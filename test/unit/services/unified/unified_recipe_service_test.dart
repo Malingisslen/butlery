@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart'; // For firstWhereOrNull
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -169,6 +170,7 @@ void main() {
   // Register fallback values for mocktail
   setUpAll(() {
     registerFallbackValue(RecipeFactory.build());
+    registerFallbackValue(SyncOperation.update);
   });
 
   group('UnifiedRecipeService', () {
@@ -176,6 +178,7 @@ void main() {
     late TestableUnifiedRecipeService testableService;
     late mocks.MockFirebaseAuthRepository mockAuthRepository;
     late mocks.MockRecipeRepository mockRecipeRepository;
+    late MockOfflineService mockOfflineService;
     late mocks.MockCommentsRepository mockCommentsRepository;
     late mocks.MockRatingsRepository mockRatingsRepository;
     late mocks.MockNotificationsRepository mockNotificationsRepository;
@@ -251,8 +254,24 @@ void main() {
       final mockCacheDao = MockCacheDao();
       final mockAppDatabase = MockAppDatabase();
       when(() => mockAppDatabase.cacheDao).thenReturn(mockCacheDao);
-      final mockOfflineService = MockOfflineService();
+      mockOfflineService = MockOfflineService();
       when(() => mockOfflineService.database).thenReturn(mockAppDatabase);
+      // A device queue, as on a phone (BUT-2162): writes are queued.
+      when(() => mockOfflineService.isQueueReady).thenReturn(true);
+      when(
+        () => mockOfflineService.queueRecipeWrite(
+          any(),
+          any(),
+          operation: any(named: 'operation'),
+          queueTagging: any(named: 'queueTagging'),
+        ),
+      ).thenAnswer((_) async => 'op');
+      when(
+        () => mockOfflineService.queueRecipeDelete(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockOfflineService.hasUnsentRecipeWrite(any(), any()),
+      ).thenAnswer((_) async => false);
       TestServiceLocator.registerMock<OfflineService>(mockOfflineService);
 
       TestServiceLocator.registerMock<TaggingService>(MockTaggingService());
@@ -1475,21 +1494,21 @@ void main() {
           expect(success, true);
         });
 
-        test('should handle delete recipe without permission', () async {
-          // Arrange
-          when(() => mockRecipeRepository.delete(any())).thenAnswer(
-            (_) async => throw Exception(
-              'Permission denied: user cannot delete this recipe',
-            ),
-          );
-
+        test('a delete is queued; a refusal comes back through the queue '
+            '(BUT-2162)', () async {
           // Act
           final success = await service.deleteRecipe('protected-recipe-id');
 
-          // Assert
-          expect(success, false);
-          // Error state handled internally by service
-          // Error details not exposed through test helpers
+          // Assert - the server is not asked here; the queue sends it and a
+          // refusal waits for the user in "Väntar på synk".
+          expect(success, isTrue);
+          verify(
+            () => mockOfflineService.queueRecipeDelete(
+              'protected-recipe-id',
+              any(),
+            ),
+          ).called(1);
+          verifyNever(() => mockRecipeRepository.delete(any()));
         });
 
         test('should handle duplicate recipe ID creation', () async {
@@ -1509,24 +1528,23 @@ void main() {
           expect(recipeId, isNotNull);
         });
 
-        test('should handle network timeout during save', () async {
-          // Arrange — simulate a hanging save that never resolves in test time.
-          // Optimistic-update path returns immediately without awaiting this.
-          final hang = Completer<Recipe>();
-          addTearDown(() {
-            if (!hang.isCompleted) hang.completeError('test-tearDown');
-          });
-          when(
-            () => mockRecipeRepository.create(any()),
-          ).thenAnswer((_) => hang.future);
-
-          // Act - optimistic update returns immediately
+        test('a create does not wait for the server (BUT-2162)', () async {
+          // Act
           final recipeId = await service.createPersonalRecipe(
             title: 'Test Recipe',
           );
 
-          // Assert - recipe ID is returned optimistically
+          // Assert - queued as a create; the queue sends it
           expect(recipeId, isNotNull);
+          verify(
+            () => mockOfflineService.queueRecipeWrite(
+              any(that: isA<Recipe>().having((r) => r.id, 'id', recipeId)),
+              any(),
+              operation: SyncOperation.create,
+              queueTagging: any(named: 'queueTagging'),
+            ),
+          ).called(1);
+          verifyNever(() => mockRecipeRepository.create(any()));
         });
       });
 
@@ -2090,10 +2108,12 @@ void main() {
             service.deleteRecipe(recipeId),
           ]);
 
-          // Assert
-          expect(results.where((r) => r == false), isNotEmpty);
-          // Error state handled internally by service
-          // Error details not exposed through test helpers
+          // Assert - both are queued; the second finds nothing on the server,
+          // which the queue counts as done (BUT-2162)
+          expect(results, [true, true]);
+          verify(
+            () => mockOfflineService.queueRecipeDelete(recipeId, any()),
+          ).called(2);
         });
 
         test('should handle conflicting archive operations', () async {
@@ -2157,7 +2177,14 @@ void main() {
 
           // Assert
           expect(recipeId, isNotNull);
-          verify(() => mockRecipeRepository.create(any())).called(1);
+          verify(
+            () => mockOfflineService.queueRecipeWrite(
+              any(),
+              any(),
+              operation: SyncOperation.create,
+              queueTagging: any(named: 'queueTagging'),
+            ),
+          ).called(1);
         });
 
         test('should handle personal module caching operations', () async {

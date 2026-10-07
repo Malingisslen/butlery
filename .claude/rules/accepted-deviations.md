@@ -181,3 +181,5 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - A capitalised bare word opening a paragraph above a quantity row is an ingredient on the text path, so "Ostsås" in that shape is a row too (BUT-2242, Malin 2026-10-06)
 - A colon-less "Till servering" groups rows on the URL path only, and the URL classifier alone takes a bare first line as the title. Do not "fix" either for symmetry without a decision (BUT-2242, 2026-10-06)
 - A multi-word colon label `looksLikeIngredient` accepts ("Till kyckling:") is a heading on the URL path and a raw ingredient on the text path (BUT-2242, 2026-10-06)
+- Recipes carry no server-side `opId` duplicate guard: a queued recipe write is a whole write on the recipe's id, so sending it twice is harmless. Build the guard with the first queued collection where a repeat does harm (BUT-2162 F3-2, Malin 2026-10-05)
+- Only recipes, their tagging and recipe images go through the offline queue; shopping lists, pantry, weekly menu, profile and chat stay on Firestore's cache, one ticket each (BUT-2287–BUT-2291) (BUT-2162 F3-1, Malin 2026-10-05)

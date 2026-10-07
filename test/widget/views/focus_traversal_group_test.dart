@@ -54,7 +54,6 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
@@ -268,7 +267,6 @@ void main() {
       // against fakes; isOnline then defaults true so no offline banner renders.
       TestServiceLocator.registerMock<OfflineService>(
         OfflineService(
-          firestoreRepository: TestServiceLocator.get<FirestoreRepository>(),
           authRepository: TestServiceLocator.get<AuthRepository>(),
         ),
       );

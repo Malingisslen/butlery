@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:uuid/uuid.dart';
+
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
@@ -46,51 +48,90 @@ class OfflineUserStorage {
     }
   }
 
-  /// Save recipe with user-specific key
-  Future<void> saveRecipeForUser(
+  /// Keeps [recipe] on the device and queues its write to the server, online
+  /// as offline (BUT-2162): the queue sends it at once when there is a
+  /// network and keeps it across restarts when there is none. Returns the
+  /// write's opId.
+  ///
+  /// With [queueTagging], a recipe whose tags still have to be made also gets
+  /// a tagging entry that waits for the write (`dependsOn`). The retagging
+  /// itself saves without it, so a recipe that tags to zero coverage does not
+  /// queue itself again.
+  Future<String> saveRecipeForUser(
     Recipe recipe,
     String userId, {
-    required bool isOnline,
+    SyncOperation operation = SyncOperation.update,
+    bool queueTagging = true,
   }) async {
     try {
       final recipeJson = jsonEncode(recipe.toJson());
+      final opId = const Uuid().v4();
+      // An edit of a recipe whose create has not reached the server goes
+      // down with that create if it fails for good (produktregler.md:187).
+      final createOpId = operation == SyncOperation.create
+          ? null
+          : await _syncQueueDao.pendingCreateOpId(userId, recipe.id);
 
       await _recipeDao.upsertRecipe(
         id: recipe.id,
         userId: userId,
         recipeJson: recipeJson,
-        needsSync: !isOnline,
+        needsSync: true,
+      );
+      await _syncQueueDao.enqueue(
+        userId: userId,
+        recipeId: recipe.id,
+        operation: operation,
+        opId: opId,
+        dependsOn: [?createOpId],
       );
 
-      if (!isOnline) {
+      // H9: Queue for tagging if recipe has failed/pending tagging
+      final tagResult = recipe.core.tagResult;
+      if (queueTagging && tagResult != null && _needsRetagging(tagResult)) {
         await _syncQueueDao.enqueue(
           userId: userId,
           recipeId: recipe.id,
-          operation: SyncOperation.update,
+          operation: SyncOperation.tag,
+          dependsOn: [opId],
         );
-
-        // H9: Queue for tagging if recipe has failed/pending tagging
-        final tagResult = recipe.core.tagResult;
-        if (tagResult != null && _needsRetagging(tagResult)) {
-          await _syncQueueDao.enqueue(
-            userId: userId,
-            recipeId: recipe.id,
-            operation: SyncOperation.tag,
-          );
-          AppLogger.debug(
-            '📋 Queued offline tagging for recipe: ${recipe.title}',
-          );
-        }
+        AppLogger.debug(
+          '📋 Queued offline tagging for recipe: ${recipe.title}',
+        );
       }
 
       AppLogger.info(
-        '💾 Recipe saved offline for user ${userId.maskedUserId}: ${recipe.title}',
+        '💾 Recipe queued for user ${userId.maskedUserId}: ${recipe.title}',
       );
+      return opId;
     } catch (e) {
       AppLogger.error('❌ Error saving recipe offline: $e');
       rethrow;
     }
   }
+
+  /// Removes the recipe from the device and queues its deletion on the
+  /// server. A create of it that has not reached the server is named in
+  /// `dependsOn`, so the server never deletes before it creates and a create
+  /// that fails for good takes the deletion with it (produktregler.md:187).
+  Future<void> queueDeleteForUser(String recipeId, String userId) async {
+    final createOpId = await _syncQueueDao.pendingCreateOpId(userId, recipeId);
+    await _recipeDao.deleteRecipe(recipeId, userId);
+    await _syncQueueDao.enqueue(
+      userId: userId,
+      recipeId: recipeId,
+      operation: SyncOperation.delete,
+      dependsOn: [?createOpId],
+    );
+    AppLogger.info(
+      '🗑️ Recipe deletion queued for user ${userId.maskedUserId}: $recipeId',
+    );
+  }
+
+  /// Whether the device holds a write of the recipe the server has not
+  /// confirmed.
+  Future<bool> hasUnsentWrite(String recipeId, String userId) =>
+      _syncQueueDao.hasEntriesForRecipe(userId, recipeId);
 
   /// H9: Check if a recipe needs retagging based on its tagResult.
   ///
@@ -141,15 +182,6 @@ class OfflineUserStorage {
       AppLogger.error('❌ Error getting recipe $recipeId: $e');
       return null;
     }
-  }
-
-  /// Delete recipe for specific user
-  Future<void> deleteRecipeForUser(String recipeId, String userId) async {
-    await _recipeDao.deleteRecipe(recipeId, userId);
-    await _syncQueueDao.removeForRecipe(userId, recipeId);
-    AppLogger.info(
-      '🗑️ Recipe deleted offline for user ${userId.maskedUserId}: $recipeId',
-    );
   }
 
   /// Clear data for specific user

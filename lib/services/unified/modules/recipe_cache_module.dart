@@ -67,6 +67,10 @@ class RecipeCacheModule {
   /// BUG-003: Callback for direct recipe removals (used on web where cache is stubbed)
   final void Function(String recipeId)? _onRecipeRemoved;
 
+  /// Whether the offline queue holds a write of the recipe the server has
+  /// not confirmed (BUT-2162).
+  final Future<bool> Function(String recipeId)? _hasUnsentWrite;
+
   /// Firestore sync metadata — whether local writes are pending server confirmation
   bool _hasPendingWrites = false;
 
@@ -98,7 +102,9 @@ class RecipeCacheModule {
     required void Function() notifyListeners,
     void Function(Recipe recipe)? onRecipeUpdated,
     void Function(String recipeId)? onRecipeRemoved,
-  }) : _firestore = firestore,
+    Future<bool> Function(String recipeId)? hasUnsentWrite,
+  }) : _hasUnsentWrite = hasUnsentWrite,
+       _firestore = firestore,
        _cacheHelper = cacheHelper,
        _getCurrentUserId = getCurrentUserId,
        _setError = setError,
@@ -241,6 +247,15 @@ class RecipeCacheModule {
   /// Update cached recipe from Firebase change
   Future<void> _updateCachedRecipe(Recipe recipe, String source) async {
     try {
+      // BUT-2162: the offline queue holds a newer write of this recipe (or
+      // its deletion) than the server has, so the server's copy would undo
+      // the user's change on screen until the queue sends it. The server's
+      // answer to that send arrives as its own change.
+      if (await _hasUnsentWrite?.call(recipe.id) ?? false) {
+        AppLogger.debug('Recipe from $source kept local (unsent write)');
+        return;
+      }
+
       // Save to cache using CacheOperations
       await saveRecipeToCache(recipe);
 

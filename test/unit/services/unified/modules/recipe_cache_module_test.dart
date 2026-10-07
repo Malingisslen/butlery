@@ -236,6 +236,50 @@ void main() {
     // web would double-fire. If no callback is wired (native), the module owns
     // the single notify. These tests pin both halves of that contract through
     // the test seam that drives the exact private path the sync stream invokes.
+    // BUT-2162: a recipe with a write in the offline queue is newer on the
+    // device than on the server. The server's copy must not replace it on
+    // screen before the queue has sent it.
+    group('unsent writes in the offline queue', () {
+      RecipeCacheModule moduleWith(Set<String> unsent) => RecipeCacheModule(
+        firestore: fakeFirestore,
+        cacheHelper: mockCacheHelper,
+        getCurrentUserId: () => currentUserId,
+        setError: (error) {},
+        notifyListeners: () => notifyListenersCalled++,
+        hasUnsentWrite: (id) async => unsent.contains(id),
+      );
+
+      test(
+        'a server copy of a recipe with an unsent write is ignored',
+        () async {
+          final guarded = moduleWith({'r1'});
+          await guarded.saveRecipeToCache(
+            RecipeFactory.build(id: 'r1', title: 'Min ändring'),
+          );
+
+          await guarded.debugApplyRecipeUpdate(
+            RecipeFactory.build(id: 'r1', title: 'Serverns gamla'),
+          );
+
+          final loaded = await guarded.loadRecipeFromCache('r1');
+          expect(loaded!.title, 'Min ändring');
+          await guarded.dispose();
+        },
+      );
+
+      test('a server copy of any other recipe is taken', () async {
+        final guarded = moduleWith({'r1'});
+
+        await guarded.debugApplyRecipeUpdate(
+          RecipeFactory.build(id: 'r2', title: 'Från servern'),
+        );
+
+        final loaded = await guarded.loadRecipeFromCache('r2');
+        expect(loaded!.title, 'Från servern');
+        await guarded.dispose();
+      });
+    });
+
     group('BUT-1256 direct-callback single-notify', () {
       test('web update path: direct callback fires, cache updates immediately, '
           'module does NOT notify (callback owns the signal)', () async {

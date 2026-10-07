@@ -7,7 +7,6 @@
 /// - Extends [ChangeNotifier] for reactive UI updates with offline state changes
 /// - Uses modular component architecture with specialized offline modules
 /// - Integrates with [Drift] for high-performance SQL-based local data persistence (replacing Hive)
-/// - Coordinates with [FirestoreRepository] for cloud data synchronization
 /// - Implements [AuthRepository] integration for user-specific data isolation
 /// **Offline Storage Features:**
 /// - **Multi-User Storage**: Isolated data storage for different authenticated users
@@ -23,15 +22,17 @@
 /// - **Background Sync**: Automatic synchronization when connectivity is restored
 /// - **Manual Sync**: User-initiated synchronization with detailed progress reporting
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 // Use conditional imports for platform-specific offline storage
 import 'package:butlery/core/storage/drift/app_database.dart'
     if (dart.library.html) 'package:butlery/core/storage/drift/app_database_stub_web.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -41,6 +42,7 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_user_storage_stub.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -58,27 +60,16 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
   // Private constructor for singleton
   OfflineService._internal({
-    FirestoreRepository? firestoreRepository,
     auth_repo.AuthRepository? authRepository,
   }) {
-    _firestoreRepository = firestoreRepository ?? FirestoreRepository();
     _authRepository = authRepository ?? FirebaseAuthRepository();
   }
 
   // Factory constructor with dependency injection
-  factory OfflineService({
-    FirestoreRepository? firestoreRepository,
-    auth_repo.AuthRepository? authRepository,
-  }) {
-    _instance ??= OfflineService._internal(
-      firestoreRepository: firestoreRepository,
-      authRepository: authRepository,
-    );
+  factory OfflineService({auth_repo.AuthRepository? authRepository}) {
+    _instance ??= OfflineService._internal(authRepository: authRepository);
 
     // Update dependencies if provided on subsequent calls
-    if (firestoreRepository != null) {
-      _instance!._firestoreRepository = firestoreRepository;
-    }
     if (authRepository != null) _instance!._authRepository = authRepository;
 
     return _instance!;
@@ -90,7 +81,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     _instance = null;
   }
 
-  late FirestoreRepository _firestoreRepository;
   late auth_repo.AuthRepository _authRepository;
 
   // Focused components
@@ -98,6 +88,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   late OfflineUserStorage _userStorage;
   late OfflineSyncManager _syncManager;
   bool _isDisposed = false;
+  StreamSubscription<Object?>? _authSubscription;
+  QueuedRecipeWriter? _recipeWriter;
 
   // User-specific storage state
   String? _currentUserId;
@@ -178,6 +170,59 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
+  /// Whether recipe writes can go through the queue: a device database is
+  /// open. On the web the database is a stub and writes go straight to the
+  /// server.
+  bool get isQueueReady => !kIsWeb && isInitialized && _isSyncManagerReady;
+
+  /// Attaches what sends queued recipe writes to the server (BUT-2162), and
+  /// sends what is waiting. Until then recipe entries stay in the queue.
+  void attachRecipeWriter(QueuedRecipeWriter writer) {
+    _recipeWriter = writer;
+    if (!_isSyncManagerReady) return;
+    _syncManager.recipeWriter = writer;
+    _sendWhenOnline();
+  }
+
+  /// Keeps [recipe] on the device and queues its write; the queue sends it at
+  /// once when the device is online. Returns the write's opId.
+  Future<String> queueRecipeWrite(
+    Recipe recipe,
+    String userId, {
+    required SyncOperation operation,
+    bool queueTagging = false,
+  }) async {
+    final opId = await _userStorage.saveRecipeForUser(
+      recipe,
+      userId,
+      operation: operation,
+      queueTagging: queueTagging,
+    );
+    await refreshSyncState();
+    _sendWhenOnline();
+    return opId;
+  }
+
+  /// Removes the recipe from the device and queues its deletion.
+  Future<void> queueRecipeDelete(String recipeId, String userId) async {
+    await _userStorage.queueDeleteForUser(recipeId, userId);
+    await refreshSyncState();
+    _sendWhenOnline();
+  }
+
+  /// Whether the device holds a write of the recipe the server has not
+  /// confirmed. A server copy of such a recipe is older than the device's.
+  Future<bool> hasUnsentRecipeWrite(String recipeId, String userId) async {
+    if (!isQueueReady) return false;
+    return _userStorage.hasUnsentWrite(recipeId, userId);
+  }
+
+  void _sendWhenOnline() {
+    if (_isSyncManagerReady && isOnline) {
+      unawaited(_syncManager.syncPendingChanges(isOnline: true));
+    }
+  }
+
   /// Initialize Drift database and offline service
   Future<void> initialize() async {
     if (isInitialized) return;
@@ -202,7 +247,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
     _syncManager = OfflineSyncManager(
       database: _initialization.database,
-      firestoreRepository: _firestoreRepository,
       authRepository: _authRepository,
       onSyncStateChanged: () {
         refreshSyncState();
@@ -211,7 +255,16 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onTagRecipe: _retagRecipe,
       // A retry timer that fires offline waits for the reconnect pass.
       isOnlineNow: () => isOnline,
+      recipeWriter: _recipeWriter,
     );
+
+    // The queue belongs to whoever is signed in: their entries are counted
+    // and sent, and a sign-in sends what an earlier session left (produkt-
+    // regler.md § 16 keeps the queue over a timeout sign-out).
+    _authSubscription = _authRepository.authStateChanges().listen((user) {
+      setCurrentUser(user?.uid);
+      if (user != null) _sendWhenOnline();
+    });
 
     // Initial sync state refresh
     await refreshSyncState();
@@ -223,12 +276,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     return _userStorage.getRecipesForUser(userId);
   }
 
-  /// Save recipe with user-specific key
-  Future<void> saveRecipeOfflineForUser(Recipe recipe, String userId) async {
-    await _userStorage.saveRecipeForUser(recipe, userId, isOnline: isOnline);
-    await refreshSyncState();
-  }
-
   /// Get specific offline recipe for user
   Future<Recipe?> getOfflineRecipeForUser(
     String recipeId,
@@ -236,15 +283,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   ) async {
     if (!isInitialized) return null;
     return _userStorage.getRecipeForUser(recipeId, userId);
-  }
-
-  /// Delete recipe for specific user
-  Future<void> deleteRecipeOfflineForUser(
-    String recipeId,
-    String userId,
-  ) async {
-    await _userStorage.deleteRecipeForUser(recipeId, userId);
-    await refreshSyncState();
   }
 
   /// Clear data for specific user
@@ -270,15 +308,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   Stream<List<Recipe>> watchRecipesForUser(String userId) {
     if (!isInitialized) return Stream.value([]);
     return _userStorage.watchRecipesForUser(userId);
-  }
-
-  /// Save recipe offline - with user support
-  Future<void> saveRecipeOffline(Recipe recipe) async {
-    AppLogger.debug('Recipe offline save request: ${recipe.title}');
-    // Use current user if available
-    if (_currentUserId != null) {
-      await saveRecipeOfflineForUser(recipe, _currentUserId!);
-    }
   }
 
   /// Queue a tagging operation for when connectivity is restored.
@@ -345,10 +374,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       );
 
       // Save updated recipe back to local storage (will also sync to Firebase)
-      await _userStorage.saveRecipeForUser(
+      await queueRecipeWrite(
         updatedRecipe,
         _currentUserId!,
-        isOnline: isOnline,
+        operation: SyncOperation.update,
       );
 
       AppLogger.success(
@@ -377,14 +406,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     return null;
   }
 
-  /// Delete recipe offline - with user support
-  Future<void> deleteRecipeOffline(String id) async {
-    AppLogger.debug('Recipe offline delete request: $id');
-    if (_currentUserId != null) {
-      await deleteRecipeOfflineForUser(id, _currentUserId!);
-    }
-  }
-
   /// Clear all offline data - with user support
   Future<void> clearOfflineData() async {
     AppLogger.debug('Offline data clear request');
@@ -409,6 +430,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   @override
   void dispose() {
     _isDisposed = true;
+    unawaited(_authSubscription?.cancel());
     if (_isInitializationReady) {
       _initialization.dispose();
     }
