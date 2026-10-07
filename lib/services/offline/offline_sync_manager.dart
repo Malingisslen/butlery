@@ -19,6 +19,9 @@ import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
+import 'package:butlery/services/offline/offline_user_storage.dart';
+import 'package:butlery/services/offline/queued_image_uploader.dart';
+import 'package:butlery/services/offline/upload_queue_processor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Handles sync operations for offline service
@@ -68,6 +71,10 @@ class OfflineSyncManager {
   /// entries wait in the queue untouched; tagging entries still run.
   QueuedRecipeWriter? recipeWriter;
 
+  /// Sends the upload queue in the same passes (BUT-2162). Built from
+  /// [uploadImage] unless given.
+  final UploadQueueProcessor? uploads;
+
   OfflineSyncManager({
     required AppDatabase database,
     required AuthRepository authRepository,
@@ -78,7 +85,21 @@ class OfflineSyncManager {
     Random? random,
     this.recipeWriter,
     this.sendTimeout = const Duration(seconds: 30),
-  }) : _database = database,
+    QueuedImageUploader? uploadImage,
+    OfflineUserStorage? userStorage,
+    UploadQueueProcessor? uploads,
+  }) : uploads =
+           uploads ??
+           (uploadImage == null
+               ? null
+               : UploadQueueProcessor(
+                   database: database,
+                   storage:
+                       userStorage ?? OfflineUserStorage(database: database),
+                   upload: uploadImage,
+                   random: random,
+                 )),
+       _database = database,
        _isOnlineNow = isOnlineNow,
        _random = random,
        _recipeDao = database.recipeDao,
@@ -94,14 +115,19 @@ class OfflineSyncManager {
   Future<bool> get hasQueuedChanges async {
     final userId = _authRepository.currentUserId;
     if (userId == null) return false;
-    return await _syncQueueDao.hasPending(userId);
+    return _hasWork(userId);
   }
 
   Future<int> get queuedChangesCount async {
     final userId = _authRepository.currentUserId;
     if (userId == null) return 0;
-    return await _syncQueueDao.countPending(userId);
+    return await _syncQueueDao.countPending(userId) +
+        await _database.uploadQueueDao.countPendingUploads(userId);
   }
+
+  Future<bool> _hasWork(String userId) async =>
+      await _syncQueueDao.hasPending(userId) ||
+      (await uploads?.hasPending(userId) ?? false);
 
   /// Sends the queue: one pass over the user's entries, oldest first.
   ///
@@ -130,8 +156,7 @@ class OfflineSyncManager {
       return;
     }
 
-    final hasPending = await _syncQueueDao.hasPending(userId);
-    if (!isOnline || !hasPending) return;
+    if (!isOnline || !await _hasWork(userId)) return;
 
     // Acquire async lock - if another sync is in progress, wait for it.
     // A loop, because several callers can wait on the same pass: only the
@@ -143,8 +168,7 @@ class OfflineSyncManager {
       }
       if (_disposed) return;
       // After waiting, check if we still need to sync
-      final stillHasPending = await _syncQueueDao.hasPending(userId);
-      if (!stillHasPending || _syncLock != null) {
+      if (!await _hasWork(userId) || _syncLock != null) {
         AppLogger.debug('🔄 SYNC: No pending changes after wait, skipping');
         return;
       }
@@ -159,111 +183,26 @@ class OfflineSyncManager {
     _retryTimer = null;
     _onSyncStateChanged?.call();
 
-    final pendingCount = await _syncQueueDao.countPending(userId);
-    AppLogger.info(
-      '🔄 Synkroniserar $pendingCount väntande ändringar...',
-    );
-
     try {
       final now = clock.now();
-      final pendingItems = await _syncQueueDao.getPendingForUser(userId);
-      final ids = await _database.queuedOpIds(userId);
-      final waiting = {...ids.waiting};
-      final failed = {...ids.failed};
-      final blockedEntities = <String>{};
-      int successCount = 0;
-      int failureCount = 0;
-
-      for (final item in pendingItems) {
-        final entityKey = '${item.entityType}:${item.recipeId}';
-        final decision = decideQueueEntry(
-          QueueEntryState(
-            opId: item.opId,
-            entityKey: entityKey,
-            dependsOn: SyncQueueDao.dependsOnOf(item),
-            nextAttemptAt: item.nextAttemptAt,
-          ),
-          now: now,
-          waiting: waiting,
-          failed: failed,
-          blockedEntities: blockedEntities,
-          force: force,
-        );
-        switch (decision) {
-          case QueueEntryDecision.dependencyFailed:
-            // "aldrig halvvägs" (produktregler.md:187).
-            _moveToFailed(
-              await _database.markChainPermanentlyFailed(
-                userId,
-                item.opId,
-                reason: QueuedChangeReason.dependencyFailed.code,
-              ),
-              waiting,
-              failed,
-            );
-            continue;
-          case QueueEntryDecision.waits:
-          case QueueEntryDecision.backoff:
-            blockedEntities.add(entityKey);
-            continue;
-          case QueueEntryDecision.send:
-            if (recipeWriter == null &&
-                item.operation != SyncOperation.tag.name) {
-              blockedEntities.add(entityKey);
-              continue;
-            }
-        }
-
-        // A pass belongs to the user it started for; the repository writes
-        // as whoever is signed in now.
-        if (_authRepository.currentUserId != userId) break;
-
-        try {
-          await _send(item, userId);
-          waiting.remove(item.opId);
-          successCount++;
-        } catch (e) {
-          failureCount++;
-          AppLogger.error(
-            '❌ Fel vid synk av ${item.recipeId}: ${queueErrorCode(e)}',
-          );
-          final permanent = permanentFailureReason(e);
-          final firstFailedAt = item.firstFailedAt ?? now;
-          if (permanent != null || queueRetriesExhausted(firstFailedAt, now)) {
-            final reason = permanent ?? QueuedChangeReason.retriesExhausted;
-            _moveToFailed(
-              await _database.markChainPermanentlyFailed(
-                userId,
-                item.opId,
-                reason: QueuedChangeReason.dependencyFailed.code,
-                rootReason: reason.code,
-              ),
-              waiting,
-              failed,
-            );
-          } else {
-            final failures = item.retryCount + 1;
-            await _syncQueueDao.scheduleRetry(
-              item.id,
-              retryCount: failures,
-              nextAttemptAt: now.add(
-                queueRetryDelay(failures, random: _random),
-              ),
-              firstFailedAt: firstFailedAt,
-              errorCode: queueErrorCode(e),
-            );
-            blockedEntities.add(entityKey);
-          }
-        }
+      var sent = await _sendSyncEntries(userId, now, force);
+      // A create sent above lets its images go up, and an image that went
+      // up queues its address as an edit of the recipe, sent here.
+      final uploaded = await uploads?.runPass(
+        userId,
+        now: now,
+        isCurrentUser: () => _authRepository.currentUserId == userId,
+        force: force,
+      );
+      if (uploaded != null && uploaded > 0) {
+        // The edits sent here were queued during this pass, so only the
+        // uploads count towards what the pass started with.
+        sent += uploaded;
+        await _sendSyncEntries(userId, now, force);
       }
 
-      _lastPassSent = successCount;
-      if (successCount > 0) {
-        AppLogger.success('🎉 Synkade $successCount ändringar');
-      }
-      if (failureCount > 0) {
-        AppLogger.warning('⚠️ $failureCount ändringar kunde inte synkas');
-      }
+      _lastPassSent = sent;
+      if (sent > 0) AppLogger.success('🎉 Synkade $sent ändringar');
 
       await _scheduleNextAttempt(userId);
     } catch (e) {
@@ -280,6 +219,110 @@ class OfflineSyncManager {
       _syncLock = null;
       _onSyncStateChanged?.call();
     }
+  }
+
+  /// One walk over the sync queue; returns how many entries reached the
+  /// server.
+  Future<int> _sendSyncEntries(
+    String userId,
+    DateTime now,
+    bool force,
+  ) async {
+    final pendingItems = await _syncQueueDao.getPendingForUser(userId);
+    final ids = await _database.queuedOpIds(userId);
+    final waiting = {...ids.waiting};
+    final failed = {...ids.failed};
+    final blockedEntities = <String>{};
+    int successCount = 0;
+    int failureCount = 0;
+
+    for (final item in pendingItems) {
+      final entityKey = '${item.entityType}:${item.recipeId}';
+      final decision = decideQueueEntry(
+        QueueEntryState(
+          opId: item.opId,
+          entityKey: entityKey,
+          dependsOn: SyncQueueDao.dependsOnOf(item),
+          nextAttemptAt: item.nextAttemptAt,
+        ),
+        now: now,
+        waiting: waiting,
+        failed: failed,
+        blockedEntities: blockedEntities,
+        force: force,
+      );
+      switch (decision) {
+        case QueueEntryDecision.dependencyFailed:
+          // "aldrig halvvägs" (produktregler.md:187).
+          _moveToFailed(
+            await _database.markChainPermanentlyFailed(
+              userId,
+              item.opId,
+              reason: QueuedChangeReason.dependencyFailed.code,
+            ),
+            waiting,
+            failed,
+          );
+          continue;
+        case QueueEntryDecision.waits:
+        case QueueEntryDecision.backoff:
+          blockedEntities.add(entityKey);
+          continue;
+        case QueueEntryDecision.send:
+          if (recipeWriter == null &&
+              item.operation != SyncOperation.tag.name) {
+            blockedEntities.add(entityKey);
+            continue;
+          }
+      }
+
+      // A pass belongs to the user it started for; the repository writes
+      // as whoever is signed in now.
+      if (_authRepository.currentUserId != userId) break;
+
+      try {
+        await _send(item, userId);
+        waiting.remove(item.opId);
+        successCount++;
+      } catch (e) {
+        failureCount++;
+        AppLogger.error(
+          '❌ Fel vid synk av ${item.recipeId}: ${queueErrorCode(e)}',
+        );
+        final permanent = permanentFailureReason(e);
+        final firstFailedAt = item.firstFailedAt ?? now;
+        if (permanent != null || queueRetriesExhausted(firstFailedAt, now)) {
+          final reason = permanent ?? QueuedChangeReason.retriesExhausted;
+          _moveToFailed(
+            await _database.markChainPermanentlyFailed(
+              userId,
+              item.opId,
+              reason: QueuedChangeReason.dependencyFailed.code,
+              rootReason: reason.code,
+            ),
+            waiting,
+            failed,
+          );
+        } else {
+          final failures = item.retryCount + 1;
+          await _syncQueueDao.scheduleRetry(
+            item.id,
+            retryCount: failures,
+            nextAttemptAt: now.add(
+              queueRetryDelay(failures, random: _random),
+            ),
+            firstFailedAt: firstFailedAt,
+            errorCode: queueErrorCode(e),
+          );
+          blockedEntities.add(entityKey);
+        }
+      }
+    }
+
+    if (failureCount > 0) {
+      AppLogger.warning('⚠️ $failureCount ändringar kunde inte synkas');
+    }
+    return successCount;
   }
 
   static void _moveToFailed(
@@ -375,6 +418,10 @@ class OfflineSyncManager {
       if (next == null) continue;
       if (earliest == null || next.isBefore(earliest)) earliest = next;
     }
+    final upload = await uploads?.earliestRetry(userId);
+    if (upload != null && (earliest == null || upload.isBefore(earliest))) {
+      earliest = upload;
+    }
     if (earliest == null) return;
     var delay = earliest.difference(now);
     if (delay.isNegative) delay = Duration.zero;
@@ -420,8 +467,7 @@ class OfflineSyncManager {
       );
     }
 
-    final hasPending = await _syncQueueDao.hasPending(userId);
-    if (!hasPending) {
+    if (!await _hasWork(userId)) {
       AppLogger.info('✅ Inga ändringar att synkronisera');
       return SyncResult(
         success: true,
@@ -432,58 +478,16 @@ class OfflineSyncManager {
 
     AppLogger.info('🔄 Manuell synkronisering startad...');
     _lastPassSent = 0;
-    final itemsToSync = await _syncQueueDao.countPending(userId);
+    final itemsToSync = await queuedChangesCount;
 
     await syncPendingChanges(isOnline: isOnline, force: true);
 
     // What reached the server, counted in the pass: an entry that became a
     // permanent failure also leaves the pending count, but was not saved.
-    final syncedItems = min(_lastPassSent, itemsToSync);
-    final remainingItems = itemsToSync - syncedItems;
-
-    if (remainingItems == 0) {
-      return SyncResult(
-        success: true,
-        message: l.syncAllSynced(syncedItems),
-        isRetry: false,
-      );
-    } else if (syncedItems > 0) {
-      return SyncResult(
-        success: true,
-        message: l.syncPartialSuccess(syncedItems, itemsToSync, remainingItems),
-        isRetry: remainingItems > 0,
-      );
-    } else {
-      return SyncResult(
-        success: false,
-        message: l.syncFailedRetryLater,
-        isRetry: true,
-      );
-    }
-  }
-
-  /// Get failed operations for diagnostic purposes
-  /// [maxRetries] - Operations with retry count above this are considered failed
-  Future<List<SyncQueueEntry>> getFailedOperations({int maxRetries = 3}) async {
-    final userId = _authRepository.currentUserId;
-    if (userId == null) return [];
-    return await _syncQueueDao.getFailedOperations(userId, maxRetries);
-  }
-
-  /// Queue a tagging operation for when connectivity is restored.
-  ///
-  /// Used for recipes saved offline that need tags generated.
-  /// The recipe will be tagged when the device goes back online.
-  Future<void> queueTagging({
-    required String userId,
-    required String recipeId,
-  }) async {
-    await _syncQueueDao.enqueue(
-      userId: userId,
-      recipeId: recipeId,
-      operation: SyncOperation.tag,
+    return SyncResult.ofManualPass(
+      synced: min(_lastPassSent, itemsToSync),
+      total: itemsToSync,
     );
-    AppLogger.debug('📋 Queued tagging operation for recipe: $recipeId');
   }
 
   void dispose() {

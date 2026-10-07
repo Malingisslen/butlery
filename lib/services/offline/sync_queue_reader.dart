@@ -414,6 +414,8 @@ Future<void> retrySmallerQueuedChange(
       status: const Value('pending'),
       retryCount: const Value(0),
       lastError: const Value(null),
+      nextAttemptAt: const Value(null),
+      firstFailedAt: const Value(null),
     ),
   );
 }

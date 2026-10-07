@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -16,11 +20,23 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 class OfflineUserStorage {
   final RecipeDao _recipeDao;
   final SyncQueueDao _syncQueueDao;
+  final UploadQueueDao _uploadQueueDao;
+  final Future<Directory> Function() _uploadsRoot;
 
+  /// [uploadsRoot] is where queued images are kept on the device until they
+  /// reach the server; by default a folder in the app's documents, which
+  /// the system does not clear the way it clears the picker's cache.
   OfflineUserStorage({
     required AppDatabase database,
+    Future<Directory> Function()? uploadsRoot,
   }) : _recipeDao = database.recipeDao,
-       _syncQueueDao = database.syncQueueDao;
+       _syncQueueDao = database.syncQueueDao,
+       _uploadQueueDao = database.uploadQueueDao,
+       _uploadsRoot = uploadsRoot ?? _defaultUploadsRoot;
+
+  static Future<Directory> _defaultUploadsRoot() async => Directory(
+    p.join((await getApplicationDocumentsDirectory()).path, 'offline_uploads'),
+  );
 
   /// Get recipes for specific user
   Future<List<Recipe>> getRecipesForUser(String userId) async {
@@ -116,10 +132,20 @@ class OfflineUserStorage {
   /// that fails for good takes the deletion with it (produktregler.md:187).
   ///
   /// Returns false, and queues nothing, when its deletion is already queued.
+  /// The recipe's images still waiting to go up are cancelled: there is no
+  /// recipe left to show them on.
   Future<bool> queueDeleteForUser(String recipeId, String userId) async {
     if (await _syncQueueDao.hasQueuedDelete(userId, recipeId)) return false;
     final createOpId = await _syncQueueDao.pendingCreateOpId(userId, recipeId);
     await _recipeDao.deleteRecipe(recipeId, userId);
+    for (final upload in await _uploadQueueDao.getUploadsForEntity(
+      recipeId,
+      SyncQueueEntityType.recipe,
+    )) {
+      if (upload.userId != userId) continue;
+      await _uploadQueueDao.cancelUpload(upload.id);
+      await deleteUploadFile(upload.localPath);
+    }
     await _syncQueueDao.enqueue(
       userId: userId,
       recipeId: recipeId,
@@ -130,6 +156,48 @@ class OfflineUserStorage {
       '🗑️ Recipe deletion queued for user ${userId.maskedUserId}: $recipeId',
     );
     return true;
+  }
+
+  /// Keeps a copy of the image at [imagePath] on the device and queues its
+  /// upload as an image of the recipe [recipeId] (BUT-2162). The upload waits for a create of
+  /// the recipe that has not reached the server, so it goes down with that
+  /// create if it fails for good (produktregler.md:187). Returns the
+  /// upload's id.
+  Future<String> queueRecipeImageForUser(
+    String imagePath,
+    String recipeId,
+    String userId,
+  ) async {
+    final image = File(imagePath);
+    final id = const Uuid().v4();
+    final folder = Directory(p.join((await _uploadsRoot()).path, userId));
+    await folder.create(recursive: true);
+    final copy = await image.copy(
+      p.join(folder.path, '$id${p.extension(image.path)}'),
+    );
+    final createOpId = await _syncQueueDao.pendingCreateOpId(userId, recipeId);
+    await _uploadQueueDao.queueUpload(
+      id: id,
+      userId: userId,
+      localPath: copy.path,
+      targetPath: 'users/$userId/recipes',
+      fileSizeBytes: await copy.length(),
+      entityId: recipeId,
+      entityType: SyncQueueEntityType.recipe,
+      dependsOn: [?createOpId],
+    );
+    AppLogger.info('📷 Image queued for recipe $recipeId');
+    return id;
+  }
+
+  /// Removes a queued image's copy from the device. A copy that is already
+  /// gone is fine.
+  Future<void> deleteUploadFile(String path) async {
+    try {
+      await File(path).delete();
+    } on FileSystemException {
+      // Already gone.
+    }
   }
 
   /// Whether the device holds a write of the recipe the server has not

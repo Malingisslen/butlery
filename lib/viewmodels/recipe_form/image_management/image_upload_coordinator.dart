@@ -7,6 +7,9 @@ import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Coordinates bulk image upload operations with thread-safe cancellation support.
 /// **Responsibilities:**
@@ -232,10 +235,26 @@ class ImageUploadCoordinator {
       if (imageStates.containsKey(filePath) &&
           !isDisposedNow() &&
           !isUploadsCanceledNow()) {
+        // BUT-2162: the form queues an image that failed for the network
+        // and refuses to save past one that is too large.
+        final storageError = e is StorageUploadException ? e : null;
         imageStates[filePath] = imageStates[filePath]!.copyWith(
           state: ImageUploadState.failed,
-          error: e.toString(),
+          error: storageError?.isTooLarge ?? false
+              ? StorageUploadException.tooLargeCode
+              : e.toString(),
+          // Never null: copyWith would keep an earlier attempt's type.
+          errorType: storageError?.isNetworkError ?? false
+              ? ImageUploadErrorType.network
+              : ImageUploadErrorType.unknown,
         );
+        if (storageError?.isTooLarge ?? false) {
+          _setError(
+            AppLocale.current.imageUploadTooLarge(
+              '${UploadConstants.maxStorageFileBytes ~/ (1024 * 1024)}',
+            ),
+          );
+        }
       }
 
       AppLogger.error('❌ Error uploading ${file.path}: $e');

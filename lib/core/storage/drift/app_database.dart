@@ -56,8 +56,9 @@ class AppDatabase extends _$AppDatabase {
   /// opId, entity type, dependsOn and a permanent-failure flag.
   /// 4: the retry schedule (produktregler.md:188) — when a sync entry may be
   /// sent again, and when its first attempt failed.
+  /// 5: the same two columns on the upload queue (BUT-2162).
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -71,10 +72,12 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(uploadQueueEntries);
         }
         if (from < 3) {
-          // Rebuilds the queues in their current shape, schema 4 included.
+          // Rebuilds the queues in their current shape, schemas 4 and 5
+          // included.
           await _migrateQueuesToV3(m);
-        } else if (from < 4) {
-          await _migrateSyncQueueToV4(m);
+        } else {
+          if (from < 4) await _migrateSyncQueueToV4(m);
+          if (from < 5) await _migrateUploadQueueToV5(m);
         }
       },
       beforeOpen: (details) async {
@@ -118,6 +121,9 @@ class AppDatabase extends _$AppDatabase {
         newColumns: [
           uploadQueueEntries.dependsOn,
           uploadQueueEntries.permanentlyFailed,
+          // Schema 5: the table is rebuilt in its current shape.
+          uploadQueueEntries.nextAttemptAt,
+          uploadQueueEntries.firstFailedAt,
         ],
       ),
     );
@@ -130,6 +136,14 @@ class AppDatabase extends _$AppDatabase {
   Future<void> _migrateSyncQueueToV4(Migrator m) async {
     await m.addColumn(syncQueueEntries, syncQueueEntries.nextAttemptAt);
     await m.addColumn(syncQueueEntries, syncQueueEntries.firstFailedAt);
+  }
+
+  /// Schema 4 → 5: the retry columns of schema 4 on the upload queue. As
+  /// there, every row is kept and a migrated upload is tried at the next
+  /// pass.
+  Future<void> _migrateUploadQueueToV5(Migrator m) async {
+    await m.addColumn(uploadQueueEntries, uploadQueueEntries.nextAttemptAt);
+    await m.addColumn(uploadQueueEntries, uploadQueueEntries.firstFailedAt);
   }
 
   /// A random UUID v4 per row, in SQL, so migrated opIds have the same

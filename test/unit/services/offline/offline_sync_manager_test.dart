@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -17,6 +18,8 @@ class MockAppDatabase extends Mock implements AppDatabase {}
 class MockRecipeDao extends Mock implements RecipeDao {}
 
 class MockSyncQueueDao extends Mock implements SyncQueueDao {}
+
+class MockUploadQueueDao extends Mock implements UploadQueueDao {}
 
 // Fake SyncQueueEntry for stubbing
 class FakeSyncQueueEntry {
@@ -70,6 +73,11 @@ void main() {
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
       when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
+      final mockUploadQueueDao = MockUploadQueueDao();
+      when(() => mockDatabase.uploadQueueDao).thenReturn(mockUploadQueueDao);
+      when(
+        () => mockUploadQueueDao.countPendingUploads(any()),
+      ).thenAnswer((_) async => 0);
       // P6-U08b: the pass reads which opIds are still queued (dependsOn).
       when(
         () => mockDatabase.queuedOpIds(any()),
@@ -138,7 +146,7 @@ void main() {
 
     group('Sync Operations', () {
       test('should skip sync when offline', () async {
-        // Arrange — prod checks hasPending before checking isOnline
+        // Arrange
         when(
           () => mockSyncQueueDao.hasPending(any()),
         ).thenAnswer((_) async => true);
@@ -146,8 +154,8 @@ void main() {
         // Act
         await syncManager.syncPendingChanges(isOnline: false);
 
-        // Assert — hasPending is called, but actual sync is skipped
-        verify(() => mockSyncQueueDao.hasPending(any())).called(1);
+        // Assert
+        verifyNever(() => mockSyncQueueDao.getPendingForUser(any()));
       });
 
       test('should skip sync when no pending changes', () async {
@@ -432,34 +440,6 @@ void main() {
         expect(taggedRecipes, containsAll(['recipe_1', 'recipe_2']));
       });
 
-      test('should queue tagging operation via queueTagging method', () async {
-        // Arrange
-        const userId = 'test_user';
-        const recipeId = 'recipe_to_queue';
-
-        when(
-          () => mockSyncQueueDao.enqueue(
-            userId: any(named: 'userId'),
-            recipeId: any(named: 'recipeId'),
-            operation: any(named: 'operation'),
-          ),
-        ).thenAnswer((_) async => 1);
-
-        // Act
-        await syncManagerWithTagCallback.queueTagging(
-          userId: userId,
-          recipeId: recipeId,
-        );
-
-        // Assert
-        verify(
-          () => mockSyncQueueDao.enqueue(
-            userId: userId,
-            recipeId: recipeId,
-            operation: SyncOperation.tag,
-          ),
-        ).called(1);
-      });
     });
   });
 }

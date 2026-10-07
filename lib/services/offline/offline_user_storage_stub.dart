@@ -26,6 +26,12 @@ class OfflineUserStorage {
   Future<bool> queueDeleteForUser(String recipeId, String userId) async =>
       false;
 
+  Future<String> queueRecipeImageForUser(
+    String imagePath,
+    String recipeId,
+    String userId,
+  ) async => '';
+
   Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
 
   Future<void> clearUserData(String userId) async {}

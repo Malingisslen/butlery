@@ -11,6 +11,7 @@ import 'package:butlery/widgets/recipe/upload_choice_dialog.dart'
     as upload_dialog;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
@@ -146,6 +147,31 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     return pending;
   }
+
+  /// BUT-2162: the images whose upload failed for the network; the offline
+  /// queue can send them instead of the form.
+  List<File> get networkFailedImages => [
+    for (final status in _imageStates.values)
+      if (status.file != null &&
+          status.state == ImageUploadState.failed &&
+          status.errorType == ImageUploadErrorType.network)
+        status.file!,
+  ];
+
+  /// Removes [files] from the form once the offline queue holds them.
+  void releaseToOfflineQueue(List<File> files) {
+    if (files.isEmpty) return;
+    final paths = {for (final f in files) f.path};
+    _imageStates.removeWhere((key, _) => paths.contains(key));
+    notifyListeners();
+  }
+
+  /// Whether an image failed because it is larger than the server accepts.
+  bool get hasTooLargeImage => _imageStates.values.any(
+    (s) =>
+        s.state == ImageUploadState.failed &&
+        s.error == StorageUploadException.tooLargeCode,
+  );
 
   /// Get uploaded URLs for recipe persistence
   List<String> get uploadedImageUrls => validImageUrls;
@@ -1122,7 +1148,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final fileSize = await imageFile.length();
       const maxSizeInBytes = UploadConstants.maxPreCompressionBytes;
       if (fileSize > maxSizeInBytes) {
-        _setImageUploadError(AppLocale.current.errorGeneric);
+        _setImageUploadError(
+          AppLocale.current.imageUploadTooLarge(
+            '${maxSizeInBytes ~/ (1024 * 1024)}',
+          ),
+        );
         return false;
       }
 

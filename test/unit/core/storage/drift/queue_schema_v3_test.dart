@@ -131,8 +131,8 @@ void main() {
     // queue_schema_v4_test.dart covers 3 -> 4.
     test('records the current schema version', () async {
       final row = await db.customSelect('PRAGMA user_version').getSingle();
-      expect(row.data.values.single, 4);
-      expect(db.schemaVersion, 4);
+      expect(row.data.values.single, 5);
+      expect(db.schemaVersion, 5);
     });
 
     test('a migrated entry has no retry time yet', () async {
@@ -362,7 +362,7 @@ void main() {
     test('every count is zero and every stream emits once', () async {
       final stub = web.AppDatabase();
 
-      expect(stub.schemaVersion, 4);
+      expect(stub.schemaVersion, 5);
       expect(await stub.watchQueueCounts('u1').first, QueueCounts.empty);
       expect(await stub.watchPendingCount('u1').first, 0);
       expect(await stub.syncQueueDao.watchPendingCount('u1').first, 0);

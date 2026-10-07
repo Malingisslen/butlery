@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/storage/drift/app_database_stub_web.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
+import 'package:butlery/services/offline/offline_user_storage_stub.dart';
+import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 
@@ -17,6 +19,8 @@ class OfflineSyncManager {
     VoidCallback? onSyncStateChanged,
     Future<void> Function(String recipeId, String userId)? onTagRecipe,
     void Function(String recipeId)? onRecipeSent,
+    QueuedImageUploader? uploadImage,
+    OfflineUserStorage? userStorage,
     bool Function()? isOnlineNow,
     this.recipeWriter,
   });
@@ -27,11 +31,6 @@ class OfflineSyncManager {
 
   Future<bool> get hasQueuedChanges async => false;
   Future<int> get queuedChangesCount async => 0;
-
-  Future<void> queueTagging({
-    required String userId,
-    required String recipeId,
-  }) async {}
 
   Future<void> syncPendingChanges({
     required bool isOnline,

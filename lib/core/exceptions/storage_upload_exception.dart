@@ -25,6 +25,13 @@ class StorageUploadException implements Exception {
   bool get isUnauthorized =>
       code == 'unauthorized' || code == 'unauthenticated';
 
+  /// The app's own refusal of a file `storage.rules` would refuse for size
+  /// (`checkStorageUploadSize`). Not a Firebase code.
+  static const String tooLargeCode = 'too-large';
+
+  /// The file is larger than the server accepts.
+  bool get isTooLarge => code == tooLargeCode;
+
   /// User-initiated or system-initiated cancellation mid-upload.
   bool get isCanceled => code == 'canceled' || code == 'cancelled';
 

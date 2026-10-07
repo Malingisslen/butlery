@@ -23,6 +23,7 @@
 /// - **Manual Sync**: User-initiated synchronization with detailed progress reporting
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -42,7 +43,9 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_user_storage_stub.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
+import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
+import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -219,6 +222,32 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     return queued;
   }
 
+  /// Keeps the image at [imagePath] on the device and queues it as an image
+  /// of the recipe [recipeId]; the queue adds its address to the recipe once
+  /// it is on the server. For an image the device could not upload now.
+  Future<void> queueRecipeImage(
+    String imagePath,
+    String recipeId,
+    String userId,
+  ) async {
+    await _userStorage.queueRecipeImageForUser(imagePath, recipeId, userId);
+    await refreshSyncState();
+    _sendWhenOnline();
+  }
+
+  Future<UploadedImage> _uploadQueuedImage(
+    String localPath,
+    String userId,
+  ) async {
+    final result = await ServiceLocator.get<StorageService>().uploadImageFile(
+      File(localPath),
+      userId,
+    );
+    // uploadImageFile returns null for a failure it has no code for.
+    if (result == null) throw StateError('Image upload failed');
+    return (url: result.imageUrl, thumbnailUrl: result.thumbnailUrl);
+  }
+
   /// Whether the device holds a write of the recipe the server has not
   /// confirmed. A server copy of such a recipe is older than the device's.
   Future<bool> hasUnsentRecipeWrite(String recipeId, String userId) async {
@@ -265,6 +294,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onRecipeSent: (recipeId) {
         if (!_recipeSent.isClosed) _recipeSent.add(recipeId);
       },
+      uploadImage: _uploadQueuedImage,
+      userStorage: _userStorage,
       // A retry timer that fires offline waits for the reconnect pass.
       isOnlineNow: () => isOnline,
       recipeWriter: _recipeWriter,
@@ -320,19 +351,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   Stream<List<Recipe>> watchRecipesForUser(String userId) {
     if (!isInitialized) return Stream.value([]);
     return _userStorage.watchRecipesForUser(userId);
-  }
-
-  /// Queue a tagging operation for when connectivity is restored.
-  /// Used for recipes saved offline that need tags generated.
-  Future<void> queueTaggingOperation(String recipeId) async {
-    if (!isInitialized || _currentUserId == null) return;
-
-    await _syncManager.queueTagging(
-      userId: _currentUserId!,
-      recipeId: recipeId,
-    );
-    await refreshSyncState();
-    AppLogger.info('📋 Queued tagging for recipe: $recipeId');
   }
 
   /// H9: Retag a recipe when connectivity is restored.
