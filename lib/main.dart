@@ -18,6 +18,7 @@ import 'package:get_it/get_it.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
 // Bootstrap system
@@ -95,6 +96,15 @@ Future<void> main() async {
               : DefaultFirebaseOptions.currentPlatform,
         );
         if (EmulatorBootstrap.enabled) await EmulatorBootstrap.configure();
+
+        // BUT-2292: the SDK retries a failing upload for 10 minutes, and the
+        // offline upload queue holds the sync lock for that whole time, so
+        // recipe edits and "Försök synka nu" wait behind one image on a
+        // network without internet. A minute is enough for a flaky network;
+        // after that the queue's own backoff takes over.
+        FirebaseStorage.instance.setMaxUploadRetryTime(
+          const Duration(minutes: 1),
+        );
 
         // Must run before any DI module instantiates FirestoreRepository.
         await FirestoreBootstrap.configure(
