@@ -2069,6 +2069,56 @@ void main() {
     });
   });
 
+  // BUT-2169: a block moves a recipient into `blockHeldUserIds`/`blockHeld`
+  // on the row.
+  group('SocialExportManager shared-content block-hold strip (BUT-2169)', () {
+    const userId = 'user-uid';
+    const blockerUid = 'blocker-uid';
+
+    Map<String, dynamic> heldRow(String id) => {
+      'id': id,
+      'data': {
+        'title': 'Delat',
+        'sharedByUserId': userId,
+        'sharedToUserIds': [userId],
+        'blockHeldUserIds': [blockerUid],
+        'blockHeld': {
+          blockerUid: {'member': null},
+        },
+      },
+    };
+
+    test('no received leg exports who a block took off the row', () async {
+      final manager = SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          sharedRecipes: [heldRow('sr1')],
+          sharedMenus: [heldRow('sm1')],
+          sharedShoppingLists: [heldRow('sl1')],
+        ),
+      );
+
+      final result = await manager.exportSharedContent(userId);
+
+      for (final key in const [
+        'shared_recipes_received',
+        'shared_menus_received',
+        'shared_shopping_lists_received',
+      ]) {
+        final rows = result[key] as List;
+        expect(rows, hasLength(1), reason: '$key must carry the row');
+        final data = (rows.single as Map)['data'] as Map;
+        expect(data['title'], 'Delat', reason: '$key keeps the content');
+        expect(data.containsKey('blockHeldUserIds'), isFalse, reason: key);
+        expect(data.containsKey('blockHeld'), isFalse, reason: key);
+      }
+      // A note claiming everything else was kept would be false on these rows.
+      expect(
+        result['data_minimisation'] as String,
+        isNot(contains('as it was stored')),
+      );
+    });
+  });
+
   group('SocialExportManager.exportBlocks (BUT-1438/BUT-2018)', () {
     test('includes the blocks you placed, sanitized for JSON', () async {
       // Unlike other record types, blocks pass the whole raw map through

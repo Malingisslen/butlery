@@ -459,6 +459,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoSaveEnabled => 'Auto-save enabled';
 
   @override
+  String get autoSaveFailed => 'The draft could not be saved.';
+
+  @override
+  String get autoSaveFailedPreserved =>
+      'What you wrote is still here. Tap Save to save the recipe.';
+
+  @override
   String selectionFriendSelectedWithName(String name) {
     return '$name selected';
   }
@@ -8567,7 +8574,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String blockedUsersUnblockMessage(String name) {
-    return 'Do you want to unblock $name? The user will be able to see your content again.';
+    return 'Do you want to unblock $name?';
   }
 
   @override
@@ -8578,6 +8585,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get blockedUsersEmpty => 'No blocked users';
+
+  @override
+  String get blockedUsersSharesHiddenNote =>
+      'Recipes, menus and shopping lists you have sent each other are hidden from both of you while the block lasts. Nothing is deleted.';
 
   @override
   String blockedUsersUnblockSelectedCount(int count) {
@@ -17342,6 +17353,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareCouldNotComplete => 'Sharing could not be completed.';
+
+  @override
+  String shareRecipesNotShared(int count, String titles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes could not be shared: $titles.',
+      one: 'One recipe could not be shared: $titles.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareRecipesRetryOnlyFailed =>
+      'What you filled in is still here. Share tries again with only those.';
 
   @override
   String get imageSelectFailed => 'The images could not be selected.';

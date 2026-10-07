@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -100,6 +101,12 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     }
 
     try {
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      userIds = await BlockedUserFilter.shareRecipients(userIds);
+      if (userIds.isEmpty) {
+        _setError(AppLocale.current.errorNoRecipientsFound);
+        return RecipeShareResult.failed;
+      }
       AppLogger.info('Sharing recipe $recipeId with ${userIds.length} users');
 
       // 1. Loading the recipe

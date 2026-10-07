@@ -292,8 +292,7 @@ Future<void> _confirmBulkDelete(
 }
 
 /// BUT-933: open the bulk-share dialog with the selected recipes.
-/// `UniversalShareDialog.bulkShare` already accepts a list — no Cloud
-/// Function changes needed. Friends + groups are fetched best-effort
+/// Friends + groups are fetched best-effort
 /// matching `recipe_social_handler.showSocialShareDialog`.
 Future<void> _openBulkShareDialog(
   BuildContext context,
@@ -319,9 +318,8 @@ Future<void> _openBulkShareDialog(
     context,
     builder: (dialogContext) => ChangeNotifierProvider.value(
       value: shareViewModel,
-      child: UniversalShareDialog.bulkShare(
-        contentItems: recipes,
-        primaryContentType: ShareContentType.recipe,
+      child: UniversalShareDialog.recipes(
+        recipes: recipes,
         viewModel: shareViewModel,
         availableFriends: availableFriends,
         availableGroups: availableGroups,

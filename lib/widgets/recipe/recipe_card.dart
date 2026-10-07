@@ -116,7 +116,7 @@ class RecipeCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             border: Border.all(color: cs.onSurface, width: 1.5),
           )
-        : InputThemes.recipeCardDecoration;
+        : _restDecoration(context, cs);
 
     return RepaintBoundary(
       child: Semantics(
@@ -171,6 +171,19 @@ class RecipeCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// The resting card on surface.base for the current mode; the shared
+  /// decoration in InputThemes holds the light values only.
+  BoxDecoration _restDecoration(BuildContext context, ColorScheme cs) {
+    final modeColors = context.modeColors;
+    return InputThemes.recipeCardDecoration.copyWith(
+      color: cs.surface,
+      border: Border(
+        left: BorderSide(color: modeColors.recipeCardLeftBorder, width: 4),
+        bottom: BorderSide(color: modeColors.recipeCardBottomBorder, width: 3),
       ),
     );
   }

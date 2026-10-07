@@ -461,6 +461,8 @@
     }
   },
   "autoSaveEnabled": "Autospar aktiverat",
+  "autoSaveFailed": "Utkastet kunde inte sparas.",
+  "autoSaveFailedPreserved": "Det du skrivit finns kvar här. Tryck Spara för att spara receptet.",
   "selectionFriendSelectedWithName": "{name} vald",
   "@selectionFriendSelectedWithName": {
     "placeholders": {
@@ -5972,10 +5974,11 @@
   "a11ySelected": "vald",
   "a11yNotSelected": "ej vald",
   "blockedUsersUnblockTitle": "Avblockera användare?",
-  "blockedUsersUnblockMessage": "Vill du avblockera {name}? Användaren kommer kunna se ditt innehåll igen.",
+  "blockedUsersUnblockMessage": "Vill du avblockera {name}?",
   "blockedUsersUnblock": "Avblockera",
   "blockedUsersTitle": "Blockerade användare",
   "blockedUsersEmpty": "Inga blockerade användare",
+  "blockedUsersSharesHiddenNote": "Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.",
   "blockedUsersUnblockSelectedCount": "Avblockera valda ({count})",
   "@blockedUsersUnblockSelectedCount": {
     "placeholders": {
@@ -13568,6 +13571,22 @@
   "shareCouldNotComplete": "Delningen kunde inte genomföras.",
   "@shareCouldNotComplete": {
     "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "shareRecipesNotShared": "{count, plural, =1{Ett recept kunde inte delas: {titles}.} other{{count} recept kunde inte delas: {titles}.}}",
+  "@shareRecipesNotShared": {
+    "description": "BUT-2152: part one of the error contract after a bulk recipe share where some recipes failed; names the recipes that were not shared.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "titles": {
+        "type": "String"
+      }
+    }
+  },
+  "shareRecipesRetryOnlyFailed": "Det du fyllt i ligger kvar. Dela försöker igen med bara dem.",
+  "@shareRecipesRetryOnlyFailed": {
+    "description": "BUT-2152: part two of the error contract after a partly failed bulk recipe share: the recipients and message are kept, and the share button retries only the failed recipes."
   },
   "imageSelectFailed": "Bilderna kunde inte väljas.",
   "@imageSelectFailed": {

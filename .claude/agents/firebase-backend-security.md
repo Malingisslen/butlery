@@ -2,7 +2,8 @@
 name: firebase-backend-security
 description: Firebase security expert. MUST BE USED when modifying files in lib/repositories/, lib/services/, or any file containing Firestore, Firebase, authentication, or user data operations. Validates GDPR compliance and security rules.
 tools: Read,Write,Edit,Bash,Grep
-model: inherit
+model: opus
+effort: medium
 ---
 
 You are a Firebase specialist focusing on security, performance optimization, and privacy compliance.

@@ -140,6 +140,9 @@ class RecipeFormState extends ChangeNotifier {
     _initializeFormFields();
     _autoSaveManager = RecipeFormAutoSaveManager();
     _autoSaveManager.initialize(isTemplate: isTemplate);
+    // A draft write ends without a keystroke, so its outcome reaches the
+    // editor's indicator only through this (BUT-2224).
+    _autoSaveManager.addListener(_onAutoSaveChanged);
     if (initialRecipe != null) {
       _loadRecipeData(initialRecipe, isTemplate);
     } else {
@@ -443,6 +446,8 @@ class RecipeFormState extends ChangeNotifier {
   // Auto-save getters
   bool get isAutoSaving => _autoSaveManager.isAutoSaving;
   bool get hasRecentAutoSave => _autoSaveManager.hasRecentAutoSave;
+  bool get hasAutoSaveFailed => _autoSaveManager.hasAutoSaveFailed;
+  int get autoSaveFailurePeriod => _autoSaveManager.autoSaveFailurePeriod;
   String? get currentDraftId => _autoSaveManager.currentDraftId;
   RecipeFormAutoSaveManager get autoSaveManager => _autoSaveManager;
 
@@ -982,6 +987,10 @@ class RecipeFormState extends ChangeNotifier {
 
   bool _isDisposed = false;
 
+  void _onAutoSaveChanged() {
+    if (!_isDisposed) notifyListeners();
+  }
+
   /// Whether [dispose] has run. Once true the form's field VALUES are gone,
   /// not just its controllers, so nothing may be built from this state.
   bool get isDisposed => _isDisposed;
@@ -989,6 +998,7 @@ class RecipeFormState extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
+    _autoSaveManager.removeListener(_onAutoSaveChanged);
     _autoSaveManager.dispose();
     // BUT-1667: the three field managers own the form's TextEditingControllers;
     // without these the controllers leak on every recipe-form close.

@@ -459,6 +459,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get autoSaveEnabled => 'Autospar aktiverat';
 
   @override
+  String get autoSaveFailed => 'Utkastet kunde inte sparas.';
+
+  @override
+  String get autoSaveFailedPreserved =>
+      'Det du skrivit finns kvar här. Tryck Spara för att spara receptet.';
+
+  @override
   String selectionFriendSelectedWithName(String name) {
     return '$name vald';
   }
@@ -8577,7 +8584,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String blockedUsersUnblockMessage(String name) {
-    return 'Vill du avblockera $name? Användaren kommer kunna se ditt innehåll igen.';
+    return 'Vill du avblockera $name?';
   }
 
   @override
@@ -8588,6 +8595,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get blockedUsersEmpty => 'Inga blockerade användare';
+
+  @override
+  String get blockedUsersSharesHiddenNote =>
+      'Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.';
 
   @override
   String blockedUsersUnblockSelectedCount(int count) {
@@ -17364,6 +17375,21 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shareCouldNotComplete => 'Delningen kunde inte genomföras.';
+
+  @override
+  String shareRecipesNotShared(int count, String titles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept kunde inte delas: $titles.',
+      one: 'Ett recept kunde inte delas: $titles.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareRecipesRetryOnlyFailed =>
+      'Det du fyllt i ligger kvar. Dela försöker igen med bara dem.';
 
   @override
   String get imageSelectFailed => 'Bilderna kunde inte väljas.';

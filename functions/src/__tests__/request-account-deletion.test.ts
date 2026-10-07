@@ -22,6 +22,7 @@
 
 import * as admin from "firebase-admin";
 import { createHash } from "crypto";
+import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: "butlery-test-acct-deletion" });
 }
@@ -85,6 +86,15 @@ interface FakeDbState {
    * two-`where` predicate seam above is untouched.
    */
   filedReportRow?: Record<string, unknown>;
+  /**
+   * BUT-2169: queries, writes to `erasures_in_progress` and the Auth delete in
+   * the order they happened, so the marker can be placed against the steps.
+   */
+  log?: string[];
+  /** What the cascade wrote to `erasures_in_progress`. */
+  markerData?: unknown;
+  /** Makes the marker write throw. */
+  throwOnMarkerSet?: boolean;
 }
 
 function emptySnapshot(): {
@@ -183,6 +193,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       ) {
         if (typeof field === "string") {
           (state.queries ??= []).push([name, field]);
+          state.log?.push(`query:${name}.${field}`);
         }
         return makeCollection(name, whereDepth + 1) as typeof query;
       },
@@ -235,8 +246,8 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       async listDocuments(): Promise<unknown[]> {
         return [];
       },
-      doc(_id: string): unknown {
-        return makeDoc(name);
+      doc(id: string): unknown {
+        return makeDoc(name, id);
       },
       async add(data: RecordedAuditRow) {
         if (name === "deletion_audit_logs") {
@@ -248,13 +259,20 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     return query;
   }
 
-  function makeDoc(_collectionName: string): unknown {
+  function makeDoc(collectionName: string, id?: string): unknown {
     const docApi = {
       async get() {
         return emptySnapshot();
       },
+      async set(data: unknown) {
+        if (collectionName === "erasures_in_progress") {
+          if (state.throwOnMarkerSet) throw new Error("marker unavailable");
+          state.markerData = data;
+        }
+        state.log?.push(`set:${collectionName}/${id}`);
+      },
       async delete() {
-        // no-op
+        state.log?.push(`delete:${collectionName}/${id}`);
       },
       collection(sub: string) {
         return makeCollection(sub);
@@ -332,12 +350,14 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
 interface FakeAuthCalls {
   deleteUserUid: string | null;
   throwOnDelete: boolean;
+  log?: string[];
 }
 
 function makeFakeAuth(calls: FakeAuthCalls): admin.auth.Auth {
   return {
     async deleteUser(uid: string) {
       calls.deleteUserUid = uid;
+      calls.log?.push("auth.deleteUser");
       if (calls.throwOnDelete) {
         throw new Error("auth/user-not-found");
       }
@@ -477,6 +497,20 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     }
   }
 
+  // BUT-2169: the held-share scrub runs alone on both sides of tier 1's
+  // `blocks` delete. Run alone, its two queries (held, then owned) are
+  // adjacent; inside the parallel tier 1 other steps' queries interleave.
+  const order = (state.queries ?? []).map(([c, f]) => `${c}.${f}`);
+  const blocksAt = order.indexOf("blocks.blockerId");
+  const scrubs = order
+    .map((key, i) => (key === "shared_content.blockHeldUserIds" &&
+      order[i + 1] === "shared_content.sharedByUserId" ? i : -1))
+    .filter((i) => i >= 0);
+  if (blocksAt < 0 || !scrubs.some((i) => i < blocksAt) ||
+      !scrubs.some((i) => i > blocksAt)) {
+    throw new Error(`held-share scrub must run alone before and after blocks: ${JSON.stringify(order)}`);
+  }
+
   // BUT-2072: the owner scrub must query after `comments_ratings` has deleted
   // the user's self-ratings, which its query also matches.
   const q = state.queries ?? [];
@@ -484,6 +518,73 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
   const scrubAt = q.findIndex(([c, f]) => c === "recipe_ratings" && f === "recipeOwnerId");
   if (deleteAt < 0 || scrubAt < 0 || scrubAt < deleteAt) {
     throw new Error(`rating_recipe_owner must run after comments_ratings: ${JSON.stringify(q)}`);
+  }
+});
+
+/**
+ * BUT-2169: the erasure marker is in place before any step can delete a
+ * `blocks` row (each delete fires a release that must see it), and the cascade
+ * never deletes it, whether Auth's delete succeeds or fails: a release that
+ * checked the account before that delete can still be running. The TTL on
+ * `expireAt` removes it.
+ */
+test("BUT-2169: the erasure marker precedes every step and is left to its TTL", async () => {
+  for (const throwOnDelete of [false, true]) {
+    const log: string[] = [];
+    const state: FakeDbState = { auditRows: [], log };
+    const before = Date.now();
+    const result = await runAccountDeletionWithDeps(
+      {
+        db: makeFakeDb(state),
+        auth: makeFakeAuth({ deleteUserUid: null, throwOnDelete, log }),
+        storage: makeFakeStorage({ deletePrefixes: [] }),
+      },
+      "uid-carol",
+      "carol@example.com",
+      "user_request",
+    );
+
+    const setAt = log.indexOf("set:erasures_in_progress/uid-carol");
+    const firstQuery = log.findIndex((e) => e.startsWith("query:"));
+    if (setAt < 0 || firstQuery < 0 || setAt > firstQuery) {
+      throw new Error(`marker must be written before the first step: ${JSON.stringify(log)}`);
+    }
+    if (log.includes("delete:erasures_in_progress/uid-carol")) {
+      throw new Error(`marker must be left to its TTL (auth fails: ${throwOnDelete})`);
+    }
+    const marker = state.markerData as
+      { startedAtMs: number; expireAt: admin.firestore.Timestamp } | undefined;
+    if (!marker || marker.startedAtMs < before ||
+        marker.expireAt.toMillis() !== marker.startedAtMs + 2 * ERASURE_MARKER_WINDOW_MS) {
+      throw new Error(`marker must carry startedAtMs and expireAt: ${JSON.stringify(marker)}`);
+    }
+    if (result.errors.some((e: string) => e.startsWith("erasure_marker"))) {
+      throw new Error(`unexpected marker error: ${JSON.stringify(result.errors)}`);
+    }
+  }
+});
+
+/**
+ * BUT-2169: a failed marker write erases nothing and is not a failed step; it
+ * is reported in `errors` and the erasure still succeeds.
+ */
+test("BUT-2169: a failed marker write is an error, not a failed erasure", async () => {
+  const state: FakeDbState = { auditRows: [], throwOnMarkerSet: true };
+  const result = await runAccountDeletionWithDeps(
+    {
+      db: makeFakeDb(state),
+      auth: makeFakeAuth({ deleteUserUid: null, throwOnDelete: false }),
+      storage: makeFakeStorage({ deletePrefixes: [] }),
+    },
+    "uid-dave",
+    "dave@example.com",
+    "user_request",
+  );
+  if (!result.success || result.failedCollections.length !== 0) {
+    throw new Error(`erasure must still succeed: ${JSON.stringify(result.failedCollections)}`);
+  }
+  if (!result.errors.some((e: string) => e.startsWith("erasure_marker: marker unavailable"))) {
+    throw new Error(`marker failure must be in errors: ${JSON.stringify(result.errors)}`);
   }
 });
 

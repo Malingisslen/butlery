@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -381,16 +382,12 @@ class _SkrivSjalvReceptViewContentState
               : context.l10n.recipeWriteNew,
           backTo: viewModel.isEditMode ? null : context.l10n.addRecipeTitle,
           actions: [
-            if (viewModel.isAutoSaving)
-              SizedBox(
-                width: AppDimensions.iconSizeL,
-                child: PlateLine(semanticLabel: context.l10n.statusSaving),
-              )
-            else if (viewModel.hasRecentAutoSave)
-              const ButleryIcon(
-                Icons.cloud_done_outlined,
-                size: AppDimensions.iconSizeM,
-              ),
+            DraftSaveIndicator(
+              isSaving: viewModel.isAutoSaving,
+              hasRecentSave: viewModel.hasRecentAutoSave,
+              hasFailed: viewModel.hasAutoSaveFailed,
+              failurePeriod: viewModel.autoSaveFailurePeriod,
+            ),
           ],
         ),
         body: Stack(

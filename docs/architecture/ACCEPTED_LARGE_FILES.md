@@ -92,7 +92,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_recipe_service.dart` | 1182 | Service facade coordinating 4 modules |
 | `import_manager.dart` | 1,283 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 706 | Social recipe sharing/rating coordinator |
-| `unified_menu_service.dart` | 708 | Menu service facade |
+| `unified_menu_service.dart` | 720 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
@@ -110,8 +110,8 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_friends_service.dart` | 616 | Friends service facade |
 | `personal_shopping_operations.dart` | 604 | Personal shopping list CRUD |
 | `fcm_service.dart` | 728 | FCM push notification service |
-| `social_recipe_sharing_service.dart` | 505 | The universal-share-dialog path: resolves friend categories to members, converts personal → collaborative, and writes the secondary `shared_content` row with bounded self-heal (BUT-1503). Crossed 500 in BUT-1797 (+56): the `grantsByUserId` attribution captured before the member union, and the two `RecipeShareGrants.forShare`/`mergeCategoryIds` call sites. The grant algebra itself was deliberately lifted OUT to `recipe_share_grants.dart` rather than kept here. Splitting the remaining group-resolution half would separate the union from the attribution it exists to preserve. |
-| `recipe_sharing_manager.dart` | 796 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
+| `social_recipe_sharing_service.dart` | 520 | The universal-share-dialog path: resolves friend categories to members, converts personal → collaborative, and writes the secondary `shared_content` row with bounded self-heal (BUT-1503). Crossed 500 in BUT-1797 (+56): the `grantsByUserId` attribution captured before the member union, and the two `RecipeShareGrants.forShare`/`mergeCategoryIds` call sites. The grant algebra itself was deliberately lifted OUT to `recipe_share_grants.dart` rather than kept here. Splitting the remaining group-resolution half would separate the union from the attribution it exists to preserve. |
+| `recipe_sharing_manager.dart` | 815 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
