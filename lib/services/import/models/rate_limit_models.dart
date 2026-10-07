@@ -128,30 +128,8 @@ enum LlmOperationType {
   ingredientLines,
 }
 
-/// One model call, in USD, at the list price the Cloud Function
-/// bills (`gemini-client.ts`: Gemini 2.5 Flash-Lite, 0.10 per million input
-/// tokens, 0.40 per million output tokens).
-double llmCallCeilingUsd({
-  required int inputTokens,
-  required int outputTokens,
-}) => (inputTokens * 0.10 + outputTokens * 0.40) / 1000000;
-
 /// The Cloud Function refuses longer input (`structure-recipe.ts`).
 const llmMaxInputChars = 50000;
-
-/// [llmMaxInputChars] counted at three characters per token.
-const llmMaxInputTokens = llmMaxInputChars ~/ 3;
-
-/// Extension for LLM operation costs
-extension LlmOperationCost on LlmOperationType {
-  /// The largest input plus the
-  /// server's output cap (2,000 tokens; 1,000 for ingredient lines). Vision is
-  /// held to the same input ceiling; its image token count is not measured.
-  double get estimatedCost => llmCallCeilingUsd(
-    inputTokens: llmMaxInputTokens,
-    outputTokens: this == LlmOperationType.ingredientLines ? 1000 : 2000,
-  );
-}
 
 /// Represents an import operation for rate limiting.
 class ImportOperation {
@@ -164,14 +142,10 @@ class ImportOperation {
   /// Source type (website, youtube, etc.)
   final String sourceType;
 
-  /// Estimated cost (for LLM operations)
-  final double? estimatedCost;
-
   const ImportOperation({
     required this.requiresLlm,
     this.llmType,
     required this.sourceType,
-    this.estimatedCost,
   });
 
   /// Create a basic import operation (no LLM)
@@ -188,7 +162,6 @@ class ImportOperation {
       requiresLlm: true,
       llmType: llmType,
       sourceType: sourceType,
-      estimatedCost: llmType.estimatedCost,
     );
   }
 }

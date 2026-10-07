@@ -51,35 +51,10 @@ void main() {
       expect(op.sourceType, 'url');
     });
 
-    test('withLlm factory creates LLM operation with cost', () {
+    test('withLlm factory creates LLM operation', () {
       final op = ImportOperation.withLlm('url', LlmOperationType.enhancement);
       expect(op.requiresLlm, isTrue);
       expect(op.llmType, LlmOperationType.enhancement);
-      expect(op.estimatedCost, LlmOperationType.enhancement.estimatedCost);
-    });
-  });
-
-  group('LlmOperationCost', () {
-    setUp(() async => await BaseUnitTest.setupUnit());
-    tearDown(() => BaseUnitTest.resetMocks());
-
-    // Worked by hand from the list price: 16,666 input tokens at 0.10 and
-    // the output cap at 0.40, per million tokens.
-    test('a call that can return a whole recipe costs at most 0.0025 USD', () {
-      for (final type in [
-        LlmOperationType.enhancement,
-        LlmOperationType.fullExtraction,
-        LlmOperationType.vision,
-      ]) {
-        expect(type.estimatedCost, closeTo(0.0024666, 1e-6), reason: '$type');
-      }
-    });
-
-    test('ingredient lines have the smaller output cap', () {
-      expect(
-        LlmOperationType.ingredientLines.estimatedCost,
-        closeTo(0.0020666, 1e-6),
-      );
     });
   });
 
