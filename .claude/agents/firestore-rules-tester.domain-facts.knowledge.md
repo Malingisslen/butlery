@@ -53,18 +53,21 @@ and malformed shapes when the validator changes.
   each blocking call site for its guard before passing any sentence contrasting an open READ
   limb with a closed write side — that contrast is the load-bearing clause of the deviation
   entry it usually sits in (BUT-2054, 2026-09-09).
-- **A block gate on `messages` create does not reach the `conversations` UPDATE limb, and
-  `lastMessage` is a client-written field there** (deny-list limb; BUT-1903's comment
-  already records it). Measured 2026-10-05 (BUT-2017): with `blocks/{blocker}_{blocked}`
-  standing, the blocked person's message create DENIES and their merge-set of
-  `lastMessage.content` onto the same DM document is ALLOWED — the chat-list preview is a
-  second write path into the blocker's screen. Any sentence saying a blocked person's
-  "writes" into a room are refused is true of `messages` only; probe the parent document's
-  update limb before passing it.
-- **`isNotBlockedBy` sits on CREATE limbs only** (`social_requests`, `recipe_comments`,
-  `recipe_ratings`, `user_notifications`) and is a bare `exists()` reading no field — so no
-  READ limb in `firestore.rules` is block-gated, and a sentence saying a change to the helper
-  would put it "on the read side" confuses reading the block doc's FIELDS with the read limb.
+- **The chat-list preview (`conversations.lastMessage`) has more than one write path, and a
+  block gate on one does not reach the others.** BUT-2246 put BUT-2017's two-armed gate on
+  a `conversations` update whose `affectedKeys()` include `lastMessage` (direct merge-set,
+  dotted `lastMessage.status`, null: all DENIED for the blocked person). The second path is a
+  sender EDIT of their own pre-block message: `syncConversationLastMessage` re-projects an
+  edit into `lastMessage` under the Admin SDK (its `>=` tie rule exists so an edit refreshes
+  the preview), so the same gate also sits on the messages sender `allow update` when
+  `content` changes. The thread hides blocked authors (`MessagingService._filterBlocked`);
+  the list row does not. Enumerate every writer of a denormalised field (client verbs AND
+  server projections fed by another collection's limb) before passing "the preview is gated".
+  A gate added to the messages sender limb is graded by `cook-snaps-and-message-mod` and
+  `poll-votes` too: their sender-edit allows are the legitimate-path controls.
+- **`isNotBlockedBy` is a bare `exists()` reading no field, and no READ limb in
+  `firestore.rules` is block-gated** — a sentence saying a change to the helper would put it
+  "on the read side" confuses reading the block doc's FIELDS with the read limb.
 - **1:1 DM minor gate** (`passesMinorDmGate`): size!=2, or other party not minor, or
   creator is their friend. Group conversations (size>2) are DELIBERATELY ungated in
   rules — minor protection there is the separate `enforceGroupMinorMembership` Cloud

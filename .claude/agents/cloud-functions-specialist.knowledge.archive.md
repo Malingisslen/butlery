@@ -20776,3 +20776,23 @@ Suite 592 -> 610, all green. Mutation probes (backup, count==1 anchors, byte-ide
 all RED: skip-own-path, cap never declines, cap `>=`, memberPermissions delete removed, grants
 delete removed, `strict:false`, probe leg silenced, runStep removed (orchestration suite),
 override removed and COLLECTION_GROUP entry removed (BUT-1781 guard).
+
+### 2026-10-07 — BUT-2246 lastMessage block gate: index-hardcode mutant survives L1–L6 [rules-test, vacuity]
+Commit-gate review of `functions/src/__tests__/conversations-rules.test.ts` L1–L6 (staged blob
+d80af471). Probed via the suite's PROBE_RULES_PATH/PROBE_PROJECT_ID seam on scratch copies, repo
+rules untouched (blob 5bcb7c28 before and after). Mutant: preview arm's
+`isNotBlockedBy(otherParticipant(resource.data.participantIds))` -> `isNotBlockedBy(resource.data.participantIds[1])`
+-> 110/110 green. Every DM deny (L1) seats the blocked caller at index 0. Seam sanity: replacing the
+same call with `true` reddens exactly L1 (109/110). The create path already has B3 for this shape;
+the update path has no twin. Filed as Medium (coverage gap, production rule correct), non-blocking.
+Folded into the client-guards chapter's composite-id bullet as "one DENY per index for a positional
+counterparty".
+
+### 2026-10-07 — BUT-2246 re-review: edit gate E1–E5 repeats the index gap on its own call site [rules-test, vacuity]
+Re-review of test blob 1e8ad3d0 against rules blob a13af38f (adds L1b, stored `lastMessage` in L3,
+E1–E5 for the sender's `messages` edit gate). Scratch-copy probes via the PROBE_* seam: preview site
+`participantIds[0]` -> L1 red only; `[1]` -> L1b red only (gap closed). Edit site `[1]` -> E1 red only;
+edit site `[0]` -> 116/116 GREEN — E1, the only DM edit deny, seats the blocked caller at index 1, the
+mirror image of the original L1 gap. Edit scope disjunct -> `false` reddens only E5. The principle
+already said "per call site"; the second gap appeared on the call site added after it was written.
+Filed Medium, non-blocking, with an E1b remediation.

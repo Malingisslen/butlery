@@ -2089,7 +2089,17 @@ service cloud.firestore {
         && (request.resource.data.get('metadata', {}) is map
             ? request.resource.data.get('metadata', {}).get('creatorId', null) : null)
            == (resource.data.get('metadata', {}) is map
-            ? resource.data.get('metadata', {}).get('creatorId', null) : null);
+            ? resource.data.get('metadata', {}).get('creatorId', null) : null)
+        // BUT-2246: `lastMessage` is the chat-list preview on every member's
+        // screen, so writing it is a second way to send text to the room. It
+        // carries the same two-armed block gate as `messages` create
+        // (BUT-2017): the caller's mirror in every room, plus an exact `blocks`
+        // read in a DM, one-directional. Scoped to writes that change the key, so a
+        // blocked member's other updates to the room are untouched.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastMessage'])
+            || ((resource.data.participantIds.size() != 2
+                  || isNotBlockedBy(otherParticipant(resource.data.participantIds)))
+                && notBlockedByAnyOf(resource.data.participantIds)));
 
       // Can delete if you're a participant
       allow delete: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
@@ -2559,7 +2569,15 @@ service cloud.firestore {
         && (!pollIsClosed(resource.data) || pollIsClosed(request.resource.data))
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
-        && cannotModify(['senderId', 'conversationId', 'sentAt']);
+        && cannotModify(['senderId', 'conversationId', 'sentAt'])
+        // BUT-2246: an edit is a second way to send text. When the edited
+        // message is the newest, `syncConversationLastMessage` copies it into
+        // the chat-list preview with the Admin SDK, past the `conversations`
+        // gate. Same gate as create, paid only when `content` changes.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['content'])
+            || ((convOf(resource.data.conversationId).data.participantIds.size() != 2
+                  || isNotBlockedBy(otherParticipant(convOf(resource.data.conversationId).data.participantIds)))
+                && notBlockedByAnyOf(convOf(resource.data.conversationId).data.participantIds)));
 
       // RECEIPTS. A SEPARATE `allow update` statement, deliberately not OR'd
       // into the sender branch above (BUT-1832). Two rules that grant different
