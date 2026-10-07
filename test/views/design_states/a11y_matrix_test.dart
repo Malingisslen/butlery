@@ -16,8 +16,9 @@
 /// The LOADING, EMPTY and OFFLINE rows are checked for targets and labels at
 /// 360 dp and 1.0 in both modes.
 ///
-/// Today's failures are listed in known_a11y_findings.dart with their
-/// tickets; an unlisted failure is red, and so is a listed one that passes.
+/// Today's failures, known and accepted, are listed in
+/// known_a11y_findings.dart with their tickets; an unlisted failure is red,
+/// and so is a listed one that passes.
 /// A few text contrast findings depend on the host's glyph rasteriser and are
 /// listed per host there (Linux, Windows).
 library;
@@ -128,7 +129,7 @@ Future<List<Violation>> _guidelines(
 void main() {
   final rows = StateFixture.load().rows;
   final results = <Map<String, Object?>>[];
-  final knownOnThisHost = knownA11yFindingsOnThisHost();
+  final knownOnThisHost = expectedA11yFindingsOnThisHost();
 
   setUpAll(() async {
     registerHostFallbacks();
@@ -221,28 +222,42 @@ void main() {
     );
   }
 
-  test('the known findings stay under the ceiling and carry tickets', () {
-    final hostBound = {
-      ...knownA11yFindingsLinuxOnly,
-      ...knownA11yFindingsWindowsOnly,
-    };
+  test('the known and accepted findings stay under their ceilings and carry '
+      'tickets', () {
+    final lists = [
+      knownA11yFindings,
+      knownA11yFindingsLinuxOnly,
+      knownA11yFindingsWindowsOnly,
+      acceptedA11yFindings,
+      acceptedA11yFindingsLinuxOnly,
+      acceptedA11yFindingsWindowsOnly,
+    ];
     expect(
       knownA11yFindings.length +
           knownA11yFindingsLinuxOnly.length +
           knownA11yFindingsWindowsOnly.length,
       lessThanOrEqualTo(knownA11yFindingsCeiling),
     );
-    // A host-bound finding is in one list only, and only a pixel check
-    // (TEXT_CONTRAST) may depend on the host.
     expect(
-      hostBound.length,
-      knownA11yFindingsLinuxOnly.length + knownA11yFindingsWindowsOnly.length,
+      acceptedA11yFindings.length +
+          acceptedA11yFindingsLinuxOnly.length +
+          acceptedA11yFindingsWindowsOnly.length,
+      lessThanOrEqualTo(acceptedA11yFindingsCeiling),
     );
+    // A finding is in one list only, and only a pixel check (TEXT_CONTRAST)
+    // may depend on the host.
+    final all = {for (final l in lists) ...l};
+    expect(all.length, lists.fold<int>(0, (n, l) => n + l.length));
+    final hostBound = {
+      ...knownA11yFindingsLinuxOnly,
+      ...knownA11yFindingsWindowsOnly,
+      ...acceptedA11yFindingsLinuxOnly,
+      ...acceptedA11yFindingsWindowsOnly,
+    };
     for (final key in hostBound.keys) {
-      expect(knownA11yFindings.containsKey(key), isFalse, reason: key);
       expect(key, endsWith('::TEXT_CONTRAST'));
     }
-    for (final entry in {...knownA11yFindings, ...hostBound}.entries) {
+    for (final entry in all.entries) {
       expect(
         RegExp(r'^BUT-\d+$').hasMatch(entry.value),
         isTrue,
