@@ -291,6 +291,40 @@ void main() {
     expect(copy.existsSync(), isFalse);
   });
 
+  test(
+    'BUT-2295: Släng on a phone-only new recipe removes its photo copy',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('slang');
+      addTearDown(() => dir.delete(recursive: true));
+      final copy = File('${dir.path}/photo.jpg')..writeAsBytesSync([1, 2, 3]);
+      await recipe('r1', 'Kålpudding');
+      await enqueue('new', 'r1', SyncOperation.create);
+      await withClock(
+        Clock.fixed(t0),
+        () => db.uploadQueueDao.queueUpload(
+          id: 'photo',
+          userId: 'u1',
+          localPath: copy.path,
+          targetPath: 'x/a.jpg',
+          fileSizeBytes: 3,
+          entityId: 'r1',
+          entityType: 'recipe',
+          dependsOn: ['new'],
+        ),
+      );
+      await db.syncQueueDao.markPermanentlyFailed('new', reason: 'not-found');
+      final created = (await readQueuedChanges(
+        db,
+        'u1',
+      )).firstWhere((c) => c.id == 'new');
+      expect(created.isNeverSyncedRecipe, isTrue);
+
+      await discardQueuedChange(db, 'u1', created);
+
+      expect(copy.existsSync(), isFalse);
+    },
+  );
+
   test('the view and the counts agree on the number', () async {
     await enqueue('a', 'r1', SyncOperation.update);
     await enqueue('b', 'r2', SyncOperation.update);
