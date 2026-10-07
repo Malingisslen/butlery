@@ -94,9 +94,11 @@ const _files = [
   'lib/widgets/messaging/new_conversation_dialog.dart',
   'lib/widgets/recipe/collection_insights_card.dart',
   'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart',
+  'lib/widgets/social/friend_actions.dart',
   'lib/widgets/social/groups/group_shared_content_section.dart',
   'lib/widgets/social/groups/shared/group_dialog_components.dart',
   'lib/widgets/social/ping_compose_sheet.dart',
+  'lib/widgets/social/public_profile_friend_button.dart',
   'lib/widgets/social/report_content_dialog.dart',
 ];
 

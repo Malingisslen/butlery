@@ -87,11 +87,23 @@ Future<void> loadGoldenFonts() async {
 
 /// Compares the whole screen with [file], with the approved image-error
 /// filter around the comparison (BUT-1946; golden_helper.dart:66).
+///
+/// A mismatch reaches `FlutterError.onError`, not the matcher. Under the
+/// state harness that handler is `captureFrameworkErrors`, and `finishState`
+/// turns what it caught into a violation nobody here reads, so the test
+/// passed with the diff images written (BUT-2282). Every error the filter
+/// lets through is therefore kept here and fails the test on the spot.
 Future<void> expectScreenGolden(String file) async {
-  final previous = installGoldenImageErrorFilter();
+  final outer = FlutterError.onError;
+  final errors = <FlutterErrorDetails>[];
+  FlutterError.onError = errors.add;
+  installGoldenImageErrorFilter();
   try {
     await expectLater(find.byType(MaterialApp), matchesGoldenFile(file));
   } finally {
-    FlutterError.onError = previous;
+    FlutterError.onError = outer;
+  }
+  if (errors.isNotEmpty) {
+    fail(errors.map((e) => e.exceptionAsString()).join('\n\n'));
   }
 }
