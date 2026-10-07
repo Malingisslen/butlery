@@ -137,7 +137,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_t3_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_topBarFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_inkSnackbarFiles` | ADOPTION | LIVE | 11 | 11 | 11 |
-| `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 80 | 80 | 80 |
+| `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 82 | 82 | 82 |
 | `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
 | `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 175 | 394 | 390 |

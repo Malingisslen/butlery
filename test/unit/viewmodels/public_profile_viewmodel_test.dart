@@ -211,6 +211,74 @@ void main() {
       });
     });
 
+    // -- R8-7: findable in search, read strictly --
+
+    group('isSearchable', () {
+      Future<PublicProfileViewModel> loadWith(
+        Future<bool> Function() searchable,
+      ) async {
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => testProfile);
+        when(
+          () => mockUserRepo.fetchPersistedSearchable(testUserId),
+        ).thenAnswer((_) => searchable());
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenAnswer((_) async => <Recipe>[]);
+        final viewModel = createViewModel();
+        for (var i = 0; i < 5; i++) {
+          await Future.delayed(Duration.zero);
+        }
+        return viewModel;
+      }
+
+      test('is the stored value when it reads true', () async {
+        final viewModel = await loadWith(() async => true);
+
+        expect(viewModel.isSearchable, isTrue);
+        viewModel.dispose();
+      });
+
+      test('is false when the stored value is not true', () async {
+        final viewModel = await loadWith(() async => false);
+
+        expect(viewModel.isSearchable, isFalse);
+        viewModel.dispose();
+      });
+
+      test('a profile hidden by moderation is not searchable, as in '
+          'search', () async {
+        when(() => mockUserRepo.fetchProfile(testUserId)).thenAnswer(
+          (_) async => testProfile.copyWith(isHidden: true),
+        );
+        when(
+          () => mockUserRepo.fetchPersistedSearchable(testUserId),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenAnswer((_) async => <Recipe>[]);
+        final viewModel = createViewModel();
+        for (var i = 0; i < 5; i++) {
+          await Future.delayed(Duration.zero);
+        }
+
+        expect(viewModel.profile, isNotNull);
+        expect(viewModel.isSearchable, isFalse);
+        viewModel.dispose();
+      });
+
+      test('a failed read counts as not searchable and still shows the '
+          'profile', () async {
+        final viewModel = await loadWith(() async => throw Exception('down'));
+
+        expect(viewModel.isSearchable, isFalse);
+        expect(viewModel.profile, isNotNull);
+        expect(viewModel.hasError, isFalse);
+        viewModel.dispose();
+      });
+    });
+
     // -- Verify delegation --
 
     group('repository delegation', () {
