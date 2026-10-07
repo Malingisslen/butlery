@@ -63,7 +63,7 @@ jobs:
   # (see the timeout note below). So sharding hits a ~12 min floor and
   # more shards just multiply the redundant compile for ~no wall-clock gain —
   # the wall BUT-1182 hit (it mis-read it as coverage instrumentation; it's the
-  # compile). 3 shards is the cost/latency sweet spot (~12.5 min, 3× compile).
+  # compile). 3 shards is the cost/latency sweet spot.
   # Pushing below ~12 min needs a bigger runner or a cached test kernel, not
   # more shards. Coverage lives in the `coverage` job below, not here.
   unit-tests:
@@ -132,7 +132,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 15
+          BUDGET_MIN: 24
           JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/3)"
         run: |
           JOB_END=$(date +%s)
@@ -166,7 +166,9 @@ jobs:
         # into the job summary.
         suite: [widget, views, golden, evaluation, import_gate]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # BUT-2001: widget took 16m30s on main run 37685482331, so 20 left the
+    # same thin margin the unit shards ran out of.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
@@ -199,7 +201,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 15
+          BUDGET_MIN: 24
           JOB_LABEL: "${{ matrix.suite }} (ubuntu)"
         run: |
           JOB_END=$(date +%s)
@@ -227,8 +229,9 @@ jobs:
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     # Coverage instrumentation roughly doubles the unaffected ~28 min unit
-    # runtime; keep BUT-1182's 40-min cap here where it actually applies.
-    timeout-minutes: 40
+    # runtime. BUT-2001: main run 37604083716 cancelled it at 39m32s inside
+    # its test step, so BUT-1182's 40-min cap no longer fits.
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v6
@@ -386,7 +389,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 35
+          BUDGET_MIN: 50
           JOB_LABEL: "coverage (ubuntu)"
         run: |
           JOB_END=$(date +%s)

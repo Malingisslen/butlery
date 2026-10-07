@@ -141,10 +141,22 @@ jobs:
               //    about whether main is broken TODAY, which is the only
               //    question this alarm exists to answer. Such a run is treated
               //    as absent, exactly like a gate that has never run on main.
-              const runs = (await github.rest.actions.listWorkflowRuns({
-                owner, repo, workflow_id: id, branch: 'main', status: 'completed', per_page: 50,
+              // Fetched without a status filter so a newer run still in
+              // progress counts as superseding a cancelled one (BUT-2001).
+              const allRuns = (await github.rest.actions.listWorkflowRuns({
+                owner, repo, workflow_id: id, branch: 'main', per_page: 50,
               })).data.workflow_runs;
+              const runs = allRuns.filter((r) => r.status === 'completed');
+              // BUT-2001: a `cancelled` run with NO newer run of the same gate
+              // was not superseded by cancel-in-progress: it stopped on
+              // `timeout-minutes` or by hand, and is counted red, not unknown.
+              const newestCreated = Math.max(0, ...allRuns.map((r) => new Date(r.created_at).getTime()));
+              const verdict = (r) =>
+                r.conclusion === 'cancelled' && new Date(r.created_at).getTime() === newestCreated
+                  ? 'timed_out'
+                  : r.conclusion;
               const run = runs
+                .map((r) => ({ ...r, conclusion: verdict(r) }))
                 .filter((r) => CONCLUSIVE.has(r.conclusion) && recentMainShas.has(r.head_sha))
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
               if (run) latest.push(run);
