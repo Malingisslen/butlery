@@ -59,6 +59,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -294,25 +295,14 @@ class AuthViewModel extends ChangeNotifier
     return await _authService.sendPasswordResetEmail(email.trim());
   }
 
-  /// Validates email format with comprehensive internationalization support and user feedback.
+  /// Validates the trimmed email and sets the error message on failure.
   /// [email] Email address to validate
-  /// Returns true if email format is valid, false otherwise with automatic error message setting.
-  /// Performs comprehensive email validation including empty check and international character support
-  /// using Unicode-aware regex patterns for global user base compatibility.
+  /// Returns true if the email passes, false otherwise.
+  /// Only the shape is checked; Firebase Auth makes the final call.
   bool _validateEmail(String email) {
-    final l = AppLocale.current;
-    if (email.isEmpty) {
-      _setError(l.errorFillRequiredFields);
-      return false;
-    }
-
-    // Email validation with Unicode support for international characters
-    final emailRegex = RegExp(
-      r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
-      unicode: true,
-    );
-    if (!emailRegex.hasMatch(email)) {
-      _setError(l.errorFillRequiredFieldsCorrectly);
+    final error = ValidationUtils.validateEmail(email.trim());
+    if (error != null) {
+      _setError(error);
       return false;
     }
 
