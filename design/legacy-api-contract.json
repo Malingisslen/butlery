@@ -295,6 +295,7 @@
    "placeholderIcon",
    "progressIndicator",
    "progressTrack",
+   "recipeCardLeftBorder",
    "recipeMeta",
    "rustLight",
    "sectionHeader",
@@ -349,7 +350,6 @@
    "primary",
    "primaryContainer",
    "recipeCardBottomBorder",
-   "recipeCardLeftBorder",
    "secondaryContainer",
    "shadow",
    "sharedRecipeBackgroundColor",
@@ -364,6 +364,7 @@
    "action.dangerPressed",
    "action.primary",
    "action.primaryPressed",
+   "border.cardEdge",
    "border.control",
    "border.onInk",
    "border.statusWarning",
@@ -906,6 +907,13 @@
     "KIND": "CANONICAL"
    },
    {
+    "FLUTTER_MEMBER": "recipeCardLeftBorder",
+    "SEMANTIC_TOKEN": "border.cardEdge",
+    "TOKENS_JSON_PATH": "semantic[\"border.cardEdge\"].dark",
+    "DARK_VALUE": "#A9B2A0",
+    "KIND": "CANONICAL"
+   },
+   {
     "FLUTTER_MEMBER": "textSecondary",
     "SEMANTIC_TOKEN": "text.secondary.onRaised",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary.onRaised\"].dark",
@@ -1064,13 +1072,6 @@
     "SEMANTIC_TOKEN": "control.checked.foreground",
     "TOKENS_JSON_PATH": "semantic[\"control.checked.foreground\"].dark",
     "DARK_VALUE": "#F5F4ED",
-    "KIND": "ALIAS"
-   },
-   {
-    "FLUTTER_MEMBER": "recipeCardLeftBorder",
-    "SEMANTIC_TOKEN": "surface.ink",
-    "TOKENS_JSON_PATH": "semantic[\"surface.ink\"].dark",
-    "DARK_VALUE": "#24382C",
     "KIND": "ALIAS"
    },
    {

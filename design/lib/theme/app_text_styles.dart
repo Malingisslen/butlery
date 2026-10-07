@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:6cdf7a5be9d3fde3676e09c964fb71a9d316479b69358f673fa4ccb08f510605 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:2cfe888dd047a670898b5f96512f40c034f8c2f30c1953fe9359a53d8551af2c (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur

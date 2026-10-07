@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:6cdf7a5be9d3fde3676e09c964fb71a9d316479b69358f673fa4ccb08f510605 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:2cfe888dd047a670898b5f96512f40c034f8c2f30c1953fe9359a53d8551af2c (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -198,6 +198,8 @@ class AppColors {
   static const Color surfacePressedOnRaised = Color(0xFFB4BFA6);
   /// Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck. · semantic.surface.pressed.onInk
   static const Color surfacePressedOnInk = Color(0xFF17251D);
+  /// Receptkortets vansterkant (BUT-2297): ink i ljust lage, salvia i morkt. · semantic.border.cardEdge
+  static const Color recipeCardLeftBorder = Color(0xFF24382C);
 
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.
@@ -229,7 +231,6 @@ class AppColors {
   static const Color onError = textOnPrimary;
   static const Color onWarning = textDark;
   static const Color onInfo = textOnPrimary;
-  static const Color recipeCardLeftBorder = forestGreen;
   static const Color recipeCardBottomBorder = rustLight;
   static const Color headerBackground = forestGreen;
   static const Color headerAccent = rust;
