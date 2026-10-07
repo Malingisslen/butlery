@@ -105,12 +105,6 @@ class OfflinePendingChangesSource implements PendingChangesSource {
   Future<void> discard(String userId) async {
     final offline = _offline();
     if (offline == null) return;
-    // Both queues and the device copies they point at go together: a queue
-    // entry without its recipe row, or the reverse, is a half-thrown change.
-    // Also clears the user's JSON and parse caches, which the next call does
-    // not.
-    await offline.database.clearUserData(userId);
-    // Also removes the queue's image files, which the database does not hold.
     await offline.clearUserData(userId);
   }
 }
@@ -151,5 +145,18 @@ class SignOutGuard {
     if (userId == null) return;
     await _source.discard(userId);
     AppLogger.info('SignOutGuard: queued changes discarded by the user');
+  }
+
+  /// The session-timeout dialog's "Logga ut och släng": the session ends
+  /// even when the discard fails, because the timeout is a security control.
+  /// The changes then stay on the device and sync at this user's next
+  /// sign-in, as after any automatic sign-out.
+  Future<void> discardAndEndSession(Future<void> Function() endSession) async {
+    try {
+      await discardForCurrentUser();
+    } catch (e) {
+      AppLogger.error('SignOutGuard: discard failed, ending the session', e);
+    }
+    await endSession();
   }
 }

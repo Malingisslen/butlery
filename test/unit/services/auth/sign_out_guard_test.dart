@@ -15,6 +15,7 @@ class _MockAuthService extends Mock implements AuthService {}
 class _RecordingSource implements PendingChangesSource {
   PendingChanges result = PendingChanges.none;
   Object? readError;
+  Object? discardError;
   final List<String> reads = [];
   final List<String> discards = [];
 
@@ -26,7 +27,10 @@ class _RecordingSource implements PendingChangesSource {
   }
 
   @override
-  Future<void> discard(String userId) async => discards.add(userId);
+  Future<void> discard(String userId) async {
+    if (discardError != null) throw discardError!;
+    discards.add(userId);
+  }
 }
 
 void main() {
@@ -122,6 +126,30 @@ void main() {
 
       expect(await offline.read('user-1'), PendingChanges.none);
       await offline.discard('user-1');
+    });
+  });
+
+  group('BUT-2296: discardAndEndSession', () {
+    test('discards, then ends the session', () async {
+      when(() => auth.currentUserId).thenReturn('anna');
+      final order = <String>[];
+
+      await guard.discardAndEndSession(() async {
+        order.add('end:${source.discards.length}');
+      });
+
+      expect(source.discards, ['anna']);
+      expect(order, ['end:1']);
+    });
+
+    test('a failed discard still ends the session', () async {
+      when(() => auth.currentUserId).thenReturn('anna');
+      source.discardError = StateError('disk full');
+      var ended = false;
+
+      await guard.discardAndEndSession(() async => ended = true);
+
+      expect(ended, isTrue);
     });
   });
 }

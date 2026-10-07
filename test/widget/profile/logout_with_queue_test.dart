@@ -60,6 +60,7 @@ class _FakeSource implements PendingChangesSource {
   PendingChanges pending;
   final List<String> discarded = [];
   bool throwOnRead = false;
+  bool throwOnDiscard = false;
 
   @override
   Future<PendingChanges> read(String userId) async {
@@ -69,6 +70,7 @@ class _FakeSource implements PendingChangesSource {
 
   @override
   Future<void> discard(String userId) async {
+    if (throwOnDiscard) throw StateError('disk full');
     discarded.add(userId);
     pending = PendingChanges.none;
   }
@@ -212,6 +214,22 @@ void main() {
     expect(source.discarded, ['anna']);
     expect(profile.logouts, 1);
     expect(find.text('sign-in screen'), findsOneWidget);
+  });
+
+  testWidgets('BUT-2296: a discard that fails keeps the user signed in', (
+    tester,
+  ) async {
+    source.throwOnDiscard = true;
+    await tester.pumpWidget(_host());
+    await tester.tap(find.text('logout'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Logga ut och släng ändringarna'));
+    await tester.pumpAndSettle();
+
+    expect(profile.logouts, 0);
+    expect(find.text('sign-in screen'), findsNothing);
+    expect(find.byType(SnackBar), findsOneWidget);
   });
 
   testWidgets('an empty queue asks the ordinary question', (tester) async {
