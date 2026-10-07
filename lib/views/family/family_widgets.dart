@@ -5,7 +5,6 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -27,13 +26,14 @@ String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
   }
 }
 
-/// Parse a stored `#RRGGBB` hex into a [Color]; falls back to [AppColors.primary].
-Color parseAvatarColor(String? hex) {
+/// Parse a stored `#RRGGBB` hex into a [Color]; falls back to the theme's
+/// primary.
+Color parseAvatarColor(BuildContext context, String? hex) {
   if (hex != null && hex.startsWith('#') && hex.length == 7) {
     final value = int.tryParse(hex.substring(1), radix: 16);
     if (value != null) return Color(value).withAlpha(255);
   }
-  return AppColors.primary;
+  return Theme.of(context).colorScheme.primary;
 }
 
 String _initials(String name) {
@@ -195,7 +195,7 @@ class FamilyAccountRow extends StatelessWidget {
         children: [
           FamilyAvatar(
             name: member.displayName,
-            color: parseAvatarColor(member.avatarColor),
+            color: parseAvatarColor(context, member.avatarColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -270,7 +270,7 @@ class FamilyMemberRow extends StatelessWidget {
                     children: [
                       FamilyAvatar(
                         name: profile.name,
-                        color: parseAvatarColor(profile.avatarColor),
+                        color: parseAvatarColor(context, profile.avatarColor),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

@@ -156,7 +156,7 @@ class PresenceOverview extends StatelessWidget {
                       children: [
                         FamilyAvatar(
                           name: member.displayName,
-                          color: parseAvatarColor(member.avatarColor),
+                          color: parseAvatarColor(context, member.avatarColor),
                           size: 18,
                         ),
                         const SizedBox(width: 5),

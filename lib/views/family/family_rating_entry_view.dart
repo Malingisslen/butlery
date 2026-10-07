@@ -281,7 +281,7 @@ class _DinerRatingRow extends StatelessWidget {
         children: [
           FamilyAvatar(
             name: member.displayName,
-            color: parseAvatarColor(member.avatarColor),
+            color: parseAvatarColor(context, member.avatarColor),
           ),
           const SizedBox(width: 12),
           Expanded(
