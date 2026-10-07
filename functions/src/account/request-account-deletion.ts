@@ -59,6 +59,7 @@ import {
   deleteMessages,
   deleteChatGroupMemberships,
   removeFromSharedContent,
+  scrubBlockHeldShares,
   deleteCommentsAndRatings,
   scrubRatingRecipeOwner,
   scrubCommentRecipeOwner,
@@ -252,6 +253,13 @@ export async function runAccountDeletionWithDeps(
     (r) => r.resourceType === USER_MODERATION,
   );
 
+  // BUT-2169: BEFORE tier 1, because tier 1's `blocks` delete fires the
+  // release in `holdSharesOnBlock`, and a held entry still naming this user
+  // would put them back on someone else's share after the erasure.
+  await runStep("shared_content_block_held", result, () =>
+    scrubBlockHeldShares(database, uid),
+  );
+
   // Tier 1 (parallel): own content + own writes on cross-user surfaces.
   const tier1: Array<[string, () => Promise<boolean>]> = [
     ["recipes", () => deleteRecipes(database, uid)],
@@ -379,6 +387,12 @@ export async function runAccountDeletionWithDeps(
   // maintenance chain rather than left as an unexported function.
   await runStep("block_mirrors", result, () =>
     deleteBlockMirrors(database, uid),
+  );
+
+  // BUT-2169: again after tier 1. A block written just before the erasure can
+  // commit its hold after the first pass ran; this is the later word on it.
+  await runStep("shared_content_block_held_after_tier1", result, () =>
+    scrubBlockHeldShares(database, uid),
   );
 
   // BUT-2046: the erased uid as a REPORTER, on rows under OTHER people's

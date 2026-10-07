@@ -167,6 +167,22 @@
       ]
     },
     {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "sharedToUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "blockHeldUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
       "collectionGroup": "notification_delivery",
       "queryScope": "COLLECTION",
       "fields": [

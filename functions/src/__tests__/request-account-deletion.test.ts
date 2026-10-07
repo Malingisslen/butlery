@@ -477,6 +477,20 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     }
   }
 
+  // BUT-2169: the held-share scrub runs alone on both sides of tier 1's
+  // `blocks` delete. Run alone, its two queries (held, then owned) are
+  // adjacent; inside the parallel tier 1 other steps' queries interleave.
+  const order = (state.queries ?? []).map(([c, f]) => `${c}.${f}`);
+  const blocksAt = order.indexOf("blocks.blockerId");
+  const scrubs = order
+    .map((key, i) => (key === "shared_content.blockHeldUserIds" &&
+      order[i + 1] === "shared_content.sharedByUserId" ? i : -1))
+    .filter((i) => i >= 0);
+  if (blocksAt < 0 || !scrubs.some((i) => i < blocksAt) ||
+      !scrubs.some((i) => i > blocksAt)) {
+    throw new Error(`held-share scrub must run alone before and after blocks: ${JSON.stringify(order)}`);
+  }
+
   // BUT-2072: the owner scrub must query after `comments_ratings` has deleted
   // the user's self-ratings, which its query also matches.
   const q = state.queries ?? [];
