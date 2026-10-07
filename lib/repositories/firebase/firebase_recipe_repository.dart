@@ -235,9 +235,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     final ownerCount = entity.socialData?.ownerId != null ? 1 : 0;
     final total = members.length + ownerCount;
     if (total > Recipe.maxSharesPerRecipe) {
-      throw StateError(
+      // BUT-2295: a ValidationException, so the offline queue reads the cap
+      // as the permanent refusal it is instead of retrying it for 24 h.
+      throw ValidationException(
         'Recipe ${entity.id} would exceed share cap: '
         '$total > ${Recipe.maxSharesPerRecipe}',
+        field: 'memberPermissions',
       );
     }
   }
