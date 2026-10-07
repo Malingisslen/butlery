@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 54 known failures and 1 residue lists are not empty
-- Known failures: 54 (a11y 12, interaction_checks 10, interactions 5, transitions 27)
+- **Migration complete:** NO: 39 known failures and 1 residue lists are not empty
+- Known failures: 39 (a11y 12, transitions 27)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 17 registered in Linear
+- Tickets: 14 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 390`
@@ -60,15 +60,10 @@ States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run i
 
 ## Required control states
 
-Required: 33; MISSING 1, PARTIAL 4, TESTED 28. Unspecified in block 288 (not tested): 33; not required: 4. Known check findings: 10.
+Required: 33; TESTED 33. Unspecified in block 288 (not tested): 33; not required: 4. Known check findings: 0.
 
 | Control state | Status | Ticket |
 | --- | --- | --- |
-| `CSR::ROLE::combobox::EXPANDED` | PARTIAL | BUT-2176 |
-| `CSR::ROLE::link::DEFAULT` | PARTIAL | BUT-2177 |
-| `CSR::ROLE::link::FOCUSED` | MISSING | BUT-2177 |
-| `CSR::ROLE::radio::FOCUSED` | PARTIAL | BUT-2148 |
-| `CSR::ROLE::switch::FOCUSED` | PARTIAL | BUT-2148 |
 
 ## Contrast pairs
 
@@ -106,7 +101,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | --- | --- | --- |
 | BUT-2140 | transitions 1 |  |
 | BUT-2142 | transitions 5 |  |
-| BUT-2148 | interaction_checks 4, interactions 2 |  |
 | BUT-2151 | transitions 1 |  |
 | BUT-2158 | transitions 2 |  |
 | BUT-2160 | transitions 2 |  |
@@ -118,8 +112,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2173 | transitions 1 |  |
 | BUT-2174 | transitions 1 |  |
 | BUT-2175 | transitions 2 |  |
-| BUT-2176 | interaction_checks 2, interactions 1 |  |
-| BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 
 ## Ratchets and adoption lists
@@ -174,8 +166,8 @@ Code only: comments are not counted; generated l10n is left out.
 | `LinearProgressIndicator(` | 1 | `lib/widgets/common/indicators/plate_line.dart` | PlateLine draws on it (package4_adoption_test _package7Components) |
 | `commonOk` | 0 |  | "OK" as a label (content-style-guide.md:77) |
 | `fontSize: <number>` | 18 | `lib/theme/app_text_styles.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
-| `Color(0x…) outside lib/theme` | 4 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/brand/butlery_lockup.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
-| `BorderRadius.circular(<number>)` | 2 | `lib/views/menu_placement/placement_widgets.dart`, `lib/views/recipe_detail/handlers/recipe_shopping_handler.dart` | raw corner radii |
+| `Color(0x…) outside lib/theme` | 0 |  | literal colours outside the theme files |
+| `BorderRadius.circular(<number>)` | 0 |  | raw corner radii |
 | `AppDimensions.opacity*` | 0 |  | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
 | `spacingS / spacingXxs` | 0 |  | spacing members retired in package 7 |
 | `pubspec fonts` | 0 |  | retired type families still declared in pubspec.yaml |
