@@ -7,10 +7,11 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 27 known failures and 1 residue lists are not empty
-- Known failures: 27 (a11y 12, transitions 15)
+- **Migration complete:** NO: 15 known failures and 1 residue lists are not empty
+- Known failures: 15 (transitions 15)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 10 registered in Linear
+- Accepted failures, counted apart (D5 = B): 12
+- Tickets: 9 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 390`
@@ -62,10 +63,11 @@ Declared pairs: 32. Measured in both modes: 32, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 12 (ceiling 12) in 12 cases (view, state, mode, width, text scale).
-- Host-bound text contrast (glyph rasteriser): linux 3, windows 0
-- By check: TEXT_CONTRAST 12
-- By view: chatt 2, inköpslista 2, receptdetalj 2, receptlista-sök 2, veckogenerering 2, veckomeny 2
+Known findings: 0 (ceiling 0) in 0 cases (view, state, mode, width, text scale).
+- Host-bound text contrast (glyph rasteriser): linux 0, windows 0
+- Accepted findings, not known failures: 12 (ceiling 12; BUT-2196 12)
+- By check: 
+- By view: 
 
 ## Token parity
 
@@ -95,7 +97,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2163 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
 | BUT-2171 | transitions 1 |  |
-| BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 | BUT-2213 | transitions 1 |  |
 
 ## Ratchets and adoption lists

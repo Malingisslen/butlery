@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// the content with no surface behind it.
 void main() {
   final factoryCall = RegExp(
-    r'UniversalShareDialog\.(recipe|menu|shoppingList|bulkShare|personalTag)\(',
+    r'UniversalShareDialog\.(recipe|recipes|menu|shoppingList|personalTag)\(',
   );
   const sheetCall = 'showUniversalShareSheet(';
 
