@@ -491,7 +491,6 @@ export async function runAccountDeletionWithDeps(
     logger.error("[requestAccountDeletion] auth.deleteUser failed", { err });
   }
 
-
   // Audit log — written under deletion_audit_logs (distinct from generic
   // audit_logs) preserving the schema readable by GDPR-export tooling.
   let auditLogId: string | null = null;
