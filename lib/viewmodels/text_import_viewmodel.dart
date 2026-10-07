@@ -133,7 +133,13 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       final parsed = result.successfulRecipes;
 
       if (parsed.isEmpty) {
-        setError(AppLocale.current.errorImportFailed);
+        final denied = result.results
+            .map((r) => r.rateLimitDenied)
+            .nonNulls
+            .firstOrNull;
+        setError(
+          denied?.swedishMessage ?? AppLocale.current.errorImportFailed,
+        );
         return false;
       }
 

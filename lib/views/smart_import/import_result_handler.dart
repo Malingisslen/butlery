@@ -1,6 +1,5 @@
 // Duplicate-detection and post-import navigation extracted from
 // smart_import_view.dart to keep the parent under the 620-line baseline.
-// All logic is identical — this is a pure relocation.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,10 +13,12 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/import/cache/content_fingerprint.dart';
+import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
+import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
 
-/// Handles the two post-import actions: duplicate detection and navigation.
+/// Handles the post-import actions: duplicate detection and navigation.
 ///
 /// Extracted from _SmartImportViewContentState so the parent stays under the
 /// 620-line baseline. Call [checkForDuplicatesAndNavigate] after a successful
@@ -238,5 +239,43 @@ abstract final class ImportResultHandler {
         'isTemplate': true,
       },
     );
+  }
+
+  /// The text import's multi-recipe handoff
+  /// (FranSocialaMedierView._pickAndSaveMultiple): tick, save, land on the list.
+  static Future<void> pickAndSaveMultiple(
+    BuildContext context,
+    SmartImportViewModel viewModel,
+    List<Recipe> recipes,
+  ) async {
+    final selected = await Navigator.push<List<Recipe>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BatchImportPreview(
+          recipes: recipes,
+          backTo: context.l10n.importRecipeTitle,
+        ),
+      ),
+    );
+    if (!context.mounted || selected == null || selected.isEmpty) return;
+
+    final ok = await viewModel.saveSelectedRecipes(selected);
+    if (!context.mounted) return;
+    if (!ok) {
+      SnackBarUtils.showFailure(
+        context,
+        what: viewModel.error ?? context.l10n.recipeSaveFailed,
+      );
+      return;
+    }
+    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+    if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
+      AllergenSetupBanner.show(context);
+    }
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.importComplete(selected.length, 0),
+    );
+    Navigator.of(context).pushNamedAndRemoveUntil(Routes.home, (_) => false);
   }
 }

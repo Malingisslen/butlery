@@ -399,6 +399,86 @@ void main() {
       });
     });
 
+    // Resa 11: dictation writes amounts as words, and "tre deciliter" was
+    // stored as amount 1 while "tre ägg" got no amount at all.
+    group('Swedish number words as amounts', () {
+      for (final (line, quantity, unit, name) in [
+        ('tre deciliter vetemjöl', 3.0, 'deciliter', 'vetemjöl'),
+        ('tre ägg', 3.0, '', 'ägg'),
+        ('Två dl mjölk', 2.0, 'dl', 'mjölk'),
+        ('en gul lök', 1.0, '', 'gul lök'),
+        ('ett par ägg', 2.0, '', 'ägg'),
+        ('en halv citron', 0.5, '', 'citron'),
+        ('halva citronen', 0.5, '', 'citronen'),
+        ('åtta skivor bacon', 8.0, 'skivor', 'bacon'),
+        ('tolv dl vatten', 12.0, 'dl', 'vatten'),
+      ]) {
+        test('"$line" → $quantity $unit $name', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, quantity);
+          expect(r.unit, unit);
+          expect(r.name, name);
+        });
+      }
+
+      for (final (line, name) in [
+        ('gul lök en stor', 'gul lök en stor'),
+        ('salt', 'salt'),
+        ('halvfet ost', 'halvfet ost'),
+        ('tretton ägg', 'tretton ägg'),
+        ('sexton nötter', 'sexton nötter'),
+      ]) {
+        test('"$line" is not read as a spoken amount', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, 1.0);
+          expect(r.name, name);
+        });
+      }
+
+      // Review of resa 11: a line that is only the phrase must not be cut
+      // into an amount and the rest of the phrase.
+      for (final line in ['en halv', 'ett halvt', 'ett par', 'Ett par']) {
+        test('"$line" alone is left as it was', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, 1.0);
+          expect(r.name, line.toLowerCase());
+        });
+      }
+
+      for (final (line, quantity, unit, name) in [
+        ('en och en halv dl mjölk', 1.5, 'dl', 'mjölk'),
+        ('två och en halv dl grädde', 2.5, 'dl', 'grädde'),
+        ('2 och en halv dl grädde', 2.5, 'dl', 'grädde'),
+        ('halvannan liter vatten', 1.5, 'liter', 'vatten'),
+      ]) {
+        test('"$line" → $quantity $unit $name', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, quantity);
+          expect(r.unit, unit);
+          expect(r.name, name);
+        });
+      }
+
+      test('"en och en halv" is one amount, not two ingredients', () {
+        final parts = IngredientParser.parseCompoundIngredient(
+          'en och en halv dl mjölk',
+        );
+        expect(parts.map((p) => (p.quantity, p.unit, p.name)), [
+          (1.5, 'dl', 'mjölk'),
+        ]);
+      });
+
+      test('a spoken amount after och is its own, not inherited', () {
+        final parts = IngredientParser.parseCompoundIngredient(
+          'tre ägg och en gul lök',
+        );
+        expect(parts.map((p) => (p.quantity, p.name)), [
+          (3.0, 'ägg'),
+          (1.0, 'gul lök'),
+        ]);
+      });
+    });
+
     group('BUG-10: compound och with explicit quantity', () {
       test('should keep explicit quantity for second part after och', () {
         // "2 ägg och 1 smör" - second part has explicit "1"

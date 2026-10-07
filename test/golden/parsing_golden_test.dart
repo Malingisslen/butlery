@@ -153,6 +153,29 @@ void main() {
           }
         }
 
+        // The parsed amount, not the line text: a line keeps its words
+        // whether or not the amount was read.
+        if (expected.containsKey('ingredientQuantities')) {
+          for (final q
+              in (expected['ingredientQuantities'] as List)
+                  .cast<Map<String, dynamic>>()) {
+            final needle = (q['contains'] as String).toLowerCase();
+            final match = ingredients.where(
+              (dynamic ing) => (ing.originalLine as String? ?? '')
+                  .toLowerCase()
+                  .contains(needle),
+            );
+            expect(match, isNotEmpty, reason: '$id: no line with "$needle"');
+            expect(
+              double.tryParse(
+                (match.first.quantity as String? ?? '').replaceAll(',', '.'),
+              ),
+              (q['quantity'] as num).toDouble(),
+              reason: '$id: quantity of "$needle"',
+            );
+          }
+        }
+
         final instructions = (recipe.instructions.value ?? []) as List;
 
         if (expected.containsKey('instructionCountMin')) {

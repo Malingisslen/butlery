@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/services/import/decompression_guard.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
 
 /// BUT-1371: a `.paprikarecipes` archive holds one gzip-compressed JSON recipe
@@ -140,4 +141,53 @@ void main() {
       expect(recipes.first.title, 'Fruktsoppa');
     },
   );
+
+  // Resa 11: the category "Desserts" became the meal type, and the heading
+  // "Garnering:" became an ingredient that left every allergen unknown.
+  group('archive categories and headings', () {
+    Future<Recipe> importOne(Map<String, dynamic> json) async =>
+        (await strategy.importMultipleFromContent(
+          paprikaArchive([
+            {'name': 'Lax', 'directions': 'Ugn', ...json},
+          ]),
+          'paprikarecipes',
+        )).single;
+
+    for (final (categories, mealType) in [
+      (['Desserts'], 'Dessert'),
+      (['Favoriter', 'Breakfast'], 'Frukost'),
+      (['Favoriter'], 'Middag'),
+      (<String>[], 'Middag'),
+    ]) {
+      test('categories $categories → $mealType', () async {
+        final recipe = await importOne({
+          'ingredients': '2 ägg',
+          'categories': categories,
+        });
+        expect(recipe.mealType, mealType);
+      });
+    }
+
+    test(
+      'a colon heading groups the rows below and is no ingredient',
+      () async {
+        final recipe = await importOne({
+          'ingredients': '400 g lax\nGarnering:\n1 citron\nDill',
+        });
+
+        expect(recipe.ingredients, ['400 g lax', '1 citron', 'Dill']);
+        expect(recipe.core.structuredIngredients!.map((i) => i.section), [
+          null,
+          'Garnering',
+          'Garnering',
+        ]);
+      },
+    );
+
+    test('a lone ingredient word with a colon stays an ingredient', () async {
+      final recipe = await importOne({'ingredients': 'Mjölk:\n2 ägg'});
+
+      expect(recipe.ingredients, ['Mjölk', '2 ägg']);
+    });
+  });
 }

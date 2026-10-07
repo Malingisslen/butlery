@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -64,6 +65,9 @@ class RecipeFormState extends ChangeNotifier {
   List<String> _imageUrls = [];
   String? _sourceUrl;
   TagOverrides? _tagOverrides;
+  // No field shows it, but an import's provenance stamp (voice, photo, link)
+  // must reach the saved recipe, and an edit must not erase it.
+  SourceArtefact? _sourceArtefact;
 
   // CRITICAL FIX: Remove internal arrays to eliminate dual state inconsistency
   // Single source of truth is now FormFieldsManager values only
@@ -236,6 +240,7 @@ class RecipeFormState extends ChangeNotifier {
     _imageUrls = List<String>.from(recipe.imageUrls);
     _sourceUrl = recipe.sourceUrl;
     _tagOverrides = recipe.tagOverrides;
+    _sourceArtefact = recipe.core.sourceArtefact;
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
     // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
@@ -895,6 +900,7 @@ class RecipeFormState extends ChangeNotifier {
         updatedAt: clock.now(),
         tagResult: _originalRecipe?.tagResult,
         tagOverrides: _tagOverrides,
+        sourceArtefact: _sourceArtefact,
       ),
       type: RecipeType.personal,
     );
@@ -915,6 +921,7 @@ class RecipeFormState extends ChangeNotifier {
     _imageUrls = [];
     _sourceUrl = null;
     _tagOverrides = null;
+    _sourceArtefact = null;
 
     _ingredientsManager.updateItems(['']);
     _instructionsManager.updateItems(['']);

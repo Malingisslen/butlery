@@ -298,6 +298,13 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           ImportResultHandler.navigateToRecipeEditor(context, recipe);
         }
 
+      case ImportSucceededMultiple(:final recipes):
+        await ImportResultHandler.pickAndSaveMultiple(
+          context,
+          viewModel,
+          recipes,
+        );
+
       case ImportNeedsUserHelp():
         await _showAssistedImportDialog(context, viewModel, result);
 
@@ -390,7 +397,9 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             () => unawaited(_saveAssisted(context, viewModel, recipe)),
           ),
         );
-      case ImportNeedsUserHelp() || ImportRateLimited():
+      case ImportNeedsUserHelp() ||
+          ImportRateLimited() ||
+          ImportSucceededMultiple():
         break;
     }
   }

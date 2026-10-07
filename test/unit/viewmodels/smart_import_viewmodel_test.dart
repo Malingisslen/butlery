@@ -360,6 +360,118 @@ void main() {
     });
   });
 
+  group('startImport — several pasted recipes', () {
+    const twoRecipes = '''
+Kycklinggryta
+Ingredienser:
+500 g kycklingfilé
+2 dl grädde
+Gör så här:
+Bryn kycklingen och låt puttra i grädden.
+
+Chokladbollar
+Ingredienser:
+100 g smör
+3 dl havregryn
+Gör så här:
+Blanda allt och rulla till bollar.''';
+
+    /// Resa 11: the link box used to send this through autoImport, which
+    /// merged both into one recipe. It must take the text import's
+    /// multi-recipe path and hand back both recipes.
+    test('two recipes become two, through autoParseMulti', () async {
+      final gryta = RecipeFactory.build(title: 'Kycklinggryta');
+      final bollar = RecipeFactory.build(title: 'Chokladbollar');
+      when(() => mockImportManager.autoParseMulti(any())).thenAnswer(
+        (_) async => BatchImportResult(
+          results: [
+            ImportManagerResult.success(gryta, strategy: 'text'),
+            ImportManagerResult.success(bollar, strategy: 'text'),
+          ],
+          successfulRecipes: [gryta, bollar],
+          errors: const [],
+          totalProcessed: 2,
+          successCount: 2,
+          failureCount: 0,
+        ),
+      );
+
+      viewModel.updateInput(twoRecipes);
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportSucceededMultiple>());
+      expect((r as ImportSucceededMultiple).recipes, [gryta, bollar]);
+      expect(viewModel.phase, ImportPhase.complete);
+      verifyNever(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      );
+    });
+
+    test('a refused limit on two recipes is ImportRateLimited', () async {
+      const denied = RateLimitDenied(
+        message: 'limit',
+        retryAfter: Duration(minutes: 5),
+        limitType: LimitType.perHour,
+        suggestedAction: FallbackAction.retryLater,
+      );
+      when(() => mockImportManager.autoParseMulti(any())).thenAnswer(
+        (_) async => BatchImportResult(
+          results: [ImportManagerResult.rateLimit(denied)],
+          successfulRecipes: const [],
+          errors: const ['limit'],
+          totalProcessed: 0,
+          successCount: 0,
+          failureCount: 1,
+        ),
+      );
+
+      viewModel.updateInput(twoRecipes);
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportRateLimited>());
+      expect((r as ImportRateLimited).rateLimitResult, same(denied));
+    });
+
+    test('one recipe still goes through autoImport', () async {
+      final recipe = RecipeFactory.build(title: 'Pannkakor');
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.success(recipe, strategy: 'text'),
+      );
+
+      viewModel.updateInput(
+        'Pannkakor\nIngredienser:\n3 dl vetemjöl\n2 ägg\n'
+        'Gör så här:\nVispa ihop och stek.',
+      );
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportSucceeded>());
+      verifyNever(() => mockImportManager.autoParseMulti(any()));
+    });
+
+    test('saveSelectedRecipes saves each and stops on a refusal', () async {
+      final a = RecipeFactory.build(title: 'A');
+      final b = RecipeFactory.build(title: 'B');
+      when(() => mockImportManager.saveImportedRecipe(a)).thenAnswer(
+        (_) async => ImportManagerResult.success(a, strategy: 'text'),
+      );
+      when(
+        () => mockImportManager.saveImportedRecipe(b),
+      ).thenAnswer((_) async => ImportManagerResult.failure('nope'));
+
+      expect(await viewModel.saveSelectedRecipes([a]), isTrue);
+      expect(await viewModel.saveSelectedRecipes([a, b]), isFalse);
+      expect(viewModel.hasError, isTrue);
+    });
+  });
+
   group('startImport — happy path', () {
     /// Pins the dispatch contract: input is trimmed and passed to autoImport
     /// with a progress callback, and a Recipe success becomes ImportSucceeded
