@@ -234,4 +234,22 @@ void main() {
       'Vitlökspulver': ShoppingCategory.veg,
     });
   });
+
+  // BUT-2135: 'ris' rode inside four groceries and filed them all under dry
+  // goods. Rice that trails its compound must still reach dry goods.
+  group('the three letters of rice', () {
+    expectCategory({
+      'Sparris': ShoppingCategory.veg,
+      'Sparrisknippe': ShoppingCategory.veg,
+      'Gris': ShoppingCategory.meat,
+      'Grisfilé': ShoppingCategory.meat,
+      'Grislever': ShoppingCategory.meat,
+      'Lakris': ShoppingCategory.snacks,
+      'Lakrits': ShoppingCategory.snacks,
+      'Grissini': ShoppingCategory.dryGoods,
+      'Ris': ShoppingCategory.dryGoods,
+      'Basmatiris': ShoppingCategory.dryGoods,
+      'Jasminris': ShoppingCategory.dryGoods,
+    });
+  });
 }
