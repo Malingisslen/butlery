@@ -10,6 +10,7 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Whether the signed-in user has ever been reported — three answers, not two.
 ///
@@ -319,7 +320,7 @@ class ReportService extends BaseService {
                   'hiddenAt': FieldValue.serverTimestamp(),
                 });
             AppLogger.info(
-              '[ReportService] Admin hid profile $ownerId via report ${report.id}',
+              '[ReportService] Admin hid profile ${ownerId.maskedUserId} via report ${report.id}',
             );
             return true;
           },

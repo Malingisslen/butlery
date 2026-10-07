@@ -19,6 +19,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// ViewModel for group conversation detail view with member management.
 /// Manages complete group detail display and management workflow including real-time
@@ -307,7 +308,7 @@ class GroupDetailViewModel extends ChangeNotifier
     _safeNotifyListeners();
 
     try {
-      AppLogger.info('Removing member $memberId from group');
+      AppLogger.info('Removing member ${memberId.maskedUserId} from group');
 
       await _chatGroupRepository.removeMember(
         groupId: groupId,

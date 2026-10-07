@@ -8,6 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
@@ -251,7 +252,7 @@ class FriendsCategoriesOperations {
     bool skipPermissionCheck = false,
   }) async {
     AppLogger.info(
-      '🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck',
+      '🔄 [ADD_TO_CATEGORY] Starting - friendId: ${friendId.maskedUserId}, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck',
     );
 
     final category = getCategoryById(categoryId);
@@ -264,7 +265,9 @@ class FriendsCategoriesOperations {
 
     // ✅ FIXED: Skip friendship check when accepting invitations (users don't need to be friends first)
     if (!skipFriendshipCheck && !_getManagement().isFriend(friendId)) {
-      AppLogger.warning('❌ [ADD_TO_CATEGORY] User is not a friend: $friendId');
+      AppLogger.warning(
+        '❌ [ADD_TO_CATEGORY] User is not a friend: ${friendId.maskedUserId}',
+      );
       return false;
     }
 
@@ -276,7 +279,7 @@ class FriendsCategoriesOperations {
 
     if (isFriendInCategory(friendId, categoryId)) {
       AppLogger.warning(
-        '⚠️ [ADD_TO_CATEGORY] Friend already in category: $friendId -> $categoryId',
+        '⚠️ [ADD_TO_CATEGORY] Friend already in category: ${friendId.maskedUserId} -> $categoryId',
       );
       return true; // Not an error, just already done
     }
@@ -325,7 +328,9 @@ class FriendsCategoriesOperations {
     final isInCategory = isFriendInCategory(friendId, categoryId);
 
     if (!isInCategory) {
-      AppLogger.warning('Friend not in category: $friendId -> $categoryId');
+      AppLogger.warning(
+        'Friend not in category: ${friendId.maskedUserId} -> $categoryId',
+      );
       return true; // Not an error, just already removed
     }
 
@@ -360,7 +365,7 @@ class FriendsCategoriesOperations {
       await _syncCategoryToFirebaseInternal(updatedCategory);
 
       AppLogger.success(
-        '✅ Friend removed from category: $friendId -> $categoryId',
+        '✅ Friend removed from category: ${friendId.maskedUserId} -> $categoryId',
       );
 
       // Emit event bus notification for UI updates
