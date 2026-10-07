@@ -200,6 +200,30 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     }
   }
 
+  /// Shares each of [recipes] on its own: the share backend takes one recipe
+  /// at a time (BUT-2152). Returns the recipes that were not shared, in
+  /// order, so a retry can send only those.
+  Future<List<Recipe>> shareRecipes({
+    required List<Recipe> recipes,
+    required List<String> friendUserIds,
+    List<String>? groupIds,
+    String? message,
+    bool allowCollaboration = false,
+  }) async {
+    final notShared = <Recipe>[];
+    for (final recipe in recipes) {
+      final shared = await shareRecipe(
+        recipe: recipe,
+        friendUserIds: friendUserIds,
+        groupIds: groupIds,
+        message: message,
+        allowCollaboration: allowCollaboration,
+      );
+      if (!shared) notShared.add(recipe);
+    }
+    return notShared;
+  }
+
   /// Share a menu with selected friends and groups using UnifiedMenuService invitation system
   Future<bool> shareMenu({
     required Map<String, List<Recipe>> menu,

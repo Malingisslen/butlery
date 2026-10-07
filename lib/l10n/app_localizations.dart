@@ -28511,6 +28511,18 @@ abstract class AppLocalizations {
   /// **'Delningen kunde inte genomföras.'**
   String get shareCouldNotComplete;
 
+  /// BUT-2152: part one of the error contract after a bulk recipe share where some recipes failed; names the recipes that were not shared.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Ett recept kunde inte delas: {titles}.} other{{count} recept kunde inte delas: {titles}.}}'**
+  String shareRecipesNotShared(int count, String titles);
+
+  /// BUT-2152: part two of the error contract after a partly failed bulk recipe share: the recipients and message are kept, and the share button retries only the failed recipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du fyllt i ligger kvar. Dela försöker igen med bara dem.'**
+  String get shareRecipesRetryOnlyFailed;
+
   /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
   ///
   /// In sv, this message translates to:
