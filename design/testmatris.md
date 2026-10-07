@@ -105,7 +105,12 @@ Referensbredd är **412 dp** (Pixel 9a). Bevis krävs i:
 | Största systemtext | systeminställning 2,0× | | | |
 | Reducerad rörelse | systeminställning | | | |
 | Tangentbord + sticky bar | manuellt | | | |
-| Offline och kö | flygplansläge | | | |
+| Offline och kö — i flygläge: skapa, ändra och radera ett recept; räknaren i toppfältet visar ändringarna | flygplansläge | | | |
+| Offline och kö — starta om appen i flygläge; ändringarna och räknaren finns kvar | flygplansläge | | | |
+| Offline och kö — slå av flygläget; kön töms och ändringarna syns på en andra enhet | flygplansläge + andra enhet | | | |
+| Offline och kö — lägg till ett foto i flygläge och spara; fotot kommer upp i receptet när nätet är tillbaka | flygplansläge | | | |
+| Offline och kö — ett foto på 10 MB eller mer ger "Bilden är för stor" | stor bildfil | | | |
+| Offline och kö — logga ut med ändringar i kön; utloggningen stoppas och förklaras | flygplansläge | | | |
 
 ---
 
