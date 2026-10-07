@@ -439,7 +439,6 @@ void main() {
         verify(() => mockSyncQueueDao.dequeue(2)).called(1);
         expect(taggedRecipes, containsAll(['recipe_1', 'recipe_2']));
       });
-
     });
   });
 }
