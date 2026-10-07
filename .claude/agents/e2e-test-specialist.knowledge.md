@@ -24,6 +24,7 @@ discovery, real flake-fix, or user correction.
 | Share recipe | `share_recipe_journey_test.dart` | Recipe → friend → recipient sees it |
 | Account deletion | `account_deletion_journey_test.dart` | Delete account → all user data cascades, sign-out |
 | Deep-link import | `deep_link_import_journey_test.dart` | `butlery://import?url=...` → pushes Routes.smartImport with decoded URL; unknown host pushes nothing |
+| Offline queue | `flows/flow_08_offline_queue_test.dart` (+ `flow_08_queue_harness.dart`) | Recipe write through `PersonalRecipeModule` offline → queue, top-bar counter, "Väntar på synk", backoff, permanent error + Spara som kopia, dependency chain, sign-out block |
 | Social subdir | `test/views/social/` | Friend requests, comments, likes |
 | Messaging subdir | `test/views/messaging/` | DM-style flows |
 
@@ -164,3 +165,6 @@ A second under-15 affordance (`Key('age_gate_set_minor')`,
 
 ### Harness runs hide framework errors (2026-10-05) [Pattern discovered]
 `pumpState` (test/views/design_states) swallows framework errors and overflows into `run.capture`, so a green smoke pump proves nothing. When building a host for a view nobody pumps, probe `capture.exceptions` and `capture.overflows` once and read the visible `Text`s. Host recipe for `MinaReceptView` is `minaReceptHost` in `test/views/golden_linux/golden_hosts.dart`: fakes at the service edge, the view's own view models real, list view model registered as a factory because the view disposes it. Detail in the archive.
+
+### A real Drift queue under a mounted widget tree [Pattern discovered]
+`OfflineService` cannot open its own database in a test (encrypted file), so journeys use a `QueueBackedOfflineService` shell over the real storage and sync manager (`test/views/flows/flow_08_queue_harness.dart`). With a screen mounted, its live Drift queries are served from the test's fake-async zone, so a queue pass in `tester.runAsync` alone hangs: start the work in the test zone and loop `runAsync(Future.delayed(Duration.zero))` + `pump` until a condition holds (`until` helper). Connectivity is a notifier flag; a reconnect must call the manager pass itself, because "Försök synka nu" is disabled offline and the view does not rebuild on connectivity. Prove each journey with a setup mutation (drop the writer failure, go online before the write); all eight went red.

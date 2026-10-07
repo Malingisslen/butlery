@@ -262,6 +262,10 @@ class OfflineUserStorage {
       final count = await _recipeDao.countForUser(userId);
       await _recipeDao.deleteAllForUser(userId);
       await _syncQueueDao.clearForUser(userId);
+      await _uploadQueueDao.clearForUser(userId);
+      // The queue's copies of the user's images, "Försök mindre" copies too.
+      final uploads = Directory(p.join((await _uploadsRoot()).path, userId));
+      if (await uploads.exists()) await uploads.delete(recursive: true);
 
       AppLogger.success(
         '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)',
