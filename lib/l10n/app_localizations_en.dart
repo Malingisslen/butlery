@@ -17336,6 +17336,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareCouldNotComplete => 'Sharing could not be completed.';
 
   @override
+  String shareRecipesNotShared(int count, String titles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes could not be shared: $titles.',
+      one: 'One recipe could not be shared: $titles.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareRecipesRetryOnlyFailed =>
+      'What you filled in is still here. Share tries again with only those.';
+
+  @override
   String get imageSelectFailed => 'The images could not be selected.';
 
   @override
