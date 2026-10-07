@@ -14,7 +14,6 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -68,7 +67,6 @@ void main() {
     TestServiceLocator.registerMock<PersonalTagService>(tags);
     TestServiceLocator.registerMock<OfflineService>(
       OfflineService(
-        firestoreRepository: TestServiceLocator.get<FirestoreRepository>(),
         authRepository: TestServiceLocator.get<AuthRepository>(),
       ),
     );

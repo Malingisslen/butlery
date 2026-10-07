@@ -9,6 +9,9 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -34,6 +37,7 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
+      registerFallbackValue(SyncOperation.update);
     });
 
     setUp(() async {
@@ -364,6 +368,141 @@ void main() {
       });
     });
 
+    group('Offline queue (BUT-2162)', () {
+      late _MockOfflineQueue queue;
+      late _RecordingAdapter adapter;
+
+      setUp(() {
+        queue = _MockOfflineQueue();
+        adapter = _RecordingAdapter();
+        when(() => queue.isQueueReady).thenReturn(true);
+        when(
+          () => queue.queueRecipeWrite(
+            any(),
+            any(),
+            operation: any(named: 'operation'),
+            queueTagging: any(named: 'queueTagging'),
+          ),
+        ).thenAnswer((_) async => 'op');
+        when(
+          () => queue.queueRecipeDelete(any(), any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockUserRepository.decrementPublicRecipeCount(any()),
+        ).thenAnswer((_) async {});
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+          getOfflineQueue: () => queue,
+        );
+      });
+
+      test('a new recipe is queued as a create, not sent', () async {
+        final id = await module.createPersonalRecipe(title: 'Köttbullar');
+
+        expect(id, isNotNull);
+        final captured = verify(
+          () => queue.queueRecipeWrite(
+            captureAny(),
+            'test-user-123',
+            operation: SyncOperation.create,
+            queueTagging: false,
+          ),
+        ).captured;
+        expect((captured.single as Recipe).id, id);
+        expect(adapter.updatedIds, isEmpty);
+      });
+
+      test('an edit is queued as an update', () async {
+        final ok = await module.updatePersonalRecipe(testRecipe);
+
+        expect(ok, isTrue);
+        verify(
+          () => queue.queueRecipeWrite(
+            any(that: isA<Recipe>().having((r) => r.id, 'id', testRecipe.id)),
+            'test-user-123',
+            operation: SyncOperation.update,
+            queueTagging: false,
+          ),
+        ).called(1);
+      });
+
+      test('a recipe whose tagging failed queues its tagging too', () async {
+        final tagging = _MockTaggingService();
+        when(() => tagging.generateTags(any())).thenThrow(Exception('down'));
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+          getOfflineQueue: () => queue,
+          taggingService: tagging,
+        );
+
+        await module.updatePersonalRecipe(testRecipe);
+
+        verify(
+          () => queue.queueRecipeWrite(
+            any(),
+            any(),
+            operation: SyncOperation.update,
+            queueTagging: true,
+          ),
+        ).called(1);
+      });
+
+      test('a delete is queued and leaves the local cache', () async {
+        await mockCacheHelper.saveJson(testRecipe.id, testRecipe.toJson());
+
+        final ok = await module.deletePersonalRecipe(testRecipe.id);
+
+        expect(ok, isTrue);
+        verify(
+          () => queue.queueRecipeDelete(testRecipe.id, 'test-user-123'),
+        ).called(1);
+        expect(await mockCacheHelper.loadJson(testRecipe.id), isNull);
+      });
+
+      test('deleting a recipe whose deletion is already queued counts it '
+          'down once', () async {
+        when(
+          () => queue.queueRecipeDelete(any(), any()),
+        ).thenAnswer((_) async => false);
+
+        final ok = await module.deletePersonalRecipe(testRecipe.id);
+
+        expect(ok, isTrue);
+        verifyNever(() => mockUserRepository.decrementPublicRecipeCount(any()));
+      });
+
+      test('without a ready queue the write goes to the server and is '
+          'awaited', () async {
+        when(() => queue.isQueueReady).thenReturn(false);
+
+        await module.saveRecipeRaw(testRecipe);
+
+        expect(adapter.updatedIds, [testRecipe.id]);
+        verifyNever(
+          () => queue.queueRecipeWrite(
+            any(),
+            any(),
+            operation: any(named: 'operation'),
+            queueTagging: any(named: 'queueTagging'),
+          ),
+        );
+      });
+    });
+
     group('Import', () {
       test('should fail import when not authenticated', () async {
         currentUserId = null;
@@ -414,6 +553,10 @@ void main() {
     });
   });
 }
+
+class _MockOfflineQueue extends Mock implements OfflineService {}
+
+class _MockTaggingService extends Mock implements TaggingService {}
 
 class _RecordingAdapter extends MockRecipeServiceAdapter {
   final List<String> updatedIds = [];

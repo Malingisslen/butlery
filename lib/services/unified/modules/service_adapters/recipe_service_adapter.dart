@@ -8,6 +8,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -16,7 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// This adapter abstracts Firebase operations through repository interfaces,
 /// allowing modules to follow clean architecture principles while maintaining
 /// backward compatibility with existing code.
-class RecipeServiceAdapter {
+class RecipeServiceAdapter implements QueuedRecipeWriter {
   final RecipeRepository _recipeRepository;
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
@@ -69,17 +70,28 @@ class RecipeServiceAdapter {
   /// Delete a recipe and cascade-delete related data (images, comments, ratings, social stats)
   Future<bool> deleteRecipe(String recipeId) async {
     try {
-      // Fetch recipe once to get imageUrls before deletion
-      final recipe = await _recipeRepository.read(recipeId);
-      await _deleteRecipeImages(recipeId, recipe?.imageUrls ?? []);
-      await _cleanupRecipeReferences(recipeId);
-      await _recipeRepository.delete(recipeId);
-      AppLogger.success('Recipe deleted via repository: $recipeId');
+      await delete(recipeId);
       return true;
     } catch (e) {
       AppLogger.error('Failed to delete recipe via repository', e);
       return false;
     }
+  }
+
+  @override
+  Future<void> create(Recipe recipe) => _recipeRepository.create(recipe);
+
+  @override
+  Future<void> update(Recipe recipe) => _recipeRepository.update(recipe);
+
+  @override
+  Future<void> delete(String recipeId) async {
+    // Fetch recipe once to get imageUrls before deletion
+    final recipe = await _recipeRepository.read(recipeId);
+    await _deleteRecipeImages(recipeId, recipe?.imageUrls ?? []);
+    await _cleanupRecipeReferences(recipeId);
+    await _recipeRepository.delete(recipeId);
+    AppLogger.success('Recipe deleted via repository: $recipeId');
   }
 
   /// Delete images from Firebase Storage. Failures do not block recipe deletion.

@@ -288,7 +288,6 @@ class ContentModule implements DIModule {
 
     container.registerLazySingleton<OfflineService>(
       () => OfflineService(
-        firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<auth.AuthRepository>(),
       ),
       dispose: (s) => s.resetForLogout(),

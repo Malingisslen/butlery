@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
@@ -53,9 +52,7 @@ void main() {
     late MockAppDatabase mockDatabase;
     late MockRecipeDao mockRecipeDao;
     late MockSyncQueueDao mockSyncQueueDao;
-    late FakeFirestoreRepository mockFirestoreRepo;
     late FakeAuthRepository mockAuthRepo;
-    late FakeFirebaseFirestore fakeFirestore;
 
     bool syncStateChanged = false;
 
@@ -67,12 +64,6 @@ void main() {
       mockDatabase = MockAppDatabase();
       mockRecipeDao = MockRecipeDao();
       mockSyncQueueDao = MockSyncQueueDao();
-      fakeFirestore = FakeFirebaseFirestore();
-      // Pass our per-test fake instance so userRecipesCollection +
-      // setDocument route through it (FakeFirestoreRepository's concrete
-      // overrides bypass mocktail when() — Fake doesn't support that
-      // dispatch).
-      mockFirestoreRepo = FakeFirestoreRepository(firestore: fakeFirestore);
       mockAuthRepo =
           TestServiceLocator.get<AuthRepository>() as FakeAuthRepository;
 
@@ -90,7 +81,6 @@ void main() {
       // Create sync manager with mock database
       syncManager = OfflineSyncManager(
         database: mockDatabase,
-        firestoreRepository: mockFirestoreRepo,
         authRepository: mockAuthRepo,
         onSyncStateChanged: () {
           syncStateChanged = true;
@@ -266,12 +256,11 @@ void main() {
         // Create sync manager with tag callback
         syncManagerWithTagCallback = OfflineSyncManager(
           database: mockDatabase,
-          firestoreRepository: mockFirestoreRepo,
           authRepository: mockAuthRepo,
           onSyncStateChanged: () {
             syncStateChanged = true;
           },
-          onTagRecipe: (recipeId) async {
+          onTagRecipe: (recipeId, _) async {
             tagCallbackInvoked = true;
             taggedRecipeId = recipeId;
           },
@@ -417,9 +406,8 @@ void main() {
         final taggedRecipes = <String>[];
         final multiTagSyncManager = OfflineSyncManager(
           database: mockDatabase,
-          firestoreRepository: mockFirestoreRepo,
           authRepository: mockAuthRepo,
-          onTagRecipe: (recipeId) async {
+          onTagRecipe: (recipeId, _) async {
             taggedRecipes.add(recipeId);
           },
         );

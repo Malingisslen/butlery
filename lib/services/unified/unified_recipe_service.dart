@@ -17,6 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -202,6 +203,7 @@ class UnifiedRecipeService
 
   // Auth state subscription (stored to prevent garbage collection)
   StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<String>? _queueSentSubscription;
 
   /// CRIT-7: Stream controller for tagging failure notifications.
   /// UI can listen to this stream to show snackbars when tagging fails.
@@ -327,6 +329,10 @@ class UnifiedRecipeService
       onTaggingFailed: (recipeTitle) {
         _taggingFailureController.add(recipeTitle);
       },
+      getOfflineQueue: ServiceLocator.tryGet<OfflineService>,
+    );
+    ServiceLocator.tryGet<OfflineService>()?.attachRecipeWriter(
+      LazyQueuedRecipeWriter(_getServiceAdapter),
     );
 
     _socialModule = SocialRecipeModule(
@@ -358,7 +364,18 @@ class UnifiedRecipeService
       // BUG-003: On web, cache is stubbed so we update _recipes directly
       onRecipeUpdated: kIsWeb ? _handleDirectRecipeUpdate : null,
       onRecipeRemoved: kIsWeb ? _handleDirectRecipeRemoval : null,
+      hasUnsentWrite: (recipeId) async {
+        final userId = currentUserId;
+        final queue = ServiceLocator.tryGet<OfflineService>();
+        if (userId == null || queue == null) return false;
+        return queue.hasUnsentRecipeWrite(recipeId, userId);
+      },
+      readRecipe: (recipeId) => _getRecipeRepository().read(recipeId),
     );
+    unawaited(_queueSentSubscription?.cancel());
+    _queueSentSubscription = ServiceLocator.tryGet<OfflineService>()
+        ?.recipesSent
+        .listen(_cacheModule.refreshAfterQueueSend);
 
     _contentOps = RecipeContentOperations(
       personalModule: _personalModule,
@@ -1157,7 +1174,6 @@ class UnifiedRecipeService
     _serviceAdapter = null;
 
     if (_areModulesInitialized()) {
-      _personalModule.cancelPendingRetries();
       _cacheModule.dispose();
       _realtimeModule.dispose();
       _modulesInitialized = false;
@@ -1169,12 +1185,12 @@ class UnifiedRecipeService
 
   void dispose() {
     _authSubscription?.cancel();
+    _queueSentSubscription?.cancel();
     _socialRetryTimer?.cancel();
     _taggingFailureController.close();
     _stateSubject.close();
 
     if (_areModulesInitialized()) {
-      _personalModule.cancelPendingRetries();
       _cacheModule.dispose();
       _realtimeModule.dispose();
     }

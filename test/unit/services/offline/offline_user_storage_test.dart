@@ -64,6 +64,11 @@ void main() {
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
       when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
 
+      // No create of the recipe waits in the queue.
+      when(
+        () => mockSyncQueueDao.pendingCreateOpId(any(), any()),
+      ).thenAnswer((_) async => null);
+
       // Create storage instance with mock database
       storage = OfflineUserStorage(database: mockDatabase);
     });
@@ -73,7 +78,7 @@ void main() {
     });
 
     group('User-Scoped Storage', () {
-      test('should save recipe with user-specific key', () async {
+      test('an online save is queued too (BUT-2162)', () async {
         // Arrange
         final recipe = RecipeBuilder()
             .withId('recipe_123')
@@ -89,57 +94,18 @@ void main() {
             needsSync: any(named: 'needsSync'),
           ),
         ).thenAnswer((_) async {});
-
-        // Act
-        await storage.saveRecipeForUser(recipe, userId, isOnline: true);
-
-        // Assert
-        verify(
-          () => mockRecipeDao.upsertRecipe(
-            id: recipe.id,
-            userId: userId,
-            recipeJson: any(named: 'recipeJson'),
-            needsSync: false,
-          ),
-        ).called(1);
-
-        // Should not add to sync queue when online
-        verifyNever(
+        when(
           () => mockSyncQueueDao.enqueue(
             userId: any(named: 'userId'),
             recipeId: any(named: 'recipeId'),
             operation: any(named: 'operation'),
-          ),
-        );
-      });
-
-      test('should save recipe and add to sync queue when offline', () async {
-        // Arrange
-        final recipe = RecipeBuilder()
-            .withId('recipe_789')
-            .withTitle('Köttbullar')
-            .build();
-        const userId = 'user_123';
-
-        when(
-          () => mockRecipeDao.upsertRecipe(
-            id: any(named: 'id'),
-            userId: any(named: 'userId'),
-            recipeJson: any(named: 'recipeJson'),
-            needsSync: any(named: 'needsSync'),
+            opId: any(named: 'opId'),
+            dependsOn: any(named: 'dependsOn'),
           ),
         ).thenAnswer((_) async {});
 
-        when(
-          () => mockSyncQueueDao.enqueue(
-            userId: any(named: 'userId'),
-            recipeId: any(named: 'recipeId'),
-            operation: any(named: 'operation'),
-          ),
-        ).thenAnswer((_) async => 1);
-
         // Act
-        await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+        final opId = await storage.saveRecipeForUser(recipe, userId);
 
         // Assert
         verify(
@@ -150,12 +116,13 @@ void main() {
             needsSync: true,
           ),
         ).called(1);
-
         verify(
           () => mockSyncQueueDao.enqueue(
             userId: userId,
             recipeId: recipe.id,
-            operation: any(named: 'operation'),
+            operation: SyncOperation.update,
+            opId: opId,
+            dependsOn: const [],
           ),
         ).called(1);
       });
@@ -245,25 +212,38 @@ void main() {
         expect(retrieved, isNull);
       });
 
-      test('should delete recipe and remove from sync queue', () async {
+      test('a delete leaves the device and is queued', () async {
         // Arrange
         const userId = 'user_123';
         const recipeId = 'recipe_456';
 
         when(
+          () => mockSyncQueueDao.hasQueuedDelete(userId, recipeId),
+        ).thenAnswer((_) async => false);
+        when(
           () => mockRecipeDao.deleteRecipe(recipeId, userId),
         ).thenAnswer((_) async => 1);
         when(
-          () => mockSyncQueueDao.removeForRecipe(userId, recipeId),
-        ).thenAnswer((_) async => 1);
+          () => mockSyncQueueDao.enqueue(
+            userId: any(named: 'userId'),
+            recipeId: any(named: 'recipeId'),
+            operation: any(named: 'operation'),
+            dependsOn: any(named: 'dependsOn'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
-        await storage.deleteRecipeForUser(recipeId, userId);
+        await storage.queueDeleteForUser(recipeId, userId);
 
         // Assert
         verify(() => mockRecipeDao.deleteRecipe(recipeId, userId)).called(1);
         verify(
-          () => mockSyncQueueDao.removeForRecipe(userId, recipeId),
+          () => mockSyncQueueDao.enqueue(
+            userId: userId,
+            recipeId: recipeId,
+            operation: SyncOperation.delete,
+            dependsOn: const [],
+          ),
         ).called(1);
       });
     });
@@ -367,11 +347,13 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
           // Act
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           // Assert - should queue both update AND tag operations
           verify(
@@ -379,6 +361,8 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.update,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
 
@@ -387,6 +371,8 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
         },
@@ -425,11 +411,13 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
           // Act
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           // Assert - should queue tag operation for failed tagResult
           verify(
@@ -437,6 +425,8 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
         },
@@ -482,11 +472,13 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
           // Act
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           // Assert - should queue tag operation for zero coverage
           verify(
@@ -494,6 +486,8 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
         },
@@ -539,11 +533,13 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
           // Act
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           // Assert - should queue update but NOT tag operation
           verify(
@@ -551,6 +547,8 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.update,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
 
@@ -560,12 +558,14 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           );
         },
       );
 
-      test('should NOT queue SyncOperation.tag when online', () async {
+      test('the retagging save does not queue tagging again', () async {
         // Arrange
         final baseRecipe = RecipeBuilder()
             .withId('recipe_online')
@@ -589,15 +589,27 @@ void main() {
           ),
         ).thenAnswer((_) async {});
 
-        // Act - save while ONLINE
-        await storage.saveRecipeForUser(recipe, userId, isOnline: true);
-
-        // Assert - no sync queue operations when online
-        verifyNever(
+        when(
           () => mockSyncQueueDao.enqueue(
             userId: any(named: 'userId'),
             recipeId: any(named: 'recipeId'),
             operation: any(named: 'operation'),
+            opId: any(named: 'opId'),
+            dependsOn: any(named: 'dependsOn'),
+          ),
+        ).thenAnswer((_) async {});
+
+        // Act - the save _retagRecipe makes
+        await storage.saveRecipeForUser(recipe, userId, queueTagging: false);
+
+        // Assert - the write is queued, the tagging is not
+        verifyNever(
+          () => mockSyncQueueDao.enqueue(
+            userId: any(named: 'userId'),
+            recipeId: any(named: 'recipeId'),
+            operation: SyncOperation.tag,
+            opId: any(named: 'opId'),
+            dependsOn: any(named: 'dependsOn'),
           ),
         );
       });
@@ -642,11 +654,13 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
           // Act
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           // Assert - should queue tag operation for stale-ingredient
           verify(
@@ -654,6 +668,8 @@ void main() {
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
         },
@@ -708,16 +724,20 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           verify(
             () => mockSyncQueueDao.enqueue(
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
         },
@@ -771,16 +791,20 @@ void main() {
               userId: any(named: 'userId'),
               recipeId: any(named: 'recipeId'),
               operation: any(named: 'operation'),
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).thenAnswer((_) async => 1);
 
-          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+          await storage.saveRecipeForUser(recipe, userId);
 
           verify(
             () => mockSyncQueueDao.enqueue(
               userId: userId,
               recipeId: recipe.id,
               operation: SyncOperation.tag,
+              opId: any(named: 'opId'),
+              dependsOn: any(named: 'dependsOn'),
             ),
           ).called(1);
         },

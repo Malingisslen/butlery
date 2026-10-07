@@ -6,7 +6,6 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 import '../../test_support/base_unit_test.dart';
-import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -16,7 +15,6 @@ class FakeRecipe extends Fake implements Recipe {}
 void main() {
   group('OfflineService', () {
     late OfflineService offlineService;
-    late FakeFirestoreRepository mockFirestoreRepository;
     late MockFirebaseAuthRepository mockAuthRepository;
 
     setUpAll(() async {
@@ -33,12 +31,10 @@ void main() {
       OfflineService.resetForTesting();
 
       // Create mocks from centralized system
-      mockFirestoreRepository = FakeFirestoreRepository();
       mockAuthRepository = MockFirebaseAuthRepository();
 
       // Create service with mock dependencies
       offlineService = OfflineService(
-        firestoreRepository: mockFirestoreRepository,
         authRepository: mockAuthRepository,
       );
 
@@ -64,11 +60,9 @@ void main() {
       test('should maintain same instance across multiple factory calls', () {
         // Arrange & Act
         final instance1 = OfflineService(
-          firestoreRepository: mockFirestoreRepository,
           authRepository: mockAuthRepository,
         );
         final instance2 = OfflineService(
-          firestoreRepository: mockFirestoreRepository,
           authRepository: mockAuthRepository,
         );
         final instance3 = OfflineService();
@@ -79,12 +73,10 @@ void main() {
       });
 
       test('should accept dependency injection', () {
-        final customFirestore = FakeFirestoreRepository();
         final customAuth = FakeAuthRepository();
 
         // Act
         final service = OfflineService(
-          firestoreRepository: customFirestore,
           authRepository: customAuth,
         );
 
@@ -195,44 +187,7 @@ void main() {
       });
     });
 
-    group('User-Specific Methods (Initialized)', () {
-      test('should save recipe for specific user', () async {
-        // Arrange
-        final recipe = RecipeFactory.build();
-        const userId = 'user_123';
-
-        // Act - will fail without Drift setup
-        try {
-          await offlineService.saveRecipeOfflineForUser(recipe, userId);
-        } catch (e) {
-          // Expected to fail
-          expect(e, isNotNull);
-        }
-      });
-
-      test('should delete recipe for specific user', () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const userId = 'user_123';
-
-        // Act - will fail without Drift setup
-        try {
-          await offlineService.deleteRecipeOfflineForUser(recipeId, userId);
-        } catch (e) {
-          // Expected to fail
-          expect(e, isNotNull);
-        }
-      });
-    });
-
     group('Legacy Methods', () {
-      test('should handle legacy saveRecipeOffline', () async {
-        final recipe = RecipeFactory.build();
-
-        // Act & Assert - should not throw
-        await offlineService.saveRecipeOffline(recipe);
-      });
-
       test('should return empty list for getAllOfflineRecipes', () async {
         final recipes = await offlineService.getAllOfflineRecipes();
 
@@ -245,11 +200,6 @@ void main() {
 
         // Assert
         expect(recipe, isNull);
-      });
-
-      test('should handle legacy deleteRecipeOffline', () async {
-        // Act & Assert
-        await offlineService.deleteRecipeOffline('recipe_123');
       });
 
       test('should handle legacy clearOfflineData', () async {

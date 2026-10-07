@@ -2,11 +2,10 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
-import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -18,6 +17,7 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -25,15 +25,14 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
-/// HIGH-10: Recipe sync status for tracking background Firebase sync state.
+/// HIGH-10: Recipe sync status of a write this module sent to Firebase
+/// itself. A write that went through the offline queue is not tracked here;
+/// the queue counts it.
 enum RecipeSyncStatus {
-  /// Recipe saved locally, background sync pending.
-  pending,
-
   /// Recipe successfully synced to Firebase.
   synced,
 
-  /// Sync failed after max retries - recipe is local only.
+  /// The write failed.
   failed,
 
   /// Recipe is being actively synced.
@@ -41,7 +40,7 @@ enum RecipeSyncStatus {
 }
 
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
-class PersonalRecipeModule with StreamManagementMixin {
+class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
   final UserRepository _userRepository;
   final JsonCacheHelper Function() _getCacheHelper;
@@ -52,6 +51,11 @@ class PersonalRecipeModule with StreamManagementMixin {
   final RecipeServiceAdapter Function() _getServiceAdapter;
   final TaggingService? _taggingService;
   final PersonalTagService? _personalTagService;
+
+  /// BUT-2162: the offline queue every create, update and delete goes
+  /// through when the device has one. Without it (the web, or a device
+  /// database that did not open) the write goes to Firebase and is awaited.
+  final OfflineService? Function() _getOfflineQueue;
   final RateLimiter _rateLimiter = RateLimiter();
 
   /// CRIT-7: Callback for notifying UI when tagging fails.
@@ -112,7 +116,9 @@ class PersonalRecipeModule with StreamManagementMixin {
     TaggingService? taggingService,
     PersonalTagService? personalTagService,
     void Function(String recipeTitle)? onTaggingFailed,
-  }) : _recipeRepository = recipeRepository,
+    OfflineService? Function()? getOfflineQueue,
+  }) : _getOfflineQueue = getOfflineQueue ?? _noOfflineQueue,
+       _recipeRepository = recipeRepository,
        _userRepository = userRepository,
        _getCacheHelper = getCacheHelper,
        _getCurrentUserId = getCurrentUserId,
@@ -194,9 +200,18 @@ class PersonalRecipeModule with StreamManagementMixin {
             // Continue anyway - don't fail recipe creation for counter issues
           }
 
-          // BUG-003 FIX: On web, cache is a no-op (Drift stubbed), so we MUST
-          // await Firebase sync to ensure recipes persist.
-          if (kIsWeb) {
+          final queue = _readyOfflineQueue();
+          if (queue != null) {
+            await queue.queueRecipeWrite(
+              newRecipe,
+              currentUserId,
+              operation: SyncOperation.create,
+              queueTagging: _taggingFailed(newRecipe),
+            );
+            AppLogger.success('✅ Personal recipe "$title" created (queued)');
+          } else {
+            // BUG-003 FIX: On web, cache is a no-op (Drift stubbed), so we
+            // MUST await Firebase sync to ensure recipes persist.
             final syncSuccess = await _syncRecipeToFirebaseAwaited(
               newRecipe,
               'create',
@@ -208,12 +223,6 @@ class PersonalRecipeModule with StreamManagementMixin {
               return null;
             }
             AppLogger.success('✅ Personal recipe "$title" created and synced');
-          } else {
-            // On mobile, use background sync (cache is real, UX is faster)
-            _startBackgroundRecipeSync(newRecipe, 'create');
-            AppLogger.success(
-              '✅ Personal recipe "$title" created (syncing in background)',
-            );
           }
           // BUG-003: Store the created recipe for direct retrieval on web
           _lastCreatedRecipe = newRecipe;
@@ -269,8 +278,19 @@ class PersonalRecipeModule with StreamManagementMixin {
           // Optimistic update - save to cache immediately, sync to Firebase in background
           await _saveToCache(editedRecipe);
 
-          // BUG-003 FIX: On web, await Firebase sync directly
-          if (kIsWeb) {
+          final queue = _readyOfflineQueue();
+          if (queue != null) {
+            await queue.queueRecipeWrite(
+              editedRecipe,
+              currentUserId,
+              operation: SyncOperation.update,
+              queueTagging: _taggingFailed(editedRecipe),
+            );
+            AppLogger.success(
+              '✅ Personal recipe "${editedRecipe.title}" updated (queued)',
+            );
+          } else {
+            // BUG-003 FIX: On web, await Firebase sync directly
             final syncSuccess = await _syncRecipeToFirebaseAwaited(
               editedRecipe,
               'update',
@@ -283,12 +303,6 @@ class PersonalRecipeModule with StreamManagementMixin {
             }
             AppLogger.success(
               '✅ Personal recipe "${editedRecipe.title}" updated and synced',
-            );
-          } else {
-            // On mobile, use background sync (cache is real, UX is faster)
-            _startBackgroundRecipeSync(editedRecipe, 'update');
-            AppLogger.success(
-              '✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)',
             );
           }
           return true;
@@ -313,19 +327,22 @@ class PersonalRecipeModule with StreamManagementMixin {
 
   /// Save a recipe directly without re-tagging or personal tag rules.
   /// Used by batch retag to avoid double-tagging and rate limiter throttling.
-  ///
-  /// The sync runs as an 'update': both sync paths write only for 'create'
-  /// and 'update', so any other operation name never reaches Firebase.
   Future<void> saveRecipeRaw(Recipe recipe) async {
     await _saveToCache(recipe);
 
-    if (kIsWeb) {
-      final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'update');
-      if (!syncSuccess) {
-        throw Exception('Failed to sync retagged recipe to Firebase');
-      }
-    } else {
-      _startBackgroundRecipeSync(recipe, 'update');
+    final userId = _getCurrentUserId();
+    final queue = _readyOfflineQueue();
+    if (queue != null && userId != null) {
+      await queue.queueRecipeWrite(
+        recipe,
+        userId,
+        operation: SyncOperation.update,
+      );
+      return;
+    }
+    final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'update');
+    if (!syncSuccess) {
+      throw Exception('Failed to sync retagged recipe to Firebase');
     }
   }
 
@@ -345,10 +362,18 @@ class PersonalRecipeModule with StreamManagementMixin {
           // Remove from cache
           await _removeFromCache(recipeId);
 
-          // Delete from Firebase using repository pattern
-          final deleteSuccess = await _getServiceAdapter().deleteRecipe(
-            recipeId,
-          );
+          final queue = _readyOfflineQueue();
+          final bool deleteSuccess;
+          if (queue != null) {
+            // Its deletion is already queued, and counted.
+            if (!await queue.queueRecipeDelete(recipeId, currentUserId)) {
+              return true;
+            }
+            deleteSuccess = true;
+          } else {
+            // Delete from Firebase using repository pattern
+            deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
+          }
           if (deleteSuccess) {
             // Decrement user's public recipe count
             try {
@@ -743,9 +768,6 @@ class PersonalRecipeModule with StreamManagementMixin {
     // This would be handled by the parent service
   }
 
-  /// Max retry attempts for background sync to prevent infinite loops.
-  static const _maxBackgroundRetries = 5;
-
   /// CRIT-4: Timeout for individual Firebase sync operations.
   /// Prevents indefinite hangs on slow/unavailable Firebase.
   static const _syncTimeout = Duration(seconds: 30);
@@ -809,166 +831,18 @@ class PersonalRecipeModule with StreamManagementMixin {
     }
   }
 
-  void _startBackgroundRecipeSync(
-    Recipe recipe,
-    String operation, {
-    int retryAttempt = 0,
-  }) {
-    // Cancel any pending retry for this recipe — new sync supersedes old retry
-    cancelNamedTimer('retry_${recipe.id}');
-
-    // HIGH-10: Mark as syncing when starting
-    _syncStatus[recipe.id] = RecipeSyncStatus.syncing;
-
-    final recipeId = recipe.id;
-    final startingUserId = _getCurrentUserId();
-
-    // Use Future.microtask to ensure this runs asynchronously without blocking
-    Future.microtask(() async {
-      // Guard: abort if module was disposed while microtask was queued
-      if (isStreamDisposed) return;
-
-      // Guard: abort if user changed (logout/switch) since sync was queued
-      if (_getCurrentUserId() != startingUserId || startingUserId == null) {
-        AppLogger.warning(
-          '⚠️ Aborting background $operation for ${recipe.title}: '
-          'user changed since sync was queued',
-        );
-        _syncStatus[recipeId] = RecipeSyncStatus.failed;
-        return;
-      }
-
-      try {
-        AppLogger.info(
-          '🔄 Starting background $operation for recipe: ${recipe.title}',
-        );
-
-        bool success = false;
-        // CRIT-4: Add timeout to prevent indefinite hangs
-        if (operation == 'create') {
-          final createdId = await _getServiceAdapter()
-              .createRecipe(recipe)
-              .timeout(
-                _syncTimeout,
-                onTimeout: () {
-                  AppLogger.warning(
-                    '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}',
-                  );
-                  return null;
-                },
-              );
-          success = createdId != null;
-        } else if (operation == 'update') {
-          success = await _getServiceAdapter()
-              .updateRecipe(recipe)
-              .timeout(
-                _syncTimeout,
-                onTimeout: () {
-                  AppLogger.warning(
-                    '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}',
-                  );
-                  return false;
-                },
-              );
-        }
-
-        if (success) {
-          AppLogger.success(
-            '✅ Background $operation completed for: ${recipe.title}',
-          );
-          // HIGH-10: Mark as synced on success
-          _syncStatus[recipeId] = RecipeSyncStatus.synced;
-          // HIGH-11: Record sync timestamp for verification
-          _lastSyncedAt[recipeId] = clock.now();
-        } else {
-          AppLogger.error(
-            '❌ Background $operation failed for: ${recipe.title}',
-          );
-          // HIGH-10: Mark as pending for retry
-          _syncStatus[recipeId] = RecipeSyncStatus.pending;
-          // Pass ID instead of recipe object to avoid stale closure data loss
-          _scheduleRetrySync(recipeId, operation, retryAttempt);
-        }
-      } catch (e) {
-        AppLogger.error(
-          '❌ Background $operation error for ${recipe.title}: $e',
-        );
-        // HIGH-10: Mark as pending for retry
-        _syncStatus[recipeId] = RecipeSyncStatus.pending;
-        _scheduleRetrySync(recipeId, operation, retryAttempt);
-      }
-    });
+  /// The offline queue, when the device has one that is open.
+  OfflineService? _readyOfflineQueue() {
+    final queue = _getOfflineQueue();
+    return queue != null && queue.isQueueReady ? queue : null;
   }
 
-  /// Loads the latest recipe from cache by ID.
-  /// Returns null if the recipe was deleted or cache read fails.
-  Future<Recipe?> _loadRecipeFromCache(String recipeId) async {
-    try {
-      final data = await _cacheHelper.loadJson(recipeId);
-      if (data == null) return null;
-      return Recipe.fromJson(data);
-    } catch (e) {
-      AppLogger.error('Failed to load recipe $recipeId from cache: $e');
-      return null;
-    }
-  }
+  static OfflineService? _noOfflineQueue() => null;
 
-  void _scheduleRetrySync(
-    String recipeId,
-    String operation,
-    int currentAttempt,
-  ) {
-    final nextAttempt = currentAttempt + 1;
-
-    // Enforce maximum retry limit
-    if (nextAttempt > _maxBackgroundRetries) {
-      AppLogger.error(
-        '❌ Max retry attempts ($_maxBackgroundRetries) reached for '
-        '$operation: $recipeId. Recipe remains in cache for manual sync.',
-      );
-      // HIGH-10: Mark as failed when max retries exceeded
-      _syncStatus[recipeId] = RecipeSyncStatus.failed;
-      return;
-    }
-
-    // Exponential backoff: 5s, 10s, 20s, 40s, 80s
-    final delaySeconds = 5 * (1 << currentAttempt);
-    final delay = Duration(seconds: delaySeconds.clamp(5, 120));
-
-    AppLogger.info(
-      '🔄 Scheduling retry $nextAttempt/$_maxBackgroundRetries '
-      'for $operation: $recipeId in ${delay.inSeconds}s',
-    );
-
-    // Store as named timer so it can be cancelled on dispose or superseded
-    final timer = Timer(delay, () async {
-      try {
-        // Re-read fresh recipe from cache to avoid syncing stale data
-        final freshRecipe = await _loadRecipeFromCache(recipeId);
-        if (freshRecipe == null) {
-          AppLogger.info(
-            '🔄 Recipe $recipeId no longer in cache, skipping retry',
-          );
-          _syncStatus.remove(recipeId);
-          return;
-        }
-        _startBackgroundRecipeSync(
-          freshRecipe,
-          operation,
-          retryAttempt: nextAttempt,
-        );
-      } catch (e) {
-        AppLogger.error('❌ Retry sync error for $recipeId: $e');
-        _syncStatus[recipeId] = RecipeSyncStatus.failed;
-      }
-    });
-    addTimer(timer, name: 'retry_$recipeId');
-  }
-
-  /// Cancels all pending retry timers. Call on dispose.
-  void cancelPendingRetries() {
-    disposeStreamResources();
-  }
+  /// Whether [_applyTagging] left the recipe marked for retagging, so the
+  /// queue tags it once the write has reached the server.
+  static bool _taggingFailed(Recipe recipe) =>
+      recipe.core.tagResult?.generatorVersion == 'failed';
 
   /// Applies automatic tagging to a recipe if tagging service is available.
   ///

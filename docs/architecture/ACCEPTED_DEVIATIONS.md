@@ -5524,3 +5524,17 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
 - **The text path's sub-heading length limit is now the shared one.** `_ingredientSubHeading`
   defers to `componentSubHeadingLabel` (label ≤ 40 characters, no word cap) instead of its own
   ≤ 30 characters and ≤ 4 words.
+
+## BUT-2162 — recipe writes go through the offline queue (2026-10-07)
+
+- **Recipes carry no server-side duplicate guard (Malin, 2026-10-05, F3-2 = A).**
+  produktregler.md:185 says the server rejects a duplicate `opId`. For recipes it does not:
+  the queue's sender writes through `FirebaseRecipeRepository`, a create is a whole-document
+  `set` on the recipe's own id and an update replaces the same top-level fields, so sending
+  one entry twice leaves the same document. No `opId` field on recipes, no rules change. The
+  guard is built when a collection where a repeat does harm (an append to a list, a chat
+  message) goes into the queue.
+- **Only recipes, their tagging and recipe images go through the queue (Malin, 2026-10-05,
+  F3-1 = A).** produktregler.md § 2.4 says "alla skrivningar". Shopping lists (BUT-2287),
+  pantry (BUT-2288), weekly menu (BUT-2289), profile (BUT-2290) and chat (BUT-2291) still
+  write through Firestore's offline cache; each has its own ticket.

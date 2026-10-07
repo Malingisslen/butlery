@@ -16,6 +16,8 @@ import 'dart:math';
 
 import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+
 import 'package:butlery/services/offline/queued_change.dart';
 
 /// The retry schedule, in order. The last step repeats until [maxRetryAge].
@@ -76,8 +78,23 @@ final Random _random = Random();
 ///
 /// Transient: unauthenticated (401, above), unavailable, deadline-exceeded
 /// (408), resource-exhausted and quota-exceeded (429), aborted, internal,
-/// unknown, cancelled, and every error that is not a FirebaseException (a socket that closed, a timeout).
+/// unknown, cancelled, and every other error that is not a FirebaseException
+/// (a socket that closed, a timeout).
+///
+/// The recipe repository the sender writes through (BUT-2162) refuses some
+/// writes itself, before Firestore sees them, with its own exceptions. Those
+/// are the same answers the server would give again, so they map like their
+/// codes: a recipe that is not there is [QueuedChangeReason.notFound], an
+/// ownership or permission refusal is [QueuedChangeReason.permissionDenied],
+/// and a refused field is [QueuedChangeReason.unknown]. A missing signed-in
+/// user ([AuthenticationException]) stays transient, like a 401.
 QueuedChangeReason? permanentFailureReason(Object error) {
+  if (error is ResourceNotFoundException) return QueuedChangeReason.notFound;
+  if (error is PermissionDeniedException ||
+      error is SecurityViolationException) {
+    return QueuedChangeReason.permissionDenied;
+  }
+  if (error is ValidationException) return QueuedChangeReason.unknown;
   if (error is! FirebaseException) return null;
   return switch (error.code) {
     'not-found' ||

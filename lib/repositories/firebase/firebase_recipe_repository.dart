@@ -120,11 +120,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// `addRecipes`, has no production caller today, so that arm is defence in
   /// depth rather than an open hole.
   ///
-  /// It does NOT cover `OfflineSyncManager`, which writes to the same
-  /// collection without touching this repository; that path calls
-  /// `sanitizeRecipeText` itself. Those two are the complete set of writers of
-  /// the WHOLE document, in the Dart client AND in `functions/src` — no Cloud
-  /// Function writes a whole recipe. Everything else writes PARTIAL field
+  /// Everything else writes PARTIAL field
   /// updates that never carry `title`, `description` or `sourceUrl`, so they
   /// need no sanitizing: on the client `rating_statistics.dart`,
   /// `family_rating_service.dart`, `recipe_tag_operations.dart` (which does
@@ -233,13 +229,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// shareRecipe, shareRecipeWithUsers) feed update/create, and capping at
   /// every callsite is bypass-prone. This is the chokepoint for every write
   /// THROUGH THIS REPOSITORY.
-  ///
-  /// BUT-1819 correction: it is not every Firestore write. `OfflineSyncManager`
-  /// pushes the whole document — `socialData`, and therefore
-  /// `memberPermissions` — straight at the collection without touching this
-  /// class, so an over-cap recipe synced from offline storage is not capped
-  /// here, and `firestore.rules` declares no cap of its own. Recorded rather
-  /// than fixed: closing it belongs with the offline path, not with a comment.
   void _enforceShareCap(Recipe entity) {
     final members = entity.socialData?.memberPermissions;
     if (members == null) return;

@@ -115,16 +115,61 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
     return query.watchSingle().map((row) => row.read(count) ?? 0);
   }
 
+  /// The opId of the recipe's create that has not reached the server yet,
+  /// or null. A later write of the recipe names it in `dependsOn`, so a
+  /// create that fails for good takes the rest of the chain with it
+  /// (produktregler.md:187).
+  Future<String?> pendingCreateOpId(String userId, String recipeId) async {
+    final row =
+        await (select(syncQueueEntries)
+              ..where(
+                (e) =>
+                    e.userId.equals(userId) &
+                    e.entityType.equals(SyncQueueEntityType.recipe) &
+                    e.recipeId.equals(recipeId) &
+                    e.operation.equals(SyncOperation.create.name),
+              )
+              ..orderBy([(e) => OrderingTerm.desc(e.queuedAt)])
+              ..limit(1))
+            .getSingleOrNull();
+    return row?.opId;
+  }
+
+  /// Whether the recipe has a write on the device the server has not
+  /// confirmed, waiting or failed for good.
+  Future<bool> hasEntriesForRecipe(String userId, String recipeId) async {
+    final count = countAll();
+    final query = selectOnly(syncQueueEntries)
+      ..addColumns([count])
+      ..where(
+        syncQueueEntries.userId.equals(userId) &
+            syncQueueEntries.entityType.equals(SyncQueueEntityType.recipe) &
+            syncQueueEntries.recipeId.equals(recipeId) &
+            syncQueueEntries.operation.isNotIn([SyncOperation.tag.name]),
+      );
+    final result = await query.getSingle();
+    return (result.read(count) ?? 0) > 0;
+  }
+
+  /// Whether a deletion of the recipe waits in the queue.
+  Future<bool> hasQueuedDelete(String userId, String recipeId) async {
+    final row =
+        await (select(syncQueueEntries)
+              ..where(
+                (e) =>
+                    e.userId.equals(userId) &
+                    e.entityType.equals(SyncQueueEntityType.recipe) &
+                    e.recipeId.equals(recipeId) &
+                    e.operation.equals(SyncOperation.delete.name),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
   /// Remove a completed operation from the queue
   Future<void> dequeue(int id) {
     return (delete(syncQueueEntries)..where((e) => e.id.equals(id))).go();
-  }
-
-  /// Remove all operations for a specific recipe
-  Future<void> removeForRecipe(String userId, String recipeId) {
-    return (delete(syncQueueEntries)
-          ..where((e) => e.userId.equals(userId) & e.recipeId.equals(recipeId)))
-        .go();
   }
 
   /// Increment retry count and record error

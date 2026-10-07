@@ -49,6 +49,29 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
     );
   }
 
+  /// Marks the recipe as synced only while the device still holds
+  /// [sentJson], the copy that reached the server. A save made while the
+  /// write was on its way keeps `needsSync`, so its own queue entry still
+  /// sends it (BUT-2162).
+  Future<void> markSyncedIfUnchanged(
+    String recipeId,
+    String userId,
+    String sentJson,
+  ) {
+    return (update(offlineRecipes)..where(
+          (r) =>
+              r.id.equals(recipeId) &
+              r.userId.equals(userId) &
+              r.recipeJson.equals(sentJson),
+        ))
+        .write(
+          OfflineRecipesCompanion(
+            needsSync: const Value(false),
+            lastSyncedAt: Value(clock.now()),
+          ),
+        );
+  }
+
   /// Mark a recipe as synced
   Future<void> markSynced(String recipeId, String userId) {
     return (update(
