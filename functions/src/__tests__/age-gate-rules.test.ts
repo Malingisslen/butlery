@@ -991,6 +991,109 @@ test(
   }
 );
 
+// --- social_requests to a minor (BUT-2251) ---
+//
+// A request to a minor is accepted only from their friend, or when the minor
+// is findable (public_profiles.isSearchable == true). SR4 is the deny; SR5
+// and SR6 each change ONE variable from it and must allow, so SR4 cannot be
+// denied by some other conjunct.
+
+async function seedRequestTarget(
+  toUid: string,
+  opts: { minor: boolean; searchable?: boolean; friendOf?: string }
+): Promise<void> {
+  await seedDoc(`users/${toUid}`, { isMinor: opts.minor });
+  if (opts.searchable !== undefined) {
+    await seedDoc(`public_profiles/${toUid}`, {
+      displayName: "Mottagare",
+      isSearchable: opts.searchable,
+    });
+  }
+  if (opts.friendOf) {
+    await seedDoc(`users/${toUid}/friends/${opts.friendOf}`, {
+      friendId: opts.friendOf,
+    });
+  }
+}
+
+function requestTo(fromUid: string, toUid: string, id: string): Promise<void> {
+  return createStamped(
+    fromUid,
+    AGE_OK_MATURED,
+    "social_requests",
+    `social_requests/${id}-${RUN}`,
+    socialRequestBody(fromUid, toUid)
+  );
+}
+
+// SR4: a stranger cannot send a request to a minor who is not findable.
+test(
+  "social_requests: a stranger cannot send a request to a minor who is not searchable",
+  async () => {
+    const from = `sr4-from-${RUN}`;
+    const to = `sr4-minor-${RUN}`;
+    await seedRequestTarget(to, { minor: true, searchable: false });
+    await assertFails(requestTo(from, to, "sr4"));
+  }
+);
+
+// SR5: control for SR4 — the same minor made findable allows it.
+test(
+  "social_requests: a stranger can send a request to a minor who chose to be searchable",
+  async () => {
+    const from = `sr5-from-${RUN}`;
+    const to = `sr5-minor-${RUN}`;
+    await seedRequestTarget(to, { minor: true, searchable: true });
+    await assertSucceeds(requestTo(from, to, "sr5"));
+  }
+);
+
+// SR6: control for SR4 — a friend of the minor may send (a group invitation
+// rides the same create).
+test(
+  "social_requests: a friend can send a request to a minor who is not searchable",
+  async () => {
+    const from = `sr6-from-${RUN}`;
+    const to = `sr6-minor-${RUN}`;
+    await seedRequestTarget(to, { minor: true, searchable: false, friendOf: from });
+    await assertSucceeds(requestTo(from, to, "sr6"));
+  }
+);
+
+// SR7: a minor with no public profile at all is not findable either.
+test(
+  "social_requests: a stranger cannot send a request to a minor with no public profile",
+  async () => {
+    const from = `sr7-from-${RUN}`;
+    const to = `sr7-minor-${RUN}`;
+    await seedRequestTarget(to, { minor: true });
+    await assertFails(requestTo(from, to, "sr7"));
+  }
+);
+
+// SR8: adults are unaffected, findable or not.
+test(
+  "social_requests: a stranger can send a request to an adult who is not searchable",
+  async () => {
+    const from = `sr8-from-${RUN}`;
+    const to = `sr8-adult-${RUN}`;
+    await seedRequestTarget(to, { minor: false, searchable: false });
+    await assertSucceeds(requestTo(from, to, "sr8"));
+  }
+);
+
+// SR9: a minor may still send a request to anyone.
+test(
+  "social_requests: a minor can send a request to an adult",
+  async () => {
+    const from = `sr9-minor-${RUN}`;
+    const to = `sr9-adult-${RUN}`;
+    await seedDoc(`users/${from}`, { isMinor: true });
+    await seedRequestTarget(to, { minor: false, searchable: false });
+    await assertSucceeds(requestTo(from, to, "sr9"));
+  }
+);
+
 // --- recipe_ratings ---
 
 // RR1: age-compliant rater can create a rating.

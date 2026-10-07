@@ -284,6 +284,19 @@ service cloud.firestore {
         || creatorIsFriendOf(otherParticipant(participantIds));
     }
 
+    // BUT-2251: a request to a minor (friend request or group invitation) is
+    // accepted only from someone who is already their friend, or when the
+    // minor has chosen to be findable — the same condition under which the
+    // app shows the "add friend" button on their profile. A minor still sends
+    // requests freely. Adults (missing or false isMinor) pay one users/{uid}
+    // read and pass.
+    function passesMinorRequestGate(toUserId) {
+      return !otherIsMinor(toUserId)
+        || creatorIsFriendOf(toUserId)
+        || get(/databases/$(database)/documents/public_profiles/$(toUserId))
+             .data.get('isSearchable', false) == true;
+    }
+
     // BUT-1626 (BUT-674): server-side hard-deny of minor discoverability.
     // A compliant 15–17-year-old (isMinor:true on the CF-set users/{uid} doc)
     // must never be searchable. BUT-1454 item #1 already keeps a minor out of
@@ -868,6 +881,7 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && hasRequiredFields(['type', 'fromUserId', 'toUserId', 'status', 'sentAt'])
         && isNotBlockedBy(request.resource.data.toUserId)
+        && passesMinorRequestGate(request.resource.data.toUserId)
         && isAccountMatured()
         && isAgeCompliant()
         && rateLimitStamped('social_requests', 10, requestId);
