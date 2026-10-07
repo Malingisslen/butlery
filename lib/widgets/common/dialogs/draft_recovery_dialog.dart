@@ -12,23 +12,32 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 class DraftRecoveryDialog extends StatelessWidget {
   final List<DraftMetadata> availableDrafts;
 
+  /// Shows "Släng" (one draft) or "Släng alla", the only choice that deletes
+  /// (produktregler.md:171-172). The dialog then pops with null, as
+  /// "Börja om" does, which keeps the drafts.
+  final VoidCallback? onDiscardAll;
+
   const DraftRecoveryDialog({
     super.key,
     required this.availableDrafts,
+    this.onDiscardAll,
   });
 
   /// Show draft recovery dialog
   static Future<String?> show(
     BuildContext context,
-    List<DraftMetadata> availableDrafts,
-  ) async {
+    List<DraftMetadata> availableDrafts, {
+    VoidCallback? onDiscardAll,
+  }) async {
     if (availableDrafts.isEmpty) return null;
 
     return showDialog<String?>(
       context: context,
       barrierDismissible: false, // Force user to make choice
-      builder: (context) =>
-          DraftRecoveryDialog(availableDrafts: availableDrafts),
+      builder: (context) => DraftRecoveryDialog(
+        availableDrafts: availableDrafts,
+        onDiscardAll: onDiscardAll,
+      ),
     );
   }
 
@@ -73,6 +82,22 @@ class DraftRecoveryDialog extends StatelessWidget {
         ],
       ),
       actions: [
+        if (onDiscardAll != null)
+          TextButton(
+            onPressed: () {
+              onDiscardAll!();
+              Navigator.of(context).pop(null);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(
+              availableDrafts.length == 1
+                  ? context.l10n.draftDiscard
+                  : context.l10n.draftDiscardAll,
+            ),
+          ),
+
         // Secondary action - Start fresh
         TextButton(
           onPressed: () => Navigator.of(context).pop(null),
@@ -171,8 +196,15 @@ class DraftRecoveryDialog extends StatelessWidget {
 /// Extension for easy dialog access
 extension DraftRecoveryDialogExtension on BuildContext {
   /// Show draft recovery dialog
-  Future<String?> showDraftRecovery(List<DraftMetadata> availableDrafts) {
-    return DraftRecoveryDialog.show(this, availableDrafts);
+  Future<String?> showDraftRecovery(
+    List<DraftMetadata> availableDrafts, {
+    VoidCallback? onDiscardAll,
+  }) {
+    return DraftRecoveryDialog.show(
+      this,
+      availableDrafts,
+      onDiscardAll: onDiscardAll,
+    );
   }
 }
 

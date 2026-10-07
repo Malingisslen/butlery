@@ -101,7 +101,7 @@
     {
       "id": "TR::FLOW::01::placering::kvitto-7-s-andra",
       "flow": "01",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/views/flows/flow_01_transitions_test.dart",
       "test_name": "the automatic placement shows a receipt with Ändra, and Ändra opens the manual placement on an empty week",
       "tests": [
@@ -109,18 +109,15 @@
           "file": "test/views/flows/flow_01_transitions_test.dart",
           "name": "the automatic placement shows a receipt with Ändra, and Ändra opens the manual placement on an empty week",
           "group": "TR::FLOW::01::placering::kvitto-7-s-andra"
+        },
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "the receipt leaves by itself after 7 s",
+          "group": "TR::FLOW::01::placering::kvitto-7-s-andra"
         }
       ],
       "ticket": null,
-      "reason": "New test: the receipt with Ändra, and Ändra opens manual placement with an empty working week.",
-      "known_gap": {
-        "reason": "D-04 gives the receipt 7 s. The view asks for 7 s (lib/views/veckomeny_view.dart:291), but SnackBarUtils keeps every snackbar with an action until the user acts (lib/core/utils/snackbar_utils.dart:424-428), so the receipt never leaves by itself.",
-        "test": {
-          "file": "test/views/flows/flow_01_transitions_test.dart",
-          "name": "known gap: the receipt asks for 7 s but stays until the user acts"
-        },
-        "ticket": "BUT-2173"
-      }
+      "reason": "New tests: the receipt with Ändra, Ändra opens manual placement with an empty working week, and the receipt leaves by itself after 7 s (UndoSnackBar.showReceipt, on the undo window)."
     },
     {
       "id": "TR::FLOW::01::resultat::placera-i-veckan",
@@ -1285,17 +1282,27 @@
     {
       "id": "TR::FLOW::08::stale-data::tidsstampel",
       "flow": "08",
-      "status": "MISSING",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
-      "ticket": "BUT-2174",
-      "reason": "No view marks data read from the cache with a timestamp; I found no such label or widget in lib/ (searched the Swedish strings and the offline widgets)."
+      "status": "TESTED",
+      "test_file": "test/widget/views/hem/hem_section_test.dart",
+      "test_name": "the plan carries when it was fetched ($mode)",
+      "tests": [
+        {
+          "file": "test/widget/views/hem/hem_section_test.dart",
+          "name": "the plan carries when it was fetched ($mode)",
+          "group": "offline (#hemoffline)"
+        },
+        {
+          "file": "test/unit/viewmodels/hem/hem_viewmodel_test.dart",
+          "name": "a plan read offline carries no fetch time of its own"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: offline, Hem's plan carries \"Planen hämtades 07:12\" (HemFetchedAtLine), the one place the spec draws it (Skarmar v12 del 4, #hemoffline); a plan read offline gets no fetch time of its own."
     },
     {
       "id": "TR::FLOW::08::utkast::aterupptagning",
       "flow": "08",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/widget/import/photo_import_draft_restore_test.dart",
       "test_name": "accept → restoreDraft() called, discard NOT called",
       "tests": [
@@ -1306,14 +1313,20 @@
         {
           "file": "test/widget/common/dialogs/draft_recovery_dialog_test.dart",
           "name": "tapping \"Återställ\" pops with the FIRST draft id"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "the next opening asks, and Återställ restores that draft",
+          "group": "TR::FLOW::08::utkast::aterupptagning"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "Börja om closes the question and keeps the draft",
+          "group": "TR::FLOW::08::utkast::aterupptagning"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests: the next opening asks, and Fortsätt restores.",
-      "known_gap": {
-        "reason": "The recipe form asks with \"Återställ\" and \"Börja om\" (draft_recovery_dialog.dart), not Fortsätt and Släng, and its handler (lib/widgets/recipe/recipe_draft_recovery_handler.dart) has no test.",
-        "ticket": "BUT-2175"
-      }
+      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md:848 says a button names its goal and Fortsätt is not one."
     },
     {
       "id": "TR::FLOW::08::utkast::avbryt-behaller",
@@ -1368,7 +1381,7 @@
     {
       "id": "TR::FLOW::08::utkast::slang-raderar",
       "flow": "08",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/widget/import/photo_import_draft_restore_test.dart",
       "test_name": "decline (\"Börja om\") → discardPersistedDraft() called, restore NOT called",
       "tests": [
@@ -1379,14 +1392,20 @@
         {
           "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
           "name": "removes both the payload entry and the metadata entry"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "Släng deletes the draft once the undo window has closed",
+          "group": "TR::FLOW::08::utkast::slang-raderar"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "Ångra after Släng keeps the draft",
+          "group": "TR::FLOW::08::utkast::slang-raderar"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import).",
-      "known_gap": {
-        "reason": "The recipe form offers no Släng: \"Börja om\" only closes the question and the draft stays (recipe_draft_recovery_handler.dart:48-51).",
-        "ticket": "BUT-2175"
-      }
+      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft."
     },
     {
       "id": "TR::FLOW::08::utkast::utloggning-raderar",

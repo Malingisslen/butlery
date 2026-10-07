@@ -635,6 +635,12 @@ class RecipeFormViewModel extends BaseViewModel
     return await _state.getAvailableDrafts();
   }
 
+  /// "Släng" in the draft question: the only choice that deletes a draft
+  /// (produktregler.md:171-172).
+  Future<void> discardDrafts(Iterable<String> draftIds) {
+    return _state.discardDrafts(draftIds);
+  }
+
   Future<bool> loadFromDraft(String draftId) async {
     try {
       final success = await _state.loadFromDraft(draftId);

@@ -17485,4 +17485,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatMessagesLoadFailed => 'The messages could not be loaded.';
+
+  @override
+  String get draftDiscard => 'Discard';
+
+  @override
+  String draftsDiscarded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count drafts were discarded',
+      one: 'The draft was discarded',
+    );
+    return '$_temp0';
+  }
 }
