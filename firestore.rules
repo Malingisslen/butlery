@@ -1697,16 +1697,18 @@ service cloud.firestore {
       // degradation; the backfill migration restores recipe-owner /
       // shared-recipient visibility once it runs. Admin moderation
       // override below covers reports flagged against legacy rows.
-      allow read: if isAuthenticated() && (
+      function canReadComment() {
         // Author can always read their own comment.
-        request.auth.uid == resource.data.authorId
-        // New comments: recipe owner gets read access.
-        || ('recipeOwnerId' in resource.data
-            && request.auth.uid == resource.data.recipeOwnerId)
-        // New comments: shared recipients get read access.
-        || ('sharedWithUserIds' in resource.data
-            && request.auth.uid in resource.data.sharedWithUserIds)
-      );
+        return request.auth.uid == resource.data.authorId
+          // New comments: recipe owner gets read access.
+          || ('recipeOwnerId' in resource.data
+              && request.auth.uid == resource.data.recipeOwnerId)
+          // New comments: shared recipients get read access.
+          || ('sharedWithUserIds' in resource.data
+              && request.auth.uid in resource.data.sharedWithUserIds);
+      }
+
+      allow read: if isAuthenticated() && canReadComment();
 
       // Moderation override: admins can read any comment for review.
       allow read: if isAdmin();
@@ -1758,6 +1760,73 @@ service cloud.firestore {
         && request.resource.data.text.size() <= 2000
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['text', 'updatedAt', 'editedAt']);
+
+      // BUT-2115: `reactions.<key>` lists the uids that reacted, and the
+      // client toggles one key with arrayUnion/arrayRemove. Must equal
+      // kReactionEmojis in emoji_reaction_picker.dart and
+      // COMMENT_REACTION_KEYS in account-deletion-cascade.ts; a functions
+      // test parses all three.
+      function reactionKeys() {
+        return ['thumbs_up', 'heart', 'fire', 'laughing', 'yum', 'thinking'];
+      }
+
+      // `grown` holds at most the caller's uid beyond `base` and lost nothing,
+      // so nobody can add or withdraw another person's uid.
+      function onlyCallerAdded(base, grown) {
+        return grown.difference(base).hasOnly([request.auth.uid])
+          && base.difference(grown).size() == 0;
+      }
+
+      function reactionListOk(k, adding) {
+        let after = request.resource.data.reactions.get(k, []);
+        let before = resource.data.get('reactions', {}).get(k, []);
+        return after is list
+          && after.size() <= 500
+          // A set comparison cannot see a repeated uid, and the app shows a
+          // list's length as the count.
+          && after.toSet().size() == after.size()
+          && (adding
+              ? onlyCallerAdded(before.toSet(), after.toSet())
+              : onlyCallerAdded(after.toSet(), before.toSet()));
+      }
+
+      // Only keys the write changes run the set comparison. A remove is
+      // evaluated by both update limbs against one 1000-expression budget per
+      // request, and comparing all six keys in each leaves no room for one
+      // more such comparison.
+      function reactionShapeOk(adding) {
+        let keys = reactionKeys();
+        let changed = request.resource.data.reactions
+            .diff(resource.data.get('reactions', {})).affectedKeys();
+        return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reactions'])
+          && request.resource.data.reactions is map
+          && request.resource.data.reactions.keys().hasOnly(keys)
+          && (!(keys[0] in changed) || reactionListOk(keys[0], adding))
+          && (!(keys[1] in changed) || reactionListOk(keys[1], adding))
+          && (!(keys[2] in changed) || reactionListOk(keys[2], adding))
+          && (!(keys[3] in changed) || reactionListOk(keys[3], adding))
+          && (!(keys[4] in changed) || reactionListOk(keys[4], adding))
+          && (!(keys[5] in changed) || reactionListOk(keys[5], adding));
+      }
+
+      // Adding carries the age, soft-delete and block gates; removing does
+      // not, so a reaction stays withdrawable after any of them changes.
+      allow update: if isAuthenticated()
+        && canReadComment()
+        && reactionShapeOk(true)
+        && isAgeCompliant()
+        && resource.data.get('isDeleted', false) != true
+        && (
+          !('recipeOwnerId' in resource.data)
+          || isNotBlockedBy(resource.data.recipeOwnerId)
+        )
+        && (request.auth.uid == resource.data.authorId
+            || isNotBlockedBy(resource.data.authorId));
+
+      allow update: if isAuthenticated()
+        && canReadComment()
+        && reactionShapeOk(false);
 
       // Any authenticated user can update counters (likes, replies) (BUT-381)
       allow update: if isAuthenticated()

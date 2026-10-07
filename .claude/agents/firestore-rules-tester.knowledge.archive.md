@@ -6210,3 +6210,27 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
   cases). No BUT-2092 close test died, so `closePoll` (metadata only) never reaches the gate.
 - Edit-gate two-way mutant (adds `!exists(blocks/{me}_{other})`): conversations 116/116
   SURVIVES — no edit test has the blocker editing with the block row standing.
+
+## 2026-10-07 — BUT-2115 commit-gate review (recipe_comments reaction limbs)
+
+- Suite 56/56 on staged rules. Mutants (via PROBE_RULES_PATH, one per run, match count asserted in a
+  slice from `match /recipe_comments/{commentId}`): rmTrue kills 10 denies; rmNoRead, addNoRead, noAge,
+  noDeleted, noOwnerBlock, noAuthorBlock, ownerBlockUnconditional, cap501, cap499 (`< 500`),
+  noKeysHasOnly, noAffected each kill exactly their own test; noLost kills 7; noGrownOnly kills 3;
+  key1off (heart) kills 8; addAsRemove kills the 7 add allows.
+- SURVIVORS 56/56: key0off, key2off, key3off, key4off, key5off (no deny on any key but heart);
+  noIsList (masked by `toSet()`); noIsMap (masked by `.keys()`); noAuthorDisjunct
+  (`isNotBlockedBy(self)` is true without a self-block doc); allKeysAlways (dropping every
+  `!(keys[i] in changed) ||` skip).
+- Budget: add limb prefixed `false &&` -> 49/56, only the 7 add allows fail, every deny holds. An
+  extra `reactionShapeOk(false)` in the remove limb reddens only the six-key worst case; an extra
+  single `reactionListOk('heart', false)` reddens nothing.
+- Duplicates on current rules: `[S]->[S,S]`, `[S]->[S,owner x10]`, `[owner,S]->[S,S]` ALLOWED as
+  owner; with `&& after.toSet().size() == after.size()` in reactionListOk all three DENIED and the
+  suite stays 56/56. `EmojiReactionDisplay` renders `userIds.length`.
+- Other probes on current rules: whole-map replace dropping another's `fire` DENIED; `[123]` DENIED;
+  stored `reactions: null` DENIED (`map.diff(null)`); unauth remove DENIED; owner adding `shared` on
+  `thinking` DENIED.
+- Re-review same day after fixes: suite 72/72. Dropping `after.toSet().size() == after.size()` -> 69/72,
+  killing exactly the three duplicate denies. key0/2/3/4/5off each 71/72, killing only that key's
+  per-key deny.

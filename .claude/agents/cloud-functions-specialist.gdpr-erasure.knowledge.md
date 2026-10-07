@@ -181,6 +181,16 @@
   FieldPath, FieldValue.delete(), …)` keeps a dotted uid one key, and deleting
   a key under a null or absent map is a no-op — no error, no `{}` created.
 
+  COLLECTION-scoped equality or `array-contains` — including on a nested map
+  subfield such as `reactions.<key>` — needs none unless `fieldOverrides`
+  EXEMPTS the field — check exemptions, not `indexes`.
+- **A cascade-suite guard that parses a file outside `functions/src` runs on CI
+  only if `.github/workflows/cloud-functions-unit.yml` `paths:` (push AND
+  pull_request) lists that file** — a key-agreement guard over Dart or
+  `firestore.rules` is otherwise skipped on exactly the edit it exists for. Call
+  `assertGuardTriggersCoverItsDartInputs(repoRoot, [absoluteDartPath])` for each
+  `lib/` input (its parameter is `dartInputsAbsolute`); a `firestore.rules` input has no helper, so add it to `paths:`.
+
 ### Verify-signup-age, account callables & minor-safety triggers
 - **A cleanup helper writing an ATTRIBUTION row takes the ACTOR as an argument,
   and a no-tombstone rule binds every CONSTANT it writes.** Deriving the actor

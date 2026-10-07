@@ -42,6 +42,9 @@ on:
       - "lib/repositories/firebase/**"
       - "lib/core/constants/firestore_collections.dart"
       - "lib/services/account/**"
+      # BUT-2115: the reaction-key guard reads both of these.
+      - "lib/widgets/common/emoji_reaction_picker.dart"
+      - "firestore.rules"
   pull_request:
     paths:
       - "functions/src/**"
@@ -55,6 +58,8 @@ on:
       - "lib/repositories/firebase/**"
       - "lib/services/account/**"
       - "lib/core/constants/firestore_collections.dart"
+      - "lib/widgets/common/emoji_reaction_picker.dart"
+      - "firestore.rules"
   workflow_dispatch:
 
 concurrency:

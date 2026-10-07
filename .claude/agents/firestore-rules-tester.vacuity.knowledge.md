@@ -39,6 +39,12 @@
   reads as covered** — `conversations`' `createdAt` and `participantIds` sat that way
   through two tickets because ONE builder supplied both sides. Audit a deny-list key by
   key, asking which test MOVES it; "the payload round-trips" is the smell (BUT-1831).
+- **An UNROLLED per-key chain (`(!(keys[i] in changed) || ok(keys[i])) && …` over a fixed
+  list) needs a deny per INDEX — a suite whose denies all use one key grades one link.**
+  Measured on `recipe_comments.reactions` (BUT-2115): neutralising the `heart` link killed 8,
+  each of the other five links survived 56/56, so a copy-paste `keys[4]` twice would open
+  another person's uid on `thinking` silently. A shared function body does not discharge the
+  call sites; each index is its own conjunct.
 - **Two new conjuncts can mask each other**: a missing-required-key test alone can pass
   even with the neighbouring `is list`/`is map` type-guard deleted, because the absent
   key already CEL-errors first. Pin the type guard separately with a WRONG-TYPE payload,
