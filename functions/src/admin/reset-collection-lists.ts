@@ -278,6 +278,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // teeth and would have left exactly that.
   { name: "erasure_holds" },
 
+  // BUT-2169: the marker an account erasure keeps while its cascade runs, keyed
+  // on the erased uid. A reset erases every account, so a marker names a person
+  // who no longer has data here.
+  { name: "erasures_in_progress" },
+
   // The admin console's own two collections (`admin/bulk-retag.ts`). Both key
   // on a raw admin uid — `admin_rate_limits` in BOTH the document id
   // `{adminUid}_bulkRetag_{date}` and an `adminUid` field, `admin_audit_logs`

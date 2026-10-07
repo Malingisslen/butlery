@@ -59,6 +59,7 @@ import {
   deleteMessages,
   deleteChatGroupMemberships,
   removeFromSharedContent,
+  scrubBlockHeldShares,
   deleteCommentsAndRatings,
   scrubRatingRecipeOwner,
   scrubCommentRecipeOwner,
@@ -85,6 +86,8 @@ import {
   USER_MODERATION,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import { Collections } from "../shared/collections";
+import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 import {
   REPORTER_RETENTION_BASIS,
   REPORTS,
@@ -224,6 +227,35 @@ export async function runAccountDeletionWithDeps(
     retained: [],
   };
 
+  // BUT-2169: first, so every `blocks` delete below fires a release that finds
+  // it. The scrubs clear held entries naming this user, but a hold committed
+  // after a scrub would otherwise be released by tier 1's own `blocks` delete
+  // and put this user back on someone else's share. Not a `runStep`: it erases
+  // nothing.
+  //
+  // Never deleted here, only by its TTL: a release that checked the account
+  // before the Auth delete can still be working through its rows afterwards,
+  // and only the marker stops it there. Kept after a failed Auth delete too,
+  // because the scrubs have already cleared every held entry naming this user,
+  // so no release has anything of theirs to bring back.
+  const erasureMarker = database
+    .collection(Collections.erasuresInProgress)
+    .doc(uid);
+  const markerStartedAtMs = Date.now();
+  try {
+    await erasureMarker.set({
+      startedAtMs: markerStartedAtMs,
+      expireAt: admin.firestore.Timestamp.fromMillis(
+        markerStartedAtMs + 2 * ERASURE_MARKER_WINDOW_MS,
+      ),
+    });
+  } catch (err) {
+    result.errors.push(
+      `erasure_marker: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    logger.error("[requestAccountDeletion] erasure marker write failed", { err });
+  }
+
   // BUT-2046 follow-up: evaluate the legal hold BEFORE tier 1, because steps
   // inside it, the residual probe, and the `onUserDeleted` trigger afterwards
   // all need the answer — and an answer computed twice at two times is two
@@ -250,6 +282,13 @@ export async function runAccountDeletionWithDeps(
   // note on `held` in `probeResidualData`, which must agree with this line.
   const held = result.retained.some(
     (r) => r.resourceType === USER_MODERATION,
+  );
+
+  // BUT-2169: BEFORE tier 1, because tier 1's `blocks` delete fires the
+  // release in `holdSharesOnBlock`, and a held entry still naming this user
+  // would put them back on someone else's share after the erasure.
+  await runStep("shared_content_block_held", result, () =>
+    scrubBlockHeldShares(database, uid),
   );
 
   // Tier 1 (parallel): own content + own writes on cross-user surfaces.
@@ -379,6 +418,12 @@ export async function runAccountDeletionWithDeps(
   // maintenance chain rather than left as an unexported function.
   await runStep("block_mirrors", result, () =>
     deleteBlockMirrors(database, uid),
+  );
+
+  // BUT-2169: again after tier 1. A block written just before the erasure can
+  // commit its hold after the first pass ran; this is the later word on it.
+  await runStep("shared_content_block_held_after_tier1", result, () =>
+    scrubBlockHeldShares(database, uid),
   );
 
   // BUT-2046: the erased uid as a REPORTER, on rows under OTHER people's

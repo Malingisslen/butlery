@@ -5941,10 +5941,11 @@
   "a11ySelected": "selected",
   "a11yNotSelected": "not selected",
   "blockedUsersUnblockTitle": "Unblock user?",
-  "blockedUsersUnblockMessage": "Do you want to unblock {name}? The user will be able to see your content again.",
+  "blockedUsersUnblockMessage": "Do you want to unblock {name}?",
   "blockedUsersUnblock": "Unblock",
   "blockedUsersTitle": "Blocked users",
   "blockedUsersEmpty": "No blocked users",
+  "blockedUsersSharesHiddenNote": "Recipes, menus and shopping lists you have sent each other are hidden from both of you while the block lasts. Nothing is deleted.",
   "blockedUsersUnblockSelectedCount": "Unblock selected ({count})",
   "@blockedUsersUnblockSelectedCount": {
     "placeholders": {

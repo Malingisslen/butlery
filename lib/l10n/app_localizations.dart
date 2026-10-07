@@ -14482,7 +14482,7 @@ abstract class AppLocalizations {
   /// No description provided for @blockedUsersUnblockMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du avblockera {name}? Användaren kommer kunna se ditt innehåll igen.'**
+  /// **'Vill du avblockera {name}?'**
   String blockedUsersUnblockMessage(String name);
 
   /// No description provided for @blockedUsersUnblock.
@@ -14502,6 +14502,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inga blockerade användare'**
   String get blockedUsersEmpty;
+
+  /// No description provided for @blockedUsersSharesHiddenNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.'**
+  String get blockedUsersSharesHiddenNote;
 
   /// No description provided for @blockedUsersUnblockSelectedCount.
   ///

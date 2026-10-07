@@ -188,6 +188,15 @@ const TARGETS: {
     writer: "lib/models/realtime/overwritten_version.dart",
     stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
   },
+  // BUT-2169 — the marker an account erasure leaves so a release still running
+  // after the Auth delete declines. Two hours from the cascade's start.
+  {
+    group: "erasures_in_progress",
+    field: "expireAt",
+    retention: "2h",
+    writer: "functions/src/account/request-account-deletion.ts",
+    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
   // P6-U09 security review — the backup-code recovery counters (per IP, per
   // account, global). Kept for their window or lock, at most about an hour.
   {
@@ -230,6 +239,7 @@ const EXPECTED_TTL_GROUPS = [
   "deletion_audit_logs",
   "dismissals",
   "engagements",
+  "erasures_in_progress",
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",

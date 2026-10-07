@@ -935,19 +935,40 @@ service cloud.firestore {
       // move the stamp back out to the call sites: this rule
       // then denies the menu and shopping-list share flows outright, which is
       // exactly what it did on the day it was written.
+      //
+      // BUT-2169: `blockHeldUserIds` and `blockHeld` are written by
+      // `holdSharesOnBlock` (Admin SDK), which moves a person there when a
+      // block stands between them and the sharer. So a client may not create
+      // them, change them, or put a held person back into `sharedToUserIds`.
+      // A share whose recipients include someone who has blocked the sharer is
+      // refused through the caller's block mirror, the BUT-2017 helper with its
+      // decisions: open when the mirror is missing, one direction only. The
+      // blocker's own direction is the client's job, because rules cannot
+      // look up one `blocks` row per recipient.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'contentType', 'sharedAt', 'sharedToUserIds'])
         && request.resource.data.sharedToUserIds is list
+        && !request.resource.data.keys().hasAny(['blockHeldUserIds', 'blockHeld'])
+        && notBlockedByAnyOf(request.resource.data.sharedToUserIds)
         && rateLimitStamped('shared_content', 3, contentId);
 
       // Update stays for the in-place edits the menu and shopping-list flows
       // make to a row they already own (title, isActive, recipient list). It is
       // no longer on the recipe re-share path at all — that is a create now.
+      //
+      // The mirror is consulted only when the recipient list GAINS someone, so
+      // a member leaving or editing a list is never refused for a block
+      // between other people.
       allow update: if isAuthenticated()
-        && cannotModify(['sharedByUserId', 'contentType', 'sharedAt'])
+        && cannotModify(['sharedByUserId', 'contentType', 'sharedAt', 'blockHeldUserIds', 'blockHeld'])
         && (request.auth.uid == resource.data.sharedByUserId
-            || isSharedMember('shared_content', contentId));
+            || isSharedMember('shared_content', contentId))
+        && !request.resource.data.get('sharedToUserIds', [])
+              .hasAny(resource.data.get('blockHeldUserIds', []))
+        && (request.resource.data.get('sharedToUserIds', []).toSet()
+              .difference(resource.data.get('sharedToUserIds', []).toSet()).size() == 0
+            || notBlockedByAnyOf(request.resource.data.sharedToUserIds));
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
@@ -955,9 +976,15 @@ service cloud.firestore {
         allow read: if isAuthenticated() && (
           userId == request.auth.uid || isSharedOwner('shared_content', contentId) || isSharedMember('shared_content', contentId)
         );
+        // BUT-2169: a person a block holds off this share gets no member row,
+        // and neither does someone who has blocked the sharer: `addMember`
+        // writes this row BEFORE the parent's recipient list, so the gate on
+        // that list alone would come too late.
         allow create: if isAuthenticated()
           && isSharedOwner('shared_content', contentId)
-          && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
+          && hasRequiredFields(['userId', 'addedBy', 'addedAt'])
+          && !(userId in getDocData('shared_content', contentId).get('blockHeldUserIds', []))
+          && notBlockedByAnyOf([userId]);
         allow delete: if isAuthenticated() && (
           request.auth.uid == userId || isSharedOwner('shared_content', contentId)
         );

@@ -7,18 +7,18 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 16 known failures and 1 residue lists are not empty
-- Known failures: 16 (transitions 16)
+- **Migration complete:** NO: 15 known failures and 1 residue lists are not empty
+- Known failures: 15 (transitions 15)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Accepted failures, counted apart (D5 = B): 12
-- Tickets: 10 registered in Linear
+- Tickets: 9 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 389`
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 8, MISSING 4, PARTIAL 4, TESTED 65.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 8, MISSING 4, PARTIAL 3, TESTED 66.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
@@ -28,7 +28,6 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt` | BUILT_NOT_REACHABLE | BUT-2140 |
 | `TR::FLOW::03::foto-ocr::otolkad-text` | MISSING | BUT-2158 |
 | `TR::FLOW::03::granska::fält-med-låg-säkerhet` | PARTIAL | BUT-2158 |
-| `TR::FLOW::05::person::blockerad` | PARTIAL | BUT-2169 |
 | `TR::FLOW::06::aterstall::satt-nytt` | MISSING | BUT-2170 |
 | `TR::FLOW::06::byt-epost::omverifiering-bada` | MISSING | BUT-2171 |
 | `TR::FLOW::06::mfa::aterstallning-engangskoder` | BUILT_NOT_REACHABLE | BUT-2142 |
@@ -95,7 +94,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2158 | transitions 2 |  |
 | BUT-2160 | transitions 2 |  |
 | BUT-2163 | transitions 1 |  |
-| BUT-2169 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
 | BUT-2171 | transitions 1 |  |
 | BUT-2213 | transitions 1 |  |

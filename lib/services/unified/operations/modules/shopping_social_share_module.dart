@@ -3,6 +3,8 @@
 import 'dart:math' show min;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -33,6 +35,9 @@ class ShoppingSocialShareModule {
         AppLogger.error('No friends selected for sharing');
         return false;
       }
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      friendIds = await BlockedUserFilter.shareRecipients(friendIds);
+      if (friendIds.isEmpty) return false;
 
       if (!_permissionService.isAuthenticated) {
         AppLogger.error('User must be authenticated to share shopping list');
@@ -275,23 +280,11 @@ class ShoppingSocialShareModule {
 
       if (sharedListIds.isEmpty) return [];
 
-      // Batch fetch all shared list documents (max 10 per whereIn query)
-      final allListDocs = <String, Map<String, dynamic>>{};
-
-      for (int i = 0; i < sharedListIds.length; i += 10) {
-        final batchIds = sharedListIds.sublist(
-          i,
-          min(i + 10, sharedListIds.length),
-        );
-        final listDocs = await _firestore
-            .collection(FirestoreCollections.sharedContent)
-            .where(FieldPath.documentId, whereIn: batchIds)
-            .get();
-
-        for (final doc in listDocs.docs) {
-          allListDocs[doc.id] = doc.data();
-        }
-      }
+      final allListDocs = await fetchReadableByIds(
+        _firestore,
+        FirestoreCollections.sharedContent,
+        sharedListIds,
+      );
 
       // Build result list from cached batch data
       final sharedLists = <Map<String, dynamic>>[];

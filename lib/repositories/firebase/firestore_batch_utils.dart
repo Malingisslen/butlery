@@ -45,3 +45,39 @@ Future<void> batchDeleteDocs(
     }
   }
 }
+
+/// Fetches [ids] from [collection] by document id and returns the ones the
+/// caller may read, keyed by id.
+///
+/// An `in` query on document ids is refused WHOLE when any one id is
+/// unreadable, so one row a block has taken the caller off (BUT-2169) would
+/// otherwise empty an entire inbox. A refused chunk is fetched again one
+/// document at a time, and the unreadable ones are skipped.
+Future<Map<String, Map<String, dynamic>>> fetchReadableByIds(
+  FirebaseFirestore firestore,
+  String collection,
+  List<String> ids,
+) async {
+  final result = <String, Map<String, dynamic>>{};
+  final ref = firestore.collection(collection);
+  for (final chunk in ids.chunked(kFirestoreWhereInLimit)) {
+    try {
+      final snap = await ref.where(FieldPath.documentId, whereIn: chunk).get();
+      for (final doc in snap.docs) {
+        result[doc.id] = doc.data();
+      }
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+      for (final id in chunk) {
+        try {
+          final doc = await ref.doc(id).get();
+          final data = doc.data();
+          if (data != null) result[id] = data;
+        } on FirebaseException catch (e) {
+          if (e.code != 'permission-denied') rethrow;
+        }
+      }
+    }
+  }
+  return result;
+}

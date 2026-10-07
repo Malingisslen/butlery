@@ -598,6 +598,9 @@ export async function probeResidualData(
     // again. Single-field array-contains is served by the automatic index; no
     // composite entry needed.
     ["shared_content", "sharedToUserIds", "array-contains"],
+    // BUT-2169: the same person, held off a share by a block. Ships with
+    // `scrubBlockHeldShares`.
+    ["shared_content", "blockHeldUserIds", "array-contains"],
     // BUT-1801: poll AUTHORSHIP. `deletePollVotes` rewrites this field to
     // "deleted" and REPORTS ON ITSELF — it decides its own `complete` flag. This
     // row is the independent check on that self-report, which is the whole point
@@ -3122,6 +3125,113 @@ const PER_USER_CONVERSATION_MAPS = [
   "lastReadTimestamps",
   "perUserSettings",
 ] as const;
+
+/** Cap on one erasure's sweep of held shares (BUT-2169). Declines above it. */
+export const MAX_BLOCK_HELD_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2169: the held state a block left on `shared_content` that involves the
+ * erased uid, both ways round: the uid HELD on someone else's share
+ * (`blockHeldUserIds` plus the `blockHeld.<uid>` entry, which keeps their
+ * member row and recipe permission), and other people held on a share the
+ * erased user made.
+ *
+ * Runs BEFORE tier 1. Tier 1 deletes the user's `blocks` rows, and each delete
+ * fires `holdSharesOnBlock`'s release, which puts held people back on the
+ * shares; with nothing held left, that release has nothing to write. It runs
+ * again after tier 1 for a hold that committed while the cascade was running.
+ */
+export async function scrubBlockHeldShares(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  if (uid.includes(".")) {
+    // A dotted key would address a different path; Auth never issues one.
+    logger.error("[deletion-cascade] uid unusable as a map key; not sweeping held shares");
+    return false;
+  }
+  const snap = await db
+    .collection("shared_content")
+    .where("blockHeldUserIds", "array-contains", uid)
+    .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
+    .get();
+  if (snap.size > MAX_BLOCK_HELD_SWEEP_ROWS) {
+    logger.error("[deletion-cascade] implausible held-share count; not sweeping", {
+      uid_prefix: uid.slice(0, 6),
+      rows: snap.size,
+    });
+    return false;
+  }
+  try {
+    // First, so a decline on the owned half below cannot leave this user held
+    // for tier 1's release to put back.
+    await commitInChunks(
+      db,
+      snap.docs,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          blockHeldUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+          [`blockHeld.${uid}`]: admin.firestore.FieldValue.delete(),
+        });
+      },
+      { label: "scrubBlockHeldShares", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] scrubBlockHeldShares failed", {
+      uid_prefix: uid.slice(0, 6),
+      rows: snap.size,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+
+  const owned = await db
+    .collection("shared_content")
+    .where("sharedByUserId", "==", uid)
+    .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
+    .get();
+  if (owned.size > MAX_BLOCK_HELD_SWEEP_ROWS) {
+    logger.error("[deletion-cascade] implausible owned-share count; not sweeping", {
+      uid_prefix: uid.slice(0, 6),
+      rows: owned.size,
+    });
+    return false;
+  }
+  const ownedHeld = owned.docs.filter((doc) => {
+    const held = doc.get("blockHeldUserIds");
+    return Array.isArray(held) && held.length > 0;
+  });
+  try {
+    // Tier 1 deletes these rows; until then a release would rewrite member
+    // rows that name the erased user as the one who added them.
+    await commitInChunks(
+      db,
+      ownedHeld,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          blockHeldUserIds: admin.firestore.FieldValue.delete(),
+          blockHeld: admin.firestore.FieldValue.delete(),
+        });
+      },
+      { label: "scrubBlockHeldShares:owned", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] scrubBlockHeldShares owned half failed", {
+      uid_prefix: uid.slice(0, 6),
+      rows: ownedHeld.length,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+  logger.info("[deletion-cascade] scrubBlockHeldShares", {
+    uid_prefix: uid.slice(0, 6),
+    rows: snap.size,
+    owned_rows: ownedHeld.length,
+  });
+  return true;
+}
 
 export async function removeFromSharedContent(
   db: admin.firestore.Firestore,

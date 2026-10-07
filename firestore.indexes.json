@@ -167,6 +167,22 @@
       ]
     },
     {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "sharedToUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "blockHeldUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
       "collectionGroup": "notification_delivery",
       "queryScope": "COLLECTION",
       "fields": [
@@ -612,6 +628,16 @@
     },
     {
       "collectionGroup": "deletion_audit_logs",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
+      "collectionGroup": "erasures_in_progress",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": [

@@ -19,6 +19,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 
 typedef CreateCollaborativeRecipeFn =
     Future<String?> Function({
@@ -119,6 +120,11 @@ class RecipeSharingManager {
     List<String>? categoryIds,
   }) async {
     try {
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      memberIds = await BlockedUserFilter.shareRecipients(memberIds);
+      if (memberIds.isEmpty) {
+        return null;
+      }
       AppLogger.info('🔄 Starting recipe share process for recipe: $recipeId');
 
       // Find the recipe to share (personal OR collaborative)
@@ -344,6 +350,11 @@ class RecipeSharingManager {
     List<String>? categoryIds,
   }) async {
     try {
+      // Before the copy exists, so a share nobody can receive leaves no copy.
+      memberIds = await BlockedUserFilter.shareRecipients(memberIds);
+      if (memberIds.isEmpty) {
+        return null;
+      }
       AppLogger.info('🔄 Duplicating and sharing recipe: $recipeId');
 
       // First, create a duplicate of the personal recipe
