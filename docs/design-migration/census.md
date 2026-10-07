@@ -24,7 +24,7 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 
 | Transition | Status | Ticket |
 | --- | --- | --- |
-| `TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar` | BUILT_NOT_REACHABLE | BUT-2151 |
+| `TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar` | BUILT_NOT_REACHABLE | BUT-2215 |
 | `TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt` | BUILT_NOT_REACHABLE | BUT-2140 |
 | `TR::FLOW::03::foto-ocr::otolkad-text` | MISSING | BUT-2158 |
 | `TR::FLOW::03::granska::fält-med-låg-säkerhet` | PARTIAL | BUT-2158 |
@@ -54,7 +54,7 @@ Required: 33; TESTED 33. Unspecified in block 288 (not tested): 33; not required
 
 ## Contrast pairs
 
-Declared pairs: 32. Measured in both modes: 32, of which under their floor: 0; unmeasurable (no generated member): 0. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
+Declared pairs: 33. Measured in both modes: 33, of which under their floor: 0; unmeasurable (no generated member): 0. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
@@ -69,8 +69,8 @@ Known findings: 0 (ceiling 0) in 0 cases (view, state, mode, width, text scale).
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `f5bcf844d33b5c6907745b03b4ee1cf1850a55266c084ef24dd4c003333c56de`); generated files say tokens 1.13 (light) and 1.13 (dark).
-- Semantic keys: 53; with a generated member: 53
+tokens.json 1.13 (sha256 `18f913cd45040490c58d38c33aaa42c8171bf89044a4ff1bcfdbaf7757c337bf`); generated files say tokens 1.13 (light) and 1.13 (dark).
+- Semantic keys: 54; with a generated member: 54
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
 | Semantic key without a member | Ticket |
@@ -89,12 +89,12 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | --- | --- | --- |
 | BUT-2140 | transitions 1 |  |
 | BUT-2142 | transitions 5 |  |
-| BUT-2151 | transitions 1 |  |
 | BUT-2158 | transitions 2 |  |
 | BUT-2163 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
 | BUT-2171 | transitions 1 |  |
 | BUT-2213 | transitions 1 |  |
+| BUT-2215 | transitions 1 |  |
 
 ## Ratchets and adoption lists
 

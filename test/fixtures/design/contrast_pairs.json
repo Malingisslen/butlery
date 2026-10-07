@@ -3,8 +3,8 @@
  "source": {
   "file": "tokens.json",
   "repo": "Butlery design system",
-  "commit": "219995f",
-  "sha256": "f5bcf844d33b5c6907745b03b4ee1cf1850a55266c084ef24dd4c003333c56de",
+  "commit": "b6d52ac",
+  "sha256": "18f913cd45040490c58d38c33aaa42c8171bf89044a4ff1bcfdbaf7757c337bf",
   "tokens_version": "1.13",
   "tokens_date": "2026-08-05"
  },
@@ -171,6 +171,11 @@
    "fg": "text.link",
    "bg": "surface.raised",
    "floor": 4.5
+  },
+  {
+   "fg": "border.cardEdge",
+   "bg": "surface.base",
+   "floor": 3
   }
  ],
  "contrastPolicy": {
