@@ -5580,9 +5580,15 @@ await her confirmation on the PR.
   return to the bundle on unblock. BUT-1718's left-list shape.
 - **The account cascade clears held state before AND after tier 1** (`shared_content_block_held`
   and `shared_content_block_held_after_tier1`), on shares where the erased user is held and on
-  shares they made. A release can still land after the second pass, or after a first pass
-  that failed or declined, and puts the erased uid back into another person's
-  `sharedToUserIds` and recipe `memberPermissions`/`grants`; no probe leg looks there.
-  `releasePair` declines only once the Auth account is gone, which is the cascade's last step.
+  shares they made. Between those passes, tier 1's own `blocks` delete fires a release; each
+  row's release reads `erasures_in_progress/{uid}` for both people inside its transaction and
+  declines while one is younger than `ERASURE_MARKER_WINDOW_MS`. The cascade writes that marker
+  before its first step and never deletes it; a TTL on `expireAt` does, two windows after the
+  start, because a release that checked the account before the Auth delete can still be
+  working through its rows afterwards. A failed marker write leaves the release free to put
+  the erased uid back into another person's `sharedToUserIds` and recipe
+  `memberPermissions`/`grants`; it is logged and listed in `errors`, not in
+  `failedCollections`, and no probe leg looks there. A release declined by the marker is not
+  replayed.
 - **A recipe entry with no `grants` record is never held.** A block reads only a `'direct'`
   grant as the share's own; a missing record is not read as direct (BUT-1797's rule).

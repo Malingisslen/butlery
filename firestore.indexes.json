@@ -637,6 +637,16 @@
       ]
     },
     {
+      "collectionGroup": "erasures_in_progress",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
       "collectionGroup": "dismissals",
       "fieldPath": "expireAt",
       "ttl": true,

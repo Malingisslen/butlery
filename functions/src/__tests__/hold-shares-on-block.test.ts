@@ -15,6 +15,8 @@ import {
   holdSharesOnBlock,
   HOLD_TIMEOUT_SECONDS,
   MAX_ROWS_PER_DIRECTION,
+  ERASURE_MARKER_WINDOW_MS,
+  erasureUnderway,
 } from "../social/hold-shares-on-block";
 import { FakeFirestore, FakeDoc } from "./_fake-firestore";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
@@ -185,6 +187,60 @@ const cases: UnitCase[] = [
 
       assertEqual(released, null, "declined");
       assertEqual(perms(db, A, "s1"), A, "recipe permission not restored");
+    },
+  },
+  {
+    name: "an unblock while either person's erasure runs releases nothing",
+    fn: async () => {
+      for (const erased of [A, B]) {
+        const db = new FakeFirestore();
+        seedRecipeShare(db, "s1", A, B);
+        block(db, A, B);
+        await holdPair(db.db, A, B);
+        unblock(db, A, B);
+        db.seed(`erasures_in_progress/${erased}`, { startedAtMs: Date.now() });
+
+        assertEqual(await releasePair(db.db, A, B, live), 0, `nothing released (${erased})`);
+        assertEqual((row(db, "s1").sharedToUserIds as string[]).join(","), A, `B still out (${erased})`);
+        assertEqual(perms(db, A, "s1"), A, `recipe permission not restored (${erased})`);
+      }
+    },
+  },
+  {
+    name: "a marker older than the window no longer stops the release",
+    fn: async () => {
+      const db = new FakeFirestore();
+      seedRecipeShare(db, "s1", A, B);
+      block(db, A, B);
+      await holdPair(db.db, A, B);
+      unblock(db, A, B);
+      db.seed(`erasures_in_progress/${A}`, {
+        startedAtMs: Date.now() - ERASURE_MARKER_WINDOW_MS - 1000,
+      });
+
+      assertEqual(await releasePair(db.db, A, B, live), 1, "released");
+    },
+  },
+  {
+    name: "erasureUnderway: inside the window, at its edge, and with an unreadable start",
+    fn: async () => {
+      const now = 10 * ERASURE_MARKER_WINDOW_MS;
+      const snap = (data: FakeDoc | null) =>
+        ({ exists: data !== null, get: (k: string) => data?.[k] }) as unknown as
+          Parameters<typeof erasureUnderway>[0];
+      assertEqual(erasureUnderway(snap(null), now), false, "no marker");
+      assertEqual(erasureUnderway(snap({ startedAtMs: now - 1 }), now), true, "fresh");
+      assertEqual(
+        erasureUnderway(snap({ startedAtMs: now - ERASURE_MARKER_WINDOW_MS + 1 }), now),
+        true,
+        "just inside",
+      );
+      assertEqual(
+        erasureUnderway(snap({ startedAtMs: now - ERASURE_MARKER_WINDOW_MS }), now),
+        false,
+        "at the edge",
+      );
+      assertEqual(erasureUnderway(snap({ startedAtMs: "x" }), now), true, "unreadable start");
     },
   },
   {

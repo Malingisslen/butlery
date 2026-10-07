@@ -86,6 +86,8 @@ import {
   USER_MODERATION,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import { Collections } from "../shared/collections";
+import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 import {
   REPORTER_RETENTION_BASIS,
   REPORTS,
@@ -224,6 +226,35 @@ export async function runAccountDeletionWithDeps(
     errors: [],
     retained: [],
   };
+
+  // BUT-2169: first, so every `blocks` delete below fires a release that finds
+  // it. The scrubs clear held entries naming this user, but a hold committed
+  // after a scrub would otherwise be released by tier 1's own `blocks` delete
+  // and put this user back on someone else's share. Not a `runStep`: it erases
+  // nothing.
+  //
+  // Never deleted here, only by its TTL: a release that checked the account
+  // before the Auth delete can still be working through its rows afterwards,
+  // and only the marker stops it there. Kept after a failed Auth delete too,
+  // because the scrubs have already cleared every held entry naming this user,
+  // so no release has anything of theirs to bring back.
+  const erasureMarker = database
+    .collection(Collections.erasuresInProgress)
+    .doc(uid);
+  const markerStartedAtMs = Date.now();
+  try {
+    await erasureMarker.set({
+      startedAtMs: markerStartedAtMs,
+      expireAt: admin.firestore.Timestamp.fromMillis(
+        markerStartedAtMs + 2 * ERASURE_MARKER_WINDOW_MS,
+      ),
+    });
+  } catch (err) {
+    result.errors.push(
+      `erasure_marker: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    logger.error("[requestAccountDeletion] erasure marker write failed", { err });
+  }
 
   // BUT-2046 follow-up: evaluate the legal hold BEFORE tier 1, because steps
   // inside it, the residual probe, and the `onUserDeleted` trigger afterwards
@@ -459,6 +490,7 @@ export async function runAccountDeletionWithDeps(
     );
     logger.error("[requestAccountDeletion] auth.deleteUser failed", { err });
   }
+
 
   // Audit log — written under deletion_audit_logs (distinct from generic
   // audit_logs) preserving the schema readable by GDPR-export tooling.

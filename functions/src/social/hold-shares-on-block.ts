@@ -27,7 +27,10 @@
  * nothing. The account cascade clears every held entry naming the
  * erased user BEFORE it deletes their `blocks` rows (step
  * `shared_content_block_held`), so the release that deletion fires finds
- * nothing to put back for them.
+ * nothing to put back for them. A hold that commits after that scrub would
+ * still be released by the same deletion, so the cascade also writes
+ * `erasures_in_progress/{uid}` before its first step, and every row's release
+ * reads that marker for both people inside its transaction.
  *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
  */
@@ -48,6 +51,26 @@ export const SHARED_CONTENT = "shared_content";
  * own app still hides the rest of what the blocked person shared.
  */
 export const MAX_ROWS_PER_DIRECTION = 500;
+
+/**
+ * How long an erasure marker stops a release, which bounds what a cascade that
+ * crashed can block. Longer than `HOLD_TIMEOUT_SECONDS`, so a release already
+ * running when the account is erased finishes inside it.
+ */
+export const ERASURE_MARKER_WINDOW_MS = 60 * 60 * 1000;
+
+/** Whether a marker read from `erasures_in_progress` still stops a release. */
+export function erasureUnderway(
+  marker: admin.firestore.DocumentSnapshot,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!marker.exists) return false;
+  const startedAtMs = marker.get("startedAtMs");
+  // A marker whose start cannot be read is honoured: releasing on a row an
+  // erasure is clearing is the outcome the marker exists to stop.
+  if (typeof startedAtMs !== "number") return true;
+  return nowMs - startedAtMs < ERASURE_MARKER_WINDOW_MS;
+}
 
 /** What `blockHeld.<uid>` stores, so the unblock can put it back. */
 export interface HeldEntry {
@@ -174,6 +197,11 @@ export async function releaseRow(db: Db, rowRef: Ref, other: string): Promise<bo
     const [ab, ba] = blockRefs(db, sharer, other);
     const blocks = [await tx.get(ab), await tx.get(ba)];
     if (blocks.some((b) => b.exists)) return false;
+    const markers = [
+      await tx.get(db.collection(Collections.erasuresInProgress).doc(sharer)),
+      await tx.get(db.collection(Collections.erasuresInProgress).doc(other)),
+    ];
+    if (markers.some((m) => erasureUnderway(m))) return false;
 
     const entry = (data.blockHeld?.[other] ?? null) as HeldEntry | null;
     const recipeRef =

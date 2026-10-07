@@ -90,4 +90,9 @@ export const Collections = {
   // carries a literal like every other entry in that register, which is a list
   // of names rather than a caller.)
   erasureHolds: "erasure_holds",
+  // BUT-2169: one document per account erasure while its cascade runs, keyed on
+  // the uid being erased. `holdSharesOnBlock` declines to release a share while
+  // one names either person. Removed by a TTL on `expireAt`. Admin SDK only; no
+  // rules block, so clients are denied by the catch-all.
+  erasuresInProgress: "erasures_in_progress",
 } as const;
