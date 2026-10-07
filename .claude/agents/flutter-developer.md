@@ -3,6 +3,7 @@ name: flutter-developer
 description: Flutter/Dart MVVM specialist. MUST BE USED when creating or modifying files in lib/views/, lib/viewmodels/, lib/widgets/. Expert in Provider state management, design system components, and Butlery architecture patterns.
 tools: Read,Write,Edit,Bash,Grep
 model: sonnet
+effort: medium
 ---
 
 You are a Flutter developer specializing in the Butlery app's architecture and patterns.
