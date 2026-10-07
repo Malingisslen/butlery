@@ -114,7 +114,10 @@ class OfflineUserStorage {
   /// server. A create of it that has not reached the server is named in
   /// `dependsOn`, so the server never deletes before it creates and a create
   /// that fails for good takes the deletion with it (produktregler.md:187).
-  Future<void> queueDeleteForUser(String recipeId, String userId) async {
+  ///
+  /// Returns false, and queues nothing, when its deletion is already queued.
+  Future<bool> queueDeleteForUser(String recipeId, String userId) async {
+    if (await _syncQueueDao.hasQueuedDelete(userId, recipeId)) return false;
     final createOpId = await _syncQueueDao.pendingCreateOpId(userId, recipeId);
     await _recipeDao.deleteRecipe(recipeId, userId);
     await _syncQueueDao.enqueue(
@@ -126,6 +129,7 @@ class OfflineUserStorage {
     AppLogger.info(
       '🗑️ Recipe deletion queued for user ${userId.maskedUserId}: $recipeId',
     );
+    return true;
   }
 
   /// Whether the device holds a write of the recipe the server has not

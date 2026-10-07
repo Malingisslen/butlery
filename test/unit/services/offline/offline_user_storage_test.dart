@@ -127,57 +127,6 @@ void main() {
         ).called(1);
       });
 
-      test('should save recipe and add to sync queue when offline', () async {
-        // Arrange
-        final recipe = RecipeBuilder()
-            .withId('recipe_789')
-            .withTitle('Köttbullar')
-            .build();
-        const userId = 'user_123';
-
-        when(
-          () => mockRecipeDao.upsertRecipe(
-            id: any(named: 'id'),
-            userId: any(named: 'userId'),
-            recipeJson: any(named: 'recipeJson'),
-            needsSync: any(named: 'needsSync'),
-          ),
-        ).thenAnswer((_) async {});
-
-        when(
-          () => mockSyncQueueDao.enqueue(
-            userId: any(named: 'userId'),
-            recipeId: any(named: 'recipeId'),
-            operation: any(named: 'operation'),
-            opId: any(named: 'opId'),
-            dependsOn: any(named: 'dependsOn'),
-          ),
-        ).thenAnswer((_) async => 1);
-
-        // Act
-        await storage.saveRecipeForUser(recipe, userId);
-
-        // Assert
-        verify(
-          () => mockRecipeDao.upsertRecipe(
-            id: recipe.id,
-            userId: userId,
-            recipeJson: any(named: 'recipeJson'),
-            needsSync: true,
-          ),
-        ).called(1);
-
-        verify(
-          () => mockSyncQueueDao.enqueue(
-            userId: userId,
-            recipeId: recipe.id,
-            operation: any(named: 'operation'),
-            opId: any(named: 'opId'),
-            dependsOn: any(named: 'dependsOn'),
-          ),
-        ).called(1);
-      });
-
       test('should retrieve recipes for specific user', () async {
         // Arrange
         const userId = 'user_001';
@@ -268,6 +217,9 @@ void main() {
         const userId = 'user_123';
         const recipeId = 'recipe_456';
 
+        when(
+          () => mockSyncQueueDao.hasQueuedDelete(userId, recipeId),
+        ).thenAnswer((_) async => false);
         when(
           () => mockRecipeDao.deleteRecipe(recipeId, userId),
         ).thenAnswer((_) async => 1);

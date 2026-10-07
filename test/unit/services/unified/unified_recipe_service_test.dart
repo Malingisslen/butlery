@@ -259,6 +259,9 @@ void main() {
       // A device queue, as on a phone (BUT-2162): writes are queued.
       when(() => mockOfflineService.isQueueReady).thenReturn(true);
       when(
+        () => mockOfflineService.recipesSent,
+      ).thenAnswer((_) => const Stream.empty());
+      when(
         () => mockOfflineService.queueRecipeWrite(
           any(),
           any(),
@@ -268,7 +271,7 @@ void main() {
       ).thenAnswer((_) async => 'op');
       when(
         () => mockOfflineService.queueRecipeDelete(any(), any()),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => true);
       when(
         () => mockOfflineService.hasUnsentRecipeWrite(any(), any()),
       ).thenAnswer((_) async => false);
@@ -1494,8 +1497,7 @@ void main() {
           expect(success, true);
         });
 
-        test('a delete is queued; a refusal comes back through the queue '
-            '(BUT-2162)', () async {
+        test('a delete is queued (BUT-2162)', () async {
           // Act
           final success = await service.deleteRecipe('protected-recipe-id');
 
@@ -2092,15 +2094,10 @@ void main() {
           // Arrange
           final recipeId = 'test-recipe-id';
 
-          int deleteCount = 0;
-          when(() => mockRecipeRepository.delete(any())).thenAnswer(
-            (_) async {
-              deleteCount++;
-              if (deleteCount > 1) {
-                throw StateError('Recipe already deleted');
-              }
-            },
-          );
+          var queued = false;
+          when(
+            () => mockOfflineService.queueRecipeDelete(recipeId, any()),
+          ).thenAnswer((_) async => !queued && (queued = true));
 
           // Act - simulate concurrent deletes
           final results = await Future.wait([
@@ -2108,12 +2105,14 @@ void main() {
             service.deleteRecipe(recipeId),
           ]);
 
-          // Assert - both are queued; the second finds nothing on the server,
-          // which the queue counts as done (BUT-2162)
+          // Assert - the second finds its deletion already queued and
+          // counts nothing again (BUT-2162)
           expect(results, [true, true]);
           verify(
-            () => mockOfflineService.queueRecipeDelete(recipeId, any()),
-          ).called(2);
+            () =>
+                (TestServiceLocator.get<UserRepository>() as MockUserRepository)
+                    .decrementPublicRecipeCount(any()),
+          ).called(1);
         });
 
         test('should handle conflicting archive operations', () async {

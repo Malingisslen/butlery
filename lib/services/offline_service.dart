@@ -89,6 +89,13 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   late OfflineSyncManager _syncManager;
   bool _isDisposed = false;
   StreamSubscription<Object?>? _authSubscription;
+
+  final StreamController<String> _recipeSent =
+      StreamController<String>.broadcast();
+
+  /// The id of each recipe whose write or deletion has just left the queue.
+  /// The server's copy is then the one to show.
+  Stream<String> get recipesSent => _recipeSent.stream;
   QueuedRecipeWriter? _recipeWriter;
 
   // User-specific storage state
@@ -204,10 +211,12 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Removes the recipe from the device and queues its deletion.
-  Future<void> queueRecipeDelete(String recipeId, String userId) async {
-    await _userStorage.queueDeleteForUser(recipeId, userId);
+  /// Returns false when its deletion was already queued.
+  Future<bool> queueRecipeDelete(String recipeId, String userId) async {
+    final queued = await _userStorage.queueDeleteForUser(recipeId, userId);
     await refreshSyncState();
     _sendWhenOnline();
+    return queued;
   }
 
   /// Whether the device holds a write of the recipe the server has not
@@ -253,6 +262,9 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       },
       // H9: Callback for retagging recipes when connectivity restores
       onTagRecipe: _retagRecipe,
+      onRecipeSent: (recipeId) {
+        if (!_recipeSent.isClosed) _recipeSent.add(recipeId);
+      },
       // A retry timer that fires offline waits for the reconnect pass.
       isOnlineNow: () => isOnline,
       recipeWriter: _recipeWriter,
@@ -325,18 +337,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
   /// H9: Retag a recipe when connectivity is restored.
   /// Called by OfflineSyncManager for pending tag operations.
-  Future<void> _retagRecipe(String recipeId) async {
-    if (_currentUserId == null) {
-      AppLogger.warning('⚠️ No user logged in, cannot retag recipe');
-      return;
-    }
-
+  Future<void> _retagRecipe(String recipeId, String userId) async {
     try {
       // Get the recipe from local storage
-      final recipe = await _userStorage.getRecipeForUser(
-        recipeId,
-        _currentUserId!,
-      );
+      final recipe = await _userStorage.getRecipeForUser(recipeId, userId);
       if (recipe == null) {
         AppLogger.warning('⚠️ Recipe $recipeId not found in offline storage');
         return;
@@ -376,7 +380,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       // Save updated recipe back to local storage (will also sync to Firebase)
       await queueRecipeWrite(
         updatedRecipe,
-        _currentUserId!,
+        userId,
         operation: SyncOperation.update,
       );
 
@@ -431,6 +435,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   void dispose() {
     _isDisposed = true;
     unawaited(_authSubscription?.cancel());
+    unawaited(_recipeSent.close());
     if (_isInitializationReady) {
       _initialization.dispose();
     }

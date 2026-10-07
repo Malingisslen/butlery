@@ -260,7 +260,7 @@ void main() {
           onSyncStateChanged: () {
             syncStateChanged = true;
           },
-          onTagRecipe: (recipeId) async {
+          onTagRecipe: (recipeId, _) async {
             tagCallbackInvoked = true;
             taggedRecipeId = recipeId;
           },
@@ -407,7 +407,7 @@ void main() {
         final multiTagSyncManager = OfflineSyncManager(
           database: mockDatabase,
           authRepository: mockAuthRepo,
-          onTagRecipe: (recipeId) async {
+          onTagRecipe: (recipeId, _) async {
             taggedRecipes.add(recipeId);
           },
         );

@@ -386,7 +386,7 @@ void main() {
         ).thenAnswer((_) async => 'op');
         when(
           () => queue.queueRecipeDelete(any(), any()),
-        ).thenAnswer((_) async {});
+        ).thenAnswer((_) async => true);
         when(
           () => mockUserRepository.decrementPublicRecipeCount(any()),
         ).thenAnswer((_) async {});
@@ -471,6 +471,18 @@ void main() {
           () => queue.queueRecipeDelete(testRecipe.id, 'test-user-123'),
         ).called(1);
         expect(await mockCacheHelper.loadJson(testRecipe.id), isNull);
+      });
+
+      test('deleting a recipe whose deletion is already queued counts it '
+          'down once', () async {
+        when(
+          () => queue.queueRecipeDelete(any(), any()),
+        ).thenAnswer((_) async => false);
+
+        final ok = await module.deletePersonalRecipe(testRecipe.id);
+
+        expect(ok, isTrue);
+        verifyNever(() => mockUserRepository.decrementPublicRecipeCount(any()));
       });
 
       test('without a ready queue the write goes to the server and is '

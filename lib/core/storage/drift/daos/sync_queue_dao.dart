@@ -151,6 +151,22 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
     return (result.read(count) ?? 0) > 0;
   }
 
+  /// Whether a deletion of the recipe waits in the queue.
+  Future<bool> hasQueuedDelete(String userId, String recipeId) async {
+    final row =
+        await (select(syncQueueEntries)
+              ..where(
+                (e) =>
+                    e.userId.equals(userId) &
+                    e.entityType.equals(SyncQueueEntityType.recipe) &
+                    e.recipeId.equals(recipeId) &
+                    e.operation.equals(SyncOperation.delete.name),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
   /// Remove a completed operation from the queue
   Future<void> dequeue(int id) {
     return (delete(syncQueueEntries)..where((e) => e.id.equals(id))).go();

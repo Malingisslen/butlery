@@ -23,7 +23,8 @@ class OfflineUserStorage {
     bool queueTagging = true,
   }) async => '';
 
-  Future<void> queueDeleteForUser(String recipeId, String userId) async {}
+  Future<bool> queueDeleteForUser(String recipeId, String userId) async =>
+      false;
 
   Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
 

@@ -15,7 +15,8 @@ class OfflineSyncManager {
     required AppDatabase database,
     required auth_repo.AuthRepository authRepository,
     VoidCallback? onSyncStateChanged,
-    Future<void> Function(String recipeId)? onTagRecipe,
+    Future<void> Function(String recipeId, String userId)? onTagRecipe,
+    void Function(String recipeId)? onRecipeSent,
     bool Function()? isOnlineNow,
     this.recipeWriter,
   });

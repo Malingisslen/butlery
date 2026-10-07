@@ -365,7 +365,10 @@ class PersonalRecipeModule {
           final queue = _readyOfflineQueue();
           final bool deleteSuccess;
           if (queue != null) {
-            await queue.queueRecipeDelete(recipeId, currentUserId);
+            // Its deletion is already queued, and counted.
+            if (!await queue.queueRecipeDelete(recipeId, currentUserId)) {
+              return true;
+            }
             deleteSuccess = true;
           } else {
             // Delete from Firebase using repository pattern

@@ -70,6 +70,7 @@ class RecipeCacheModule {
   /// Whether the offline queue holds a write of the recipe the server has
   /// not confirmed (BUT-2162).
   final Future<bool> Function(String recipeId)? _hasUnsentWrite;
+  final Future<Recipe?> Function(String recipeId)? _readRecipe;
 
   /// Firestore sync metadata — whether local writes are pending server confirmation
   bool _hasPendingWrites = false;
@@ -103,7 +104,9 @@ class RecipeCacheModule {
     void Function(Recipe recipe)? onRecipeUpdated,
     void Function(String recipeId)? onRecipeRemoved,
     Future<bool> Function(String recipeId)? hasUnsentWrite,
+    Future<Recipe?> Function(String recipeId)? readRecipe,
   }) : _hasUnsentWrite = hasUnsentWrite,
+       _readRecipe = readRecipe,
        _firestore = firestore,
        _cacheHelper = cacheHelper,
        _getCurrentUserId = getCurrentUserId,
@@ -249,8 +252,7 @@ class RecipeCacheModule {
     try {
       // BUT-2162: the offline queue holds a newer write of this recipe (or
       // its deletion) than the server has, so the server's copy would undo
-      // the user's change on screen until the queue sends it. The server's
-      // answer to that send arrives as its own change.
+      // the user's change on screen until the queue sends it.
       if (await _hasUnsentWrite?.call(recipe.id) ?? false) {
         AppLogger.debug('Recipe from $source kept local (unsent write)');
         return;
@@ -272,6 +274,25 @@ class RecipeCacheModule {
       AppLogger.debug('Recipe updated from $source: ${recipe.title}');
     } catch (e) {
       AppLogger.error('Error updating cached recipe: $e');
+    }
+  }
+
+  /// The queue has sent a write or deletion of the recipe. While it waited,
+  /// the screen took none of the server's copies of it, so the server's copy
+  /// is read once now. Nothing happens while another write of it waits.
+  Future<void> refreshAfterQueueSend(String recipeId) async {
+    final read = _readRecipe;
+    if (read == null) return;
+    try {
+      if (await _hasUnsentWrite?.call(recipeId) ?? false) return;
+      final recipe = await read(recipeId);
+      if (recipe == null) {
+        await _removeCachedRecipe(recipeId, 'offline queue');
+      } else {
+        await _updateCachedRecipe(recipe, 'offline queue');
+      }
+    } catch (e) {
+      AppLogger.warning('Could not refresh recipe after queue send: $e');
     }
   }
 

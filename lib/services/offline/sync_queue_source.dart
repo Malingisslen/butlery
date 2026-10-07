@@ -82,9 +82,7 @@ abstract class SyncQueueSource {
 ///
 /// The user is the one the auth repository has signed in, the same source
 /// the sync manager sends the queue for (OfflineSyncManager reads
-/// `AuthRepository.currentUserId`). OfflineService.currentUserId is not used:
-/// the app never sets it, so reading it would show an empty queue while
-/// changes wait (produktregler.md:191, Töm-kö-garanti).
+/// `AuthRepository.currentUserId`).
 class OfflineSyncQueueSource extends SyncQueueSource {
   const OfflineSyncQueueSource({this.offlineService, this.authRepository});
 

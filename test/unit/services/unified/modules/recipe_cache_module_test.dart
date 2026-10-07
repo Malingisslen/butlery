@@ -240,14 +240,58 @@ void main() {
     // device than on the server. The server's copy must not replace it on
     // screen before the queue has sent it.
     group('unsent writes in the offline queue', () {
-      RecipeCacheModule moduleWith(Set<String> unsent) => RecipeCacheModule(
+      RecipeCacheModule moduleWith(
+        Set<String> unsent, {
+        Map<String, Recipe> server = const {},
+      }) => RecipeCacheModule(
         firestore: fakeFirestore,
         cacheHelper: mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         setError: (error) {},
         notifyListeners: () => notifyListenersCalled++,
         hasUnsentWrite: (id) async => unsent.contains(id),
+        readRecipe: (id) async => server[id],
       );
+
+      test('once the queue has sent it, the server copy is shown', () async {
+        final module = moduleWith(
+          {},
+          server: {'r1': RecipeFactory.build(id: 'r1', title: 'Normaliserad')},
+        );
+        await module.saveRecipeToCache(
+          RecipeFactory.build(id: 'r1', title: 'Min ändring'),
+        );
+
+        await module.refreshAfterQueueSend('r1');
+
+        expect((await module.loadRecipeFromCache('r1'))!.title, 'Normaliserad');
+        await module.dispose();
+      });
+
+      test('a sent deletion takes the recipe off the screen', () async {
+        final module = moduleWith({});
+        await module.saveRecipeToCache(RecipeFactory.build(id: 'r1'));
+
+        await module.refreshAfterQueueSend('r1');
+
+        expect(await module.loadRecipeFromCache('r1'), isNull);
+        await module.dispose();
+      });
+
+      test('nothing is read while another write of it waits', () async {
+        final module = moduleWith(
+          {'r1'},
+          server: {'r1': RecipeFactory.build(id: 'r1', title: 'Serverns')},
+        );
+        await module.saveRecipeToCache(
+          RecipeFactory.build(id: 'r1', title: 'Min senaste'),
+        );
+
+        await module.refreshAfterQueueSend('r1');
+
+        expect((await module.loadRecipeFromCache('r1'))!.title, 'Min senaste');
+        await module.dispose();
+      });
 
       test(
         'a server copy of a recipe with an unsent write is ignored',

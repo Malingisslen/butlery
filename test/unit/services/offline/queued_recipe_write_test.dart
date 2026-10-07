@@ -5,6 +5,9 @@
 // A real in-memory queue; the repository is the mock, the queue and the
 // adapter are real.
 
+import 'dart:async';
+import 'dart:math';
+
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
@@ -33,6 +36,8 @@ void main() {
   late OfflineUserStorage storage;
   late OfflineSyncManager manager;
   late List<String> tagged;
+  late List<String> settled;
+  late FakeAuthRepository auth;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -51,14 +56,18 @@ void main() {
     when(() => repository.read(any())).thenAnswer((_) async => null);
     storage = OfflineUserStorage(database: db);
     tagged = [];
+    settled = [];
+    auth = FakeAuthRepository()
+      ..setAuthState(user: FakeUser(), userId: uid, isAuthenticated: true);
     manager = OfflineSyncManager(
       database: db,
-      authRepository: FakeAuthRepository()
-        ..setAuthState(user: FakeUser(), userId: uid, isAuthenticated: true),
+      authRepository: auth,
       isOnlineNow: () => false,
       random: MidRandom(),
-      onTagRecipe: (id) async => tagged.add(id),
+      onTagRecipe: (id, userId) async => tagged.add('$id@$userId'),
       recipeWriter: RecipeServiceAdapter(recipeRepository: repository),
+      onRecipeSent: settled.add,
+      sendTimeout: const Duration(milliseconds: 50),
     );
   });
 
@@ -231,7 +240,7 @@ void main() {
 
     await pass();
     verify(() => repository.create(any())).called(1);
-    expect(tagged, ['r1']);
+    expect(tagged, ['r1@$uid']);
   });
 
   test('recipe entries wait untouched until a writer is attached', () async {
@@ -244,5 +253,100 @@ void main() {
     expect(row.retryCount, 0);
     expect(row.permanentlyFailed, isFalse);
     expect(await db.recipeDao.getRecipe('r1', uid), isNotNull);
+  });
+
+  test('the screen is told when a write and a deletion have gone', () async {
+    await storage.saveRecipeForUser(recipe('r1'), uid);
+    await pass();
+    await storage.queueDeleteForUser('r1', uid);
+    await pass();
+
+    expect(settled, ['r1', 'r1']);
+  });
+
+  test('a pass stops when another account signs in, and leaves the first '
+      "account's entries for its own next pass", () async {
+    await storage.saveRecipeForUser(recipe('r1'), uid);
+    await storage.saveRecipeForUser(recipe('r2'), uid);
+    when(() => repository.update(any())).thenAnswer((inv) async {
+      // The first send is on its way when the user switches account.
+      auth.setAuthState(user: FakeUser(), userId: 'u2', isAuthenticated: true);
+    });
+
+    await pass();
+
+    final sent = verify(() => repository.update(captureAny())).captured;
+    expect(sent.map((r) => (r as Recipe).id), ['r1']);
+    final left = await db.syncQueueDao.getPendingForUser(uid);
+    expect(left.map((e) => e.recipeId), ['r2']);
+    expect(left.single.retryCount, 0);
+    expect(left.single.permanentlyFailed, isFalse);
+  });
+
+  test('a send that never completes is a failure the queue retries', () async {
+    await storage.saveRecipeForUser(recipe('r1'), uid);
+    when(
+      () => repository.update(any()),
+    ).thenAnswer((_) => Completer<void>().future);
+
+    await pass();
+
+    final row = (await db.select(db.syncQueueEntries).get()).single;
+    expect(row.retryCount, 1);
+    expect(row.permanentlyFailed, isFalse);
+    expect(row.nextAttemptAt, isNotNull);
+    expect(manager.isSyncing, isFalse);
+  });
+
+  test('a second delete of a queued deletion queues nothing', () async {
+    await storage.saveRecipeForUser(recipe('r1'), uid);
+    await pass();
+
+    expect(await storage.queueDeleteForUser('r1', uid), isTrue);
+    expect(await storage.queueDeleteForUser('r1', uid), isFalse);
+
+    final deletes = (await db.select(db.syncQueueEntries).get()).where(
+      (e) => e.operation == SyncOperation.delete.name,
+    );
+    expect(deletes, hasLength(1));
+  });
+
+  test('passes asked for while one runs go one at a time', () async {
+    await storage.saveRecipeForUser(recipe('r1'), uid);
+    final gate = Completer<void>();
+    var inFlight = 0;
+    var most = 0;
+    when(() => repository.update(any())).thenAnswer((_) async {
+      inFlight++;
+      most = max(most, inFlight);
+      await gate.future;
+      inFlight--;
+    });
+
+    final first = pass();
+    await pumpEventQueue();
+    await storage.saveRecipeForUser(recipe('r2'), uid);
+    final waiting = [pass(), pass()];
+    gate.complete();
+    await Future.wait([first, ...waiting]);
+
+    expect(most, 1);
+    expect(await db.syncQueueDao.countPending(uid), 0);
+  });
+
+  test('a pass waiting when the manager is disposed does not run', () async {
+    await storage.saveRecipeForUser(recipe('r1'), uid);
+    final gate = Completer<void>();
+    when(() => repository.update(any())).thenAnswer((_) => gate.future);
+
+    final first = pass();
+    await pumpEventQueue();
+    final waiting = pass();
+    manager.dispose();
+    await db.close();
+    gate.complete();
+
+    await expectLater(waiting, completes);
+    await first.catchError((_) {});
   });
 }
