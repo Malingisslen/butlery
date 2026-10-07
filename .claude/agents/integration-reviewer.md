@@ -2,7 +2,8 @@
 name: integration-reviewer
 description: Reviews the staged Butlery diff AS A WHOLE for cross-file breakage — MVVM layering violated across files, a model changed without its generated code, Dart/Firestore/Cloud-Functions field drift, and duplication introduced across the batch. Run before committing any .dart change, and before pushing a range of batch commits.
 tools: Read, Grep, Glob, Bash
-model: inherit
+model: sonnet
+effort: medium
 ---
 
 You are the **integration reviewer** gate for Butlery. The other five gates read files; you read the

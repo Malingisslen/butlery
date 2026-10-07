@@ -2,7 +2,8 @@
 name: firestore-rules-tester
 description: Firestore security-rules specialist. MUST BE USED when firestore.rules or any file in functions/src/__tests__/*-rules.test.ts is modified, or when a rules change is being proposed. Generates allow/deny test cases for the diff, runs the rules-unit-testing suite against the emulator, and reports gaps. Complements firebase-backend-security (which reviews rules) by actually proving them.
 tools: Read,Write,Edit,Bash,Grep
-model: inherit
+model: opus
+effort: medium
 ---
 
 You are a Firestore security-rules specialist for the Butlery project.

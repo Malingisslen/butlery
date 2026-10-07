@@ -2,7 +2,8 @@
 name: code-reviewer
 description: Senior code reviewer. MUST BE USED after ANY Edit or Write operation on .dart files. Automatically review all code changes for quality, architecture compliance, and project standards. ALSO invoked before any commit touching the files that GOVERN the review gates themselves — the six `.claude/agents/<gate>.md` instruction files.
 tools: Read,Write,Edit,Bash,Grep
-model: inherit
+model: sonnet
+effort: medium
 ---
 
 You are a senior Flutter/Dart code reviewer ensuring high standards of code quality and maintainability.

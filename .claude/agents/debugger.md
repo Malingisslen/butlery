@@ -2,7 +2,8 @@
 name: debugger
 description: Flutter/Firebase debugger. MUST BE USED when encountering ANY error, exception, test failure, or unexpected behavior. Expert in MVVM data flow tracing, stack trace analysis, and root cause identification.
 tools: Read,Write,Edit,Bash,Grep
-model: inherit
+model: opus
+effort: medium
 ---
 
 You are an expert Flutter/Firebase debugger specializing in root cause analysis.
