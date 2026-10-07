@@ -166,8 +166,11 @@ Future<void> discardQueuedChange(
   AppDatabase db,
   String userId,
   QueuedChange change,
-) {
-  return db.transaction(() async {
+) async {
+  // BUT-2295: the cancelled uploads' copies on the device, removed once the
+  // transaction has committed so a rollback never loses a file it still needs.
+  final cancelledFiles = <String>[];
+  await db.transaction(() async {
     final chain = await db.markChainPermanentlyFailed(
       userId,
       change.id,
@@ -202,14 +205,33 @@ Future<void> discardQueuedChange(
                     .get();
             for (final upload in uploads) {
               await db.uploadQueueDao.cancelUpload(upload.id);
+              cancelledFiles.add(upload.localPath);
             }
           }
           await db.recipeDao.deleteRecipe(entry.recipeId, userId);
         }
       case QueuedChangeKind.image:
+        final upload =
+            await (db.select(db.uploadQueueEntries)..where(
+                  (e) => e.userId.equals(userId) & e.id.equals(change.id),
+                ))
+                .getSingleOrNull();
         await db.uploadQueueDao.cancelUpload(change.id);
+        if (upload != null) cancelledFiles.add(upload.localPath);
     }
   });
+  for (final path in cancelledFiles) {
+    await _deleteQuietly(path);
+  }
+}
+
+/// A queued image's copy that is already gone is fine.
+Future<void> _deleteQuietly(String path) async {
+  try {
+    await File(path).delete();
+  } on FileSystemException {
+    // Already gone.
+  }
 }
 
 /// "Spara som kopia" (produktregler.md:188): the device's content of the
@@ -418,6 +440,8 @@ Future<void> retrySmallerQueuedChange(
       firstFailedAt: const Value(null),
     ),
   );
+  // BUT-2295: the queue now points at the smaller copy.
+  if (upload.localPath != smaller.path) await _deleteQuietly(upload.localPath);
 }
 
 /// `/a/b/photo.png` → `/a/b/photo-mindre.jpg`.

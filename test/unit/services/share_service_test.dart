@@ -516,6 +516,39 @@ void main() {
       });
     });
 
+    group('BUT-2136: the fine-grained aisles are named in Swedish', () {
+      test('meat, fish, fruit and veg headers are not the raw keys', () {
+        final items = [
+          for (final category in [
+            ShoppingCategory.meat,
+            ShoppingCategory.fish,
+            ShoppingCategory.fruit,
+            ShoppingCategory.veg,
+          ])
+            UnifiedShoppingItem(
+              id: category,
+              name: 'vara',
+              amount: 1,
+              unit: '',
+              category: category,
+              bought: false,
+            ),
+        ];
+
+        final formatted = shareService.formatShoppingList(items);
+        final grouped = shareService.formatShoppingListGrouped({
+          ShoppingCategory.veg: [items.last],
+        });
+
+        for (final header in ['【KÖTT】', '【FISK】', '【FRUKT】', '【GRÖNSAKER】']) {
+          expect(formatted, contains(header));
+        }
+        expect(formatted, isNot(contains('MEAT')));
+        expect(formatted, isNot(contains('VEG')));
+        expect(grouped, contains('GRÖNSAKER'));
+      });
+    });
+
     group('Weekly Menu Formatting', () {
       test('should format weekly menu with days', () {
         // Arrange

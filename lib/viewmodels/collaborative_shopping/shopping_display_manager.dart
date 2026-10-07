@@ -9,41 +9,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages UI display helpers including colors, status text, and item formatting.
 class ShoppingDisplayManager {
-  /// Translate language-neutral category constant to localized display name.
-  String _categoryDisplayName(String category) {
-    final l = AppLocale.current;
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return l.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return l.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return l.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return l.categoryBread;
-      case ShoppingCategory.pantry:
-        return l.categoryPantry;
-      case ShoppingCategory.frozen:
-        return l.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return l.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return l.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return l.categoryHygiene;
-      case ShoppingCategory.spices:
-        return l.categorySpices;
-      case ShoppingCategory.canned:
-        return l.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return l.categoryDryGoods;
-      case ShoppingCategory.other:
-        return l.categoryOther;
-      default:
-        return category;
-    }
-  }
-
   Color getStatusColor(
     ColorScheme cs,
     ModeColors modeColors,
@@ -82,7 +47,7 @@ class ShoppingDisplayManager {
     }
 
     if (item.category.isNotEmpty && item.category != ShoppingCategory.other) {
-      parts.add(_categoryDisplayName(item.category));
+      parts.add(ShoppingCategory.displayName(item.category));
     }
 
     if (item.bought) {

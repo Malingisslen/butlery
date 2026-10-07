@@ -357,13 +357,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   /// Called by OfflineSyncManager for pending tag operations.
   Future<void> _retagRecipe(String recipeId, String userId) async {
     try {
-      // Get the recipe from local storage
-      final recipe = await _userStorage.getRecipeForUser(recipeId, userId);
-      if (recipe == null) {
-        AppLogger.warning('⚠️ Recipe $recipeId not found in offline storage');
-        return;
-      }
-
       // CRIT-8: Get TaggingService with defensive error handling
       // Service might not be available during early startup or on web platform
       TaggingService? taggingService;
@@ -377,35 +370,18 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
         rethrow; // Propagate to trigger retry
       }
 
-      // Generate tags
-      final tagResult = await taggingService.generateTags(recipe);
-      if (tagResult == null) {
-        AppLogger.warning(
-          '⚠️ Tagging returned null for recipe: ${recipe.title}',
-        );
+      final retagged = await _userStorage.retagRecipeForUser(
+        recipeId,
+        userId,
+        taggingService.generateTags,
+      );
+      if (!retagged) {
+        AppLogger.warning('⚠️ Recipe $recipeId was not retagged');
         return;
       }
-
-      // Update recipe with new tags
-      final updatedRecipe = Recipe(
-        core: recipe.core.copyWith(tagResult: tagResult),
-        type: recipe.type,
-        socialData: recipe.socialData,
-        realtimeData: recipe.realtimeData,
-        offlineData: recipe.offlineData,
-      );
-
-      // Save updated recipe back to local storage (will also sync to Firebase)
-      await queueRecipeWrite(
-        updatedRecipe,
-        userId,
-        operation: SyncOperation.update,
-      );
-
-      AppLogger.success(
-        '✅ Retagged recipe "${recipe.title}" with ${tagResult.tags.length} tags '
-        '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
-      );
+      await refreshSyncState();
+      _sendWhenOnline();
+      AppLogger.success('✅ Retagged recipe $recipeId');
     } catch (e) {
       AppLogger.error('❌ Failed to retag recipe $recipeId: $e');
       rethrow; // Let sync manager handle retry

@@ -278,6 +278,27 @@ class ArlaRecipeParser extends RecipeSiteParser {
       }
     }
 
+    if (ingredients.isEmpty) ingredients.addAll(_extractIngredientTable(doc));
+    return ingredients;
+  }
+
+  /// BUT-2020: arla.se lists ingredients as table rows, the name in a `<th>`
+  /// and the amount in the `<td>` after it. The page carries the table once
+  /// per layout, so only the first wrap is read.
+  List<String> _extractIngredientTable(Document doc) {
+    final wrap = doc.querySelector('.c-recipe__ingredients-inner-wrap');
+    final rows = (wrap ?? doc.documentElement)?.querySelectorAll(
+      '.c-recipe__ingredients-group tr',
+    );
+    final ingredients = <String>[];
+    for (final row in rows ?? const <Element>[]) {
+      final name = (row.querySelector('th')?.text.trim()).orEmpty();
+      if (name.isEmpty) continue;
+      final amount = (row.querySelector('td')?.text.trim()).orEmpty();
+      ingredients.add(
+        cleanSwedishText(amount.isEmpty ? name : '$amount $name'),
+      );
+    }
     return ingredients;
   }
 
@@ -286,6 +307,7 @@ class ArlaRecipeParser extends RecipeSiteParser {
 
     final selectors = [
       '.recipe-steps li',
+      '.c-recipe__instructions-step',
       '.instructions ol li',
       '.recipe-instructions li',
       '.arla-instructions li',

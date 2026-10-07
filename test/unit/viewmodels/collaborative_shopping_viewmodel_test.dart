@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
@@ -400,6 +401,23 @@ void main() {
         const butlery = ModeColors.light;
         final progressColor = viewModel.getProgressColor(cs, butlery);
         expect(progressColor, isA<Color>());
+      });
+
+      test('BUT-2136: an item subtitle names a fine-grained aisle', () {
+        final manager = ShoppingDisplayManager();
+        final subtitle = manager.getItemSubtitle(
+          UnifiedShoppingItem(
+            id: 'i',
+            name: 'Fläskfilé',
+            amount: 1,
+            unit: '',
+            category: ShoppingCategory.meat,
+            bought: false,
+          ),
+        );
+
+        expect(subtitle, contains('Kött'));
+        expect(subtitle, isNot(contains('meat')));
       });
 
       // P7-C4: the progress colour reads the generated member for the
