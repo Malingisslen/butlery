@@ -8584,7 +8584,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String blockedUsersUnblockMessage(String name) {
-    return 'Vill du avblockera $name? Användaren kommer kunna se ditt innehåll igen.';
+    return 'Vill du avblockera $name?';
   }
 
   @override
@@ -8595,6 +8595,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get blockedUsersEmpty => 'Inga blockerade användare';
+
+  @override
+  String get blockedUsersSharesHiddenNote =>
+      'Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.';
 
   @override
   String blockedUsersUnblockSelectedCount(int count) {
@@ -16604,6 +16608,14 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get permPhotosDenied =>
       'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.';
+
+  @override
+  String get permCameraDeniedImage =>
+      'Kameran är inte tillåten, så bilden går inte att ta.';
+
+  @override
+  String get permPhotosDeniedImage =>
+      'Bildbiblioteket är inte tillåtet, så bilden går inte att välja.';
 
   @override
   String get permCameraPermanentlyDenied =>

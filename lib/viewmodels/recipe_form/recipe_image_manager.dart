@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/models/media_permission_notice.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/widgets/recipe/upload_choice_dialog.dart'
     as upload_dialog;
@@ -70,6 +71,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   bool _isUploadingImage = false;
   String? _imageUploadError;
+  MediaPermissionNotice? _permissionNotice;
 
   // Random instance for temporary recipe ID generation
   static final Random _random = Random.secure();
@@ -95,6 +97,17 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       setError: _setImageUploadError,
       checkCompletionEvents: _checkAndTriggerCompletionEvents,
     );
+  }
+
+  /// What the last pick's camera or photo-library answer leaves to explain
+  /// in the editor (flow 07). Null when there is nothing to say.
+  MediaPermissionNotice? get permissionNotice => _permissionNotice;
+
+  void _notePermission(ImageSource source, OsPermissionOutcome outcome) {
+    final notice = MediaPermissionNotice.after(source, outcome);
+    if (notice == _permissionNotice) return;
+    _permissionNotice = notice;
+    _safeNotifyListeners(immediate: true);
   }
 
   /// Combined list of all images for UI display
@@ -349,13 +362,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           rationale: mediaRationalePrompt(context),
           enableCrop: true,
         );
+        _notePermission(imageSource, outcome.permission);
         final pickedFile = outcome.file;
         if (pickedFile != null) {
           final xFile = XFile(pickedFile.path);
           await _processImagePickerResult(xFile, recipeId: recipeId);
-        } else if (outcome.blockedByPermission && context.mounted) {
-          // Flow 07: the permission, not a failure, stopped the pick.
-          explainMediaPermission(context, outcome.permission, imageSource);
         }
         // A cancelled pick is no error (content-style-guide.md:94).
       }
@@ -366,9 +377,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Pick single image from camera directly (no dialog)
+  /// [askAgain] is "Fråga igen" on the notice: the user asked for the
+  /// system prompt, so our explanation is not repeated
+  /// (produktregler.md:683). The same holds for the gallery picks below.
   Future<void> pickImageFromCamera(
     BuildContext context, {
     String? recipeId,
+    bool askAgain = false,
   }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -381,16 +396,14 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
       final outcome = await _imagePickerService.pickImageWithOutcome(
         ImageSource.camera,
-        rationale: mediaRationalePrompt(context),
+        rationale: askAgain ? null : mediaRationalePrompt(context),
         enableCrop: true,
       );
+      _notePermission(ImageSource.camera, outcome.permission);
       final pickedFile = outcome.file;
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
-      } else if (outcome.blockedByPermission && context.mounted) {
-        // Flow 07: the permission, not a failure, stopped the pick.
-        explainMediaPermission(context, outcome.permission, ImageSource.camera);
       }
       // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
@@ -405,6 +418,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickImageFromGallery(
     BuildContext context, {
     String? recipeId,
+    bool askAgain = false,
   }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -417,20 +431,14 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
       final outcome = await _imagePickerService.pickImageWithOutcome(
         ImageSource.gallery,
-        rationale: mediaRationalePrompt(context),
+        rationale: askAgain ? null : mediaRationalePrompt(context),
         enableCrop: true,
       );
+      _notePermission(ImageSource.gallery, outcome.permission);
       final pickedFile = outcome.file;
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
-      } else if (outcome.blockedByPermission && context.mounted) {
-        // Flow 07: the permission, not a failure, stopped the pick.
-        explainMediaPermission(
-          context,
-          outcome.permission,
-          ImageSource.gallery,
-        );
       }
       // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
@@ -445,6 +453,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickMultipleImagesFromGallery(
     BuildContext context, {
     String? recipeId,
+    bool askAgain = false,
   }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -456,19 +465,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _setUploadingImage(true);
 
       final outcome = await _imagePickerService.pickMultipleImagesWithOutcome(
-        rationale: mediaRationalePrompt(context),
+        rationale: askAgain ? null : mediaRationalePrompt(context),
       );
+      _notePermission(ImageSource.gallery, outcome.permission);
       final pickedFiles = outcome.files;
       if (pickedFiles.isNotEmpty) {
         final xFiles = pickedFiles.map((file) => XFile(file.path)).toList();
         await _processImagePickerResult(xFiles, recipeId: recipeId);
-      } else if (outcome.blockedByPermission && context.mounted) {
-        // Flow 07: the permission, not a failure, stopped the pick.
-        explainMediaPermission(
-          context,
-          outcome.permission,
-          ImageSource.gallery,
-        );
       }
       // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {

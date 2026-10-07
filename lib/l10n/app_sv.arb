@@ -5974,10 +5974,11 @@
   "a11ySelected": "vald",
   "a11yNotSelected": "ej vald",
   "blockedUsersUnblockTitle": "Avblockera användare?",
-  "blockedUsersUnblockMessage": "Vill du avblockera {name}? Användaren kommer kunna se ditt innehåll igen.",
+  "blockedUsersUnblockMessage": "Vill du avblockera {name}?",
   "blockedUsersUnblock": "Avblockera",
   "blockedUsersTitle": "Blockerade användare",
   "blockedUsersEmpty": "Inga blockerade användare",
+  "blockedUsersSharesHiddenNote": "Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.",
   "blockedUsersUnblockSelectedCount": "Avblockera valda ({count})",
   "@blockedUsersUnblockSelectedCount": {
     "placeholders": {
@@ -12628,6 +12629,8 @@
   "permPhotosBody": "Butlery läser bara de bilder du själv väljer.",
   "permCameraDenied": "Kameran är inte tillåten, så receptet går inte att fotografera.",
   "permPhotosDenied": "Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.",
+  "permCameraDeniedImage": "Kameran är inte tillåten, så bilden går inte att ta.",
+  "permPhotosDeniedImage": "Bildbiblioteket är inte tillåtet, så bilden går inte att välja.",
   "permCameraPermanentlyDenied": "Kameran är avstängd för Butlery i telefonens inställningar.",
   "permPhotosPermanentlyDenied": "Bildbiblioteket är avstängt för Butlery i telefonens inställningar.",
   "permCameraRestricted": "Enheten har spärrat kameran. Det går inte att ändra här.",

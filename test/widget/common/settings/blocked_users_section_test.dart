@@ -145,6 +145,22 @@ void main() {
       expect(find.byIcon(ButleryIcons.unlock), findsNothing);
     });
 
+    // BUT-2169: the list says what a block does to shares, since the blocked
+    // person sees their shares disappear too.
+    testWidgets('the open list explains that shares are hidden, not deleted', (
+      tester,
+    ) async {
+      await pumpExpanded(tester);
+
+      expect(
+        find.text(
+          'Recept, menyer och inköpslistor ni har skickat till varandra är '
+          'dolda för er båda så länge blockeringen gäller. Inget raderas.',
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('long-press enters selection mode and selects that tile', (
       tester,
     ) async {

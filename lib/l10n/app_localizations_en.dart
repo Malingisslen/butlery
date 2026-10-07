@@ -8574,7 +8574,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String blockedUsersUnblockMessage(String name) {
-    return 'Do you want to unblock $name? The user will be able to see your content again.';
+    return 'Do you want to unblock $name?';
   }
 
   @override
@@ -8585,6 +8585,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get blockedUsersEmpty => 'No blocked users';
+
+  @override
+  String get blockedUsersSharesHiddenNote =>
+      'Recipes, menus and shopping lists you have sent each other are hidden from both of you while the block lasts. Nothing is deleted.';
 
   @override
   String blockedUsersUnblockSelectedCount(int count) {
@@ -16578,6 +16582,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permPhotosDenied =>
       'The photo library is not allowed, so the recipe cannot be read from a photo.';
+
+  @override
+  String get permCameraDeniedImage =>
+      'The camera is not allowed, so the photo cannot be taken.';
+
+  @override
+  String get permPhotosDeniedImage =>
+      'The photo library is not allowed, so the photo cannot be chosen.';
 
   @override
   String get permCameraPermanentlyDenied =>

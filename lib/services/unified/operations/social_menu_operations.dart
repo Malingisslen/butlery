@@ -3,11 +3,12 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Social menu operations for friend-based and group sharing with import/export and activity tracking.
@@ -44,6 +45,9 @@ class SocialMenuOperations {
         AppLogger.error('No friends selected for sharing');
         return false;
       }
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      friendUserIds = await BlockedUserFilter.shareRecipients(friendUserIds);
+      if (friendUserIds.isEmpty) return false;
 
       if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
         AppLogger.error('User must be authenticated to share menu');
@@ -279,17 +283,11 @@ class SocialMenuOperations {
 
       if (sharedMenuIds.isEmpty) return [];
 
-      final menuDocsById = <String, Map<String, dynamic>>{};
-      for (final chunk in sharedMenuIds.chunked(kFirestoreWhereInLimit)) {
-        final menuQuery = await _firestore
-            .collection(FirestoreCollections.sharedContent)
-            .where(FieldPath.documentId, whereIn: chunk)
-            .get();
-
-        for (final menuDoc in menuQuery.docs) {
-          menuDocsById[menuDoc.id] = menuDoc.data();
-        }
-      }
+      final menuDocsById = await fetchReadableByIds(
+        _firestore,
+        FirestoreCollections.sharedContent,
+        sharedMenuIds,
+      );
 
       final sharedMenus = <Map<String, dynamic>>[];
       for (final sharedMenuId in sharedMenuIds) {

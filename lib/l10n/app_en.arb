@@ -5941,10 +5941,11 @@
   "a11ySelected": "selected",
   "a11yNotSelected": "not selected",
   "blockedUsersUnblockTitle": "Unblock user?",
-  "blockedUsersUnblockMessage": "Do you want to unblock {name}? The user will be able to see your content again.",
+  "blockedUsersUnblockMessage": "Do you want to unblock {name}?",
   "blockedUsersUnblock": "Unblock",
   "blockedUsersTitle": "Blocked users",
   "blockedUsersEmpty": "No blocked users",
+  "blockedUsersSharesHiddenNote": "Recipes, menus and shopping lists you have sent each other are hidden from both of you while the block lasts. Nothing is deleted.",
   "blockedUsersUnblockSelectedCount": "Unblock selected ({count})",
   "@blockedUsersUnblockSelectedCount": {
     "placeholders": {
@@ -12310,6 +12311,8 @@
   "permPhotosBody": "Butlery only reads the photos you choose.",
   "permCameraDenied": "The camera is not allowed, so the recipe cannot be photographed.",
   "permPhotosDenied": "The photo library is not allowed, so the recipe cannot be read from a photo.",
+  "permCameraDeniedImage": "The camera is not allowed, so the photo cannot be taken.",
+  "permPhotosDeniedImage": "The photo library is not allowed, so the photo cannot be chosen.",
   "permCameraPermanentlyDenied": "The camera is switched off for Butlery in the phone's settings.",
   "permPhotosPermanentlyDenied": "The photo library is switched off for Butlery in the phone's settings.",
   "permCameraRestricted": "This device blocks the camera. It cannot be changed here.",

@@ -206,6 +206,10 @@ export { setProfileSearchability } from "./social/set-profile-searchability";
 // client write to it.
 export { syncBlockMirror } from "./social/sync-block-mirror";
 
+// BUT-2169: a block hides what the two people shared with each other, both
+// directions, and an unblock brings it back.
+export { holdSharesOnBlock } from "./social/hold-shares-on-block";
+
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
 
