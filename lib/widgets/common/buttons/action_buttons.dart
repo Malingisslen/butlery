@@ -380,18 +380,18 @@ class FloatingActionButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final result = Semantics(
-      label: semanticLabel,
-      button: true,
-      enabled: onPressed != null,
+    // FloatingActionButton puts its tooltip on a node above its button node,
+    // leaving the button unnamed; the name goes inside the button instead.
+    final result = Tooltip(
+      message: semanticLabel,
+      excludeFromSemantics: true,
       child: PressFill(
         surface: PressSurface.ink,
         child: FloatingActionButton(
           onPressed: onPressed,
-          tooltip: semanticLabel,
           backgroundColor: backgroundColor ?? cs.primary,
           foregroundColor: foregroundColor ?? cs.onPrimary,
-          child: child,
+          child: Semantics(label: semanticLabel, child: child),
         ),
       ),
     );
@@ -444,16 +444,18 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Tooltip alone doesn't always surface on the semantic tree when the
-    // IconButton is nested under interactive ancestors.
-    return Semantics(
-      label: semanticLabel,
-      button: true,
-      enabled: onPressed != null,
+    // The name sits inside the button node as its label, as in
+    // FloatingActionButtonWidget; IconButton's own tooltip would name it
+    // through the tooltip field instead.
+    return Tooltip(
+      message: semanticLabel,
+      excludeFromSemantics: true,
       child: IconButton(
-        icon: ButleryIcon(icon, color: color, size: iconSize),
+        icon: Semantics(
+          label: semanticLabel,
+          child: ButleryIcon(icon, color: color, size: iconSize),
+        ),
         onPressed: onPressed,
-        tooltip: semanticLabel,
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
       ),
     );

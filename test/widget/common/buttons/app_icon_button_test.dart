@@ -32,9 +32,6 @@ void main() {
         ),
       );
 
-      // AppIconButton wraps IconButton in an explicit Semantics node so the
-      // label is visible in the semantic tree for TalkBack/VoiceOver, not
-      // just in the tooltip overlay.
       expect(find.bySemanticsLabel('Dela recept'), findsOneWidget);
     });
 
