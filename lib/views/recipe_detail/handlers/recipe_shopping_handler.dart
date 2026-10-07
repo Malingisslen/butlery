@@ -172,7 +172,6 @@ class RecipeShoppingHandler {
                             height: 8,
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.onSurface,
-                              borderRadius: BorderRadius.circular(0),
                             ),
                           ),
                           const SizedBox(width: AppDimensions.spacingL),

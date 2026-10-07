@@ -216,7 +216,7 @@ class HeaderGhostIllustration extends StatelessWidget {
             // Identity modulate (white = preserve source colors); not
             // theme-dependent — modulating with anything else would tint.
             colorFilter: const ColorFilter.mode(
-              Color(0xFFFFFFFF),
+              Colors.white,
               BlendMode.modulate,
             ),
             child: Image.asset(

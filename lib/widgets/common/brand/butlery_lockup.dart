@@ -297,6 +297,6 @@ class ButleryLockupDrawing {
   static Color _parseColor(String css) {
     final hex = css.trim().replaceFirst('#', '');
     final value = int.parse(hex, radix: 16);
-    return Color(0xFF000000 | value);
+    return Color(value).withAlpha(255);
   }
 }
