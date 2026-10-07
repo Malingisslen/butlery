@@ -461,6 +461,8 @@
     }
   },
   "autoSaveEnabled": "Autospar aktiverat",
+  "autoSaveFailed": "Utkastet kunde inte sparas.",
+  "autoSaveFailedPreserved": "Det du skrivit finns kvar här. Tryck Spara för att spara receptet.",
   "selectionFriendSelectedWithName": "{name} vald",
   "@selectionFriendSelectedWithName": {
     "placeholders": {

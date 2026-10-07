@@ -455,6 +455,8 @@
     }
   },
   "autoSaveEnabled": "Auto-save enabled",
+  "autoSaveFailed": "The draft could not be saved.",
+  "autoSaveFailedPreserved": "What you wrote is still here. Tap Save to save the recipe.",
   "selectionFriendSelectedWithName": "{name} selected",
   "@selectionFriendSelectedWithName": {
     "placeholders": {

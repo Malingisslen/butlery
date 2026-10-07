@@ -175,6 +175,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   DateTime? _lastAutoSaveTime;
   bool _isTemplate = false; // Track if this is a template-based form
   Completer<void>? _metadataWriteLock;
+  bool _hasSaveFailed = false;
+  int _failurePeriod = 0;
 
   // Auto-save state for UI feedback
   bool get isAutoSaving => _isAutoSaving;
@@ -182,6 +184,15 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       _lastAutoSaveTime != null &&
       clock.now().difference(_lastAutoSaveTime!).inSeconds < 10;
   String? get currentDraftId => _currentDraftId;
+
+  /// Whether the latest draft write failed. The editor shows a warning
+  /// triangle instead of the cloud while this holds (BUT-2224 = A).
+  bool get hasAutoSaveFailed => _hasSaveFailed;
+
+  /// Counts failure periods: it grows when a period starts, not on every
+  /// failed write, so the editor can show its failure snackbar once per
+  /// period (BUT-2224 = A).
+  int get autoSaveFailurePeriod => _failurePeriod;
 
   /// BUT-1136 test seam: lets tests assert that a pending debounce timer
   /// survives a `scheduleAutoSave(..., skipIfBusy: true)` call while a
@@ -290,6 +301,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       await _saveDraftMetadata(metadata);
 
       _lastAutoSaveTime = now;
+      _hasSaveFailed = false;
 
       // Show subtle user feedback (once per session)
       if (!_hasShownAutoSaveNotice) {
@@ -302,7 +314,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       );
     } catch (e) {
       AppLogger.error('🔄 AUTO_SAVE: Failed to save draft: $e');
-      // Don't show error to user for auto-save failures - it's background operation
+      if (!_hasSaveFailed) {
+        _hasSaveFailed = true;
+        _failurePeriod++;
+      }
     } finally {
       _isAutoSaving = false;
       if (!_isDisposed) notifyListeners();
@@ -555,6 +570,9 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// delete was still in flight — and if the delete completed AFTER the
   /// new metadata index write, the fresh entry got clobbered.
   Future<void> clearCurrentDraft() async {
+    // The recipe itself is saved, so a failed draft no longer matters, even
+    // when the broken storage makes the delete below throw too.
+    _hasSaveFailed = false;
     if (_currentDraftId != null) {
       final idToDelete = _currentDraftId!;
       await deleteDraft(idToDelete);

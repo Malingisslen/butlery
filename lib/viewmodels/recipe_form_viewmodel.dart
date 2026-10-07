@@ -244,6 +244,8 @@ class RecipeFormViewModel extends BaseViewModel
   bool get isValid => _state.isValid;
   bool get isAutoSaving => _state.isAutoSaving;
   bool get hasRecentAutoSave => _state.hasRecentAutoSave;
+  bool get hasAutoSaveFailed => _state.hasAutoSaveFailed;
+  int get autoSaveFailurePeriod => _state.autoSaveFailurePeriod;
 
   /// CRITICAL: Detects unsaved changes to prevent data loss on navigation.
   bool get hasUnsavedChanges {

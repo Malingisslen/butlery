@@ -806,6 +806,18 @@ abstract class AppLocalizations {
   /// **'Autospar aktiverat'**
   String get autoSaveEnabled;
 
+  /// No description provided for @autoSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utkastet kunde inte sparas.'**
+  String get autoSaveFailed;
+
+  /// No description provided for @autoSaveFailedPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du skrivit finns kvar här. Tryck Spara för att spara receptet.'**
+  String get autoSaveFailedPreserved;
+
   /// No description provided for @selectionFriendSelectedWithName.
   ///
   /// In sv, this message translates to:

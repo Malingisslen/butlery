@@ -22,6 +22,7 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -251,10 +252,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       (vm) =>
           vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
     );
-    final (isAutoSaving, hasRecentAutoSave) = context
-        .select<RecipeFormViewModel, (bool, bool)>(
-          (vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
-        );
+    final (
+      isAutoSaving,
+      hasRecentAutoSave,
+      hasAutoSaveFailed,
+      failurePeriod,
+    ) = context.select<RecipeFormViewModel, (bool, bool, bool, int)>(
+      (vm) => (
+        vm.isAutoSaving,
+        vm.hasRecentAutoSave,
+        vm.hasAutoSaveFailed,
+        vm.autoSaveFailurePeriod,
+      ),
+    );
     // Q6-08 = A: someone else's recipe is not edited, a change is suggested
     // (produktregler.md:247, the menu item's own words).
     final suggests = context.select<RecipeFormViewModel, bool>(
@@ -273,17 +283,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onPressed: () => Navigator.of(context).maybePop(),
       ),
       actions: [
-        if (isAutoSaving)
-          SizedBox(
-            width: AppDimensions.iconSizeL,
-            child: PlateLine(semanticLabel: context.l10n.statusSaving),
-          )
-        else if (hasRecentAutoSave)
-          ButleryIcon(
-            Icons.cloud_done_outlined,
-            size: AppDimensions.iconSizeM,
-            color: cs.onSurface,
-          ),
+        DraftSaveIndicator(
+          isSaving: isAutoSaving,
+          hasRecentSave: hasRecentAutoSave,
+          hasFailed: hasAutoSaveFailed,
+          failurePeriod: failurePeriod,
+          color: cs.onSurface,
+        ),
         // Shared editing is carried by the badge and the banner below, not
         // by a tinted bar (tokens.json:40-53).
         if (isCollaborative)

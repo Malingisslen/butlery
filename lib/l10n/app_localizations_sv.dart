@@ -459,6 +459,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get autoSaveEnabled => 'Autospar aktiverat';
 
   @override
+  String get autoSaveFailed => 'Utkastet kunde inte sparas.';
+
+  @override
+  String get autoSaveFailedPreserved =>
+      'Det du skrivit finns kvar här. Tryck Spara för att spara receptet.';
+
+  @override
   String selectionFriendSelectedWithName(String name) {
     return '$name vald';
   }
