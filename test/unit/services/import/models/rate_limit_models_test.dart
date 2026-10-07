@@ -132,6 +132,22 @@ void main() {
       expect(ServerLlmCost.dayResetAfter(_feb01At0001).isUtc, isTrue);
     });
 
+    // Same TZ caveat as the key test above: bites under TZ=Europe/Stockholm,
+    // where 23:59 UTC on 31 Jan is already 1 Feb on the wall clock.
+    test('resets are computed from the UTC instant of a local DateTime', () {
+      final local = _jan31At2359.toLocal();
+      expect(
+        ServerLlmCost.dayResetAfter(local),
+        ServerLlmCost.dayResetAfter(_jan31At2359),
+      );
+      expect(ServerLlmCost.dayResetAfter(local), DateTime.utc(2026, 2));
+      expect(
+        ServerLlmCost.monthResetAfter(local),
+        ServerLlmCost.monthResetAfter(_jan31At2359),
+      );
+      expect(ServerLlmCost.monthResetAfter(local), DateTime.utc(2026, 2));
+    });
+
     test('the month resets at the first instant of the next UTC month', () {
       expect(
         ServerLlmCost.monthResetAfter(_jan31At2359),
