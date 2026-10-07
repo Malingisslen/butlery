@@ -128,7 +128,6 @@ const Map<String, Map<String, int>> _residue = {
   'lib/views/photo_import_view.dart': {
     'draw_outlined': 1,
     'library_books': 1,
-    'no_photography_outlined': 1,
     'restore': 2,
   },
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart': {
@@ -349,6 +348,9 @@ const Map<String, Map<String, int>> _residue = {
     'history': 1,
     'repeat': 1,
     'title': 1,
+  },
+  'lib/widgets/common/permissions/media_permission_notice_card.dart': {
+    'no_photography_outlined': 1,
   },
   'lib/widgets/common/permissions/permission_widgets.dart': {'save': 4},
   'lib/widgets/common/profile/builders/profile_section_builders.dart': {

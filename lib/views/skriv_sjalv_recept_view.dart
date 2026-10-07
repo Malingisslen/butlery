@@ -29,6 +29,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/recipe/recipe_image_permission_notice.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
@@ -539,6 +540,7 @@ class _SkrivSjalvReceptViewContentState
                             onCancelAllActive: viewModel.cancelAllActiveUploads,
                             onClearAllFailed: viewModel.clearAllFailedUploads,
                           ),
+                          RecipeImagePermissionNotice(viewModel: viewModel),
                           const SizedBox(height: AppDimensions.spacingXl),
 
                           // Titel

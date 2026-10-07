@@ -27347,6 +27347,18 @@ abstract class AppLocalizations {
   /// **'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.'**
   String get permPhotosDenied;
 
+  /// No description provided for @permCameraDeniedImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kameran är inte tillåten, så bilden går inte att ta.'**
+  String get permCameraDeniedImage;
+
+  /// No description provided for @permPhotosDeniedImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildbiblioteket är inte tillåtet, så bilden går inte att välja.'**
+  String get permPhotosDeniedImage;
+
   /// No description provided for @permCameraPermanentlyDenied.
   ///
   /// In sv, this message translates to:

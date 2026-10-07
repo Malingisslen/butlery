@@ -12308,6 +12308,8 @@
   "permPhotosBody": "Butlery only reads the photos you choose.",
   "permCameraDenied": "The camera is not allowed, so the recipe cannot be photographed.",
   "permPhotosDenied": "The photo library is not allowed, so the recipe cannot be read from a photo.",
+  "permCameraDeniedImage": "The camera is not allowed, so the photo cannot be taken.",
+  "permPhotosDeniedImage": "The photo library is not allowed, so the photo cannot be chosen.",
   "permCameraPermanentlyDenied": "The camera is switched off for Butlery in the phone's settings.",
   "permPhotosPermanentlyDenied": "The photo library is switched off for Butlery in the phone's settings.",
   "permCameraRestricted": "This device blocks the camera. It cannot be changed here.",

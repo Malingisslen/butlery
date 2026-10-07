@@ -50,6 +50,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/recipe/recipe_image_permission_notice.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
 import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
@@ -473,6 +474,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           maxImages: 5,
           isLoading: viewModel.isUploadingImage,
         ),
+        RecipeImagePermissionNotice(viewModel: viewModel),
         const SizedBox(height: AppDimensions.spacingXl),
       ],
 

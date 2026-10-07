@@ -8,6 +8,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/models/media_permission_notice.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
@@ -17,6 +18,7 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -64,6 +66,9 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
   final List<File> _selectedImages = [];
   bool _isUploadingImages = false;
 
+  // Flow 07: what the last pick's photo-library answer leaves to explain.
+  MediaPermissionNotice? _permissionNotice;
+
   late final ImagePickerService _imagePicker;
   late final StorageService _storageService;
 
@@ -104,23 +109,25 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     _draftManager.save(text);
   }
 
-  Future<void> _pickImages() async {
-    if (_atImageCap) return;
+  /// [askAgain] is "Fråga igen" on the notice: the user asked for the
+  /// system prompt, so our explanation is not repeated
+  /// (produktregler.md:683).
+  Future<void> _pickImages({bool askAgain = false}) async {
+    // The notice's Fråga igen stays tappable while a post uploads the list.
+    if (_atImageCap || _isBusy) return;
     final remaining = RecipeComment.maxImageUrls - _selectedImages.length;
     // Flow 07: explanation before the system prompt (produktregler.md:682).
     final outcome = await _imagePicker.pickMultipleImagesWithOutcome(
       maxImages: remaining,
-      rationale: mediaRationalePrompt(context),
+      rationale: askAgain ? null : mediaRationalePrompt(context),
     );
     if (!mounted) return;
-    if (outcome.blockedByPermission) {
-      explainMediaPermission(context, outcome.permission, ImageSource.gallery);
-      return;
-    }
-    final picked = outcome.files;
-    if (picked.isEmpty) return;
     setState(() {
-      _selectedImages.addAll(picked.take(remaining));
+      _permissionNotice = MediaPermissionNotice.after(
+        ImageSource.gallery,
+        outcome.permission,
+      );
+      _selectedImages.addAll(outcome.files.take(remaining));
     });
   }
 
@@ -347,6 +354,18 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             ),
           ],
         ),
+        if (_permissionNotice case final notice?) ...[
+          const SizedBox(height: AppDimensions.space4),
+          // The library is the only source here, and writing it yourself
+          // is offered in photo import (Malin, decision A, 2026-10-07).
+          MediaPermissionNoticeCard(
+            source: notice.source,
+            outcome: notice.outcome,
+            deniedMessage: context.l10n.permPhotosDeniedImage,
+            onAskAgain: () => _pickImages(askAgain: true),
+            onOpenSettings: OsPermissionHelper.openSettings,
+          ),
+        ],
         if (_selectedImages.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.space4),
           _buildImagePreviewRow(context),

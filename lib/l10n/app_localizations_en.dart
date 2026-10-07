@@ -16573,6 +16573,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The photo library is not allowed, so the recipe cannot be read from a photo.';
 
   @override
+  String get permCameraDeniedImage =>
+      'The camera is not allowed, so the photo cannot be taken.';
+
+  @override
+  String get permPhotosDeniedImage =>
+      'The photo library is not allowed, so the photo cannot be chosen.';
+
+  @override
   String get permCameraPermanentlyDenied =>
       'The camera is switched off for Butlery in the phone\'s settings.';
 

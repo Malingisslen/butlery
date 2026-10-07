@@ -16599,6 +16599,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'Bildbiblioteket är inte tillåtet, så receptet går inte att läsa ur en bild.';
 
   @override
+  String get permCameraDeniedImage =>
+      'Kameran är inte tillåten, så bilden går inte att ta.';
+
+  @override
+  String get permPhotosDeniedImage =>
+      'Bildbiblioteket är inte tillåtet, så bilden går inte att välja.';
+
+  @override
   String get permCameraPermanentlyDenied =>
       'Kameran är avstängd för Butlery i telefonens inställningar.';
 

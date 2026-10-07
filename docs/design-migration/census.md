@@ -7,17 +7,17 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 28 known failures and 1 residue lists are not empty
-- Known failures: 28 (a11y 12, transitions 16)
+- **Migration complete:** NO: 26 known failures and 1 residue lists are not empty
+- Known failures: 26 (a11y 12, transitions 14)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 11 registered in Linear
+- Tickets: 10 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 390`
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 8, MISSING 4, PARTIAL 4, TESTED 65.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 8, MISSING 4, PARTIAL 2, TESTED 67.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
@@ -35,8 +35,6 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::06::mfa::ominloggning-kravs` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::06::mfa::paslagning-kraver-reservkoder` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::06::mfa::utmaning-maskerad-ledtrad` | BUILT_NOT_REACHABLE | BUT-2142 |
-| `TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv` | PARTIAL | BUT-2160 |
-| `TR::FLOW::07::nekad::funktionen-kvar` | PARTIAL | BUT-2160 |
 | `TR::FLOW::08::ko::toms::konfliktbanner` | BUILT_NOT_REACHABLE | BUT-2213 |
 | `TR::FLOW::08::lagring-slut::varning-innan-nedladdning` | MISSING | BUT-2163 |
 
@@ -79,7 +77,7 @@ tokens.json 1.13 (sha256 `f5bcf844d33b5c6907745b03b4ee1cf1850a55266c084ef24dd4c0
 
 ## Icon residue
 
-Material icons with no Butlery glyph yet: 390 uses of 178 icons in 173 files (Material icon uses found in lib code: 390).
+Material icons with no Butlery glyph yet: 390 uses of 178 icons in 174 files (Material icon uses found in lib code: 390).
 Rows still listed for files that are deleted (not counted): `lib/widgets/common/feedback/snackbar_widgets.dart`, `lib/widgets/common/indicators/sync_indicator.dart`.
 
 ## Known failures by ticket
@@ -92,7 +90,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2142 | transitions 5 |  |
 | BUT-2151 | transitions 1 |  |
 | BUT-2158 | transitions 2 |  |
-| BUT-2160 | transitions 2 |  |
 | BUT-2163 | transitions 1 |  |
 | BUT-2169 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
@@ -126,7 +123,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 82 | 82 | 82 |
 | `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
-| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 175 | 394 | 390 |
+| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 176 | 394 | 390 |
 | `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | LIVE | 2 | 2 | 0 |
 | `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 2 | 3 | 3 |
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 0 | 0 | 0 |
@@ -145,7 +142,7 @@ Code only: comments are not counted; generated l10n is left out.
 | `AppSpecificColors` | 10 | `lib/theme/app_mode_colors.dart`, `lib/theme/app_specific_colors.dart` | app-specific decoration colours (lib/theme/app_specific_colors.dart) |
 | `SeasonalAccent*` | 0 |  | retired seasonal tint (Q7-01 = A) |
 | `CupertinoColors` | 0 |  | Cupertino palette |
-| `Icons.<name>` | 390 | 173 files | Material icons; the residue is listed in icon_census_test |
+| `Icons.<name>` | 390 | 174 files | Material icons; the residue is listed in icon_census_test |
 | `CupertinoIcons.<name>` | 0 |  | banned by icon_census_test |
 | `AdaptiveAppBar(` | 0 |  | retired for ButleryTopBar (B-45) |
 | `CircularProgressIndicator(` | 0 |  | Material spinner; PlateLine is the only loading indicator (B-18) |

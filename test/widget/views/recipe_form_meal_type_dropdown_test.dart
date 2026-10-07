@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/recipe/recipe_image_permission_notice.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -306,6 +307,32 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(mealTypeDropdown(tester).initialValue, 'Huvudrätt');
+    });
+
+    // BUT-2160: the camera and library answers are explained under the image
+    // strip on both editors; the notice's own behaviour is pinned in
+    // recipe_image_permission_notice_test.dart.
+    testWidgets('both editors carry the image permission notice', (
+      tester,
+    ) async {
+      await pumpSkrivSjalv(tester, 'dinner');
+      expect(find.byType(RecipeImagePermissionNotice), findsOneWidget);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          // Someone else's recipe opens as a suggestion, without images.
+          child: EditRecipeView(
+            recipe: RecipeFactory.build(
+              id: 'recipe-but-2160',
+              title: 'Testrecept',
+              createdBy: 'test-user-123',
+            ),
+          ),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(RecipeImagePermissionNotice), findsOneWidget);
     });
 
     // The selected value is read through the dropdown's own text style. A
