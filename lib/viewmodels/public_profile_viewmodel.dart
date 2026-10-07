@@ -13,10 +13,17 @@ class PublicProfileViewModel extends BaseViewModel {
 
   UserProfile? _profile;
   List<Recipe> _publicRecipes = [];
+  bool _isSearchable = false;
 
   UserProfile? get profile => _profile;
   List<Recipe> get publicRecipes => _publicRecipes;
   bool get hasPublicRecipes => _publicRecipes.isNotEmpty;
+
+  /// Whether the profile is findable in people-search: stored
+  /// `isSearchable == true` and not hidden by moderation. A missing value, or
+  /// a read that fails, counts as not searchable, so a non-friend gets no
+  /// friend button (R8-7).
+  bool get isSearchable => _isSearchable;
 
   PublicProfileViewModel({required this.userId}) {
     loadProfile();
@@ -32,9 +39,19 @@ class PublicProfileViewModel extends BaseViewModel {
       }
 
       _profile = fetchedProfile;
+      _isSearchable =
+          !fetchedProfile.isHidden && await _readSearchable(userRepo);
 
       final recipeRepo = ServiceLocator.get<RecipeRepository>();
       _publicRecipes = await recipeRepo.fetchPublicUserRecipes(userId);
     }, errorPrefix: AppLocale.current.publicProfileError);
+  }
+
+  Future<bool> _readSearchable(UserRepository userRepo) async {
+    try {
+      return await userRepo.fetchPersistedSearchable(userId);
+    } catch (_) {
+      return false;
+    }
   }
 }
