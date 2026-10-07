@@ -64,6 +64,8 @@ library;
 
 import 'dart:io';
 
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_coordinator.dart';
@@ -503,6 +505,68 @@ void main() {
         );
       },
     );
+  });
+
+  group('BUT-2162: how a failed upload is marked', () {
+    Future<Map<String, ImageUploadStatus>> failWith(
+      _Harness h,
+      Object error, {
+      ImageUploadStatus? before,
+    }) async {
+      final file = File('/a.jpg');
+      final imageStates = {'/a.jpg': before ?? _pending()};
+      when(() => h.storage.uploadRecipeImage(file, 'r-1')).thenThrow(error);
+      await h.coordinator.uploadPendingImagesInBackground(
+        [file],
+        'r-1',
+        imageStates: imageStates,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
+      );
+      return imageStates;
+    }
+
+    test('a network failure is marked as one, for the offline queue', () async {
+      final h = _Harness();
+      final states = await failWith(
+        h,
+        const StorageUploadException('network-request-failed', 'offline'),
+      );
+
+      expect(states['/a.jpg']!.state, ImageUploadState.failed);
+      expect(states['/a.jpg']!.errorType, ImageUploadErrorType.network);
+      expect(h.errorsSet, isEmpty);
+    });
+
+    test('a too-large image is marked too large and says so', () async {
+      final h = _Harness();
+      final states = await failWith(
+        h,
+        const StorageUploadException(StorageUploadException.tooLargeCode, ''),
+      );
+
+      expect(states['/a.jpg']!.error, StorageUploadException.tooLargeCode);
+      expect(states['/a.jpg']!.errorType, ImageUploadErrorType.unknown);
+      expect(h.errorsSet, [AppLocale.current.imageUploadTooLarge('10')]);
+    });
+
+    test('a refusal is neither, even after a network failure', () async {
+      final h = _Harness();
+      final states = await failWith(
+        h,
+        const StorageUploadException('unauthorized', ''),
+        before: const ImageUploadStatus(
+          state: ImageUploadState.pending,
+          errorType: ImageUploadErrorType.network,
+        ),
+      );
+
+      expect(states['/a.jpg']!.errorType, ImageUploadErrorType.unknown);
+      expect(
+        states['/a.jpg']!.error,
+        isNot(StorageUploadException.tooLargeCode),
+      );
+    });
   });
 
   group('retryAllFailedUploads', () {

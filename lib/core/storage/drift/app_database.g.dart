@@ -2220,6 +2220,30 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _nextAttemptAtMeta = const VerificationMeta(
+    'nextAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAt =
+      GeneratedColumn<DateTime>(
+        'next_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _firstFailedAtMeta = const VerificationMeta(
+    'firstFailedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firstFailedAt =
+      GeneratedColumn<DateTime>(
+        'first_failed_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2238,6 +2262,8 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
     metadata,
     dependsOn,
     permanentlyFailed,
+    nextAttemptAt,
+    firstFailedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2368,6 +2394,24 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         ),
       );
     }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+        _nextAttemptAtMeta,
+        nextAttemptAt.isAcceptableOrUnknown(
+          data['next_attempt_at']!,
+          _nextAttemptAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('first_failed_at')) {
+      context.handle(
+        _firstFailedAtMeta,
+        firstFailedAt.isAcceptableOrUnknown(
+          data['first_failed_at']!,
+          _firstFailedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2441,6 +2485,14 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         DriftSqlType.bool,
         data['${effectivePrefix}permanently_failed'],
       )!,
+      nextAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_attempt_at'],
+      ),
+      firstFailedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}first_failed_at'],
+      ),
     );
   }
 
@@ -2506,6 +2558,12 @@ class UploadQueueEntry extends DataClass
   /// produktregler.md:189). It stays in the queue for the user to decide on
   /// and is never deleted without her (produktregler.md:192).
   final bool permanentlyFailed;
+
+  /// When the upload may be tried again, or null to try it at the next pass.
+  final DateTime? nextAttemptAt;
+
+  /// When its first attempt failed, for the 24 h limit; null until then.
+  final DateTime? firstFailedAt;
   const UploadQueueEntry({
     required this.id,
     required this.userId,
@@ -2523,6 +2581,8 @@ class UploadQueueEntry extends DataClass
     this.metadata,
     this.dependsOn,
     required this.permanentlyFailed,
+    this.nextAttemptAt,
+    this.firstFailedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2555,6 +2615,12 @@ class UploadQueueEntry extends DataClass
       map['depends_on'] = Variable<String>(dependsOn);
     }
     map['permanently_failed'] = Variable<bool>(permanentlyFailed);
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    if (!nullToAbsent || firstFailedAt != null) {
+      map['first_failed_at'] = Variable<DateTime>(firstFailedAt);
+    }
     return map;
   }
 
@@ -2588,6 +2654,12 @@ class UploadQueueEntry extends DataClass
           ? const Value.absent()
           : Value(dependsOn),
       permanentlyFailed: Value(permanentlyFailed),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+      firstFailedAt: firstFailedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstFailedAt),
     );
   }
 
@@ -2613,6 +2685,8 @@ class UploadQueueEntry extends DataClass
       metadata: serializer.fromJson<String?>(json['metadata']),
       dependsOn: serializer.fromJson<String?>(json['dependsOn']),
       permanentlyFailed: serializer.fromJson<bool>(json['permanentlyFailed']),
+      nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+      firstFailedAt: serializer.fromJson<DateTime?>(json['firstFailedAt']),
     );
   }
   @override
@@ -2635,6 +2709,8 @@ class UploadQueueEntry extends DataClass
       'metadata': serializer.toJson<String?>(metadata),
       'dependsOn': serializer.toJson<String?>(dependsOn),
       'permanentlyFailed': serializer.toJson<bool>(permanentlyFailed),
+      'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+      'firstFailedAt': serializer.toJson<DateTime?>(firstFailedAt),
     };
   }
 
@@ -2655,6 +2731,8 @@ class UploadQueueEntry extends DataClass
     Value<String?> metadata = const Value.absent(),
     Value<String?> dependsOn = const Value.absent(),
     bool? permanentlyFailed,
+    Value<DateTime?> nextAttemptAt = const Value.absent(),
+    Value<DateTime?> firstFailedAt = const Value.absent(),
   }) => UploadQueueEntry(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -2674,6 +2752,12 @@ class UploadQueueEntry extends DataClass
     metadata: metadata.present ? metadata.value : this.metadata,
     dependsOn: dependsOn.present ? dependsOn.value : this.dependsOn,
     permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
+    nextAttemptAt: nextAttemptAt.present
+        ? nextAttemptAt.value
+        : this.nextAttemptAt,
+    firstFailedAt: firstFailedAt.present
+        ? firstFailedAt.value
+        : this.firstFailedAt,
   );
   UploadQueueEntry copyWithCompanion(UploadQueueEntriesCompanion data) {
     return UploadQueueEntry(
@@ -2707,6 +2791,12 @@ class UploadQueueEntry extends DataClass
       permanentlyFailed: data.permanentlyFailed.present
           ? data.permanentlyFailed.value
           : this.permanentlyFailed,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+      firstFailedAt: data.firstFailedAt.present
+          ? data.firstFailedAt.value
+          : this.firstFailedAt,
     );
   }
 
@@ -2728,7 +2818,9 @@ class UploadQueueEntry extends DataClass
           ..write('entityType: $entityType, ')
           ..write('metadata: $metadata, ')
           ..write('dependsOn: $dependsOn, ')
-          ..write('permanentlyFailed: $permanentlyFailed')
+          ..write('permanentlyFailed: $permanentlyFailed, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('firstFailedAt: $firstFailedAt')
           ..write(')'))
         .toString();
   }
@@ -2751,6 +2843,8 @@ class UploadQueueEntry extends DataClass
     metadata,
     dependsOn,
     permanentlyFailed,
+    nextAttemptAt,
+    firstFailedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2771,7 +2865,9 @@ class UploadQueueEntry extends DataClass
           other.entityType == this.entityType &&
           other.metadata == this.metadata &&
           other.dependsOn == this.dependsOn &&
-          other.permanentlyFailed == this.permanentlyFailed);
+          other.permanentlyFailed == this.permanentlyFailed &&
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.firstFailedAt == this.firstFailedAt);
 }
 
 class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
@@ -2791,6 +2887,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
   final Value<String?> metadata;
   final Value<String?> dependsOn;
   final Value<bool> permanentlyFailed;
+  final Value<DateTime?> nextAttemptAt;
+  final Value<DateTime?> firstFailedAt;
   final Value<int> rowid;
   const UploadQueueEntriesCompanion({
     this.id = const Value.absent(),
@@ -2809,6 +2907,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     this.metadata = const Value.absent(),
     this.dependsOn = const Value.absent(),
     this.permanentlyFailed = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.firstFailedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UploadQueueEntriesCompanion.insert({
@@ -2828,6 +2928,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     this.metadata = const Value.absent(),
     this.dependsOn = const Value.absent(),
     this.permanentlyFailed = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.firstFailedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -2852,6 +2954,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     Expression<String>? metadata,
     Expression<String>? dependsOn,
     Expression<bool>? permanentlyFailed,
+    Expression<DateTime>? nextAttemptAt,
+    Expression<DateTime>? firstFailedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2871,6 +2975,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
       if (metadata != null) 'metadata': metadata,
       if (dependsOn != null) 'depends_on': dependsOn,
       if (permanentlyFailed != null) 'permanently_failed': permanentlyFailed,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (firstFailedAt != null) 'first_failed_at': firstFailedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2892,6 +2998,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     Value<String?>? metadata,
     Value<String?>? dependsOn,
     Value<bool>? permanentlyFailed,
+    Value<DateTime?>? nextAttemptAt,
+    Value<DateTime?>? firstFailedAt,
     Value<int>? rowid,
   }) {
     return UploadQueueEntriesCompanion(
@@ -2911,6 +3019,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
       metadata: metadata ?? this.metadata,
       dependsOn: dependsOn ?? this.dependsOn,
       permanentlyFailed: permanentlyFailed ?? this.permanentlyFailed,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      firstFailedAt: firstFailedAt ?? this.firstFailedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2966,6 +3076,12 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     if (permanentlyFailed.present) {
       map['permanently_failed'] = Variable<bool>(permanentlyFailed.value);
     }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
+    }
+    if (firstFailedAt.present) {
+      map['first_failed_at'] = Variable<DateTime>(firstFailedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2991,6 +3107,8 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
           ..write('metadata: $metadata, ')
           ..write('dependsOn: $dependsOn, ')
           ..write('permanentlyFailed: $permanentlyFailed, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('firstFailedAt: $firstFailedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4073,6 +4191,8 @@ typedef $$UploadQueueEntriesTableCreateCompanionBuilder =
       Value<String?> metadata,
       Value<String?> dependsOn,
       Value<bool> permanentlyFailed,
+      Value<DateTime?> nextAttemptAt,
+      Value<DateTime?> firstFailedAt,
       Value<int> rowid,
     });
 typedef $$UploadQueueEntriesTableUpdateCompanionBuilder =
@@ -4093,6 +4213,8 @@ typedef $$UploadQueueEntriesTableUpdateCompanionBuilder =
       Value<String?> metadata,
       Value<String?> dependsOn,
       Value<bool> permanentlyFailed,
+      Value<DateTime?> nextAttemptAt,
+      Value<DateTime?> firstFailedAt,
       Value<int> rowid,
     });
 
@@ -4182,6 +4304,16 @@ class $$UploadQueueEntriesTableFilterComposer
 
   ColumnFilters<bool> get permanentlyFailed => $composableBuilder(
     column: $table.permanentlyFailed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firstFailedAt => $composableBuilder(
+    column: $table.firstFailedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4274,6 +4406,16 @@ class $$UploadQueueEntriesTableOrderingComposer
     column: $table.permanentlyFailed,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get firstFailedAt => $composableBuilder(
+    column: $table.firstFailedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UploadQueueEntriesTableAnnotationComposer
@@ -4346,6 +4488,16 @@ class $$UploadQueueEntriesTableAnnotationComposer
     column: $table.permanentlyFailed,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get firstFailedAt => $composableBuilder(
+    column: $table.firstFailedAt,
+    builder: (column) => column,
+  );
 }
 
 class $$UploadQueueEntriesTableTableManager
@@ -4404,6 +4556,8 @@ class $$UploadQueueEntriesTableTableManager
                 Value<String?> metadata = const Value.absent(),
                 Value<String?> dependsOn = const Value.absent(),
                 Value<bool> permanentlyFailed = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<DateTime?> firstFailedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UploadQueueEntriesCompanion(
                 id: id,
@@ -4422,6 +4576,8 @@ class $$UploadQueueEntriesTableTableManager
                 metadata: metadata,
                 dependsOn: dependsOn,
                 permanentlyFailed: permanentlyFailed,
+                nextAttemptAt: nextAttemptAt,
+                firstFailedAt: firstFailedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4442,6 +4598,8 @@ class $$UploadQueueEntriesTableTableManager
                 Value<String?> metadata = const Value.absent(),
                 Value<String?> dependsOn = const Value.absent(),
                 Value<bool> permanentlyFailed = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<DateTime?> firstFailedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UploadQueueEntriesCompanion.insert(
                 id: id,
@@ -4460,6 +4618,8 @@ class $$UploadQueueEntriesTableTableManager
                 metadata: metadata,
                 dependsOn: dependsOn,
                 permanentlyFailed: permanentlyFailed,
+                nextAttemptAt: nextAttemptAt,
+                firstFailedAt: firstFailedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

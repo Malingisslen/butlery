@@ -7,6 +7,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -17,6 +18,8 @@ class MockAppDatabase extends Mock implements AppDatabase {}
 class MockRecipeDao extends Mock implements RecipeDao {}
 
 class MockSyncQueueDao extends Mock implements SyncQueueDao {}
+
+class MockUploadQueueDao extends Mock implements UploadQueueDao {}
 
 // Fake OfflineRecipe for stubbing
 class FakeOfflineRecipe extends Fake implements OfflineRecipe {
@@ -63,6 +66,12 @@ void main() {
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
       when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
+      final mockUploadQueueDao = MockUploadQueueDao();
+      when(() => mockDatabase.uploadQueueDao).thenReturn(mockUploadQueueDao);
+      // No image of the recipe waits to go up.
+      when(
+        () => mockUploadQueueDao.getUploadsForEntity(any(), any()),
+      ).thenAnswer((_) async => []);
 
       // No create of the recipe waits in the queue.
       when(

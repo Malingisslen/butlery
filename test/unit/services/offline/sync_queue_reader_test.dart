@@ -16,6 +16,7 @@ import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline/sync_queue_reader.dart';
 import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
@@ -507,6 +508,15 @@ void main() {
         ..writeAsBytesSync(List.filled(4000, 1));
       final change = await tooLarge(original.path, 4000);
       expect(change.canTrySmaller, isTrue);
+      // A failure after retries left a retry schedule behind (BUT-2162).
+      await db
+          .update(db.uploadQueueEntries)
+          .write(
+            UploadQueueEntriesCompanion(
+              nextAttemptAt: Value(t0.add(const Duration(hours: 1))),
+              firstFailedAt: Value(t0),
+            ),
+          );
 
       final smaller = _jpeg(40, 30);
       await retrySmallerQueuedChange(
@@ -522,6 +532,8 @@ void main() {
       expect(row.fileSizeBytes, smaller.length);
       expect(row.permanentlyFailed, isFalse);
       expect(row.status, 'pending');
+      expect(row.nextAttemptAt, isNull, reason: 'sent at the next pass');
+      expect(row.firstFailedAt, isNull, reason: 'a new 24 h limit');
       expect(original.existsSync(), isTrue, reason: 'the original is kept');
     });
 

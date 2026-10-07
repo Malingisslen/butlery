@@ -10,6 +10,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
@@ -92,6 +93,38 @@ void main() {
 
     tearDownAll(() async {
       await TestServiceLocator.reset();
+    });
+
+    group('BUT-2162: images the offline queue takes', () {
+      test('only an image the network failed is offered to the queue, and '
+          'it leaves the form only when released', () async {
+        final network = File('/picked/net.jpg');
+        final big = File('/picked/big.jpg');
+        when(
+          () => mockStorageService.uploadRecipeImage(network, testRecipeId),
+        ).thenThrow(
+          const StorageUploadException('network-request-failed', 'offline'),
+        );
+        when(
+          () => mockStorageService.uploadRecipeImage(big, testRecipeId),
+        ).thenThrow(
+          const StorageUploadException(StorageUploadException.tooLargeCode, ''),
+        );
+        imageManager
+          ..addPendingImage(network)
+          ..addPendingImage(big);
+
+        await imageManager.uploadPendingImagesInBackground(testRecipeId);
+
+        expect(imageManager.hasTooLargeImage, isTrue);
+        expect(imageManager.networkFailedImages, [network]);
+        expect(imageManager.totalImageCount, 2);
+
+        imageManager.releaseToOfflineQueue([network]);
+
+        expect(imageManager.networkFailedImages, isEmpty);
+        expect(imageManager.totalImageCount, 1, reason: 'the big one stays');
+      });
     });
 
     group('Initialization and Basic Properties', () {

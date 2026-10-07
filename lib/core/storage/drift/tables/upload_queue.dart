@@ -71,6 +71,15 @@ class UploadQueueEntries extends Table {
   BoolColumn get permanentlyFailed =>
       boolean().withDefault(const Constant(false))();
 
+  // ── Schema 5: the retry schedule (produktregler.md:188), as on the sync
+  // queue in schema 4.
+
+  /// When the upload may be tried again, or null to try it at the next pass.
+  DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+
+  /// When its first attempt failed, for the 24 h limit; null until then.
+  DateTimeColumn get firstFailedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
