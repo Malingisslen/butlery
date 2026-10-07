@@ -617,7 +617,7 @@
     {
       "id": "TR::FLOW::05::person::blockerad",
       "flow": "05",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/unit/viewmodels/shared_content/shared_recipe_viewmodel_test.dart",
       "test_name": "excludes content from blocked users (read at load time)",
       "tests": [
@@ -632,14 +632,30 @@
         {
           "file": "test/unit/viewmodels/shared_content/shared_shopping_viewmodel_test.dart",
           "name": "blocked-user content IS filtered out (BUT-1085 / BUT-1069 regression)"
+        },
+        {
+          "file": "functions/src/__tests__/hold-shares-on-block.test.ts",
+          "name": "a block takes the blocked person off the blocker's recipe share and its recipe"
+        },
+        {
+          "file": "functions/src/__tests__/hold-shares-on-block.test.ts",
+          "name": "the other direction: what the blocked person shared is taken off the blocker too"
+        },
+        {
+          "file": "functions/src/__tests__/hold-shares-on-block.test.ts",
+          "name": "an unblock puts back the inbox entry, the member row and the recipe permission"
+        },
+        {
+          "file": "functions/src/__tests__/shared-content-block-rules.test.ts",
+          "name": "update: the sharer cannot put a held person back in the recipient list"
+        },
+        {
+          "file": "test/unit/services/social/blocking/blocked_user_filter_test.dart",
+          "name": "drops both the person I blocked and the person who blocked me"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests: what a blocked person shared is hidden from me.",
-      "known_gap": {
-        "reason": "Only my side is filtered (base_shared_content_viewmodel.dart:99-100 reads the users I blocked). I found no code or test that hides my earlier shares from the person I blocked, or that proves the history is kept.",
-        "ticket": "BUT-2169"
-      }
+      "reason": "Both directions (BUT-2169): a block takes each person off what the other shared, history is kept and comes back on unblock, and a new share skips anyone on either side of a block."
     },
     {
       "id": "TR::FLOW::06::aterstall::satt-nytt",

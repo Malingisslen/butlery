@@ -5538,3 +5538,51 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   F3-1 = A).** produktregler.md § 2.4 says "alla skrivningar". Shopping lists (BUT-2287),
   pantry (BUT-2288), weekly menu (BUT-2289), profile (BUT-2290) and chat (BUT-2291) still
   write through Firestore's offline cache; each has its own ticket.
+
+## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
+
+The first three entries are Malin's decisions. The rest are gaps the build ships with and
+await her confirmation on the PR.
+
+- **Both directions, and the blocked person can tell (Malin, 2026-10-07, F1 = a).**
+  `holdSharesOnBlock` takes each person off the `shared_content` rows the other shared with
+  them and keeps the history on the row (`blockHeldUserIds`, `blockHeld.<uid>`), and an
+  unblock puts it back. The blocked person sees a share disappear, so for shares the block is
+  visible to them. Chat display stays one-directional (BUT-1917). Do not harmonise the two.
+  produktregler.md § 18.5 is rewritten to match.
+- **Scope is one-off shares only (Malin, 2026-10-07, F2).** `shared_content` rows and the
+  `'direct'` grant the same share wrote on a recipe. Groups, live shared lists and realtime
+  menus are untouched by a block, so someone who reads a recipe through a `group:` grant keeps
+  reading it while blocked.
+- **A blocked person can still share to a group the blocker is in (F3).** The client drops
+  the blocker from the recipients without saying so (`BlockedUserFilter.shareRecipients`).
+- **The rules gate inherits the BUT-2017 mirror's decisions.** A share is refused through the
+  CALLER's block mirror on create, on a recipient list that grows, and on a new member row:
+  open when the mirror is missing, and in that direction only. The blocker's own direction is
+  the client filter alone, so a hand-rolled client of the blocker can still share to the
+  person they blocked, and that row is not held.
+- **A co-member can add someone the sharer blocked to the sharer's row.** The update rule
+  reads the co-member's mirror, not the sharer's, and no rule can read one `blocks` row per
+  added person.
+- **A hand-rolled client can write a person into `memberPermissions` on its own recipe across
+  a block.** No rule reads `blocks` on a recipe save; that would add a read to every recipe
+  write. The recipe then does not appear in the other person's inbox.
+- **A recipe share whose row write failed (`RecipeShareResult.partial`) is not held.** The
+  hold finds recipe access through the share row, so access granted without one survives a
+  block.
+- **Co-recipients can read `blockHeldUserIds` and `blockHeld` on the row**, which names the
+  two people a block stands between and keeps the held person's old member row and
+  permission. The update and member rules need the list on the parent document. The app never
+  shows it, and the Art. 15 received sections strip both fields (`sharedRowForExport`),
+  without naming the strip in `data_minimisation` (BUT-2018's shape).
+- **A held person's Art. 15 bundle does not contain the held rows while the block stands.**
+  They cannot read them, and a read limb on `blockHeldUserIds` would undo the block. The rows
+  return to the bundle on unblock. BUT-1718's left-list shape.
+- **The account cascade clears held state before AND after tier 1** (`shared_content_block_held`
+  and `shared_content_block_held_after_tier1`), on shares where the erased user is held and on
+  shares they made. A release can still land after the second pass, or after a first pass
+  that failed or declined, and puts the erased uid back into another person's
+  `sharedToUserIds` and recipe `memberPermissions`/`grants`; no probe leg looks there.
+  `releasePair` declines only once the Auth account is gone, which is the cascade's last step.
+- **A recipe entry with no `grants` record is never held.** A block reads only a `'direct'`
+  grant as the share's own; a missing record is not read as direct (BUT-1797's rule).

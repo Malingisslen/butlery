@@ -6146,3 +6146,18 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
   docs DENIED (test 1, V2, V4, V5 red). Emulator cap is per distinct document.
 - Standalone probe (deleted in the same call): blocked person, block row standing, DM seeded —
   message create DENIED; `set({lastMessage: {...}}, {merge: true})` on the conversation ALLOWED.
+
+## 2026-10-07 — BUT-2169 `shared_content` block hold (commit-gate review, uncommitted tree)
+- New suite `shared-content-block-rules.test.ts` 13/13. No env-var probe seam; probed via a
+  sed copy (`PROJECT_ID`/`RULES_PATH` from env, `path.resolve` kept so `path` stays used),
+  deleted by trap. Mutants sliced to the `shared_content` block, match count asserted 1.
+- create-no-mirror: C2 red alone. create-no-keys-deny: C4+C5 red. update-no-held-hasAny: U2 red
+  alone. cannotModify minus `blockHeldUserIds`: U4 red alone. cannotModify minus `blockHeld`:
+  13/13 GREEN — no test moves the `blockHeld` map on update (deny-list key held constant by
+  `seedRow`). gain-arm `|| true`: U5 red alone. gain test `== -1`: U6 red alone.
+  members-no-held-check: M2 red alone.
+- Neighbour suites green on the same rules: rate-limit 76, shared-content-counters 24,
+  shared-content-metadata 11, members-collection-group 7, iter102 21, poll-votes 56.
+- Re-review same day: suite 16/16. cannotModify minus `blockHeld` now kills U7 alone; dropping
+  the new members `notBlockedByAnyOf([userId])` kills M3 alone (M4, a different target with the same mirror, is its control
+  and writes in `addMember`'s order: member row, then the parent arrayUnion).
