@@ -5,6 +5,31 @@ kodsessionen avslutas. Hela planen finns i `tasks/design-migration-completion-pl
 (faserna 0–8 och vad "klar" betyder). Arbetssättet framåt är en PR per biljett, automerge på
 grön CI och aldrig merge på rött.
 
+## Läget 2026-10-07
+
+Mätt med `tools/design_migration_census.dart` samma dag:
+
+- Kvar: 16 flödesövergångar och 390 ikonanvändningar utan ritad glyf (BUT-2166).
+- De 12 godtagna kontrastposterna (BUT-2196) räknas nu för sig enligt beslut D5 = B.
+  Census visar dem som "accepted", inte som kända brister.
+- Kontrast 0, interaktionstillstånd 33 av 33, vytillstånd 53 av 53.
+- Mergat sedan 2026-10-05: BUT-2146 (#407, #418), BUT-2248 (#411), BUT-2191 (#424),
+  BUT-2211 (#460), BUT-2250 (#471), fas 2 BUT-2148/2176/2177 (#470, #476, #477),
+  BUT-2168 (#472), BUT-2249 (#482), BUT-2162 del 1–3 (#484, #488, #489) och
+  BUT-2173/2174/2175 (#485).
+
+Kön framåt, i ordning:
+
+1. BUT-2235: startvyn kraschar i webbversionen. Det är en bugg och rättas direkt.
+2. BUT-2160 och BUT-2158 (fotoflödena) är UI och behöver ingen egen plan.
+3. Det som rör Firestore, auth eller servern får en egen plan som Malin säger ja till:
+   BUT-2215 (veckomenyns konfliktvarning), BUT-2213, BUT-2216/2217, BUT-2142, BUT-2169,
+   BUT-2170, BUT-2171 och BUT-2140.
+4. BUT-2163 (lagring nästan full) byggs sist.
+5. BUT-2166 (ikonerna) väntar på glyfer från designrepot.
+
+Avsnitten nedan är läget 2026-10-05 och står kvar som historik.
+
 ## Klart
 
 - **BUT-2205, tryckt och hovrat utseende:** PR #370–#380 är mergade och biljetten är Done.

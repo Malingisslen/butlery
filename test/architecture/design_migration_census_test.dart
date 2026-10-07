@@ -163,6 +163,46 @@ void main() {
     expect(v['package8_done'], startsWith('NOT_YET: 1 known failures'));
   });
 
+  test('an accepted a11y finding is counted apart, never as a known '
+      'failure (D5 = B)', () {
+    const file = 'test/views/design_states/known_a11y_findings.dart';
+    final source = CensusSource('.').read(file)!;
+    final added = source.replaceFirst(
+      'acceptedA11yFindings = {',
+      'acceptedA11yFindings = {\n'
+          "  'veckomeny::DEFAULT::light::412::1.0::TEXT_CONTRAST': 'BUT-2196',",
+    );
+    expect(added, isNot(source));
+    final v = census['verdict']! as Map;
+    final after =
+        buildCensus(
+              CensusSource('.', overrides: {file: added}),
+            )['verdict']!
+            as Map;
+    expect(after['accepted_failures'], (v['accepted_failures']! as int) + 1);
+    expect(after['known_failures'], v['known_failures']);
+    expect(
+      v['accepted_failures'],
+      section('a11y')['accepted_findings'],
+    );
+    final hostBound = source.replaceFirst(
+      'acceptedA11yFindingsLinuxOnly = {',
+      'acceptedA11yFindingsLinuxOnly = {\n'
+          "  'veckomeny::DEFAULT::dark::412::1.0::TEXT_CONTRAST': 'BUT-2196',",
+    );
+    expect(hostBound, isNot(source));
+    final afterHost =
+        buildCensus(
+              CensusSource('.', overrides: {file: hostBound}),
+            )['verdict']!
+            as Map;
+    expect(
+      afterHost['accepted_failures'],
+      (v['accepted_failures']! as int) + 1,
+    );
+    expect(afterHost['known_failures'], v['known_failures']);
+  });
+
   test('two runs give byte-identical output', () {
     final again = buildCensus(CensusSource('.'));
     expect(renderJson(again), renderJson(census));
