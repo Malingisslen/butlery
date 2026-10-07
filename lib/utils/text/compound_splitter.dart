@@ -77,6 +77,47 @@ class CompoundSplitter {
     return result;
   }
 
+  /// Dish words that name a preparation rather than an ingredient, so the
+  /// first half of the compound is what the dish is made of.
+  static const _dishHeads = [
+    'sallad',
+    'röra',
+    'soppa',
+    'gryta',
+    'cocktail',
+    'pastej',
+    'stuvning',
+  ];
+
+  /// Endings a Swedish noun drops as the first half of a compound:
+  /// "räka" → "räksallad", "kräftor" → "kräftsoppa".
+  static const _droppedStemEndings = ['', 'a', 'or'];
+
+  /// BUT-2234: the ingredient a dish compound is named after, or null.
+  ///
+  /// [extractBase] needs the first half to be a known word as written, so
+  /// "räksallad" (stem "räk", from "räka") matched nothing. This restores
+  /// the dropped ending, but only in front of a dish word: in "vitost" the
+  /// second half is an ingredient, and reading it as "vita" would be wrong.
+  static String? dishIngredient(String word, Set<String>? knownIngredients) {
+    for (final head in _dishHeads) {
+      if (!word.endsWith(head)) continue;
+      final stem = word.substring(0, word.length - head.length);
+      final stems = [
+        stem,
+        if (stem.endsWith('s')) stem.substring(0, stem.length - 1),
+      ];
+      for (final candidate in stems) {
+        if (candidate.length < _minComponentLength) continue;
+        for (final ending in _droppedStemEndings) {
+          final base = '$candidate$ending';
+          if (_isKnownIngredient(base, knownIngredients)) return base;
+        }
+      }
+    }
+    return null;
+  }
+
   /// Clear the cache (useful for testing)
   static void clearCache() => _cache.clear();
 

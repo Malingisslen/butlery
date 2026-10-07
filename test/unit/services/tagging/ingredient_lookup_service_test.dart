@@ -1193,6 +1193,38 @@ void main() {
       });
     },
   );
+
+  group('BUT-2234: dish compounds named after an ingredient', () {
+    test('räksallad adds the räka row but stays unmatched', () async {
+      final raka = _createIngredient(
+        'raka',
+        'räka',
+        properties: {'crustacean', 'shellfish', 'seafood'},
+      );
+      when(
+        () => mockIngredientRepo.findByName('raka'),
+      ).thenAnswer((_) async => raka);
+      final tomat = _createIngredient('tomato', 'tomat');
+      when(
+        () => mockIngredientRepo.findByName('tomat'),
+      ).thenAnswer((_) async => tomat);
+
+      final result = await service.lookupIngredients(['räksallad', 'tomat']);
+
+      expect(result.matched, containsAll([raka, tomat]));
+      expect(result.unmatched, ['räksallad']);
+      expect(result.coverage, 0.5);
+      expect(result.hasProperty('crustacean'), isTrue);
+    });
+
+    test('an unmatched compound with no dish word adds nothing', () async {
+      final result = await service.lookupIngredients(['vitost']);
+
+      expect(result.matched, isEmpty);
+      expect(result.unmatched, ['vitost']);
+      verifyNever(() => mockIngredientRepo.findByName('vita'));
+    });
+  });
 }
 
 /// Helper to create test ingredient data

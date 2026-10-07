@@ -248,4 +248,27 @@ void main() {
       });
     });
   });
+
+  group('BUT-2234: dishIngredient', () {
+    test('restores the ending a stem dropped in front of a dish word', () {
+      expect(CompoundSplitter.dishIngredient('räksallad', null), 'räka');
+      expect(CompoundSplitter.dishIngredient('krabbsallad', null), 'krabba');
+      expect(CompoundSplitter.dishIngredient('kräftsoppa', null), 'kräftor');
+    });
+
+    test('reads a genitive-s stem', () {
+      expect(CompoundSplitter.dishIngredient('laxsallad', null), 'lax');
+    });
+
+    test('leaves a compound whose second half is an ingredient alone', () {
+      expect(CompoundSplitter.dishIngredient('vitost', null), isNull);
+      expect(CompoundSplitter.dishIngredient('rovfisk', null), isNull);
+      expect(CompoundSplitter.dishIngredient('gurkmeja', null), isNull);
+    });
+
+    test('returns null when nothing in front of the dish word is known', () {
+      expect(CompoundSplitter.dishIngredient('sallad', null), isNull);
+      expect(CompoundSplitter.dishIngredient('qqqsallad', null), isNull);
+    });
+  });
 }
