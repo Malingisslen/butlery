@@ -7,10 +7,10 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 54 known failures and 1 residue lists are not empty
-- Known failures: 54 (a11y 12, interaction_checks 10, interactions 5, transitions 27)
+- **Migration complete:** NO: 39 known failures and 1 residue lists are not empty
+- Known failures: 39 (a11y 12, transitions 27)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 17 registered in Linear
+- Tickets: 14 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 390`
@@ -60,15 +60,10 @@ States: 53 (CONFLICT 2, DEFAULT 18, EMPTY 8, LOADING 11, OFFLINE 14), each run i
 
 ## Required control states
 
-Required: 33; MISSING 1, PARTIAL 4, TESTED 28. Unspecified in block 288 (not tested): 33; not required: 4. Known check findings: 10.
+Required: 33; TESTED 33. Unspecified in block 288 (not tested): 33; not required: 4. Known check findings: 0.
 
 | Control state | Status | Ticket |
 | --- | --- | --- |
-| `CSR::ROLE::combobox::EXPANDED` | PARTIAL | BUT-2176 |
-| `CSR::ROLE::link::DEFAULT` | PARTIAL | BUT-2177 |
-| `CSR::ROLE::link::FOCUSED` | MISSING | BUT-2177 |
-| `CSR::ROLE::radio::FOCUSED` | PARTIAL | BUT-2148 |
-| `CSR::ROLE::switch::FOCUSED` | PARTIAL | BUT-2148 |
 
 ## Contrast pairs
 
@@ -106,7 +101,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | --- | --- | --- |
 | BUT-2140 | transitions 1 |  |
 | BUT-2142 | transitions 5 |  |
-| BUT-2148 | interaction_checks 4, interactions 2 |  |
 | BUT-2151 | transitions 1 |  |
 | BUT-2158 | transitions 2 |  |
 | BUT-2160 | transitions 2 |  |
@@ -118,8 +112,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2173 | transitions 1 |  |
 | BUT-2174 | transitions 1 |  |
 | BUT-2175 | transitions 2 |  |
-| BUT-2176 | interaction_checks 2, interactions 1 |  |
-| BUT-2177 | interaction_checks 4, interactions 2 |  |
 | BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 
 ## Ratchets and adoption lists
