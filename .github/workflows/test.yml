@@ -599,6 +599,13 @@ jobs:
         run: |
           # Kill all Firebase emulator processes
           pkill -f "firebase" || true
+          # Wait for them to exit, so none is still touching the checkout when
+          # the post-job cache step hashes **/pubspec.lock. That hash has failed
+          # this job after its tests passed.
+          for _ in $(seq 1 30); do
+            pgrep -f "firebase" >/dev/null || break
+            sleep 1
+          done
 
       # Upload test results if tests fail
       - name: Upload test results
