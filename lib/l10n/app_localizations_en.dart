@@ -8567,7 +8567,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String blockedUsersUnblockMessage(String name) {
-    return 'Do you want to unblock $name? The user will be able to see your content again.';
+    return 'Do you want to unblock $name?';
   }
 
   @override
@@ -8578,6 +8578,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get blockedUsersEmpty => 'No blocked users';
+
+  @override
+  String get blockedUsersSharesHiddenNote =>
+      'Recipes, menus and shopping lists you have sent each other are hidden from both of you while the block lasts. Nothing is deleted.';
 
   @override
   String blockedUsersUnblockSelectedCount(int count) {

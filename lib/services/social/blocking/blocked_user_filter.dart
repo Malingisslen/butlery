@@ -33,8 +33,11 @@ import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 ///   rule that now refuses such a vote is not retroactive — rows written before
 ///   it landed are still there, so the client filter is what covers them.
 ///
+/// - **Share recipients use BOTH** (BUT-2169): nothing new is shared across a
+///   block in either direction.
+///
 /// Anything reaching for `blockedByIds` for a DISPLAY surface should stop and
-/// re-read the two bullets above.
+/// re-read the bullets above.
 class BlockedUserFilter {
   BlockedUserFilter({FirebaseBlockRepository? blockRepository})
     : _blockRepository = blockRepository;
@@ -126,6 +129,46 @@ class BlockedUserFilter {
     // the display path opens; writing into it from here would seed a set with
     // nothing behind it to update it.
     return ids;
+  }
+
+  /// BUT-2169: [recipientIds] without anyone a block stands between, in either
+  /// direction. A share is a write, not a display, so it uses both sets.
+  ///
+  /// Asks the server first. Offline it falls back to this device's cached
+  /// sets.
+  Future<List<String>> withoutBlocksEitherWay(List<String> recipientIds) async {
+    Set<String> blocked;
+    Set<String> blockedBy;
+    try {
+      blocked = await requireBlockedIds();
+      blockedBy = await requireBlockedByIds();
+    } catch (e) {
+      AppLogger.warning(
+        '[BlockedUserFilter] share check fell back to cache: $e',
+      );
+      blocked = await currentBlockedIds();
+      blockedBy = await currentBlockedByIds();
+    }
+    return recipientIds
+        .where((id) => !blocked.contains(id) && !blockedBy.contains(id))
+        .toList();
+  }
+
+  /// [withoutBlocksEitherWay] through the registered filter, or [recipientIds]
+  /// unchanged when none is registered.
+  static Future<List<String>> shareRecipients(
+    List<String> recipientIds,
+  ) async {
+    final filter = ServiceLocator.tryGet<BlockedUserFilter>();
+    if (filter == null) {
+      AppLogger.warning('[BlockedUserFilter] not registered; share unfiltered');
+      return recipientIds;
+    }
+    final kept = await filter.withoutBlocksEitherWay(recipientIds);
+    if (kept.isEmpty && recipientIds.isNotEmpty) {
+      AppLogger.info('[BlockedUserFilter] every share recipient was dropped');
+    }
+    return kept;
   }
 
   /// Cheap predicate for in-memory filtering. Empty set → no-op (return

@@ -5972,10 +5972,11 @@
   "a11ySelected": "vald",
   "a11yNotSelected": "ej vald",
   "blockedUsersUnblockTitle": "Avblockera användare?",
-  "blockedUsersUnblockMessage": "Vill du avblockera {name}? Användaren kommer kunna se ditt innehåll igen.",
+  "blockedUsersUnblockMessage": "Vill du avblockera {name}?",
   "blockedUsersUnblock": "Avblockera",
   "blockedUsersTitle": "Blockerade användare",
   "blockedUsersEmpty": "Inga blockerade användare",
+  "blockedUsersSharesHiddenNote": "Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.",
   "blockedUsersUnblockSelectedCount": "Avblockera valda ({count})",
   "@blockedUsersUnblockSelectedCount": {
     "placeholders": {

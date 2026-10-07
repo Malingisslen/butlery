@@ -291,6 +291,18 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
               )
             else ...[
               if (_selectionMode) _buildSelectionBar(context),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppDimensions.spacingMd,
+                  AppDimensions.spacingMd,
+                  AppDimensions.spacingMd,
+                  AppDimensions.spacingXs,
+                ),
+                child: Text(
+                  context.l10n.blockedUsersSharesHiddenNote,
+                  style: AppTextStyles.metadataEmphasized,
+                ),
+              ),
               ..._blockedUserIds.map(_buildBlockedUserTile),
             ],
           ],

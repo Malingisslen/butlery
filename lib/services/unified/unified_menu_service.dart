@@ -25,6 +25,7 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 
 /// Result of importing a shared menu.
 /// Indicates whether the import joined a collaborative session or created a local copy.
@@ -444,6 +445,13 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
     final result = await safeExecute<String?>(() async {
       try {
+        // BUT-2169: nothing new is shared across a block, in either direction.
+        inviteeUserIds = await BlockedUserFilter.shareRecipients(
+          inviteeUserIds,
+        );
+        if (inviteeUserIds.isEmpty) {
+          return null;
+        }
         AppLogger.info(
           '🔍🔍🔍 DEBUG SHARE ENTRY: createMenuInvitation called with "$menuTitle" for ${inviteeUserIds.length} users',
         );

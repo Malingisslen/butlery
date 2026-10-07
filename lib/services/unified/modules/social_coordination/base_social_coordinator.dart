@@ -31,6 +31,7 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart' as user_service;
 
 /// Abstract base coordinator for social content operations
@@ -130,6 +131,9 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     }
 
     try {
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      inviteeUserIds = await BlockedUserFilter.shareRecipients(inviteeUserIds);
+      if (inviteeUserIds.isEmpty) return null;
       AppLogger.info(
         '📨 Creating $contentTypeName invitation for $contentId to ${inviteeUserIds.length} users',
       );
