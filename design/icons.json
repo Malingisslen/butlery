@@ -16,9 +16,9 @@
     "superseded": "Tidigare riktning ”Lucide” är formellt övergiven 2026-07-25. Se beslutslogg B-02 i beslutslogg.md."
   },
   "counts": {
-    "ui": 73,
+    "ui": 91,
     "nav": 5,
-    "total": 78,
+    "total": 96,
     "used": 78,
     "source_date": "2026-08-05"
   },
@@ -216,6 +216,17 @@
       "status": "levererad"
     },
     {
+      "name": "circle",
+      "category": "tillstånd",
+      "meaning": "Ej vald (urvalsmarkör)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/circle.svg",
+      "status": "levererad"
+    },
+    {
       "name": "circle-check",
       "category": "status",
       "meaning": "Bekräftad",
@@ -224,6 +235,17 @@
       "fill": "none",
       "usages": 18,
       "master_svg": "assets/icons/circle-check.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "circle-dot",
+      "category": "tillstånd",
+      "meaning": "Vald, ett av flera (urvalsmarkör)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/circle-dot.svg",
       "status": "levererad"
     },
     {
@@ -337,6 +359,17 @@
       "status": "levererad"
     },
     {
+      "name": "flag",
+      "category": "åtgärd",
+      "meaning": "Rapportera",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/flag.svg",
+      "status": "levererad"
+    },
+    {
       "name": "folder",
       "category": "övrigt",
       "meaning": "Samling",
@@ -345,6 +378,28 @@
       "fill": "none",
       "usages": 1,
       "master_svg": "assets/icons/folder.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "globe",
+      "category": "objekt",
+      "meaning": "Språk",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/globe.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "grid",
+      "category": "objekt",
+      "meaning": "Kategori",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/grid.svg",
       "status": "levererad"
     },
     {
@@ -370,6 +425,17 @@
       "status": "levererad"
     },
     {
+      "name": "history",
+      "category": "åtgärd",
+      "meaning": "Historik, återställ",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/history.svg",
+      "status": "levererad"
+    },
+    {
       "name": "house",
       "category": "objekt",
       "meaning": "Hemma (närvaro)",
@@ -392,6 +458,28 @@
       "status": "levererad"
     },
     {
+      "name": "image-off",
+      "category": "status",
+      "meaning": "Bilden kunde inte visas",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/image-off.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "inbox",
+      "category": "objekt",
+      "meaning": "Inkorg",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/inbox.svg",
+      "status": "levererad"
+    },
+    {
       "name": "info",
       "category": "status",
       "meaning": "Information",
@@ -400,6 +488,17 @@
       "fill": "none",
       "usages": 30,
       "master_svg": "assets/icons/info.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "leaf",
+      "category": "objekt",
+      "meaning": "Kost, växtbaserat",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/leaf.svg",
       "status": "levererad"
     },
     {
@@ -436,6 +535,17 @@
       "status": "levererad"
     },
     {
+      "name": "list-x",
+      "category": "åtgärd",
+      "meaning": "Rensa alla",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/list-x.svg",
+      "status": "levererad"
+    },
+    {
       "name": "lock",
       "category": "status",
       "meaning": "Låst / privat",
@@ -444,6 +554,17 @@
       "fill": "none",
       "usages": 9,
       "master_svg": "assets/icons/lock.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "log-out",
+      "category": "åtgärd",
+      "meaning": "Logga ut, lämna",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/log-out.svg",
       "status": "levererad"
     },
     {
@@ -603,6 +724,28 @@
       "status": "levererad"
     },
     {
+      "name": "reply",
+      "category": "åtgärd",
+      "meaning": "Svara",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/reply.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "save",
+      "category": "åtgärd",
+      "meaning": "Spara",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/save.svg",
+      "status": "levererad"
+    },
+    {
       "name": "search",
       "category": "åtgärd",
       "meaning": "Sök",
@@ -611,6 +754,17 @@
       "fill": "none",
       "usages": 12,
       "master_svg": "assets/icons/search.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "search-off",
+      "category": "status",
+      "meaning": "Inga träffar",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/search-off.svg",
       "status": "levererad"
     },
     {
@@ -658,6 +812,17 @@
       "status": "levererad"
     },
     {
+      "name": "shield",
+      "category": "objekt",
+      "meaning": "Säkerhet, integritet",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/shield.svg",
+      "status": "levererad"
+    },
+    {
       "name": "shield-check",
       "category": "status",
       "meaning": "Verifierad",
@@ -688,6 +853,17 @@
       "fill": "none",
       "usages": 2,
       "master_svg": "assets/icons/shuffle.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "square",
+      "category": "tillstånd",
+      "meaning": "Ej markerad (kryssruta)",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/square.svg",
       "status": "levererad"
     },
     {
@@ -790,6 +966,17 @@
       "status": "levererad"
     },
     {
+      "name": "user-plus",
+      "category": "personer",
+      "meaning": "Lägg till person",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/user-plus.svg",
+      "status": "levererad"
+    },
+    {
       "name": "users",
       "category": "personer",
       "meaning": "Flera personer / grupp",
@@ -798,6 +985,17 @@
       "fill": "none",
       "usages": 15,
       "master_svg": "assets/icons/users.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "users-plus",
+      "category": "personer",
+      "meaning": "Lägg till i grupp",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/users-plus.svg",
       "status": "levererad"
     },
     {

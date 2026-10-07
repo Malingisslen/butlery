@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=775-->
+<!--manifest:files=793-->
 
 ## Reporoten
 
@@ -120,7 +120,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/chevron-right.svg` | `3879fe334bb7d761e670a7172dbc535b6b634ff78a725b7060ab346783151fc0` |
 | `assets/icons/chevron-up.svg` | `c817de8f05743addb7f47a84573ca8b10afb4755b536a588aae592dd1cbbf34f` |
 | `assets/icons/circle-check.svg` | `3fa65a65dd97fb9b3aa68ec61a478e9fec38e6bc5a5f2ca3074efe114c922894` |
+| `assets/icons/circle-dot.svg` | `c5910a205f3d568b139bb116f08436a90617448df9fe4142d8a9d73a7dda9ff2` |
 | `assets/icons/circle-help.svg` | `69914710a241d634cfa519383fdd96168525ba885762a6801c4e7d876527d153` |
+| `assets/icons/circle.svg` | `64687077cbfe9856759e53677ba0af42c1e6d6c2209cbcf19ea6bc50eb6126f0` |
 | `assets/icons/clock.svg` | `acf0fcdb418356b28a9f6409b4af80556b09d0b91f9a4626404718988e111bc3` |
 | `assets/icons/copy.svg` | `43a196b715896b06fbdeb61bfb7218400a08721e951aa5d0ed5de0b132c46d7d` |
 | `assets/icons/download.svg` | `d8e81a1f9c9c8e6c46a4d42f3489461b6ac34475f72ba4b5aa998362a75084b4` |
@@ -130,16 +132,25 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/eye.svg` | `e3db961457292ae91a895e7e61143621da90f7e80ca3247eb9c6022f436ae98d` |
 | `assets/icons/file.svg` | `f06efb89b828daec1dca7ef406e8829ec10b3c190c8e86b0bd2de14c15a4a9b4` |
 | `assets/icons/filter.svg` | `f3ebb296b5543ed991d287c335a1a6a52face98a6cdcbbf46d8d7b16bb424260` |
+| `assets/icons/flag.svg` | `b86dd6b0affde10beb5a657b6398e1b933564ad87e6f9fec64f8078a8ba4d387` |
 | `assets/icons/folder.svg` | `42ce942bb5263b904c5560a9dc9458414f7429bb4f2c2156f6c8eadfac538024` |
+| `assets/icons/globe.svg` | `63ae6b5156ae657e9f521368c8225498c88d367c522525c987fc0ef5ff341de5` |
+| `assets/icons/grid.svg` | `187da40d92f1a0302a545d5c2e7953e9b5098316bcb0e6cd4e6667d5655ca70e` |
 | `assets/icons/hand.svg` | `c994c30df2b39264eae3f3a92876010ed408573fcf98d0647ec449115bf01099` |
 | `assets/icons/heart.svg` | `38d863fcaf65b283eac5f90ac322455e5d99d5401b17d2a2c1c8b40c877b094d` |
+| `assets/icons/history.svg` | `d411f7ffc29c45129dea60b1c244c11454654f4ac2625bd11047c7da7d90c64d` |
 | `assets/icons/house.svg` | `d25fb6197c5b5a1956eb894d9f3da066639bf4495a481f24a47aaf99402f0f02` |
+| `assets/icons/image-off.svg` | `75d312ffcfff4e0ace98caa641147fcc8d015e160ea8a5f992ae411c24e51df6` |
 | `assets/icons/image.svg` | `4eba3e45b0cd0750bb631fb98f381168f188c8ca290a0f11d00056788a306180` |
+| `assets/icons/inbox.svg` | `56ba1972c00f82d3125ff398977fdba259086b258532dbce8ba460cbfaa30491` |
 | `assets/icons/info.svg` | `bbf92e1d2d682c1e34ce40e433cc9ad180ecb9761fd280c9358de0c5e073619f` |
+| `assets/icons/leaf.svg` | `5459f51d5fd5ec507640a2ed45ca8ff2a077f087b64f88e2e9c81724342e5540` |
 | `assets/icons/link.svg` | `a7c4c166ede8c89b2635e7546842c1fcb3d4156df103953fcdb4d133a17c1c57` |
 | `assets/icons/list-check.svg` | `1c13cfe9b8c0222b91442fb58b0fdcd2d39b2240546bc1882068987cb1616fcc` |
+| `assets/icons/list-x.svg` | `0e8d6bf605dbba843b9c62515f7c1d7dcb7c1b5a86b86d0472dc1bb1030585e3` |
 | `assets/icons/list.svg` | `5ca9f5560f724014dee4593f1fd262f20fe21cb446a88b15864322bc00709d55` |
 | `assets/icons/lock.svg` | `61c387edb960f8f932c3fe177dd998d9a32b10d7f121a5906b709d7445ab36a8` |
+| `assets/icons/log-out.svg` | `1bff863ab46a0cc201b5e7b088ea43c1ce79ee6f5bf403283c16448221facc8d` |
 | `assets/icons/mail.svg` | `77c1df936427dc675647b5d0f9b450b78604f2a411c06f59e57c825643908c46` |
 | `assets/icons/message-square.svg` | `856a6f2c0da6d090f3726ecd16a3b9279878f213961ddf5cef56f71a5f4dfc70` |
 | `assets/icons/mic.svg` | `64ad366b5a1be09dc622e52835a686bd7bfede5e870ce0668f8a3477415a4b08` |
@@ -159,14 +170,19 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/plus.svg` | `91c960cd589b4feb75c4009b7ecc393d7da8c534498d19c33d8eb250bec308d9` |
 | `assets/icons/reaction-add.svg` | `e3d91c36d51c3f2cfb00d598bf602e5e21a559a17d847348e6fae1b08f612e3b` |
 | `assets/icons/refresh-cw.svg` | `686de34b4c51308307815ac94996e2c86ef51e164987f1a4f805f790f0e2e46b` |
+| `assets/icons/reply.svg` | `07ed79a5e186f4584e803f99d0a7995f9c01f11afe4878ea248aeb97a0254f86` |
+| `assets/icons/save.svg` | `018a4fdeebf3f4aba50534ec3387f650b342f358012857d319c2a113a2efca85` |
+| `assets/icons/search-off.svg` | `e3e3e1f78a80befdd4efc53763a909a78f6b93484d81b53ace80a528e72e477d` |
 | `assets/icons/search.svg` | `ea2ad628a5da3cc4bf4015b58e185d84a9821f23d99e456cabc9330a923a5c48` |
 | `assets/icons/send.svg` | `8e5241043f15c2e35f4121366ce277a2e61377cd90bb230bee6c004ab2ecf27f` |
 | `assets/icons/server.svg` | `9e4d142c0500738dd2e188eea21ee06e8babca7ffd7db149251c1bfc53574b9a` |
 | `assets/icons/settings.svg` | `ec92c7623ef2957b0de1250aeb2ea70d271f4fca261052cfcd1a7f0fbeb4d859` |
 | `assets/icons/share-2.svg` | `ec6e9578c11cd2fcc56549ec062f89f7a1ee09c07b540f099ce9844ae66c4f23` |
 | `assets/icons/shield-check.svg` | `71ea758902bf3c5da1c25c945cd645a241aba739405d63645293ba3801c3fb43` |
+| `assets/icons/shield.svg` | `e55dba7d0334bf6dead6142c7822a085a44af57ee8d7eaa633dade0eebfebdb8` |
 | `assets/icons/shopping-cart.svg` | `3f3f22643c6fc991f675ed531d94924c466aa395074fc4f8186fdaf740fd54c2` |
 | `assets/icons/shuffle.svg` | `c4e424f45c343c8100847dbf073e7074812b3e66d4c550b2d2b759b6c4890fe1` |
+| `assets/icons/square.svg` | `e0df29bbfb12d08e6a22f4d638c1523aaf4622ffe5513c90cabdb32db11580f8` |
 | `assets/icons/star.svg` | `a56e43c990b8f22116a5c25628b984a62904f7246ea9b65d9affb4397c86512a` |
 | `assets/icons/stop.svg` | `3f8e1f8a8fffe5ba9eec6541a2180842de805e71f076a1b1585c46603b974ee4` |
 | `assets/icons/swap-horizontal.svg` | `081cdcc7db1dfa60477cc68da64d8e40b11ec242cedf245bb66f5b5afbbda1c6` |
@@ -175,7 +191,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/triangle-alert.svg` | `0fd28c0cf073d41a25ece79bb3952af2bcd2d3e4b76074cc8248e5ef33c7680d` |
 | `assets/icons/unlock.svg` | `4163946e11e1d809f0f2907a20354c2c873868ba246d5d5ff08f2ea3e0c5b3b4` |
 | `assets/icons/user-minus.svg` | `29dc5f846acb3475cefacac3f6f76551bed5460339029c41441baabe2d5b33f0` |
+| `assets/icons/user-plus.svg` | `5512eb50d32d105016b4d3790dad3935be7c252780f9acba262d5753a62788d4` |
 | `assets/icons/user.svg` | `14a950331bb0157d2df5f9c15b3f45b8168b7df4352e5e3cc616be3cde776030` |
+| `assets/icons/users-plus.svg` | `4d8a84c946c49d9eaba5526fb984a915325291c58edcc66911bab5643dffb813` |
 | `assets/icons/users.svg` | `016591ebbea8ed2a154c543c0a6ee0742d7ed7f7913e7df114632010914d9d87` |
 | `assets/icons/utensils.svg` | `de1d721e3ea3a4808b99d19ecc8527fe4fc3d4739a0d5203886c46d159634bc9` |
 | `assets/icons/volume.svg` | `0b030431c9b748ebad8d1871ed68a4aedcef63218fbd83b9de14a4780004f145` |
@@ -542,7 +560,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `flows-roles-budget.md` | `15ddab8d62fcdf25458cd6b7ba879edbfbea3ede0aa9ab108e31e3d1520dcb8a` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
-| `icons.json` | `fa46237fdc7ef51b4f46885144e1480504bc65230c63bf484b669975355f0cc9` |
+| `icons.json` | `0dfc639baf1e5f3895522243356fae5ab27b8a5e910f53bd2af1fdc0553fea8b` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `d8b9683b373a3e142456890d177285c52307ccd433908f30c8e0592b35648431` |
 | `legacy-api-contract.json` | `bb3f02bd93c00c171abbb01e69ef116b380131a0e73e3d36e17565d6fb6320ae` |
