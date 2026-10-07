@@ -149,8 +149,6 @@ class SignOutGuard {
 
   /// The session-timeout dialog's "Logga ut och släng": the session ends
   /// even when the discard fails, because the timeout is a security control.
-  /// The changes then stay on the device and sync at this user's next
-  /// sign-in, as after any automatic sign-out.
   Future<void> discardAndEndSession(Future<void> Function() endSession) async {
     try {
       await discardForCurrentUser();

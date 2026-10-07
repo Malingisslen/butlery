@@ -59,6 +59,13 @@ void main() {
             cachedAt: DateTime(2026, 10, 7),
           ),
         );
+    await db.uploadQueueDao.queueUpload(
+      id: 'up-$uid',
+      userId: uid,
+      localPath: '/x.jpg',
+      targetPath: 'x/x.jpg',
+      fileSizeBytes: 1,
+    );
   }
 
   test('clears every table and the image copies of that user only', () async {
@@ -79,6 +86,13 @@ void main() {
       ),
       'sync': (await db.select(db.syncQueueEntries).get()).map((r) => r.userId),
       'json': (await db.select(db.jsonCacheEntries).get()).map((r) => r.userId),
+      'upload':
+          (await db
+                  .select(
+                    db.uploadQueueEntries,
+                  )
+                  .get())
+              .map((r) => r.userId),
       'parse':
           (await db
                   .select(

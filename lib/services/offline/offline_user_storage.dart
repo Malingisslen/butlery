@@ -310,7 +310,16 @@ class OfflineUserStorage {
     await _database.clearUserData(userId);
     // The queue's copies of the user's images, "Försök mindre" copies too.
     final uploads = Directory(p.join((await _uploadsRoot()).path, userId));
-    if (await uploads.exists()) await uploads.delete(recursive: true);
+    try {
+      if (await uploads.exists()) await uploads.delete(recursive: true);
+    } on FileSystemException catch (e) {
+      // The path names the uid, and callers hand the error to Crashlytics.
+      throw FileSystemException(
+        'Could not delete queued images',
+        '',
+        e.osError,
+      );
+    }
 
     AppLogger.success(
       '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)',
