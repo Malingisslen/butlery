@@ -1,6 +1,6 @@
 /// The app reads the AI cost ledger by field name, the Cloud Function writes
 /// it by field name, and Firestore does not connect the two. A rename on one
-/// side makes the app read 0 spend forever, silently.
+/// side makes the app read 0 spend, silently.
 library;
 
 import 'dart:io';
