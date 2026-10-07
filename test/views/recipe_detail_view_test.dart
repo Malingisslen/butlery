@@ -38,6 +38,8 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -746,6 +748,16 @@ Gör så här:
 4. Mixa slätt, rör i grädden och servera.''';
 
     final originalCreatedAt = DateTime(2024, 1, 2, 9, 30);
+
+    // BUT-2279: the re-extract runs through ImportManager; give it the real
+    // text strategy so the payload is parsed end to end.
+    setUp(() {
+      TestServiceLocator.registerMock<ImportManager>(
+        ImportManager.withStrategies(MockPersonalRecipeOperations(), [
+          TextImportStrategy(),
+        ]),
+      );
+    });
 
     /// Rebuilds the outer-setUp recipe with a [SourceArtefact] of [type]
     /// captured [age] ago, an explicit createdAt, and deliberately sparse
