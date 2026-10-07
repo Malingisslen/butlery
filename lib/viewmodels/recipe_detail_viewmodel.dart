@@ -58,14 +58,11 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
-import 'package:butlery/services/import/import_strategy.dart';
-import 'package:butlery/services/import/text_import_strategy.dart';
-import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
@@ -82,31 +79,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// maps this to a success/error snackbar without knowing the import internals.
 enum ReextractOutcome { success, failure }
 
-/// BUT-1300: seam for [RecipeDetailViewModel.reextractFromSource]. Maps a
-/// [SourceArtefactType] to the [ImportStrategy] that owns re-extracting its
-/// payload. Defaulted in the constructor to the production construction
-/// ([_defaultReextractStrategyFactory]); tests inject a fake to drive the
-/// re-extract contract without touching real network/parsing.
-typedef ReextractStrategyFactory =
-    ImportStrategy Function(SourceArtefactType type);
-
-/// Production default for [ReextractStrategyFactory]: URL artefacts re-extract
-/// via [UrlImportStrategy], everything else (transcript/caption/pasted/OCR
-/// text) via [TextImportStrategy]. Mirrors the original inline selection so
-/// the production happy path is unchanged by the BUT-1300 seam.
-ImportStrategy _defaultReextractStrategyFactory(SourceArtefactType type) =>
-    type == SourceArtefactType.url ? UrlImportStrategy() : TextImportStrategy();
-
-/// BUT-1300: the production default factory, exposed so tests can assert the
-/// real url-vs-text mapping. The re-extract unit tests inject a *fake* factory
-/// through the seam, which means they never exercise this default — a regression
-/// flipping the url/text condition would otherwise ship green. Constructing
-/// either strategy is side-effect-free (network only happens in `import()`),
-/// so asserting the dispatched runtime type here is safe.
-@visibleForTesting
-ImportStrategy defaultReextractStrategyForTest(SourceArtefactType type) =>
-    _defaultReextractStrategyFactory(type);
-
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
 /// recipe interactions, analytics tracking, and real-time state management while maintaining clean MVVM architecture
@@ -122,11 +94,10 @@ class RecipeDetailViewModel extends BaseViewModel {
   /// cold-start race) — the post-cook analytics path degrades gracefully.
   final CookEventRepository? _cookEventRepository;
 
-  /// BUT-1300: injectable strategy selector for [reextractFromSource]. Defaults
-  /// to [_defaultReextractStrategyFactory] (the original inline construction)
-  /// so production behavior is unchanged; tests pass a fake to avoid real
-  /// network/parsing.
-  final ReextractStrategyFactory _reextractStrategyFactory;
+  /// BUT-2279: re-extraction goes through the import pipeline's one way in,
+  /// so it takes the import quota and records an import event. Looked up only
+  /// when re-extracting, so building the screen needs no [ImportManager].
+  final ImportManager? _injectedImportManager;
 
   /// Current recipe data with real-time synchronization and state coordination.
   Recipe _recipe;
@@ -147,7 +118,7 @@ class RecipeDetailViewModel extends BaseViewModel {
     AnalyticsService? analyticsService,
     RecipeCookingService? cookingService,
     CookEventRepository? cookEventRepository,
-    ReextractStrategyFactory? reextractStrategyFactory,
+    ImportManager? importManager,
   }) : _recipe = recipe,
        _recipeService =
            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
@@ -157,8 +128,7 @@ class RecipeDetailViewModel extends BaseViewModel {
            cookingService ?? ServiceLocator.get<RecipeCookingService>(),
        _cookEventRepository =
            cookEventRepository ?? ServiceLocator.tryGet<CookEventRepository>(),
-       _reextractStrategyFactory =
-           reextractStrategyFactory ?? _defaultReextractStrategyFactory {
+       _injectedImportManager = importManager {
     _recipeServiceSubscription = _recipeService.stateStream.listen(
       (_) => _onRecipeServiceUpdate(),
     );
@@ -592,7 +562,7 @@ class RecipeDetailViewModel extends BaseViewModel {
 
   /// BUT-1205: re-run the import pipeline on the stored source payload and
   /// overwrite the recipe's parsed fields, persisting the result. This is
-  /// business logic (strategy selection, import, copyWith assembly,
+  /// business logic (import, copyWith assembly,
   /// persistence) — it lives here, not in the View, which only drives the
   /// confirm dialog + feedback from the returned [ReextractOutcome].
   ///
@@ -602,15 +572,11 @@ class RecipeDetailViewModel extends BaseViewModel {
   /// On any failure (import error or persistence failure) the existing recipe
   /// is left untouched.
   Future<ReextractOutcome> reextractFromSource(SourceArtefact artefact) async {
-    ImportResult result;
+    ImportManagerResult result;
     try {
-      // The artefact payload already IS the canonical extraction input: a URL
-      // for url-type, the raw transcript/caption/pasted/OCR text otherwise.
-      // BUT-1300: strategy selection goes through the injectable factory so a
-      // fake can be supplied in tests; the default reproduces the original
-      // url-vs-text construction.
-      final ImportStrategy strategy = _reextractStrategyFactory(artefact.type);
-      result = await strategy.import(artefact.payload);
+      result =
+          await (_injectedImportManager ?? ServiceLocator.get<ImportManager>())
+              .reimportFromArtefact(artefact);
     } catch (e) {
       return ReextractOutcome.failure;
     }

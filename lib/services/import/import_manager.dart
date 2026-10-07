@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
@@ -596,19 +597,62 @@ class ImportManager {
     String strategyName,
     String input, {
     Map<String, dynamic>? options,
-  }) async {
-    final strategy = _strategies
-        .where((s) => s.strategyName == strategyName)
-        .firstOrNull;
+  }) => _rateLimitedParse(
+    _strategies.where((s) => s.strategyName == strategyName).firstOrNull,
+    input,
+    options,
+    missing: 'Strategy not found: $strategyName',
+  );
 
-    if (strategy == null) {
+  /// BUT-2279: re-reads a saved recipe from the capture it was made from. A
+  /// link is fetched again; every other capture is parsed as text.
+  Future<ImportManagerResult> reimportFromArtefact(SourceArtefact artefact) {
+    final isLink = artefact.type == SourceArtefactType.url;
+    return _measured(
+      isLink ? ImportChannel.link : ImportChannel.text,
+      artefact.payload,
+      () => _rateLimitedParse(
+        isLink
+            ? _strategies.whereType<UrlImportStrategy>().firstOrNull
+            : _strategies.whereType<TextImportStrategy>().firstOrNull,
+        artefact.payload,
+        null,
+        missing: 'No ${artefact.type.name} import strategy is available',
+      ),
+    );
+  }
+
+  Future<ImportManagerResult> _rateLimitedParse(
+    ImportStrategy? strategy,
+    String input,
+    Map<String, dynamic>? options, {
+    required String missing,
+  }) async {
+    try {
+      final rateLimiter = _rateLimiter;
+      if (rateLimiter != null) {
+        final limitResult = await rateLimiter.checkLimit(
+          ImportOperation.basic('auto'),
+        );
+        if (limitResult is RateLimitDenied) {
+          return ImportManagerResult.rateLimit(limitResult);
+        }
+      }
+
+      if (strategy == null) {
+        return ImportManagerResult.failure(
+          missing,
+          availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+        );
+      }
+
+      return await _parseWithStrategy(strategy, input, options);
+    } catch (e) {
       return ImportManagerResult.failure(
-        'Strategy not found: $strategyName',
+        'Import manager error: $e',
         availableStrategies: _strategies.map((s) => s.strategyName).toList(),
       );
     }
-
-    return await _parseWithStrategy(strategy, input, options);
   }
 
   /// Processes multiple recipe imports in batch with comprehensive progress tracking and error aggregation.
