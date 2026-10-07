@@ -2092,6 +2092,8 @@
   "shareRecipeWithFriends": "Dela recept med vänner",
   "shareMenuWithFriends": "Dela veckomeny med vänner",
   "shareShoppingList": "Dela inköpslista",
+  "shareTagWithFriends": "Dela tagg med vänner",
+  "shareTag": "Dela tagg",
   "shareSelectAtLeastOneFriend": "Välj minst en vän för att dela",
   "shareRecipesInCategories": "{recipes} recept i {categories} kategorier",
   "@shareRecipesInCategories": {

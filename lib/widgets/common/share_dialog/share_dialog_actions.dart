@@ -93,7 +93,7 @@ class ShareDialogActions {
         case ShareContentType.shoppingList:
           return context.l10n.shareShoppingListTitle;
         case ShareContentType.personalTag:
-          return 'Dela tagg';
+          return context.l10n.shareTag;
       }
     }
   }

@@ -2956,6 +2956,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareShoppingList => 'Dela inköpslista';
 
   @override
+  String get shareTagWithFriends => 'Dela tagg med vänner';
+
+  @override
+  String get shareTag => 'Dela tagg';
+
+  @override
   String get shareSelectAtLeastOneFriend => 'Välj minst en vän för att dela';
 
   @override
