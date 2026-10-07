@@ -345,7 +345,7 @@ class _DinerToggleRow extends StatelessWidget {
                   children: [
                     FamilyAvatar(
                       name: member.displayName,
-                      color: parseAvatarColor(member.avatarColor),
+                      color: parseAvatarColor(context, member.avatarColor),
                       size: 40,
                     ),
                     const SizedBox(width: 12),

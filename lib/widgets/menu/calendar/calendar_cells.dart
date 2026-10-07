@@ -378,7 +378,10 @@ class _SlotPresenceRow extends StatelessWidget {
                           ),
                           child: FamilyAvatar(
                             name: shown[i].displayName,
-                            color: parseAvatarColor(shown[i].avatarColor),
+                            color: parseAvatarColor(
+                              context,
+                              shown[i].avatarColor,
+                            ),
                             size: 16,
                           ),
                         ),

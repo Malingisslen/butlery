@@ -26,16 +26,14 @@ String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
   }
 }
 
-/// Parse a stored `#RRGGBB` hex into a [Color]; falls back to the brand green.
-Color parseAvatarColor(String? hex) {
+/// Parse a stored `#RRGGBB` hex into a [Color]; falls back to the theme's
+/// primary.
+Color parseAvatarColor(BuildContext context, String? hex) {
   if (hex != null && hex.startsWith('#') && hex.length == 7) {
     final value = int.tryParse(hex.substring(1), radix: 16);
-    if (value != null) return Color(0xFF000000 | value);
+    if (value != null) return Color(value).withAlpha(255);
   }
-  // Context-less helper: fall back to the brand forest-green literal
-  // (0xFF4A7C59, the value behind cs.primary) so callers in other files
-  // need no signature change.
-  return const Color(0xFF4A7C59);
+  return Theme.of(context).colorScheme.primary;
 }
 
 String _initials(String name) {
@@ -197,7 +195,7 @@ class FamilyAccountRow extends StatelessWidget {
         children: [
           FamilyAvatar(
             name: member.displayName,
-            color: parseAvatarColor(member.avatarColor),
+            color: parseAvatarColor(context, member.avatarColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -272,7 +270,7 @@ class FamilyMemberRow extends StatelessWidget {
                     children: [
                       FamilyAvatar(
                         name: profile.name,
-                        color: parseAvatarColor(profile.avatarColor),
+                        color: parseAvatarColor(context, profile.avatarColor),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

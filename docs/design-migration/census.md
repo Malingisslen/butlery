@@ -166,8 +166,8 @@ Code only: comments are not counted; generated l10n is left out.
 | `LinearProgressIndicator(` | 1 | `lib/widgets/common/indicators/plate_line.dart` | PlateLine draws on it (package4_adoption_test _package7Components) |
 | `commonOk` | 0 |  | "OK" as a label (content-style-guide.md:77) |
 | `fontSize: <number>` | 18 | `lib/theme/app_text_styles.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
-| `Color(0x…) outside lib/theme` | 4 | `lib/views/family/family_widgets.dart`, `lib/widgets/common/brand/butlery_lockup.dart`, `lib/widgets/common/illustrations/vegetable_illustration.dart` | literal colours outside the theme files |
-| `BorderRadius.circular(<number>)` | 2 | `lib/views/menu_placement/placement_widgets.dart`, `lib/views/recipe_detail/handlers/recipe_shopping_handler.dart` | raw corner radii |
+| `Color(0x…) outside lib/theme` | 0 |  | literal colours outside the theme files |
+| `BorderRadius.circular(<number>)` | 0 |  | raw corner radii |
 | `AppDimensions.opacity*` | 0 |  | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
 | `spacingS / spacingXxs` | 0 |  | spacing members retired in package 7 |
 | `pubspec fonts` | 0 |  | retired type families still declared in pubspec.yaml |

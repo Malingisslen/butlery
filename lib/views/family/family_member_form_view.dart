@@ -249,7 +249,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: parseAvatarColor(hex),
+                      color: parseAvatarColor(context, hex),
                       border: Border.all(
                         color: _color == hex
                             ? cs.onSurface
