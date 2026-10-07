@@ -453,6 +453,11 @@
    "semantic",
    "surface.pressed.onInk",
    "Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck."
+  ],
+  "recipeCardLeftBorder": [
+   "semantic",
+   "border.cardEdge",
+   "Receptkortets vansterkant (BUT-2297): ink i ljust lage, salvia i morkt."
   ]
  },
  "aliases": {
@@ -484,7 +489,6 @@
   "onError": "textOnPrimary",
   "onWarning": "textDark",
   "onInfo": "textOnPrimary",
-  "recipeCardLeftBorder": "forestGreen",
   "recipeCardBottomBorder": "rustLight",
   "headerBackground": "forestGreen",
   "headerAccent": "rust",
