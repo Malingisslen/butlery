@@ -808,6 +808,30 @@ void main() {
         },
       );
 
+      test(
+        'error_message is dropped; error_code survives (BUT-2281)',
+        () async {
+          await repository.logEvent(
+            name: 'network_error',
+            parameters: {
+              'error_code': 'timeout',
+              'error_message':
+                  'SocketException: https://example.com/u/aBcDeFgHiJkLmNoPqRsT',
+            },
+          );
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'network_error',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
+          expect(captured.containsKey('error_message'), isFalse);
+          expect(captured['error_code'], equals('timeout'));
+        },
+      );
+
       test('short search_query falls in 1-3 bucket', () async {
         await repository.logEvent(
           name: 'recipe_search_performed',

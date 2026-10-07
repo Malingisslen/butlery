@@ -46,11 +46,13 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
 
   /// Keys that must be dropped entirely — unbounded free text → unbounded PII.
   /// `search_query` is replaced with `search_query_len_bucket` downstream.
-  /// `error_message` is kept for aggregated diagnostics.
+  /// `error_message` is dropped too (BUT-2281): exception text can carry URLs
+  /// and ids.
   static const Set<String> _piiDropKeys = {
     'search_query',
     'comment_text',
     'note',
+    'error_message',
   };
 
   /// SharedPreferences key for the per-install PII hashing salt.
