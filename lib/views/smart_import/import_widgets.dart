@@ -52,6 +52,12 @@ class PendingImportBanner extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               FilledButton(
+                // The theme's full-width minimum is infinite inside a Row.
+                style: const ButtonStyle(
+                  minimumSize: WidgetStatePropertyAll(
+                    Size(0, AppDimensions.minTouchTarget),
+                  ),
+                ),
                 onPressed: onRetry,
                 child: Text(context.l10n.importPendingRetry),
               ),

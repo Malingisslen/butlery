@@ -80,6 +80,11 @@ class InvitationActions {
           if (showSend && onSendInvitations != null)
             ElevatedButton(
               onPressed: selectedCount > 0 ? onSendInvitations : null,
+              style: const ButtonStyle(
+                minimumSize: WidgetStatePropertyAll(
+                  Size(0, AppDimensions.minTouchTarget),
+                ),
+              ),
               child: Text(context.l10n.commonSend),
             ),
         ],
@@ -215,6 +220,11 @@ class InvitationActions {
           if (showInvite && onBulkInvite != null)
             ElevatedButton.icon(
               onPressed: onBulkInvite,
+              style: const ButtonStyle(
+                minimumSize: WidgetStatePropertyAll(
+                  Size(0, AppDimensions.minTouchTarget),
+                ),
+              ),
               icon: const ButleryIcon(ButleryIcons.send),
               label: Text(inviteText ?? context.l10n.invitationSendInvitations),
             ),
