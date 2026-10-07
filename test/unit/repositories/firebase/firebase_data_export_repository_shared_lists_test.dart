@@ -1,4 +1,4 @@
-/// GDPR Article 15 coverage for the three SHARED-shopping-list probes on
+/// GDPR Article 15 coverage for the SHARED-shopping-list probes on
 /// [FirebaseDataExportRepository] (BUT-1732).
 ///
 /// Why these exist at the repository level, when
@@ -62,9 +62,8 @@ void main() {
         authRepository: auth,
       );
 
-      // Four documents, one per role, each matching EXACTLY ONE probe. A probe
-      // that lost its filter returns all four, so every assertion below can
-      // fail in the direction the bug actually took.
+      // Four documents. A probe that lost its filter returns all four, so every
+      // assertion below can fail in the direction the bug actually took.
       final lists = firestore.collection(
         FirestoreCollections.unifiedSharedShoppingLists,
       );
@@ -134,38 +133,10 @@ void main() {
       );
     });
 
-    // NOTE ON WHAT THIS FIXTURE PROVES — and what it does not.
-    //
-    // `FakeFirebaseFirestore` enforces no security rules, so a document the
-    // user has LEFT is readable here. In production it is not: the read rule
-    // is `ownerId == uid || uid in memberPermissions`, so the moment this
-    // query matches a left list the server refuses the WHOLE query. That
-    // refusal is the documented BUT-1732 gap and is pinned separately, in
-    // `content_export_manager_test.dart`, by injecting the FirebaseException.
-    //
-    // What this test pins is narrower and still worth having: the PREDICATE is
-    // `arrayContains` on the uid, not a whole-collection scan. Do not read a
-    // green here as evidence that exporting left lists works — it cannot.
-    test('the contributor probe returns only lists whose '
-        'contributorUserIds names the user', () async {
-      final result = await repository.exportSharedShoppingListsAsContributor(
-        me,
-      );
-
-      expect(result.map((row) => row['id']), <String>['contributed-to']);
-      expect(
-        result.map((row) => row['id']),
-        isNot(contains('strangers-only')),
-        reason:
-            'the erasure handle is an array of uids — array-contains, never a '
-            'whole-collection scan',
-      );
-    });
-
-    /// The three probes must not overlap by accident: if any of them widened
-    /// into another's territory the union would grow, and the section would
-    /// report roles the user does not hold.
-    test('the three probes partition the four fixtures', () async {
+    /// The probes must not overlap by accident: if either widened into the
+    /// other's territory the union would grow, and the section would report
+    /// roles the user does not hold.
+    test('the two probes return exactly the owned and member lists', () async {
       final ids = <String>{
         for (final row in await repository.exportSharedShoppingListsOwned(me))
           row['id'] as String,
@@ -173,16 +144,13 @@ void main() {
           me,
         ))
           row['id'] as String,
-        for (final row
-            in await repository.exportSharedShoppingListsAsContributor(me))
-          row['id'] as String,
       };
 
-      expect(ids, <String>{'owned-by-me', 'member-of', 'contributed-to'});
+      expect(ids, <String>{'owned-by-me', 'member-of'});
     });
 
     /// Defence-in-depth: the self-export guard refuses somebody else's bundle
-    /// even though all three predicates are now correct.
+    /// even though both predicates are now correct.
     test('every probe refuses to export another user id', () async {
       await expectLater(
         repository.exportSharedShoppingListsOwned(stranger),
@@ -190,10 +158,6 @@ void main() {
       );
       await expectLater(
         repository.exportSharedShoppingListsAsMember(stranger),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-      await expectLater(
-        repository.exportSharedShoppingListsAsContributor(stranger),
         throwsA(isA<PermissionDeniedException>()),
       );
     });

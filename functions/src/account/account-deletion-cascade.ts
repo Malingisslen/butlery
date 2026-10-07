@@ -3451,7 +3451,7 @@ export async function removeFromSharedContent(
 }
 
 /** The four fields on an item row that name a person by uid. */
-const ITEM_UID_FIELDS = [
+export const ITEM_UID_FIELDS = [
   "addedByUserId",
   "lastModifiedByUserId",
   "assignedToUserId",
@@ -3466,7 +3466,7 @@ const ITEM_UID_FIELDS = [
 const MAX_SHARED_ITEM_ROWS = 2000;
 
 /** True for `shared_content/{id}`, and for nothing nested deeper. */
-function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean {
+export function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean {
   return ref.parent.id === "shared_content" && ref.parent.parent === null;
 }
 

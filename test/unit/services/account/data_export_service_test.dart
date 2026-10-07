@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
+import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
@@ -319,26 +320,61 @@ class _LeakySettingsExportRepository extends FirebaseDataExportRepository {
 /// BUT-1721 (fix round): the PARTIAL shape — a section that sets `error_code`
 /// but NOT `error`.
 ///
-/// `SharedShoppingListExport` does this deliberately: its contributor probe is
-/// the only one a rules refusal can stop, so a transient failure there leaves
-/// the owner and member probes' lists in the section body along with an
-/// accurate note. The section WAS exported; one of its three lookups was not.
-///
-/// A non-`permission-denied` exception is what makes it a warning rather than
-/// the documented rules-refusal note, so the throw below is a `StateError`.
-class _TransientContributorProbeRepository
-    extends FirebaseDataExportRepository {
-  _TransientContributorProbeRepository({
+/// `PreferencesExportManager.exportPreferences` isolates its settings
+/// collection read, so a failure there leaves the `preferences` document in the
+/// section body with a partial token. The section WAS exported; one of its
+/// lookups was not.
+class _PartialSettingsExportRepository extends FirebaseDataExportRepository {
+  _PartialSettingsExportRepository({
     required super.firestore,
     required super.authRepository,
   });
 
   @override
-  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsContributor(
+  Future<List<Map<String, dynamic>>> exportUserSettings(
     String userId, {
-    int maxDocuments = 500,
-  }) async => throw StateError('deadline exceeded on the contributor probe');
+    int maxDocuments = 50,
+  }) async => throw StateError('deadline exceeded on the settings read');
 }
+
+/// BUT-1747: the `exportSharedResidue` callable. Answers with an empty
+/// residue, or throws [error] when one is given.
+class _SharedResidueHttpsCallable extends Fake implements HttpsCallable {
+  _SharedResidueHttpsCallable(this.error);
+  final Object? error;
+
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    if (error != null) throw error!;
+    return _EmptyHttpsCallableResult<T>(
+      <dynamic, dynamic>{
+            'shared_lists_left': const <dynamic>[],
+            'shared_content_items': const <dynamic>[],
+            'known_gaps': const <dynamic>['a-gap'],
+          }
+          as T,
+    );
+  }
+}
+
+class _SharedResidueFunctions extends Fake implements FirebaseFunctions {
+  _SharedResidueFunctions([this.error]);
+  final Object? error;
+
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) {
+    expect(name, SharedResidueExportManager.callableName);
+    return _SharedResidueHttpsCallable(error);
+  }
+}
+
+SharedResidueExportManager _sharedResidueOk() =>
+    SharedResidueExportManager(functions: _SharedResidueFunctions());
 
 class _SuccessThenTransientFirebaseFunctions extends Fake
     implements FirebaseFunctions {
@@ -379,6 +415,7 @@ void main() {
       HouseholdRepository? householdRepository,
       DinerProfileRepository? dinerProfileRepository,
       FamilyRatingRepository? familyRatingRepository,
+      SharedResidueExportManager? sharedResidueExportManager,
     }) {
       return DataExportService(
         authRepository: mockAuthRepository,
@@ -391,6 +428,8 @@ void main() {
         // BUT-842: also inject a fake-firestore-backed dataExportRepository so
         // exportConsentRecords doesn't fall through to ServiceLocator (the
         // manager re-throws unknown errors instead of swallowing them).
+        sharedResidueExportManager:
+            sharedResidueExportManager ?? _sharedResidueOk(),
         complianceExportManager: ComplianceExportManager(
           functions: _FakeFirebaseFunctions(),
           dataExportRepository: FirebaseDataExportRepository(
@@ -523,6 +562,7 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
@@ -1883,6 +1923,7 @@ void main() {
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
+            sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
               functions: _TransientFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
@@ -1985,6 +2026,7 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
@@ -2047,6 +2089,7 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
@@ -2133,6 +2176,7 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
@@ -2140,7 +2184,7 @@ void main() {
               authRepository: mockAuthRepository,
             ),
           ),
-          dataExportRepository: _TransientContributorProbeRepository(
+          dataExportRepository: _PartialSettingsExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
           ),
@@ -2153,11 +2197,11 @@ void main() {
         // Premise: the section really is in the partial shape. Without this the
         // assertions below would pass against any section that simply succeeded.
         final section =
-            data['shared_shopping_lists'] as Map<String, dynamic>? ??
+            data['preferences'] as Map<String, dynamic>? ??
             const <String, dynamic>{};
         expect(
           section['error_code'],
-          'shared-shopping-lists-contributor-probe-failed',
+          'preferences-partial-export-failure',
           reason: 'fixture must stage the error_code-without-error shape',
         );
         expect(
@@ -2169,19 +2213,19 @@ void main() {
         final warnings =
             data['export_metadata']['warnings'] as List<dynamic>? ??
             const <dynamic>[];
-        final listWarning = warnings
+        final sectionWarning = warnings
             .cast<Map<String, dynamic>>()
-            .where((w) => w['section'] == 'shared_shopping_lists')
+            .where((w) => w['section'] == 'preferences')
             .toList();
-        expect(listWarning, hasLength(1));
+        expect(sectionWarning, hasLength(1));
         expect(
-          listWarning.single['message'],
+          sectionWarning.single['message'],
           isNot(contains('could not be exported')),
           reason:
               'the section WAS exported; claiming otherwise at bundle root is '
               'the over-claiming half of this ticket',
         );
-        expect(listWarning.single['message'], contains('may be incomplete'));
+        expect(sectionWarning.single['message'], contains('may be incomplete'));
       });
 
       test(
@@ -2200,6 +2244,7 @@ void main() {
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
+            sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
               functions: _LeakyAuditLogFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
@@ -2285,6 +2330,7 @@ void main() {
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
+            sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
               functions: _FakeFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
@@ -2320,6 +2366,80 @@ void main() {
       );
     });
 
+    group('BUT-1747: shared_lists_left section', () {
+      test('a success ships the callable keys and raises no warning', () async {
+        final data =
+            json.decode(await buildService().exportUserData())
+                as Map<String, dynamic>;
+
+        final section = data['shared_lists_left'] as Map<String, dynamic>;
+        expect(section['shared_lists_left'], isEmpty);
+        expect(section['shared_content_items'], isEmpty);
+        expect(section['known_gaps'], ['a-gap']);
+        final warnings =
+            data['export_metadata']['warnings'] as List<dynamic>? ??
+            const <dynamic>[];
+        expect(
+          warnings.cast<Map<String, dynamic>>().map((w) => w['section']),
+          isNot(contains('shared_lists_left')),
+        );
+      });
+
+      final failures = <String, (Object, String)>{
+        'unavailable (transient)': (
+          FirebaseFunctionsException(code: 'unavailable', message: 'down'),
+          'shared-lists-left-unavailable',
+        ),
+        'failed-precondition shared-residue-too-large': (
+          FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'too large',
+            details: const {'error_code': 'shared-residue-too-large'},
+          ),
+          'shared-residue-too-large',
+        ),
+        'unauthenticated': (
+          FirebaseFunctionsException(code: 'unauthenticated', message: 'x'),
+          'shared-lists-left-unauthenticated',
+        ),
+      };
+
+      for (final MapEntry(key: name, value: (error, code))
+          in failures.entries) {
+        test('$name becomes the section error_code and a warning, and the '
+            'rest of the bundle still builds', () async {
+          final service = buildService(
+            sharedResidueExportManager: SharedResidueExportManager(
+              functions: _SharedResidueFunctions(error),
+            ),
+          );
+
+          final data =
+              json.decode(await service.exportUserData())
+                  as Map<String, dynamic>;
+
+          final section = data['shared_lists_left'] as Map<String, dynamic>;
+          expect(section['error_code'], code);
+          expect(section.containsKey('shared_lists_left'), isFalse);
+
+          final metadata = data['export_metadata'] as Map<String, dynamic>;
+          final warning =
+              (metadata['warnings'] as List<dynamic>? ?? const <dynamic>[])
+                  .cast<Map<String, dynamic>>()
+                  .where((w) => w['section'] == 'shared_lists_left')
+                  .toList();
+          expect(warning, hasLength(1));
+          expect(warning.single['error_code'], code);
+          expect(warning.single['message'], contains('could not be exported'));
+          expect(metadata['data_completeness'], contains('shared_lists_left'));
+
+          // One gap, not the whole bundle: the neighbouring sections shipped.
+          expect(data['shared_shopping_lists'], contains('total_count'));
+          expect(data['profile'], contains('firebase_auth'));
+        });
+      }
+    });
+
     group('BUT-865: partial-recovery contract (page #1 success + page #2 '
         'transient throw)', () {
       test('partial rows from page #1 are discarded when page #2 throws — '
@@ -2328,6 +2448,7 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
             functions: _SuccessThenTransientFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
