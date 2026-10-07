@@ -286,8 +286,7 @@ service cloud.firestore {
 
     // BUT-2251: a request to a minor (friend request or group invitation) is
     // accepted only from someone who is already their friend, or when the
-    // minor has chosen to be findable — the same condition under which the
-    // app shows the "add friend" button on their profile. A minor still sends
+    // minor has chosen to be findable. A minor still sends
     // requests freely. Adults (missing or false isMinor) pay one users/{uid}
     // read and pass.
     function passesMinorRequestGate(toUserId) {
@@ -881,9 +880,9 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && hasRequiredFields(['type', 'fromUserId', 'toUserId', 'status', 'sentAt'])
         && isNotBlockedBy(request.resource.data.toUserId)
-        && passesMinorRequestGate(request.resource.data.toUserId)
         && isAccountMatured()
         && isAgeCompliant()
+        && passesMinorRequestGate(request.resource.data.toUserId)
         && rateLimitStamped('social_requests', 10, requestId);
 
       // Recipient can accept/reject/expire
