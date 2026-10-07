@@ -696,9 +696,9 @@ Blanda allt och rulla till bollar.''';
     /// BUT-2237: the screen's text is chosen by the cause CODE the import
     /// reported, never by words in the English message.
     final cases = <ImportErrorCode, String>{
-      ImportErrorCode.urlNotAccessible: 'Kunde inte nå sidan',
+      ImportErrorCode.urlNotAccessible: 'Länken kunde inte läsas',
       ImportErrorCode.platformBlocked: 'Sidan kräver inloggning',
-      ImportErrorCode.noRecipeContent: 'Inget recept hittades',
+      ImportErrorCode.noRecipeContent: 'Vi hittade inget recept på sidan',
       ImportErrorCode.parsingFailed: 'Kunde inte tolka receptet',
       ImportErrorCode.invalidUrl: 'Ogiltig URL',
       ImportErrorCode.ocrFailed: 'Kunde inte läsa texten i bilden',
@@ -827,6 +827,85 @@ Blanda allt och rulla till bollar.''';
 
       expect(viewModel.failureRoutes, isEmpty);
       expect(viewModel.failurePreserved, isNull);
+    });
+  });
+
+  // BUT-2168: the most helpful route stands first, by cause
+  // (flows-roles-budget.md, flow 03 `hämtar`).
+  group('startImport — the first route follows the cause', () {
+    const allStrategies = ['URL Import', 'Text Import', 'Photo Import'];
+    final cases = <ImportErrorCode?, List<ImportRoute>>{
+      ImportErrorCode.urlNotAccessible: [
+        ImportRoute.pasteText,
+        ImportRoute.photo,
+        ImportRoute.manual,
+      ],
+      ImportErrorCode.platformBlocked: [
+        ImportRoute.pasteText,
+        ImportRoute.photo,
+        ImportRoute.manual,
+      ],
+      ImportErrorCode.noRecipeContent: [
+        ImportRoute.manual,
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+      ],
+      ImportErrorCode.parsingFailed: [
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+        ImportRoute.manual,
+      ],
+      ImportErrorCode.unknown: [
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+        ImportRoute.manual,
+      ],
+      null: [ImportRoute.photo, ImportRoute.pasteText, ImportRoute.manual],
+    };
+    cases.forEach((code, routes) {
+      test(
+        '${code?.name ?? 'no cause'} → ${routes.map((r) => r.name)}',
+        () async {
+          when(
+            () => mockImportManager.autoImport(
+              any(),
+              onProgress: any(named: 'onProgress'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.failure(
+              'any English text',
+              errorCode: code,
+              availableStrategies: allStrategies,
+            ),
+          );
+          viewModel.updateInput('https://example.com/recept');
+
+          final r = (await viewModel.startImport()) as ImportFailed;
+
+          expect(r.routes, routes);
+        },
+      );
+    });
+
+    test('a cause whose first route is not offered keeps the rest in '
+        'order', () async {
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.failure(
+          'any English text',
+          errorCode: ImportErrorCode.platformBlocked,
+          availableStrategies: const ['Text Import', 'Photo Import'],
+        ),
+      );
+      viewModel.updateInput('Pannkakor, 3 dl mjöl och 6 dl mjölk');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [ImportRoute.photo, ImportRoute.manual]);
     });
   });
 

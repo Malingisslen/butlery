@@ -5543,7 +5543,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importPasteText => 'Klistra in text';
 
   @override
-  String get importAddManually => 'Lägg till manuellt';
+  String get importAddManually => 'Skriv själv';
 
   @override
   String get importPhotoDescription =>
@@ -10826,13 +10826,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importErrorInvalidUrl => 'Ogiltig URL';
 
   @override
-  String get importErrorCouldNotReachPage => 'Kunde inte nå sidan';
+  String get importErrorCouldNotReachPage => 'Länken kunde inte läsas';
 
   @override
   String get importErrorLoginRequired => 'Sidan kräver inloggning';
 
   @override
-  String get importErrorNoRecipeFound => 'Inget recept hittades';
+  String get importErrorNoRecipeFound => 'Vi hittade inget recept på sidan';
 
   @override
   String get importErrorCouldNotReadImage => 'Kunde inte läsa texten i bilden';
@@ -15818,7 +15818,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importRoutePhoto => 'Fotografera skärmen';
 
   @override
-  String get importRoutePasteText => 'Klistra in texten';
+  String get importRoutePasteText => 'Klistra in texten själv';
 
   @override
   String get duplicateMergeFailedPreserved =>

@@ -9352,7 +9352,7 @@ abstract class AppLocalizations {
   /// No description provided for @importAddManually.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till manuellt'**
+  /// **'Skriv själv'**
   String get importAddManually;
 
   /// No description provided for @importPhotoDescription.
@@ -18334,7 +18334,7 @@ abstract class AppLocalizations {
   /// No description provided for @importErrorCouldNotReachPage.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte nå sidan'**
+  /// **'Länken kunde inte läsas'**
   String get importErrorCouldNotReachPage;
 
   /// No description provided for @importErrorLoginRequired.
@@ -18346,7 +18346,7 @@ abstract class AppLocalizations {
   /// No description provided for @importErrorNoRecipeFound.
   ///
   /// In sv, this message translates to:
-  /// **'Inget recept hittades'**
+  /// **'Vi hittade inget recept på sidan'**
   String get importErrorNoRecipeFound;
 
   /// No description provided for @importErrorCouldNotReadImage.
@@ -26300,7 +26300,7 @@ abstract class AppLocalizations {
   /// No description provided for @importRoutePasteText.
   ///
   /// In sv, this message translates to:
-  /// **'Klistra in texten'**
+  /// **'Klistra in texten själv'**
   String get importRoutePasteText;
 
   /// No description provided for @duplicateMergeFailedPreserved.

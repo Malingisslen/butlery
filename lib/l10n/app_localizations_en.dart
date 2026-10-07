@@ -5536,7 +5536,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importPasteText => 'Paste text';
 
   @override
-  String get importAddManually => 'Add manually';
+  String get importAddManually => 'Write it yourself';
 
   @override
   String get importPhotoDescription =>
@@ -10805,13 +10805,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importErrorInvalidUrl => 'Invalid URL';
 
   @override
-  String get importErrorCouldNotReachPage => 'Could not reach the page';
+  String get importErrorCouldNotReachPage => 'The link could not be read';
 
   @override
   String get importErrorLoginRequired => 'The page requires login';
 
   @override
-  String get importErrorNoRecipeFound => 'No recipe found';
+  String get importErrorNoRecipeFound => 'We found no recipe on the page';
 
   @override
   String get importErrorCouldNotReadImage =>
@@ -15793,7 +15793,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importRoutePhoto => 'Photograph the screen';
 
   @override
-  String get importRoutePasteText => 'Paste the text';
+  String get importRoutePasteText => 'Paste the text yourself';
 
   @override
   String get duplicateMergeFailedPreserved =>

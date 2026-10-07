@@ -318,10 +318,14 @@
     {
       "id": "TR::FLOW::03::hämtar::betalvägg",
       "flow": "03",
-      "status": "PARTIAL",
-      "test_file": "test/unit/services/import/import_failure_cause_test.dart",
-      "test_name": "a 403 says the page requires login",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_error_journey_test.dart",
+      "test_name": "platformBlocked: says \"Sidan kräver inloggning\" and offers pasting the text first, which fills the field from the clipboard",
       "tests": [
+        {
+          "file": "test/views/smart_import_error_journey_test.dart",
+          "name": "platformBlocked: says \"Sidan kräver inloggning\" and offers pasting the text first, which fills the field from the clipboard"
+        },
         {
           "file": "test/unit/services/import/import_failure_cause_test.dart",
           "name": "a 403 says the page requires login"
@@ -336,11 +340,7 @@
         }
       ],
       "ticket": null,
-      "reason": "The URL strategy reports a login wall (403, or a page with a password field) and the view model's message is \"Sidan kräver inloggning\".",
-      "known_gap": {
-        "reason": "Tested through the view model only: no test drives the screen this failure reaches, so the drawn outcome on it is unverified.",
-        "ticket": "BUT-2168"
-      }
+      "reason": "A login wall on the Smart import screen says \"Sidan kräver inloggning\" and offers \"Klistra in texten själv\" first, which fills the field from the clipboard."
     },
     {
       "id": "TR::FLOW::03::hämtar::ok",
@@ -360,40 +360,40 @@
     {
       "id": "TR::FLOW::03::hämtar::privat-trasig-länk",
       "flow": "03",
-      "status": "PARTIAL",
-      "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-      "test_name": "a link that failed keeps the link and offers photo, paste and manual",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_error_journey_test.dart",
+      "test_name": "urlNotAccessible: says \"Länken kunde inte läsas\" and offers pasting the text first, which fills the field from the clipboard",
       "tests": [
         {
-          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
-          "name": "a link that failed keeps the link and offers photo, paste and manual"
+          "file": "test/views/smart_import_error_journey_test.dart",
+          "name": "urlNotAccessible: says \"Länken kunde inte läsas\" and offers pasting the text first, which fills the field from the clipboard"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a broken link (404) says the link could not be read"
         }
       ],
       "ticket": null,
-      "reason": "Existing test: a failed link keeps the link and offers \"Klistra in texten\".",
-      "known_gap": {
-        "reason": "A broken link (404) shows \"Kunde inte nå sidan\" (test/unit/services/import/import_failure_cause_test.dart), not the drawn \"Länken kunde inte läsas\".",
-        "ticket": "BUT-2168"
-      }
+      "reason": "A link that could not be read says \"Länken kunde inte läsas\" on the Smart import screen and offers \"Klistra in texten själv\" first, which fills the field from the clipboard."
     },
     {
       "id": "TR::FLOW::03::hämtar::sidan-har-inget-recept",
       "flow": "03",
-      "status": "PARTIAL",
-      "test_file": "test/unit/services/import/import_failure_cause_test.dart",
-      "test_name": "a readable page without a recipe says no recipe was found",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_error_journey_test.dart",
+      "test_name": "noRecipeContent: says \"Vi hittade inget recept på sidan\" and offers writing it first, which opens the editor",
       "tests": [
+        {
+          "file": "test/views/smart_import_error_journey_test.dart",
+          "name": "noRecipeContent: says \"Vi hittade inget recept på sidan\" and offers writing it first, which opens the editor"
+        },
         {
           "file": "test/unit/services/import/import_failure_cause_test.dart",
           "name": "a readable page without a recipe says no recipe was found"
         }
       ],
       "ticket": null,
-      "reason": "A readable page with no recipe on it fails with its own cause and the view model's message is \"Inget recept hittades\".",
-      "known_gap": {
-        "reason": "Tested through the view model only: no test drives the screen this failure reaches, so the drawn outcome on it is unverified.",
-        "ticket": "BUT-2168"
-      }
+      "reason": "A page without a recipe says \"Vi hittade inget recept på sidan\" on the Smart import screen and offers \"Skriv själv\" first, which opens the editor."
     },
     {
       "id": "TR::FLOW::03::länkfält::importera",
