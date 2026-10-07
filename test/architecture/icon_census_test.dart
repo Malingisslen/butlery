@@ -58,7 +58,6 @@ const Map<String, Map<String, int>> _residue = {
     'mark_email_unread_outlined': 1,
   },
   'lib/views/cooking_mode_view.dart': {'no_meals': 1, 'touch_app': 1},
-  'lib/views/edit_recipe_view.dart': {'cloud_done_outlined': 1},
   'lib/views/family/family_member_form_view.dart': {'save': 1, 'undo': 1},
   'lib/views/family/who_is_eating_sheet.dart': {'how_to_reg': 1},
   'lib/views/file_import_view.dart': {'file_upload': 1},
@@ -190,7 +189,6 @@ const Map<String, Map<String, int>> _residue = {
     'shield_outlined': 1,
     'upload_outlined': 1,
   },
-  'lib/views/skriv_sjalv_recept_view.dart': {'cloud_done_outlined': 1},
   'lib/views/smart_import/import_widgets.dart': {'content_paste': 2},
   'lib/views/smart_import_view.dart': {'videocam_off': 1},
   'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart':
@@ -516,6 +514,9 @@ const Map<String, Map<String, int>> _residue = {
     'pending_outlined': 1,
     'pie_chart_outline': 1,
     'public': 1,
+  },
+  'lib/widgets/recipe/recipe_form/draft_save_indicator.dart': {
+    'cloud_done_outlined': 1,
   },
   'lib/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart': {
     'low_priority': 1,

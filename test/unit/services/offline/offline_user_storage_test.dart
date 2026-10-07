@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -7,6 +9,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -17,6 +20,8 @@ class MockAppDatabase extends Mock implements AppDatabase {}
 class MockRecipeDao extends Mock implements RecipeDao {}
 
 class MockSyncQueueDao extends Mock implements SyncQueueDao {}
+
+class MockUploadQueueDao extends Mock implements UploadQueueDao {}
 
 // Fake OfflineRecipe for stubbing
 class FakeOfflineRecipe extends Fake implements OfflineRecipe {
@@ -51,6 +56,7 @@ void main() {
     late MockAppDatabase mockDatabase;
     late MockRecipeDao mockRecipeDao;
     late MockSyncQueueDao mockSyncQueueDao;
+    late MockUploadQueueDao mockUploadQueueDao;
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
@@ -63,6 +69,12 @@ void main() {
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
       when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
+      mockUploadQueueDao = MockUploadQueueDao();
+      when(() => mockDatabase.uploadQueueDao).thenReturn(mockUploadQueueDao);
+      // No image of the recipe waits to go up.
+      when(
+        () => mockUploadQueueDao.getUploadsForEntity(any(), any()),
+      ).thenAnswer((_) async => []);
 
       // No create of the recipe waits in the queue.
       when(
@@ -70,7 +82,12 @@ void main() {
       ).thenAnswer((_) async => null);
 
       // Create storage instance with mock database
-      storage = OfflineUserStorage(database: mockDatabase);
+      final uploadsRoot = await Directory.systemTemp.createTemp('uploads');
+      addTearDown(() => uploadsRoot.delete(recursive: true));
+      storage = OfflineUserStorage(
+        database: mockDatabase,
+        uploadsRoot: () async => uploadsRoot,
+      );
     });
 
     tearDown(() async {
@@ -262,6 +279,9 @@ void main() {
         when(
           () => mockSyncQueueDao.clearForUser(targetUser),
         ).thenAnswer((_) async => 2);
+        when(
+          () => mockUploadQueueDao.clearForUser(targetUser),
+        ).thenAnswer((_) async => 1);
 
         // Act
         await storage.clearUserData(targetUser);
@@ -269,6 +289,7 @@ void main() {
         // Assert
         verify(() => mockRecipeDao.deleteAllForUser(targetUser)).called(1);
         verify(() => mockSyncQueueDao.clearForUser(targetUser)).called(1);
+        verify(() => mockUploadQueueDao.clearForUser(targetUser)).called(1);
       });
 
       test('should get recipe count for user', () async {

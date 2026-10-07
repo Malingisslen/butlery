@@ -1,5 +1,7 @@
 // lib/services/offline/sync_result.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Result of synchronization operation
 class SyncResult {
   final bool success;
@@ -36,6 +38,31 @@ class SyncResult {
       isRetry: failedCount > 0,
       syncedCount: syncedCount,
       failedCount: failedCount,
+    );
+  }
+
+  /// "Försök synka nu": [synced] of the [total] changes reached the server.
+  factory SyncResult.ofManualPass({required int synced, required int total}) {
+    final l = AppLocale.current;
+    final remaining = total - synced;
+    if (remaining == 0) {
+      return SyncResult(
+        success: true,
+        message: l.syncAllSynced(synced),
+        isRetry: false,
+      );
+    }
+    if (synced > 0) {
+      return SyncResult(
+        success: true,
+        message: l.syncPartialSuccess(synced, total, remaining),
+        isRetry: true,
+      );
+    }
+    return SyncResult(
+      success: false,
+      message: l.syncFailedRetryLater,
+      isRetry: true,
     );
   }
 

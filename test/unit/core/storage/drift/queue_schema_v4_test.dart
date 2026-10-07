@@ -105,10 +105,10 @@ void main() {
       expect(await _schemaOf(db), await _schemaOf(fresh));
     });
 
-    test('records schema version 4', () async {
+    test('records the current schema version', () async {
       final row = await db.customSelect('PRAGMA user_version').getSingle();
-      expect(row.data.values.single, 4);
-      expect(db.schemaVersion, 4);
+      expect(row.data.values.single, 5);
+      expect(db.schemaVersion, 5);
     });
   });
 

@@ -17,7 +17,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
@@ -26,6 +31,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_persistence_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -40,6 +46,8 @@ class _MockRecipeCollaborativeManager extends Mock
 
 class _MockRecipePermissionManager extends Mock
     implements RecipePermissionManager {}
+
+class _MockOfflineService extends Mock implements OfflineService {}
 
 class _MockPersonalRecipeOperations extends Mock
     implements PersonalRecipeOperations {}
@@ -371,6 +379,123 @@ void main() {
       verify(() => mockState.clearCurrentDraft()).called(1);
       verifyNever(() => mockState.setError(any()));
       verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
+    });
+  });
+
+  // BUT-2162: an image the network failed while the recipe is saved goes
+  // to the offline queue, after the recipe it belongs to. Offline, every
+  // upload fails that way.
+  group('images the offline queue takes (BUT-2162)', () {
+    late _MockOfflineService offline;
+    final picked = File('/picked/a.jpg');
+
+    setUp(() {
+      offline = _MockOfflineService();
+      when(() => offline.isQueueReady).thenReturn(true);
+      when(
+        () => offline.queueRecipeImage(any(), any(), any()),
+      ).thenAnswer((_) async {});
+      GetIt.instance.registerSingleton<OfflineService>(offline);
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      mockRecipeService.setRecipeState(
+        isInitialized: true,
+        personalOperations: mockPersonalOps,
+        currentUserId: 'u1',
+      );
+      when(() => mockImageManager.networkFailedImages).thenReturn([picked]);
+      when(() => mockImageManager.hasTooLargeImage).thenReturn(false);
+      when(
+        () => mockImageManager.releaseToOfflineQueue(any()),
+      ).thenAnswer((_) {});
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Recipe saved'));
+    });
+
+    tearDown(() {
+      app_provider.ServiceLocator.reset();
+      GetIt.instance.unregister<OfflineService>();
+    });
+
+    Future<Recipe?> save() =>
+        manager.saveRecipe(isCollaborative: false, onNotify: () {});
+
+    test('an image the network failed is queued after the recipe is saved, '
+        'and only then leaves the form', () async {
+      final result = await save();
+
+      expect(result, isNotNull);
+      verifyInOrder([
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+        () => offline.queueRecipeImage(picked.path, result!.id, 'u1'),
+        () => mockImageManager.releaseToOfflineQueue([picked]),
+      ]);
+      verifyNever(() => mockState.setError(any()));
+    });
+
+    test(
+      'a failed save keeps the image in the form and queues nothing',
+      () async {
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.failure('nope'));
+
+        expect(await save(), isNull);
+        verifyNever(() => offline.queueRecipeImage(any(), any(), any()));
+        verifyNever(() => mockImageManager.releaseToOfflineQueue(any()));
+      },
+    );
+
+    test(
+      'a form closed while the recipe was saved still queues the image',
+      () async {
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer((
+          _,
+        ) async {
+          manager.dispose();
+          return RecipeOperationResult.success('Recipe saved');
+        });
+
+        final result = await save();
+
+        verify(
+          () => offline.queueRecipeImage(picked.path, result!.id, 'u1'),
+        ).called(1);
+        verifyNever(() => mockImageManager.releaseToOfflineQueue(any()));
+      },
+    );
+
+    test('an image the queue cannot take stays in the form, and the recipe '
+        'stays saved', () async {
+      when(
+        () => offline.queueRecipeImage(any(), any(), any()),
+      ).thenThrow(const FileSystemException('gone'));
+
+      expect(await save(), isNotNull);
+      verifyNever(() => mockState.setError(any()));
+      verify(() => mockImageManager.releaseToOfflineQueue(const [])).called(1);
+    });
+
+    test('a too-large image stops the save and says why', () async {
+      var round = 0;
+      when(
+        () => mockImageManager.pendingImages,
+      ).thenAnswer((_) => round++ < 2 ? [picked] : const []);
+      when(
+        () => mockImageManager.uploadPendingImagesInBackground(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer((_) async => const []);
+      when(() => mockImageManager.hasTooLargeImage).thenReturn(true);
+
+      expect(await save(), isNull);
+      verify(
+        () => mockState.setError(AppLocale.current.imageUploadTooLarge('10')),
+      ).called(1);
+      verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+      verifyNever(() => offline.queueRecipeImage(any(), any(), any()));
     });
   });
 }

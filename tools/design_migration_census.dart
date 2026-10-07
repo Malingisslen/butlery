@@ -862,6 +862,13 @@ Map<String, Object?> _a11y(CensusSource src, List<_Finding> out) {
   for (final f in findings) {
     out.add(_Finding('a11y', f.key, f.values.isEmpty ? null : f.values.first));
   }
+  // Failures Malin has accepted (D5 = B) are counted here, never as known
+  // failures, so the verdict can reach YES with them still listed.
+  final accepted = [
+    ..._collection(source, 'acceptedA11yFindings').entries,
+    for (final host in ['Linux', 'Windows'])
+      ..._collection(source, 'acceptedA11yFindings${host}Only').entries,
+  ];
   final cases = {
     for (final f in findings) f.key.split('::').take(5).join('::'),
   };
@@ -870,6 +877,14 @@ Map<String, Object?> _a11y(CensusSource src, List<_Finding> out) {
     'file': _a11yFindings,
     'known_findings': findings.length,
     'known_findings_ceiling': _intConst(source, 'knownA11yFindingsCeiling'),
+    'accepted_findings': accepted.length,
+    'accepted_findings_ceiling': _intConst(
+      source,
+      'acceptedA11yFindingsCeiling',
+    ),
+    'accepted_by_ticket': _countBy(
+      accepted.map((f) => f.values.isEmpty ? '—' : f.values.first),
+    ),
     'host_bound': {
       for (final e in hostBound.entries) e.key.toLowerCase(): e.value.length,
     },
@@ -1162,6 +1177,7 @@ Map<String, Object?> buildCensus(CensusSource src) {
                 'residue lists are not empty',
       'known_failures': findings.length,
       'known_failures_by_list': byList,
+      'accepted_failures': (sections['a11y']! as Map)['accepted_findings'] ?? 0,
       'tickets_registered': tickets.length,
       'failures_without_ticket': untracked,
       'residue_lists_not_empty': residue,
@@ -1218,6 +1234,10 @@ String renderMarkdown(Map<String, Object?> census) {
     ..writeln(
       '  Each list counts at its own grain (a transition, a control state, '
       'a check, a view case), so one cause can appear in more than one list.',
+    )
+    ..writeln(
+      '- Accepted failures, counted apart (D5 = B): '
+      '${v['accepted_failures']}',
     )
     ..writeln(
       '- Tickets: ${v['tickets_registered']} registered in Linear',
@@ -1375,6 +1395,11 @@ String renderMarkdown(Map<String, Object?> census) {
       ..writeln(
         '- Host-bound text contrast (glyph rasteriser): '
         '${counts(a['host_bound'])}',
+      )
+      ..writeln(
+        '- Accepted findings, not known failures: ${a['accepted_findings']} '
+        '(ceiling ${a['accepted_findings_ceiling']}; '
+        '${counts(a['accepted_by_ticket'])})',
       )
       ..writeln('- By check: ${counts(a['by_code'])}')
       ..writeln('- By view: ${counts(a['by_view'])}');

@@ -17,6 +17,7 @@ import 'dart:math';
 import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 
 import 'package:butlery/services/offline/queued_change.dart';
 
@@ -88,7 +89,17 @@ final Random _random = Random();
 /// ownership or permission refusal is [QueuedChangeReason.permissionDenied],
 /// and a refused field is [QueuedChangeReason.unknown]. A missing signed-in
 /// user ([AuthenticationException]) stays transient, like a 401.
+///
+/// An image upload fails with a [StorageUploadException] carrying the
+/// Storage code, mapped like the codes above. Its `too-large` is the app's
+/// own size check (`checkStorageUploadSize`) and is
+/// [QueuedChangeReason.tooLarge]. Since that check runs first, an
+/// `unauthorized` is still a permission answer.
 QueuedChangeReason? permanentFailureReason(Object error) {
+  if (error is StorageUploadException) {
+    if (error.isTooLarge) return QueuedChangeReason.tooLarge;
+    return _permanentReasonForCode(error.code);
+  }
   if (error is ResourceNotFoundException) return QueuedChangeReason.notFound;
   if (error is PermissionDeniedException ||
       error is SecurityViolationException) {
@@ -96,7 +107,11 @@ QueuedChangeReason? permanentFailureReason(Object error) {
   }
   if (error is ValidationException) return QueuedChangeReason.unknown;
   if (error is! FirebaseException) return null;
-  return switch (error.code) {
+  return _permanentReasonForCode(error.code);
+}
+
+QueuedChangeReason? _permanentReasonForCode(String code) {
+  return switch (code) {
     'not-found' ||
     'object-not-found' ||
     'bucket-not-found' ||
@@ -114,8 +129,10 @@ QueuedChangeReason? permanentFailureReason(Object error) {
 /// A short, non-personal code for a failed attempt, kept for diagnostics
 /// while the entry is still retried: the Firebase code, or the error's type.
 /// Never the message, which can carry user text.
-String queueErrorCode(Object error) =>
-    error is FirebaseException ? error.code : error.runtimeType.toString();
+String queueErrorCode(Object error) => switch (error) {
+  FirebaseException(:final code) || StorageUploadException(:final code) => code,
+  _ => error.runtimeType.toString(),
+};
 
 /// One entry as [planQueuePass] sees it.
 class QueueEntryState {

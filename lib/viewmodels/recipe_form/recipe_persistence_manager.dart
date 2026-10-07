@@ -13,6 +13,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/offline_image_handoff.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
@@ -155,6 +158,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     _state.setSaving(true);
     _state.clearError();
 
+    var imageTooLarge = false;
     try {
       final result = await safeExecute<Recipe>(
         () async {
@@ -187,6 +191,10 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
               if (_imageManager.pendingImages.isNotEmpty) {
                 throw Exception('Image upload incomplete - cannot save recipe');
+              }
+              if (_imageManager.hasTooLargeImage) {
+                imageTooLarge = true;
+                throw Exception('Image too large - cannot save recipe');
               }
 
               AppLogger.info(
@@ -256,6 +264,15 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             );
           }
 
+          await OfflineImageHandoff(
+            _imageManager,
+            ServiceLocator.tryGet<OfflineService>(),
+          ).queueFor(
+            recipeId,
+            _recipeService.currentUserId,
+            formAlive: !_disposed,
+          );
+
           if (_disposed) {
             AppLogger.warning(
               '⚠️ Save completed but Manager disposed - skipping state updates',
@@ -291,7 +308,13 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
       if (result == null) {
         if (!_disposed) {
-          _state.setError(AppLocale.current.errorCouldNotSaveRecipe);
+          _state.setError(
+            imageTooLarge
+                ? AppLocale.current.imageUploadTooLarge(
+                    '${UploadConstants.maxStorageFileBytes ~/ (1024 * 1024)}',
+                  )
+                : AppLocale.current.errorCouldNotSaveRecipe,
+          );
         }
       } else {
         if (!_disposed) {

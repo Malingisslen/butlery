@@ -277,6 +277,44 @@ void main() {
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
     });
+
+    test('several recipes are shared one by one, and the ones that fail '
+        'come back in order (BUT-2152)', () async {
+      final recipes = [
+        RecipeFactory.build(id: 'recipe_a'),
+        RecipeFactory.build(id: 'recipe_b'),
+        RecipeFactory.build(id: 'recipe_c'),
+      ];
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer(
+        (invocation) async =>
+            invocation.namedArguments[#recipeId] != 'recipe_b',
+      );
+
+      final notShared = await viewModel.shareRecipes(
+        recipes: recipes,
+        friendUserIds: ['friend_1'],
+      );
+
+      expect(notShared.map((r) => r.id), ['recipe_b']);
+      expect(viewModel.isSharing, isFalse);
+      for (final id in ['recipe_a', 'recipe_b', 'recipe_c']) {
+        verify(
+          () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+            recipeId: id,
+            friendIds: ['friend_1'],
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).called(1);
+      }
+    });
   });
 
   group('UniversalShareDialogViewModel - Menu Sharing', () {

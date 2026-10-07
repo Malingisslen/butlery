@@ -79,10 +79,13 @@ class ShareDialogHeader {
   ) {
     switch (contentType) {
       case ShareContentType.recipe:
-        final recipe = content as Recipe;
+        // A bulk share hands over the recipes still to share (BUT-2152).
+        final subtitle = content is List<Recipe>
+            ? content.map((recipe) => recipe.title).join(', ')
+            : (content as Recipe).title;
         return (
           context.l10n.shareRecipeWithFriends,
-          recipe.title,
+          subtitle,
           ButleryIcons.utensils,
         );
       case ShareContentType.menu:

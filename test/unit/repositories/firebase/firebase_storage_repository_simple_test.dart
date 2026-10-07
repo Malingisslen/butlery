@@ -9,6 +9,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -247,4 +249,23 @@ void main() {
       });
     },
   );
+
+  group('checkStorageUploadSize (BUT-2162)', () {
+    test('refuses what storage.rules refuses, as too large', () {
+      expect(
+        () => checkStorageUploadSize(UploadConstants.maxStorageFileBytes),
+        throwsA(
+          isA<StorageUploadException>().having(
+            (e) => e.isTooLarge,
+            'isTooLarge',
+            isTrue,
+          ),
+        ),
+      );
+    });
+
+    test('lets a byte less through', () {
+      checkStorageUploadSize(UploadConstants.maxStorageFileBytes - 1);
+    });
+  });
 }

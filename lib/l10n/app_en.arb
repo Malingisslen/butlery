@@ -455,6 +455,8 @@
     }
   },
   "autoSaveEnabled": "Auto-save enabled",
+  "autoSaveFailed": "The draft could not be saved.",
+  "autoSaveFailedPreserved": "What you wrote is still here. Tap Save to save the recipe.",
   "selectionFriendSelectedWithName": "{name} selected",
   "@selectionFriendSelectedWithName": {
     "placeholders": {
@@ -13232,6 +13234,22 @@
   "shareCouldNotComplete": "Sharing could not be completed.",
   "@shareCouldNotComplete": {
     "description": "P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08)."
+  },
+  "shareRecipesNotShared": "{count, plural, =1{One recipe could not be shared: {titles}.} other{{count} recipes could not be shared: {titles}.}}",
+  "@shareRecipesNotShared": {
+    "description": "BUT-2152: part one of the error contract after a bulk recipe share where some recipes failed; names the recipes that were not shared.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "titles": {
+        "type": "String"
+      }
+    }
+  },
+  "shareRecipesRetryOnlyFailed": "What you filled in is still here. Share tries again with only those.",
+  "@shareRecipesRetryOnlyFailed": {
+    "description": "BUT-2152: part two of the error contract after a partly failed bulk recipe share: the recipients and message are kept, and the share button retries only the failed recipes."
   },
   "imageSelectFailed": "The images could not be selected.",
   "@imageSelectFailed": {

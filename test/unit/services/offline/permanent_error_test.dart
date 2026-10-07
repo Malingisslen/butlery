@@ -3,6 +3,7 @@
 // Väntar på dig med orsak i ord." Classified from the error code, never from
 // the message text.
 
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/queued_change.dart';
@@ -116,6 +117,33 @@ void main() {
           ),
         ),
         'unavailable',
+      );
+    });
+
+    test('an image upload is classified by its Storage code (BUT-2162)', () {
+      expect(
+        permanentFailureReason(
+          const StorageUploadException(StorageUploadException.tooLargeCode, ''),
+        ),
+        QueuedChangeReason.tooLarge,
+      );
+      expect(
+        permanentFailureReason(
+          const StorageUploadException('unauthorized', ''),
+        ),
+        QueuedChangeReason.permissionDenied,
+      );
+      expect(
+        permanentFailureReason(
+          const StorageUploadException('network-request-failed', ''),
+        ),
+        isNull,
+      );
+      expect(
+        queueErrorCode(
+          const StorageUploadException('quota-exceeded', 'Pannbiffar.jpg'),
+        ),
+        'quota-exceeded',
       );
     });
   });

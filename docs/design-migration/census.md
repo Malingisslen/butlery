@@ -7,17 +7,18 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 35 known failures and 1 residue lists are not empty
-- Known failures: 35 (a11y 12, transitions 23)
+- **Migration complete:** NO: 16 known failures and 1 residue lists are not empty
+- Known failures: 16 (transitions 16)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 11 registered in Linear
+- Accepted failures, counted apart (D5 = B): 12
+- Tickets: 10 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 390`
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 15, MISSING 4, PARTIAL 4, TESTED 58.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 8, MISSING 4, PARTIAL 4, TESTED 65.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
@@ -37,15 +38,8 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::06::mfa::utmaning-maskerad-ledtrad` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv` | PARTIAL | BUT-2160 |
 | `TR::FLOW::07::nekad::funktionen-kvar` | PARTIAL | BUT-2160 |
-| `TR::FLOW::08::ko::beroendekedja-misslyckas` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::ko::koindikator-i-toppfaltet` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::ko::omforsok-backoff` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::ko::permanent-fel` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::ko::toms::konfliktbanner` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::kovy::vantar-pa-synk` | BUILT_NOT_REACHABLE | BUT-2162 |
+| `TR::FLOW::08::ko::toms::konfliktbanner` | BUILT_NOT_REACHABLE | BUT-2213 |
 | `TR::FLOW::08::lagring-slut::varning-innan-nedladdning` | MISSING | BUT-2163 |
-| `TR::FLOW::08::skrivning::koas` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::utloggning-med-ko::blockeras` | BUILT_NOT_REACHABLE | BUT-2162 |
 
 ## The 53 visual-only view states
 
@@ -70,10 +64,11 @@ Declared pairs: 32. Measured in both modes: 32, of which under their floor: 0; u
 
 ## Accessibility matrix
 
-Known findings: 12 (ceiling 12) in 12 cases (view, state, mode, width, text scale).
-- Host-bound text contrast (glyph rasteriser): linux 3, windows 0
-- By check: TEXT_CONTRAST 12
-- By view: chatt 2, inköpslista 2, receptdetalj 2, receptlista-sök 2, veckogenerering 2, veckomeny 2
+Known findings: 0 (ceiling 0) in 0 cases (view, state, mode, width, text scale).
+- Host-bound text contrast (glyph rasteriser): linux 0, windows 0
+- Accepted findings, not known failures: 12 (ceiling 12; BUT-2196 12)
+- By check: 
+- By view: 
 
 ## Token parity
 
@@ -100,12 +95,11 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2151 | transitions 1 |  |
 | BUT-2158 | transitions 2 |  |
 | BUT-2160 | transitions 2 |  |
-| BUT-2162 | transitions 8 |  |
 | BUT-2163 | transitions 1 |  |
 | BUT-2169 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
 | BUT-2171 | transitions 1 |  |
-| BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
+| BUT-2213 | transitions 1 |  |
 
 ## Ratchets and adoption lists
 

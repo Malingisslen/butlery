@@ -806,6 +806,18 @@ abstract class AppLocalizations {
   /// **'Autospar aktiverat'**
   String get autoSaveEnabled;
 
+  /// No description provided for @autoSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utkastet kunde inte sparas.'**
+  String get autoSaveFailed;
+
+  /// No description provided for @autoSaveFailedPreserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du skrivit finns kvar här. Tryck Spara för att spara receptet.'**
+  String get autoSaveFailedPreserved;
+
   /// No description provided for @selectionFriendSelectedWithName.
   ///
   /// In sv, this message translates to:
@@ -28510,6 +28522,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delningen kunde inte genomföras.'**
   String get shareCouldNotComplete;
+
+  /// BUT-2152: part one of the error contract after a bulk recipe share where some recipes failed; names the recipes that were not shared.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Ett recept kunde inte delas: {titles}.} other{{count} recept kunde inte delas: {titles}.}}'**
+  String shareRecipesNotShared(int count, String titles);
+
+  /// BUT-2152: part two of the error contract after a partly failed bulk recipe share: the recipients and message are kept, and the share button retries only the failed recipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du fyllt i ligger kvar. Dela försöker igen med bara dem.'**
+  String get shareRecipesRetryOnlyFailed;
 
   /// P7-B2: part one of the error contract (content-style-guide.md:87-97), what did not happen, without the exception's text (:95; Q-P7-08).
   ///
