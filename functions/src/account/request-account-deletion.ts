@@ -65,6 +65,7 @@ import {
   scrubCommentRecipeOwner,
   scrubCommentSharedWith,
   deleteCommentLikes,
+  scrubRecipeMemberPermissions,
   deletePingsByUser,
   deleteUserReports,
   deleteModerationSystemEvents,
@@ -453,6 +454,11 @@ export async function runAccountDeletionWithDeps(
   );
   await runStep("comment_likes", result, () =>
     deleteCommentLikes(database, uid),
+  );
+
+  // BUT-2272: the uid as a member of other people's shared recipes.
+  await runStep("recipe_member_permissions", result, () =>
+    scrubRecipeMemberPermissions(database, uid),
   );
 
   // Tier 2 (parallel after T1): subcollections under users/{uid}.

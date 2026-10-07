@@ -5592,3 +5592,21 @@ await her confirmation on the PR.
   replayed.
 - **A recipe entry with no `grants` record is never held.** A block reads only a `'direct'`
   grant as the share's own; a missing record is not read as direct (BUT-1797's rule).
+
+## BUT-2272 — a recipient's uid on other people's shared recipes (2026-10-07)
+
+- **A recipe whose `grants` holds the uid but whose `memberPermissions` does not is not found
+  (BUT-2272, 2026-10-07).** `scrubRecipeMemberPermissions` in
+  `functions/src/account/account-deletion-cascade.ts` finds recipes by
+  `collectionGroup("recipes")` on `socialData.memberPermissions.<uid> != null` and removes
+  both `socialData.memberPermissions.<uid>` and `socialData.grants.<uid>` from each one that
+  is not under `users/{uid}/recipes`. `request-account-deletion.ts` runs it as step
+  `recipe_member_permissions`, after `comment_likes`. Above `MAX_RECIPE_MEMBER_SWEEP_ROWS`
+  it declines and writes nothing, and `probeResidualData` counts the recipes still holding the key in its own
+  uncapped leg. `grants` is keyed by uid too, so only the same kind of query on `grants`
+  could find such a recipe; there is no such query, no index for one, and no probe leg.
+- **A client that read the recipe BEFORE the erasure can write the uid back (BUT-2272,
+  2026-10-07).** The owner's app saves `socialData` from the `Recipe` it holds, so a save
+  from a screen loaded before the erasure puts the key back. Accepted, the same shape as
+  BUT-1971's "A client that read the plan BEFORE an erasure can write the uid back." No test
+  pins it: the writer is the Dart client, not the cascade.

@@ -20750,3 +20750,29 @@ Re-review (same day): bound now `TResponse extends { estimatedCost: number }`, r
 name; `ocr-retry.test.ts` BONUS 2 asserts `resp.estimatedCost === 0.011` (coordinator's probe:
 catch returning 0.005 reddens it). Ledger 17/17, ocr-retry 21/21, tsc clean, no unstaged
 drift under functions/. Passed.
+
+### 2026-10-07 — BUT-2272 recipient uid on other people's shared recipes [account][gdpr]
+Built `scrubRecipeMemberPermissions` (collectionGroup `recipes`, `FieldPath("socialData",
+"memberPermissions", uid) != null`, `limit(MAX_RECIPE_MEMBER_SWEEP_ROWS + 1)`, decline above
+2000, skip docs under `users/{uid}/`, varargs `batch.update` deleting the memberPermissions and
+grants keys, `strict: true`, `hashUid` on log lines), its uncapped probe leg, runStep
+`recipe_member_permissions` after `comment_likes`, and a `recipes`/`socialData.memberPermissions`
+fieldOverride (ASC+DESC COLLECTION, ASC COLLECTION_GROUP).
+Own recipes: the ticket said tier 2 deletes them; it is `deleteRecipes` in TIER 1
+(`users/{uid}/recipes` + top-level `recipes where userId`). The probe runs after tier 3, so a
+plain count is right — an own recipe still standing is residue the `recipes` leg also counts.
+Ordering vs `deleteRecipes` is not load-bearing: the skip filter excludes own docs whatever runs
+first, so no order pin was added to `request-account-deletion.test.ts`.
+MEASURED on the Firestore emulator (cloud-firestore-emulator v1.19.8, `firebase emulators:exec`,
+uid `u.with.dot`): the collectionGroup `!= null` query matched `users/o1/recipes/a` (value 0),
+`users/o2/recipes/b` and top-level `recipes/top`; a grants-only doc was not matched; after the
+varargs batch update `grants: null` stayed null, an absent `grants` was not created, the dotted
+uid was removed as one key, and the count went 3 -> 0. The emulator does not enforce indexes, so
+the override's sufficiency in production is NOT measured.
+Test fake (`account-deletion-cascade.test.ts`): collectionGroup gained `!=` (only `!= null`;
+any other value throws), `batch.update` gained the FieldPath varargs form (segments kept, never
+joined), and `applyFieldPath` no longer builds a missing/null intermediate map for a delete.
+Suite 592 -> 610, all green. Mutation probes (backup, count==1 anchors, byte-identical restore),
+all RED: skip-own-path, cap never declines, cap `>=`, memberPermissions delete removed, grants
+delete removed, `strict:false`, probe leg silenced, runStep removed (orchestration suite),
+override removed and COLLECTION_GROUP entry removed (BUT-1781 guard).

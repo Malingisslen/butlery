@@ -516,6 +516,15 @@
       ]
     },
     {
+      "collectionGroup": "recipes",
+      "fieldPath": "socialData.memberPermissions",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "friend_categories",
       "fieldPath": "friendUserIds",
       "indexes": [

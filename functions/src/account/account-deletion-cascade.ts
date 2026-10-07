@@ -456,6 +456,37 @@ export async function probeResidualData(
       });
     }
   }
+  // BUT-2272: the erased uid as a member of other people's shared recipes.
+  // A plain count, with no skip for the user's own recipes: the probe runs
+  // after tier 1, where `deleteRecipes` removes those, so one still standing
+  // is residue too. Uncapped, so it stays loud when the capped scrub declined.
+  try {
+    const snap = await db
+      .collectionGroup("recipes")
+      .where(
+        new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+        "!=",
+        null,
+      )
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual recipe member keys", {
+        uidHash: hashUid(uid),
+        field: "socialData.memberPermissions.<uid>",
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: recipe members", {
+      uidHash: hashUid(uid),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
   // A read rather than `count()`, because only rows under `recipe_comments`
   // are the deleter's to remove. Over the cap reads as residual.
   try {
@@ -3841,6 +3872,95 @@ export async function deleteCommentLikes(
     uid_prefix: uid.slice(0, 6),
     rows: rows.length,
     decremented,
+  });
+  return true;
+}
+
+/**
+ * Cap on one erasure's sweep of OTHER people's recipes that list this user in
+ * `socialData.memberPermissions`. Declines rather than truncates, like the
+ * sibling caps: the recipe create and update rules let an owner write any
+ * uid into that map on their own recipes, so the row count is not this
+ * user's own doing.
+ */
+export const MAX_RECIPE_MEMBER_SWEEP_ROWS = 2000;
+
+/** True for a document in the erased user's own `users/{uid}/recipes`. */
+function isOwnRecipe(
+  ref: admin.firestore.DocumentReference,
+  uid: string,
+): boolean {
+  const owner = ref.parent.parent;
+  return (
+    owner !== null &&
+    owner.id === uid &&
+    owner.parent.id === "users" &&
+    owner.parent.parent === null
+  );
+}
+
+/**
+ * BUT-2272: take the erased uid out of other people's shared recipes — the
+ * `socialData.memberPermissions` key that found the recipe, and the
+ * `socialData.grants` key beside it. The recipe stays; it belongs to its owner.
+ *
+ * Both keys are addressed with `FieldPath`, never a dotted string built from
+ * the uid. The user's own recipes are skipped: `deleteRecipes` removes them in
+ * tier 1, and an update on a document deleted underneath it rejects the whole
+ * chunk.
+ */
+export async function scrubRecipeMemberPermissions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collectionGroup("recipes")
+    .where(
+      new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+      "!=",
+      null,
+    )
+    .limit(MAX_RECIPE_MEMBER_SWEEP_ROWS + 1)
+    .get();
+
+  if (snap.size > MAX_RECIPE_MEMBER_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible recipe member count; not sweeping",
+      { uidHash: hashUid(uid), rows: snap.size },
+    );
+    return false;
+  }
+  const rows = snap.docs.filter((doc) => !isOwnRecipe(doc.ref, uid));
+  if (rows.length === 0) return true;
+
+  try {
+    await commitInChunks(
+      db,
+      rows,
+      (batch, doc) => {
+        batch.update(
+          doc.ref,
+          new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+          admin.firestore.FieldValue.delete(),
+          new admin.firestore.FieldPath("socialData", "grants", uid),
+          admin.firestore.FieldValue.delete(),
+        );
+      },
+      { label: "scrubRecipeMemberPermissions", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] recipe member scrub failed", {
+      uidHash: hashUid(uid),
+      rows: rows.length,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+
+  logger.info("[deletion-cascade] recipe member scrub", {
+    uidHash: hashUid(uid),
+    rows: rows.length,
   });
   return true;
 }
