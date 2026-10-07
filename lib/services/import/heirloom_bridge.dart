@@ -1,40 +1,49 @@
-/// BUT-953: One-shot handoff between PhotoImportView and the save flow in
-/// ImportBaseViewModel.
+/// BUT-953: One-shot handoff of the heirloom ("släktrecept") scan from
+/// PhotoImportView to the recipe form that saves the parsed recipe.
 ///
-/// PhotoImportView populates `setDraft` before pushing the text-import route.
-/// `ImportBaseViewModel.saveImportedRecipe` calls `consumeDraft` — read-then-
-/// clear — so the upload runs once with the actual parsed recipe id, never
-/// twice and never against the wrong recipe.
+/// BUT-2280: a draft is handed out only to the recipe it was bound to.
+/// PhotoImportView sets the draft, `TextImportViewModel.parseText` binds it to
+/// the recipe it parsed, and the recipe form opened as a template of that
+/// recipe takes it. Any other form — a duplicate, an unrelated import — gets
+/// nothing, so a scan never lands on the wrong recipe.
 ///
-/// Pure-state holder: no async, no Firebase, no notify. Documented non-adopter
-/// of `BaseService` (see `lib/services/CLAUDE.md`).
+/// Pure-state holder: no async, no Firebase, no notify.
 
 import 'package:butlery/models/recipe/heirloom_draft.dart';
 
 class HeirloomBridge {
   HeirloomDraft? _draft;
+  String? _boundRecipeId;
 
   /// Set the pending heirloom draft. Overwrites any existing draft — the
-  /// most recent photo-import navigation wins.
+  /// most recent photo-import navigation wins — and drops any earlier binding.
   void setDraft(HeirloomDraft draft) {
     _draft = draft;
+    _boundRecipeId = null;
   }
 
-  /// Read the pending draft and clear the slot atomically. Returns null when
-  /// no draft is queued — the save flow falls through to the regular path
-  /// without an upload attempt.
-  HeirloomDraft? consumeDraft() {
-    final out = _draft;
-    _draft = null;
-    return out;
+  /// Bind the pending draft to the recipe parsed from its scan. No-op when no
+  /// draft is pending.
+  void bindTo(String recipeId) {
+    if (_draft == null || recipeId.isEmpty) return;
+    _boundRecipeId = recipeId;
   }
 
-  /// Drop the pending draft without consuming it — e.g. when the user
-  /// navigates away from the import flow.
+  /// Hand the draft to [recipeId] and clear the slot, or return null when no
+  /// draft is bound to that recipe.
+  HeirloomDraft? takeFor(String recipeId) {
+    final draft = _draft;
+    if (draft == null || _boundRecipeId != recipeId) return null;
+    clear();
+    return draft;
+  }
+
+  /// Drop the pending draft — e.g. when the photo import screen goes away.
   void clear() {
     _draft = null;
+    _boundRecipeId = null;
   }
 
-  /// True when a draft is queued for the next save.
+  /// True when a draft is queued.
   bool get hasPending => _draft != null;
 }

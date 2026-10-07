@@ -543,12 +543,7 @@ class TestServiceLocator {
       MockFactory.createNetworkManager(),
     );
 
-    // HeirloomBridge — BUT-953 photo-import handoff slot. BUT-1181: import
-    // ViewModels' saveImportedRecipe() resolves it via the production
-    // ServiceLocator.get (fail-loud, not tryGet), so it must exist in the
-    // shared GetIt or every import-save test throws. A real (empty) bridge has
-    // hasPending == false, so _attachHeirloomIfPending early-returns and the
-    // normal save path proceeds — no draft is stashed by these tests.
+    // HeirloomBridge — BUT-953 photo-import handoff slot.
     getIt.registerSingleton<HeirloomBridge>(HeirloomBridge());
   }
 

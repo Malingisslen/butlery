@@ -29,7 +29,11 @@
 
 // lib/viewmodels/shared_content/shared_recipe_viewmodel.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:uuid/uuid.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -222,9 +226,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   /// Puts the user's own copy of [sharedRecipe] in Mina recept and marks the
   /// share imported. Returns null when no copy was made.
   ///
-  /// The copy goes through the same path as forking a recipe, so it gets a new
-  /// id and the current user as owner. The sharer's personal tags and own
-  /// rating are theirs and stay behind.
+  /// The copy goes through the same path as forking a recipe. The sharer's
+  /// personal tags and own rating are theirs and stay behind.
   Future<String?> importSharedRecipe(
     SharedRecipe sharedRecipe, {
     String? newTitle,
@@ -238,10 +241,15 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
         if (source == null) return null;
 
         final saved = await _addPersonalRecipe(
-          source.copyWith(
-            title: newTitle,
-            personalTagIds: const <String>[],
-            rating: null,
+          RecipeFactory.newPersonalFrom(
+            source.copyWith(
+              title: newTitle,
+              personalTagIds: const <String>[],
+              personalTags: const <RecipePersonalTag>[],
+              rating: null,
+            ),
+            ownerId: currentUserId.orEmpty(),
+            id: const Uuid().v4(),
           ),
         );
         if (!saved.isSuccess) return null;

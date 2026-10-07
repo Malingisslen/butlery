@@ -39,6 +39,8 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 
 /// Comprehensive text import ViewModel providing advanced text-to-recipe conversion through ImportManager coordination.
 /// Specializes in text-based recipe importing from various sources including social media, OCR, manual input, and copied content.
@@ -156,6 +158,11 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       // Multiple → still seed parsedRecipe with the first so single-recipe
       // getters/consumers stay non-null, but the view routes to the picker.
       setParsedRecipe(recipes.first);
+      // BUT-2280: a heirloom scan from the photo screen belongs to the one
+      // recipe parsed from it; the multi-recipe picker saves no scan.
+      if (recipes.length == 1) {
+        ServiceLocator.tryGet<HeirloomBridge>()?.bindTo(recipes.first.id);
+      }
       return true;
     } catch (e) {
       // The timeout throws its own localized copy; everything else collapses to

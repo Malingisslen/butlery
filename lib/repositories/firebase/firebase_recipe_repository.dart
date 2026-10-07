@@ -300,15 +300,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         // This branch used to rebuild from `entity`, which threw the
         // sanitization away — and it is not an edge case: `needsNormalization`
         // is true whenever `ingredientsNormalized` is null, which is its
-        // default and which nothing on a LIVE create path populates. (Two copy
-        // factories do carry it forward. `recipe_factory.dart:340` has no
-        // production caller at all. `realtime_recipe.dart:527` DOES have
-        // callers — `recipe_content_operations.dart:427` ←
-        // `realtime_recipe_service.dart:405` — but that chain is dead at the
-        // top, so it reaches no live create either. Wiring either would make
-        // this branch skippable; do not read the claim as stronger than "no
-        // live path".) So it ran on every create,
-        // and the sanitize line above it (added 2026-03-15, over a branch from
+        // default, and the sanitize line above it (added 2026-03-15, over a branch from
         // 2025-11-14) never had an effect here.
         //
         // The write itself is now safe regardless, because `toFirestore`

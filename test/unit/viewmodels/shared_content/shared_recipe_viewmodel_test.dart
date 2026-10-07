@@ -31,6 +31,7 @@
 library;
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
@@ -433,6 +434,11 @@ void main() {
         mealType: 'Middag',
         personalTagIds: const ['their-tag'],
         rating: 4,
+        heirloom: HeirloomMetadata(
+          sourceImageUrl: 'https://storage/heirloom/theirs.jpg',
+          addedAt: DateTime(2026, 10, 1),
+          addedByUserId: 'the-sharer',
+        ),
       ),
       type: RecipeType.personal,
     );
@@ -466,6 +472,10 @@ void main() {
       expect(copy.ingredients, ['400 g pasta']);
       expect(copy.personalTagIds, isEmpty);
       expect(copy.rating, isNull);
+      // BUT-2280: the copy is stored whole, so it must not reuse the
+      // source's id, and an heirloom the sharer added stays theirs.
+      expect(copy.id, isNot('orig-i1'));
+      expect(copy.heirloom, isNull);
       verify(
         () => coordinator.joinSharedRecipe(sharedRecipeId: 'i1', newTitle: 'A'),
       ).called(1);
