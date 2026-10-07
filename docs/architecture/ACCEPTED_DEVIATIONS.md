@@ -5602,7 +5602,7 @@ await her confirmation on the PR.
   both `socialData.memberPermissions.<uid>` and `socialData.grants.<uid>` from each one that
   is not under `users/{uid}/recipes`. `request-account-deletion.ts` runs it as step
   `recipe_member_permissions`, after `comment_likes`. Above `MAX_RECIPE_MEMBER_SWEEP_ROWS`
-  it declines and writes nothing, and `probeResidualData` counts remaining keys in its own
+  it declines and writes nothing, and `probeResidualData` counts the recipes still holding the key in its own
   uncapped leg. `grants` is keyed by uid too, so only the same kind of query on `grants`
   could find such a recipe; there is no such query, no index for one, and no probe leg.
 - **A client that read the recipe BEFORE the erasure can write the uid back (BUT-2272,
