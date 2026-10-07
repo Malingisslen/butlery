@@ -13424,5 +13424,18 @@
   "chatMessagesLoadFailed": "The messages could not be loaded.",
   "@chatMessagesLoadFailed": {
     "description": "P7-C3: part one of the error contract (content-style-guide.md:87-97), what did not happen, instead of the causeless errorGeneric (:95). The retry action is the button beside it."
+  },
+  "draftDiscard": "Discard",
+  "@draftDiscard": {
+    "description": "BUT-2175: the recipe form's draft question, one draft: Släng deletes it (produktregler.md:171-172)."
+  },
+  "draftsDiscarded": "{count, plural, =1{The draft was discarded} other{{count} drafts were discarded}}",
+  "@draftsDiscarded": {
+    "description": "BUT-2175: undo snackbar after Släng in the recipe form's draft question.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

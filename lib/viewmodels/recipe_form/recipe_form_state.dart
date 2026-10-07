@@ -804,6 +804,12 @@ class RecipeFormState extends ChangeNotifier {
     return _autoSaveManager.getAvailableDrafts();
   }
 
+  Future<void> discardDrafts(Iterable<String> draftIds) async {
+    for (final id in draftIds) {
+      await _autoSaveManager.deleteDraft(id);
+    }
+  }
+
   /// Get current form data for external analysis
   Map<String, dynamic> serializeFormData() {
     return _serializeFormData();

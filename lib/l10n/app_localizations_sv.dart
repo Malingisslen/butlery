@@ -17504,4 +17504,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get chatMessagesLoadFailed => 'Meddelandena kunde inte laddas.';
+
+  @override
+  String get draftDiscard => 'Släng';
+
+  @override
+  String draftsDiscarded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count utkast slängdes',
+      one: 'Utkastet slängdes',
+    );
+    return '$_temp0';
+  }
 }

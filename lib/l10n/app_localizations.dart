@@ -28792,6 +28792,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Meddelandena kunde inte laddas.'**
   String get chatMessagesLoadFailed;
+
+  /// BUT-2175: the recipe form's draft question, one draft: Släng deletes it (produktregler.md:171-172).
+  ///
+  /// In sv, this message translates to:
+  /// **'Släng'**
+  String get draftDiscard;
+
+  /// BUT-2175: undo snackbar after Släng in the recipe form's draft question.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Utkastet slängdes} other{{count} utkast slängdes}}'**
+  String draftsDiscarded(int count);
 }
 
 class _AppLocalizationsDelegate

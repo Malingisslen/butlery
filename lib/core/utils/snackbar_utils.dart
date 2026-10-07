@@ -657,9 +657,28 @@ class UndoSnackBar {
     String message, {
     required VoidCallback onUndo,
   }) {
+    return _showWindowed(message, label: _undoLabel, onAction: onUndo);
+  }
+
+  /// A receipt whose [actionLabel] is the flow's way back, on the same
+  /// window as Ångra: the automatic placement's ÄNDRA, "kvitto i 7 sekunder"
+  /// (produktregler.md:202, ux-beslut D-04).
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showReceipt(
+    String message, {
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) {
+    return _showWindowed(message, label: actionLabel, onAction: onAction);
+  }
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _showWindowed(
+    String message, {
+    required String label,
+    required VoidCallback onAction,
+  }) {
     final messenger = _messenger;
     if (messenger == null) return null;
-    AppLogger.debug('Undo snackbar shown: $message');
+    AppLogger.debug('Windowed snackbar shown: $message');
     messenger
       ..clearSnackBars()
       ..removeCurrentSnackBar();
@@ -678,7 +697,7 @@ class UndoSnackBar {
           child: InkSnackBar(
             message: message,
             action: InkSnackBarAction(
-              label: _undoLabel,
+              label: label,
               onPressed: () {
                 if (acted) return;
                 acted = true;
@@ -686,7 +705,7 @@ class UndoSnackBar {
                 messenger.hideCurrentSnackBar(
                   reason: SnackBarClosedReason.action,
                 );
-                onUndo();
+                onAction();
               },
             ),
           ),

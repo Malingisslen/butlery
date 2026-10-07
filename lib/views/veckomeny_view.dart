@@ -284,12 +284,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   void _showAutoPlacedToast(int placed) {
-    SnackBarUtils.showSuccessWithAction(
-      context,
+    UndoSnackBar.capture(context).showReceipt(
       context.l10n.menuAutoPlacedToast(placed),
       actionLabel: context.l10n.menuAutoPlacedChangeAction,
       onAction: () => unawaited(_openPlacement(redoAuto: true)),
-      duration: const Duration(seconds: 7),
     );
   }
 

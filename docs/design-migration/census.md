@@ -7,23 +7,22 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 39 known failures and 1 residue lists are not empty
-- Known failures: 39 (a11y 12, transitions 27)
+- **Migration complete:** NO: 35 known failures and 1 residue lists are not empty
+- Known failures: 35 (a11y 12, transitions 23)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Tickets: 14 registered in Linear
+- Tickets: 11 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
   - `test/architecture/icon_census_test.dart _residue: 390`
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 15, MISSING 5, PARTIAL 7, TESTED 54.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 15, MISSING 4, PARTIAL 4, TESTED 58.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built.
 
 | Transition | Status | Ticket |
 | --- | --- | --- |
-| `TR::FLOW::01::placering::kvitto-7-s-andra` | PARTIAL | BUT-2173 |
 | `TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar` | BUILT_NOT_REACHABLE | BUT-2151 |
 | `TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt` | BUILT_NOT_REACHABLE | BUT-2140 |
 | `TR::FLOW::03::foto-ocr::otolkad-text` | MISSING | BUT-2158 |
@@ -46,9 +45,6 @@ Only TESTED counts as done. PARTIAL is built and driven but misses its canonical
 | `TR::FLOW::08::kovy::vantar-pa-synk` | BUILT_NOT_REACHABLE | BUT-2162 |
 | `TR::FLOW::08::lagring-slut::varning-innan-nedladdning` | MISSING | BUT-2163 |
 | `TR::FLOW::08::skrivning::koas` | BUILT_NOT_REACHABLE | BUT-2162 |
-| `TR::FLOW::08::stale-data::tidsstampel` | MISSING | BUT-2174 |
-| `TR::FLOW::08::utkast::aterupptagning` | PARTIAL | BUT-2175 |
-| `TR::FLOW::08::utkast::slang-raderar` | PARTIAL | BUT-2175 |
 | `TR::FLOW::08::utloggning-med-ko::blockeras` | BUILT_NOT_REACHABLE | BUT-2162 |
 
 ## The 53 visual-only view states
@@ -109,9 +105,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | BUT-2169 | transitions 1 |  |
 | BUT-2170 | transitions 1 |  |
 | BUT-2171 | transitions 1 |  |
-| BUT-2173 | transitions 1 |  |
-| BUT-2174 | transitions 1 |  |
-| BUT-2175 | transitions 2 |  |
 | BUT-2196 | a11y 12 | Rendered text under its contrast floor (textContrastGuideline): meta lines, week subtitle |
 
 ## Ratchets and adoption lists
