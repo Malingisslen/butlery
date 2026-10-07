@@ -176,6 +176,7 @@ jobs:
 
   # Build job - runs the platforms picked above in parallel after validation.
   build:
+    name: build (${{ matrix.platform }})
     needs: [validate, platforms]
     timeout-minutes: 60
 
