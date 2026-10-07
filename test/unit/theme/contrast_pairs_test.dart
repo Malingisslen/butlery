@@ -31,7 +31,7 @@ const knownContrastFailures = <String, String>{};
 
 const _fixture = 'test/fixtures/design/contrast_pairs.json';
 const _tokensSha256 =
-    'f5bcf844d33b5c6907745b03b4ee1cf1850a55266c084ef24dd4c003333c56de';
+    '18f913cd45040490c58d38c33aaa42c8171bf89044a4ff1bcfdbaf7757c337bf';
 
 final _member = RegExp(
   r'static const Color (\w+) = Color\(0x([0-9A-Fa-f]{8})\);',
@@ -102,7 +102,7 @@ void main() {
 
   test('the fixture is tokens.json as vendored', () {
     expect((fixture['source'] as Map)['sha256'], _tokensSha256);
-    expect(pairs, hasLength(32));
+    expect(pairs, hasLength(33));
     final policy = fixture['contrastPolicy'] as Map<String, dynamic>;
     expect((policy['floors'] as Map)['smallText'], 4.5);
   });

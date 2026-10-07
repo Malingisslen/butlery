@@ -183,8 +183,8 @@
           "name": "someone else saving the week shows \"{namn} sparade veckan\""
         }
       ],
-      "ticket": "BUT-2151",
-      "reason": "The snackbar is built and tested, but the week plan (weekly_menu_plans) has no rev check and no realtime resource, and realtime_resources has no Firestore rules, so no conflict event is ever raised for the week in production."
+      "ticket": "BUT-2215",
+      "reason": "The snackbar is built and tested, but the week plan (weekly_menu_plans) has no rev check and no realtime resource, so no conflict event is ever raised for the week in production."
     },
     {
       "id": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",

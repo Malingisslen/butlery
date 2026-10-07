@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:34ef5282a0e1bed20f41f95fb42bf8b5cfd5983c07a6229305cd8b5d66cf7d33 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:1e6f235a7812c9b111c41a696ea6db5a763c68babbb691b1c9968312f8951304 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -227,6 +227,9 @@ class AppColorsDark {
   /// Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck. · semantic.surface.pressed.onInk (dark)
   static const Color surfacePressedOnInk = Color(0xFF17251D);
 
+  /// Receptkortets vansterkant (BUT-2297): ink i ljust lage, salvia i morkt. · semantic.border.cardEdge (dark)
+  static const Color recipeCardLeftBorder = Color(0xFFA9B2A0);
+
   // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
   // tools/app-theme-map.json.
   static const Color textSecondary = textMedium;
@@ -252,7 +255,6 @@ class AppColorsDark {
   static const Color onError = textOnPrimary;
   static const Color onWarning = textDark;
   static const Color onInfo = textOnPrimary;
-  static const Color recipeCardLeftBorder = forestGreen;
   static const Color recipeCardBottomBorder = rustLight;
   static const Color headerBackground = forestGreen;
   static const Color headerForeground = textOnPrimary;
