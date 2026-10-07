@@ -368,6 +368,29 @@ void main() {
     expect(uploadedPaths, isEmpty);
   });
 
+  test('clearing a user leaves nothing of their images on the device, and '
+      'nothing of anyone else\'s goes', () async {
+    await saveOffline('r1');
+    final id = await queueImage('r1');
+    final copy = (await uploadRow(id))!.localPath;
+    final other = File('${Directory.systemTemp.path}/picked-other.jpg')
+      ..writeAsBytesSync([9]);
+    addTearDown(other.deleteSync);
+    final otherId = await withClock(
+      Clock.fixed(t0),
+      () => storage.queueRecipeImageForUser(other.path, 'r9', 'u2'),
+    );
+
+    await storage.clearUserData(uid);
+
+    final rows = await db.select(db.uploadQueueEntries).get();
+    expect(rows.where((r) => r.userId == uid), isEmpty);
+    expect(File(copy).existsSync(), isFalse);
+    expect(Directory('${root.path}/$uid').existsSync(), isFalse);
+    final kept = (await uploadRow(otherId))!;
+    expect(File(kept.localPath).existsSync(), isTrue);
+  });
+
   test('a waiting image counts as a queued change', () async {
     await saveOffline('r1');
     await queueImage('r1');

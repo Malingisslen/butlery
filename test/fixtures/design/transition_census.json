@@ -1148,40 +1148,55 @@
     {
       "id": "TR::FLOW::08::ko::beroendekedja-misslyckas",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/services/offline/dependency_chain_test.dart",
-      "test_name": "when the dependency fails for good, the whole chain is marked and the dependent is never sent",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "when the recipe is refused for good, its later edit and its image fail with it and are never sent",
       "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "when the recipe is refused for good, its later edit and its image fail with it and are never sent",
+          "group": "TR::FLOW::08::ko::beroendekedja-misslyckas"
+        },
         {
           "file": "test/unit/services/offline/dependency_chain_test.dart",
           "name": "when the dependency fails for good, the whole chain is marked and the dependent is never sent"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
+      "ticket": null,
+      "reason": "New journey: a recipe create refused for good takes its queued edit and its queued image with it; all three wait under \"Väntar på dig\" and none is sent."
     },
     {
       "id": "TR::FLOW::08::ko::koindikator-i-toppfaltet",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/widget/common/sync/sync_queue_indicator_test.dart",
-      "test_name": "the counter comes and goes with the queue",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "the counter stays away while the queue drains by itself, shows when a write is refused, and goes when the user has dealt with it",
       "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "the counter stays away while the queue drains by itself, shows when a write is refused, and goes when the user has dealt with it",
+          "group": "TR::FLOW::08::ko::koindikator-i-toppfaltet"
+        },
         {
           "file": "test/widget/common/sync/sync_queue_indicator_test.dart",
           "name": "the counter comes and goes with the queue"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
+      "ticket": null,
+      "reason": "New journey: the real top bar shows no counter while the queue drains by itself, a saffron 1 when the server refuses a write, and nothing again after Spara som kopia is sent."
     },
     {
       "id": "TR::FLOW::08::ko::omforsok-backoff",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/services/offline/backoff_schedule_test.dart",
-      "test_name": "is the six steps of produktregler.md:188, in order",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "a write the network drops is tried again on the schedule, not before; the screen says when",
       "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "a write the network drops is tried again on the schedule, not before; the screen says when",
+          "group": "TR::FLOW::08::ko::omforsok-backoff"
+        },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
           "name": "is the six steps of produktregler.md:188, in order"
@@ -1191,23 +1206,28 @@
           "name": "before its time the entry is not sent again, even when the network comes back; at its time it is, and the next step is 4 s"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
+      "ticket": null,
+      "reason": "New journey: a recipe write the network drops is retried at 2 s then 4 s, a reconnect before its time sends nothing, and the view says \"nästa försök om N s\"."
     },
     {
       "id": "TR::FLOW::08::ko::permanent-fel",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/services/offline/permanent_error_test.dart",
-      "test_name": "a refused write goes to \"Väntar på dig\" with its cause, is kept, and is never sent again by itself",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "a refused write waits for the user with its cause, is not sent again by itself, and \"Spara som kopia\" saves it as a new recipe",
       "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "a refused write waits for the user with its cause, is not sent again by itself, and \"Spara som kopia\" saves it as a new recipe",
+          "group": "TR::FLOW::08::ko::permanent-fel"
+        },
         {
           "file": "test/unit/services/offline/permanent_error_test.dart",
           "name": "a refused write goes to \"Väntar på dig\" with its cause, is kept, and is never sent again by itself"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
+      "ticket": null,
+      "reason": "New journey: a refused recipe write lands under \"Väntar på dig\" with its cause, is never sent again by itself, and Spara som kopia sends it as a new recipe titled \"(kopia)\"."
     },
     {
       "id": "TR::FLOW::08::ko::toms::konfliktbanner",
@@ -1221,23 +1241,28 @@
           "name": "a notice raised while the queue waits is held, then shown when it empties, in order"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user. Realtime conflicts do not reach production either (BUT-2151)."
+      "ticket": "BUT-2213",
+      "reason": "Built and tested against a real database, but no conflict can reach the gate from the queue: a queued recipe write replaces the server's recipe after reading it only to check that it exists and who owns it (FirebaseRecipeRepository.update), with no version compared, and the gate is fed by the realtime resource path (ConflictResolutionModule), not by the queue. It needs version checks on recipes (BUT-2213)."
     },
     {
       "id": "TR::FLOW::08::kovy::vantar-pa-synk",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/widget/views/sync/sync_queue_view_test.dart",
-      "test_name": "permanent failures first, then the queue, with count, what and age",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "\"Väntar på synk\" lists what the user wrote offline, with count, what and age, and is empty once it is sent",
       "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "\"Väntar på synk\" lists what the user wrote offline, with count, what and age, and is empty once it is sent",
+          "group": "TR::FLOW::08::kovy::vantar-pa-synk"
+        },
         {
           "file": "test/widget/views/sync/sync_queue_view_test.dart",
           "name": "permanent failures first, then the queue, with count, what and age"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user. The view opens from Mer, but it always says nothing is waiting."
+      "ticket": null,
+      "reason": "New journey: recipes written through the recipe module offline fill \"Väntar på synk\" with count, what and age; on reconnect the view reads \"Allt är sparat\"."
     },
     {
       "id": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
@@ -1272,12 +1297,18 @@
     {
       "id": "TR::FLOW::08::skrivning::koas",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "a recipe created, edited and deleted offline stays on the phone, is queued in order and is not sent",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "a recipe created, edited and deleted offline stays on the phone, is queued in order and is not sent",
+          "group": "TR::FLOW::08::skrivning::koas"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey from PersonalRecipeModule: offline, create, edit and delete stay on the phone and wait in the queue in the order made; nothing reaches the server."
     },
     {
       "id": "TR::FLOW::08::stale-data::tidsstampel",
@@ -1429,17 +1460,22 @@
     {
       "id": "TR::FLOW::08::utloggning-med-ko::blockeras",
       "flow": "08",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/widget/profile/logout_with_queue_test.dart",
-      "test_name": "a sign-out with 3 pending changes is blocked and explained",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "signing out with writes in the queue is blocked and says what is lost; once the queue is sent it asks the ordinary question",
       "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "signing out with writes in the queue is blocked and says what is lost; once the queue is sent it asks the ordinary question",
+          "group": "TR::FLOW::08::utloggning-med-ko::blockeras"
+        },
         {
           "file": "test/widget/profile/logout_with_queue_test.dart",
           "name": "a sign-out with 3 pending changes is blocked and explained"
         }
       ],
-      "ticket": "BUT-2162",
-      "reason": "Built and tested against a real database, but nothing in lib/ writes to the sync or upload queue (saveRecipeOffline and queueTaggingOperation have no callers), so the queue is always empty for a user."
+      "ticket": null,
+      "reason": "New journey: with a recipe write and an image in the queue the real sign-out dialog blocks and counts both; Vänta på synk signs nobody out; after the queue is sent the ordinary question is asked."
     }
   ]
 }

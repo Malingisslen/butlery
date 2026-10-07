@@ -107,10 +107,9 @@ class OfflinePendingChangesSource implements PendingChangesSource {
     if (offline == null) return;
     // Both queues and the device copies they point at go together: a queue
     // entry without its recipe row, or the reverse, is a half-thrown change.
-    // `AppDatabase.clearUserData` covers the upload queue too, which
-    // `OfflineService.clearUserData` does not.
     await offline.database.clearUserData(userId);
-    await offline.refreshSyncState();
+    // Also removes the queue's image files, which the database does not hold.
+    await offline.clearUserData(userId);
   }
 }
 
