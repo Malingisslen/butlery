@@ -1,4 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:fake_async/fake_async.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -41,9 +46,6 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      // BUT-1181: bridge the production ServiceLocator so saveImportedRecipe()'s
-      // ServiceLocator.get<HeirloomBridge>() resolves (DIContainer wraps the
-      // shared GetIt where TestServiceLocator registers HeirloomBridge).
       prod_locator.ServiceLocator.initialize(DIContainer());
       registerFallbackValue(RecipeFactory.build());
     });
@@ -612,6 +614,48 @@ void main() {
 
         expect(viewModel.parsedRecipes, hasLength(1));
         expect(viewModel.hasMultipleParsedRecipes, isFalse);
+      });
+    });
+
+    group('BUT-2280: heirloom scan binding', () {
+      final draft = HeirloomDraft(imageBytes: Uint8List.fromList([1, 2]));
+
+      test('a single parsed recipe gets the pending scan', () async {
+        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+        viewModel.updateInputText('Pannkakor\n2 ägg\nVispa och stek.');
+
+        expect(await viewModel.parseText(), isTrue);
+
+        expect(bridge.takeFor(viewModel.parsedRecipe!.id), same(draft));
+      });
+
+      test('a multi-recipe parse binds the scan to none of them', () async {
+        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => BatchImportResult(
+            results: const [],
+            successfulRecipes: [
+              RecipeFactory.build(id: 'r1', title: 'Pannkakor'),
+              RecipeFactory.build(id: 'r2', title: 'Våfflor'),
+            ],
+            errors: const [],
+            totalProcessed: 2,
+            successCount: 2,
+            failureCount: 0,
+          ),
+        );
+        viewModel.updateInputText('Pannkakor\n---\nVåfflor');
+
+        expect(await viewModel.parseText(), isTrue);
+
+        expect(bridge.takeFor('r1'), isNull);
+        expect(bridge.takeFor('r2'), isNull);
       });
     });
 

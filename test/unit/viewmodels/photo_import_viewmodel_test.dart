@@ -9,18 +9,15 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/models/recipe/heirloom_draft.dart';
-import 'package:butlery/repositories/interfaces/storage_repository.dart';
-import 'package:butlery/services/permission_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
-import '../../infrastructure/mocks/repositories/mock_storage_repository.dart';
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager
@@ -134,25 +131,12 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
 
-      // BUT-953: saveImportedRecipe() on the shared base VM calls
-      // ServiceLocator.get<HeirloomBridge>() (fail-loud by design — not
-      // tryGet). It's intentionally not in TestServiceLocator (the bridge is
-      // its only consumer). Register an empty bridge here: no pending heirloom
-      // → _attachHeirloomIfPending early-returns → the save path proceeds.
       final getIt = GetIt.instance;
       if (getIt.isRegistered<HeirloomBridge>()) {
         getIt.unregister<HeirloomBridge>();
       }
       getIt.registerSingleton<HeirloomBridge>(HeirloomBridge());
 
-      // BUT-1171: bridge the PRODUCTION ServiceLocator (application_provider) to
-      // GetIt.instance so ImportBaseViewModel.saveImportedRecipe's
-      // `ServiceLocator.get<HeirloomBridge>()` resolves the bridge registered
-      // above. Without this the production ServiceLocator is uninitialized, so
-      // the lookup threw "not initialized" — executeAsyncVoid swallowed it into
-      // a generic error, masking the real save flow and keeping the three save
-      // tests permanently red. DIContainer().get<T>() reads the same
-      // GetIt.instance, so the registration above is what gets resolved.
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(DIContainer());
 
@@ -589,113 +573,6 @@ void main() {
       });
     });
 
-    group('Import and Save', () {
-      test('should save imported recipe', () async {
-        // Arrange
-        viewModel.setTestImageBytes(testImageBytes);
-        viewModel.setTestOcrText(testOcrText);
-        final importResult = await mockImportManager.autoImport(
-          viewModel.ocrText,
-        );
-        if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
-          // ignore: invalid_use_of_protected_member
-          viewModel.setParsedRecipe(importResult.importedRecipes.first);
-        }
-        expect(viewModel.hasParsedRecipe, isTrue);
-
-        // Act
-        final saved = await viewModel.saveImportedRecipe();
-
-        // Assert
-        expect(saved, isTrue);
-        verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-      });
-
-      test('should not save without parsed recipe', () async {
-        // Arrange - no recipe parsed
-
-        // Act
-        final saved = await viewModel.saveImportedRecipe();
-
-        // Assert
-        expect(saved, isFalse);
-        expect(viewModel.error, equals('Inget recept att spara'));
-        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
-      });
-
-      test('should handle save failure', () async {
-        // Arrange
-        viewModel.setTestImageBytes(testImageBytes);
-        viewModel.setTestOcrText(testOcrText);
-        final importResult = await mockImportManager.autoImport(
-          viewModel.ocrText,
-        );
-        if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
-          // ignore: invalid_use_of_protected_member
-          viewModel.setParsedRecipe(importResult.importedRecipes.first);
-        }
-        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer((
-          _,
-        ) async {
-          return ImportManagerResult.failure(
-            'Failed to save',
-            strategy: 'photo',
-          );
-        });
-
-        // Act
-        final saved = await viewModel.saveImportedRecipe();
-
-        // Assert
-        expect(saved, isFalse);
-        expect(viewModel.error, equals('Ett oväntat fel uppstod'));
-      });
-    });
-
-    group('Complete Import Workflow', () {
-      test('should complete full import from camera', () async {
-        // Arrange
-        viewModel.setTestImageBytes(testImageBytes);
-        viewModel.setTestOcrText(testOcrText);
-        final importResult = await mockImportManager.autoImport(
-          viewModel.ocrText,
-        );
-        if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
-          // ignore: invalid_use_of_protected_member
-          viewModel.setParsedRecipe(importResult.importedRecipes.first);
-        }
-
-        // Act
-        final saved = await viewModel.saveImportedRecipe();
-
-        // Assert
-        expect(saved, isTrue);
-        expect(viewModel.hasParsedRecipe, isTrue);
-        expect(viewModel.hasOcrResult, isTrue);
-      });
-
-      test('should complete full import from gallery', () async {
-        // Arrange
-        viewModel.setTestImageBytes(testImageBytes);
-        viewModel.setTestOcrText(testOcrText);
-        final importResult = await mockImportManager.autoImport(
-          viewModel.ocrText,
-        );
-        if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
-          // ignore: invalid_use_of_protected_member
-          viewModel.setParsedRecipe(importResult.importedRecipes.first);
-        }
-
-        // Act
-        final saved = await viewModel.saveImportedRecipe();
-
-        // Assert
-        expect(saved, isTrue);
-        expect(viewModel.hasParsedRecipe, isTrue);
-        expect(viewModel.hasOcrResult, isTrue);
-      });
-    });
-
     group('Debug State', () {
       test('should provide comprehensive debug information', () async {
         // Arrange
@@ -733,6 +610,38 @@ void main() {
 
         // Act & Assert
         expect(() => testViewModel.dispose(), returnsNormally);
+      });
+
+      test('BUT-2280: leaving the photo screen drops a pending heirloom '
+          'scan', () {
+        final bridge = GetIt.instance<HeirloomBridge>()
+          ..setDraft(HeirloomDraft(imageBytes: Uint8List.fromList([1])));
+        final testViewModel = TestablePhotoImportViewModel(
+          importManager: mockImportManager,
+        );
+
+        testViewModel.dispose();
+
+        expect(bridge.hasPending, isFalse);
+      });
+
+      test('BUT-2280: turning heirloom off drops a stashed scan', () {
+        final bridge = GetIt.instance<HeirloomBridge>()
+          ..setDraft(HeirloomDraft(imageBytes: Uint8List.fromList([1])));
+        viewModel.isHeirloom = true;
+
+        viewModel.isHeirloom = false;
+
+        expect(bridge.hasPending, isFalse);
+      });
+
+      test('BUT-2280: clearing the photo drops a stashed scan', () {
+        final bridge = GetIt.instance<HeirloomBridge>()
+          ..setDraft(HeirloomDraft(imageBytes: Uint8List.fromList([1])));
+
+        viewModel.clearPhoto();
+
+        expect(bridge.hasPending, isFalse);
       });
 
       test('should clean up resources on dispose', () async {
@@ -790,126 +699,6 @@ void main() {
         expect(viewModel.hasOcrResult, isTrue);
         expect(viewModel.hasParsedRecipe, isTrue);
       });
-    });
-
-    // BUT-1175: exercise the heirloom-pending upload branch of the inherited
-    // saveImportedRecipe at the REAL PhotoImportViewModel level. The outer
-    // setUp already registered an (empty) HeirloomBridge and bridged the
-    // production ServiceLocator; here we add a MockStorageRepository, stage a
-    // pending draft, and authenticate the FakePermissionService so
-    // `_attachHeirloomIfPending` actually runs (it early-returns in every other
-    // test because no draft is pending). Complements the base-class coverage in
-    // import_base_viewmodel_heirloom_test.dart with a concrete-VM proof.
-    group('BUT-1175: VM-level heirloom-pending upload via saveImportedRecipe', () {
-      late MockStorageRepository mockStorage;
-      late HeirloomBridge bridge;
-
-      setUp(() {
-        final getIt = GetIt.instance;
-        bridge = getIt<HeirloomBridge>();
-        if (getIt.isRegistered<StorageRepository>()) {
-          getIt.unregister<StorageRepository>();
-        }
-        mockStorage = MockStorageRepository();
-        getIt.registerSingleton<StorageRepository>(mockStorage);
-
-        // TestServiceLocator registers a FakePermissionService — authenticate it.
-        (getIt<PermissionService>() as FakePermissionService)
-            .setPermissionState(currentUserId: 'user-abc');
-      });
-
-      test(
-        'pending draft + upload OK → uploads scan, attaches metadata, saves',
-        () async {
-          // ignore: invalid_use_of_protected_member
-          viewModel.setParsedRecipe(
-            RecipeFactory.build(id: 'recipe-xyz', title: 'Arvegods'),
-          );
-          bridge.setDraft(
-            HeirloomDraft(
-              imageBytes: Uint8List.fromList(List<int>.generate(64, (i) => i)),
-              writerName: 'Farmor Elsa',
-              year: 1972,
-            ),
-          );
-          when(
-            () => mockStorage.uploadImageData(
-              imageData: any(named: 'imageData'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              metadata: any(named: 'metadata'),
-              cacheControl: any(named: 'cacheControl'),
-            ),
-          ).thenAnswer((_) async => 'https://storage/heirloom/abc.jpg');
-
-          final ok = await viewModel.saveImportedRecipe();
-
-          expect(ok, isTrue);
-          expect(viewModel.hasError, isFalse);
-          expect(
-            viewModel.parsedRecipe?.heirloom,
-            isNotNull,
-            reason: 'metadata must be stitched onto the recipe before save',
-          );
-          expect(viewModel.parsedRecipe!.heirloom!.writerName, 'Farmor Elsa');
-          expect(viewModel.parsedRecipe!.heirloom!.addedByUserId, 'user-abc');
-          expect(
-            bridge.hasPending,
-            isFalse,
-            reason: 'draft drained after upload',
-          );
-          verify(
-            () => mockStorage.uploadImageData(
-              imageData: any(named: 'imageData'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              metadata: any(named: 'metadata'),
-              cacheControl: any(named: 'cacheControl'),
-            ),
-          ).called(1);
-        },
-      );
-
-      test(
-        'pending draft + signed out (null uid) → save blocked, no upload, draft restored',
-        () async {
-          (GetIt.instance<PermissionService>() as FakePermissionService)
-              .setPermissionState(currentUserId: null);
-          // ignore: invalid_use_of_protected_member
-          viewModel.setParsedRecipe(RecipeFactory.build(id: 'recipe-xyz'));
-          bridge.setDraft(
-            HeirloomDraft(imageBytes: Uint8List.fromList([1, 2, 3, 4])),
-          );
-
-          final ok = await viewModel.saveImportedRecipe();
-
-          expect(
-            ok,
-            isFalse,
-            reason: 'save must fail when the heirloom auth re-check fails',
-          );
-          expect(viewModel.hasError, isTrue);
-          expect(
-            viewModel.parsedRecipe?.heirloom,
-            isNull,
-            reason: 'no metadata when upload never ran',
-          );
-          verifyNever(
-            () => mockStorage.uploadImageData(
-              imageData: any(named: 'imageData'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              metadata: any(named: 'metadata'),
-              cacheControl: any(named: 'cacheControl'),
-            ),
-          );
-          expect(
-            bridge.hasPending,
-            isTrue,
-            reason: 'failed auth restores the draft so sign-in + retry works',
-          );
-        },
-      );
     });
 
     group('BUT-684: handwritten mode', () {

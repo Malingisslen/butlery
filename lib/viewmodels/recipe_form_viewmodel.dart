@@ -40,6 +40,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mix
 
 // Import for feedback loop
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Import for per-ingredient confidence review (BUT-925)
@@ -189,6 +190,9 @@ class RecipeFormViewModel extends BaseViewModel
     // BUT-1469: keyed by recipe id (not sourceUrl) so EVERY import path
     // participates — text, photo, voice and archive imports, not just URL.
     if (initialRecipe != null && isTemplate) {
+      // BUT-2280: only the recipe parsed from the heirloom scan gets it.
+      _persistenceManager.pendingHeirloom =
+          ServiceLocator.tryGet<HeirloomBridge>()?.takeFor(initialRecipe.id);
       final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
       if (cache != null) {
         final parsed = cache.retrieve(initialRecipe.id);

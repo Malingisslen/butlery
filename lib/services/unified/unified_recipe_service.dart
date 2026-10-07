@@ -767,6 +767,10 @@ class UnifiedRecipeService
   );
 
   @override
+  Future<String?> createRecipeFrom(Recipe draft) async =>
+      _personalCrud.createPersonalRecipeFrom(draft);
+
+  @override
   Future<void> saveRecipeRaw(Recipe recipe) async =>
       _personalCrud.saveRecipeRaw(recipe);
 

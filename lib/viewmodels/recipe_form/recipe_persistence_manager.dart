@@ -4,6 +4,9 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -31,7 +34,12 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   final RecipePermissionManager _permissionManager;
   final AnalyticsService? _analyticsService;
   final RecipeEditAnalyticsEmitter _editEmitter;
+  final HeirloomUploader? _heirloomUploader;
   final _uuid = const Uuid();
+
+  /// BUT-2280: the heirloom scan handed to this form by the photo import.
+  /// Kept until a save lands, so a failed save can be retried with it.
+  HeirloomDraft? pendingHeirloom;
 
   bool _isSaveInProgress = false;
   String? _currentSaveOperationId;
@@ -54,7 +62,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     required RecipePermissionManager permissionManager,
     AnalyticsService? analyticsService,
     RecipeEditAnalyticsEmitter? editEmitter,
+    HeirloomUploader? heirloomUploader,
   }) : _recipeService = recipeService,
+       _heirloomUploader = heirloomUploader,
        _state = state,
        _imageManager = imageManager,
        _collaborativeManager = collaborativeManager,
@@ -199,10 +209,16 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             '📝 Creating recipe with ${validImageUrls.length} validated image URLs',
           );
 
+          final heirloomDraft = pendingHeirloom;
+          final heirloom = heirloomDraft == null
+              ? null
+              : await _uploadHeirloom(heirloomDraft, recipeId);
+
           final recipe = _state.createRecipe(
             recipeId: recipeId,
             imageUrls: validImageUrls,
             thumbnailUrl: _imageManager.firstThumbnailUrl,
+            heirloom: heirloom,
           );
 
           Recipe savedRecipe;
@@ -229,6 +245,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
               throw Exception(result.message ?? 'Failed to create recipe');
             }
           }
+
+          pendingHeirloom = null;
 
           if (validImageUrls.isNotEmpty) {
             _analyticsService?.recipe.logRecipeImageUploaded(
@@ -312,6 +330,21 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
       AppLogger.info('🔓 Atomic save operation completed and lock released');
     }
+  }
+
+  /// Throws when the scan cannot be stored, so the save fails and the user
+  /// can retry instead of getting the recipe without the scan they added.
+  Future<HeirloomMetadata> _uploadHeirloom(
+    HeirloomDraft draft,
+    String recipeId,
+  ) async {
+    final uploader =
+        _heirloomUploader ?? ServiceLocator.get<HeirloomUploader>();
+    final heirloom = await uploader.upload(draft, recipeId);
+    if (heirloom == null) {
+      throw Exception('Heirloom upload failed for $recipeId');
+    }
+    return heirloom;
   }
 
   /// BUT-2161: clears the draft once the recipe is written. The write has

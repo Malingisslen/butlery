@@ -1,3 +1,5 @@
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 
 /// BUT-410 heirloom ("Farmors lapp") form state, extracted from
@@ -40,6 +42,8 @@ mixin PhotoImportHeirloomFormMixin on ImportBaseViewModel {
   set isHeirloom(bool value) {
     if (isDisposed || _isHeirloom == value) return;
     _isHeirloom = value;
+    // BUT-2280: a scan stashed before the user opted out must not be saved.
+    if (!value) _dropPendingScan();
     notifyListeners();
   }
 
@@ -75,5 +79,16 @@ mixin PhotoImportHeirloomFormMixin on ImportBaseViewModel {
     _heirloomYear = null;
     _heirloomNote = '';
     _isOfflineQueued = false;
+    _dropPendingScan();
   }
+
+  /// BUT-2280: a scan stashed for a parse that never happened must not be
+  /// bound to the next, unrelated text import once this screen is gone.
+  @override
+  void dispose() {
+    _dropPendingScan();
+    super.dispose();
+  }
+
+  void _dropPendingScan() => ServiceLocator.tryGet<HeirloomBridge>()?.clear();
 }

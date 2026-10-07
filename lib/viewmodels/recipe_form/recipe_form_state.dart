@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -820,6 +821,7 @@ class RecipeFormState extends ChangeNotifier {
     String? recipeId,
     List<String>? imageUrls,
     String? thumbnailUrl,
+    HeirloomMetadata? heirloom,
   }) {
     // BUT-1667: after dispose() the field managers have cleared their values,
     // so building here would silently yield a recipe with no ingredients and
@@ -907,6 +909,7 @@ class RecipeFormState extends ChangeNotifier {
         tagResult: _originalRecipe?.tagResult,
         tagOverrides: _tagOverrides,
         sourceArtefact: _sourceArtefact,
+        heirloom: heirloom ?? _originalRecipe?.core.heirloom,
       ),
       type: RecipeType.personal,
     );

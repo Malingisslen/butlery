@@ -3,9 +3,12 @@
 // lib/viewmodels/archive/archive_import_operations_manager.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:uuid/uuid.dart';
 
 /// Manages batch import operations with error handling and state management.
 class ArchiveImportOperationsManager extends ChangeNotifier {
@@ -17,6 +20,15 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
   ArchiveImportOperationsManager(this._recipeService);
 
   bool get isImporting => _isImporting;
+
+  // The archive's ids live for the whole app session and a create keeps its
+  // draft's id, so without a fresh one a second import of the same recipe
+  // would overwrite the user's first copy.
+  static Recipe _asNewCopy(Recipe r) => RecipeFactory.newPersonalFrom(
+    r.copyWith(sourceUrl: 'Från Butlerys arkiv'),
+    ownerId: r.createdBy.orEmpty(),
+    id: const Uuid().v4(),
+  );
   String? get error => _error;
   bool get hasError => _error != null;
 
@@ -36,7 +48,7 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
     try {
       final toImport = archivedRecipes
           .where((r) => selectedRecipeIds.contains(r.id))
-          .map((r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'))
+          .map(_asNewCopy)
           .toList();
 
       final result = await _recipeService.personal.addMultipleUnifiedRecipes(
@@ -68,7 +80,7 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
     try {
       final toImport =
           (filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes)
-              .map((r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'))
+              .map(_asNewCopy)
               .toList();
 
       final result = await _recipeService.personal.addMultipleUnifiedRecipes(

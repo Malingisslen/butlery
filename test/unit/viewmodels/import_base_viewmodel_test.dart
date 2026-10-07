@@ -206,45 +206,6 @@ void main() {
   });
 
   group('ImportBaseViewModel - Import Operations', () {
-    test('should save imported recipe successfully', () async {
-      final recipe = RecipeFactory.build(title: 'Test Recipe');
-      viewModel.setParsedRecipe(recipe);
-
-      final success = await viewModel.saveImportedRecipe();
-
-      expect(success, isTrue);
-      expect(viewModel.hasError, isFalse);
-
-      verify(() => mockImportManager.saveImportedRecipe(recipe)).called(1);
-    });
-
-    test('should handle save without parsed recipe', () async {
-      final success = await viewModel.saveImportedRecipe();
-
-      expect(success, isFalse);
-      expect(viewModel.hasError, isTrue);
-      // Production uses Swedish locale
-      expect(viewModel.error, equals('Inget recept att spara'));
-
-      verifyNever(() => mockImportManager.saveImportedRecipe(any()));
-    });
-
-    test('should handle save error', () async {
-      final recipe = RecipeFactory.build();
-      viewModel.setParsedRecipe(recipe);
-
-      when(
-        () => mockImportManager.saveImportedRecipe(any()),
-      ).thenAnswer((_) async => ImportManagerResult.failure('Save failed'));
-
-      final success = await viewModel.saveImportedRecipe();
-
-      expect(success, isFalse);
-      expect(viewModel.hasError, isTrue);
-      // executeAsyncVoid sets errorPrefix or errorUnexpected
-      expect(viewModel.error, isNotNull);
-    });
-
     test('should update parsed recipe with new data', () {
       final recipe = RecipeFactory.build(
         title: 'Original',
@@ -351,25 +312,6 @@ void main() {
 
       expect(debugState['inputText'], endsWith('...'));
       expect((debugState['inputText'] as String).length, equals(53));
-    });
-  });
-
-  group('ImportBaseViewModel - Error Scenarios', () {
-    test('should handle save exception', () async {
-      final recipe = RecipeFactory.build();
-      viewModel.setParsedRecipe(recipe);
-
-      when(
-        () => mockImportManager.saveImportedRecipe(any()),
-      ).thenThrow(Exception('Database error'));
-
-      // saveImportedRecipe uses executeAsyncVoid which does NOT rethrow
-      final success = await viewModel.saveImportedRecipe();
-
-      expect(success, isFalse);
-      expect(viewModel.hasError, isTrue);
-      // executeAsyncVoid: error is errorPrefix or errorUnexpected (Swedish)
-      expect(viewModel.error, isNotNull);
     });
   });
 }

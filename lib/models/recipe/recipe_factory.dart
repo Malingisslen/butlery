@@ -298,6 +298,55 @@ class RecipeFactory {
     );
   }
 
+  /// BUT-2280: [ownerId] becomes the owner. What belonged to the draft's
+  /// previous owner does not carry over: cook and rating history, sharing
+  /// state, and an heirloom someone else added. A draft another user created
+  /// also leaves behind their tag corrections (which name them and would
+  /// decide this owner's allergen verdict), their source capture and their
+  /// related-recipe links. [id] replaces the draft's id, for a copy that must
+  /// not share an id with its source.
+  static Recipe newPersonalFrom(
+    Recipe draft, {
+    required String ownerId,
+    String? id,
+  }) {
+    final core = draft.core;
+    final heirloom = core.heirloom;
+    final foreign = !{null, '', ownerId}.contains(core.createdBy);
+    return Recipe(
+      core: RecipeCore(
+        id: id ?? (core.id.isEmpty ? null : core.id),
+        title: core.title.trim(),
+        description: core.description,
+        portions: core.portions,
+        timeMinutes: core.timeMinutes,
+        ingredients: core.ingredients,
+        structuredIngredients: core.structuredIngredients,
+        instructions: core.instructions,
+        personalTagIds: core.personalTagIds,
+        personalTags: core.personalTags,
+        rating: core.rating,
+        mealType: core.mealType,
+        sourceUrl: core.sourceUrl,
+        relatedRecipeIds: foreign ? null : core.relatedRecipeIds,
+        sourceArtefact: foreign ? null : core.sourceArtefact,
+        imageUrls: core.imageUrls,
+        thumbnailUrl: core.thumbnailUrl,
+        createdBy: ownerId,
+        ingredientsNormalized: core.ingredientsNormalized,
+        tagResult: core.tagResult,
+        tagOverrides: foreign ? null : core.tagOverrides,
+        heirloom: heirloom?.addedByUserId == ownerId ? heirloom : null,
+        prepTimeMinutes: core.prepTimeMinutes,
+        cookTimeMinutes: core.cookTimeMinutes,
+        cuisine: core.cuisine,
+        difficulty: core.difficulty,
+        nutritionInfo: core.nutritionInfo,
+      ),
+      type: RecipeType.personal,
+    );
+  }
+
   /// Create personal copy from any recipe type
   static Recipe createPersonalCopy(
     Recipe sourceRecipe, {

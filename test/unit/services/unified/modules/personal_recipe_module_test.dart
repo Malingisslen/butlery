@@ -14,6 +14,10 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
@@ -178,6 +182,111 @@ void main() {
         expect(structured[1].amount, 2);
         expect(structured[1].unit, 'msk');
         expect(structured[2].amount, isNull);
+      });
+
+      group('BUT-2280: a new recipe is stored whole', () {
+        HeirloomMetadata heirloomBy(String uid) => HeirloomMetadata(
+          sourceImageUrl: 'https://storage/heirloom/abc.jpg',
+          writerName: 'Farmor Elsa',
+          addedAt: DateTime(2026, 10, 7),
+          addedByUserId: uid,
+        );
+
+        Recipe draft({
+          required HeirloomMetadata heirloom,
+          String createdBy = 'test-user-123',
+        }) => Recipe(
+          core: RecipeCore(
+            id: 'form-id-1',
+            title: '  Farmors bullar ',
+            description: '',
+            ingredients: const ['2 dl mjölk'],
+            structuredIngredients: const [
+              RecipeIngredient(
+                amount: 2,
+                unit: 'dl',
+                name: 'mjölk',
+                section: 'Degen',
+                raw: '2 dl mjölk',
+              ),
+            ],
+            instructions: const ['Baka.'],
+            mealType: 'Middag',
+            createdBy: createdBy,
+            cookCount: 7,
+            relatedRecipeIds: const ['bas-1'],
+            sourceArtefact: SourceArtefact(
+              type: SourceArtefactType.url,
+              payload: 'https://example.com/bullar',
+              fetchedAt: DateTime(2026, 10, 6),
+            ),
+            tagOverrides: const TagOverrides(addedTags: {'fika'}),
+          ),
+          type: RecipeType.personal,
+        )..core.heirloom = heirloom;
+
+        test('keeps the id, sections, source, tag corrections and the '
+            "user's own heirloom", () async {
+          final heirloom = heirloomBy('test-user-123');
+
+          final id = await module.createPersonalRecipeFrom(
+            draft(heirloom: heirloom),
+          );
+
+          expect(id, 'form-id-1');
+          final saved = module.popLastCreatedRecipe()!;
+          expect(saved.id, 'form-id-1');
+          expect(saved.title, 'Farmors bullar');
+          expect(saved.core.heirloom, same(heirloom));
+          expect(saved.core.structuredIngredients!.single.section, 'Degen');
+          expect(
+            saved.core.sourceArtefact!.payload,
+            'https://example.com/bullar',
+          );
+          expect(saved.core.tagOverrides!.addedTags, {'fika'});
+          expect(saved.core.relatedRecipeIds, ['bas-1']);
+          expect(saved.core.createdBy, 'test-user-123');
+        });
+
+        test(
+          'a draft with no owner yet keeps its tag corrections and source',
+          () async {
+            await module.createPersonalRecipeFrom(
+              draft(heirloom: heirloomBy('test-user-123'), createdBy: ''),
+            );
+
+            final saved = module.popLastCreatedRecipe()!;
+            expect(saved.core.tagOverrides!.addedTags, {'fika'});
+            expect(saved.core.sourceArtefact, isNotNull);
+            expect(saved.core.relatedRecipeIds, ['bas-1']);
+          },
+        );
+
+        test("drops another person's heirloom and cook history", () async {
+          await module.createPersonalRecipeFrom(
+            draft(heirloom: heirloomBy('someone-else')),
+          );
+
+          final saved = module.popLastCreatedRecipe()!;
+          expect(saved.core.heirloom, isNull);
+          expect(saved.core.cookCount, isNull);
+        });
+
+        test("another person's recipe leaves their tag corrections, source "
+            'capture and related recipes behind', () async {
+          await module.createPersonalRecipeFrom(
+            draft(
+              heirloom: heirloomBy('someone-else'),
+              createdBy: 'someone-else',
+            ),
+          );
+
+          final saved = module.popLastCreatedRecipe()!;
+          expect(saved.core.tagOverrides, isNull);
+          expect(saved.core.sourceArtefact, isNull);
+          expect(saved.core.relatedRecipeIds, isNull);
+          expect(saved.core.structuredIngredients!.single.section, 'Degen');
+        });
       });
 
       test('should fail update when not authenticated', () async {

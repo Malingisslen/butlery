@@ -24,6 +24,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
+import 'package:butlery/models/recipe/recipe_factory.dart';
 
 /// HIGH-10: Recipe sync status of a write this module sent to Firebase
 /// itself. A write that went through the offline queue is not tracked here;
@@ -142,7 +143,25 @@ class PersonalRecipeModule {
     double? rating,
     List<String>? personalTagIds,
     String? sourceUrl,
-  }) async {
+  }) => createPersonalRecipeFrom(
+    Recipe.personal(
+      title: title,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      personalTagIds: personalTagIds,
+      sourceUrl: sourceUrl,
+      imageUrls: imageUrls,
+    ),
+  );
+
+  /// BUT-2280: stores [draft] as a new recipe owned by the signed-in
+  /// user (see [RecipeFactory.newPersonalFrom]), keeping its id.
+  Future<String?> createPersonalRecipeFrom(Recipe draft) async {
     final currentUserId = PermissionHelper.requireAuthWithError(
       getCurrentUserId: _getCurrentUserId,
       setError: _setError,
@@ -150,35 +169,25 @@ class PersonalRecipeModule {
     );
     if (currentUserId == null) return null;
 
-    if (ValidationUtils.isNullOrWhitespace(title)) {
+    if (ValidationUtils.isNullOrWhitespace(draft.title)) {
       _setError(AppLocale.current.errorRecipeNameEmpty);
       return null;
     }
+    final title = draft.title.trim();
 
     try {
       // Rate limit check for recipe creation (DoS prevention)
       return await _rateLimiter.executeWithLimit(
         RateLimitOperation.createRecipe,
         () async {
-          var newRecipe = Recipe.personal(
-            title: title.trim(),
-            description: description,
-            ingredients: ingredients,
-            // Readers that sum or scale amounts (the menu's shopping list,
-            // portions) treat a recipe without these as unparsed lines.
-            structuredIngredients: StructuredIngredientDeriver.deriveAll(
-              ingredients,
-            ),
-            instructions: instructions,
-            mealType: mealType,
-            createdBy: currentUserId,
-            portions: portions,
-            timeMinutes: timeMinutes,
-            rating: rating,
-            personalTagIds: personalTagIds,
-            sourceUrl: sourceUrl,
-            imageUrls: imageUrls,
+          var newRecipe = RecipeFactory.newPersonalFrom(
+            draft,
+            ownerId: currentUserId,
           );
+          // Readers that sum or scale amounts (the menu's shopping list,
+          // portions) treat a recipe without these as unparsed lines.
+          newRecipe.core.structuredIngredients ??=
+              StructuredIngredientDeriver.deriveAll(newRecipe.ingredients);
 
           // Generate tags if tagging service is available
           newRecipe = await _applyTagging(newRecipe);

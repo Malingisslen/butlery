@@ -923,8 +923,7 @@ class ImportManager {
 
   /// Save imported recipe using PersonalRecipeOperations.
   /// Tagging is handled by PersonalRecipeModule._applyTagging on save —
-  /// no need to tag here (the result would be dropped by addUnifiedRecipe's
-  /// parameter decomposition anyway).
+  /// no need to tag here.
   Future<ImportManagerResult> saveImportedRecipe(Recipe recipe) async {
     try {
       final saveResult = await _personalOperations.addUnifiedRecipe(recipe);

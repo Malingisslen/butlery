@@ -19,6 +19,7 @@ abstract class PersonalRecipeDelegate {
     List<String>? personalTagIds,
     String? sourceUrl,
   });
+  Future<String?> createRecipeFrom(Recipe draft);
   Future<List<Recipe>> fetchAllUserRecipes(String userId);
   Future<void> saveRecipeRaw(Recipe recipe);
   Future<bool> updateRecipe(Recipe recipe);
@@ -54,22 +55,10 @@ class PersonalRecipeOperations {
 
   PersonalRecipeOperations(this._delegate);
 
-  /// Add unified recipe
+  /// BUT-2280: stores [unifiedRecipe] as a new personal recipe.
   Future<RecipeOperationResult> addUnifiedRecipe(Recipe unifiedRecipe) async {
     try {
-      final recipeId = await createRecipe(
-        title: unifiedRecipe.title,
-        description: unifiedRecipe.description,
-        ingredients: unifiedRecipe.ingredients,
-        instructions: unifiedRecipe.instructions,
-        imageUrls: unifiedRecipe.imageUrls,
-        mealType: unifiedRecipe.mealType,
-        portions: unifiedRecipe.portions,
-        timeMinutes: unifiedRecipe.timeMinutes,
-        rating: unifiedRecipe.rating,
-        personalTagIds: unifiedRecipe.personalTagIds,
-        sourceUrl: unifiedRecipe.sourceUrl,
-      );
+      final recipeId = await _delegate.createRecipeFrom(unifiedRecipe);
 
       return recipeId != null
           ? RecipeOperationResult.success('Recipe added successfully')
