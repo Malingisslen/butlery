@@ -12,6 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
@@ -456,5 +459,36 @@ void main() {
         await tester.pumpAndSettle();
       },
     );
+
+    testWidgets('in dark mode the resting card is the dark surface.base, '
+        'with the dark border colours', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: RecipeCard(recipe: testRecipe, onTap: (_) {}),
+          ),
+        ),
+      );
+
+      final rest =
+          tester
+                  .widget<HoverableCard>(
+                    find.descendant(
+                      of: find.byType(RecipeCard),
+                      matching: find.byType(HoverableCard),
+                    ),
+                  )
+                  .restDecoration
+              as BoxDecoration;
+      expect(rest.color, AppColorsDark.cardWhite);
+      final border = rest.border! as Border;
+      expect(border.left.color, AppColorsDark.recipeCardLeftBorder);
+      expect(border.bottom.color, AppColorsDark.recipeCardBottomBorder);
+      expect(rest.borderRadius, isNull);
+    });
   });
 }
