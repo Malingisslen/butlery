@@ -8,8 +8,10 @@ push reading down to cheaper models.
 - **Reading goes to Haiku 5.5.** Code searches, CI and test logs, summaries, Linear
   lookups and reading old threads or long files go to `Explore` (Haiku) or an Agent call
   with `model: haiku`. Bring back the conclusion, not the dump.
-- **Clearly scoped everyday code goes to Sonnet 5.5.** UI, tests and small fixes with a
-  precise brief go to a Sonnet subagent at medium effort.
+- **Clearly scoped everyday code goes to Sonnet 5.5.** UI and tests with a precise brief
+  go to a Sonnet subagent at medium effort.
+- **A small fix in one file with a precise brief goes to Haiku 5.5** (outside the Opus areas
+  below), and a Sonnet or Opus agent reviews its diff before it is committed.
 - **Security, GDPR, Firestore rules, Cloud Functions and plans stay on Opus.** Their
   agents pin `model: opus` so they never follow a smaller main model.
 - **Fable only when Malin asks for it.**
