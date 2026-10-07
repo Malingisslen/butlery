@@ -66,7 +66,7 @@ For each row below, in the Play Console **Data types** step:
 
 ### 2.3 Health and fitness
 
-**UNDECIDED — do not fill this row from memory. Malin decides it at filing time (her call, 2026-08-23).**
+**DECIDED 2026-10-07 — Malin: Yes.** Tick **Health info**: Collected, Shared = No, Optional, purpose App functionality. This matches the iOS manifest. The comparison below is what she chose between.
 
 The two stores are answered differently today, and that asymmetry is not yet a decision:
 
