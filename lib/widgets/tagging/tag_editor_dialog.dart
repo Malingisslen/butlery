@@ -291,6 +291,11 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   const SizedBox(width: AppDimensions.spacingM),
                   FilledButton(
                     onPressed: _save,
+                    style: const ButtonStyle(
+                      minimumSize: WidgetStatePropertyAll(
+                        Size(0, AppDimensions.minTouchTarget),
+                      ),
+                    ),
                     child: Text(context.l10n.commonSave),
                   ),
                 ],
