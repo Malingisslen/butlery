@@ -6,6 +6,7 @@ import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/services/tagging/config/compound_suffixes.dart';
+import 'package:butlery/utils/text/compound_splitter.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
@@ -85,9 +86,23 @@ class IngredientLookupService extends BaseService {
       }
     }
 
-    final result = IngredientLookupResult.fromLists(
-      matched: matched,
+    // BUT-2234: an unmatched dish compound ("räksallad") still names the
+    // ingredient it is made of. That row adds what it CONTAINS, but the dish
+    // stays unmatched and coverage is counted without it, so the rest of the
+    // dish (the mayonnaise in a bought räksallad) can never read as FREE.
+    final dishRows = await Future.wait(
+      unmatched.map((name) {
+        final base = CompoundSplitter.dishIngredient(name, null);
+        return base == null
+            ? Future<IngredientData?>.value()
+            : _findIngredient(base, userId: userId);
+      }),
+    );
+    final total = matched.length + unmatched.length;
+    final result = IngredientLookupResult(
+      matched: [...matched, ...dishRows.whereType<IngredientData>()],
       unmatched: unmatched,
+      coverage: total == 0 ? 0.0 : matched.length / total,
     );
 
     if (result.hasUnknowns) {

@@ -1,6 +1,7 @@
 // lib/widgets/recipe/recipe_image_picker.dart
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -110,24 +111,38 @@ class RecipeImagePicker {
   ) async {
     switch (choice) {
       case 'camera':
-        AppLogger.info('[$_logTag] Calling viewModel.pickImageFromCamera');
-        await viewModel.pickImageFromCamera(context);
-        break;
+        await pick(context, viewModel, ImageSource.camera);
       case 'gallery':
-        // Use canAddMoreImages and proper limit checking
-        if (viewModel.canAddMoreImages &&
-            (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
-          AppLogger.info(
-            '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery',
-          );
-          await viewModel.pickMultipleImagesFromGallery(context);
-        } else {
-          AppLogger.info(
-            '[$_logTag] Calling viewModel.pickImageFromGallery (single)',
-          );
-          await viewModel.pickImageFromGallery(context);
-        }
-        break;
+        await pick(context, viewModel, ImageSource.gallery);
+    }
+  }
+
+  /// Picks from [source]: several images from the library while more than
+  /// one slot is free, otherwise one. [askAgain] is "Fråga igen" on the
+  /// permission notice, which skips our explanation (produktregler.md:683).
+  static Future<void> pick(
+    BuildContext context,
+    RecipeFormViewModel viewModel,
+    ImageSource source, {
+    bool askAgain = false,
+  }) async {
+    if (source == ImageSource.camera) {
+      AppLogger.info('[$_logTag] Calling viewModel.pickImageFromCamera');
+      await viewModel.pickImageFromCamera(context, askAgain: askAgain);
+    } else if (viewModel.canAddMoreImages &&
+        (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
+      AppLogger.info(
+        '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery',
+      );
+      await viewModel.pickMultipleImagesFromGallery(
+        context,
+        askAgain: askAgain,
+      );
+    } else {
+      AppLogger.info(
+        '[$_logTag] Calling viewModel.pickImageFromGallery (single)',
+      );
+      await viewModel.pickImageFromGallery(context, askAgain: askAgain);
     }
   }
 }

@@ -110,6 +110,22 @@ void main() {
         expect(result.status['fisk'], TriState.free);
       });
 
+      test('[$branch] räksallad → skaldjur CONTAINS, ägg never FREE', () {
+        // The lookup's shape for an unmatched dish compound: the räka row it
+        // is named after, with the dish itself still unmatched.
+        final result = Phase1AllergenCalculator.calculate(
+          IngredientLookupResult(
+            matched: [_rakor()],
+            unmatched: const ['räksallad'],
+            coverage: 0.0,
+          ),
+          config,
+        );
+        expect(result.status['skaldjur'], TriState.contains);
+        expect(result.status['ägg'], isNot(TriState.free));
+        expect(result.status['fisk'], isNot(TriState.free));
+      });
+
       test('[$branch] fiskgryta med räkor → both CONTAINS', () {
         final result = Phase1AllergenCalculator.calculate(
           _lookup([_lax(), _rakor()]),

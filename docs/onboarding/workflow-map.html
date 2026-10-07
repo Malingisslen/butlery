@@ -756,12 +756,6 @@
       "path": "Firestore"
     },
     {
-      "id": "svc-reextract-strategy",
-      "label": "Re-extract-strategi (URL/text, kringgår vattenfallet)",
-      "context": "service",
-      "path": "lib/viewmodels/recipe_detail_viewmodel.dart"
-    },
-    {
       "id": "v-personal-tags",
       "label": "Personliga taggar — översikt",
       "context": "view",
@@ -3670,7 +3664,7 @@
     {
       "id": "flow-rec-4",
       "label": "receptdetalj",
-      "description": "Cook-snap-galleriet är en egen liveström filtrerad på vänskap, separat från receptets huvuddata. Källåterextraktion (BUT-1205) hoppar över hela 7-stegsvattenfallet i importManager — den anropar URL-/textstrategin direkt och skriver över endast de tolkade fälten, med recept-id, skapad-datum och käll-metadata bevarade.",
+      "description": "Cook-snap-galleriet är en egen liveström filtrerad på vänskap, separat från receptets huvuddata. Källåterextraktion (BUT-1205) hoppar över hela 7-stegsvattenfallet i importManager och skriver över endast de tolkade fälten, med recept-id, skapad-datum och käll-metadata bevarade.",
       "features": [
         "REC-11",
         "REC-12",
@@ -3728,8 +3722,8 @@
         },
         {
           "from": "vm-recipe-detail",
-          "to": "svc-reextract-strategy",
-          "payload": "strategy(artefact.type).import(artefact.payload) — UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
+          "to": "svc-import-manager",
+          "payload": "reimportFromArtefact(artefact) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
           "transport": "method call",
           "verified": true
         },

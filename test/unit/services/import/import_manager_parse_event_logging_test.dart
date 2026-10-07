@@ -18,7 +18,9 @@ import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 import '../../../test_support/base_unit_test.dart';
@@ -67,6 +69,22 @@ class _CannedUrlStrategy extends UrlImportStrategy {
     String input, {
     Map<String, dynamic>? options,
   }) async => _result;
+}
+
+/// A text strategy answering from a canned result, recording what it read.
+class _CannedTextStrategy extends TextImportStrategy {
+  _CannedTextStrategy(this._result);
+  final ImportResult _result;
+  final List<String> inputs = [];
+
+  @override
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
+    inputs.add(input);
+    return _result;
+  }
 }
 
 class _FailingStrategy extends ImportStrategy {
@@ -341,6 +359,81 @@ void main() {
       expect(r.rateLimitDenied, isNotNull);
       expect(spy.events, isEmpty);
       expect(limiter.recorded, isEmpty);
+    });
+  });
+
+  group('BUT-2279: re-extracting a saved recipe from its source', () {
+    SourceArtefact artefact(SourceArtefactType type, String payload) =>
+        SourceArtefact(
+          type: type,
+          payload: payload,
+          fetchedAt: DateTime(2026, 10, 1),
+        );
+
+    test('a link is fetched again by the URL strategy and counted as a '
+        'link import', () async {
+      final limiter = installLimiter();
+      final text = _CannedTextStrategy(ImportResult.failure('fel väg'));
+
+      final r =
+          await managerWith([
+            text,
+            _CannedUrlStrategy(ImportResult.success(recipe)),
+          ]).reimportFromArtefact(
+            artefact(SourceArtefactType.url, 'https://www.ica.se/recept/x/'),
+          );
+
+      expect(r.isSuccess, isTrue);
+      expect(text.inputs, isEmpty);
+      expect(spy.events.single.channel, ImportChannel.link);
+      expect(limiter.recorded.single.sourceType, 'link');
+    });
+
+    test('every other capture is parsed as text and counted as a text '
+        'import', () async {
+      for (final type in SourceArtefactType.values.where(
+        (t) => t != SourceArtefactType.url,
+      )) {
+        final limiter = installLimiter();
+        spy.events.clear();
+        final text = _CannedTextStrategy(ImportResult.success(recipe));
+
+        final r = await managerWith([
+          _CannedUrlStrategy(ImportResult.failure('fel väg')),
+          text,
+        ]).reimportFromArtefact(artefact(type, 'Pannkakor\n3 ägg'));
+
+        expect(r.isSuccess, isTrue, reason: '$type');
+        expect(text.inputs, ['Pannkakor\n3 ägg'], reason: '$type');
+        expect(spy.events.single.channel, ImportChannel.text, reason: '$type');
+        expect(limiter.recorded.single.sourceType, 'text', reason: '$type');
+      }
+    });
+
+    test('a refused re-extract reads nothing and is not counted', () async {
+      final limiter = installLimiter(deny: true);
+      final text = _CannedTextStrategy(ImportResult.success(recipe));
+
+      final r = await managerWith([text]).reimportFromArtefact(
+        artefact(SourceArtefactType.textPaste, 'Pannkakor'),
+      );
+
+      expect(r.rateLimitDenied, isNotNull);
+      expect(text.inputs, isEmpty);
+      expect(spy.events, isEmpty);
+      expect(limiter.recorded, isEmpty);
+    });
+
+    test('importWithStrategy is refused the same way', () async {
+      installLimiter(deny: true);
+      final text = _CannedTextStrategy(ImportResult.success(recipe));
+
+      final r = await managerWith([
+        text,
+      ]).importWithStrategy(text.strategyName, 'Pannkakor');
+
+      expect(r.rateLimitDenied, isNotNull);
+      expect(text.inputs, isEmpty);
     });
   });
 

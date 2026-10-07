@@ -80,10 +80,10 @@ blocked THEM. Their uid inside OTHER people's mirrors is a cross-user sweep,
 `MAX_MIRROR_SWEEP_ROWS`. Deleting only the first leg would leave the uid behind in every
 mirror naming it.
 
-⚠ `firestore.indexes.json` declares `expireAt` collection-group TTLs whose ids collide with
-`ingredients`. Whether user-scoped documents carry that field is unmeasured
-and tracked as BUT-1996 — a TTL armed over a user's own ingredient library would delete
-content this register says is retained until account deletion.
+⚠ `firestore.indexes.json` declares an `expireAt` TTL on collection group `ingredients`, and
+a collection-group policy also covers `users/{uid}/ingredients`. No writer of the user's
+library stamps `expireAt`, so nothing there is deleted; `firestore-ttl-policies.test.ts` fails
+if one starts to (BUT-1996).
 
 ## Art. 15 export treatment
 

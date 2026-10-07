@@ -23,6 +23,7 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -51,6 +52,7 @@ Widget _wrap(Widget child) => MaterialApp(
 
 void main() {
   late _FakeSocialRecipeViewModel vm;
+  final sv = AppLocalizationsSv();
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -504,6 +506,99 @@ void main() {
           imageUrls: ['https://example.test/comment_images/x.jpg'],
         ),
       ).called(1);
+    });
+  });
+
+  // BUT-2160 · flow 07: a library answer is explained where the image was
+  // wanted (flows-roles-budget.md:98-106).
+  group('photo library permission', () {
+    late File tempImage;
+    late List<OsPermissionOutcome> answers;
+    late List<MediaRationalePrompt?> rationales;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      tempImage = File(
+        '${Directory.systemTemp.path}/comment_perm_${DateTime.now().microsecondsSinceEpoch}.jpg',
+      );
+      await tempImage.writeAsBytes(const [0xFF, 0xD8, 0xFF, 0xD9]);
+      rationales = [];
+      final picker = ServiceLocator.get<ImagePickerService>();
+      when(
+        () => picker.pickMultipleImagesWithOutcome(
+          maxImages: any(named: 'maxImages'),
+          rationale: any(named: 'rationale'),
+        ),
+      ).thenAnswer((invocation) async {
+        rationales.add(
+          invocation.namedArguments[#rationale] as MediaRationalePrompt?,
+        );
+        final permission = answers.removeAt(0);
+        return ImagePickOutcome(
+          permission: permission,
+          files: permission.isUsable ? [tempImage] : const [],
+        );
+      });
+    });
+
+    tearDown(() async {
+      if (await tempImage.exists()) await tempImage.delete();
+    });
+
+    Future<void> attach(WidgetTester tester) async {
+      await tester.tap(find.byIcon(ButleryIcons.camera));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a no: Fråga igen asks again without our explanation', (
+      tester,
+    ) async {
+      answers = [OsPermissionOutcome.denied, OsPermissionOutcome.granted];
+      await tester.pumpWidget(_wrap(buildWidget('r1')));
+      await tester.pumpAndSettle();
+
+      await attach(tester);
+      expect(find.text(sv.permPhotosDeniedImage), findsOneWidget);
+      expect(find.text(sv.permFallbackWriteYourself), findsNothing);
+      expect(find.byType(Image), findsNothing);
+
+      await tester.tap(find.text(sv.permAskAgain));
+      await tester.pumpAndSettle();
+
+      expect(rationales.first, isNotNull);
+      expect(rationales.last, isNull);
+      // Granted: the notice goes and the image is attached.
+      expect(find.text(sv.permPhotosDeniedImage), findsNothing);
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('limited: Välj fler bilder, and the picked image stays', (
+      tester,
+    ) async {
+      answers = [OsPermissionOutcome.limited];
+      await tester.pumpWidget(_wrap(buildWidget('r1')));
+      await tester.pumpAndSettle();
+
+      await attach(tester);
+
+      expect(find.text(sv.permPhotosLimited), findsOneWidget);
+      expect(find.text(sv.permPhotosChooseMore), findsOneWidget);
+      expect(find.text(sv.permAskAgain), findsNothing);
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('a permanent no: Öppna inställningar, not Fråga igen', (
+      tester,
+    ) async {
+      answers = [OsPermissionOutcome.permanentlyDenied];
+      await tester.pumpWidget(_wrap(buildWidget('r1')));
+      await tester.pumpAndSettle();
+
+      await attach(tester);
+
+      expect(find.text(sv.permPhotosPermanentlyDenied), findsOneWidget);
+      expect(find.text(sv.permOpenSettings), findsOneWidget);
+      expect(find.text(sv.permAskAgain), findsNothing);
     });
   });
 }

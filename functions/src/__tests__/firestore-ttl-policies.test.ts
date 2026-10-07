@@ -324,8 +324,96 @@ function ttlPoliciesDeclared(): void {
   );
 }
 
+/**
+ * BUT-1996. A TTL policy binds a collection-group ID, not a path, so the
+ * policy declared for the shared `ingredients` catalogue also covers
+ * `users/{uid}/ingredients` — the user's own library, which is kept until
+ * account deletion. It deletes nothing there only because no writer of that
+ * subcollection stamps the policy's field. This pins that.
+ *
+ * The writers are discovered, not listed. On the Dart side every file under
+ * lib/ that names the `ingredients` collection is checked, plus the model the
+ * repositories serialise: a repository on `UserScopedFirebaseRepository` names
+ * only `.ingredients`, because the base class adds `users/{uid}`. On the TS side
+ * a file under functions/src is flagged when it reaches the subcollection
+ * (a `collectionGroup("ingredients")`, or a `users` doc chained into
+ * `.collection("ingredients")`) and also writes the field; the shared catalogue
+ * writers stamp it legitimately through `db.collection("ingredients")`.
+ */
+const USER_INGREDIENT_MODEL = "lib/models/tagging/ingredient_data.dart";
+
+function listFiles(dir: string, ext: string): string[] {
+  const out: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listFiles(full, ext));
+    else if (entry.name.endsWith(ext)) out.push(full);
+  }
+  return out;
+}
+
+function userIngredientsCarryNoTtlField(): void {
+  const repoRoot = path.resolve(__dirname, "..", "..", "..");
+  const policy = loadOverrides().find(
+    (o) => o.collectionGroup === "ingredients" && o.ttl === true,
+  );
+  if (policy === undefined) {
+    // No policy on the group means nothing to arm; the set assertion above
+    // already reports the missing entry.
+    return;
+  }
+  const field = policy.fieldPath;
+
+  const relative = (file: string): string =>
+    path.relative(repoRoot, file).split(path.sep).join("/");
+  const namesIngredients = /FirestoreCollections\.ingredients\b|collection\(\s*['"]ingredients['"]\s*\)/;
+  const writers = listFiles(path.join(repoRoot, "lib"), ".dart")
+    .filter((file) => namesIngredients.test(fs.readFileSync(file, "utf8")))
+    .map(relative);
+
+  record(
+    "the users/{uid}/ingredients writer is found (the scan below is not vacuous)",
+    writers.includes(
+      "lib/repositories/firebase/firebase_user_ingredient_repository.dart",
+    ),
+    `found: ${writers.join(", ") || "none"} — if the repository moved or stopped naming FirestoreCollections, fix the discovery rather than this check`,
+  );
+
+  // A quoted key is how Dart writes a map field; a bare identifier in prose
+  // or a variable name is not a write.
+  const quotedKey = new RegExp(`['"]${field}['"]`);
+  for (const file of [...writers, USER_INGREDIENT_MODEL]) {
+    const src = fs.readFileSync(path.join(repoRoot, file), "utf8");
+    record(
+      `${file} writes no '${field}' key, so the ingredients TTL cannot reach users/{uid}/ingredients`,
+      !quotedKey.test(src),
+      `'${field}' is the field the collection-group TTL on \`ingredients\` deletes by, and that policy also covers users/{uid}/ingredients — stamping it there deletes the user's own ingredients. Use another field name.`,
+    );
+  }
+
+  const reachesSubcollection = new RegExp(
+    String.raw`collectionGroup\(\s*["']ingredients["']\s*\)` +
+      "|" +
+      String.raw`collection\(\s*["']users["']\s*\)[^;]*?\.collection\(\s*["']ingredients["']\s*\)`,
+  );
+  const writesField = new RegExp(String.raw`\b${field}\s*:|["']${field}["']`);
+  const tsWriters = listFiles(path.join(repoRoot, "functions", "src"), ".ts")
+    .filter((file) => !file.includes(`${path.sep}__tests__${path.sep}`))
+    .filter((file) => {
+      const src = fs.readFileSync(file, "utf8");
+      return reachesSubcollection.test(src) && writesField.test(src);
+    })
+    .map(relative);
+  record(
+    `no Cloud Functions file reaches users/{uid}/ingredients and writes '${field}'`,
+    tsWriters.length === 0,
+    `found: ${tsWriters.join(", ")} — the ingredients TTL would delete the user's own rows this file stamps`,
+  );
+}
+
 function main(): void {
   ttlPoliciesDeclared();
+  userIngredientsCarryNoTtlField();
 
   let failed = 0;
   for (const r of results) {

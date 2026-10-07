@@ -50,27 +50,44 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   }
 
   /// Pick single image from camera (direct, no dialog)
-  Future<void> pickImageFromCamera(BuildContext context) async {
+  Future<void> pickImageFromCamera(
+    BuildContext context, {
+    bool askAgain = false,
+  }) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromCamera called');
     final recipeId =
         state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await imageManager.pickImageFromCamera(context, recipeId: recipeId);
+    await imageManager.pickImageFromCamera(
+      context,
+      recipeId: recipeId,
+      askAgain: askAgain,
+    );
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
   /// Pick single image from gallery (direct, no dialog)
-  Future<void> pickImageFromGallery(BuildContext context) async {
+  Future<void> pickImageFromGallery(
+    BuildContext context, {
+    bool askAgain = false,
+  }) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromGallery called');
     final recipeId =
         state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await imageManager.pickImageFromGallery(context, recipeId: recipeId);
+    await imageManager.pickImageFromGallery(
+      context,
+      recipeId: recipeId,
+      askAgain: askAgain,
+    );
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
   /// Pick multiple images from gallery (direct, no dialog)
-  Future<void> pickMultipleImagesFromGallery(BuildContext context) async {
+  Future<void> pickMultipleImagesFromGallery(
+    BuildContext context, {
+    bool askAgain = false,
+  }) async {
     AppLogger.info('🎯 VIEWMODEL: pickMultipleImagesFromGallery called');
     final recipeId =
         state.originalRecipe?.id ??
@@ -78,6 +95,7 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     await imageManager.pickMultipleImagesFromGallery(
       context,
       recipeId: recipeId,
+      askAgain: askAgain,
     );
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }

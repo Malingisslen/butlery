@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 final _bypass = RegExp(
-  r'\b(WebScraper|SocialMediaExtractor|RecipeParserService|FileImportStrategy|getTextImportStrategy)\b',
+  r'\b(WebScraper|SocialMediaExtractor|RecipeParserService|FileImportStrategy|UrlImportStrategy|TextImportStrategy|getTextImportStrategy)\b',
 );
 
 /// Code without comments, so history in a comment is not a use.
@@ -48,6 +48,10 @@ void main() {
       ]);
       expect(_hits('ServiceLocator.get<RecipeParserService>()'), [
         'RecipeParserService',
+      ]);
+      expect(_hits('UrlImportStrategy().import(url)'), ['UrlImportStrategy']);
+      expect(_hits('TextImportStrategy().import(text)'), [
+        'TextImportStrategy',
       ]);
     });
 
