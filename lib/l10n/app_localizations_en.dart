@@ -459,6 +459,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoSaveEnabled => 'Auto-save enabled';
 
   @override
+  String get autoSaveFailed => 'The draft could not be saved.';
+
+  @override
+  String get autoSaveFailedPreserved =>
+      'What you wrote is still here. Tap Save to save the recipe.';
+
+  @override
   String selectionFriendSelectedWithName(String name) {
     return '$name selected';
   }
