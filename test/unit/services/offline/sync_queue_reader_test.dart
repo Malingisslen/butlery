@@ -269,6 +269,28 @@ void main() {
     expect(counts.waiting, 0);
   });
 
+  test('BUT-2295: Släng on an image removes its copy on the device', () async {
+    final dir = await Directory.systemTemp.createTemp('slang');
+    addTearDown(() => dir.delete(recursive: true));
+    final copy = File('${dir.path}/up-1.jpg')..writeAsBytesSync([1, 2, 3]);
+    await withClock(
+      Clock.fixed(t0),
+      () => db.uploadQueueDao.queueUpload(
+        id: 'up-1',
+        userId: 'u1',
+        localPath: copy.path,
+        targetPath: 'x/a.jpg',
+        fileSizeBytes: 3,
+      ),
+    );
+    await db.uploadQueueDao.markPermanentlyFailed('up-1', reason: 'too-large');
+    final image = (await readQueuedChanges(db, 'u1')).single;
+
+    await discardQueuedChange(db, 'u1', image);
+
+    expect(copy.existsSync(), isFalse);
+  });
+
   test('the view and the counts agree on the number', () async {
     await enqueue('a', 'r1', SyncOperation.update);
     await enqueue('b', 'r2', SyncOperation.update);
@@ -534,7 +556,11 @@ void main() {
       expect(row.status, 'pending');
       expect(row.nextAttemptAt, isNull, reason: 'sent at the next pass');
       expect(row.firstFailedAt, isNull, reason: 'a new 24 h limit');
-      expect(original.existsSync(), isTrue, reason: 'the original is kept');
+      expect(
+        original.existsSync(),
+        isFalse,
+        reason: 'BUT-2295: the queue no longer points at the original',
+      );
     });
 
     test('an image that cannot be made smaller stays where it was', () async {
