@@ -596,9 +596,18 @@ jobs:
       # Stop Firebase Emulator
       - name: Stop Firebase Emulator
         if: always()
+        # BUT-2204: wait for the emulators to EXIT, not just signal them. The
+        # flutter-action post step hashes `**/pubspec.lock` across the whole
+        # workspace, and it failed there with every test passed (run
+        # 37685482331); the emulators are what is still running at that point.
         run: |
-          # Kill all Firebase emulator processes
           pkill -f "firebase" || true
+          for _ in $(seq 1 30); do
+            pgrep -f "firebase" >/dev/null || break
+            sleep 1
+          done
+          pkill -9 -f "firebase" || true
+          rm -f ./*-debug.log
 
       # Upload test results if tests fail
       - name: Upload test results
