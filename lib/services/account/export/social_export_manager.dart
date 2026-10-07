@@ -495,7 +495,7 @@ class SocialExportManager with SocialExportRedaction {
       for (final entry in sharedRecipes.items) {
         sharedData['shared_recipes_received'].add({
           'share_id': entry['id'],
-          'data': dropSharerAvatar(entry, userId),
+          'data': sharedRowForExport(entry, userId),
         });
       }
 
@@ -507,7 +507,7 @@ class SocialExportManager with SocialExportRedaction {
       for (final entry in sharedMenus.items) {
         sharedData['shared_menus_received'].add({
           'menu_id': entry['id'],
-          'data': dropSharerAvatar(entry, userId),
+          'data': sharedRowForExport(entry, userId),
         });
       }
 
@@ -526,7 +526,7 @@ class SocialExportManager with SocialExportRedaction {
         sharedData['shared_shopping_lists_received'].add({
           'share_id': entry['id'],
           'data': dropOtherMembersNamesInListData(
-            dropSharerAvatar(entry, userId),
+            sharedRowForExport(entry, userId),
             userId,
           ),
         });
@@ -551,8 +551,7 @@ class SocialExportManager with SocialExportRedaction {
           'In shared shopping lists, the names of other members have also been '
           'removed — from the list itself and from each item, including who '
           'added, bought or last changed it. Your own name is kept so you can '
-          'recognise your entries. Everything else these shares held is kept '
-          'as it was stored.';
+          'recognise your entries.';
       sharedData['provenance'] =
           'shared_shopping_lists_received holds lists a friend sent you a copy '
           'of. Lists you were made a member of are in the '

@@ -12,9 +12,12 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockBlockRepo extends Mock implements FirebaseBlockRepository {}
@@ -497,6 +500,94 @@ void main() {
       // The watch too: a mutant that caches the fetch but re-subscribes on
       // every read stays green without this, and leaks a subscription per read.
       verify(() => repo.watchBlockedUserIds()).called(1);
+    });
+  });
+
+  // BUT-2169: a share drops anyone on either side of a block. The two
+  // directions return DIFFERENT people in every case, so a filter that reads
+  // only one of them leaves the other person in the list.
+  group('withoutBlocksEitherWay', () {
+    late _MockBlockRepo repo;
+
+    setUp(() {
+      repo = _MockBlockRepo();
+    });
+
+    test(
+      'drops both the person I blocked and the person who blocked me',
+      () async {
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenAnswer((_) async => {'alice'});
+        when(
+          () => repo.getBlockedByUserIdsFromServer(),
+        ).thenAnswer((_) async => {'bob'});
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+
+        expect(
+          await filter.withoutBlocksEitherWay(['alice', 'bob', 'carol']),
+          ['carol'],
+        );
+      },
+    );
+
+    test(
+      'falls back to the cached lists when the server cannot answer',
+      () async {
+        when(
+          () => repo.getBlockedUserIdsFromServer(),
+        ).thenThrow(Exception('offline'));
+        when(() => repo.getBlockedUserIds()).thenAnswer((_) async => {'alice'});
+        when(
+          () => repo.watchBlockedUserIds(),
+        ).thenAnswer((_) => const Stream.empty());
+        when(() => repo.getBlockedByUserIds()).thenAnswer((_) async => {'bob'});
+        when(
+          () => repo.watchBlockedByUserIds(),
+        ).thenAnswer((_) => const Stream.empty());
+
+        final filter = BlockedUserFilter(blockRepository: repo);
+
+        expect(
+          await filter.withoutBlocksEitherWay(['alice', 'bob', 'carol']),
+          ['carol'],
+        );
+      },
+    );
+  });
+
+  // The share services call the static helper, so this is what they rely on
+  // to find the registered filter rather than pass the list through.
+  group('shareRecipients', () {
+    tearDown(() async {
+      if (GetIt.instance.isRegistered<BlockedUserFilter>()) {
+        await GetIt.instance.unregister<BlockedUserFilter>();
+      }
+      ServiceLocator.reset();
+    });
+
+    test('uses the registered filter', () async {
+      final repo = _MockBlockRepo();
+      when(
+        () => repo.getBlockedUserIdsFromServer(),
+      ).thenAnswer((_) async => {'alice'});
+      when(
+        () => repo.getBlockedByUserIdsFromServer(),
+      ).thenAnswer((_) async => {'bob'});
+      ServiceLocator.initialize(DIContainer());
+      GetIt.instance.registerSingleton<BlockedUserFilter>(
+        BlockedUserFilter(blockRepository: repo),
+      );
+
+      expect(
+        await BlockedUserFilter.shareRecipients(['alice', 'bob', 'carol']),
+        ['carol'],
+      );
+    });
+
+    test('passes the list through when no filter is registered', () async {
+      expect(await BlockedUserFilter.shareRecipients(['alice']), ['alice']);
     });
   });
 }

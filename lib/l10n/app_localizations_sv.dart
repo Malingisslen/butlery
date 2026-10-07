@@ -8584,7 +8584,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String blockedUsersUnblockMessage(String name) {
-    return 'Vill du avblockera $name? Användaren kommer kunna se ditt innehåll igen.';
+    return 'Vill du avblockera $name?';
   }
 
   @override
@@ -8595,6 +8595,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get blockedUsersEmpty => 'Inga blockerade användare';
+
+  @override
+  String get blockedUsersSharesHiddenNote =>
+      'Recept, menyer och inköpslistor ni har skickat till varandra är dolda för er båda så länge blockeringen gäller. Inget raderas.';
 
   @override
   String blockedUsersUnblockSelectedCount(int count) {

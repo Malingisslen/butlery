@@ -9326,6 +9326,59 @@ async function scenario_probeSeesLeftoverCommentTraces(): Promise<void> {
 }
 
 /**
+ * BUT-2169: a block holds the erased user off someone else's share. The scrub
+ * removes them from the held list and drops the entry that would restore them,
+ * and leaves every other held person in place.
+ */
+async function scenario_blockHeldShareLosesOnlyTheErasedUid(): Promise<void> {
+  const { scrubBlockHeldShares } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("shared_content/held", {
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER],
+    blockHeldUserIds: [UID, THIRD],
+    blockHeld: {
+      [UID]: { member: null, recipePermission: "view", recipeHadGrants: true },
+      [THIRD]: { member: null, recipePermission: null, recipeHadGrants: false },
+    },
+  });
+  // A share the erased user made, with someone else held on it: an unblock
+  // would rewrite that person's member row naming the erased user as adder.
+  db.set("shared_content/mine", {
+    sharedByUserId: UID,
+    sharedToUserIds: [UID],
+    blockHeldUserIds: [THIRD],
+    blockHeld: { [THIRD]: { member: { userId: THIRD, addedBy: UID } } },
+  });
+
+  const ok = await scrubBlockHeldShares(asDb(db), UID);
+
+  const row = db.get("shared_content/held");
+  check("the held-share scrub reports success", ok === true);
+  check(
+    "the erased uid leaves the held list and the other held person stays",
+    JSON.stringify(row?.blockHeldUserIds) === JSON.stringify([THIRD]),
+    JSON.stringify(row),
+  );
+  const held = (row?.blockHeld ?? {}) as Record<string, unknown>;
+  check("the entry that would restore them is gone", !(UID in held), JSON.stringify(held));
+  check("the other held person's entry stays", THIRD in held, JSON.stringify(held));
+  const mine = db.get("shared_content/mine");
+  check(
+    "a share the erased user made keeps nothing held for a release to restore",
+    mine !== undefined && !("blockHeld" in mine) && !("blockHeldUserIds" in mine),
+    JSON.stringify(mine),
+  );
+
+  const probe = require("../account/account-deletion-cascade").probeResidualData;
+  const residue = new FakeFirestore();
+  residue.set("shared_content/x", { sharedByUserId: OTHER, blockHeldUserIds: [UID] });
+  const r = emptyResult();
+  await probe(asDb(residue), UID, r);
+  check("a surviving held entry is residual", sawResidual(r));
+}
+
+/**
  * BUT-2112: the collection-group index the like sweep and its probe leg need.
  * Same reasoning as `scenario_pollVoteIndexIsDeclared`.
  */
@@ -9490,6 +9543,7 @@ async function main(): Promise<void> {
   await scenario_commentSweepFailures();
   await scenario_probeSeesLeftoverCommentTraces();
   await scenario_commentLikeIndexIsDeclared();
+  await scenario_blockHeldShareLosesOnlyTheErasedUid();
 
   let failed = 0;
   for (const r of results) {
