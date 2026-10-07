@@ -173,6 +173,13 @@
   throws FAILED_PRECONDITION on every real erasure while the fake stays green.
   COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS the
   field — check exemptions, not `indexes`.
+  A uid-keyed MAP (`socialData.memberPermissions.<uid>`) is indexed by an
+  override on the MAP field — subfields inherit it — and the BUT-1781 guard
+  lists it under `MAP_REQUIRED`. Query `where(new FieldPath(map, uid), "!=",
+  null)`: it matches a stored `0` (a `viewer`), and `collectionGroup("recipes")`
+  also returns the legacy top-level `recipes/{id}`. `batch.update(ref,
+  FieldPath, FieldValue.delete(), …)` keeps a dotted uid one key, and deleting
+  a key under a null or absent map is a no-op — no error, no `{}` created.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - **A cleanup helper writing an ATTRIBUTION row takes the ACTOR as an argument,

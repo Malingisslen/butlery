@@ -96,13 +96,36 @@ const REQUIRED: {
 ];
 
 /**
+ * BUT-2272: a MAP field whose override serves queries on its SUBFIELDS. A
+ * single-field index setting on a map field is inherited by every subfield,
+ * which is the only way to index a key that is a uid. The query addresses the
+ * subfield with a `FieldPath` built from the map's literal segments plus a
+ * runtime key, so it cannot be pinned with the `.where("…")` shape above.
+ *
+ * Only the paths listed here may be queried that way.
+ */
+const MAP_REQUIRED: {
+  fieldPath: string;
+  order: string;
+  queriers: string[];
+}[] = [
+  {
+    fieldPath: "socialData.memberPermissions",
+    order: "ASCENDING",
+    queriers: ["functions/src/account/account-deletion-cascade.ts"],
+  },
+];
+
+/**
  * The exact set, not just "each of mine is present". A count/subset check stays
  * green when an edit deletes one override and adds another; since the paths are
  * named anyway, pinning the set costs nothing and catches the swap. Adding a
- * fourth recipes-scoped override is a deliberate act — extend REQUIRED in the
+ * recipes-scoped override is a deliberate act — extend REQUIRED in the
  * same edit.
  */
-const EXPECTED_RECIPE_FIELD_PATHS = REQUIRED.map((r) => r.fieldPath).sort();
+const EXPECTED_RECIPE_FIELD_PATHS = [...REQUIRED, ...MAP_REQUIRED]
+  .map((r) => r.fieldPath)
+  .sort();
 
 function indexesDeclared(): void {
   const overrides = loadOverrides();
@@ -110,7 +133,12 @@ function indexesDeclared(): void {
     (o) => o.collectionGroup === "recipes",
   );
 
-  for (const req of REQUIRED) {
+  for (const req of [...REQUIRED, ...MAP_REQUIRED] as {
+    fieldPath: string;
+    arrayConfig?: string;
+    order?: string;
+    queriers: string[];
+  }[]) {
     const match = recipeOverrides.find((o) => o.fieldPath === req.fieldPath);
     const groupScoped = (match?.indexes ?? []).find(
       (i) =>
@@ -266,9 +294,44 @@ function bothSpellingsAreQueried(): void {
   }
 }
 
+/**
+ * The map override is only worth declaring if a collection-group query still
+ * addresses a key inside that map. Anchored on the chained call, so a
+ * docstring naming the path cannot satisfy it.
+ *
+ * The top-level `recipes` check above is not repeated here: the cascade
+ * deliberately sweeps that legacy collection in `deleteRecipes`.
+ */
+function mapQueriersStillMatch(): void {
+  for (const req of MAP_REQUIRED) {
+    const segments = req.fieldPath
+      .split(".")
+      .map((s) => `"${s}"\\s*,\\s*`)
+      .join("");
+    const shape = new RegExp(
+      `\\.collectionGroup\\(\\s*("recipes"|Collections\\.recipes)\\s*\\)\\s*` +
+        `\\.where\\(\\s*new\\s+admin\\.firestore\\.FieldPath\\(\\s*${segments}[A-Za-z_]`,
+    );
+    for (const querier of req.queriers) {
+      const src = readSource(querier);
+      record(
+        `${path.basename(querier)} queries a key inside ${req.fieldPath} via a collection group`,
+        src !== "" && shape.test(src),
+        src === ""
+          ? `source not found at ${querier} — the file moved, so the declared index may now serve nothing`
+          : `no \`collectionGroup("recipes").where(new admin.firestore.FieldPath(${req.fieldPath
+              .split(".")
+              .map((s) => `"${s}"`)
+              .join(", ")}, <key>)\` found — the map override would serve nothing`,
+      );
+    }
+  }
+}
+
 function main(): void {
   indexesDeclared();
   queriersStillMatch();
+  mapQueriersStillMatch();
   bothSpellingsAreQueried();
 
   let failed = 0;
