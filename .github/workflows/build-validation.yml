@@ -9,6 +9,7 @@ on:
       - 'tasks/**'
       - '.claude/**'
       - 'memory/**'
+  workflow_dispatch:
   pull_request:
     branches: [ main, develop ]
     paths-ignore:
@@ -123,36 +124,66 @@ jobs:
       with:
         extra_args: --only-verified
 
-  # Build job - runs Android, Web, iOS and Linux in parallel after validation.
+  # Picks the platforms the build job runs. iOS needs a macOS runner and takes
+  # about 25 minutes against Android's 9. Between 2026-06-29 and 2026-10-07 it
+  # failed four times, each a network or rate-limit error on the runner and
+  # none a code fault the other legs missed. So a pull request builds iOS only
+  # when it touches what the iOS build alone reads: ios/, the pubspec (a new or
+  # bumped plugin brings new native pods) or this workflow. A push to main or
+  # develop and a manual run always build iOS, so a regression still shows up
+  # on the merge that caused it.
+  platforms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        # A pull_request checkout is the merge commit, so HEAD^1 is the base.
+        fetch-depth: 2
+
+    - name: Pick platforms
+      id: pick
+      env:
+        EVENT: ${{ github.event_name }}
+      run: |
+        # Budgets (BUT-495): android 15m, web 10m, linux 15m, iOS 25m.
+        # macOS/Windows desktop builds dropped from the gate (BUT-435):
+        # flutter_onnxruntime needs a higher desktop deployment target than
+        # those projects set, and desktop is not a shipping target.
+        MATRIX='[
+          {"platform":"android","runs-on":"ubuntu-latest","budget-min":15},
+          {"platform":"web","runs-on":"ubuntu-latest","budget-min":10},
+          {"platform":"linux","runs-on":"ubuntu-latest","budget-min":15}
+        ]'
+        RUN_IOS=true
+        if [ "$EVENT" = "pull_request" ]; then
+          if CHANGED=$(git diff --name-only HEAD^1 HEAD); then
+            if ! printf '%s\n' "$CHANGED" | grep -qE '^(ios/|pubspec\.(yaml|lock)$|\.github/workflows/build-validation\.yml$)'; then
+              RUN_IOS=false
+            fi
+          fi
+        fi
+        if [ "$RUN_IOS" = true ]; then
+          MATRIX=$(jq -c '. + [{"platform":"ios","runs-on":"macos-latest","budget-min":25}]' <<< "$MATRIX")
+        else
+          MATRIX=$(jq -c . <<< "$MATRIX")
+          echo "iOS skipped: no change under ios/, pubspec or this workflow." >> "$GITHUB_STEP_SUMMARY"
+        fi
+        echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  # Build job - runs the platforms picked above in parallel after validation.
   build:
-    needs: validate
+    name: build (${{ matrix.platform }})
+    needs: [validate, platforms]
     timeout-minutes: 60
 
     strategy:
       fail-fast: false
       matrix:
-        platform: [android, web, ios, linux]
-        include:
-          # BUT-495 budgets: android 15m, web 10m per ticket spec; iOS 25m
-          # (slow Xcode/CocoaPods even on macos-latest, not in ticket scope
-          # but instrumented for completeness).
-          - platform: android
-            runs-on: ubuntu-latest
-            budget-min: 15
-          - platform: web
-            runs-on: ubuntu-latest
-            budget-min: 10
-          - platform: ios
-            runs-on: macos-latest
-            budget-min: 25
-          # BUT-491 desktop build jobs: catch desktop-specific regressions.
-          - platform: linux
-            runs-on: ubuntu-latest
-            budget-min: 15
-          # macOS/Windows desktop builds dropped from the gate (BUT-435):
-          # flutter_onnxruntime (on-device ML) needs a higher desktop deployment
-          # target than those projects set, and desktop is not a shipping target
-          # (mobile + web only). Re-add if desktop ever becomes a goal.
+        include: ${{ fromJSON(needs.platforms.outputs.matrix) }}
 
     runs-on: ${{ matrix.runs-on }}
 
@@ -287,6 +318,19 @@ jobs:
     - name: Get Flutter dependencies (iOS)
       if: matrix.platform == 'ios'
       run: flutter pub get
+
+    # The pod specs come from the CocoaPods CDN on raw.githubusercontent.com,
+    # which has rate-limited this runner (429) and failed a build. A warm cache
+    # also skips most of the pod download time.
+    - name: Cache CocoaPods
+      if: matrix.platform == 'ios'
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/Library/Caches/CocoaPods
+          ios/Pods
+        key: pods-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'ios/Podfile') }}
+        restore-keys: pods-${{ runner.os }}-
 
     - name: Build iOS (no codesign)
       if: matrix.platform == 'ios'

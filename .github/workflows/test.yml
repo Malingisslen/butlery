@@ -119,7 +119,7 @@ jobs:
           echo "Running test/unit shard ${{ matrix.shard }} of 3..."
           flutter test test/unit \
             --total-shards 3 --shard-index ${{ matrix.shard }} \
-            --reporter=expanded
+            --concurrency=4 --reporter=expanded
 
       - name: Upload test results
         if: failure()
@@ -186,7 +186,7 @@ jobs:
       - name: Run ${{ matrix.suite }} tests
         run: |
           echo "Running test/${{ matrix.suite }}..."
-          flutter test test/${{ matrix.suite }} --reporter=expanded
+          flutter test test/${{ matrix.suite }} --concurrency=4 --reporter=expanded
 
       - name: Upload test results
         if: failure()
