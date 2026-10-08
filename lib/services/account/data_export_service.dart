@@ -100,7 +100,7 @@ class DataExportService extends BaseService {
     // Tests inject a pre-built manager with a mocked FirebaseFunctions
     // to bypass the Firebase.app dependency.
     ComplianceExportManager? complianceExportManager,
-    SharedResidueExportManager? sharedResidueExportManager,
+    required SharedResidueExportManager sharedResidueExportManager,
     // BUT-1773: test seam for the one-row-per-export audit trail.
     FirebaseAuditRepository? auditRepository,
   }) : _authRepository = authRepository,
@@ -142,8 +142,7 @@ class DataExportService extends BaseService {
     _preferencesManager = PreferencesExportManager(
       dataExportRepository: _exportRepo,
     );
-    _sharedResidueManager =
-        sharedResidueExportManager ?? SharedResidueExportManager();
+    _sharedResidueManager = sharedResidueExportManager;
     _familyManager = FamilyExportManager(
       householdRepository: householdRepository,
       dinerProfileRepository: dinerProfileRepository,

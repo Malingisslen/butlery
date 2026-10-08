@@ -28,18 +28,15 @@ class SharedResidueExportManager {
       "included, and the list owner's user ID is kept. On every item in this "
       "section, other people's user IDs and display names are removed.";
 
-  FirebaseFunctions? _functions;
+  final FirebaseFunctions _functions;
 
-  SharedResidueExportManager({FirebaseFunctions? functions})
+  SharedResidueExportManager({required FirebaseFunctions functions})
     : _functions = functions;
-
-  FirebaseFunctions get _fns =>
-      _functions ??= FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   /// No uid is sent: the callable takes the requester from `request.auth` only.
   Future<Map<String, dynamic>> exportSharedListsLeft() async {
     try {
-      final result = await _fns
+      final result = await _functions
           .httpsCallable(
             callableName,
             options: HttpsCallableOptions(
