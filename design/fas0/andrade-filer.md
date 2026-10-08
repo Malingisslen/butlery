@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=820-->
+<!--manifest:files=821-->
 
 ## Reporoten
 
@@ -411,6 +411,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/produktbeslut-2026-10-01.json` | `1d777760d836f33d9e1fbfb9e9d9f942ef27bb0431411147df79aac7726035f1` |
 | `fas2/produktbeslut-2026-10-04.json` | `092cdd52c1c4808af9b6d6c5dde6182eb11f3f8d0ab9048996a2976ff0eb1d9f` |
 | `fas2/produktbeslut-2026-10-05.json` | `5a2cdae51c992d98bf5020ebf83513bd3b4abe5ef56ff5cda66e10828e2f3d50` |
+| `fas2/produktbeslut-2026-10-07.json` | `633743ec027da80da79e1ad52f615f0bd038e16f60dc3df2db5fcd4ed06e38e0` |
 | `fas2/profil-kontrollsemantik.json` | `21149399d134abf4dbd4393ed2d7fd9d5a02e0b1246f7b835c3bd83b68adc5b6` |
 | `fas2/profil-stategroup-beslutspaket.json` | `a1da77c5ddc27dcac4d646eea2206c4bc97b3f083da70b81e083d86d1f03aaef` |
 | `fas2/profil-stategroup-utford.json` | `b7c8b5a99ef6fd7e74ee58d51200e3e06cf635d308d2369bf7e90a9a36e309e2` |
@@ -584,7 +585,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/upptacktsslutning.json` | `cb5778fca1cab81f5e64babdad8e0a145ffbd5c448130c19d6a94907f68b1f8f` |
 | `fas2/upptacktstackning.json` | `b376fb6e97f026b8ced71ec3ab75be95591ea145e2bede66904311a30073bd9f` |
 | `fas2/ux-beslut.json` | `7492b8161a5c50e72b6f8389c584123b03776ad2b514e5e9c03db52087d31d52` |
-| `flows-roles-budget.md` | `15ddab8d62fcdf25458cd6b7ba879edbfbea3ede0aa9ab108e31e3d1520dcb8a` |
+| `flows-roles-budget.md` | `38b013bda4f7ff11ca69fb4d2ca634612ae97a7285745f27cf7c530d83e43cb1` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
 | `icons.json` | `82614fcee6dbc996a351cdc3f523ff40b08d4533e3493b723e35783c5ba2a236` |

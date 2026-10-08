@@ -85,7 +85,7 @@ Merge-ordning: dubbletter slås samman → enheter konverteras inom samma varuty
 
 ## 06 · Konto
 
-`skapa konto → verifiera e-post → klart` · verifieringslänk utgången → `begär ny` · glömt lösenord → `återställ` → `sätt nytt` · byt e-post kräver omverifiering av båda adresserna · MFA-återställning via engångskoder · sessionsutgång → `logga in igen` med returväg · radera konto → `skäl` → `bekräfta med lösenord` → kaskad → permanent.
+`skapa konto → verifiera e-post → klart` · verifieringslänk utgången → `begär ny` · glömt lösenord → `återställ` → `sätt nytt` · byt e-post bekräftas via länk till den nya adressen, och den nuvarande adressen får ett mejl där bytet kan ångras (BUT-2171 = A, fas2/produktbeslut-2026-10-07.json) · MFA-återställning via engångskoder · sessionsutgång → `logga in igen` med returväg · radera konto → `skäl` → `bekräfta med lösenord` → kaskad → permanent.
 
 **Det finns inget återkallningsfönster.** Raden ovan lovade tidigare trettio
 dagar. Det gör koden inte: fyndet ur `account_deletion_service.dart` togs upp

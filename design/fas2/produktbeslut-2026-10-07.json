@@ -1,0 +1,49 @@
+{
+ "$om": "Malins beslut om övergångsfelen i flöde 03, 06 och 08 och om blockering och nekad kamera, fattade 2026-10-07 i projektchatten 'Butlery redesign' (meddelandet som började 'Fortsätt designmigreringen i Butlery'). Registrerade 2026-10-08.",
+ "beslutat_av": "Malin",
+ "datum": "2026-10-07",
+ "rader": [
+  {
+   "id": "BUT-2171",
+   "beslut": "A",
+   "biljett": "BUT-2171",
+   "overgang": "TR::FLOW::06::byt-epost::omverifiering-bada",
+   "innebord": "Firebases flöde för e-postbyte behålls: bara den nya adressen bekräftas via länk, och den nuvarande adressen får ett mejl där bytet kan ångras när det har trätt i kraft. Kravet 'båda adresserna måste bekräftas' ändras till detta. Kontosäkerhet säger hur bytet går till innan det begärs.",
+   "ersatter": "flows-roles-budget.md 06 'byt e-post kräver omverifiering av båda adresserna' och VISIBLE_USER_EFFECT 'bada adresserna maste bekraftas' i fas2/stateflow-applicability-0608.json. Övergångens id och block 288:s hash står kvar."
+  },
+  {
+   "id": "BUT-2163",
+   "beslut": "A",
+   "biljett": "BUT-2163",
+   "overgang": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
+   "innebord": "Kravet vilar tills appen har en nedladdning som användaren själv startar. Övergången räknas för sig som vilande, inte som känd brist."
+  },
+  {
+   "id": "BUT-2170",
+   "beslut": "A",
+   "biljett": "BUT-2170",
+   "overgang": "TR::FLOW::06::aterstall::satt-nytt",
+   "innebord": "Att sätta nytt lösenord i appen får en egen plan senare."
+  },
+  {
+   "id": "BUT-2158",
+   "beslut": "A",
+   "biljett": "BUT-2158",
+   "overgang": "TR::FLOW::03::foto-ocr::otolkad-text",
+   "innebord": "Fotoimportens olästa rader får en egen plan senare; den kräver säkerhet per rad från OCR."
+  },
+  {
+   "id": "BUT-2169",
+   "beslut": "A",
+   "biljett": "BUT-2169",
+   "innebord": "Blockering döljer delningar åt båda håll. Planen skrevs och godkändes före bygget eftersom den rör databasreglerna."
+  },
+  {
+   "id": "BUT-2160",
+   "beslut": "A",
+   "biljett": "BUT-2160",
+   "overgang": "galleri-utan-behorighet::skriv-sjalv",
+   "innebord": "Receptbilder och kommentarer får 'Fråga igen' och 'Välj fler bilder'. Vid stängt galleri räknas 'Skriv själv' som klar via fotoimporten."
+  }
+ ]
+}
