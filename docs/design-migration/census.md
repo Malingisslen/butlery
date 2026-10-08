@@ -15,7 +15,7 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 - Tickets: 6 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 1
-  - `test/architecture/icon_census_test.dart _residue: 237`
+  - `test/architecture/icon_census_test.dart _residue: 212`
 
 ## Required flow transitions
 
@@ -78,7 +78,7 @@ tokens.json 1.13 (sha256 `18f913cd45040490c58d38c33aaa42c8171bf89044a4ff1bcfdbaf
 
 ## Icon residue
 
-Material icons with no Butlery glyph yet: 237 uses of 151 icons in 125 files (Material icon uses found in lib code: 237).
+Material icons with no Butlery glyph yet: 212 uses of 135 icons in 120 files (Material icon uses found in lib code: 212).
 
 ## Known failures by ticket
 
@@ -119,7 +119,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 82 | 82 | 82 |
 | `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
-| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 125 | 237 | 237 |
+| `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 120 | 212 | 212 |
 | `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | LIVE | 2 | 2 | 0 |
 | `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 2 | 3 | 3 |
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 0 | 0 | 0 |
@@ -138,7 +138,7 @@ Code only: comments are not counted; generated l10n is left out.
 | `AppSpecificColors` | 10 | `lib/theme/app_mode_colors.dart`, `lib/theme/app_specific_colors.dart` | app-specific decoration colours (lib/theme/app_specific_colors.dart) |
 | `SeasonalAccent*` | 0 |  | retired seasonal tint (Q7-01 = A) |
 | `CupertinoColors` | 0 |  | Cupertino palette |
-| `Icons.<name>` | 237 | 125 files | Material icons; the residue is listed in icon_census_test |
+| `Icons.<name>` | 212 | 120 files | Material icons; the residue is listed in icon_census_test |
 | `CupertinoIcons.<name>` | 0 |  | banned by icon_census_test |
 | `AdaptiveAppBar(` | 0 |  | retired for ButleryTopBar (B-45) |
 | `CircularProgressIndicator(` | 0 |  | Material spinner; PlateLine is the only loading indicator (B-18) |
