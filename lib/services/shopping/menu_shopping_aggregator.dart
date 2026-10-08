@@ -284,10 +284,9 @@ class _MergeGroup {
   _Accumulator toAccumulator() {
     // Sum lives in the base unit; convert up to the most readable Swedish
     // unit for display (e.g. 500 ml stays ml, 1300 g → 1.3 kg).
-    final display = SmartUnitConverter.convertToReadableUnit(
-      baseQuantity,
-      baseUnit,
-    );
+    final display =
+        _asSpoons() ??
+        SmartUnitConverter.convertToReadableUnit(baseQuantity, baseUnit);
     return _Accumulator(
         displayName: firstSeen.displayName,
         nameKey: firstSeen.nameKey,
@@ -296,5 +295,38 @@ class _MergeGroup {
       ..sum = display.quantity
       ..hasAmount = true
       ..sourceCount = sourceCount;
+  }
+
+  static const _spoonUnits = {
+    'msk',
+    'matsked',
+    'matskedar',
+    'tsk',
+    'tesked',
+    'teskedar',
+    'krm',
+    'kryddmått',
+  };
+
+  /// BUT-2304: nobody shops for sugar in centiliters, so a total written only
+  /// in spoons stays in spoons instead of reading "3 cl socker". The largest
+  /// spoon that measures it in half steps wins, except that half a msk reads
+  /// as 1.5 tsk.
+  ConvertedMeasurement? _asSpoons() {
+    if (memberUnits.isEmpty || !memberUnits.every(_spoonUnits.contains)) {
+      return null;
+    }
+    for (final (unit, ml, least) in const [
+      ('msk', 15.0, 1.0),
+      ('tsk', 5.0, 0.5),
+      ('krm', 1.0, 0.5),
+    ]) {
+      final count = baseQuantity / ml;
+      final halves = count * 2;
+      if (count >= least && (halves - halves.roundToDouble()).abs() < 1e-9) {
+        return ConvertedMeasurement(count, unit);
+      }
+    }
+    return ConvertedMeasurement(baseQuantity / 15, 'msk');
   }
 }
