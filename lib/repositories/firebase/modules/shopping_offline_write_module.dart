@@ -1,7 +1,9 @@
 // lib/repositories/firebase/modules/shopping_offline_write_module.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -59,10 +61,16 @@ class ShoppingOfflineWriteModule {
       .where((key) => !privilegedKeys.contains(key))
       .toList(growable: false);
 
-  /// Every key an offline payload can actually carry — the items array plus the
-  /// activity stamp. A change to anything else is DROPPED by both builders.
+  /// Every key an offline payload can actually carry — the items array, the
+  /// restore history and the activity stamp. A change to anything else is
+  /// DROPPED by both builders.
+  ///
+  /// BUT-2140: `recentlyRemoved` is carried only as a set operation, never as
+  /// the array — see [_recentlyRemovedDelta] for which part of a change that
+  /// keeps and which it leaves to the next online write.
   static final Set<String> offlineCarriableKeys = {
     'items',
+    UnifiedShoppingList.recentlyRemovedKey,
     ..._writableActivityKeys,
   };
 
@@ -186,15 +194,21 @@ class ShoppingOfflineWriteModule {
 
   /// Append-only payload: the new rows unioned in, so a replay merges with
   /// whatever the household did meanwhile instead of replacing it.
+  ///
+  /// [live] is the cached base [mutated] was computed from; it is required so
+  /// the restore history a mutation changed cannot be dropped by a caller that
+  /// forgot to pass it.
   Map<String, Object?> appendPayload(
     UnifiedShoppingList mutated,
-    List<UnifiedShoppingItem> appended,
-  ) {
+    List<UnifiedShoppingItem> appended, {
+    required UnifiedShoppingList live,
+  }) {
     final serialized = mutated.toFirestore();
     return {
       'items': FieldValue.arrayUnion([
         for (final item in appended) item.toFirestore(),
       ]),
+      ..._recentlyRemovedDelta(live, mutated),
       // Non-null only: a mutator that does not stamp activity would otherwise
       // queue three nulls and wipe another member's attribution on the server.
       for (final key in _writableActivityKeys)
@@ -227,13 +241,58 @@ class ShoppingOfflineWriteModule {
   /// caller is told the mutation applied. Safe today because every live mutator
   /// only touches items, but `mutateCollaborativeList` takes an arbitrary
   /// mutator and is on the public repository interface.
-  Map<String, Object?> cachedBasePayload(UnifiedShoppingList mutated) {
+  Map<String, Object?> cachedBasePayload(
+    UnifiedShoppingList mutated, {
+    required UnifiedShoppingList live,
+  }) {
     final serialized = mutated.toFirestore();
     return {
       'items': [for (final item in mutated.items) item.toFirestore()],
+      ..._recentlyRemovedDelta(live, mutated),
       // Non-null only — see the note on [appendPayload].
       for (final key in _writableActivityKeys)
         if (serialized[key] != null) key: serialized[key],
+    };
+  }
+
+  /// BUT-2140: the change [mutated] makes to `recentlyRemoved`, as a set
+  /// operation a replay merges with whatever other members did meanwhile. The
+  /// cached array itself is never sent: it would overwrite every entry another
+  /// device added while this one was offline.
+  ///
+  /// New entries go as `arrayUnion`. An entry taken out while still restorable
+  /// (a restore) goes as `arrayRemove`, but only when nothing is added, since
+  /// one update cannot carry two transforms on the same field. Entries pruned
+  /// because they are older than 30 days, or squeezed out by the cap, are not
+  /// sent at all: they stay on the server until the next online removal
+  /// prunes the array it rebuilds from the live document.
+  Map<String, Object?> _recentlyRemovedDelta(
+    UnifiedShoppingList live,
+    UnifiedShoppingList mutated,
+  ) {
+    final before = live.recentlyRemoved.toSet();
+    final after = mutated.recentlyRemoved.toSet();
+    final added = [
+      for (final s in mutated.recentlyRemoved)
+        if (!before.contains(s)) s,
+    ];
+    if (added.isNotEmpty) {
+      return {
+        UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayUnion([
+          for (final s in added) s.toFirestore(),
+        ]),
+      };
+    }
+    final now = clock.now();
+    final taken = <ShoppingRowSnapshot>[
+      for (final s in live.recentlyRemoved)
+        if (!after.contains(s) && s.restorableAt(now)) s,
+    ];
+    if (taken.isEmpty) return const {};
+    return {
+      UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove([
+        for (final s in taken) s.toFirestore(),
+      ]),
     };
   }
 

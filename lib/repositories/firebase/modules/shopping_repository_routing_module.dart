@@ -482,8 +482,8 @@ class ShoppingRepositoryRoutingModule {
     // merge, so it is safe on the cached-base path too.
     final payload = _withContributorTrail(
       appended != null
-          ? _offline.appendPayload(mutated, appended)
-          : _offline.cachedBasePayload(mutated),
+          ? _offline.appendPayload(mutated, appended, live: live)
+          : _offline.cachedBasePayload(mutated, live: live),
       uid,
     );
     // Deliberately not awaited: while offline this future only settles once

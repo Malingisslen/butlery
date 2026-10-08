@@ -439,6 +439,26 @@ without reception is worse than the narrow window. Do NOT file "the offline repl
 another device's tick" against `_mergeFromMemory` — decided. The alternative, B2, is switching
 "Ersätt listan" off offline with the sheet saying why. — 2026-10-08
 
+### [Shopping/Offline] A version lost to an offline cached-base replay is not kept for restore (BUT-2140, PR 3)
+The 30-day restore keeps a row's earlier version (`previous`) and a removed row
+(`recentlyRemoved`) in the same write as the change, computed from the document that write
+starts from. Offline, `_mutateFromCache` starts from the cached copy and queues the whole
+`items` array (BUT-1683). When that replay overwrites another member's edit or tick made in the
+meantime, the overwritten version is not in `previous` or `recentlyRemoved`: the writing device
+never saw it. **Accepted.**
+**Why:** it is the same window as the BUT-1683 entry above and has the same cause; catching it
+needs the server's copy, which an offline write does not have. `recentlyRemoved` itself is queued
+as `arrayUnion` (a restore with no new entry as `arrayRemove`), never as the cached array, so an
+offline write cannot drop entries another device added. Entries older than 30 days or past the
+cap of 30 are not pruned offline; the next online removal on the list does it. — 2026-10-08
+
+### [Shopping/Compat] An app version from before BUT-2140 drops `previous` on a shared list (BUT-2140, PR 3)
+A shared list's rows sit inline in `items`, and every row write sends the whole array. An app
+from before BUT-2140 does not know `UnifiedShoppingItem.previous`, so any row write it makes
+sends every row without it, and the earlier versions on that list can no longer be restored.
+**Accepted.** No current content is lost, only the restore point. `recentlyRemoved` is a
+top-level field such an app never sends, so its merge-set leaves it as stored. — 2026-10-08
+
 ### [Tagging/Safety] A colon-terminated bare GLUTEN word stays an ingredient; other allergens keep colon-wins (BUT-1691 → BUT-1714)
 `RecipeSectionDetector.componentSubHeadingLabel` is the single hinge that decides whether an
 imported line is a component heading (pulled OUT of the flat ingredient list that tagging reads)

@@ -11,6 +11,7 @@
 /// `appendedItems` and `appendPayload` are exercised there, not here.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -147,7 +148,7 @@ void main() {
     test('carries only items and the activity stamp', () {
       final live = _list(items: [_item('mjölk')]);
 
-      final payload = module.cachedBasePayload(live);
+      final payload = module.cachedBasePayload(live, live: live);
 
       expect(
         payload.keys,
@@ -183,7 +184,7 @@ void main() {
         memberPermissions: const {'bob': SharedListPermission.edit},
       );
 
-      final payload = module.cachedBasePayload(unstamped);
+      final payload = module.cachedBasePayload(unstamped, live: unstamped);
 
       expect(payload.keys, contains('items'));
       expect(
@@ -200,6 +201,74 @@ void main() {
   // map on every rename. `merge` unions map keys, so a caller whose copy
   // predated a removal handed the removed member their edit rights back — and
   // `merge` can never delete a key, so removing a member never stuck either.
+  // BUT-2140: a removal offline changes `recentlyRemoved`. Before it was
+  // carriable the BUT-1706 guard refused every offline removal outright.
+  group('recentlyRemoved offline', () {
+    final now = DateTime.utc(2026, 10, 8, 12);
+    ShoppingRowSnapshot entry(String id, Duration age) => ShoppingRowSnapshot(
+      id: id,
+      name: id,
+      amount: 1,
+      unit: 'st',
+      category: ShoppingCategory.other,
+      at: now.subtract(age),
+    );
+    final fresh = entry('mjölk', const Duration(days: 1));
+    final expired = entry('gammal', const Duration(days: 31));
+
+    test('a change to it passes the guard', () {
+      final live = _list(items: [_item('bröd')]);
+      expect(
+        () => module.requireOfflineWritableMutation(
+          live,
+          live.copyWith(recentlyRemoved: [fresh]),
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('a new entry is queued as a set operation, never the array', () {
+      final live = _list(items: [_item('bröd')]);
+      final payload = withClock(
+        Clock.fixed(now),
+        () => module.cachedBasePayload(
+          live.copyWith(recentlyRemoved: [fresh]),
+          live: live,
+        ),
+      );
+      expect(payload['recentlyRemoved'], isA<FieldValue>());
+    });
+
+    test('an entry dropped only because it expired is not sent', () {
+      final live = _list(
+        items: [_item('bröd')],
+      ).copyWith(recentlyRemoved: [expired]);
+      final payload = withClock(
+        Clock.fixed(now),
+        () => module.cachedBasePayload(
+          live.copyWith(recentlyRemoved: const []),
+          live: live,
+        ),
+      );
+      expect(payload.keys, isNot(contains('recentlyRemoved')));
+    });
+
+    test('an unchanged history is not sent', () {
+      final live = _list(
+        items: [_item('bröd')],
+      ).copyWith(recentlyRemoved: [fresh]);
+      final payload = withClock(
+        Clock.fixed(now),
+        () => module.appendPayload(
+          live.copyWith(items: [...live.items, _item('ost')]),
+          [_item('ost')],
+          live: live,
+        ),
+      );
+      expect(payload.keys, isNot(contains('recentlyRemoved')));
+    });
+  });
+
   group('narrowUpdatePayload', () {
     test('a rename carries the name and nothing about membership', () async {
       final stored = _list();

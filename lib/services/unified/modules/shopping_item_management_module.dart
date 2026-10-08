@@ -1,5 +1,6 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
@@ -13,6 +14,7 @@ import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 import 'package:butlery/services/unified/modules/shopping_bulk_item_module.dart';
 import 'package:butlery/services/unified/shopping_failure_message.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 
 /// Shopping item management module for all item operations.
 class ShoppingItemManagementModule {
@@ -280,7 +282,11 @@ class ShoppingItemManagementModule {
       final committedUpdates = <UnifiedShoppingItem>[];
       try {
         for (final updated in itemsToUpdate) {
-          await repository.updateItem(activeListId, updated);
+          await repository.updateItem(
+            activeListId,
+            updated,
+            before: preUpdateById[updated.id],
+          );
           committedUpdates.add(updated);
         }
 
@@ -382,7 +388,11 @@ class ShoppingItemManagementModule {
       );
 
       // Atomic update in Firebase
-      await repository.updateItem(activeListId, updatedItem);
+      await repository.updateItem(
+        activeListId,
+        updatedItem,
+        before: currentItem,
+      );
 
       // Update local state by ID, not by the indices captured before the await:
       // both the list index and the row index can have drifted, and a positional
@@ -394,7 +404,11 @@ class ShoppingItemManagementModule {
         );
         final rowIndex = updatedItems.indexWhere((i) => i.id == itemId);
         if (rowIndex >= 0) {
-          updatedItems[rowIndex] = updatedItem;
+          updatedItems[rowIndex] = RestorableRows.withPrevious(
+            currentItem,
+            updatedItem,
+            clock.now(),
+          );
           lists[targetIndex] = lists[targetIndex].copyWith(items: updatedItems);
         }
       }
@@ -415,13 +429,17 @@ class ShoppingItemManagementModule {
 
     try {
       // Verify the active list exists
-      lists.firstWhere(
-        (list) => list.id == activeListId,
-        orElse: () => throw StateError('Active list not found'),
-      );
+      final removed = lists
+          .firstWhere(
+            (list) => list.id == activeListId,
+            orElse: () => throw StateError('Active list not found'),
+          )
+          .items
+          .where((item) => item.id == itemId)
+          .firstOrNull;
 
       // Remove from Firebase first
-      await repository.removeItem(activeListId, itemId);
+      await repository.removeItem(activeListId, itemId, removed: removed);
 
       // Update local state
       final listIndex = lists.indexWhere((list) => list.id == activeListId);
@@ -430,7 +448,11 @@ class ShoppingItemManagementModule {
             .where((item) => item.id != itemId)
             .toList();
 
-        lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
+        lists[listIndex] = RestorableRows.withRemoved(
+          lists[listIndex].copyWith(items: updatedItems),
+          [?removed],
+          clock.now(),
+        );
 
         notifyListeners();
       }
