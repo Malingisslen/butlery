@@ -87,6 +87,7 @@ Future<void> main() async {
         // daily dev work is unaffected. See docs/operations/cert-pin-rotation.md.
         CertPinConfig.assertReleaseModeSafety();
 
+        if (EmulatorBootstrap.enabled) EmulatorBootstrap.prepare();
         // Initialize Firebase with configuration from compile-time --dart-define
         await Firebase.initializeApp(
           options: EmulatorBootstrap.enabled
