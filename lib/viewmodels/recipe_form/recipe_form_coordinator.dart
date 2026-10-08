@@ -8,7 +8,6 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 
 /// Coordinates state synchronization between recipe form managers.
@@ -16,18 +15,15 @@ import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 /// - Set up and manage manager listeners
 /// - Coordinate notifications to prevent cascading loops
 /// - Synchronize state between managers
-/// - Handle collaborative state updates
 /// - Sync image URLs between managers and state
 /// - Load initial permissions
 /// **Dependencies:**
 /// - RecipeFormState: Form data management
 /// - RecipeImageManager: Image management
-/// - RecipeCollaborativeManager: Collaborative editing
 /// - RecipePermissionManager: Permission management
 class RecipeFormCoordinator with ErrorHandlingMixin {
   final RecipeFormState _state;
   final RecipeImageManager _imageManager;
-  final RecipeCollaborativeManager _collaborativeManager;
   final RecipePermissionManager _permissionManager;
 
   // Notification coordination
@@ -41,49 +37,26 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   RecipeFormCoordinator({
     required RecipeFormState state,
     required RecipeImageManager imageManager,
-    required RecipeCollaborativeManager collaborativeManager,
     required RecipePermissionManager permissionManager,
     required VoidCallback parentNotify,
   }) : _state = state,
        _imageManager = imageManager,
-       _collaborativeManager = collaborativeManager,
        _permissionManager = permissionManager,
        _parentNotify = parentNotify;
 
   /// Establishes comprehensive manager listener coordination for reactive state management.
   /// Sets up listener connections to all focused managers ensuring automatic UI notification
-  /// and state synchronization across form state, collaborative editing, image management,
+  /// and state synchronization across form state, image management,
   /// and permission systems for comprehensive reactive state coordination.
   void setupManagerListeners() {
     _state.addListener(_onStateChanged);
-    _collaborativeManager.addListener(_onCollaborativeChanged);
     _imageManager.addListener(_onImageChanged);
     _permissionManager.addListener(_onPermissionChanged);
   }
 
-  /// Synchronizes form state to collaborative infrastructure for real-time updates.
-  /// Performs collaborative state synchronization when in collaborative mode,
-  /// creating recipe from current state and updating Firebase for real-time
-  /// collaborative editing and participant synchronization.
-  void syncToCollaborative({required bool isCollaborative}) {
-    // BUT-1667: this is the one createRecipe caller with no safeExecute around
-    // it, and after dispose() the field managers have cleared their values —
-    // building here would push an EMPTY recipe over the shared collaborative
-    // document. createRecipe now throws in that state, so guard rather than
-    // catch: there is nothing worth doing post-dispose.
-    if (_disposed || _state.isDisposed) return;
-    if (isCollaborative && _state.originalRecipe != null) {
-      final recipe = _state.createRecipe(recipeId: _state.originalRecipe!.id);
-      _collaborativeManager.updateRecipeInFirebase(recipe);
-    }
-  }
-
-  /// Synchronizes image URLs between image manager and form state with collaborative coordination.
   /// Updates form state with ONLY valid Firebase URLs from RecipeImageManager
-  /// (filters out file paths to prevent invalid URLs from being persisted)
-  /// and triggers collaborative synchronization for real-time image updates
-  /// in collaborative editing scenarios.
-  void syncImageUrls({required bool isCollaborative}) {
+  /// (filters out file paths to prevent invalid URLs from being persisted).
+  void syncImageUrls() {
     // RACE CONDITION GUARD: Prevent sync during save operations to avoid autosave conflicts
     if (_state.isSaving || _state.isForking) {
       // Skip sync during save operations to prevent race conditions
@@ -95,7 +68,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
       _imageManager.validImageUrls,
       skipAutoSave: _state.isAutoSaving,
     );
-    syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Loads initial permissions for recipe form initialization with comprehensive error handling.
@@ -154,14 +126,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
     _coordinatedNotifyListeners();
   }
 
-  /// Handles collaborative state changes with automatic UI synchronization and participant updates.
-  /// Provides seamless collaborative state synchronization ensuring
-  /// all collaborative changes are immediately reflected in UI components
-  /// for real-time collaborative editing and participant awareness.
-  void _onCollaborativeChanged() {
-    _coordinatedNotifyListeners();
-  }
-
   /// Handles image management changes with automatic UI notification and visual updates.
   /// Provides seamless image state synchronization ensuring
   /// all image changes are immediately reflected in UI components
@@ -185,7 +149,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
     // BUT-1667: mirror setupManagerListeners. Until this class was actually
     // disposed by the viewmodel these four outlived the form.
     _state.removeListener(_onStateChanged);
-    _collaborativeManager.removeListener(_onCollaborativeChanged);
     _imageManager.removeListener(_onImageChanged);
     _permissionManager.removeListener(_onPermissionChanged);
   }

@@ -4,7 +4,6 @@ test/unit/models/conversation_test.dart
 test/unit/models/friend_category_test.dart
 test/unit/models/friend_request_test.dart
 test/unit/models/group_invitation_test.dart
-test/unit/models/live_editor_test.dart
 test/unit/models/message_test.dart
 test/unit/models/realtime_menu_analytics_test.dart
 test/unit/models/realtime_menu_data_test.dart
@@ -29,7 +28,6 @@ test/unit/models/unified_shopping_item_test.dart
 test/unit/models/unified_shopping_list_test.dart
 test/unit/models/user_profile_test.dart
 test/unit/repositories/base_firebase_repository_test.dart
-test/unit/repositories/collaborative_recipe_repository_mock_test.dart
 test/unit/repositories/firebase_analytics_repository_test.dart
 test/unit/repositories/firebase_audit_repository_test.dart
 test/unit/repositories/firebase_block_repository_test.dart
@@ -87,7 +85,6 @@ test/unit/services/parsing/recipe_parser_service_test.dart
 test/unit/services/performance/intelligent_cache_manager_test.dart
 test/unit/services/persistence_service_test.dart
 test/unit/services/realtime/realtime_menu_service_test.dart
-test/unit/services/realtime/realtime_recipe_service_test.dart
 test/unit/services/seasonal/seasonal_hero_service_test.dart
 test/unit/services/security/algolia_pinning_interceptor_concurrency_test.dart
 test/unit/services/share_service_test.dart
@@ -102,8 +99,6 @@ test/unit/services/unified/friends_service_test.dart
 test/unit/services/unified/menu_operations_test.dart
 test/unit/services/unified/modules/cache_optimization_test.dart
 test/unit/services/unified/modules/debounced_sync_operations_test.dart
-test/unit/services/unified/modules/realtime_cache_manager_test.dart
-test/unit/services/unified/modules/realtime_event_handler_test.dart
 test/unit/services/unified/modules/service_adapters/recipe_service_adapter_test.dart
 test/unit/services/unified/modules/social_recipe/social_recipe_creation_service_test.dart
 test/unit/services/unified/operations/collaborative_shopping_operations_test.dart
@@ -126,11 +121,6 @@ test/unit/services/unified/operations/modules/recipe_social_stats_test.dart
 test/unit/services/unified/operations/modules/social_engagement_metrics_test.dart
 test/unit/services/unified/operations/personal_shopping_operations_test.dart
 test/unit/services/unified/operations/realtime_recipe/collaboration_management_module_test.dart
-test/unit/services/unified/operations/realtime_recipe/presence_tracking_module_test.dart
-test/unit/services/unified/operations/realtime_recipe/realtime_notification_module_test.dart
-test/unit/services/unified/operations/realtime_recipe/realtime_watching_module_test.dart
-test/unit/services/unified/operations/realtime_recipe_operations_test.dart
-test/unit/services/unified/operations/realtime_recipe_utils_test.dart
 test/unit/services/unified/operations/shopping_share_operations_test.dart
 test/unit/services/unified/operations/social_menu_operations_test.dart
 test/unit/services/unified/unified_friends_service_test.dart
@@ -157,7 +147,6 @@ test/unit/viewmodels/realtime_menu/realtime_stream_manager_test.dart
 test/unit/viewmodels/realtime_menu_state_test.dart
 test/unit/viewmodels/realtime_menu_viewmodel_test.dart
 test/unit/viewmodels/realtime_participant_manager_test.dart
-test/unit/viewmodels/recipe_collaborative_manager_test.dart
 test/unit/viewmodels/recipe_detail_viewmodel_test.dart
 test/unit/viewmodels/recipe_form_state_test.dart
 test/unit/viewmodels/recipe_query_viewmodel_test.dart

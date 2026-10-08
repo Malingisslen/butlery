@@ -8,13 +8,11 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:collection/collection.dart'; // For firstWhereOrNull
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
-import 'package:butlery/services/realtime/realtime_types.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/mocks/production_mocks.dart' as mocks;
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -24,7 +22,6 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -184,7 +181,6 @@ void main() {
     late mocks.MockRatingsRepository mockRatingsRepository;
     late mocks.MockNotificationsRepository mockNotificationsRepository;
     late mocks.FakeFirestoreRepository mockFirestoreRepository;
-    late mocks.MockCollaborativeRecipeRepository mockCollaborativeRepository;
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
@@ -202,7 +198,6 @@ void main() {
       mockRatingsRepository = mocks.MockRatingsRepository();
       mockNotificationsRepository = mocks.MockNotificationsRepository();
       mockFirestoreRepository = mocks.FakeFirestoreRepository();
-      mockCollaborativeRepository = mocks.MockCollaborativeRecipeRepository();
 
       // Setup auth repository defaults - create mock user
       final mockUser = MockFactory.createMockUser(uid: 'test_user_123');
@@ -237,9 +232,6 @@ void main() {
       TestServiceLocator.registerMock<FirestoreRepository>(
         mockFirestoreRepository,
       );
-      TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-        mockCollaborativeRepository,
-      );
 
       // Register mocks for eager ServiceLocator.get<>() calls in constructor chain
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
@@ -253,7 +245,7 @@ void main() {
       // BaseService.executeServiceOperation reads AuthRepository through the
       // production ServiceLocator. Without an authenticated one registered
       // here its auth pre-flight returns the fallback and the operation body
-      // (e.g. RealtimeRecipeOperations) never runs.
+      // never runs.
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
 
       // Stub OfflineService -> AppDatabase -> CacheDao chain
@@ -865,92 +857,6 @@ void main() {
       });
     });
 
-    group('Real-time Editing Operations', () {
-      setUp(() async {
-        await service.initialize();
-
-        // Stub repository create for recipe creation
-        when(() => mockRecipeRepository.create(any())).thenAnswer(
-          (invocation) async => invocation.positionalArguments[0] as Recipe,
-        );
-
-        // Stub collaborative repository methods for real-time editing
-        when(
-          () => mockCollaborativeRepository.setPresence(any(), any(), any()),
-        ).thenAnswer(
-          (_) async {},
-        );
-        when(
-          () => mockCollaborativeRepository.removePresence(any(), any()),
-        ).thenAnswer(
-          (_) async {},
-        );
-        when(
-          () =>
-              mockCollaborativeRepository.updatePresenceHeartbeat(any(), any()),
-        ).thenAnswer(
-          (_) async {},
-        );
-        when(
-          () => mockCollaborativeRepository.getActiveEditors(any()),
-        ).thenAnswer(
-          (_) async => [],
-        );
-      });
-
-      test('should start real-time editing session', () async {
-        // Arrange - create a recipe
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Real-time',
-        );
-
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-
-        // Act
-        final success = await service.startRealtimeEditing(recipeId!);
-
-        // Assert
-        expect(success, true);
-        expect(service.isInRealtimeEditingSession(recipeId), true);
-      });
-
-      test('should stop real-time editing session', () async {
-        // Arrange - create and start editing
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Real-time',
-        );
-
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-        await service.startRealtimeEditing(recipeId!);
-
-        // Act
-        final success = await service.stopRealtimeEditing(recipeId);
-
-        // Assert
-        expect(success, true);
-        expect(service.isInRealtimeEditingSession(recipeId), false);
-      });
-
-      test('should make real-time edit', () async {
-        // Arrange - create and start editing
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Recipe for Real-time',
-        );
-
-        expect(recipeId, isNotNull, reason: 'Recipe should be created');
-        await service.startRealtimeEditing(recipeId!);
-
-        // Act
-        final success = await service.makeRealtimeEdit(
-          recipeId,
-          {'title': 'Updated Title'},
-        );
-
-        // Assert
-        expect(success, true);
-      });
-    });
-
     group('Content Operations', () {
       setUp(() async {
         await service.initialize();
@@ -1357,7 +1263,6 @@ void main() {
         expect(status['personalCount'], 0);
         expect(status['collaborativeCount'], 0);
         expect(status.containsKey('cacheStatus'), true);
-        expect(status.containsKey('realtimeStatus'), true);
 
         // Cleanup
         freshService.dispose();
@@ -1684,46 +1589,6 @@ void main() {
 
           // Assert
           expect(success, false);
-          // Error state handled internally by service
-          // Error details not exposed through test helpers
-        });
-
-        test('should handle concurrent edit conflicts', () async {
-          // Arrange
-          final recipeId = 'test-recipe-id';
-
-          // Stub repository to simulate conflict error on update
-          when(() => mockRecipeRepository.update(any())).thenAnswer(
-            (_) async => throw StateError(
-              'Conflict: recipe was modified by another user',
-            ),
-          );
-
-          // Create recipe and start editing
-          when(() => mockRecipeRepository.create(any())).thenAnswer(
-            (invocation) async => invocation.positionalArguments[0] as Recipe,
-          );
-
-          when(
-            () => mockCollaborativeRepository.setPresence(any(), any(), any()),
-          ).thenAnswer(
-            (_) async {},
-          );
-
-          await service.createPersonalRecipe(title: 'Test Recipe');
-          await service.startRealtimeEditing(recipeId);
-
-          // Act - try to make realtime edit which internally updates recipe
-          final success = await service.makeRealtimeEdit(
-            recipeId,
-            {'title': 'Conflicting Update'},
-          );
-
-          // Assert
-          expect(
-            success,
-            true,
-          ); // Edit succeeds as conflict resolution is handled internally
           // Error state handled internally by service
           // Error details not exposed through test helpers
         });
@@ -2335,103 +2200,6 @@ void main() {
         });
       });
 
-      group('RealtimeRecipeModule Operations', () {
-        test(
-          'should coordinate realtime module for collaborative editing',
-          () async {
-            // Arrange
-            final testRecipe = Recipe.collaborative(
-              title: 'Realtime Recipe',
-              description: 'For realtime editing',
-              ingredients: ['ingredient 1'],
-              instructions: ['step 1'],
-              mealType: 'dinner',
-              ownerId: 'test-user-id',
-              ownerDisplayName: 'Test User',
-              memberPermissions: {},
-            );
-
-            // Mock repository to return the test recipe
-            when(
-              () => mockRecipeRepository.read(testRecipe.id),
-            ).thenAnswer((_) async => testRecipe);
-            when(
-              () => mockRecipeRepository.readAll(),
-            ).thenAnswer((_) async => [testRecipe]);
-
-            // Act
-            final result = await service.realtime.startRealtimeEditing(
-              testRecipe.id,
-            );
-            final isEditing = service.realtime.isInRealtimeEditingMode(
-              testRecipe.id,
-            );
-
-            // Assert
-            // Realtime editing requires proper setup, may not always return true in unit tests
-            expect(result, anyOf(isTrue, isFalse));
-            expect(isEditing, anyOf(isTrue, isFalse));
-          },
-        );
-
-        test('should handle realtime module presence tracking', () async {
-          // Arrange
-          final recipeId = 'realtime-recipe-123';
-
-          // Act
-          await service.realtime.showPresence(recipeId);
-          final presence = await service.realtime.getRecipePresence(recipeId);
-
-          // Assert
-          expect(presence, isA<List<Map<String, dynamic>>>());
-        });
-
-        test('should handle realtime module conflict resolution', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Conflict Test',
-            description: 'Testing conflicts',
-            ingredients: ['original'],
-            instructions: ['original'],
-            mealType: 'dinner',
-            ownerId: 'test-user-id',
-            ownerDisplayName: 'Test User',
-            memberPermissions: {},
-          );
-
-          // Mock repository to return the recipe
-          when(
-            () => mockRecipeRepository.read(recipe.id),
-          ).thenAnswer((_) async => recipe);
-          when(
-            () => mockRecipeRepository.readAll(),
-          ).thenAnswer((_) async => [recipe]);
-
-          // Act - Simulate concurrent updates
-          final update1 = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {
-              'ingredients': ['updated 1'],
-            },
-            editDescription: 'Update 1',
-          );
-
-          final update2 = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {
-              'ingredients': ['updated 2'],
-            },
-            editDescription: 'Update 2',
-          );
-
-          await Future.wait([update1, update2]);
-
-          // Assert - One should succeed, conflict handled
-          // In mock setup, both may succeed or service may handle internally
-          expect(service.hasError, anyOf(isTrue, isFalse));
-        });
-      });
-
       group('RecipeCacheModule Operations', () {
         test('should handle cache module optimization', () async {
           // Arrange
@@ -2563,48 +2331,6 @@ void main() {
           },
         );
 
-        test('should coordinate social to realtime module transition', () async {
-          // Arrange
-          final socialRecipe = Recipe.collaborative(
-            title: 'Social Recipe',
-            description: 'For sharing',
-            ingredients: ['social'],
-            instructions: ['social'],
-            mealType: 'dinner',
-            ownerId: 'test-user-id',
-            ownerDisplayName: 'Test User',
-            memberPermissions: {
-              'friend-1': ResourcePermission.editor,
-            },
-          );
-
-          // Mock repository to return the social recipe
-          when(
-            () => mockRecipeRepository.read(socialRecipe.id),
-          ).thenAnswer((_) async => socialRecipe);
-          when(
-            () => mockRecipeRepository.readAll(),
-          ).thenAnswer((_) async => [socialRecipe]);
-
-          // Initialize service to load the recipe
-          await service.initialize();
-
-          // Act - Start realtime editing on social recipe
-          final result = await service.realtime.startRealtimeEditing(
-            socialRecipe.id,
-          );
-
-          // Assert
-          // Starting realtime editing on social recipe may require additional setup
-          expect(result, anyOf(isTrue, isFalse));
-          // Note: isInRealtimeEditingMode may require actual realtime service setup
-          // For unit test, we verify the operation completed without throwing
-          expect(
-            service.realtime.isInRealtimeEditingMode(socialRecipe.id),
-            anyOf(isTrue, isFalse),
-          ); // Allow either since it depends on mock setup
-        });
-
         test('should coordinate cache updates across all modules', () async {
           // Arrange
           final recipe = Recipe.personal(
@@ -2636,533 +2362,6 @@ void main() {
           // we just verify the ID was returned (it's a generated UUID)
           expect(recipeId, isA<String>());
           expect(recipeId!.length, greaterThan(0));
-        });
-      });
-    });
-
-    group('Collaborative Editing', () {
-      late mocks.MockRealtimeSyncService mockRealtimeSyncService;
-
-      setUp(() {
-        mockRealtimeSyncService = mocks.MockRealtimeSyncService();
-        TestServiceLocator.registerMock<RealtimeSyncService>(
-          mockRealtimeSyncService,
-        );
-      });
-
-      group('Real-time Collaborative Editing', () {
-        test(
-          'should handle multiple users editing same recipe simultaneously',
-          () async {
-            // Arrange
-            final recipe = Recipe.collaborative(
-              title: 'Collaborative Recipe',
-              description: 'Testing collaborative editing',
-              ingredients: ['initial ingredient'],
-              instructions: ['initial step'],
-              mealType: 'dinner',
-              ownerId: 'user-1',
-              ownerDisplayName: 'User 1',
-              memberPermissions: {
-                'user-2': ResourcePermission.editor,
-                'user-3': ResourcePermission.editor,
-              },
-            );
-
-            when(
-              () => mockRecipeRepository.read(recipe.id),
-            ).thenAnswer((_) async => recipe);
-            // RealtimeSyncService doesn't have startRealtimeSession or makeRealtimeEdit
-            // These operations are handled through RealtimeRecipeOperations
-            mockRealtimeSyncService.setConnectionState(true);
-            mockRealtimeSyncService.setInitialized(true);
-
-            // Act - Simulate multiple users editing
-            final user1Edit = service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'User 1 Edit'},
-              editDescription: 'User 1 changed title',
-            );
-
-            final user2Edit = service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {
-                'ingredients': ['user 2 ingredient'],
-              },
-              editDescription: 'User 2 changed ingredients',
-            );
-
-            final user3Edit = service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {
-                'instructions': ['user 3 step'],
-              },
-              editDescription: 'User 3 changed instructions',
-            );
-
-            final results = await Future.wait([
-              user1Edit,
-              user2Edit,
-              user3Edit,
-            ]);
-
-            // Assert
-            // In unit tests, the results depend on mock setup
-            expect(results.length, equals(3));
-            expect(results.every((r) => r == true || r == false), isTrue);
-          },
-        );
-
-        test('should propagate live updates between users', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Live Update Recipe',
-            description: 'Testing live updates',
-            ingredients: ['original'],
-            instructions: ['original'],
-            mealType: 'lunch',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {
-              'user-2': ResourcePermission.editor,
-            },
-          );
-
-          // Act - watchRecipe uses RealtimeSyncService internally,
-          // not the recipe repository's watchRecipes stream.
-          // In unit tests without a real RealtimeSyncService, we verify
-          // that the stream is returned without throwing.
-          final watchStream = service.realtime.watchRecipe(recipe.id);
-
-          // Assert - stream is returned (empty in unit tests without
-          // a configured RealtimeSyncService)
-          expect(watchStream, isA<Stream<Recipe>>());
-        });
-
-        test(
-          'should handle optimistic updates with rollback on failure',
-          () async {
-            // Arrange
-            final recipe = Recipe.collaborative(
-              title: 'Optimistic Update Recipe',
-              description: 'Testing optimistic updates',
-              ingredients: [],
-              instructions: [],
-              mealType: 'dinner',
-              ownerId: 'user-1',
-              ownerDisplayName: 'User 1',
-              memberPermissions: {},
-            );
-
-            when(
-              () => mockRecipeRepository.read(recipe.id),
-            ).thenAnswer((_) async => recipe);
-            // Set up mock to simulate network error
-            mockRealtimeSyncService.setConnectionState(false);
-            mockRealtimeSyncService.setError(
-              SyncError(
-                type: SyncErrorType.connectionLost,
-                message: 'Network error',
-              ),
-            );
-
-            // Act
-            final result = await service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'Failed Update'},
-              editDescription: 'This should fail',
-            );
-
-            // Assert
-            expect(result, isFalse);
-            // Recipe should remain unchanged after rollback
-            final currentRecipe = service.recipes.firstWhereOrNull(
-              (r) => r.id == recipe.id,
-            );
-            expect(currentRecipe?.title, isNot('Failed Update'));
-          },
-        );
-
-        test(
-          'should handle connection loss and recovery during editing',
-          () async {
-            // Arrange
-            final recipe = Recipe.collaborative(
-              title: 'Connection Test Recipe',
-              description: 'Testing connection handling',
-              ingredients: [],
-              instructions: [],
-              mealType: 'dinner',
-              ownerId: 'user-1',
-              ownerDisplayName: 'User 1',
-              memberPermissions: {},
-            );
-
-            // Set initial connection state
-            mockRealtimeSyncService.setConnectionState(true);
-
-            // Act
-            // Simulate connection loss
-            mockRealtimeSyncService.setConnectionState(false);
-            final offlineEdit = await service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'Offline Edit'},
-              editDescription: 'Edit while offline',
-            );
-
-            // Simulate connection recovery
-            mockRealtimeSyncService.setConnectionState(true);
-            final onlineEdit = await service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'Online Edit'},
-              editDescription: 'Edit after reconnection',
-            );
-
-            // Assert
-            expect(offlineEdit, anyOf(isTrue, isFalse)); // May queue or fail
-            expect(
-              onlineEdit,
-              anyOf(isTrue, isFalse),
-            ); // Should process normally
-          },
-        );
-      });
-
-      group('Multi-user Conflict Resolution', () {
-        test(
-          'should detect and resolve concurrent edits to same field',
-          () async {
-            // Arrange
-            final recipe = Recipe.collaborative(
-              title: 'Conflict Test Recipe',
-              description: 'Testing conflict resolution',
-              ingredients: ['original'],
-              instructions: ['original'],
-              mealType: 'dinner',
-              ownerId: 'user-1',
-              ownerDisplayName: 'User 1',
-              memberPermissions: {
-                'user-2': ResourcePermission.editor,
-              },
-            );
-
-            when(
-              () => mockRecipeRepository.read(recipe.id),
-            ).thenAnswer((_) async => recipe);
-
-            // Simulate conflict scenario through mock setup
-            mockRealtimeSyncService.setConnectionState(true);
-
-            // Act - Two users edit the same field
-            final user1Edit = service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'User 1 Title'},
-              editDescription: 'User 1 edit',
-            );
-
-            final user2Edit = service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'User 2 Title'},
-              editDescription: 'User 2 edit',
-            );
-
-            final results = await Future.wait([user1Edit, user2Edit]);
-
-            // Assert
-            // Both edits may fail or succeed depending on mock behavior
-            expect(results.length, equals(2));
-            // At least check that we got results
-            expect(results.every((r) => r == true || r == false), isTrue);
-          },
-        );
-
-        test('should handle three-way merge scenarios', () async {
-          // Arrange
-          final baseRecipe = Recipe.collaborative(
-            title: 'Base Recipe',
-            description: 'Base description',
-            ingredients: ['base ingredient'],
-            instructions: ['base step'],
-            mealType: 'dinner',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {
-              'user-2': ResourcePermission.editor,
-              'user-3': ResourcePermission.editor,
-            },
-          );
-
-          final localRecipe = baseRecipe.copyWith(
-            title: 'Local Edit',
-            ingredients: ['local ingredient'],
-          );
-
-          final remoteRecipe = baseRecipe.copyWith(
-            description: 'Remote Edit',
-            instructions: ['remote step'],
-          );
-
-          // Act
-          final resolved = await service.realtime.resolveConflict(
-            recipeId: baseRecipe.id,
-            localVersion: localRecipe,
-            remoteVersion: remoteRecipe,
-            resolution: 'merge',
-          );
-
-          // Assert
-          expect(resolved, anyOf(isTrue, isFalse)); // Depends on merge strategy
-        });
-
-        test('should prevent lost updates in rapid edits', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Rapid Edit Recipe',
-            description: 'Testing rapid edits',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {},
-          );
-
-          final editResults = <bool>[];
-
-          // Act - Simulate rapid edits
-          for (int i = 0; i < 5; i++) {
-            final result = await service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'Edit $i'},
-              editDescription: 'Rapid edit $i',
-            );
-            editResults.add(result);
-          }
-
-          // Assert
-          // All edits should be processed (success or queued)
-          expect(editResults.length, equals(5));
-        });
-      });
-
-      group('Permission Changes During Editing', () {
-        test(
-          'should handle permission downgrade during active editing',
-          () async {
-            // Arrange
-            final recipe = Recipe.collaborative(
-              title: 'Permission Test Recipe',
-              description: 'Testing permission changes',
-              ingredients: [],
-              instructions: [],
-              mealType: 'dinner',
-              ownerId: 'owner',
-              ownerDisplayName: 'Owner',
-              memberPermissions: {
-                'editor': ResourcePermission.editor,
-              },
-            );
-
-            when(
-              () => mockRecipeRepository.read(recipe.id),
-            ).thenAnswer((_) async => recipe);
-
-            // Act
-            // Start editing as editor
-            await service.realtime.startRealtimeEditing(recipe.id);
-
-            // Simulate permission downgrade to viewer
-            // Note: Recipe doesn't have copyWith for memberPermissions
-            // Create a new recipe with updated permissions
-            final downgradedRecipe = Recipe.collaborative(
-              title: recipe.title,
-              description: recipe.description,
-              ingredients: recipe.ingredients,
-              instructions: recipe.instructions,
-              mealType: recipe.mealType,
-              ownerId: 'owner',
-              ownerDisplayName: 'Owner',
-              memberPermissions: {
-                'editor': ResourcePermission.viewer,
-              },
-            );
-            when(
-              () => mockRecipeRepository.read(recipe.id),
-            ).thenAnswer((_) async => downgradedRecipe);
-
-            // Try to edit with downgraded permissions
-            final editResult = await service.realtime.makeRealtimeEdit(
-              recipeId: recipe.id,
-              changes: {'title': 'Should Fail'},
-              editDescription: 'Edit with viewer permission',
-            );
-
-            // Assert
-            expect(
-              editResult,
-              anyOf(isTrue, isFalse),
-            ); // May fail or be handled gracefully
-          },
-        );
-
-        test('should handle member removal during active session', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Member Removal Test',
-            description: 'Testing member removal',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'owner',
-            ownerDisplayName: 'Owner',
-            memberPermissions: {
-              'member1': ResourcePermission.editor,
-              'member2': ResourcePermission.editor,
-            },
-          );
-
-          // Act
-          // Remove member1 while they're editing
-          final success = await service.realtime.removeCollaborators(
-            recipe.id,
-            ['member1'],
-          );
-
-          // Assert
-          expect(success, anyOf(isTrue, isFalse));
-          // Session should be terminated for removed member
-        });
-
-        test('should handle ownership transfer during editing', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Ownership Transfer Test',
-            description: 'Testing ownership transfer',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'original-owner',
-            ownerDisplayName: 'Original Owner',
-            memberPermissions: {
-              'new-owner': ResourcePermission.editor,
-            },
-          );
-
-          // Act
-          final transferSuccess = await service.realtime.transferOwnership(
-            recipe.id,
-            'new-owner',
-          );
-
-          // Assert
-          expect(transferSuccess, anyOf(isTrue, isFalse));
-          // Permissions should be updated for all participants
-        });
-      });
-
-      group('Participant Management Flow', () {
-        test('should track participant presence in real-time', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Presence Test Recipe',
-            description: 'Testing presence tracking',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'owner',
-            ownerDisplayName: 'Owner',
-            memberPermissions: {
-              'user1': ResourcePermission.editor,
-              'user2': ResourcePermission.viewer,
-            },
-          );
-
-          // Act
-          await service.realtime.showPresence(recipe.id);
-          final presence = await service.realtime.getRecipePresence(recipe.id);
-
-          // Assert
-          expect(presence, isA<List>());
-          // Presence list should include active users
-        });
-
-        test('should handle participant activity monitoring', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Activity Test Recipe',
-            description: 'Testing activity monitoring',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'owner',
-            ownerDisplayName: 'Owner',
-            memberPermissions: {},
-          );
-
-          // Act
-          // Monitor editing activity
-          final activeEditors = service.realtime.getActiveEditors(recipe.id);
-
-          // Assert - no mock editors were set up, so list should be empty
-          expect(activeEditors, isA<List<String>>());
-          expect(activeEditors, isEmpty);
-        });
-
-        test('should handle session handoff between participants', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Handoff Test Recipe',
-            description: 'Testing session handoff',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'user1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {
-              'user2': ResourcePermission.editor,
-            },
-          );
-
-          // Act
-          // User1 stops editing
-          final stopped = await service.realtime.stopRealtimeEditing(recipe.id);
-          expect(stopped, isTrue);
-
-          // User2 starts editing
-          await service.realtime.startRealtimeEditing(recipe.id);
-
-          // Assert
-          // Session should transfer smoothly
-          final isUser2Editing = service.realtime.isInRealtimeEditingMode(
-            recipe.id,
-          );
-          expect(isUser2Editing, anyOf(isTrue, isFalse));
-        });
-
-        test('should handle adding participants to active session', () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Add Participant Test',
-            description: 'Testing adding participants',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'owner',
-            ownerDisplayName: 'Owner',
-            memberPermissions: {
-              'existing': ResourcePermission.editor,
-            },
-          );
-
-          // Act
-          final success = await service.realtime.addCollaborators(
-            recipe.id,
-            ['new-user1', 'new-user2'],
-          );
-
-          // Assert
-          expect(success, anyOf(isTrue, isFalse));
-          // New participants should be able to join the session
         });
       });
     });
@@ -3598,44 +2797,6 @@ void main() {
             anyOf(isNull, isNotNull),
           ); // More flexible for offline scenarios
           expect(mockRealtimeSyncService.isConnected, isTrue);
-        });
-
-        test('should handle conflict resolution after offline edits', () async {
-          // Arrange
-          final localRecipe = Recipe.personal(
-            title: 'Local Version',
-            description: 'Edited offline',
-            createdBy: 'test-user',
-            ingredients: ['local'],
-            instructions: ['local'],
-            mealType: 'dinner',
-          );
-
-          final remoteRecipe = Recipe.personal(
-            title: 'Remote Version',
-            description: 'Edited by another user',
-            createdBy: 'test-user',
-            ingredients: ['remote'],
-            instructions: ['remote'],
-            mealType: 'dinner',
-          );
-
-          // Simulate offline edit
-          mockRealtimeSyncService.setConnectionState(false);
-
-          // Act
-          // Come back online and detect conflict
-          mockRealtimeSyncService.setConnectionState(true);
-
-          final resolved = await service.realtime.resolveConflict(
-            recipeId: 'conflict-recipe',
-            localVersion: localRecipe,
-            remoteVersion: remoteRecipe,
-            resolution: 'merge',
-          );
-
-          // Assert
-          expect(resolved, anyOf(isTrue, isFalse));
         });
 
         test('should maintain data consistency after sync', () async {

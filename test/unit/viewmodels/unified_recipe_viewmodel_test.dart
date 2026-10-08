@@ -130,8 +130,7 @@ void main() {
       // Collaborative — left to Mock base (returns null by default).
       // Individual success tests override via when() as needed.
 
-      // Social and Realtime — FakeSocialRecipeOperations and
-      // MockRealtimeRecipeOperations already have default implementations
+      // Social — FakeSocialRecipeOperations already has default implementations
 
       // Register mocks
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
@@ -185,7 +184,6 @@ void main() {
         // Assert
         expect(viewModel.personal, isNotNull);
         expect(viewModel.social, isNotNull);
-        expect(viewModel.realtime, isNotNull);
         expect(viewModel.query, isNotNull);
       });
 
@@ -597,27 +595,6 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-      });
-    });
-
-    group('Real-time Features', () {
-      test('should expose real-time connection status', () {
-        // Assert - realtime operations not available
-        expect(viewModel.isRealtimeConnected, isFalse);
-      });
-
-      test('should expose real-time connection stream', () async {
-        // Act
-        final stream = viewModel.realtimeConnectionStream;
-
-        // Assert - will return empty stream since realtime mock doesn't exist
-        expect(stream, isNotNull);
-        await expectLater(stream, emits(isFalse));
-      });
-
-      test('should handle real-time disconnection', () {
-        // Assert - realtime operations not available
-        expect(viewModel.isRealtimeConnected, isFalse);
       });
     });
 

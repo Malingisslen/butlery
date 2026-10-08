@@ -1,7 +1,6 @@
 // lib/services/unified/modules/recipe_cache_module.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -54,8 +53,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// final stats = await cacheModule.getCacheStatistics();
 /// ```
 class RecipeCacheModule {
-  // Firebase instance for synchronization
-  final FirebaseFirestore? _firestore;
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final void Function(String) _setError;
@@ -96,7 +93,6 @@ class RecipeCacheModule {
   static const Duration _cacheCleanupInterval = Duration(hours: 24);
 
   RecipeCacheModule({
-    FirebaseFirestore? firestore,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
@@ -107,7 +103,6 @@ class RecipeCacheModule {
     Future<Recipe?> Function(String recipeId)? readRecipe,
   }) : _hasUnsentWrite = hasUnsentWrite,
        _readRecipe = readRecipe,
-       _firestore = firestore,
        _cacheHelper = cacheHelper,
        _getCurrentUserId = getCurrentUserId,
        _setError = setError,
@@ -186,12 +181,6 @@ class RecipeCacheModule {
       return;
     }
 
-    final firestore = _firestore;
-    if (firestore == null) {
-      AppLogger.warning('Cannot start Firebase sync: No Firestore instance');
-      return;
-    }
-
     try {
       AppLogger.info('🔄 Starting Firebase sync...');
 
@@ -211,7 +200,6 @@ class RecipeCacheModule {
           _removeCachedRecipe(recipeId, source);
         },
         onSyncError: _handleSyncError,
-        firestore: firestore,
         onSyncStatusChanged: (hasPendingWrites, isFromCache) {
           if (_hasPendingWrites != hasPendingWrites ||
               _isFromCache != isFromCache) {

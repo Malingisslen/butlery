@@ -831,10 +831,7 @@ class RecipeFormState extends ChangeNotifier {
     // BUT-1667: after dispose() the field managers have cleared their values,
     // so building here would silently yield a recipe with no ingredients and
     // no instructions — which a resuming save would then WRITE over the user's
-    // stored recipe. Fail loudly instead. The two RecipePersistenceManager
-    // callers sit inside safeExecute, which turns this into "kunde inte spara"
-    // rather than data loss; RecipeFormCoordinator.syncToCollaborative has no
-    // error boundary and guards on [isDisposed] before calling instead.
+    // stored recipe. Fail loudly instead.
     if (_isDisposed) {
       throw StateError(
         'createRecipe called on a disposed RecipeFormState — the form data is '
