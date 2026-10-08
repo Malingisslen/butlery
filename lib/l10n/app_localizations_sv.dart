@@ -1463,7 +1463,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuWeekBadgeWithCount(int week, int count) {
-    return 'Vecka $week · $count rätter';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter',
+      one: '1 rätt',
+    );
+    return 'Vecka $week · $_temp0';
   }
 
   @override
@@ -15513,6 +15519,11 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String menuWeekBadgeEmpty(int week) {
     return 'Vecka $week · inget planerat';
+  }
+
+  @override
+  String menuWeekBadgeOnly(int week) {
+    return 'Vecka $week';
   }
 
   @override

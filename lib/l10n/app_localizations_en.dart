@@ -1460,7 +1460,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuWeekBadgeWithCount(int week, int count) {
-    return 'Week $week · $count dishes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes',
+      one: '1 dish',
+    );
+    return 'Week $week · $_temp0';
   }
 
   @override
@@ -15485,6 +15491,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String menuWeekBadgeEmpty(int week) {
     return 'Week $week · nothing planned';
+  }
+
+  @override
+  String menuWeekBadgeOnly(int week) {
+    return 'Week $week';
   }
 
   @override

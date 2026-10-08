@@ -1051,7 +1051,7 @@
   },
   "menuNoMoreRecipes": "Inga fler recept tillgängliga för byte",
   "menuGenerateError": "Kunde inte generera meny",
-  "menuWeekBadgeWithCount": "Vecka {week} · {count} rätter",
+  "menuWeekBadgeWithCount": "Vecka {week} · {count, plural, =1{1 rätt} other{{count} rätter}}",
   "@menuWeekBadgeWithCount": {
     "placeholders": {
       "week": {
@@ -11579,6 +11579,15 @@
   "menuWeekBadgeEmpty": "Vecka {week} · inget planerat",
   "@menuWeekBadgeEmpty": {
     "description": "The empty week's line under \"Veckomeny\" on the root bar (Skarmar v12 del 1 #tomvecka).",
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "menuWeekBadgeOnly": "Vecka {week}",
+  "@menuWeekBadgeOnly": {
+    "description": "The line under \"Veckomeny\" on the root bar while the week has not been read, or its read failed, so it cannot say how many dishes are planned.",
     "placeholders": {
       "week": {
         "type": "int"

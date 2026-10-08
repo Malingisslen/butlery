@@ -227,6 +227,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   bool get hasOverflow => _overflow.isNotEmpty;
   bool get hasEntries => _plan?.isNotEmpty ?? false;
 
+  /// Dishes saved in the week on screen, or null while that week has not been
+  /// read or its read failed, so a caller cannot mistake "unknown" for empty.
+  int? get plannedDishCount => _plan?.entries.length;
+
   List<WeeklyMenuPlanEntry> entriesAt(DayOfWeek day, MealSlot slot) {
     return _plan?.entriesAt(day, slot) ?? const [];
   }

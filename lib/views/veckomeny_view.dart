@@ -123,6 +123,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         orElse: () => VeckomenyViewMode.lista,
       );
       if (mode != _viewMode) setState(() => _viewMode = mode);
+      // Kalender reads the week itself; Lista needs it for the week line.
+      if (mode != VeckomenyViewMode.kalender) {
+        await context.read<WeeklyMenuPlanViewModel>().loadWeek(clock.now());
+      }
       return;
     }
     // First run (no stored preference): the saved weekly plan only renders in
@@ -352,12 +356,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
-  /// Get current week number
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
-    final weekNumber = IsoWeekUtils.isoWeekNumber(clock.now());
-    final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
     // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
     // #tomvecka): "Veckomeny" with the week and the number of dishes on the
@@ -365,26 +366,34 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     //
     // P5-U26a: the week menu listens for "{namn} sparade veckan", and
     // BUT-2215 for its own week saved on another device.
-    final planVm = context.read<WeeklyMenuPlanViewModel>();
+    final planVm = context.watch<WeeklyMenuPlanViewModel>();
     return VeckomenyConflictNotice(
       weekConflicts: planVm.weekConflicts,
       onKeepMine: planVm.keepMine,
-      child: _buildScaffold(context, viewModel, weekNumber, menuItemCount),
+      child: _buildScaffold(context, viewModel, planVm),
     );
+  }
+
+  /// The week line counts the SAVED week, never the generated suggestion: a
+  /// suggestion is not planned until it is placed, and a week saved on
+  /// another device or in an earlier session has no suggestion at all.
+  String _weekLine(BuildContext context, WeeklyMenuPlanViewModel planVm) {
+    final week = IsoWeekUtils.isoWeekNumber(planVm.currentWeekStart);
+    final dishes = planVm.plannedDishCount;
+    if (dishes == null) return context.l10n.menuWeekBadgeOnly(week);
+    if (dishes == 0) return context.l10n.menuWeekBadgeEmpty(week);
+    return context.l10n.menuWeekBadgeWithCount(week, dishes);
   }
 
   Widget _buildScaffold(
     BuildContext context,
     MenuViewModel viewModel,
-    int weekNumber,
-    int menuItemCount,
+    WeeklyMenuPlanViewModel planVm,
   ) {
     return Scaffold(
       appBar: ButleryTopBar.rot(
         title: context.l10n.menuWeek,
-        secondaryLine: viewModel.hasMenu
-            ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
-            : context.l10n.menuWeekBadgeEmpty(weekNumber),
+        secondaryLine: _weekLine(context, planVm),
         actions: _buildHeaderActions(context, viewModel),
         bottom: VeckomenyViewModeToggle(
           mode: _viewMode,
