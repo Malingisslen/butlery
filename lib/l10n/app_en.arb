@@ -2088,7 +2088,7 @@
   "shareShoppingList": "Share shopping list",
   "shareTagWithFriends": "Share tag with friends",
   "shareTag": "Share tag",
-  "shareSelectAtLeastOneFriend": "Select at least one friend to share",
+  "shareSelectAtLeastOneFriend": "Choose who to share with.",
   "shareRecipesInCategories": "{recipes} recipes in {categories} categories",
   "@shareRecipesInCategories": {
     "placeholders": {
@@ -2627,19 +2627,27 @@
       }
     }
   },
-  "shareSuccessMessage": "{name} has been shared as {mode} with {count} recipients.",
+  "shareSuccessMessage": "Shared with {count, plural, =1{1 person} other{{count} people}}.",
   "@shareSuccessMessage": {
+    "description": "Receipt after sharing with friends only.",
     "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "mode": {
-        "type": "String"
-      },
       "count": {
         "type": "int"
       }
     }
+  },
+  "shareSuccessMessageGroups": "Shared with {count, plural, =1{1 recipient} other{{count} recipients}}.",
+  "@shareSuccessMessageGroups": {
+    "description": "Receipt after sharing when a group was among the recipients, so the count is not a head count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareSuccessLiveNote": "Changes are visible to everyone.",
+  "@shareSuccessLiveNote": {
+    "description": "Appended to the share receipt after a live share: recipients see later changes."
   },
   "uploadFailed": "Image upload failed",
   "uploadFailedCount": "{count} images could not be uploaded.\n\nWhat do you want to do?",
@@ -9166,7 +9174,7 @@
   "@faqQ4": {
     "description": "FAQ question 4: how to create personal tags"
   },
-  "faqA4": "Go to your profile and select \"My tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.",
+  "faqA4": "Go to More and select \"Personal tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.",
   "@faqA4": {
     "description": "FAQ answer 4: how to create personal tags"
   },
@@ -10912,7 +10920,7 @@
       }
     }
   },
-  "familyTitle": "my family",
+  "familyTitle": "My family",
   "familyIntro": "Everyone who eats at home with you. Adults and teens (15+) have their own accounts; children and guests are added as family members.",
   "familyHouseholdSection": "household",
   "familyMembersSection": "family",

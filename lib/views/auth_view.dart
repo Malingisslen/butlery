@@ -52,6 +52,10 @@ class _AuthViewState extends State<AuthView> {
   final _passwordFocus = FocusNode();
   final _nameFocus = FocusNode();
   bool _termsAccepted = false;
+
+  // After the first submit an error follows the field as the user types,
+  // instead of standing until the next press of the button.
+  bool _submitAttempted = false;
   late final AuthViewModel _viewModel;
 
   @override
@@ -224,6 +228,9 @@ class _AuthViewState extends State<AuthView> {
       child: AutofillGroup(
         child: Form(
           key: _formKey,
+          autovalidateMode: _submitAttempted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -368,6 +375,13 @@ class _AuthViewState extends State<AuthView> {
                   children: [
                     _buildConsentCheckbox(
                       value: _termsAccepted,
+                      // The sentence beside the box is split into links, so
+                      // the box carries the whole of it as its name.
+                      semanticLabel:
+                          '${context.l10n.authTermsAcceptPrefix}'
+                          '${context.l10n.authTermsOfService}'
+                          '${context.l10n.authTermsAcceptMiddle}'
+                          '${context.l10n.profilePrivacyPolicy}',
                       onChanged: viewModel.isLoading
                           ? null
                           : (value) => setState(
@@ -486,6 +500,7 @@ class _AuthViewState extends State<AuthView> {
                           // doesn't carry a stale password or name.
                           _passwordController.clear();
                           _nameController.clear();
+                          setState(() => _submitAttempted = false);
                           viewModel.toggleAuthMode();
                         },
                   style: OutlinedButton.styleFrom(
@@ -581,11 +596,16 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildConsentCheckbox({
     required bool value,
     required ValueChanged<bool?>? onChanged,
+    required String semanticLabel,
   }) {
     return SizedBox(
       width: 48,
       height: 48,
-      child: Checkbox(value: value, onChanged: onChanged),
+      child: Checkbox(
+        value: value,
+        onChanged: onChanged,
+        semanticLabel: semanticLabel,
+      ),
     );
   }
 
@@ -665,6 +685,7 @@ class _AuthViewState extends State<AuthView> {
   Future<void> _handleSubmit(AuthViewModel viewModel) async {
     viewModel.clearError();
 
+    if (!_submitAttempted) setState(() => _submitAttempted = true);
     if (!_formKey.currentState!.validate()) {
       return;
     }

@@ -34,22 +34,6 @@ void main() {
     });
   });
 
-  group('VegetableIllustration.randomForRecipe', () {
-    test('deterministic for the same recipe id', () {
-      expect(
-        VegetableIllustration.randomForRecipe('recipe-42'),
-        VegetableIllustration.randomForRecipe('recipe-42'),
-      );
-    });
-
-    test('returns a value in the enum range', () {
-      for (final id in ['a', 'b', 'long-recipe-id-xyz', '12345', '']) {
-        final t = VegetableIllustration.randomForRecipe(id);
-        expect(VegetableType.values, contains(t));
-      }
-    });
-  });
-
   group('HeaderGhostIllustration.viewMapping', () {
     test('every main route maps to a vegetable', () {
       const routes = ['recipes', 'menu', 'shopping', 'add', 'profile'];

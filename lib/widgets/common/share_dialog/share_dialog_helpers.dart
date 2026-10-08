@@ -73,21 +73,20 @@ class ShareDialogHelpers {
   }
 
   static String getSuccessMessage(
-    BuildContext context,
-    ShareContentType contentType,
-    int recipientCount,
-    ShareMode shareMode,
-  ) {
-    final contentName = getContentTypeName(context, contentType);
-    final modeText = shareMode == ShareMode.realtime
-        ? context.l10n.shareRealtimeSharing
-        : context.l10n.shareStaticCopy;
-
-    return context.l10n.shareSuccessMessage(
-      contentName,
-      modeText,
-      recipientCount,
-    );
+    BuildContext context, {
+    required int friendCount,
+    required int groupCount,
+    required ShareMode shareMode,
+  }) {
+    final l10n = context.l10n;
+    // A group is one pick but several people, so with a group in the mix the
+    // count is not a head count.
+    final receipt = groupCount > 0
+        ? l10n.shareSuccessMessageGroups(friendCount + groupCount)
+        : l10n.shareSuccessMessage(friendCount);
+    return shareMode == ShareMode.realtime
+        ? '$receipt ${l10n.shareSuccessLiveNote}'
+        : receipt;
   }
 
   static String getShareTitle(

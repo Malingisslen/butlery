@@ -1139,7 +1139,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoTagsSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Personliga taggar används för att ordna receptsamlingen.'**
+  /// **'Egna taggar används för att ordna receptsamlingen.'**
   String get emptyNoTagsSubtitle;
 
   /// No description provided for @emptyNoGroupsTitle.
@@ -1889,7 +1889,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipePersonalTags.
   ///
   /// In sv, this message translates to:
-  /// **'Personliga taggar'**
+  /// **'Egna taggar'**
   String get recipePersonalTags;
 
   /// No description provided for @recipeAnalysisFailed.
@@ -3167,7 +3167,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagsViewTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Personliga taggar'**
+  /// **'Egna taggar'**
   String get personalTagsViewTitle;
 
   /// No description provided for @personalTagCreateTag.
@@ -3185,7 +3185,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagEmptyTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Inga personliga taggar'**
+  /// **'Inga egna taggar'**
   String get personalTagEmptyTitle;
 
   /// No description provided for @personalTagEmptySubtitle.
@@ -4696,13 +4696,13 @@ abstract class AppLocalizations {
   /// No description provided for @profileMyTags.
   ///
   /// In sv, this message translates to:
-  /// **'Mina taggar'**
+  /// **'Egna taggar'**
   String get profileMyTags;
 
   /// No description provided for @profileMyTagsSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Hantera dina personliga taggar'**
+  /// **'Hantera dina egna taggar'**
   String get profileMyTagsSubtitle;
 
   /// No description provided for @profileCloseMenu.
@@ -4888,7 +4888,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareSelectAtLeastOneFriend.
   ///
   /// In sv, this message translates to:
-  /// **'Välj minst en vän för att dela'**
+  /// **'Välj vem du vill dela med.'**
   String get shareSelectAtLeastOneFriend;
 
   /// No description provided for @shareRecipesInCategories.
@@ -6457,11 +6457,23 @@ abstract class AppLocalizations {
   /// **'Välj minst en vän för att dela {contentType}'**
   String shareSelectAtLeastOne(String contentType);
 
-  /// No description provided for @shareSuccessMessage.
+  /// Receipt after sharing with friends only.
   ///
   /// In sv, this message translates to:
-  /// **'{name} har delats som {mode} med {count} mottagare.'**
-  String shareSuccessMessage(String name, String mode, int count);
+  /// **'Delat med {count, plural, =1{1 person} other{{count} personer}}.'**
+  String shareSuccessMessage(int count);
+
+  /// Receipt after sharing when a group was among the recipients, so the count is not a head count.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat med {count} mottagare.'**
+  String shareSuccessMessageGroups(int count);
+
+  /// Appended to the share receipt after a live share: recipients see later changes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringar syns för alla.'**
+  String get shareSuccessLiveNote;
 
   /// No description provided for @uploadFailed.
   ///
@@ -9088,7 +9100,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterCreatePersonalTags.
   ///
   /// In sv, this message translates to:
-  /// **'Skapa personliga taggar'**
+  /// **'Skapa egna taggar'**
   String get filterCreatePersonalTags;
 
   /// No description provided for @filterDietary.
@@ -9130,7 +9142,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterPersonalTags.
   ///
   /// In sv, this message translates to:
-  /// **'Personliga taggar'**
+  /// **'Egna taggar'**
   String get filterPersonalTags;
 
   /// No description provided for @filterRating.
@@ -10966,25 +10978,25 @@ abstract class AppLocalizations {
   /// No description provided for @taggingNoPersonalTags.
   ///
   /// In sv, this message translates to:
-  /// **'Inga personliga taggar'**
+  /// **'Inga egna taggar'**
   String get taggingNoPersonalTags;
 
   /// No description provided for @taggingPersonalTags.
   ///
   /// In sv, this message translates to:
-  /// **'Personliga taggar'**
+  /// **'Egna taggar'**
   String get taggingPersonalTags;
 
   /// No description provided for @taggingPersonalTagsRemoved.
   ///
   /// In sv, this message translates to:
-  /// **'Personliga taggar borttagna'**
+  /// **'Egna taggar borttagna'**
   String get taggingPersonalTagsRemoved;
 
   /// No description provided for @taggingPersonalTagsSaved.
   ///
   /// In sv, this message translates to:
-  /// **'{count} personliga taggar sparade'**
+  /// **'{count} egna taggar sparade'**
   String taggingPersonalTagsSaved(int count);
 
   /// No description provided for @taggingTagsGenerated.
@@ -21878,7 +21890,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkTagNoTagsAvailable.
   ///
   /// In sv, this message translates to:
-  /// **'Inga personliga taggar att välja'**
+  /// **'Inga egna taggar att välja'**
   String get bulkTagNoTagsAvailable;
 
   /// No description provided for @bulkTagSuccess.
@@ -21974,13 +21986,13 @@ abstract class AppLocalizations {
   /// FAQ question 4: how to create personal tags
   ///
   /// In sv, this message translates to:
-  /// **'Hur skapar jag personliga taggar?'**
+  /// **'Hur skapar jag egna taggar?'**
   String get faqQ4;
 
   /// FAQ answer 4: how to create personal tags
   ///
   /// In sv, this message translates to:
-  /// **'Gå till profilen och välj \"Mina taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.'**
+  /// **'Gå till Mer och välj \"Egna taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.'**
   String get faqA4;
 
   /// FAQ question 5: how to report problems
@@ -24818,7 +24830,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyTitle.
   ///
   /// In sv, this message translates to:
-  /// **'min familj'**
+  /// **'Min familj'**
   String get familyTitle;
 
   /// No description provided for @familyIntro.

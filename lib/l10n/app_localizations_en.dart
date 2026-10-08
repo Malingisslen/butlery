@@ -2963,8 +2963,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareTag => 'Share tag';
 
   @override
-  String get shareSelectAtLeastOneFriend =>
-      'Select at least one friend to share';
+  String get shareSelectAtLeastOneFriend => 'Choose who to share with.';
 
   @override
   String shareRecipesInCategories(int recipes, int categories) {
@@ -3862,9 +3861,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shareSuccessMessage(String name, String mode, int count) {
-    return '$name has been shared as $mode with $count recipients.';
+  String shareSuccessMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return 'Shared with $_temp0.';
   }
+
+  @override
+  String shareSuccessMessageGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipients',
+      one: '1 recipient',
+    );
+    return 'Shared with $_temp0.';
+  }
+
+  @override
+  String get shareSuccessLiveNote => 'Changes are visible to everyone.';
 
   @override
   String get uploadFailed => 'Image upload failed';
@@ -13130,7 +13149,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get faqA4 =>
-      'Go to your profile and select \"My tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.';
+      'Go to More and select \"Personal tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.';
 
   @override
   String get faqQ5 => 'How do I report problems?';
@@ -14879,7 +14898,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get familyTitle => 'my family';
+  String get familyTitle => 'My family';
 
   @override
   String get familyIntro =>

@@ -672,7 +672,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get emptyNoTagsSubtitle =>
-      'Personliga taggar används för att ordna receptsamlingen.';
+      'Egna taggar används för att ordna receptsamlingen.';
 
   @override
   String get emptyNoGroupsTitle => 'Matlagning tillsammans, enklare';
@@ -1098,7 +1098,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get recipePersonalTags => 'Personliga taggar';
+  String get recipePersonalTags => 'Egna taggar';
 
   @override
   String get recipeAnalysisFailed => 'Analys misslyckades';
@@ -1886,7 +1886,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get personalTagsViewTitle => 'Personliga taggar';
+  String get personalTagsViewTitle => 'Egna taggar';
 
   @override
   String get personalTagCreateTag => 'Skapa tagg';
@@ -1895,7 +1895,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get personalTagCreateGroup => 'Skapa grupp';
 
   @override
-  String get personalTagEmptyTitle => 'Inga personliga taggar';
+  String get personalTagEmptyTitle => 'Inga egna taggar';
 
   @override
   String get personalTagEmptySubtitle =>
@@ -2864,10 +2864,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Välj vilka allergener du vill spåra';
 
   @override
-  String get profileMyTags => 'Mina taggar';
+  String get profileMyTags => 'Egna taggar';
 
   @override
-  String get profileMyTagsSubtitle => 'Hantera dina personliga taggar';
+  String get profileMyTagsSubtitle => 'Hantera dina egna taggar';
 
   @override
   String get profileCloseMenu => 'Stäng profilmeny';
@@ -2968,7 +2968,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareTag => 'Dela tagg';
 
   @override
-  String get shareSelectAtLeastOneFriend => 'Välj minst en vän för att dela';
+  String get shareSelectAtLeastOneFriend => 'Välj vem du vill dela med.';
 
   @override
   String shareRecipesInCategories(int recipes, int categories) {
@@ -3866,9 +3866,23 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String shareSuccessMessage(String name, String mode, int count) {
-    return '$name har delats som $mode med $count mottagare.';
+  String shareSuccessMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personer',
+      one: '1 person',
+    );
+    return 'Delat med $_temp0.';
   }
+
+  @override
+  String shareSuccessMessageGroups(int count) {
+    return 'Delat med $count mottagare.';
+  }
+
+  @override
+  String get shareSuccessLiveNote => 'Ändringar syns för alla.';
 
   @override
   String get uploadFailed => 'Bilduppladdning misslyckades';
@@ -5404,7 +5418,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterCookingTime => 'Tillagningstid';
 
   @override
-  String get filterCreatePersonalTags => 'Skapa personliga taggar';
+  String get filterCreatePersonalTags => 'Skapa egna taggar';
 
   @override
   String get filterDietary => 'Specialkost';
@@ -5425,7 +5439,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterMealType => 'Måltidstyp';
 
   @override
-  String get filterPersonalTags => 'Personliga taggar';
+  String get filterPersonalTags => 'Egna taggar';
 
   @override
   String get filterRating => 'Betyg';
@@ -6503,17 +6517,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagAll => 'Alla taggar';
 
   @override
-  String get taggingNoPersonalTags => 'Inga personliga taggar';
+  String get taggingNoPersonalTags => 'Inga egna taggar';
 
   @override
-  String get taggingPersonalTags => 'Personliga taggar';
+  String get taggingPersonalTags => 'Egna taggar';
 
   @override
-  String get taggingPersonalTagsRemoved => 'Personliga taggar borttagna';
+  String get taggingPersonalTagsRemoved => 'Egna taggar borttagna';
 
   @override
   String taggingPersonalTagsSaved(int count) {
-    return '$count personliga taggar sparade';
+    return '$count egna taggar sparade';
   }
 
   @override
@@ -13092,7 +13106,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get bulkTagNoTagsAvailable => 'Inga personliga taggar att välja';
+  String get bulkTagNoTagsAvailable => 'Inga egna taggar att välja';
 
   @override
   String bulkTagSuccess(int count) {
@@ -13149,11 +13163,11 @@ class AppLocalizationsSv extends AppLocalizations {
       'Gå till veckomeny via navigeringen. Där kan du planera veckans måltider genom att lägga till recept från din samling. Ingredienser från menyn kan skickas direkt till inköpslistan.';
 
   @override
-  String get faqQ4 => 'Hur skapar jag personliga taggar?';
+  String get faqQ4 => 'Hur skapar jag egna taggar?';
 
   @override
   String get faqA4 =>
-      'Gå till profilen och välj \"Mina taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.';
+      'Gå till Mer och välj \"Egna taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.';
 
   @override
   String get faqQ5 => 'Hur rapporterar jag problem?';
@@ -14906,7 +14920,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyTitle => 'min familj';
+  String get familyTitle => 'Min familj';
 
   @override
   String get familyIntro =>
