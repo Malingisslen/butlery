@@ -16,7 +16,7 @@ Stream<List<QueuedChange>> watchQueuedChanges(AppDatabase db, String userId) =>
 Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {}
 
 /// Nothing to discard on the web.
-Future<({String recipeId, bool recipeDeleted})?> discardQueuedChange(
+Future<String?> discardQueuedChange(
   AppDatabase db,
   String userId,
   QueuedChange change,
