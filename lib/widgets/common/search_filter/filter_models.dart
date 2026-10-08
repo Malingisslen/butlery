@@ -71,13 +71,11 @@ class RecipeFilters {
     FilterOption(
       id: 'snack',
       label: context.l10n.filterSnack,
-      icon: Icons.cookie,
       value: 'Mellanmål',
     ),
     FilterOption(
       id: 'dessert',
       label: context.l10n.filterDessert,
-      icon: Icons.cake,
       value: 'Efterrätt',
     ),
   ];
@@ -281,7 +279,6 @@ class RecipeFilters {
     FilterOption(
       id: 'kid-friendly',
       label: context.l10n.filterKidFriendly,
-      icon: Icons.child_care,
       value: 'barnvänlig',
     ),
   ];
