@@ -11074,3 +11074,25 @@ cannot tell the offline refusal from a real denial by label. Both membership ser
 (updateSharedListMembership, leaveSharedList) word failures through shoppingFailureMessage.
 Tests: the service suite's offline case reddens if the arm is removed or moved below the parent.
 Not executed by this reviewer (caller reported analyze clean, shopping suites green).
+
+## 2026-10-08 — BUT-2140 PR 5 (pantry Återställ), commit c0156b91a vs 85b1f4d2e
+
+Reviewed FirebasePantryRepository.updateFields(before:), PantryPreviousVersion, PantryItem
+.storedValues/.withPreviousRestored, PantryService.updateItem/restorePrevious,
+PantryViewModel.restorePrevious, rules test P8. Ownership: unchanged structural path
+users/{userId}/pantry with userId from PermissionService.currentUserId; rules
+(pantryWriteValid, firestore.rules ~745-761) pin auth.uid == userId and updatedBy == userId;
+no hasOnly, so `previous` needs no rules change and P8 is an allow-only regression pin
+(a future hasOnly lacking 'previous' would redden it). Repo has no PermissionValidationMixin
+— pre-existing, not introduced; its class comment explains not extending
+BaseFirebaseRepository, not the mixin's absence. uid: restorableKeys filters on write
+(storedValues) and read (fromMap); changes keys come only from changesFrom/restoreChanges,
+so no uid path; the repo test "without a uid" passes vacuously for the write filter (its
+change map cannot carry updatedBy). Null markers: toFirestore always emits ingredientName/unit/
+location/quantity-key, so app-written markers only ever land on nullable fields
+(ingredientId, quantity, expiryDate, note, isStaple), where delete == absent on read.
+Art. 15: content_export_manager exportPantryItems -> sanitizeForJson recurses maps,
+Timestamp->string; holds. Art. 17: deletePantryItems (cascade) and client deleteAll delete
+whole docs; holds. Retention: comment + commit message cite "Malin 2026-10-08" for an older
+version staying in the document past 30 days with no nightly job; no entry in
+ACCEPTED_DEVIATIONS.md or accepted-deviations*.md at review time — flagged Medium.
