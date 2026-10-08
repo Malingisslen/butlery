@@ -264,6 +264,45 @@ class ShoppingListManagementModule {
     }
   }
 
+  /// BUT-2140: the week menu's merge into the personal list [listId]. The
+  /// local copy is replaced with the repository's result, which is built on
+  /// the server's rows, so rows another device added show up here. Rethrows,
+  /// so the caller can tell a failed merge from one that wrote nothing.
+  Future<PersonalMergeResult> applyPersonalMerge(
+    String listId,
+    PersonalMergeRequest request,
+  ) async {
+    final base = lists.firstWhere((l) => l.id == listId);
+    final result = await repository.applyPersonalMerge(base, request);
+    _replaceLocal(result.list);
+    return result;
+  }
+
+  /// BUT-2140: Ångra for [applyPersonalMerge]. Rethrows, as it does.
+  Future<void> undoPersonalMerge(
+    String listId,
+    List<String> addedIds,
+    List<UnifiedShoppingItem> restore,
+  ) async {
+    final base = lists.firstWhere((l) => l.id == listId);
+    final undone = await repository.undoPersonalMerge(
+      base,
+      addedIds: addedIds,
+      restore: restore,
+    );
+    _replaceLocal(undone);
+  }
+
+  /// Re-finds the list after the await: the collaborative snapshot handler
+  /// rebuilds the same `lists` instance during the round-trip.
+  void _replaceLocal(UnifiedShoppingList list) {
+    final index = lists.indexWhere((l) => l.id == list.id);
+    if (index >= 0) {
+      lists[index] = list;
+      notifyListeners();
+    }
+  }
+
   /// BUT-1726: persist a membership change on a collaborative list.
   ///
   /// [base] is the copy the change was computed from — see

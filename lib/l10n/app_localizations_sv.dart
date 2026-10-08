@@ -16187,6 +16187,19 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String shoppingMergeConcurrentChange(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Listan hade ändrats på en annan enhet. Dina $count varor lades till och inget skrevs över.',
+      one:
+          'Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get shoppingMergeUndoFailed => 'Ångra gick inte att slutföra';
 
   @override

@@ -22,6 +22,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -30,6 +31,7 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'personal_merge_stub.dart';
 
 class _MockPantryService extends Mock implements PantryService {}
 
@@ -100,6 +102,7 @@ void main() {
     registerFallbackValue(
       UnifiedShoppingList(name: 'x', ownerId: 'x', ownerDisplayName: 'x'),
     );
+    registerPersonalMergeFallbacks();
   });
 
   setUp(() async {
@@ -111,13 +114,7 @@ void main() {
     shopping = MockUnifiedShoppingService();
     TestServiceLocator.registerMock<UnifiedShoppingService>(shopping);
     writes = [];
-    when(() => shopping.updateList(any())).thenAnswer((invocation) async {
-      final list = invocation.positionalArguments.single as UnifiedShoppingList;
-      writes.add(list);
-      // The service's cache holds what was written, as in production.
-      shopping.setShoppingState(lists: [list], personalLists: [list]);
-      return true;
-    });
+    stubPersonalMerge(shopping, writes);
     when(() => shopping.setActiveList(any())).thenAnswer((_) async => true);
     when(() => shopping.deleteList(any())).thenAnswer((_) async => true);
     generator = MenuShoppingListGenerator();
@@ -381,28 +378,55 @@ void main() {
   group(
     'TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt',
     () {
-      test('rows that reached the list after the sheet opened are kept: the '
-          'merge builds on the list as it is at the write', () async {
-        final list = _weekList();
+      test('a change made on another device reaches the receipt, which takes '
+          'its removed rows from the server for Ångra', () async {
+        final list = _weekList(menuItemIds: const []);
         shopping.setShoppingState(lists: [list], personalLists: [list]);
         final merge = MenuShoppingListGenerator.preview(
           _source(),
           const MenuShoppingPantry.read([]),
-          const MenuShoppingMergeOptions(),
+          const MenuShoppingMergeOptions(replaceList: true),
         );
-        // Someone's row lands while the sheet is open.
+        // The server's list, with a row another device ticked and one it
+        // added. The generator writes per operation and never sends a list.
+        final ticked = UnifiedShoppingItem(
+          id: 'ticked',
+          name: 'gul lök',
+          amount: 1,
+          unit: 'st',
+          bought: true,
+        );
         final theirs = UnifiedShoppingItem(
           id: 'theirs',
           name: 'bröd',
           amount: 1,
         );
-        final changed = _weekList(items: [theirs]);
-        shopping.setShoppingState(lists: [changed], personalLists: [changed]);
+        late List<UnifiedShoppingItem> written;
+        when(() => shopping.applyPersonalMerge(any(), any())).thenAnswer((
+          invocation,
+        ) async {
+          final request =
+              invocation.positionalArguments[1] as PersonalMergeRequest;
+          written = request.rows([ticked]);
+          return PersonalMergeResult(
+            list: _weekList(items: [theirs, ...written]),
+            added: written,
+            removed: [ticked],
+            concurrentChange: true,
+          );
+        });
 
-        await generator.apply(merge);
+        final receipt = await generator.apply(merge);
 
-        expect(writes.single.items.map((i) => i.id), contains('theirs'));
-        expect(writes.single.items, hasLength(4));
+        expect(receipt!.concurrentChange, isTrue);
+        expect(receipt.removedItems, [ticked]);
+        expect(receipt.addedItemIds, [for (final i in written) i.id]);
+        expect(
+          written.firstWhere((i) => i.name == 'gul lök').bought,
+          isTrue,
+          reason: 'the tick read from the server carries over (§ 8.7)',
+        );
+        verifyNever(() => shopping.updateList(any()));
       });
     },
   );

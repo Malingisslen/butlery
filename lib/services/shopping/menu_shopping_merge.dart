@@ -170,6 +170,7 @@ class MenuShoppingMergeReceipt {
     required this.previousMenuItemIds,
     required this.replaced,
     required this.createdList,
+    this.concurrentChange = false,
   });
 
   final String listId;
@@ -181,6 +182,10 @@ class MenuShoppingMergeReceipt {
   final List<String>? previousMenuItemIds;
   final bool replaced;
   final bool createdList;
+
+  /// BUT-2140: the list had been changed on another device before the write.
+  /// Nothing was overwritten, and the receipt says so.
+  final bool concurrentChange;
 
   int get itemCount => addedItemIds.length;
 }
