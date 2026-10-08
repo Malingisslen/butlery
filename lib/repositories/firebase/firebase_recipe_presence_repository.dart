@@ -12,7 +12,6 @@
 /// - Removing presence when users stop viewing/editing
 /// - Query operations for active users (future enhancement)
 /// **What This Repository Does NOT Handle:**
-/// - Business logic for presence cleanup and expiry (handled by PresenceTrackingModule)
 /// - UI state management (handled by ViewModels)
 /// - Permission checks (presence is view-level, not permission-gated)
 
