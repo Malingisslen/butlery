@@ -28,6 +28,10 @@ String shoppingFailureMessage(Object error, {required bool shared}) {
     // and the fix is to reload rather than to ask someone for access.
     StaleAccessControlBaseException() =>
       AppLocale.current.shoppingListChangedElsewhere,
+    // BUT-2090: same ordering constraint. Offline, a membership change (a
+    // leave included) waits for a server read; the user has the right and
+    // lacks the connection.
+    OfflineAccessControlChangeException() => AppLocale.current.errorNetwork,
     PermissionDeniedException() => noPermission,
     // A row that vanished is NOT a missing list. Saying "Lista hittades inte"
     // about a list the shopper is looking at is the invented cause this whole

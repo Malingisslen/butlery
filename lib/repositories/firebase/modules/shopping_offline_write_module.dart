@@ -304,7 +304,7 @@ class ShoppingOfflineWriteModule {
           'List: ${proposed.id}, refused ${privileged.join(", ")} change made '
           'against a cached document',
     );
-    throw PermissionDeniedException(
+    throw OfflineAccessControlChangeException(
       'Changing ${privileged.join(", ")} on collaborative shopping list '
       '${proposed.id} needs a server read; this device is offline',
       resource: 'collaborative_list:${proposed.id}',

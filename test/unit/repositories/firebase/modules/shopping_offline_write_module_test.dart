@@ -301,7 +301,9 @@ void main() {
           stored,
           baseIsCached: true,
         ),
-        throwsA(isA<PermissionDeniedException>()),
+        // BUT-2090: the offline subtype, so the user is told about the
+        // connection rather than about a right they have.
+        throwsA(isA<OfflineAccessControlChangeException>()),
       );
       expect(calls.single.granted, isFalse);
     });

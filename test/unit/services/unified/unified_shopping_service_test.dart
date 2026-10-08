@@ -1365,6 +1365,42 @@ void main() {
       },
     );
 
+    /// BUT-2090: offline, a departure is refused until a server read, and the
+    /// reason must name the connection. Before this the user was told they
+    /// lacked permission to edit the list, on a button that says "Lämna listan".
+    /// The case above is the control: same path, a plain denial, a different
+    /// sentence.
+    test('an offline departure is worded as a connection problem', () async {
+      final list = await seedShared();
+      fakeRepo.throwOnMembership = OfflineAccessControlChangeException(
+        'offline',
+        resource: 'collaborative_list:${list.id}',
+        userId: 'u',
+      );
+
+      expect(await service.leaveSharedList(list, list), isFalse);
+      final reason = service.consumeMutationError();
+      expect(reason, AppLocale.current.errorNetwork);
+      expect(reason, isNot(AppLocale.current.shoppingNoEditPermissionShared));
+    });
+
+    /// The plain denial keeps the permission sentence, so the arm above cannot
+    /// be satisfied by mapping every denial to the network message.
+    test('a plain refused departure keeps the permission sentence', () async {
+      final list = await seedShared();
+      fakeRepo.throwOnMembership = PermissionDeniedException(
+        'nope',
+        resource: 'collaborative_list:${list.id}',
+        userId: 'u',
+      );
+
+      expect(await service.leaveSharedList(list, list), isFalse);
+      expect(
+        service.consumeMutationError(),
+        AppLocale.current.shoppingNoEditPermissionShared,
+      );
+    });
+
     /// Control for the case above: a successful departure records nothing, so
     /// the reason cannot be something the path always parks.
     test('a successful departure leaves no reason', () async {
