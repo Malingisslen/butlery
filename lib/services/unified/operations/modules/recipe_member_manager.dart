@@ -8,6 +8,7 @@ import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Collaborative recipe membership management module
 class RecipeMemberManager {
@@ -38,7 +39,9 @@ class RecipeMemberManager {
   }) async {
     try {
       permission ??= ResourcePermission.viewer;
-      AppLogger.info('Adding member $memberId to recipe $recipeId');
+      AppLogger.info(
+        'Adding member ${memberId.maskedUserId} to recipe $recipeId',
+      );
       final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
@@ -89,7 +92,9 @@ class RecipeMemberManager {
         return false;
       }
 
-      AppLogger.success('Successfully added member $memberId to recipe');
+      AppLogger.success(
+        'Successfully added member ${memberId.maskedUserId} to recipe',
+      );
 
       await _sendMemberAddedNotification(
         recipeId: recipeId,
@@ -119,7 +124,9 @@ class RecipeMemberManager {
     required String memberId,
   }) async {
     try {
-      AppLogger.info('Removing member $memberId from recipe $recipeId');
+      AppLogger.info(
+        'Removing member ${memberId.maskedUserId} from recipe $recipeId',
+      );
 
       final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
@@ -133,7 +140,9 @@ class RecipeMemberManager {
       }
 
       if (recipe.socialData?.memberPermissions?.containsKey(memberId) != true) {
-        AppLogger.warning('User $memberId is not a member of recipe $recipeId');
+        AppLogger.warning(
+          'User ${memberId.maskedUserId} is not a member of recipe $recipeId',
+        );
         return false;
       }
 
@@ -182,7 +191,9 @@ class RecipeMemberManager {
         return false;
       }
 
-      AppLogger.success('Successfully removed member $memberId from recipe');
+      AppLogger.success(
+        'Successfully removed member ${memberId.maskedUserId} from recipe',
+      );
 
       await _sendMemberRemovedNotification(
         recipeId: recipeId,
@@ -333,7 +344,7 @@ class RecipeMemberManager {
   }) async {
     try {
       AppLogger.info(
-        'Updating permission for member $memberId in recipe $recipeId to ${newPermission.name}',
+        'Updating permission for member ${memberId.maskedUserId} in recipe $recipeId to ${newPermission.name}',
       );
 
       final recipe = _getRecipes()

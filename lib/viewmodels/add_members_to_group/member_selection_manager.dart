@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Manages friend selection state and bulk selection operations.
 class MemberSelectionManager extends ChangeNotifier {
@@ -25,10 +26,10 @@ class MemberSelectionManager extends ChangeNotifier {
   void toggleFriendSelection(String friendId) {
     if (_selectedFriendIds.contains(friendId)) {
       _selectedFriendIds.remove(friendId);
-      AppLogger.info('❌ Avmarkerad vän: $friendId');
+      AppLogger.info('❌ Avmarkerad vän: ${friendId.maskedUserId}');
     } else {
       _selectedFriendIds.add(friendId);
-      AppLogger.info('✅ Markerad vän: $friendId');
+      AppLogger.info('✅ Markerad vän: ${friendId.maskedUserId}');
     }
     notifyListeners();
   }

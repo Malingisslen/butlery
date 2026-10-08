@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart'
     show CreateCollaborativeRecipeFn, CreatePersonalRecipeFn;
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Collaboration management module
 /// This module handles ONLY collaboration management operations:
@@ -478,7 +479,9 @@ class CollaborationManagementModule {
       );
       await repo.update(updated);
 
-      AppLogger.success('Transferred recipe ownership to $newOwnerId');
+      AppLogger.success(
+        'Transferred recipe ownership to ${newOwnerId.maskedUserId}',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to transfer ownership', e);

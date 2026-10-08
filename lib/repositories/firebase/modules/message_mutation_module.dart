@@ -51,7 +51,9 @@ class MessageMutationModule {
       AppLogger.debug(
         '📤 [MessageMutation] Conversation ID: ${message.conversationId.maskedConversationId}',
       );
-      AppLogger.debug('📤 [MessageMutation] Sender ID: ${message.senderId}');
+      AppLogger.debug(
+        '📤 [MessageMutation] Sender ID: ${message.senderId.maskedUserId}',
+      );
       AppLogger.debug('📤 [MessageMutation] Content: "${message.content}"');
 
       // Read conversation (required for atomic update).

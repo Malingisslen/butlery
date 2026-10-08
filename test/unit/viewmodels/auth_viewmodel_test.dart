@@ -225,18 +225,18 @@ void main() {
         expect(result, isFalse);
         expect(
           viewModel.errorMessage,
-          equals('Fyll i alla obligatoriska fält'),
+          equals('E-post krävs'),
         );
       });
 
       test('should reject invalid email format during sign in', () async {
-        // Arrange - test emails that actually fail the production regex
+        // Arrange - emails that fail the shape-only check
         final invalidEmails = [
           'invalid-email', // No @ symbol
+          'annaexample.com', // No @ symbol
           'test@', // Missing domain
           '@example.com', // Missing local part
           'test@example', // Missing TLD
-          'test @example.com', // Space in local part (not allowed by regex)
         ];
 
         // Act & Assert
@@ -246,10 +246,7 @@ void main() {
             password: 'password123',
           );
           expect(result, isFalse, reason: 'Should reject email: $email');
-          expect(
-            viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'),
-          );
+          expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
         }
       });
 
@@ -264,6 +261,8 @@ void main() {
             'erik_svensson@example.se',
             'anna-andersson@test.co.uk',
             'test123@subdomain.example.com',
+            'namn+test@gmail.com',
+            'anna@example.online',
           ];
 
           // Act & Assert
@@ -341,9 +340,9 @@ void main() {
       });
 
       test(
-        'should reject email with leading/trailing spaces during validation',
+        'should accept email with leading/trailing spaces during validation',
         () async {
-          // Arrange - Production validates BEFORE trimming, so spaces cause rejection
+          // Arrange - the email is validated trimmed, same as what is sent to the service
 
           // Act
           final result = await viewModel.signIn(
@@ -351,12 +350,9 @@ void main() {
             password: 'password123',
           );
 
-          // Assert - Should fail validation due to spaces (production behavior)
-          expect(result, isFalse);
-          expect(
-            viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'),
-          );
+          // Assert
+          expect(result, isTrue);
+          expect(viewModel.errorMessage, isNull);
         },
       );
 
@@ -406,10 +402,7 @@ void main() {
           displayName: 'Test User',
         );
         expect(result, isFalse);
-        expect(
-          viewModel.errorMessage,
-          equals('Fyll i alla obligatoriska fält'),
-        );
+        expect(viewModel.errorMessage, equals('E-post krävs'));
 
         // Act & Assert - empty password
         result = await viewModel.register(
@@ -500,9 +493,9 @@ void main() {
       });
 
       test(
-        'should reject email with spaces during registration validation',
+        'should accept email with spaces during registration validation',
         () async {
-          // Arrange - Production validates BEFORE trimming, so spaces cause rejection
+          // Arrange - the email is validated trimmed, same as what is sent to the service
 
           // Act
           final result = await viewModel.register(
@@ -511,12 +504,9 @@ void main() {
             displayName: 'Test User',
           );
 
-          // Assert - Should fail validation due to spaces (production behavior)
-          expect(result, isFalse);
-          expect(
-            viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'),
-          );
+          // Assert
+          expect(result, isTrue);
+          expect(viewModel.errorMessage, isNull);
         },
       );
 
@@ -577,35 +567,26 @@ void main() {
           expect(result, isFalse, reason: 'Should reject email: $email');
           // Verify appropriate error message based on email
           if (email.isEmpty) {
-            expect(
-              viewModel.errorMessage,
-              equals('Fyll i alla obligatoriska fält'),
-            );
+            expect(viewModel.errorMessage, equals('E-post krävs'));
           } else {
-            expect(
-              viewModel.errorMessage,
-              equals('Fyll i alla obligatoriska fält korrekt'),
-            );
+            expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
           }
         }
       });
 
       test(
-        'should reject email with spaces during password reset validation',
+        'should accept email with spaces during password reset validation',
         () async {
-          // Arrange - Production validates BEFORE trimming, so spaces cause rejection
+          // Arrange - the email is validated trimmed, same as what is sent to the service
 
           // Act
           final result = await viewModel.sendPasswordReset(
             '  test@example.com  ',
           );
 
-          // Assert - Should fail validation due to spaces (production behavior)
-          expect(result, isFalse);
-          expect(
-            viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'),
-          );
+          // Assert
+          expect(result, isTrue);
+          expect(viewModel.errorMessage, isNull);
         },
       );
 
@@ -880,31 +861,22 @@ void main() {
       );
 
       test(
-        'should reject Swedish domain names per email validation standards',
+        'should accept Swedish domain names since only the shape is checked',
         () async {
-          // Arrange - Production regex requires ASCII-only domain names (standard email validation)
-
+          // Arrange - internationalised domains are valid; Firebase Auth makes the final call
           final swedishDomains = [
-            'test@företag.se', // å, ö not allowed in domain part by production regex
-            'test@skåne.se', // å not allowed in domain part
-            'test@göteborg.se', // ö not allowed in domain part
+            'test@företag.se',
+            'test@skåne.se',
+            'test@göteborg.se',
           ];
 
-          // Act & Assert - Should fail validation (production behavior)
+          // Act & Assert
           for (final email in swedishDomains) {
             final result = await viewModel.signIn(
               email: email,
               password: 'password123',
             );
-            expect(
-              result,
-              isFalse,
-              reason: 'Should reject email with non-ASCII domain: $email',
-            );
-            expect(
-              viewModel.errorMessage,
-              equals('Fyll i alla obligatoriska fält korrekt'),
-            );
+            expect(result, isTrue, reason: 'Should accept email: $email');
           }
         },
       );

@@ -2,6 +2,7 @@
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Permission helper utilities for authentication and authorization checks
 /// This helper provides safe permission checking patterns with:
@@ -114,7 +115,7 @@ class PermissionHelper {
     if (!isOwner && resourceType != null) {
       final resourceInfo = resourceId != null ? ' ($resourceId)' : '';
       AppLogger.warning(
-        '⚠️ User $currentUserId does not own $resourceType$resourceInfo',
+        '⚠️ User ${currentUserId.maskedUserId} does not own $resourceType$resourceInfo',
       );
     }
 

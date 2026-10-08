@@ -35,7 +35,7 @@ class MessageReactionsService extends BaseService {
     final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null || currentUserId != userId) {
       AppLogger.warning(
-        'Unauthorized reaction attempt: ${userId.maskedUserId} != $currentUserId',
+        'Unauthorized reaction attempt: ${userId.maskedUserId} != ${currentUserId.maskedUserId}',
       );
       throw StateError('Cannot toggle reaction for another user');
     }

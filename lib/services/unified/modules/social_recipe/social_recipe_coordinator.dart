@@ -252,7 +252,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     String addedUserId,
   ) async {
     AppLogger.info(
-      '📧 Sending member addition notification for recipe $recipeId to user $addedUserId',
+      '📧 Sending member addition notification for recipe $recipeId to user ${addedUserId.maskedUserId}',
     );
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in this coordinator
@@ -326,7 +326,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info(
-        '📤 Getting sent recipe invitations for user $currentUserId',
+        '📤 Getting sent recipe invitations for user ${currentUserId.maskedUserId}',
       );
       return []; // Placeholder - would need additional repository method
     } catch (e) {
@@ -347,7 +347,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info(
-        '📥 Getting received recipe invitations for user $currentUserId',
+        '📥 Getting received recipe invitations for user ${currentUserId.maskedUserId}',
       );
       return await _sharedRecipeRepository.getSharedRecipesForUser(
         currentUserId,

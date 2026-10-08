@@ -504,7 +504,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     if (!_friends.any((f) => f.uid == friend.uid)) {
       _friends.add(friend);
       AppLogger.debug(
-        'Added friend to state: ${friend.displayName} (${friend.uid})',
+        'Added friend to state: ${friend.displayName} (${friend.uid.maskedUserId})',
       );
       notifyListeners();
     }
@@ -514,7 +514,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     final initialLength = _friends.length;
     _friends.removeWhere((f) => f.uid == friendId);
     if (_friends.length < initialLength) {
-      AppLogger.debug('Removed friend from state: $friendId');
+      AppLogger.debug('Removed friend from state: ${friendId.maskedUserId}');
       notifyListeners();
     }
   }

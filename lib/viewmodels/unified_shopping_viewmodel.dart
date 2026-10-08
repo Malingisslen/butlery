@@ -32,6 +32,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
 class UnifiedShoppingViewModel extends BaseViewModel {
@@ -687,7 +688,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   bool get canEditActiveList {
     if (activeList == null || currentUserId == null) {
       AppLogger.warning(
-        'canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId',
+        'canEditActiveList - activeList: ${activeList?.name}, currentUserId: ${currentUserId.maskedUserId}',
       );
       return false;
     }
@@ -696,7 +697,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     final canEdit = permissionService.canEditShoppingList(activeList!.id);
 
     AppLogger.info(
-      'Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit',
+      'Permission check - List: ${activeList!.name} (${activeList!.type}), User: ${currentUserId.maskedUserId}, CanEdit: $canEdit',
     );
 
     return canEdit;
