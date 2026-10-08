@@ -1,11 +1,3 @@
-/// Recipe addition view with 4 simplified import method options.
-///
-/// **UI Redesign:** Simplified from 7 buttons to 4 buttons in a 2x2 grid:
-/// - Importera länk (rust) → /smartImport
-/// - Skriv manuellt (green) → /skrivSjalv
-/// - Från bild (green) → /photoImport
-/// - Från arkiv (rust) → /importFranArkiv
-
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
@@ -26,8 +18,6 @@ import 'package:butlery/widgets/common/press_fill.dart';
 ///  - `btn-write-manually` → "Skriv manuellt" grid button
 ///  - `btn-photo-import` → "Från bild" grid button
 ///  - `btn-archive-import` → "Från arkiv" grid button
-///
-/// Recipe addition view with simplified 2x2 grid of import options.
 class LaggTillReceptView extends StatelessWidget {
   const LaggTillReceptView({super.key});
 
@@ -125,7 +115,6 @@ class LaggTillReceptView extends StatelessWidget {
     );
   }
 
-  /// Builds the 2x2 button grid with alternating rust/green colors.
   Widget _buildButtonGrid(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -144,7 +133,6 @@ class LaggTillReceptView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Row 1: Import link (rust) + Write manually (green)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -170,7 +158,6 @@ class LaggTillReceptView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: spacing),
-              // Row 2: From image (green) + From archive (rust) — diagonal pattern
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -196,8 +183,6 @@ class LaggTillReceptView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: spacing),
-              // Row 3: voice dictation (kb-whisper plan) — green continues
-              // the diagonal rust/green alternation from row 2's rust.
               _AddRecipeButton(
                 key: const ValueKey('test-lagg-till-voice-import'),
                 semanticIdentifier: 'btn-voice-import',
@@ -278,7 +263,7 @@ class _AddRecipeButton extends StatelessWidget {
               builder: (context, pressed) => content(
                 pressed
                     ? AppModeColors.onActionPrimaryPressed(cs.brightness)
-                    : cs.onPrimary,
+                    : AppModeColors.onActionPrimary(cs.brightness),
               ),
             )
           : Material(

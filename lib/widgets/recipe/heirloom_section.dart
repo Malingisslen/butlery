@@ -50,41 +50,37 @@ class HeirloomSection extends StatelessWidget {
       ),
       child: AspectRatio(
         aspectRatio: 3 / 4,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ColoredBox(
-              color: cs.surface,
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
-                fit: BoxFit.contain,
-                // A still plate while the image loads, never a spinner (P4-U05).
-                placeholder: (_, __) => const SizedBox.shrink(),
-                errorWidget: (_, __, ___) => Center(
-                  child: ButleryIcon(
-                    ButleryIcons.imageOff,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-            ),
-            HeirloomStamp(heirloom: heirloom),
-            Positioned.fill(
-              child: Material(
-                color: Colors.transparent,
-                child: Semantics(
-                  label: context.l10n.a11yHeirloomScanOpenFullscreen,
-                  button: true,
-                  child: PressUnchanged(
-                    child: InkWell(
-                      onTap: () => _openFullscreen(context, imageUrl),
+        child: Material(
+          color: Colors.transparent,
+          child: Semantics(
+            label: context.l10n.a11yHeirloomScanOpenFullscreen,
+            button: true,
+            child: PressScale(
+              onTap: () => _openFullscreen(context, imageUrl),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(
+                    color: cs.surface,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
+                      fit: BoxFit.contain,
+                      // A still plate while the image loads, never a spinner (P4-U05).
+                      placeholder: (_, __) => const SizedBox.shrink(),
+                      errorWidget: (_, __, ___) => Center(
+                        child: ButleryIcon(
+                          ButleryIcons.imageOff,
+                          color: cs.onSurface,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  HeirloomStamp(heirloom: heirloom),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
