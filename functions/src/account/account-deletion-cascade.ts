@@ -608,9 +608,9 @@ export async function probeResidualData(
   // matching deleter now clears, keeping the deleter a strict superset of the
   // probe:
   //   messages.senderId          — anonymized (or deleted with a 1:1 thread)
-  //   realtime_menus/recipes.ownerId       — deleted, subcollections included
-  //   realtime_menus/recipes.lastEditedBy  — anonymized
-  //   realtime_menus/recipes.participantIds — membership dropped on docs the
+  //   realtime_menus.ownerId       — deleted, subcollections included
+  //   realtime_menus.lastEditedBy  — anonymized
+  //   realtime_menus.participantIds — membership dropped on docs the
   //                                           user does not own
   //   conversations.participantIds — 1:1 deleted, group departed
   // The conversation ROSTER rows (`conversations/{id}/participants/{uid}`) are on
@@ -630,9 +630,6 @@ export async function probeResidualData(
     [Collections.realtimeMenus, "ownerId", "=="],
     [Collections.realtimeMenus, "lastEditedBy", "=="],
     [Collections.realtimeMenus, "participantIds", "array-contains"],
-    [Collections.realtimeRecipes, "ownerId", "=="],
-    [Collections.realtimeRecipes, "lastEditedBy", "=="],
-    [Collections.realtimeRecipes, "participantIds", "array-contains"],
     [Collections.realtimeResources, "ownerId", "=="],
     [Collections.realtimeResources, "lastEditedBy", "=="],
     [Collections.realtimeResources, "participantIds", "array-contains"],
@@ -4667,29 +4664,6 @@ export async function deleteNotificationAnalytics(
   return true;
 }
 
-export async function deleteRealtimeRecipes(
-  db: admin.firestore.Firestore,
-  uid: string,
-): Promise<boolean> {
-  // BUT-1396 follow-up: the owner field on `realtime_recipes` is `ownerId`
-  // (the model writes it, the Firestore rule gates read/delete on it). The
-  // prior `userId` filter matched zero docs, so a deleted user's collaborative
-  // recipes were exported (Art. 15) but never erased (Art. 17). Filter on
-  // `ownerId` so deletion mirrors the export.
-  const snap = await db
-    .collection(Collections.realtimeRecipes)
-    .where("ownerId", "==", uid)
-    .get();
-  await deleteRealtimeDocsWithChildren(db, snap.docs);
-
-  // BUT-1768: the same last-editor pair the menus step scrubs. Deleting only
-  // the recipes the user OWNS leaves their name on every collaborative recipe
-  // they last touched but do not own.
-  await scrubLastEditor(db, Collections.realtimeRecipes, uid);
-  await removeRealtimeParticipation(db, Collections.realtimeRecipes, uid);
-  return true;
-}
-
 /**
  * BUT-1768: `realtime_menus` was in no tier at all — a collaborative menu the
  * user owns survived an Article 17 erasure intact, readable by every
@@ -4794,7 +4768,7 @@ async function removeVoteEntries(
  * The rule-blessed child collections of a realtime document.
  *
  * `firestore.rules` declares `realtime_menus/{id}/presence/{userId}` and
- * `/votes/{voteId}`, and `realtime_recipes/{id}/presence/{uid}`. Both are
+ * `/votes/{voteId}`. Both are
  * uid-keyed and both carry personal data: a presence doc holds
  * `{displayName, isActive, lastSeen}`, and a vote document's `votes` map is
  * keyed `userId -> optionId`.

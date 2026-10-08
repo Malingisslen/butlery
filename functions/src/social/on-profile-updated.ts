@@ -142,7 +142,6 @@ export async function propagateProfileUpdate(
 
     // Realtime resources — owner + last-editor denorm names.
     for (const col of [
-      Collections.realtimeRecipes,
       Collections.realtimeMenus,
       Collections.realtimeResources,
     ]) {

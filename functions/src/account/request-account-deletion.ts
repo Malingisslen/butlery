@@ -78,7 +78,6 @@ import {
   deleteNotificationPreferences,
   deleteNotifications,
   deleteNotificationAnalytics,
-  deleteRealtimeRecipes,
   deleteRealtimeMenus,
   deleteRealtimeResources,
   deleteUserPreferences,
@@ -397,9 +396,7 @@ export async function runAccountDeletionWithDeps(
       "notification_effectiveness",
       () => deleteNotificationEffectiveness(database, uid),
     ],
-    ["realtime_recipes", () => deleteRealtimeRecipes(database, uid)],
-    // BUT-1768: `realtime_menus` had no tier entry at all — the sibling
-    // collection was cascaded, this one survived every erasure.
+    // BUT-1768: `realtime_menus` had no tier entry at all.
     ["realtime_menus", () => deleteRealtimeMenus(database, uid)],
     ["realtime_resources", () => deleteRealtimeResources(database, uid)],
     ["storage_files", () => deleteUserStorageFiles(storage, uid)],

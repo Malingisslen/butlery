@@ -49,7 +49,6 @@ enum ExportResourceType {
   // previously omitted — a right-of-access gap (Art. 15).
   reports('reports'),
   pings('pings'),
-  realtimeRecipes('realtime_recipes'),
   // BUT-2151: live menus.
   realtimeResources('realtime_resources'),
   // BUT-1450: notification analytics the deletion cascade erases but the
@@ -1071,22 +1070,6 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('userId', isEqualTo: userId),
     userId,
     ExportResourceType.householdAllergenShares,
-    limit: maxDocuments,
-  );
-
-  /// Top-level `realtime_recipes` where `ownerId == userId` — collaborative
-  /// recipes the user owns. `ownerId` is the model's authoritative field
-  /// (`RealtimeRecipe.fromFirestore` reads `ownerId`; the cascade CF's
-  /// `userId` filter is a known no-op), so the export queries `ownerId`.
-  Future<List<Map<String, dynamic>>> exportRealtimeRecipesByOwner(
-    String userId, {
-    int maxDocuments = 500,
-  }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.realtimeRecipes)
-        .where('ownerId', isEqualTo: userId),
-    userId,
-    ExportResourceType.realtimeRecipes,
     limit: maxDocuments,
   );
 

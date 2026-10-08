@@ -1096,10 +1096,6 @@ async function scenario_messagesInLeftConversationsAreReached(): Promise<void> {
 }
 
 /**
- * BUT-1768. `ownerId`, never `userId` — the BUT-1396 trap that made
- * `deleteRealtimeRecipes` match zero documents for months.
- */
-/**
  * BUT-2267: a household linked to the erased user's OWN group ends the way the
  * group-deleted trigger ends it — every joined member out, their shares gone —
  * and, with its owner gone too, it is torn down. Never re-pointed to a `view`

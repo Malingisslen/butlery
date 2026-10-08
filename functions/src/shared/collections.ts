@@ -9,7 +9,6 @@ export const Collections = {
   recipes: "recipes",
   ingredients: "ingredients",
   sharedRecipes: "shared_recipes",
-  realtimeRecipes: "realtime_recipes",
   realtimeMenus: "realtime_menus",
   realtimeResources: "realtime_resources",
   messages: "messages",

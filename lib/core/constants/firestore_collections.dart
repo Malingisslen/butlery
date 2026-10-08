@@ -28,7 +28,6 @@ abstract final class FirestoreCollections {
   static const String deletionAuditLogs = 'deletion_audit_logs';
   static const String feedback = 'feedback';
   static const String presence = 'presence';
-  static const String realtimeRecipes = 'realtime_recipes';
   static const String realtimeResources = 'realtime_resources';
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';

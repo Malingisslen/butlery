@@ -19,7 +19,7 @@ service cloud.firestore {
     //   canonical_recipe_stats (pooled-ratings aggregate, server-only)
     //
     // Realtime collaboration:
-    //   realtime_recipes(/presence), recipePresence(/activeUsers)
+    //   recipePresence(/activeUsers)
     //
     // Infrastructure / read-only:
     //   ingredients (global), ingredient_substitutions, tag_configs,
@@ -327,7 +327,7 @@ service cloud.firestore {
       return isSharedOwner(collectionName, docId) || isSharedMember(collectionName, docId);
     }
 
-    // Realtime collaboration helper — used by realtime_recipes, realtime_menus
+    // Realtime collaboration helper — used by realtime_menus
     // Uses get() which returns null for non-existent docs (avoids exists()+get() double read)
     function isRealtimeParticipant(collectionName, docId) {
       let parentPath = /databases/$(database)/documents/$(collectionName)/$(docId);
@@ -1468,44 +1468,6 @@ service cloud.firestore {
     }
 
     // ========================================
-    // REALTIME RECIPES - Collaborative editing
-    // ========================================
-    
-    match /realtime_recipes/{recipeId} {
-      allow read: if isAuthenticated()
-        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds);
-
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.ownerId
-        && request.auth.uid in request.resource.data.participantIds
-        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
-
-      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a
-      // member never writes someone else's recipe; a member's edit becomes a
-      // suggestion (recipe_suggestions). So only the owner updates this
-      // document: its content (`recipe`) and who takes part
-      // (`participants`, `participantIds`) alike. Participants used to be
-      // able to rewrite both. A member's live presence is the `presence`
-      // subcollection below, which stays theirs to write. The client does
-      // not send a member's write here either: RealtimeSyncService
-      // .updateResource refuses it before the network, and a member's
-      // conflict writes nothing (it becomes a suggestion or a notice).
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId
-        && cannotModify(['ownerId', 'createdAt']);
-
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
-
-      match /presence/{userId} {
-        allow read: if isAuthenticated() && isRealtimeParticipant('realtime_recipes', recipeId);
-        allow write: if isAuthenticated()
-          && request.auth.uid == userId
-          && isRealtimeParticipant('realtime_recipes', recipeId);
-      }
-    }
-
-    // ========================================
     // REALTIME MENUS - Collaborative menu editing
     // ========================================
 
@@ -1587,7 +1549,6 @@ service cloud.firestore {
     // ========================================
     // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
     // ========================================
-    // Note: This is separate from realtime_recipes/presence which is for collaborative editing.
     // This collection tracks ALL users viewing recipes (not just collaborative ones).
     
     match /recipePresence/{recipeId} {

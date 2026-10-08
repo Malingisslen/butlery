@@ -56,7 +56,6 @@ class TestDataIsolator {
     final nonIsolatedCollections = [
       'users',
       'test_collection', // Used by base repository tests
-      'realtime_recipes', // Used by collaboration tests
     ];
 
     if (nonIsolatedCollections.contains(baseCollection)) {

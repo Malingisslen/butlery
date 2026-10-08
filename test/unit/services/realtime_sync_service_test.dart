@@ -902,8 +902,7 @@ void main() {
     });
 
     /// Q6-08 = A: an editor member's save of someone else's recipe outside a
-    /// conflict is refused before it reaches the server, which would refuse
-    /// it too (firestore.rules realtime_recipes update is owner-only).
+    /// conflict is refused before it reaches the server.
     test('an editor member\'s save outside a conflict is refused', () async {
       when(() => mockAuth.currentUserId).thenReturn('editor_user');
       final resource = _buildResource(
