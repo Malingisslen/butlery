@@ -153,20 +153,23 @@ class FirebaseWeeklyMenuPlanRepository
       await collection.doc(plan.id).set(toFirestore(plan));
     } on FirebaseException catch (e) {
       if (e.code != 'permission-denied') rethrow;
-      final remote = await _conflictingWeek(plan);
-      if (remote == null) rethrow;
-      throw WeekPlanConflictException(remote, originalError: e);
+      final stored = await _storedAfterRefusal(plan);
+      // A resent write the server already applied is refused because its
+      // revId is now the stored one; the save landed, so nothing is wrong.
+      if (stored != null &&
+          stored.revId != null &&
+          stored.revId == plan.revId) {
+        return;
+      }
+      if (stored == null || !_weekMovedOn(stored, plan)) rethrow;
+      throw WeekPlanConflictException(stored, originalError: e);
     }
   }
 
-  /// BUT-2215: whether a refused save lost to another save of the same week.
-  ///
-  /// One server read, only on a refusal. The week has moved on when the
-  /// stored `revId` is not the one [plan] was built on (`plan.baseRevId`), or
-  /// when the stored `createdAt` differs — a plan started from an empty week
-  /// over a week that exists (BUT-1961). Anything else, an absent document
-  /// included, is not a conflict and the refusal keeps its own meaning.
-  Future<WeeklyMenuPlan?> _conflictingWeek(WeeklyMenuPlan plan) async {
+  /// BUT-2215: the stored week after a refused save, from one server read.
+  /// Null when the read fails or the week is absent, so the refusal keeps its
+  /// own meaning.
+  Future<WeeklyMenuPlan?> _storedAfterRefusal(WeeklyMenuPlan plan) async {
     final DocumentSnapshot<Map<String, dynamic>> snapshot;
     try {
       snapshot = await collection
@@ -177,12 +180,15 @@ class FirebaseWeeklyMenuPlanRepository
       return null;
     }
     if (!snapshot.exists) return null;
-    final remote = fromFirestore(snapshot);
-    final moved =
-        remote.revId != plan.baseRevId ||
-        !remote.createdAt.isAtSameMomentAs(plan.createdAt);
-    return moved ? remote : null;
+    return fromFirestore(snapshot);
   }
+
+  /// The week has moved on when the stored `revId` is not the one [plan] was
+  /// built on (`plan.baseRevId`), or when the stored `createdAt` differs — a
+  /// plan started from an empty week over a week that exists (BUT-1961).
+  bool _weekMovedOn(WeeklyMenuPlan stored, WeeklyMenuPlan plan) =>
+      stored.revId != plan.baseRevId ||
+      !stored.createdAt.isAtSameMomentAs(plan.createdAt);
 
   @override
   Future<int> deleteAllByUser(String userId) async {

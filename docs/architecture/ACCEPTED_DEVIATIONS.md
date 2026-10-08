@@ -5724,14 +5724,15 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
 - **An app version from before the check bypasses it (BUT-2215, 2026-10-08).** An update
   without `revId` is allowed, so an older app still overwrites a newer save silently. Its
   whole-document `set()` also drops `revId` and `baseRevId`; a current app that read the week
-  before that save then names a base the stored week no longer has and gets the conflict
+  before that save, from a copy that had a `revId`, then names a base the stored week no longer has and gets the conflict
   notice.
   An older app's recipe scrub is a batch of `update()` calls that write only `entries`. On a
   week that has a `revId` the updated document still carries the stored `revId`, so that
   update is denied by the `revId` inequality, the batch fails as a whole, and the older app
   scrubs no week; the recipe itself is still deleted.
-- **A week that has never had a `revId` is not protected against an older app (BUT-2215,
-  2026-10-08).** A current app that read such a week names no base. If an older app saves
+- **A stored week without a `revId` is not protected against an older app (BUT-2215,
+  2026-10-08).** That covers a week that never had one and a week whose `revId` an older
+  app's `set()` removed. A current app that read such a week names no base. If an older app saves
   the week in between, the stored week still has no `revId`, the two nulls compare equal, and
   the current app's save is accepted over the older app's without a notice. Two current apps
   are covered from the first save on: the first one that lands writes a `revId`, and the

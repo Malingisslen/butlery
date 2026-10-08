@@ -512,6 +512,28 @@ void main() {
     });
 
     test(
+      'a refused replay of a save that already landed returns quietly',
+      () async {
+        final ref = _MockDocRef();
+        final repo = refusingRepo(ref, stored);
+        // The server already holds this save's revId: the write landed and a
+        // resend was refused, so neither a conflict nor the refusal surfaces.
+        final landed = WeeklyMenuPlan(
+          id: stored.id,
+          userId: _alice,
+          weekStartDate: stored.weekStartDate,
+          entries: const [],
+          createdAt: stored.createdAt,
+          updatedAt: DateTime.utc(2026, 4, 2),
+          revId: 'rev-server',
+          baseRevId: 'rev-before',
+        );
+
+        await repo.save(landed);
+      },
+    );
+
+    test(
       'another createdAt on the same base is a conflict (BUT-1961)',
       () async {
         final ref = _MockDocRef();

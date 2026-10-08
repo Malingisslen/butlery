@@ -404,7 +404,7 @@ class WeeklyMenuPlanService extends BaseService {
   Future<void> save(WeeklyMenuPlan plan) async {
     final next = plan.nextRevision();
     await _repository.save(next);
-    _weekWrites.add(next.id);
+    if (!_weekWrites.isClosed) _weekWrites.add(next.id);
   }
 
   /// BUT-2215: saves exactly [plan], which the caller has already made a new
@@ -614,7 +614,7 @@ class WeeklyMenuPlanService extends BaseService {
       ),
       operationName: 'removeRecipeFromAllPlans',
     );
-    if ((result ?? 0) > 0) _weekWrites.add(null);
+    if ((result ?? 0) > 0 && !_weekWrites.isClosed) _weekWrites.add(null);
     return result ?? 0;
   }
 
