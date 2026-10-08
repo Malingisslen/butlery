@@ -2922,7 +2922,8 @@ service cloud.firestore {
         && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt'])
         // The client seats `[uid]` here; only the bound applies on create,
         // since there is no prior array to preserve.
-        && request.resource.data.get('contributorUserIds', []).size() <= 200;
+        && request.resource.data.get('contributorUserIds', []).size() <= 200
+        && request.resource.data.get('recentlyRemoved', []).size() <= 100;
 
       // BUT-1718: a member removing ONLY their own key from `memberPermissions`.
       //
@@ -2979,7 +2980,11 @@ service cloud.firestore {
       // The erasure trail is append-only for EVERY client writer, the owner
       // included — the owner is as able to strip a departed member's uid as
       // anyone else, and the cascade needs it either way.
-      allow update: if isAuthenticated() && keepsContributorTrail() && (
+      // BUT-2140: rows removed in the last 30 days ride on the list so any
+      // editor can restore them. The client keeps 30; the bound stops the
+      // array being used as unbounded storage, and it binds the owner too.
+      allow update: if isAuthenticated() && keepsContributorTrail()
+        && request.resource.data.get('recentlyRemoved', []).size() <= 100 && (
         (request.auth.uid == resource.data.ownerId && ownerStaysSeated()) ||
         (request.auth.uid in resource.data.memberPermissions
          && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
