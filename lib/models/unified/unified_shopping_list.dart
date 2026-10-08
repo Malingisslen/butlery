@@ -57,6 +57,7 @@ import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -215,6 +216,15 @@ class UnifiedShoppingList {
   /// Default 1 — old docs without this field are treated as v1.
   final int schemaVersion;
 
+  /// BUT-2140: rows removed from this list in the last 30 days, restorable
+  /// from "Återställ varor". Written only by the row paths (they append in the
+  /// same write as the removal); the whole-list paths drop it so a stale copy
+  /// cannot overwrite newer entries.
+  final List<ShoppingRowSnapshot> recentlyRemoved;
+
+  /// The Firestore field [recentlyRemoved] is stored under.
+  static const String recentlyRemovedKey = 'recentlyRemoved';
+
   /// BUT-1755: the value [fromMap] parks in [createdAt] when the stored
   /// document has no readable one.
   ///
@@ -277,6 +287,7 @@ class UnifiedShoppingList {
     this.generatedForWeek,
     this.menuItemIds,
     this.schemaVersion = 1,
+    this.recentlyRemoved = const [],
   }) : id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? clock.now(),
        updatedAt = updatedAt ?? clock.now();
@@ -456,6 +467,7 @@ class UnifiedShoppingList {
     String? generatedForWeek,
     List<String>? menuItemIds,
     int? schemaVersion,
+    List<ShoppingRowSnapshot>? recentlyRemoved,
   }) {
     return UnifiedShoppingList(
       id: id,
@@ -482,6 +494,7 @@ class UnifiedShoppingList {
       generatedForWeek: generatedForWeek ?? this.generatedForWeek,
       menuItemIds: menuItemIds ?? this.menuItemIds,
       schemaVersion: schemaVersion ?? this.schemaVersion,
+      recentlyRemoved: recentlyRemoved ?? this.recentlyRemoved,
     );
   }
 
@@ -649,6 +662,7 @@ class UnifiedShoppingList {
       'generatedForWeek': generatedForWeek,
       'menuItemIds': menuItemIds,
       'schemaVersion': schemaVersion,
+      recentlyRemovedKey: [for (final r in recentlyRemoved) r.toFirestore()],
     };
   }
 
@@ -682,6 +696,7 @@ class UnifiedShoppingList {
       'generatedForWeek': generatedForWeek,
       'menuItemIds': menuItemIds,
       'schemaVersion': schemaVersion,
+      'recentlyRemoved': [for (final r in recentlyRemoved) r.toJson()],
     };
   }
 
@@ -761,6 +776,11 @@ class UnifiedShoppingList {
       ),
       menuItemIds: _readMenuItemIds(json['menuItemIds']),
       schemaVersion: json['schemaVersion'] as int? ?? 1,
+      recentlyRemoved: SerializationUtils.safeObjectList(
+        json,
+        'recentlyRemoved',
+        ShoppingRowSnapshot.fromMap,
+      ),
     );
   }
 
@@ -845,6 +865,11 @@ class UnifiedShoppingList {
       ),
       menuItemIds: _readMenuItemIds(data['menuItemIds']),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
+      recentlyRemoved: SerializationUtils.safeObjectList(
+        data,
+        'recentlyRemoved',
+        ShoppingRowSnapshot.fromMap,
+      ),
     );
   }
 

@@ -156,6 +156,10 @@
   decision-record sentence it falsifies. Name each withheld collection in a
   `data_minimisation` line, verifying WHICH line, or the gap is undisclosed
   (Art. 12(1)).
+- **A fail-closed export allowlist is pinned to its Dart `toFirestore` per LEVEL** —
+  a nested map field (`previous` = `ShoppingRowSnapshot`) gets its own key list,
+  source-pinned to ITS model file and that file added to the CI `paths:`; the
+  parent pin sees only the key `previous`, so a new snapshot key drops silently.
 - **A SCHEDULED JOB writing uid-keyed rows under a non-`users/{uid}` path is
   invisible to both of the cascade's structural loops** (e.g.
   `analytics/notifications/effectiveness`) — give each its own probe leg; a

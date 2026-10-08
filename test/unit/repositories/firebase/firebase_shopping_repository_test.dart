@@ -15,6 +15,7 @@
 library;
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
@@ -115,5 +116,79 @@ void main() {
       final stored = await itemsOf(created.id).get();
       expect(stored.docs, isEmpty);
     });
+  });
+
+  // BUT-2140: the whole-list `update` must not write the restore history. A
+  // copy held in memory since before a removal carries an older array, and
+  // writing it would erase the newer entries.
+  group('FirebaseShoppingRepository.update — recentlyRemoved', () {
+    late FakeFirebaseFirestore firestore;
+    late FakeAuthRepository auth;
+    late FirebaseShoppingRepository repository;
+
+    const userId = 'user-abc';
+
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+    });
+
+    setUp(() {
+      firestore = FakeFirebaseFirestore();
+      auth = FakeAuthRepository();
+      auth.setAuthState(
+        user: FakeUser(uid: userId),
+        userId: userId,
+        isAuthenticated: true,
+      );
+      repository = FirebaseShoppingRepository(
+        firestore: firestore,
+        authRepository: auth,
+      );
+    });
+
+    tearDown(() async {
+      BaseUnitTest.resetMocks();
+      await TestServiceLocator.reset();
+    });
+
+    test(
+      'a rename from a stale copy leaves the stored history alone',
+      () async {
+        final created = await repository.create(
+          UnifiedShoppingList(
+            name: 'Veckohandling',
+            ownerId: userId,
+            ownerDisplayName: 'Malin',
+          ),
+        );
+        final listDoc = firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.unifiedShoppingLists)
+            .doc(created.id);
+        final newer = ShoppingRowSnapshot(
+          id: 'removed-after-the-copy-was-taken',
+          name: 'Mjölk',
+          amount: 1,
+          unit: '',
+          category: ShoppingCategory.other,
+          at: DateTime.utc(2026, 10, 8),
+        );
+        await listDoc.update({
+          'recentlyRemoved': [newer.toFirestore()],
+        });
+
+        // `created` predates the removal and has an empty history.
+        await repository.update(created.copyWith(name: 'Söndagshandel'));
+
+        final stored = (await listDoc.get()).data()!;
+        expect(stored['name'], 'Söndagshandel');
+        expect(stored['recentlyRemoved'], hasLength(1));
+        expect(
+          (stored['recentlyRemoved'] as List).single['id'],
+          newer.id,
+        );
+      },
+    );
   });
 }

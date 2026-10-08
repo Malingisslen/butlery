@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_offline_write_module.dart';
 
@@ -265,6 +266,33 @@ void main() {
         );
       },
     );
+
+    // BUT-2140: only the row paths write `recentlyRemoved`. A caller holding a
+    // copy from before a removal would otherwise send its older array on a
+    // rename and overwrite the newer entries.
+    test('a stale copy never sends recentlyRemoved on a rename', () async {
+      final stored = _list().copyWith(
+        recentlyRemoved: [
+          ShoppingRowSnapshot(
+            id: 'r1',
+            name: 'Mjölk',
+            amount: 1,
+            unit: '',
+            category: ShoppingCategory.other,
+            at: DateTime.utc(2026, 10, 8),
+          ),
+        ],
+      );
+      final payload = await module.narrowUpdatePayload(
+        'alice',
+        _list().copyWith(name: 'Söndagshandel'),
+        stored,
+        baseIsCached: false,
+      );
+
+      expect(payload['name'], 'Söndagshandel');
+      expect(payload.keys, isNot(contains('recentlyRemoved')));
+    });
 
     test('adding a member emits only that key', () async {
       final stored = _list();

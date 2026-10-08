@@ -34,6 +34,7 @@ import 'package:butlery/services/account/export/content_export_manager.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart';
 import 'package:butlery/services/account/export/shared_shopping_list_export.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 class _FakeRecipeRepository extends Fake implements FirebaseRecipeRepository {
@@ -1400,6 +1401,146 @@ void main() {
             'is the whole point of the position fallback',
       );
     });
+  });
+
+  // BUT-2140 (conditions P1, P2): the restore history rides inside the list
+  // document and the rows. The shared-list export only drops display names at
+  // the TOP level of a row, so a snapshot that carried a name or uid would
+  // ship another member's data unredacted. The fixtures are the models' own
+  // output, so a field added to the snapshot is exercised here.
+  group('restore history in the Art. 15 export (BUT-2140)', () {
+    final at = DateTime.utc(2026, 10, 8, 12);
+
+    // Bob edited and then removed rows; every attribution field is filled.
+    Map<String, dynamic> listWithHistory() {
+      final bobsRow = UnifiedShoppingItem(
+        id: 'i1',
+        name: 'Mjölk',
+        amount: 1,
+        addedByUserId: 'bob',
+        addedByDisplayName: 'Bob B',
+        purchasedByUserId: 'bob',
+        purchasedByDisplayName: 'Bob B',
+        lastModifiedByUserId: 'bob',
+        lastModifiedByDisplayName: 'Bob B',
+        assignedToUserId: 'bob',
+        assignedToDisplayName: 'Bob B',
+      );
+      final edited = RestorableRows.withPrevious(
+        bobsRow,
+        bobsRow.copyWith(name: 'Havremjölk'),
+        at,
+      );
+      final list = RestorableRows.withRemoved(
+        UnifiedShoppingList.collaborative(
+          name: 'Veckans handla',
+          ownerId: 'alice',
+          ownerDisplayName: 'Alice A',
+          memberPermissions: const {
+            'alice': SharedListPermission.admin,
+            'bob': SharedListPermission.edit,
+          },
+          items: [edited],
+        ),
+        [bobsRow],
+        at,
+      );
+      return list.toFirestore();
+    }
+
+    Iterable<String> keysUnder(Object? node) sync* {
+      if (node is Map) {
+        for (final e in node.entries) {
+          yield e.key.toString();
+          yield* keysUnder(e.value);
+        }
+      } else if (node is List) {
+        for (final v in node) {
+          yield* keysUnder(v);
+        }
+      }
+    }
+
+    test(
+      'a shared list exports previous and recentlyRemoved as plain JSON, '
+      'with every key of a full snapshot free of names and uids',
+      () async {
+        final manager = _manager(
+          exports: _FakeDataExportRepository(
+            sharedOwned: [
+              {'id': 'l1', 'data': listWithHistory()},
+            ],
+          ),
+        );
+
+        final result = await manager.exportSharedShoppingLists('alice');
+
+        // The documents hold Timestamps in nested lists and maps; one left
+        // unsanitised throws out of the whole bundle here.
+        expect(() => jsonEncode(result), returnsNormally);
+        final list = (result['shared_shopping_lists'] as List).single as Map;
+        final removed = (list['list_info'] as Map)['recentlyRemoved'] as List;
+        final row = ((list['items'] as List).single as Map)['data'] as Map;
+        final previous = row['previous'] as Map;
+
+        expect(removed, hasLength(1));
+        expect((removed.single as Map)['at'], isA<String>());
+        expect(previous['name'], 'Mjölk');
+        expect(previous['at'], isA<String>());
+
+        final snapshotKeys = keysUnder([...removed, previous]).toSet();
+        expect(snapshotKeys, {
+          'id',
+          'name',
+          'amount',
+          'unit',
+          'category',
+          'note',
+          'at',
+        });
+        expect(
+          snapshotKeys.where(
+            (k) => k.endsWith('UserId') || k.endsWith('DisplayName'),
+          ),
+          isEmpty,
+        );
+
+        // Bob's name is dropped from the row itself, and is absent from the
+        // history he created.
+        expect(row.containsKey('addedByDisplayName'), isFalse);
+        final history = jsonEncode([removed, previous]);
+        expect(history, isNot(contains('Bob B')));
+        expect(history, isNot(contains('"bob"')));
+      },
+    );
+
+    test(
+      'a personal list exports previous and recentlyRemoved as plain JSON',
+      () async {
+        final data = listWithHistory();
+        final manager = _manager(
+          exports: _FakeDataExportRepository(
+            shoppingLists: [
+              {
+                'id': 'p1',
+                'data': data,
+                'items': [
+                  {'id': 'i1', 'data': (data['items'] as List).single},
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportShoppingLists('alice');
+
+        expect(() => jsonEncode(result), returnsNormally);
+        final list = (result['shopping_lists'] as List).single as Map;
+        expect((list['list_info'] as Map)['recentlyRemoved'], hasLength(1));
+        final row = ((list['items'] as List).single as Map)['data'] as Map;
+        expect((row['previous'] as Map)['name'], 'Mjölk');
+      },
+    );
   });
 
   // BUT-2028: the section's USE of `fetchCapped`. The primitive's boundary is

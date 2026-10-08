@@ -19,6 +19,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/content_time_labels.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -122,7 +123,7 @@ void main() {
       final v = _version('v1', today);
       await pumpStart(tester, [v]);
 
-      final when = RestoreOverwrittenVersion.whenLabel(
+      final when = ContentTimeLabels.whenLabel(
         l,
         today,
         DateTime.now(),
@@ -215,7 +216,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      final until = RestoreOverwrittenVersion.dateLabel(
+      final until = ContentTimeLabels.dateLabel(
         l,
         v.expiresAt,
         DateTime.now(),
@@ -267,7 +268,7 @@ void main() {
       );
       final ref = DateTime(2026, 9, 23, 18);
       expect(
-        RestoreOverwrittenVersion.whenLabel(
+        ContentTimeLabels.whenLabel(
           l,
           DateTime(2026, 9, 23, 14, 2),
           ref,
@@ -275,15 +276,15 @@ void main() {
         'i dag 14:02',
       );
       expect(
-        RestoreOverwrittenVersion.whenLabel(l, DateTime(2026, 9, 22, 9), ref),
+        ContentTimeLabels.whenLabel(l, DateTime(2026, 9, 22, 9), ref),
         'i går',
       );
       expect(
-        RestoreOverwrittenVersion.whenLabel(l, DateTime(2026, 7, 9, 9), ref),
+        ContentTimeLabels.whenLabel(l, DateTime(2026, 7, 9, 9), ref),
         '9 juli',
       );
       expect(
-        RestoreOverwrittenVersion.whenLabel(l, DateTime(2025, 7, 9, 9), ref),
+        ContentTimeLabels.whenLabel(l, DateTime(2025, 7, 9, 9), ref),
         '9 juli 2025',
       );
     });
