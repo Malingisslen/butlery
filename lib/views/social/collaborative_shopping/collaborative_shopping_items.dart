@@ -46,7 +46,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
         // BUT-1199: first-use hint for the swipe-to-claim gesture.
         SwipeHintBanner(
           seenKey: SwipeHintBanner.shoppingClaimSeenKey,
-          icon: Icons.swipe,
+          icon: ButleryIcons.hand,
           message: context.l10n.shoppingClaimHintText,
         ),
         Expanded(child: _buildBody(context)),

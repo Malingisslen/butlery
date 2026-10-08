@@ -48,7 +48,7 @@ class ProfileSectionBuilders {
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.upload,
+            icon: ButleryIcons.upload,
             title: context.l10n.profileRestoreFromBackup,
             subtitle: context.l10n.profileRestoreFromBackupSubtitle,
             onTap: () =>
@@ -127,7 +127,7 @@ class ProfileSectionBuilders {
           // GDPR Article 13/14 - Privacy Policy & Transparency
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.policy_rounded,
+            icon: ButleryIcons.shield,
             title: context.l10n.profilePrivacyPolicy,
             subtitle: context.l10n.profilePrivacyPolicySubtitle,
             onTap: () => GdprConsentHandler.handlePrivacyPolicy(context),
@@ -137,7 +137,7 @@ class ProfileSectionBuilders {
           // GDPR Article 7 - Consent Management
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.privacy_tip_rounded,
+            icon: ButleryIcons.shield,
             title: context.l10n.profileManageConsent,
             subtitle: context.l10n.profileManageConsentSubtitle,
             onTap: () => GdprConsentHandler.handleManageConsent(context),

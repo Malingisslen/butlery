@@ -48,7 +48,7 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
       ),
       child: Row(
         children: [
-          ButleryIcon(Icons.install_mobile, color: cs.onSurface),
+          ButleryIcon(ButleryIcons.download, color: cs.onSurface),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(

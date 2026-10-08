@@ -20,6 +20,7 @@ import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Rebuilds with the user's queue counts, live. Starts at
 /// [QueueCounts.empty], so nothing shows before the first read.
@@ -128,7 +129,7 @@ class SyncQueueIndicator extends StatelessWidget {
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
-          child: const ButleryIcon(Icons.sync_problem_outlined),
+          child: const ButleryIcon(ButleryIcons.triangleAlert),
         ),
       ),
     );

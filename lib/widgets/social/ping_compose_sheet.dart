@@ -220,7 +220,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-nudge'),
             label: l10n.pingNudge,
-            icon: Icons.back_hand_outlined,
+            icon: ButleryIcons.hand,
             selected: selected == PingType.nudge,
             onTap: () => onSelect(PingType.nudge),
           ),
@@ -240,7 +240,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-help'),
             label: l10n.pingHelpMe,
-            icon: Icons.help_outline,
+            icon: ButleryIcons.circleHelp,
             selected: selected == PingType.helpMe,
             onTap: () => onSelect(PingType.helpMe),
           ),

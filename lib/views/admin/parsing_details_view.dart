@@ -79,7 +79,7 @@ class _ParsingDetailsContent extends StatelessWidget {
     if (vm.stats.isEmpty) {
       return StateWidget.empty(
         title: l10n.adminParsingEmpty,
-        icon: Icons.rule,
+        icon: ButleryIcons.file,
       );
     }
     return Column(

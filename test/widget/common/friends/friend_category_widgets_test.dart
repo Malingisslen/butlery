@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
 
@@ -262,7 +263,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Familie'), findsOneWidget);
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget);
       });
 
       testWidgets('renders without count', (tester) async {

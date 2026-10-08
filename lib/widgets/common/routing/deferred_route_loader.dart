@@ -179,7 +179,7 @@ class ModuleLoadErrorScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: onGoHome,
-                      icon: const ButleryIcon(Icons.home),
+                      icon: const ButleryIcon(ButleryIcons.house),
                       label: Text(context.l10n.navigationGoHome),
                     ),
                   ),

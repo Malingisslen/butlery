@@ -83,7 +83,9 @@ class ConversationListItem extends StatelessWidget {
           ),
           color: context.modeColors.warning,
           child: ButleryIcon(
-            conversation.isArchived ? Icons.unarchive : ButleryIcons.archive,
+            conversation.isArchived
+                ? ButleryIcons.history
+                : ButleryIcons.archive,
             color: context.modeColors.onWarning,
           ),
         ),

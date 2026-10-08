@@ -155,7 +155,7 @@ void main() {
 
       // Empty-hint path: up-arrow icon (nudges user to the prompt above)
       // + StateWidget.empty with the l10n "Ingen planering än" title.
-      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.arrowUp), findsOneWidget);
       expect(find.byType(StateWidget), findsOneWidget);
       expect(find.text('Ingen planering än'), findsOneWidget);
     });
@@ -710,7 +710,7 @@ void main() {
 
           // The action bar's move button (drive_file_move_outline) opens the
           // "Flytta till" target sheet.
-          await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+          await tester.tap(find.byIcon(ButleryIcons.move));
           await tester.pumpAndSettle();
           expect(
             find.text('Flytta till'),
@@ -760,7 +760,7 @@ void main() {
 
           await pumpSelectedOneEntry(tester, plan: plan);
 
-          await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+          await tester.tap(find.byIcon(ButleryIcons.move));
           await tester.pumpAndSettle();
           await tester.tap(find.text('mån · lunch'));
           await tester.pumpAndSettle();
@@ -780,7 +780,7 @@ void main() {
           final plan = oneEntryWeek();
           final vm = await pumpSelectedOneEntry(tester, plan: plan);
 
-          await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+          await tester.tap(find.byIcon(ButleryIcons.move));
           await tester.pumpAndSettle();
           expect(find.text('Flytta till'), findsOneWidget);
 

@@ -250,7 +250,7 @@ class FriendRequestCard {
         break;
       case FriendRequestStatus.expired:
         statusColor = cs.onSurfaceVariant;
-        statusIcon = Icons.timer_off;
+        statusIcon = ButleryIcons.clock;
         statusText = context.l10n.socialExpired;
         break;
       default:

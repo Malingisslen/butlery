@@ -241,7 +241,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       ),
       actions: [
         IconButton(
-          icon: const ButleryIcon(Icons.merge),
+          icon: const ButleryIcon(ButleryIcons.merge),
           tooltip: context.l10n.personalTagMergeAction,
           onPressed: count >= 2
               ? () => PersonalTagDialogs.showMergeDialog(context, selectedTags)

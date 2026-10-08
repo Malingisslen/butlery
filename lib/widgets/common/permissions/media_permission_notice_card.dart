@@ -110,7 +110,7 @@ class MediaPermissionNoticeCard extends StatelessWidget {
             children: [
               ExcludeSemantics(
                 child: ButleryIcon(
-                  camera ? Icons.no_photography_outlined : ButleryIcons.image,
+                  camera ? ButleryIcons.camera : ButleryIcons.image,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),

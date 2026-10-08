@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
@@ -114,7 +115,7 @@ void main() {
               data: theme,
               child: Center(
                 child: RecipeHeroButton(
-                  icon: Icons.arrow_back,
+                  icon: ButleryIcons.arrowLeft,
                   onPressed: () {},
                 ),
               ),
@@ -158,7 +159,7 @@ void main() {
               data: theme,
               child: Center(
                 child: RecipeHeroMenuButton<int>(
-                  icon: Icons.more_vert,
+                  icon: ButleryIcons.moreVertical,
                   itemBuilder: (_) => const [
                     PopupMenuItem(value: 1, child: Text('Redigera')),
                   ],

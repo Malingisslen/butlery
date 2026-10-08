@@ -75,8 +75,8 @@ class _DeltaChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final rounded = deltaPercent.round();
     final (icon, color) = switch (rounded.sign) {
-      1 => (Icons.arrow_upward, cs.onSurface),
-      -1 => (Icons.arrow_downward, cs.error),
+      1 => (ButleryIcons.arrowUp, cs.onSurface),
+      -1 => (ButleryIcons.arrowDown, cs.error),
       _ => (ButleryIcons.minus, cs.outline),
     };
     return Row(

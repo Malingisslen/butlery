@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 void main() {
@@ -310,11 +311,14 @@ void main() {
         AppTheme.lightTheme,
         const IconTheme(
           data: IconThemeData(color: appBarIcon),
-          child: PressFill(surface: PressSurface.base, child: Icon(Icons.add)),
+          child: PressFill(
+            surface: PressSurface.base,
+            child: Icon(ButleryIcons.plus),
+          ),
         ),
       ),
     );
-    final icon = find.byIcon(Icons.add);
+    final icon = find.byIcon(ButleryIcons.plus);
     expect(IconTheme.of(tester.element(icon)).color, appBarIcon);
   });
 

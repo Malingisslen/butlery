@@ -241,7 +241,7 @@ class SharedShoppingListCard {
             label: isJoined
                 ? context.l10n.sharedMember
                 : context.l10n.sharedJoin,
-            icon: isJoined ? ButleryIcons.check : Icons.add_shopping_cart,
+            icon: isJoined ? ButleryIcons.check : ButleryIcons.shoppingCart,
             isLoading: viewModel.shoppingViewModel.isOperating,
             onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                 ? null
@@ -386,7 +386,7 @@ class SharedShoppingListCard {
                         : context.l10n.sharedJoinList,
                     icon: isJoined
                         ? ButleryIcons.check
-                        : Icons.add_shopping_cart,
+                        : ButleryIcons.shoppingCart,
                     isLoading: viewModel.shoppingViewModel.isOperating,
                     onPressed:
                         isJoined || viewModel.shoppingViewModel.isOperating

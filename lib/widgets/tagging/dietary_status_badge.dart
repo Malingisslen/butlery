@@ -92,7 +92,7 @@ class DietaryStatusBadge extends StatelessWidget {
         // health risk. Using the same red as allergen warnings made "Ej
         // vegetarisk" look as alarming as "Innehåller gluten". Neutral grey +
         // a cancel icon keeps the message clear without overstating risk.
-        return (TagStatusTone.neutral, Icons.cancel_outlined);
+        return (TagStatusTone.neutral, ButleryIcons.x);
       case TriState.unknown:
         return (TagStatusTone.neutral, ButleryIcons.info);
     }

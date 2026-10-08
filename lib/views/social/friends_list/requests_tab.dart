@@ -150,7 +150,7 @@ class RequestsTab extends StatelessWidget {
         Row(
           children: [
             ButleryIcon(
-              Icons.outbox,
+              ButleryIcons.send,
               size: AppDimensions.iconSizeM,
               color: cs.onSurfaceVariant,
             ),

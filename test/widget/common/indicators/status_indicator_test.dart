@@ -304,7 +304,7 @@ void main() {
                     color: Colors.red,
                   ),
                   StatusIndicator(
-                    icon: Icons.pending,
+                    icon: ButleryIcons.hourglass,
                     color: Colors.orange,
                   ),
                 ],
@@ -316,7 +316,7 @@ void main() {
         expect(find.byType(StatusIndicator), findsNWidgets(3));
         expect(find.byIcon(ButleryIcons.check), findsOneWidget);
         expect(find.byIcon(ButleryIcons.x), findsOneWidget);
-        expect(find.byIcon(Icons.pending), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.hourglass), findsOneWidget);
       });
 
       testWidgets('renders correctly in Column layout', (
@@ -353,7 +353,7 @@ void main() {
               body: Row(
                 children: [
                   StatusIndicator(
-                    icon: Icons.home,
+                    icon: ButleryIcons.house,
                     color: Colors.blue,
                   ),
                   StatusIndicator(

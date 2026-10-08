@@ -18,7 +18,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.title,
         context.l10n.sortTitle,
-        Icons.title,
+        ButleryIcons.type,
         currentSort,
         sortAscending,
       ),
@@ -58,7 +58,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.cookCount,
         context.l10n.sortCookCount,
-        Icons.repeat,
+        ButleryIcons.barChart,
         currentSort,
         sortAscending,
       ),
@@ -105,7 +105,7 @@ class SortMenuBuilder {
           const SizedBox(width: AppDimensions.spacingM),
           if (isSelected)
             ButleryIcon(
-              sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+              sortAscending ? ButleryIcons.arrowUp : ButleryIcons.arrowDown,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),

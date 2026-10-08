@@ -256,7 +256,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     return PressFill(
       surface: PressSurface.base,
       child: PopupMenuButton<String?>(
-        icon: const ButleryIcon(Icons.low_priority),
+        icon: const ButleryIcon(ButleryIcons.move),
         tooltip: context.l10n.recipeMoveToSection,
         onSelected: (headingId) => onMoveLineToSection(rowIndex, headingId),
         itemBuilder: (context) => [

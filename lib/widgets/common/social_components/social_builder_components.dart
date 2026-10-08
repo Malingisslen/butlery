@@ -157,7 +157,7 @@ class SocialBuilderComponents {
         'shared_menus': {
           'value': sharedMenuCount,
           'label': context.l10n.socialSharedMenus,
-          'icon': Icons.menu_book,
+          'icon': ButleryIcons.utensils,
         },
     };
 
@@ -250,7 +250,7 @@ class SocialBuilderComponents {
         'pending': {
           'value': pendingInvitations,
           'label': context.l10n.socialPending,
-          'icon': Icons.pending,
+          'icon': ButleryIcons.hourglass,
         },
     };
 

@@ -749,7 +749,7 @@ class _OvrigtEntry extends StatelessWidget {
                   color: cs.surfaceContainerHighest,
                   alignment: Alignment.center,
                   child: ButleryIcon(
-                    Icons.cake_outlined,
+                    ButleryIcons.utensils,
                     size: 11,
                     color: _slotIconColor(context),
                   ),

@@ -170,7 +170,7 @@ void main() {
         expect(decoration.border, isNull);
         final warning = AppModeColors.textWarning(theme.brightness);
         expect(textColor(tester, 'Analyseras...'), warning);
-        expect(glyphColor(tester, Icons.pending_outlined), warning);
+        expect(glyphColor(tester, ButleryIcons.hourglass), warning);
       });
 
       testWidgets('failed-analysis notice is the danger tint, no border, '
@@ -229,8 +229,8 @@ void main() {
           expect(border.top.color, cs.outlineVariant, reason: text);
           expect(border.top.width, 1, reason: text);
         }
-        expect(glyphColor(tester, Icons.help_outline), secondary);
-        expect(glyphColor(tester, Icons.pie_chart_outline), secondary);
+        expect(glyphColor(tester, ButleryIcons.info), secondary);
+        expect(glyphColor(tester, ButleryIcons.barChart), secondary);
       });
 
       testWidgets(

@@ -3,6 +3,7 @@
 /// snackbar once per failure period.
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,7 +41,7 @@ void main() {
   testWidgets('a recent save shows the cloud', (tester) async {
     await tester.pumpWidget(_indicator(hasRecentSave: true));
 
-    expect(find.byIcon(Icons.cloud_done_outlined), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     expect(find.byKey(const ValueKey('draft-save-failed')), findsNothing);
   });
 
@@ -53,7 +54,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('draft-save-failed')), findsOneWidget);
-    expect(find.byIcon(Icons.cloud_done_outlined), findsNothing);
+    expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
     expect(
       find.bySemanticsLabel('Utkastet kunde inte sparas.'),
       findsOneWidget,

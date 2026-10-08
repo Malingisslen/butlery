@@ -226,7 +226,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                         WhoAteResult.attended(vm.selectedMemberIds),
                       )
                     : null,
-                icon: const ButleryIcon(Icons.how_to_reg, size: 18),
+                icon: const ButleryIcon(ButleryIcons.circleCheck, size: 18),
                 label: Text(config.confirmLabel(vm.selectedCount)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),

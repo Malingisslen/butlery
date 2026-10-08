@@ -134,8 +134,8 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_downward), findsNothing);
+      expect(find.byIcon(ButleryIcons.arrowUp), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.arrowDown), findsNothing);
     });
 
     testWidgets('ascending=false → selected row has arrow_downward', (
@@ -150,8 +150,8 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.arrow_downward), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_upward), findsNothing);
+      expect(find.byIcon(ButleryIcons.arrowDown), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.arrowUp), findsNothing);
     });
 
     testWidgets('only the selected criterion gets a direction arrow', (
@@ -167,7 +167,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one direction-arrow icon, regardless of how many entries.
-      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.arrowUp), findsOneWidget);
     });
 
     testWidgets('tapping an item invokes onSelected with that criterion', (
@@ -199,13 +199,13 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.title), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.type), findsOneWidget);
       // Cooking time and schedule both mean Tid: one clock glyph (P7-U08).
       expect(find.byIcon(ButleryIcons.clock), findsNWidgets(2));
       expect(find.byIcon(ButleryIcons.star), findsOneWidget);
       expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       expect(find.byIcon(ButleryIcons.history), findsOneWidget);
-      expect(find.byIcon(Icons.repeat), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.barChart), findsOneWidget);
       expect(find.byIcon(ButleryIcons.shuffle), findsOneWidget);
     });
   });

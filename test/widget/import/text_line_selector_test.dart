@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
@@ -43,14 +44,14 @@ void main() {
       // Swedish locale → "Butlerys förslag". One suggested line ⇒ exactly one chip.
       expect(find.text('Butlerys förslag'), findsOneWidget);
       // The auto_awesome glyph is the chip's icon.
-      expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.sparkles), findsOneWidget);
     });
 
     testWidgets('shows no chip when no lines are ai-suggested', (tester) async {
       await tester.pumpWidget(buildSelector());
 
       expect(find.text('Butlerys förslag'), findsNothing);
-      expect(find.byIcon(Icons.auto_awesome), findsNothing);
+      expect(find.byIcon(ButleryIcons.sparkles), findsNothing);
     });
 
     testWidgets('renders one chip per ai-suggested line', (tester) async {
@@ -81,7 +82,7 @@ void main() {
 
       // The chip's icon resolves to onSecondaryContainer — a theme tweak should
       // move this in lockstep, not break the test.
-      final icon = tester.widget<Icon>(find.byIcon(Icons.auto_awesome));
+      final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.sparkles));
       expect(icon.color, cs.onSecondaryContainer);
     });
   });

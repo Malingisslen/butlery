@@ -19,7 +19,7 @@ void main() {
   Widget fab() => FloatingActionButtonWidget(
     semanticLabel: 'Nytt recept',
     onPressed: () {},
-    child: const Icon(Icons.add),
+    child: const Icon(ButleryIcons.plus),
   );
 
   final cases = <(String, Widget, String, bool)>[

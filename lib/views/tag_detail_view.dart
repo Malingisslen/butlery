@@ -218,7 +218,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
               PopupMenuItem(
                 value: 'apply_rules',
                 child: ListTile(
-                  leading: const ButleryIcon(Icons.play_arrow),
+                  leading: const ButleryIcon(ButleryIcons.playOutline),
                   title: Text(context.l10n.tagDetailApplyRules),
                   subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
                   contentPadding: EdgeInsets.zero,

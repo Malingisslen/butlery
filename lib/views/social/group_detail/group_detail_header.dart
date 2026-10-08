@@ -107,7 +107,7 @@ class GroupDetailHeader {
                   context,
                   context.l10n.groupUpdatedDate,
                   _formatDate(context, group.updatedAt),
-                  Icons.update,
+                  ButleryIcons.clock,
                 ),
                 _buildDetailRow(
                   context,
@@ -136,7 +136,7 @@ class GroupDetailHeader {
                 ),
               ),
               secondary: ButleryIcon(
-                Icons.home,
+                ButleryIcons.house,
                 color: isHousehold
                     ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.onSurfaceVariant,

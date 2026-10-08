@@ -95,7 +95,7 @@ class TextLineSelector extends StatelessWidget {
                 ButleryIcon(
                   mode == SelectionMode.ingredients
                       ? ButleryIcons.utensils
-                      : Icons.format_list_numbered,
+                      : ButleryIcons.list,
                   size: AppDimensions.iconSizeM,
                   color: _getModeColor(context, colorScheme),
                 ),
@@ -151,7 +151,7 @@ class TextLineSelector extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ButleryIcon(
-              Icons.text_fields,
+              ButleryIcons.type,
               size: 48,
               color: AppModeColors.textDisabled(theme.brightness),
             ),
@@ -364,7 +364,7 @@ class _LineItem extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             ButleryIcon(
-                              Icons.auto_awesome,
+                              ButleryIcons.sparkles,
                               size: AppDimensions.iconSizeXs,
                               color: colorScheme.onSecondaryContainer,
                             ),

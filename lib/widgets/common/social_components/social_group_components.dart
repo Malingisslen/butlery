@@ -374,7 +374,7 @@ class SocialGroupComponents {
                   if (showAverageSize)
                     Expanded(
                       child: StatItemWidget(
-                        icon: Icons.analytics,
+                        icon: ButleryIcons.barChart,
                         value: averageSize.toStringAsFixed(1),
                         label: context.l10n.socialAveragePerCategory,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,

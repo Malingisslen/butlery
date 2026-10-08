@@ -113,7 +113,7 @@ class UserAvatarWidgets {
                       ),
                     ),
                     child: ButleryIcon(
-                      isOnline ? Icons.circle : ButleryIcons.circle,
+                      isOnline ? ButleryIcons.dot : ButleryIcons.circle,
                       size: statusSize,
                       color: isOnline ? bc.success : cs.outline,
                     ),
@@ -231,7 +231,7 @@ class UserAvatarWidgets {
               : context.l10n.a11yStatusOffline,
           excludeSemantics: true,
           child: ButleryIcon(
-            isOnline ? Icons.circle : ButleryIcons.circle,
+            isOnline ? ButleryIcons.dot : ButleryIcons.circle,
             size: indicatorSize,
             color: isOnline ? bc.success : cs.outline,
           ),

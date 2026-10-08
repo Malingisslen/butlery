@@ -23,8 +23,9 @@ const _out = 'lib/widgets/common/icons/butlery_icons.dart';
 /// Filled masters that also have an outline state. The outline is the same
 /// geometry drawn as a 1.75 stroke: Skarmar v12 del 1:311 draws the heart
 /// that way (not yet a favourite), and the star is drawn with fill none in
-/// two places in the screen files.
-const _outlineVariants = ['heart', 'star'];
+/// two places in the screen files. The bookmark's outline is the template
+/// that is not saved (icons.json contract.exceptions.bookmark).
+const _outlineVariants = ['bookmark', 'heart', 'star'];
 
 /// Semantic aliases (migration-gap.md:46, K-10: map the family onto the
 /// app's semantic aliases, not raw names). alias -> member.
@@ -35,6 +36,8 @@ const _aliases = {
   'primaryOutline': 'starOutline',
   'back': 'arrowLeft',
   'close': 'x',
+  'savedTemplate': 'bookmark',
+  'savedTemplateOutline': 'bookmarkOutline',
 };
 
 String camel(String kebab) {

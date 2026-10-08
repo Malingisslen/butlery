@@ -155,7 +155,7 @@ class _IngredientSearchContent extends StatelessWidget {
     if (vm.matchResults.isEmpty) {
       return StateWidget.empty(
         title: l10n.ingredientSearchNoResults,
-        icon: Icons.no_meals_outlined,
+        icon: ButleryIcons.searchOff,
       );
     }
 

@@ -68,7 +68,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Retag banner has an update icon
-        expect(find.byIcon(Icons.update), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.refreshCw), findsOneWidget);
 
         // Find and tap the update button
         final updateButton = find.byType(TextButton);
@@ -111,7 +111,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // No analytics icon (coverage section header)
-      expect(find.byIcon(Icons.analytics_outlined), findsNothing);
+      expect(find.byIcon(ButleryIcons.barChart), findsNothing);
     });
 
     testWidgets('coverage section visible when showCoverage: true', (
@@ -131,7 +131,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.analytics_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.barChart), findsOneWidget);
       expect(find.text('80%'), findsOneWidget);
     });
 

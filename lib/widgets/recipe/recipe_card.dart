@@ -518,7 +518,7 @@ class RecipeCard extends StatelessWidget {
         context.l10n.recipeVisibilityCollaborative,
       ),
       Recipe(isPublic: true) => (
-        Icons.public,
+        ButleryIcons.globe,
         context.l10n.recipeVisibilityPublic,
       ),
       _ => (
@@ -1029,7 +1029,7 @@ class RecipeCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ButleryIcon(
-              hasFailed ? ButleryIcons.triangleAlert : Icons.pending_outlined,
+              hasFailed ? ButleryIcons.triangleAlert : ButleryIcons.hourglass,
               size: 14,
               color: noticeFg,
             ),
@@ -1100,7 +1100,7 @@ class RecipeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ButleryIcon(Icons.help_outline, size: 14, color: secondary),
+            ButleryIcon(ButleryIcons.info, size: 14, color: secondary),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
@@ -1150,7 +1150,7 @@ class RecipeCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ButleryIcon(
-              Icons.pie_chart_outline,
+              ButleryIcons.barChart,
               size: 14,
               color: secondary,
             ),
