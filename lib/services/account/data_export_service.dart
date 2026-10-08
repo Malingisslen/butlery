@@ -138,6 +138,7 @@ class DataExportService extends BaseService {
         complianceExportManager ??
         ComplianceExportManager(
           dataExportRepository: _exportRepo,
+          authRepository: authRepository,
         );
     _preferencesManager = PreferencesExportManager(
       dataExportRepository: _exportRepo,
@@ -253,6 +254,9 @@ class DataExportService extends BaseService {
       'comments_and_ratings': _activityManager.exportCommentsAndRatings(userId),
       'audit_logs': _complianceManager.exportAuditLogs(userId),
       'consent_records': _complianceManager.exportConsentRecords(userId),
+      'two_step_verification': _complianceManager.exportTwoStepVerification(
+        userId,
+      ),
       'preferences': _preferencesManager.exportPreferences(userId),
       'notifications': _preferencesManager.exportNotifications(userId),
       // BUT-1957: `users/{uid}/notifications`, the subcollection. NOT the same
