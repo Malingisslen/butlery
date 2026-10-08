@@ -62,6 +62,22 @@ void main() {
     });
   });
 
+  group('EmulatorBootstrap.prepare', () {
+    test('refuses a release build', () {
+      expect(
+        () => EmulatorBootstrap.prepare(releaseMode: true, isWeb: true),
+        throwsStateError,
+      );
+    });
+
+    test('refuses a native build', () {
+      expect(
+        () => EmulatorBootstrap.prepare(releaseMode: false, isWeb: false),
+        throwsStateError,
+      );
+    });
+  });
+
   group('EmulatorBootstrap.configure', () {
     test('refuses a release build before touching Firebase', () {
       expect(
