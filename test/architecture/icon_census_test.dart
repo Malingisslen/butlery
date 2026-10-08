@@ -71,28 +71,7 @@ const Map<String, Map<String, int>> _residue = {
   'lib/views/notifications/notifications_view.dart': {
     'notifications_outlined': 1,
   },
-  'lib/views/onboarding/onboarding_allergen_page.dart': {
-    'catching_pokemon': 3,
-    'egg_outlined': 1,
-    'grain': 1,
-    'grass_outlined': 1,
-    'local_florist_outlined': 3,
-    'science_outlined': 1,
-    'spa_outlined': 1,
-    'water_drop_outlined': 2,
-  },
-  'lib/views/onboarding/onboarding_dietary_page.dart': {
-    'no_food': 1,
-    'spa': 1,
-    'water_drop_outlined': 1,
-  },
   'lib/views/onboarding/onboarding_import_page.dart': {'content_paste': 1},
-  'lib/views/pantry/pantry_view.dart': {
-    'ac_unit': 1,
-    'grass_outlined': 1,
-    'inventory_2_outlined': 1,
-    'kitchen': 1,
-  },
   'lib/views/personal_tags/personal_tag_dialogs.dart': {
     'folder_off': 1,
     'play_arrow': 1,
@@ -272,11 +251,6 @@ const Map<String, Map<String, int>> _residue = {
   },
   'lib/widgets/common/pwa_install_banner.dart': {'install_mobile': 1},
   'lib/widgets/common/routing/deferred_route_loader.dart': {'home': 1},
-  'lib/widgets/common/search_filter/filter_models.dart': {
-    'cake': 1,
-    'child_care': 1,
-    'cookie': 1,
-  },
   'lib/widgets/common/search_filter/quick_filter_chips.dart': {
     'kitchen_outlined': 1,
   },
@@ -366,10 +340,6 @@ const Map<String, Map<String, int>> _residue = {
   'lib/widgets/social/shared_card_header.dart': {'link_off': 1},
   'lib/widgets/styled/styled_input.dart': {'phone': 1},
   'lib/widgets/tagging/dietary_status_badge.dart': {'cancel_outlined': 1},
-  'lib/widgets/tagging/personal_tag_rule_dialog.dart': {
-    'all_inclusive': 1,
-    'call_split': 1,
-  },
   'lib/widgets/tagging/tag_detail_rules_section.dart': {
     'auto_awesome': 1,
     'rule': 1,

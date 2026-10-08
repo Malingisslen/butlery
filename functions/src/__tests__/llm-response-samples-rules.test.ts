@@ -62,6 +62,9 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // Suites share one long-lived emulator; leftovers from an earlier run
+  // turn a create-only write into a denied update.
+  await env.clearFirestore();
 
   // Seed the admin record (so isAdmin() resolves true for ADMIN_UID — proving
   // the deny holds even for an app admin) and an existing sample row for the

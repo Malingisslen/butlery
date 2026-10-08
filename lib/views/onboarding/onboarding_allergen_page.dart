@@ -20,35 +20,35 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
   bool _showAll = false;
 
   /// Primary allergens (most common, always visible).
-  static const Map<String, IconData> _primaryAllergenIcons = {
-    'gluten': Icons.grain,
-    'mjölk': Icons.water_drop_outlined,
-    'nötter': ButleryIcons.leaf,
-    'ägg': Icons.egg_outlined,
-    'soja': Icons.spa_outlined,
-    'fisk': ButleryIcons.utensils,
-    'skaldjur': Icons.catching_pokemon,
-    'sesam': Icons.grass_outlined,
-  };
+  static const List<String> _primaryAllergens = [
+    'gluten',
+    'mjölk',
+    'nötter',
+    'ägg',
+    'soja',
+    'fisk',
+    'skaldjur',
+    'sesam',
+  ];
 
   /// Extended allergens (remaining EU-14 + lactose).
-  static const Map<String, IconData> _extendedAllergenIcons = {
-    'laktos': Icons.water_drop_outlined,
-    'selleri': Icons.local_florist_outlined,
-    'senap': Icons.local_florist_outlined,
-    'lupin': Icons.local_florist_outlined,
-    'sulfiter': Icons.science_outlined,
-    'jordnötter': ButleryIcons.leaf,
-    'trädnötter': ButleryIcons.leaf,
-    'kräftdjur': Icons.catching_pokemon,
-    'blötdjur': Icons.catching_pokemon,
-  };
+  static const List<String> _extendedAllergens = [
+    'laktos',
+    'selleri',
+    'senap',
+    'lupin',
+    'sulfiter',
+    'jordnötter',
+    'trädnötter',
+    'kräftdjur',
+    'blötdjur',
+  ];
 
   /// All allergens combined (precomputed to avoid per-build allocation).
-  static const Map<String, IconData> _allAllergenIcons = {
-    ..._primaryAllergenIcons,
-    ..._extendedAllergenIcons,
-  };
+  static const List<String> _allAllergens = [
+    ..._primaryAllergens,
+    ..._extendedAllergens,
+  ];
 
   static String _allergenLabel(BuildContext context, String key) {
     final l10n = context.l10n;
@@ -79,8 +79,7 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    final allergens = _showAll ? _allAllergenIcons : _primaryAllergenIcons;
-    final allergenEntries = allergens.entries.toList();
+    final allergens = _showAll ? _allAllergens : _primaryAllergens;
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -112,21 +111,20 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
                 mainAxisSpacing: AppDimensions.spacingSm,
                 childAspectRatio: 2.5,
               ),
-              itemCount: allergenEntries.length + 1, // +1 for toggle button
+              itemCount: allergens.length + 1, // +1 for toggle button
               itemBuilder: (context, index) {
-                if (index == allergenEntries.length) {
+                if (index == allergens.length) {
                   return _ShowAllToggle(
                     showAll: _showAll,
                     onToggle: () => setState(() => _showAll = !_showAll),
                   );
                 }
-                final entry = allergenEntries[index];
-                final isSelected = viewModel.isAllergenSelected(entry.key);
+                final key = allergens[index];
+                final isSelected = viewModel.isAllergenSelected(key);
                 return _AllergenToggleCard(
-                  label: _allergenLabel(context, entry.key),
-                  icon: entry.value,
+                  label: _allergenLabel(context, key),
                   isSelected: isSelected,
-                  onTap: () => viewModel.toggleAllergen(entry.key),
+                  onTap: () => viewModel.toggleAllergen(key),
                 );
               },
             ),
@@ -194,13 +192,11 @@ class _ShowAllToggle extends StatelessWidget {
 
 class _AllergenToggleCard extends StatelessWidget {
   final String label;
-  final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _AllergenToggleCard({
     required this.label,
-    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
@@ -238,12 +234,6 @@ class _AllergenToggleCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              ButleryIcon(
-                icon,
-                size: AppDimensions.iconSizeL,
-                color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
               Expanded(
                 child: Text(
                   label,
