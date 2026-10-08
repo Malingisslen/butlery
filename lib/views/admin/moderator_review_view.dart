@@ -193,7 +193,7 @@ class _ReportCard extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingXs),
               AdminBadge(
                 label: context.l10n.moderatorMinorAccountBadge,
-                icon: Icons.shield_outlined,
+                icon: ButleryIcons.shield,
               ),
             ],
             const SizedBox(height: AppDimensions.spacingSm),

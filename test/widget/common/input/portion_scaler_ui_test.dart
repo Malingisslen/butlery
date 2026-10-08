@@ -209,7 +209,7 @@ void main() {
         );
         // Banner uses calculate or language icon — neither should be present
         expect(find.byIcon(Icons.calculate), findsNothing);
-        expect(find.byIcon(Icons.language), findsNothing);
+        expect(find.byIcon(ButleryIcons.globe), findsNothing);
       },
     );
 
@@ -242,7 +242,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.language), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.globe), findsAtLeastNWidgets(1));
     });
 
     testWidgets(
@@ -328,7 +328,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.language), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.globe), findsAtLeastNWidgets(1));
     });
 
     testWidgets('tap toggle invokes onToggleUnitConversion exactly once', (
@@ -468,7 +468,7 @@ void main() {
       // Header portion text
       expect(find.text('6'), findsOneWidget);
       // Status banner (language icon)
-      expect(find.byIcon(Icons.language), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.globe), findsAtLeastNWidgets(1));
       // Toggle button
       expect(
         find.byWidgetPredicate((w) => w is OutlinedButton),

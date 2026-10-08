@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class ShareModeSelection {
   static Widget build(
@@ -75,8 +76,8 @@ class ShareModeSelection {
                             children: [
                               ButleryIcon(
                                 selectedMode == ShareMode.staticCopy
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked,
+                                    ? ButleryIcons.circleDot
+                                    : ButleryIcons.circle,
                                 color: selectedMode == ShareMode.staticCopy
                                     ? Theme.of(context).colorScheme.onSurface
                                     : null,
@@ -157,8 +158,8 @@ class ShareModeSelection {
                           children: [
                             ButleryIcon(
                               selectedMode == ShareMode.realtime
-                                  ? Icons.radio_button_checked
-                                  : Icons.radio_button_unchecked,
+                                  ? ButleryIcons.circleDot
+                                  : ButleryIcons.circle,
                               color: selectedMode == ShareMode.realtime
                                   ? Theme.of(context).colorScheme.onSurface
                                   : null,

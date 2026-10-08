@@ -549,7 +549,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             if (viewModel.hasMenu)
               _rootItem(
                 _VeckomenyRootAction.save,
-                Icons.save,
+                ButleryIcons.save,
                 context.l10n.menuSave,
               ),
             if (viewModel.hasMenu)

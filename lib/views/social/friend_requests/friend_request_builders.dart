@@ -59,7 +59,7 @@ class FriendRequestsHeaderBuilder {
               icon: Badge(
                 isLabelVisible: viewModel.incomingRequests.isNotEmpty,
                 label: Text('${viewModel.incomingRequests.length}'),
-                child: const ButleryIcon(Icons.inbox),
+                child: const ButleryIcon(ButleryIcons.inbox),
               ),
               text: context.l10n.socialIncoming,
             ),
@@ -230,7 +230,7 @@ class IncomingRequestsTabBuilder {
       return StateWidget.empty(
         title: context.l10n.socialNoFriendRequests,
         subtitle: context.l10n.socialNoFriendRequestsDescription,
-        icon: Icons.inbox_outlined,
+        icon: ButleryIcons.inbox,
       );
     }
 

@@ -199,7 +199,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             if (_canAddMembers && !_selectionMode)
               TextButton.icon(
                 onPressed: widget.onAddMembers,
-                icon: const ButleryIcon(Icons.person_add),
+                icon: const ButleryIcon(ButleryIcons.userPlus),
                 label: Text(context.l10n.commonAdd),
               ),
             // P5-U31: the list lives in the group view's scroll, so the

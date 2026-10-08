@@ -67,7 +67,7 @@ class LanguageSettingsSection extends StatelessWidget {
                     }
                   },
                   secondary: ButleryIcon(
-                    isSelected ? ButleryIcons.circleCheck : Icons.language,
+                    isSelected ? ButleryIcons.circleCheck : ButleryIcons.globe,
                     color: isSelected ? context.modeColors.success : null,
                   ),
                 ),
@@ -170,7 +170,7 @@ class ProfileActionButtons extends StatelessWidget {
         HeroButton(
           key: const ValueKey('profileEdit.save'),
           label: context.l10n.profileSaveProfile,
-          icon: Icons.save,
+          icon: ButleryIcons.save,
           onPressed: viewModel.isFormValid ? onSave : null,
           busy: viewModel.isLoading,
           busyLabel: context.l10n.statusSaving,

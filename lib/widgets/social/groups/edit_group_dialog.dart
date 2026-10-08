@@ -208,7 +208,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                 onPrimaryAction: _isUpdating ? null : _updateGroup,
                 onSecondaryAction: () => Navigator.of(context).pop(),
                 isLoading: _isUpdating,
-                primaryActionIcon: Icons.save,
+                primaryActionIcon: ButleryIcons.save,
               ),
             ],
           ),

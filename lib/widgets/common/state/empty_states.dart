@@ -128,7 +128,7 @@ class EmptyStates {
         );
       case EmptyStateVariant.noSearchResults:
         return _EmptyStateConfig(
-          icon: Icons.search_off,
+          icon: ButleryIcons.searchOff,
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoResults,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
@@ -136,7 +136,7 @@ class EmptyStates {
         );
       case EmptyStateVariant.noFriendsSearchResults:
         return _EmptyStateConfig(
-          icon: Icons.search_off,
+          icon: ButleryIcons.searchOff,
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoFriendsSearchTitle,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
@@ -144,7 +144,7 @@ class EmptyStates {
         );
       case EmptyStateVariant.noGroupsSearchResults:
         return _EmptyStateConfig(
-          icon: Icons.search_off,
+          icon: ButleryIcons.searchOff,
           illustration: VegetableType.mushroom,
           title: l10n.emptyNoGroupsSearchTitle,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
@@ -172,11 +172,11 @@ class EmptyStates {
           // No illustration for social states - use icon
           title: l10n.emptyNoFriendsTitle,
           subtitle: l10n.emptyNoFriendsSubtitle,
-          actionIcon: Icons.person_add,
+          actionIcon: ButleryIcons.userPlus,
         );
       case EmptyStateVariant.noCategories:
         return _EmptyStateConfig(
-          icon: Icons.category,
+          icon: ButleryIcons.grid,
           title: l10n.emptyNoCategoriesTitle,
           subtitle: l10n.emptyNoCategoriesSubtitle,
           actionIcon: ButleryIcons.plus,
@@ -190,7 +190,7 @@ class EmptyStates {
         );
       case EmptyStateVariant.noTargets:
         return _EmptyStateConfig(
-          icon: Icons.group_add,
+          icon: ButleryIcons.usersPlus,
           title: l10n.emptyNoTargetsTitle,
           subtitle: l10n.emptyNoTargetsSubtitle,
           actionIcon: ButleryIcons.plus,

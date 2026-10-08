@@ -902,7 +902,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      Icons.history,
+                                      ButleryIcons.history,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -922,7 +922,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               child: Row(
                                 children: [
                                   ButleryIcon(
-                                    Icons.flag_outlined,
+                                    ButleryIcons.flag,
                                     size: AppDimensions.iconSizeM,
                                     color: menuCs.error,
                                   ),

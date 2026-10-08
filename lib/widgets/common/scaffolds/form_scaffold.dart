@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Form scaffold consolidating patterns from 18+ files
 class FormScaffold extends StatelessWidget {
@@ -81,7 +82,7 @@ class FormScaffold extends StatelessWidget {
                     onFill: false,
                   )
                 : null,
-            icon: const ButleryIcon(Icons.save),
+            icon: const ButleryIcon(ButleryIcons.save),
             tooltip: context.l10n.commonSave,
           ),
         ),

@@ -617,8 +617,8 @@ void main() {
           await tester.pumpAndSettle();
 
           // Before tapping: the cell shows an EMPTY checkbox.
-          expect(find.byIcon(Icons.check_box_outline_blank), findsOneWidget);
-          expect(find.byIcon(Icons.check_box), findsNothing);
+          expect(find.byIcon(ButleryIcons.square), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.checkSquare), findsNothing);
 
           // Tap the assigned cell (its lowercased title surfaces the recipe).
           await tester.tap(find.text('pasta'));
@@ -627,8 +627,8 @@ void main() {
           // The entry is now selected: filled checkbox, VM agrees, count is 1.
           expect(vm.isSelected('mon-m'), isTrue);
           expect(vm.selectedCount, 1);
-          expect(find.byIcon(Icons.check_box), findsOneWidget);
-          expect(find.byIcon(Icons.check_box_outline_blank), findsNothing);
+          expect(find.byIcon(ButleryIcons.checkSquare), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.square), findsNothing);
 
           // Navigation must NOT have fired — the tap toggled instead.
           verifyNever(() => recipeService.getRecipeById(any()));

@@ -117,7 +117,7 @@ class UserStatusHelper {
         size: iconSize,
       ),
       UserStatus.offline => ButleryIcon(
-        Icons.circle_outlined,
+        ButleryIcons.circle,
         color: color,
         size: iconSize,
       ),

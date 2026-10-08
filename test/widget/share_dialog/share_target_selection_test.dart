@@ -125,7 +125,7 @@ void main() {
 
       // Check for correct Swedish no results text
       expect(find.text('Inga vänner matchade din sökning'), findsOneWidget);
-      expect(find.byIcon(Icons.search_off), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.searchOff), findsOneWidget);
     });
 
     // BUT-2183: the list separator is border.subtle (outlineVariant), not the

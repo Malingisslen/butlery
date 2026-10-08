@@ -345,8 +345,8 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                         if (widget.multiSelect)
                           ButleryIcon(
                             isSelected
-                                ? Icons.check_box
-                                : Icons.check_box_outline_blank,
+                                ? ButleryIcons.checkSquare
+                                : ButleryIcons.square,
                             size: AppDimensions.iconSize18,
                             color: isSelected
                                 ? cs.onSurface

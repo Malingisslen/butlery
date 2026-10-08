@@ -367,7 +367,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       return StateWidget.empty(
         title: context.l10n.importNoRecipesMatchedFilters,
         subtitle: context.l10n.importTryAdjustFilters,
-        icon: Icons.search_off,
+        icon: ButleryIcons.searchOff,
       );
     }
 

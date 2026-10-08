@@ -74,7 +74,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
           if (viewModel.canEdit)
             _buildPopupMenuItem(
               value: 'clear_completed',
-              icon: Icons.clear_all,
+              icon: ButleryIcons.listX,
               label: context.l10n.collaborativeClearCompleted,
             ),
         ],
@@ -238,7 +238,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
         completedItems.length,
       ),
       confirmActionText: context.l10n.collaborativeClearAll,
-      confirmationIcon: Icons.clear_all,
+      confirmationIcon: ButleryIcons.listX,
       isDangerous: true,
       successMessage: context.l10n.collaborativeCompletedItemsCleared(
         completedItems.length,

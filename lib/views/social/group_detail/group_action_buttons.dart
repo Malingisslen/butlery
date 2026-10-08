@@ -125,7 +125,7 @@ class GroupActionButtons extends StatelessWidget {
         ] else
           OutlinedButton.icon(
             onPressed: onLeaveGroup,
-            icon: const ButleryIcon(Icons.exit_to_app),
+            icon: const ButleryIcon(ButleryIcons.logOut),
             label: Text(context.l10n.groupLeaveGroup),
             style: ComponentThemes.outlinedButtonStyle(
               Theme.of(context).colorScheme,

@@ -134,7 +134,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
         // text.primary: cs.primary is ink in both modes and would vanish
         // on the dark dialog.
         icon: ButleryIcon(
-          Icons.restore,
+          ButleryIcons.history,
           color: Theme.of(context).colorScheme.onSurface,
           size: AppDimensions.iconSizeL,
         ),
@@ -148,7 +148,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
           FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
             icon: const ButleryIcon(
-              Icons.restore,
+              ButleryIcons.history,
               size: AppDimensions.iconSizeS,
             ),
             label: Text(context.l10n.draftRestore),

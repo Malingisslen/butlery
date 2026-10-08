@@ -7,6 +7,7 @@ import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Creates a TagResult with specific allergen and dietary statuses for testing.
 TagResult _buildTagResult({
@@ -77,8 +78,8 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // DietaryStatusBadge FREE uses Icons.eco_outlined
-          expect(find.byIcon(Icons.eco_outlined), findsNWidgets(2));
+          // DietaryStatusBadge FREE uses ButleryIcons.leaf
+          expect(find.byIcon(ButleryIcons.leaf), findsNWidgets(2));
         },
       );
     });

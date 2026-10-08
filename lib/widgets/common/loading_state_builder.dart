@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
 /// This widget wraps the existing StateWidget with a convenient builder pattern
@@ -180,7 +181,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
       return StateWidget.empty(
         title: emptyTitle ?? context.l10n.loadingNoContent,
         subtitle: emptySubtitle,
-        icon: emptyIcon ?? Icons.inbox_outlined,
+        icon: emptyIcon ?? ButleryIcons.inbox,
         actionLabel: emptyActionLabel,
         onAction: onEmptyAction,
       );
@@ -199,7 +200,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     return StateWidget.empty(
       title: emptyTitle ?? context.l10n.loadingNoContent,
       subtitle: emptySubtitle,
-      icon: emptyIcon ?? Icons.inbox_outlined,
+      icon: emptyIcon ?? ButleryIcons.inbox,
       actionLabel: emptyActionLabel,
       onAction: onEmptyAction,
     );
@@ -294,7 +295,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
           builder: (context) => StateWidget.empty(
             title: emptyTitle ?? context.l10n.loadingNoContent,
             subtitle: emptySubtitle,
-            icon: emptyIcon ?? Icons.inbox_outlined,
+            icon: emptyIcon ?? ButleryIcons.inbox,
             actionLabel: emptyActionLabel,
             onAction: onEmptyAction,
           ),

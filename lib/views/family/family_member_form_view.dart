@@ -190,7 +190,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     ActionButtons.primaryButton(
                       context,
                       label: l10n.commonSave,
-                      icon: Icons.save,
+                      icon: ButleryIcons.save,
                       isExpanded: true,
                       isLoading: _vm.isLoading,
                       onPressed: _canSave ? _save : null,

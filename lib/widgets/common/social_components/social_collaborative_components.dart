@@ -356,7 +356,7 @@ class SocialCollaborativeComponents {
                 const SizedBox(width: AppDimensions.spacingMd),
                 _buildMetricItem(
                   context,
-                  icon: Icons.history,
+                  icon: ButleryIcons.history,
                   value: totalEdits.toString(),
                   label: context.l10n.socialChanges,
                 ),

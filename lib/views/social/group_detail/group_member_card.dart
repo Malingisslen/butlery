@@ -70,7 +70,7 @@ class GroupMemberCard {
         onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
         leading: isSelectionMode && selectable
             ? ButleryIcon(
-                isSelected ? ButleryIcons.circleCheck : Icons.circle_outlined,
+                isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
                 color: isSelected ? cs.onSurface : cs.outline,
                 size: AppDimensions.iconSizeL,
               )
@@ -184,7 +184,7 @@ class GroupMemberCard {
                         child: Row(
                           children: [
                             ButleryIcon(
-                              Icons.flag_outlined,
+                              ButleryIcons.flag,
                               size: AppDimensions.iconSizeM,
                               color: Theme.of(context).colorScheme.error,
                             ),

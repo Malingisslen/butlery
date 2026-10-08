@@ -13,7 +13,7 @@ class OnboardingDietaryPage extends StatelessWidget {
   const OnboardingDietaryPage({super.key});
 
   static const Map<String, IconData> _dietaryIcons = {
-    'vegetarisk': Icons.eco,
+    'vegetarisk': ButleryIcons.leaf,
     'vegansk': Icons.spa,
     'pescetarian': ButleryIcons.utensils,
     'glutenfri': Icons.no_food,

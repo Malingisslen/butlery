@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -269,7 +270,7 @@ void main() {
             builder: (_, __) => const SizedBox.shrink(),
             emptyTitle: 'Tomt här',
             emptySubtitle: 'Lägg till något',
-            emptyIcon: Icons.search_off,
+            emptyIcon: ButleryIcons.searchOff,
             emptyActionLabel: 'Lägg till',
             onEmptyAction: () => taps++,
           ),
@@ -279,7 +280,7 @@ void main() {
 
       expect(find.text('Tomt här'), findsOneWidget);
       expect(find.text('Lägg till något'), findsOneWidget);
-      expect(find.byIcon(Icons.search_off), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.searchOff), findsOneWidget);
 
       await tester.tap(find.text('Lägg till'));
       await tester.pump();

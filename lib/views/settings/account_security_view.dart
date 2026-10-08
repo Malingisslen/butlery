@@ -384,7 +384,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            ButleryIcon(Icons.security, color: cs.onSurface),
+            ButleryIcon(ButleryIcons.shield, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -454,7 +454,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           onTap: () => Navigator.pushNamed(context, Routes.communityGuidelines),
         ),
         ListTile(
-          leading: const ButleryIcon(Icons.flag_outlined),
+          leading: const ButleryIcon(ButleryIcons.flag),
           title: Text(context.l10n.settingsMyReports),
           trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.myReports),

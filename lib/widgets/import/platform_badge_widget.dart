@@ -86,7 +86,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.instagram:
         return ButleryIcons.camera;
       case Platform.website:
-        return Icons.language;
+        return ButleryIcons.globe;
       case Platform.unknown:
         return Icons.text_snippet_outlined;
     }

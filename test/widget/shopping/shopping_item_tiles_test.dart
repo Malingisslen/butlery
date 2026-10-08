@@ -548,7 +548,7 @@ void main() {
                   context: context,
                   title: 'Empty',
                   message: 'No items',
-                  icon: Icons.inbox,
+                  icon: ButleryIcons.inbox,
                 );
               },
             ),
@@ -561,7 +561,7 @@ void main() {
         final messageWidget = tester.widget<Text>(find.text('No items'));
         expect(messageWidget.style?.color, isNotNull);
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.inbox));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.inbox));
         expect(icon.color, isNotNull);
       });
     });

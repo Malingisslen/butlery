@@ -261,7 +261,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             child: Row(
               children: [
                 ButleryIcon(
-                  Icons.reply,
+                  ButleryIcons.reply,
                   size: AppDimensions.iconSizeM,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),

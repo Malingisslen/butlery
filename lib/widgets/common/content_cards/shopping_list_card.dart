@@ -262,7 +262,7 @@ class ShoppingListCard extends StatelessWidget {
                     ButleryIcon(
                       _isItemCompleted(item)
                           ? ButleryIcons.circleCheck
-                          : Icons.radio_button_unchecked,
+                          : ButleryIcons.circle,
                       size: AppDimensions.iconSizeS,
                       color: _isItemCompleted(item)
                           ? context.modeColors.success

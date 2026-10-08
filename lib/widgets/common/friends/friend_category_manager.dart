@@ -184,7 +184,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         Row(
           children: [
             ButleryIcon(
-              Icons.category_outlined,
+              ButleryIcons.grid,
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),

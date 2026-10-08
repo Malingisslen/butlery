@@ -309,7 +309,7 @@ class GroupDetailActions {
       title: context.l10n.groupLeaveGroup,
       message: context.l10n.groupLeaveGroupConfirm(group.name),
       confirmText: context.l10n.groupLeave,
-      icon: Icons.exit_to_app,
+      icon: ButleryIcons.logOut,
       isDangerous: true,
     );
 

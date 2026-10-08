@@ -204,7 +204,7 @@ void main() {
       expect(find.byIcon(ButleryIcons.clock), findsNWidgets(2));
       expect(find.byIcon(ButleryIcons.star), findsOneWidget);
       expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
-      expect(find.byIcon(Icons.history), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.history), findsOneWidget);
       expect(find.byIcon(Icons.repeat), findsOneWidget);
       expect(find.byIcon(ButleryIcons.shuffle), findsOneWidget);
     });

@@ -145,7 +145,7 @@ class CategoryDisplayWidgets {
               children: [
                 Expanded(
                   child: StatItemWidget(
-                    icon: Icons.category,
+                    icon: ButleryIcons.grid,
                     label: context.l10n.friendCategories,
                     value: categories.length.toString(),
                     color: Theme.of(context).colorScheme.onSurface,
@@ -339,7 +339,7 @@ class CategoryDisplayWidgets {
       child: Row(
         children: [
           ButleryIcon(
-            Icons.category,
+            ButleryIcons.grid,
             color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeM,
           ),
@@ -381,7 +381,7 @@ class CategoryDisplayWidgets {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ButleryIcon(
-            Icons.category_outlined,
+            ButleryIcons.grid,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

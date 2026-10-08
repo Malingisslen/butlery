@@ -95,7 +95,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
                   ? context.l10n.a11yRecipeSelected(recipe.title)
                   : context.l10n.a11yRecipeNotSelected(recipe.title),
               child: ButleryIcon(
-                isSelected ? ButleryIcons.circleCheck : Icons.circle_outlined,
+                isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
                 // text.primary when chosen, border.control when not: ink on
                 // light and paper on dark (#flerbar draws the ink check).
                 color: isSelected ? cs.onSurface : cs.outline,

@@ -176,7 +176,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             return EmptyStates.buildEmptyState(
               context,
               variant: EmptyStateVariant.noSearchResults,
-              icon: Icons.search_off,
+              icon: ButleryIcons.searchOff,
               title: l10n.messagingNoConversationsFound,
               subtitle: l10n.messagingTryAnotherSearch,
             );
@@ -409,7 +409,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               },
             ),
             ListTile(
-              leading: const ButleryIcon(Icons.exit_to_app),
+              leading: const ButleryIcon(ButleryIcons.logOut),
               title: Text(l10n.messagingLeaveGroup),
               onTap: () {
                 Navigator.pop(context);

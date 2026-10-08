@@ -20,7 +20,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.eco_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.leaf), findsOneWidget);
         expect(find.byIcon(Icons.cancel_outlined), findsNothing);
         expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
@@ -37,7 +37,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.cancel_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.eco_outlined), findsNothing);
+        expect(find.byIcon(ButleryIcons.leaf), findsNothing);
         expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
 
@@ -75,7 +75,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.eco_outlined));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.leaf));
         expect(icon.size, 14.0);
       });
 
@@ -91,7 +91,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.eco_outlined));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.leaf));
         expect(icon.size, 18.0);
       });
     });
@@ -109,7 +109,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.eco_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.leaf), findsOneWidget);
         final textInBadge = find.descendant(
           of: find.byType(DietaryStatusBadge),
           matching: find.byType(Text),

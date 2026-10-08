@@ -111,7 +111,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circle), findsOneWidget);
         expect(find.byIcon(ButleryIcons.moreVertical), findsNothing);
       },
     );
@@ -195,7 +195,7 @@ void main() {
         await tester.pump();
 
         // No select indicator — the avatar is shown instead of the toggle icon.
-        expect(find.byIcon(Icons.circle_outlined), findsNothing);
+        expect(find.byIcon(ButleryIcons.circle), findsNothing);
         expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
 
         // Tapping the tile does nothing (onTap is null for non-removable).

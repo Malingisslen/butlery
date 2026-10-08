@@ -213,7 +213,7 @@ class ShareTargetSelectionEnhanced {
     if (filteredFriends.isEmpty) {
       return _buildEmptyState(
         context,
-        searchQuery.isEmpty ? ButleryIcons.users : Icons.search_off,
+        searchQuery.isEmpty ? ButleryIcons.users : ButleryIcons.searchOff,
         searchQuery.isEmpty
             ? context.l10n.shareNoFriendsAvailable
             : context.l10n.shareNoFriendsMatchedSearch,
@@ -301,7 +301,7 @@ class ShareTargetSelectionEnhanced {
     if (filteredGroups.isEmpty) {
       return _buildEmptyState(
         context,
-        searchQuery.isEmpty ? ButleryIcons.users : Icons.search_off,
+        searchQuery.isEmpty ? ButleryIcons.users : ButleryIcons.searchOff,
         searchQuery.isEmpty
             ? context.l10n.shareNoGroupsAvailable
             : context.l10n.shareNoGroupsMatchedSearch,

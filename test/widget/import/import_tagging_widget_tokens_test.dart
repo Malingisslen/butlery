@@ -446,7 +446,7 @@ void main() {
 
         final decoration = _decorationAbove(
           tester,
-          find.byIcon(Icons.eco_outlined),
+          find.byIcon(ButleryIcons.leaf),
         );
         expect(decoration.color, modeColors.surfaceTintSuccess);
         expect(decoration.border, isNull);

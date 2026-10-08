@@ -497,7 +497,7 @@ void main() {
                             ButleryIcons.circleCheck,
                             color: Colors.green,
                           )
-                        : const Icon(Icons.radio_button_unchecked),
+                        : const Icon(ButleryIcons.circle),
                   ),
                 ),
               ),
@@ -505,13 +505,13 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circle), findsOneWidget);
         expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
 
         await tester.tap(find.text('John Doe'));
         await tester.pump();
 
-        expect(find.byIcon(Icons.radio_button_unchecked), findsNothing);
+        expect(find.byIcon(ButleryIcons.circle), findsNothing);
         expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
       });
 

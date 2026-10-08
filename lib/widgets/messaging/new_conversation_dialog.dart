@@ -122,7 +122,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
               child: OutlinedButton.icon(
                 onPressed: _navigateToGroupCreation,
-                icon: const ButleryIcon(Icons.group_add),
+                icon: const ButleryIcon(ButleryIcons.usersPlus),
                 label: Text(context.l10n.conversationCreateGroup),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(

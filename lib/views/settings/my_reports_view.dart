@@ -84,7 +84,7 @@ class _MyReportsContent extends StatelessWidget {
     if (!vm.hasReports) {
       return StateWidget.empty(
         title: context.l10n.myReportsEmpty,
-        icon: Icons.flag_outlined,
+        icon: ButleryIcons.flag,
       );
     }
     return RefreshIndicator(

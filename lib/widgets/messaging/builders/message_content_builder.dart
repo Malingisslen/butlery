@@ -323,7 +323,7 @@ class MessageContentBuilder {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ButleryIcon(
-                    Icons.broken_image,
+                    ButleryIcons.imageOff,
                     size: 48,
                     color: isFromCurrentUser
                         ? AppModeColors.textSecondaryOnInk()

@@ -257,13 +257,13 @@ class RecipeFilters {
     FilterOption(
       id: 'vegetarian',
       label: context.l10n.filterVegetarian,
-      icon: Icons.eco_outlined,
+      icon: ButleryIcons.leaf,
       value: 'vegetarisk',
     ),
     FilterOption(
       id: 'vegan',
       label: context.l10n.filterVegan,
-      icon: Icons.eco_outlined,
+      icon: ButleryIcons.leaf,
       value: 'vegansk',
     ),
     FilterOption(

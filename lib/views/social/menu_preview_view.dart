@@ -174,7 +174,7 @@ class MenuPreviewView extends StatelessWidget {
                   ),
                   const SizedBox(width: AppDimensions.spacingL),
                   ButleryIcon(
-                    Icons.category,
+                    ButleryIcons.grid,
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),

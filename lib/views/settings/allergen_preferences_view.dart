@@ -116,7 +116,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             Row(
               children: [
                 ButleryIcon(
-                  Icons.shield_outlined,
+                  ButleryIcons.shield,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),

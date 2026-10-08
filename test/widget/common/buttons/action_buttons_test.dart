@@ -127,13 +127,13 @@ void main() {
                 context,
                 label: 'Save',
                 onPressed: () {},
-                icon: Icons.save,
+                icon: ButleryIcons.save,
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.save), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.save), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
       });
 
@@ -477,14 +477,14 @@ void main() {
                 context,
                 label: 'Save',
                 onPressed: () {},
-                icon: Icons.save,
+                icon: ButleryIcons.save,
                 isLoading: true,
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.save), findsNothing);
+        expect(find.byIcon(ButleryIcons.save), findsNothing);
         expect(find.byType(ButtonPlateLine), findsOneWidget);
       });
     });

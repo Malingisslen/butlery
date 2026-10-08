@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Empty state scaffold consolidating patterns from 20+ files
 class EmptyStateScaffold extends StatelessWidget {
@@ -21,7 +22,7 @@ class EmptyStateScaffold extends StatelessWidget {
     super.key,
     this.title,
     this.emptyMessage,
-    this.emptyIcon = Icons.inbox_outlined,
+    this.emptyIcon = ButleryIcons.inbox,
     this.onAction,
     this.actionText,
     this.showBackButton = true,

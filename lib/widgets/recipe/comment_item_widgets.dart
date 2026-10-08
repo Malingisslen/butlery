@@ -320,7 +320,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       child: IconButton(
                         onPressed: widget.onReply,
                         icon: ButleryIcon(
-                          Icons.reply,
+                          ButleryIcons.reply,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),
@@ -375,7 +375,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                           contentOwnerId: widget.comment.authorId,
                         ),
                         icon: ButleryIcon(
-                          Icons.flag_outlined,
+                          ButleryIcons.flag,
                           color: cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),

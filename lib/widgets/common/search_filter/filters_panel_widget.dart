@@ -184,7 +184,7 @@ class FiltersPanelWidget extends StatelessWidget {
                           child: TextButton.icon(
                             onPressed: onClearAllFilters,
                             icon: const ButleryIcon(
-                              Icons.clear_all,
+                              ButleryIcons.listX,
                               size: AppDimensions.iconSizeAction,
                             ),
                             label: Text(

@@ -148,8 +148,8 @@ class _ShoppingListSelectionDialogState
                 child: ListTile(
                   leading: ButleryIcon(
                     _isCreatingNew
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_unchecked,
+                        ? ButleryIcons.circleDot
+                        : ButleryIcons.circle,
                     color: _isCreatingNew
                         ? Theme.of(context).colorScheme.onSurface
                         : null,
@@ -206,8 +206,8 @@ class _ShoppingListSelectionDialogState
                         child: ListTile(
                           leading: ButleryIcon(
                             _selectedListId == list.id
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_unchecked,
+                                ? ButleryIcons.circleDot
+                                : ButleryIcons.circle,
                             color: _selectedListId == list.id
                                 ? Theme.of(context).colorScheme.onSurface
                                 : null,

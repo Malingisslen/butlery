@@ -23,7 +23,7 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
   static const Map<String, IconData> _primaryAllergenIcons = {
     'gluten': Icons.grain,
     'mjölk': Icons.water_drop_outlined,
-    'nötter': Icons.eco_outlined,
+    'nötter': ButleryIcons.leaf,
     'ägg': Icons.egg_outlined,
     'soja': Icons.spa_outlined,
     'fisk': ButleryIcons.utensils,
@@ -38,8 +38,8 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
     'senap': Icons.local_florist_outlined,
     'lupin': Icons.local_florist_outlined,
     'sulfiter': Icons.science_outlined,
-    'jordnötter': Icons.eco_outlined,
-    'trädnötter': Icons.eco_outlined,
+    'jordnötter': ButleryIcons.leaf,
+    'trädnötter': ButleryIcons.leaf,
     'kräftdjur': Icons.catching_pokemon,
     'blötdjur': Icons.catching_pokemon,
   };

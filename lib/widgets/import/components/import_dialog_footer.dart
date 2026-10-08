@@ -105,7 +105,7 @@ class ImportDialogFooter extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: canProceed ? onSave : null,
                   style: _fitLabel,
-                  icon: const ButleryIcon(Icons.save),
+                  icon: const ButleryIcon(ButleryIcons.save),
                   label: Text(context.l10n.importSaveRecipe),
                 )
               else

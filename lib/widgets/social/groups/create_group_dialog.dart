@@ -237,7 +237,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               // Header
               DialogHeader(
                 title: context.l10n.groupCreateNew,
-                icon: Icons.group_add,
+                icon: ButleryIcons.usersPlus,
                 onClose: () => Navigator.of(context).pop(),
               ),
 
@@ -328,7 +328,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 onPrimaryAction: _isCreating ? null : _createGroup,
                 onSecondaryAction: () => Navigator.of(context).pop(),
                 isLoading: _isCreating,
-                primaryActionIcon: Icons.group_add,
+                primaryActionIcon: ButleryIcons.usersPlus,
               ),
             ],
           ),
