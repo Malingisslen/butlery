@@ -36,11 +36,11 @@ class ImageDisplayInfo {
       case ImageUploadState.pending:
         return ButleryIcons.clock;
       case ImageUploadState.uploading:
-        return Icons.cloud_upload;
+        return ButleryIcons.upload;
       case ImageUploadState.retrying:
         return ButleryIcons.refreshCw;
       case ImageUploadState.completed:
-        return Icons.cloud_done;
+        return ButleryIcons.circleCheck;
       case ImageUploadState.failed:
         return ButleryIcons.triangleAlert;
       case ImageUploadState.cancelled:

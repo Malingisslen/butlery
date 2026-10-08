@@ -397,7 +397,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
           key: const ValueKey('accountSecurity.mfa'),
-          leading: ButleryIcon(Icons.phone_android, color: cs.onSurface),
+          leading: ButleryIcon(ButleryIcons.smartphone, color: cs.onSurface),
           title: Text(
             context.l10n.accountSecurityMfaSettings,
             style: AppTextStyles.titleMedium,
@@ -430,7 +430,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            ButleryIcon(Icons.gavel_outlined, color: cs.onSurface),
+            ButleryIcon(ButleryIcons.file, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -442,7 +442,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
-          leading: const ButleryIcon(Icons.description_outlined),
+          leading: const ButleryIcon(ButleryIcons.file),
           title: Text(context.l10n.legalTermsOfService),
           trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.termsOfService),
@@ -460,7 +460,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           onTap: () => Navigator.pushNamed(context, Routes.myReports),
         ),
         ListTile(
-          leading: const ButleryIcon(Icons.code),
+          leading: const ButleryIcon(ButleryIcons.file),
           title: Text(context.l10n.legalOpenSourceLicenses),
           trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => showLicensePage(

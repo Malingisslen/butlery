@@ -22,7 +22,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
     });
 
     testWidgets('does not render once the seen flag is set', (tester) async {
@@ -32,7 +32,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsNothing);
+      expect(find.byIcon(ButleryIcons.hand), findsNothing);
     });
 
     testWidgets('dismiss hides the banner and persists the seen flag', (
@@ -41,12 +41,12 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.swipe), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
 
       await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsNothing);
+      expect(find.byIcon(ButleryIcons.hand), findsNothing);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(SwipeHintBanner.recipeSwipeSeenKey), isTrue);
     });
@@ -97,7 +97,7 @@ void main() {
         final box = tester.widget<Container>(
           find
               .ancestor(
-                of: find.byIcon(Icons.swipe),
+                of: find.byIcon(ButleryIcons.hand),
                 matching: find.byType(Container),
               )
               .first,
@@ -110,7 +110,10 @@ void main() {
           decoration.borderRadius,
           BorderRadius.circular(AppDimensions.radiusControl),
         );
-        expect(tester.widget<Icon>(find.byIcon(Icons.swipe)).color, iconColor);
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.hand)).color,
+          iconColor,
+        );
         final text = tester.widget<Text>(
           find.descendant(
             of: find.byType(SwipeHintBanner),
@@ -129,14 +132,14 @@ void main() {
         createLocalizedTestApp(
           child: const SwipeHintBanner(
             seenKey: SwipeHintBanner.cookingStepSeenKey,
-            icon: Icons.touch_app,
+            icon: ButleryIcons.hand,
             message: 'Long-press a step',
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.touch_app), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
       expect(find.text('Long-press a step'), findsOneWidget);
     });
 
@@ -156,7 +159,7 @@ void main() {
               SwipeHintBanner(), // recipe default — seen, must stay hidden
               SwipeHintBanner(
                 seenKey: SwipeHintBanner.cookingStepSeenKey,
-                icon: Icons.touch_app,
+                icon: ButleryIcons.hand,
                 message: 'Long-press a step',
               ),
             ],
@@ -165,8 +168,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsNothing);
-      expect(find.byIcon(Icons.touch_app), findsOneWidget);
+      // One hand on screen: the cooking hint's. The recipe hint shows the
+      // same glyph, so a second hand would mean it ignored its seen flag.
+      expect(find.text('Long-press a step'), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
     });
 
     testWidgets('dismiss persists its own key only', (tester) async {
@@ -175,7 +180,7 @@ void main() {
         createLocalizedTestApp(
           child: const SwipeHintBanner(
             seenKey: SwipeHintBanner.shoppingClaimSeenKey,
-            icon: Icons.swipe,
+            icon: ButleryIcons.hand,
             message: 'Swipe to claim',
           ),
         ),

@@ -402,7 +402,7 @@ class CookingNoStepsState extends StatelessWidget {
                       children: [
                         ExcludeSemantics(
                           child: ButleryIcon(
-                            Icons.no_meals,
+                            ButleryIcons.utensils,
                             color: cs.onPrimary,
                             size: AppDimensions.iconSizeDisplay,
                           ),
@@ -1121,7 +1121,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
           // BUT-1199: first-use hint for the long-press-step → timer gesture.
           SwipeHintBanner(
             seenKey: SwipeHintBanner.cookingStepSeenKey,
-            icon: Icons.touch_app,
+            icon: ButleryIcons.hand,
             message: context.l10n.cookingStepHintText,
           ),
           Expanded(

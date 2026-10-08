@@ -84,7 +84,7 @@ class _DraftSaveIndicatorState extends State<DraftSaveIndicator> {
     }
     if (widget.hasRecentSave) {
       return ButleryIcon(
-        Icons.cloud_done_outlined,
+        ButleryIcons.circleCheck,
         size: AppDimensions.iconSizeM,
         color: widget.color,
       );

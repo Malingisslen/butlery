@@ -59,7 +59,7 @@ class AboutButleryView extends StatelessWidget {
                 ),
                 ListTile(
                   leading: ButleryIcon(
-                    Icons.article_outlined,
+                    ButleryIcons.file,
                     color: cs.onSurface,
                   ),
                   title: Text(

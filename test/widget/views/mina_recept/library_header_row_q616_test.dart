@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/library_header_row.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
 import '../../../test_support/base_unit_test.dart';
@@ -118,17 +119,19 @@ void main() {
       expect(
         find.descendant(
           of: row(),
-          matching: find.byIcon(Icons.kitchen_outlined),
+          matching: find.byIcon(ButleryIcons.refrigerator),
         ),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: row(), matching: find.byIcon(Icons.grid_view)),
+        find.descendant(of: row(), matching: find.byIcon(ButleryIcons.grid)),
         findsOneWidget,
       );
       // Välj stands first among the actions (B-46).
       final select = tester.getTopLeft(find.byType(ButlerySelectButton)).dx;
-      final search = tester.getTopLeft(find.byIcon(Icons.kitchen_outlined)).dx;
+      final search = tester
+          .getTopLeft(find.byIcon(ButleryIcons.refrigerator))
+          .dx;
       expect(select, lessThan(search));
       // The drawn 2 px rule in text.primary (tokens.json:54-56).
       final box = tester.widget<DecoratedBox>(

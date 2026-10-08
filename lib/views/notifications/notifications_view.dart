@@ -315,7 +315,7 @@ class _NotificationTile extends StatelessWidget {
       case 'system':
         return ButleryIcons.info;
       default:
-        return Icons.notifications_outlined;
+        return ButleryIcons.bell;
     }
   }
 }

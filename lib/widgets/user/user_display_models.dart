@@ -112,7 +112,7 @@ class UserStatusHelper {
 
     return switch (status) {
       UserStatus.online => ButleryIcon(
-        Icons.circle,
+        ButleryIcons.dot,
         color: color,
         size: iconSize,
       ),
@@ -127,7 +127,7 @@ class UserStatusHelper {
         size: iconSize,
       ),
       UserStatus.busy => ButleryIcon(
-        Icons.do_not_disturb,
+        ButleryIcons.bellOff,
         color: color,
         size: iconSize,
       ),

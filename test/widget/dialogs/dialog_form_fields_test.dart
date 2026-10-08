@@ -263,7 +263,7 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.description_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.file), findsOneWidget);
       });
 
       testWidgets('renders amount field with numeric keyboard', (
@@ -283,7 +283,7 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.numbers), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
       });
 
       testWidgets('validates amount field min/max', (
@@ -410,7 +410,7 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.phone_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.smartphone), findsOneWidget);
         expect(find.text('+46 70 123 45 67'), findsOneWidget);
       });
 

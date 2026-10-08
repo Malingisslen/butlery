@@ -116,7 +116,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
 
     if (_templates.isEmpty) {
       return StateWidget.empty(
-        icon: Icons.list_alt_outlined,
+        icon: ButleryIcons.list,
         title: context.l10n.shoppingTemplateEmpty,
         subtitle: context.l10n.shoppingTemplateEmptyDescription,
       );
@@ -147,7 +147,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
               vertical: AppDimensions.paddingS,
             ),
             leading: ButleryIcon(
-              Icons.list_alt,
+              ButleryIcons.list,
               color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),

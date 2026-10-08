@@ -352,7 +352,7 @@ class _FranSocialaMedierViewContentState
                   UtilityComponents.primaryButton(
                     context,
                     label: context.l10n.importPreviewAndEdit,
-                    icon: Icons.preview,
+                    icon: ButleryIcons.eye,
                     onPressed: viewModel.isParsing || !viewModel.canParse
                         ? null
                         : () => _parseAndNavigate(context),

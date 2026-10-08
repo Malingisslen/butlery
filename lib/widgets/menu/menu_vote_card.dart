@@ -230,7 +230,7 @@ class MenuVoteCard extends StatelessWidget {
         child: Row(
           children: [
             ButleryIcon(
-              Icons.timer_off,
+              ButleryIcons.clock,
               color: cs.onSurfaceVariant,
               size: AppDimensions.iconSizeL,
             ),

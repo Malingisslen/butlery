@@ -20,6 +20,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -215,7 +216,7 @@ abstract final class RecipeDetailSharedWidgets {
           Row(
             children: [
               ButleryIcon(
-                Icons.tips_and_updates_outlined,
+                ButleryIcons.info,
                 size: 18,
                 color: cs.onSurface,
               ),
@@ -263,12 +264,12 @@ abstract final class RecipeDetailSharedWidgets {
   static IconData sourceIcon(String url) {
     final host = (Uri.tryParse(url)?.host.toLowerCase()).orEmpty();
     if (host.contains('youtube.') || host.contains('youtu.be')) {
-      return Icons.play_circle_outline;
+      return ButleryIcons.video;
     }
     if (host.contains('tiktok.')) {
-      return Icons.music_note;
+      return ButleryIcons.video;
     }
-    return Icons.open_in_new;
+    return ButleryIcons.externalLink;
   }
 
   /// Launches an external URL, telling the user when it does not open.

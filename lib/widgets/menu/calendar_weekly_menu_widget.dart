@@ -117,7 +117,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         Padding(
           padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
           child: ButleryIcon(
-            Icons.arrow_upward,
+            ButleryIcons.arrowUp,
             size: 32,
             color: Theme.of(context).colorScheme.onSurface,
           ),
@@ -374,7 +374,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                               dense: true,
                               leading: ButleryIcon(
                                 slot.isMulti
-                                    ? Icons.cake_outlined
+                                    ? ButleryIcons.utensils
                                     : ButleryIcons.utensils,
                                 color: cs.secondary,
                               ),

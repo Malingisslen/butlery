@@ -3,6 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Reusable admin badge indicator for groups and collaborative content.
 class AdminBadge extends StatelessWidget {
@@ -12,7 +13,7 @@ class AdminBadge extends StatelessWidget {
   const AdminBadge({
     super.key,
     this.label,
-    this.icon = Icons.admin_panel_settings,
+    this.icon = ButleryIcons.crown,
   });
 
   @override

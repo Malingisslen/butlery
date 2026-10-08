@@ -207,11 +207,11 @@ void main() {
           expect(selectedSide.width, 1.5);
           final selectedTile = _above<Container>(
             tester,
-            find.byIcon(Icons.analytics_rounded),
+            find.byIcon(ButleryIcons.barChart),
             (c) => c.decoration is BoxDecoration,
           );
           expect((selectedTile.decoration! as BoxDecoration).color, cs.surface);
-          expect(_glyphColor(tester, Icons.analytics_rounded), cs.onSurface);
+          expect(_glyphColor(tester, ButleryIcons.barChart), cs.onSurface);
 
           final unselected = find.text(_sv.consentPushNotifications);
           final unselectedSide = _cardSide(_cardAbove(tester, unselected));
@@ -219,7 +219,7 @@ void main() {
           expect(unselectedSide.width, 1);
           final unselectedTile = _above<Container>(
             tester,
-            find.byIcon(Icons.notifications_rounded),
+            find.byIcon(ButleryIcons.bell),
             (c) => c.decoration is BoxDecoration,
           );
           expect(

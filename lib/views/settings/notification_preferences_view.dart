@@ -303,9 +303,7 @@ class _NotificationPreferencesViewState
         style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
       ),
       secondary: ButleryIcon(
-        _preferences.enabled
-            ? Icons.notifications_active_outlined
-            : Icons.notifications_off_outlined,
+        _preferences.enabled ? ButleryIcons.bell : ButleryIcons.bellOff,
         color: cs.onSurface,
         size: AppDimensions.iconSizeL,
       ),
@@ -393,7 +391,7 @@ class _NotificationPreferencesViewState
         InputDecorator(
           decoration: InputDecoration(
             prefixIcon: ButleryIcon(
-              Icons.summarize_outlined,
+              ButleryIcons.clock,
               color: cs.onSurface,
               size: AppDimensions.iconSizeL,
             ),
@@ -476,7 +474,7 @@ class _NotificationPreferencesViewState
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
           secondary: ButleryIcon(
-            Icons.do_not_disturb_on_outlined,
+            ButleryIcons.bellOff,
             color: cs.onSurface,
             size: AppDimensions.iconSizeL,
           ),

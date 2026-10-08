@@ -193,7 +193,7 @@ class ImportErrorMessage extends StatelessWidget {
               filled: i == 0,
               icon: switch (route) {
                 ImportRoute.photo => ButleryIcons.camera,
-                ImportRoute.pasteText => Icons.content_paste,
+                ImportRoute.pasteText => ButleryIcons.clipboard,
                 ImportRoute.manual => ButleryIcons.pencil,
               },
               label: switch (route) {
@@ -294,7 +294,7 @@ class ImportActionSection extends StatelessWidget {
         if (viewModel.input.isEmpty) ...[
           OutlinedButton.icon(
             onPressed: onPaste,
-            icon: const ButleryIcon(Icons.content_paste),
+            icon: const ButleryIcon(ButleryIcons.clipboard),
             label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(

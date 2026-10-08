@@ -143,7 +143,7 @@ class _DraftListTile extends StatelessWidget {
             child: Row(
               children: [
                 ButleryIcon(
-                  Icons.description_outlined,
+                  ButleryIcons.file,
                   size: AppDimensions.iconSizeM,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

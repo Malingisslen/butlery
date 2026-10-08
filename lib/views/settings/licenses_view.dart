@@ -154,7 +154,7 @@ class _LicensesViewState extends State<LicensesView> {
           // duplicate them.
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const ButleryIcon(Icons.code),
+            leading: const ButleryIcon(ButleryIcons.file),
             title: Text(context.l10n.legalOpenSourceLicenses),
             trailing: const ButleryIcon(ButleryIcons.chevronRight),
             onTap: () =>

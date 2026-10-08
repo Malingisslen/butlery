@@ -406,7 +406,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     if (widget.onPollCreate != null)
                       IconButton(
                         onPressed: _handlePollCreate,
-                        icon: const ButleryIcon(Icons.poll_outlined),
+                        icon: const ButleryIcon(ButleryIcons.vote),
                         color: cs.onSurfaceVariant,
                         tooltip: context.l10n.tooltipCreatePoll,
                       ),

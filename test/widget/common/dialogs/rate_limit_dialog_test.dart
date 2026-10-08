@@ -93,7 +93,7 @@ void main() {
 
       // sv: rateLimitSlowDown = "Sakta ner lite"
       expect(find.text('Sakta ner lite'), findsOneWidget);
-      expect(find.byIcon(Icons.speed_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.zap), findsOneWidget);
     });
 
     testWidgets('perDay renders rateLimitDailyQuota title with today icon', (
@@ -135,7 +135,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('AI-gräns nådd'), findsOneWidget);
-      expect(find.byIcon(Icons.smart_toy_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.sparkles), findsOneWidget);
     });
 
     testWidgets('costMonthly renders rateLimitAiBudget title with money icon', (
@@ -156,7 +156,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('AI-budget förbrukad'), findsOneWidget);
-      expect(find.byIcon(Icons.attach_money_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.barChart), findsOneWidget);
     });
   });
 

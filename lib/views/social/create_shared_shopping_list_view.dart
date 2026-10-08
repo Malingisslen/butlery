@@ -248,7 +248,7 @@ class _CreateSharedShoppingListViewState
           decoration: InputDecoration(
             labelText: context.l10n.shoppingSharedListTitle,
             hintText: context.l10n.shoppingSharedListTitleHint,
-            prefixIcon: const ButleryIcon(Icons.title),
+            prefixIcon: const ButleryIcon(ButleryIcons.type),
             errorText: viewModel.titleError,
           ),
           onChanged: viewModel.updateTitle,

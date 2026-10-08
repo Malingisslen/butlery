@@ -92,7 +92,7 @@ void main() {
       tester,
     ) async {
       const tabs = [
-        ButleryTab(text: 'Flöde', icon: Icon(Icons.dynamic_feed)),
+        ButleryTab(text: 'Flöde', icon: Icon(ButleryIcons.activity)),
         ButleryTab(text: 'Vänner', icon: ButleryIcon(ButleryIcons.users)),
       ];
       final bar = TabBar(tabs: tabs);

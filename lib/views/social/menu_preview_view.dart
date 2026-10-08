@@ -364,7 +364,7 @@ class MenuPreviewView extends StatelessWidget {
     final categoryLower = category.toLowerCase();
 
     if (categoryLower.contains('frukost')) {
-      return Icons.free_breakfast;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('lunch')) {
       return ButleryIcons.utensils;
@@ -374,13 +374,13 @@ class MenuPreviewView extends StatelessWidget {
     }
     if (categoryLower.contains('mellanmål') ||
         categoryLower.contains('snack')) {
-      return Icons.cookie;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('dessert')) {
-      return Icons.cake;
+      return ButleryIcons.utensils;
     }
     if (categoryLower.contains('drink') || categoryLower.contains('dryck')) {
-      return Icons.local_cafe;
+      return ButleryIcons.utensils;
     }
 
     return ButleryIcons.utensils;

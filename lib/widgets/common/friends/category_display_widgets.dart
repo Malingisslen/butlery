@@ -28,7 +28,7 @@ class CategoryDisplayWidgets {
         final category = categories[index];
         return ListTile(
           leading: ButleryIcon(
-            category.emoji != null ? Icons.emoji_emotions : ButleryIcons.users,
+            category.emoji != null ? ButleryIcons.grid : ButleryIcons.users,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           title: Text(category.name),
@@ -79,7 +79,7 @@ class CategoryDisplayWidgets {
                   children: [
                     ButleryIcon(
                       category.emoji != null
-                          ? Icons.emoji_emotions
+                          ? ButleryIcons.grid
                           : ButleryIcons.users,
                       size: AppDimensions.iconSizeXl,
                       color: Theme.of(context).colorScheme.onSurface,
@@ -167,7 +167,7 @@ class CategoryDisplayWidgets {
                 ),
                 Expanded(
                   child: StatItemWidget(
-                    icon: Icons.analytics,
+                    icon: ButleryIcons.barChart,
                     label: context.l10n.friendAverage,
                     value: averageSize.toString(),
                     color: context.modeColors.warning,
@@ -228,7 +228,7 @@ class CategoryDisplayWidgets {
                     children: [
                       ButleryIcon(
                         category.emoji != null
-                            ? Icons.emoji_emotions
+                            ? ButleryIcons.grid
                             : ButleryIcons.users,
                         color: Theme.of(context).colorScheme.onSurface,
                         size: AppDimensions.iconSizeM,

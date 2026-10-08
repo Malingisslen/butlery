@@ -375,7 +375,7 @@ class _ShoppingMemberManagementDialogState
       title: Row(
         children: [
           ButleryIcon(
-            Icons.manage_accounts,
+            ButleryIcons.users,
             size: AppDimensions.iconSizeAction,
             color: cs.onSurface,
           ),
@@ -643,7 +643,7 @@ class _ShoppingMemberManagementDialogState
                     child: Row(
                       children: [
                         ButleryIcon(
-                          Icons.admin_panel_settings,
+                          ButleryIcons.crown,
                           size: AppDimensions.iconSizeS,
                           color: cs.onSurface,
                         ),
