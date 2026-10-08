@@ -141,8 +141,8 @@ void main() {
       // P4-U03: the empty state is the shared StateWidget.empty, with the
       // one way forward as its action.
       expect(find.byType(StateWidget), findsOneWidget);
-      expect(find.text('Skapa personliga taggar'), findsOneWidget);
-      await tester.tap(find.text('Skapa personliga taggar'));
+      expect(find.text('Skapa egna taggar'), findsOneWidget);
+      await tester.tap(find.text('Skapa egna taggar'));
       expect(manageTapped, isTrue);
     });
 

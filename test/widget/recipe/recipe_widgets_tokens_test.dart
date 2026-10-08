@@ -23,6 +23,7 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
 import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 
@@ -184,25 +185,37 @@ void main() {
         );
       });
 
-      testWidgets('the shelf placeholder draws the vegetable at the shared '
-          'placeholder opacity', (tester) async {
-        await tester.pumpWidget(
-          _app(
-            theme,
-            RecipeShelf(
-              title: 'Nyligen',
-              recipes: [_recipe()],
-              onRecipeTap: (_) {},
+      testWidgets(
+        'the shelf placeholder is the title initial on surface.raised '
+        'in text.secondary, with no vegetable',
+        (tester) async {
+          await tester.pumpWidget(
+            _app(
+              theme,
+              RecipeShelf(
+                title: 'Nyligen',
+                recipes: [_recipe()],
+                onRecipeTap: (_) {},
+              ),
             ),
-          ),
-        );
-        expect(
-          tester
-              .widget<VegetableIllustration>(find.byType(VegetableIllustration))
-              .opacity,
-          0.8,
-        );
-      });
+          );
+          final plate = find.byType(RecipeInitialPlate);
+          expect(plate, findsOneWidget);
+          expect(find.byType(VegetableIllustration), findsNothing);
+          expect(
+            tester
+                .widget<ColoredBox>(
+                  find.descendant(of: plate, matching: find.byType(ColoredBox)),
+                )
+                .color,
+            cs.surfaceContainerHighest,
+          );
+          final letter = tester.widget<Text>(
+            find.descendant(of: plate, matching: find.text('P')),
+          );
+          expect(letter.style!.color, cs.onSurfaceVariant);
+        },
+      );
 
       testWidgets('a related-recipe chip is surface.raised with an '
           'outlineVariant line', (tester) async {

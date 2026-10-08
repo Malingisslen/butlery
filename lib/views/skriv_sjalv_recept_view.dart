@@ -376,11 +376,13 @@ class _SkrivSjalvReceptViewContentState
         // "Skriv själv" is a subpage under Lägg till recept: back arrow and
         // title in 14/700 (Komponentark v1:71-78; Skarmar v12 del 2 'Skriv
         // själv').
+        // `isEditing` (a stored recipe is loaded), not `isEditMode`, which is
+        // the edit permission and is true for a new recipe too.
         appBar: ButleryTopBar.undersida(
-          title: viewModel.isEditMode
+          title: viewModel.isEditing
               ? context.l10n.recipeEdit
               : context.l10n.recipeWriteNew,
-          backTo: viewModel.isEditMode ? null : context.l10n.addRecipeTitle,
+          backTo: viewModel.isEditing ? null : context.l10n.addRecipeTitle,
           actions: [
             DraftSaveIndicator(
               isSaving: viewModel.isAutoSaving,

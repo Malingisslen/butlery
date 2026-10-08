@@ -114,7 +114,7 @@ void main() {
         final normal = await barHeight(
           tester,
           ButleryTopBar.undersida(
-            title: 'Personliga taggar',
+            title: 'Egna taggar',
             onBack: () {},
             actions: [ButlerySelectButton(onPressed: () {})],
           ),

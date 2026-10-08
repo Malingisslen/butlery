@@ -30,6 +30,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
@@ -176,8 +177,8 @@ void main() {
   });
 
   group('RelatedRecipesSection placeholder', () {
-    testWidgets('a photo-less thumbnail draws the vegetable at the shared '
-        'placeholder opacity', (tester) async {
+    testWidgets('a photo-less thumbnail shows the title initial, not a '
+        'vegetable', (tester) async {
       await tester.pumpWidget(
         _wrap(
           RelatedRecipesSection(
@@ -188,11 +189,13 @@ void main() {
       await tester.pump();
 
       expect(
-        tester
-            .widget<VegetableIllustration>(find.byType(VegetableIllustration))
-            .opacity,
-        0.8,
+        find.descendant(
+          of: find.byType(RecipeInitialPlate),
+          matching: find.text('P'),
+        ),
+        findsOneWidget,
       );
+      expect(find.byType(VegetableIllustration), findsNothing);
     });
   });
 

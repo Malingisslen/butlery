@@ -339,6 +339,106 @@ void main() {
     });
   });
 
+  group('FeedbackFAB — steps aside for a snackbar', () {
+    late BuildContext pageContext;
+
+    /// Mounted as `butlery_app.dart` does: the messenger and the FAB share a
+    /// `Stack` in the `MaterialApp` builder, above the navigator.
+    Widget app() => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      home: Scaffold(
+        body: Builder(
+          builder: (context) {
+            pageContext = context;
+            return const SizedBox();
+          },
+        ),
+      ),
+      builder: (context, child) => FeedbackAwareScaffoldMessenger(
+        child: Stack(children: [child!, const FeedbackFAB()]),
+      ),
+    );
+
+    ScaffoldFeatureController<SnackBar, SnackBarClosedReason> show(
+      String text,
+    ) => ScaffoldMessenger.of(
+      pageContext,
+    ).showSnackBar(SnackBar(content: Text(text)));
+
+    setUp(() async {
+      await _bindAuth(isAuthenticated: true);
+    });
+
+    testWidgets('the "!" hides while a snackbar is up and returns when it is '
+        'hidden', (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pump();
+      expect(find.text('!'), findsOneWidget);
+
+      show('Sparat');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 750));
+      expect(find.text('Sparat'), findsOneWidget);
+      expect(find.text('!'), findsNothing);
+
+      ScaffoldMessenger.of(pageContext).hideCurrentSnackBar();
+      await tester.pumpAndSettle();
+      expect(find.text('Sparat'), findsNothing);
+      expect(find.text('!'), findsOneWidget);
+    });
+
+    testWidgets('the "!" returns when the snackbar times out', (tester) async {
+      await tester.pumpWidget(app());
+      show('Sparat');
+      await tester.pump();
+      expect(find.text('!'), findsNothing);
+
+      // Slide in, then outlast the display duration, then slide out.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 10));
+      await tester.pumpAndSettle();
+
+      expect(find.text('!'), findsOneWidget);
+    });
+
+    testWidgets('the "!" stays hidden until every queued snackbar is gone', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      show('Första');
+      show('Andra');
+      await tester.pump();
+
+      ScaffoldMessenger.of(pageContext).hideCurrentSnackBar();
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.text('Andra'), findsOneWidget);
+      expect(find.text('!'), findsNothing);
+
+      ScaffoldMessenger.of(pageContext).hideCurrentSnackBar();
+      await tester.pumpAndSettle();
+      expect(find.text('!'), findsOneWidget);
+    });
+
+    testWidgets('the "!" returns after clearSnackBars drops a queue', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      show('Första');
+      show('Andra');
+      show('Tredje');
+      await tester.pump();
+      expect(find.text('!'), findsNothing);
+
+      ScaffoldMessenger.of(pageContext).clearSnackBars();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Andra'), findsNothing);
+      expect(find.text('!'), findsOneWidget);
+    });
+  });
+
   group('FeedbackFAB — global keys', () {
     test('feedbackRepaintBoundaryKey is a GlobalKey', () {
       expect(feedbackRepaintBoundaryKey, isA<GlobalKey>());

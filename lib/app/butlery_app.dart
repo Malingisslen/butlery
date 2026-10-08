@@ -804,14 +804,16 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                   bottom: true, // Always protect bottom from system nav bar
                   left: false,
                   right: false,
-                  child: Stack(
-                    children: [
-                      RepaintBoundary(
-                        key: feedbackRepaintBoundaryKey,
-                        child: clampedChild,
-                      ),
-                      const FeedbackFAB(),
-                    ],
+                  child: FeedbackAwareScaffoldMessenger(
+                    child: Stack(
+                      children: [
+                        RepaintBoundary(
+                          key: feedbackRepaintBoundaryKey,
+                          child: clampedChild,
+                        ),
+                        const FeedbackFAB(),
+                      ],
+                    ),
                   ),
                 ),
               ),

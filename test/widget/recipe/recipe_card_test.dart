@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -106,8 +107,14 @@ void main() {
         );
 
         expect(find.text('Fisksoppa'), findsOneWidget);
-        // UI Redesign: Vegetable illustration placeholder instead of restaurant icon
-        expect(find.byType(VegetableIllustration), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(RecipeInitialPlate),
+            matching: find.text('F'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.byType(VegetableIllustration), findsNothing);
       });
 
       testWidgets('should hide elements based on display options', (
@@ -642,7 +649,7 @@ void main() {
         );
 
         final titleText = tester.widget<Text>(
-          find.byType(Text).first,
+          find.text(longTitleRecipe.title),
         );
 
         expect(titleText.maxLines, equals(2));

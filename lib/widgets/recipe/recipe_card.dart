@@ -14,7 +14,7 @@ import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -479,20 +479,9 @@ class RecipeCard extends StatelessWidget {
                   heroTag: ImageConfig.recipeHeroTag(recipe.id),
                 ),
               )
-            : Hero(
-                tag: ImageConfig.recipeHeroTag(recipe.id),
-                // The placeholder is still sized from the 64px default rather
-                // than from its box, so on a grid tile it no longer fills the
-                // 4:3 shape around it. Deliberately left: the obvious fix is a
-                // LayoutBuilder, and this subtree is measured by an
-                // IntrinsicHeight — a LayoutBuilder there reports zero height
-                // in release and throws only in debug, which is the silent
-                // clipping BUT-1911 exists to remove.
-                child: VegetableIllustration(
-                  type: VegetableIllustration.randomForRecipe(recipe.id),
-                  size: imageSize * 0.7,
-                  opacity: VegetableIllustration.recipePlaceholderOpacity,
-                ),
+            : RecipeInitialPlate(
+                title: recipe.title,
+                letterSize: imageSize * 0.35,
               ),
       ),
     );

@@ -5,7 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
 class RecipeShelf extends StatelessWidget {
@@ -103,15 +103,9 @@ class _ShelfCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         config: ImageConfig.thumbnail(),
                       )
-                    : Center(
-                        child: VegetableIllustration(
-                          type: VegetableIllustration.randomForRecipe(
-                            recipe.id,
-                          ),
-                          size: AppDimensions.imageSizeThumbnail / 2,
-                          opacity:
-                              VegetableIllustration.recipePlaceholderOpacity,
-                        ),
+                    : RecipeInitialPlate(
+                        title: recipe.title,
+                        letterSize: AppDimensions.imageSizeThumbnail * 0.35,
                       ),
               ),
               const SizedBox(height: AppDimensions.spacingXs),

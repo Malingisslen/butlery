@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../test_support/base_unit_test.dart';
@@ -234,8 +235,8 @@ void main() {
       });
 
       testWidgets(
-        'the photo-less placeholder draws the vegetable at the shared '
-        'placeholder opacity',
+        'the photo-less placeholder is the title initial on surface.raised in '
+        'text.secondary, with no vegetable',
         (tester) async {
           for (final style in [
             RecipeCardStyle.detailed,
@@ -246,15 +247,25 @@ void main() {
               theme: theme,
               card: RecipeCard(recipe: _recipe(), style: style),
             );
+            final plate = find.byType(RecipeInitialPlate);
+            expect(plate, findsOneWidget, reason: style.name);
+            expect(find.byType(VegetableIllustration), findsNothing);
             expect(
               tester
-                  .widget<VegetableIllustration>(
-                    find.byType(VegetableIllustration),
+                  .widget<ColoredBox>(
+                    find.descendant(
+                      of: plate,
+                      matching: find.byType(ColoredBox),
+                    ),
                   )
-                  .opacity,
-              0.8,
+                  .color,
+              cs.surfaceContainerHighest,
               reason: style.name,
             );
+            final letter = tester.widget<Text>(
+              find.descendant(of: plate, matching: find.text('E')),
+            );
+            expect(letter.style!.color, cs.onSurfaceVariant);
           }
         },
       );
