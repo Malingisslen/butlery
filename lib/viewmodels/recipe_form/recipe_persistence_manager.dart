@@ -44,6 +44,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// Kept until a save lands, so a failed save can be retried with it.
   HeirloomDraft? pendingHeirloom;
 
+  /// The images this form last saved, which the device copy then holds.
+  List<String>? _imagesLastSaved;
+
   bool _isSaveInProgress = false;
   String? _currentSaveOperationId;
 
@@ -212,20 +215,36 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             );
           }
 
-          final validImageUrls = _imageManager.validImageUrls;
-          AppLogger.info(
-            '📝 Creating recipe with ${validImageUrls.length} validated image URLs',
-          );
-
           final heirloomDraft = pendingHeirloom;
           final heirloom = heirloomDraft == null
               ? null
               : await _uploadHeirloom(heirloomDraft, recipeId);
 
+          final handoff = OfflineImageHandoff(
+            _imageManager,
+            ServiceLocator.tryGet<OfflineService>(),
+          );
+          final images = _state.isEditing
+              ? await handoff.keepQueuedImages(
+                  recipeId,
+                  _recipeService.currentUserId,
+                  formHad: _imagesLastSaved ?? _state.originalRecipe!.imageUrls,
+                  imageUrls: _imageManager.validImageUrls,
+                  thumbnailUrl: _imageManager.firstThumbnailUrl,
+                )
+              : (
+                  imageUrls: _imageManager.validImageUrls,
+                  thumbnailUrl: _imageManager.firstThumbnailUrl,
+                );
+          final validImageUrls = images.imageUrls;
+          AppLogger.info(
+            '📝 Creating recipe with ${validImageUrls.length} validated image URLs',
+          );
+
           final recipe = _state.createRecipe(
             recipeId: recipeId,
             imageUrls: validImageUrls,
-            thumbnailUrl: _imageManager.firstThumbnailUrl,
+            thumbnailUrl: images.thumbnailUrl,
             heirloom: heirloom,
           );
 
@@ -255,6 +274,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           }
 
           pendingHeirloom = null;
+          _imagesLastSaved = validImageUrls;
 
           if (validImageUrls.isNotEmpty) {
             _analyticsService?.recipe.logRecipeImageUploaded(
@@ -264,10 +284,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             );
           }
 
-          await OfflineImageHandoff(
-            _imageManager,
-            ServiceLocator.tryGet<OfflineService>(),
-          ).queueFor(
+          await handoff.queueFor(
             recipeId,
             _recipeService.currentUserId,
             formAlive: !_disposed,
