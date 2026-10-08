@@ -30,6 +30,7 @@ import {
 import {
   IMAGE_OCR_SYSTEM_PROMPT,
   IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT,
+  UNREADABLE_MARKER,
 } from "../llm/gemini-client";
 
 interface AssertionResult {
@@ -231,6 +232,33 @@ async function testPreExistingDocKeepsOverridesWithPerFieldFallback(): Promise<v
   );
 }
 
+// [7] BUT-2158: both image prompts tell the model to write the marker the app
+// reads, never to guess. The app's UnreadLineDetector.unreadMarker must equal
+// it byte for byte.
+function testImagePromptsMarkUnreadableNeverGuess(): void {
+  record(
+    "[7] the marker is the app's",
+    UNREADABLE_MARKER === "[oläsligt]"
+      ? { ok: true }
+      : { ok: false, detail: `marker=${UNREADABLE_MARKER}` }
+  );
+  for (const [name, prompt] of [
+    ["printed", IMAGE_OCR_SYSTEM_PROMPT],
+    ["handwritten", IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT],
+  ] as const) {
+    record(
+      `[7] ${name} prompt asks for the marker, keeps the line, never guesses`,
+      prompt.includes(UNREADABLE_MARKER) &&
+        prompt.includes("Gissa aldrig") &&
+        prompt.includes("Hoppa inte över raden") &&
+        prompt.includes(`skriv ${UNREADABLE_MARKER} i preparation`) &&
+        !prompt.includes("gissa det mest sannolika")
+        ? { ok: true }
+        : { ok: false, detail: prompt }
+    );
+  }
+}
+
 // =============================================================================
 // Driver
 // =============================================================================
@@ -245,6 +273,7 @@ async function main(): Promise<void> {
   await testFallbackExposesHandwritten();
   await testFirestoreOverrideRoundTrips();
   await testPreExistingDocKeepsOverridesWithPerFieldFallback();
+  testImagePromptsMarkUnreadableNeverGuess();
 
   __resetPromptsCacheForTests();
 
