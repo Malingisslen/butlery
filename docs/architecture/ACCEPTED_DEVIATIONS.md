@@ -5765,3 +5765,8 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   `winner.lastEditedBy == userId`. On the queue path the winner is, by the assumption that
   only the owner edits their recipe, always the user's own other device. The asymmetry is the
   decision; do not harmonise it.
+- **SUPERSEDES "a device copy queued before the update has no revision and is written without
+  comparing" (BUT-2213, 2026-10-08).** `RecipeRevisionRecord.baseFor` returns no base, and
+  the update is written without comparing, for any edit without a `rev` whose device copy
+  has no `rev`. That covers a copy cached before the update whether or not it was queued.
+  A send that succeeds gives the copy a `rev`.
