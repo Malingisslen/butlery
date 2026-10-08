@@ -28,4 +28,9 @@ A new deviation in this area is appended HERE and in that document, in the same 
   harmonise the two seams (pinned by widget test 8; test 7 pins the widening itself and stays
   green under the harmonisation mutant). Full rationale:
   `docs/architecture/ACCEPTED_DEVIATIONS.md`. BUT-1858, 2026-08-15
-
+- **An older pantry version stays in the document, unshown, after 30 days** — `previous` is
+  replaced by the next edit-sheet save or deleted with the item or the account, and until then
+  it is in the Art. 15 export. There is no nightly job. **Malin's call, 2026-10-08.** BUT-2140
+- **Återställ can work from a local copy older than a save the same user made on another
+  device** — `PantryViewModel` holds no live stream, so the swap writes back the `previous`
+  it has. BUT-1683 shape. BUT-2140, 2026-10-08

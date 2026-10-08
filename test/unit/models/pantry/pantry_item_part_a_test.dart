@@ -117,4 +117,19 @@ void main() {
       expect(item.updatedBy, 'u1');
     });
   });
+
+  // BUT-2140: the kept version holds user-edited fields only, so it never
+  // carries the uid in updatedBy into the Art. 15 export.
+  group('storedValues', () {
+    test('drops a key the user does not edit', () {
+      final item = _item(
+        note: 'öppnad',
+      ).copyWith(updatedBy: 'u1', updatedAt: DateTime.utc(2026, 1, 2));
+
+      final values = item.storedValues(['note', 'updatedBy']);
+
+      expect(values.keys, ['note']);
+      expect(values['note'], 'öppnad');
+    });
+  });
 }

@@ -29,6 +29,21 @@ class _MockIngredientMatchService extends Mock
 
 const _userId = 'user-alice';
 
+/// A repository whose field writes fail, as an offline or refused write does.
+class _FailingWriteRepository extends FirebasePantryRepository {
+  _FailingWriteRepository({super.firestore});
+
+  @override
+  Future<void> updateFields(
+    String userId,
+    String itemId,
+    Map<String, Object> changes, {
+    PantryItem? before,
+  }) async {
+    throw StateError('write refused');
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -163,5 +178,44 @@ void main() {
       throwsA(isA<StateError>()),
     );
     expect((await stored()).updatedAt, isNull);
+  });
+
+  group('when the write fails', () {
+    late PantryService failing;
+
+    setUp(() {
+      failing = PantryService(
+        pantryRepository: _FailingWriteRepository(firestore: firestore),
+        ingredientRepository: _MockIngredientRepository(),
+        matchService: _MockIngredientMatchService(),
+      );
+    });
+
+    test('updateItem returns no kept version', () async {
+      final kept = await failing.updateItem(
+        _userId,
+        base.copyWith(note: 'ny'),
+        previous: base,
+      );
+
+      expect(kept, isNull);
+    });
+
+    test(
+      'restorePrevious throws, so the sheet can offer Försök igen',
+      () async {
+        await service.updateItem(
+          _userId,
+          base.copyWith(note: 'ny'),
+          previous: base,
+        );
+
+        await expectLater(
+          failing.restorePrevious(_userId, await stored()),
+          throwsA(isA<StateError>()),
+        );
+        expect((await stored()).note, 'ny');
+      },
+    );
   });
 }
