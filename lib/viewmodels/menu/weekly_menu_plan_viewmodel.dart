@@ -3,7 +3,7 @@ library;
 
 import 'dart:async';
 
-import 'package:butlery/core/exceptions/repository_exception.dart';
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
@@ -44,9 +44,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }) : _service = service,
        _recipeService = recipeService,
        _shoppingListGenerator = shoppingListGenerator,
-       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore();
+       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore() {
+    _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
+  }
 
   final WeeklyMenuOverflowTrayStore _trayStore;
+
+  /// BUT-2215: another caller of the service (the recipe scrub, the
+  /// placement flow, a bulk action) wrote a week on this device. Without a
+  /// re-read the next edit here is built on the copy this screen read, the
+  /// rules refuse it, and the user is told the week was saved on another
+  /// device.
+  late final StreamSubscription<String?> _weekWritesSub;
 
   WeeklyMenuPlan? _plan;
 
@@ -339,7 +348,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     WeeklyMenuPlan previous,
   ) async {
     // BUT-2215: the published copy is the one saved, so a second quick edit,
-    // offline too, builds on this revision and is written one past it.
+    // offline too, names this copy's revId as its base.
     final next = updated.nextRevision();
     _plan = next;
     notifyListeners();
@@ -378,7 +387,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// BUT-2215: "Behåll min". Writes [conflict]'s dishes and presence over the
   /// server's week, keeping the server's `createdAt` (the rules refuse a
-  /// changed one) and one revision past the week it builds on: the one on
+  /// changed one) and naming as its base the week it builds on: the one on
   /// screen when the user is still on it, else the server's.
   ///
   /// Returns false when this save lost to yet another save while the week is
@@ -406,6 +415,22 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     } on WeekPlanConflictException {
       return false;
     }
+  }
+
+  void _onWeekWritten(String? weekId) {
+    final shown = _plan;
+    if (isDisposed || shown == null) return;
+    if (weekId != null && weekId != shown.id) return;
+    unawaited(_refreshShown(shown));
+  }
+
+  /// Quiet: no spinner and no error. A failed read leaves [shown] as it was,
+  /// and an edit made meanwhile is newer than this read, so it wins.
+  Future<void> _refreshShown(WeeklyMenuPlan shown) async {
+    final read = await _service.readWeek(shown.weekStartDate);
+    if (isDisposed || read.readFailed || !identical(_plan, shown)) return;
+    _plan = read.plan;
+    notifyListeners();
   }
 
   Future<void> loadWeek(DateTime date) async {
@@ -1114,6 +1139,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   @override
   void dispose() {
     _stopPendingTray();
+    unawaited(_weekWritesSub.cancel());
     unawaited(_weekConflicts.close());
     super.dispose();
   }

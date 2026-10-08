@@ -42,7 +42,6 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { increment } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-weekly-menu-plans";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -158,44 +157,90 @@ test("an edit that preserves createdAt is allowed", async () => {
   );
 });
 
-// R1-R6 (BUT-2215): `weekRevAdvancesByOne` on the update limb. Each body is
-// built from `planBody`, so it keeps createdAt and userId and only `rev` can
-// decide. R2 and R3 are the deny pair for R1; R4 is the older-app path.
-test("a week save one revision ahead is allowed", async () => {
-  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 4 }));
+// R1-R8 (BUT-2215): `weekSaveBuiltOnStored` on the update limb. Each body is
+// built from `planBody`, so it keeps createdAt and userId and only the
+// lineage fields can decide. Which conjunct each test pins:
+//   R2, R8 (deny) — `baseRevId == stored revId` (the queued chain; a scrub
+//        built on a stale read);
+//   R3 (deny) — `revId is string`;
+//   R4 (deny) — `revId != stored revId`;
+//   R5 (allow) — the `!('revId' in …)` compat disjunct: without it the
+//        missing field makes the rule error, which denies;
+//   R6 (deny, then allow) — a null stored revId compares with the base.
+// R1, R6's second write and R7 are the allow controls, so the denies are not
+// passing because every write fails.
+// R1
+test("a week save built on the stored revision is allowed", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-a" }));
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertSucceeds(
     ctx
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
-      .set(planBody(OWNER_UID, { rev: 5, updatedAt: LATER }))
+      .set(
+        planBody(OWNER_UID, {
+          revId: "rev-b",
+          baseRevId: "rev-a",
+          updatedAt: LATER,
+        })
+      )
   );
 });
 
-test("a week save on a stale revision is denied", async () => {
-  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 5 }));
+// R2
+test("a queued save built on a copy that never landed is denied", async () => {
+  // Device A queued rev-a1 then rev-a2 (built on rev-a1) on top of rev-0;
+  // device B landed rev-b1 first. rev-a1 is refused (base rev-0), and rev-a2
+  // must be refused too: its base rev-a1 is not what is stored.
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-b1", baseRevId: "rev-0" }));
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertFails(
     ctx
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
-      .set(planBody(OWNER_UID, { rev: 5, updatedAt: LATER }))
+      .set(
+        planBody(OWNER_UID, {
+          revId: "rev-a2",
+          baseRevId: "rev-a1",
+          updatedAt: LATER,
+        })
+      )
   );
 });
 
-test("a week save that skips a revision is denied", async () => {
-  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 4 }));
+// R3
+test("a week save whose revId is not a string is denied", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-a" }));
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertFails(
     ctx
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
-      .set(planBody(OWNER_UID, { rev: 6, updatedAt: LATER }))
+      .set(planBody(OWNER_UID, { revId: 7, baseRevId: "rev-a", updatedAt: LATER }))
   );
 });
 
-test("a save without rev from an older app is allowed", async () => {
-  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 4 }));
+// R4
+test("a week save that reuses the stored revId is denied", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-a" }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(
+        planBody(OWNER_UID, {
+          revId: "rev-a",
+          baseRevId: "rev-a",
+          updatedAt: LATER,
+        })
+      )
+  );
+});
+
+// R5
+test("a save without revId from an older app is allowed", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { revId: "rev-a" }));
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertSucceeds(
     ctx
@@ -205,34 +250,64 @@ test("a save without rev from an older app is allowed", async () => {
   );
 });
 
-test("the first rev on a document without one is 1", async () => {
+// R6
+test("the first save on a week without revId names no base", async () => {
   await seed(OWNED_ID, planBody(OWNER_UID));
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertFails(
     ctx
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
-      .set(planBody(OWNER_UID, { rev: 2, updatedAt: LATER }))
+      .set(
+        planBody(OWNER_UID, {
+          revId: "rev-b",
+          baseRevId: "rev-x",
+          updatedAt: LATER,
+        })
+      )
   );
   await assertSucceeds(
     ctx
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
-      .set(planBody(OWNER_UID, { rev: 1, updatedAt: LATER }))
+      .set(planBody(OWNER_UID, { revId: "rev-b", updatedAt: LATER }))
   );
 });
 
-test("a recipe scrub that increments rev is allowed", async () => {
+// R7
+test("a recipe scrub built on the stored revision is allowed", async () => {
   await seed(
     OWNED_ID,
-    planBody(OWNER_UID, { rev: 3, entries: [{ recipeId: "r1", day: "mon" }] })
+    planBody(OWNER_UID, {
+      revId: "rev-a",
+      entries: [{ recipeId: "r1", day: "mon" }],
+    })
   );
   const ctx = env.authenticatedContext(OWNER_UID);
   await assertSucceeds(
     ctx
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
-      .update({ entries: [], rev: increment(1) })
+      .update({ entries: [], revId: "rev-scrub", baseRevId: "rev-a" })
+  );
+});
+
+// R8
+test("a recipe scrub built on a stale read is denied", async () => {
+  await seed(
+    OWNED_ID,
+    planBody(OWNER_UID, {
+      revId: "rev-b",
+      baseRevId: "rev-a",
+      entries: [{ recipeId: "r1", day: "mon" }],
+    })
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .update({ entries: [], revId: "rev-scrub", baseRevId: "rev-a" })
   );
 });
 

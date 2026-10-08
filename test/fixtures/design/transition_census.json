@@ -189,7 +189,7 @@
         }
       ],
       "ticket": "BUT-2215",
-      "reason": "New test: the week carries a rev that firestore.rules checks, so a save built on a stale copy is refused and the week menu shows the 30 s notice with Behåll min. The other saver is the owner on another device (Malin, A1, 2026-10-08); a shared household week is not built yet."
+      "reason": "New test: each week save names the revision it was built on and firestore.rules checks it against the stored one, so a save built on a stale copy is refused and the week menu shows the 30 s notice with Behåll min. The other saver is the owner on another device (Malin, A1, 2026-10-08); a shared household week is not built yet."
     },
     {
       "id": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",

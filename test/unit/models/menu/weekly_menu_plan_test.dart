@@ -263,15 +263,18 @@ void main() {
       expect(restored.entries, isEmpty);
     });
 
-    // BUT-2215: the week's revision, checked by `firestore.rules`.
-    test('rev round-trips through toFirestore and fromMap', () {
+    // BUT-2215: the week's lineage, checked by `firestore.rules`.
+    test('revId and baseRevId round-trip through toFirestore and fromMap', () {
       final plan = planWith([]).nextRevision().nextRevision();
-      final restored = WeeklyMenuPlan.fromMap(plan.id, plan.toFirestore());
-      expect(plan.toFirestore()['rev'], 2);
-      expect(restored.rev, 2);
+      final data = plan.toFirestore();
+      final restored = WeeklyMenuPlan.fromMap(plan.id, data);
+      expect(data['revId'], plan.revId);
+      expect(data['baseRevId'], plan.baseRevId);
+      expect(restored.revId, plan.revId);
+      expect(restored.baseRevId, plan.baseRevId);
     });
 
-    test('a document without rev reads as 0, and empty starts at 0', () {
+    test('a document without revId reads as null and writes neither key', () {
       final restored = WeeklyMenuPlan.fromMap('id', {
         'userId': 'u1',
         'weekStartDate': '2026-01-05T00:00:00.000Z',
@@ -279,22 +282,39 @@ void main() {
         'updatedAt': '2026-01-05T00:00:00.000Z',
         'entries': const [],
       });
-      expect(restored.rev, 0);
-      expect(WeeklyMenuPlan.empty(userId: 'u1', date: DateTime(2026)).rev, 0);
+      expect(restored.revId, isNull);
+      expect(restored.baseRevId, isNull);
+      expect(restored.toFirestore().containsKey('revId'), isFalse);
+      expect(restored.toFirestore().containsKey('baseRevId'), isFalse);
+      expect(
+        WeeklyMenuPlan.empty(userId: 'u1', date: DateTime(2026)).revId,
+        isNull,
+      );
     });
 
-    test('nextRevision is rev + 1 and changes nothing else; copyWith keeps '
-        'rev', () {
+    test('nextRevision mints a fresh revId, names the old one as its base and '
+        'changes nothing else; copyWith keeps both', () {
       final base = planWith([
         entry(DayOfWeek.mon, MealSlot.middag, 'e1'),
       ]).nextRevision();
       final next = base.nextRevision();
-      expect(next.rev, base.rev + 1);
+      expect(next.revId, isA<String>());
+      expect(next.revId, isNot(base.revId));
+      expect(next.baseRevId, base.revId);
       expect(next.id, base.id);
       expect(next.entries, base.entries);
       expect(next.createdAt, base.createdAt);
       expect(next.updatedAt, base.updatedAt);
-      expect(base.copyWith(entries: const []).rev, base.rev);
+      final copied = base.copyWith(entries: const []);
+      expect(copied.revId, base.revId);
+      expect(copied.baseRevId, base.baseRevId);
+    });
+
+    test('the first revision of a week without revId names no base', () {
+      final first = planWith([]).nextRevision();
+      expect(first.revId, isNotNull);
+      expect(first.baseRevId, isNull);
+      expect(first.toFirestore().containsKey('baseRevId'), isFalse);
     });
   });
 

@@ -19,7 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/core/exceptions/repository_exception.dart';
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -67,7 +67,7 @@ WeeklyMenuPlan _plan({
 
 /// BUT-2215: the viewmodel publishes and saves `nextRevision()` of what the
 /// service computed — a new instance carrying the SAME entries and presence
-/// instances, one revision on. This matcher keeps the identity checks those
+/// instances, as a new revision. This matcher keeps the identity checks those
 /// tests were written with.
 Matcher _shows(WeeklyMenuPlan expected) => isA<WeeklyMenuPlan>()
     .having((p) => p.id, 'id', expected.id)
@@ -118,6 +118,7 @@ void main() {
     late _MockWeeklyMenuPlanService mockService;
     late _MockUnifiedRecipeService mockRecipeService;
     late _MockMenuShoppingListGenerator mockGenerator;
+    late StreamController<String?> weekWrites;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -127,6 +128,8 @@ void main() {
       mockService = _MockWeeklyMenuPlanService();
       mockRecipeService = _MockUnifiedRecipeService();
       mockGenerator = _MockMenuShoppingListGenerator();
+      weekWrites = StreamController<String?>.broadcast();
+      when(() => mockService.weekWrites).thenAnswer((_) => weekWrites.stream);
 
       // Most tests don't exercise save; stub a permissive default that
       // individual tests can override with `when(...).thenAnswer(...)`.
@@ -139,8 +142,9 @@ void main() {
       );
     });
 
-    tearDown(() {
+    tearDown(() async {
       viewModel.dispose();
+      await weekWrites.close();
     });
 
     // BUT-1962 — a refused save must (a) say so and (b) put back the state it
@@ -822,7 +826,7 @@ void main() {
         entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
         createdAt: DateTime(2026, 4, 1),
         updatedAt: DateTime(2026, 4, 1),
-        rev: 3,
+        revId: 'rev-stored',
       );
       // What the other device saved: another dish, a later revision.
       final remote = WeeklyMenuPlan(
@@ -834,7 +838,8 @@ void main() {
         ],
         createdAt: stored.createdAt,
         updatedAt: DateTime(2026, 4, 14),
-        rev: 7,
+        revId: 'rev-remote',
+        baseRevId: 'rev-stored',
       );
 
       late List<WeekConflict> conflicts;
@@ -881,7 +886,8 @@ void main() {
       );
 
       test(
-        'two quick edits are saved as N+1 and N+2, with no conflict',
+        'two quick edits are saved as a chain built on the read week, with no '
+        'conflict',
         () async {
           final pending = Completer<void>();
           addTearDown(() {
@@ -899,8 +905,11 @@ void main() {
           pending.complete();
           await Future<void>.delayed(Duration.zero);
 
-          expect(saved.map((p) => p.rev), [4, 5]);
-          expect(viewModel.plan!.rev, 5);
+          expect(saved, hasLength(2));
+          expect(saved[0].baseRevId, 'rev-stored');
+          expect(saved[1].baseRevId, saved[0].revId);
+          expect(saved[1].revId, isNot(saved[0].revId));
+          expect(viewModel.plan, same(saved[1]));
           expect(conflicts, isEmpty);
         },
       );
@@ -953,8 +962,8 @@ void main() {
         },
       );
 
-      test('keepMine writes my dishes with the server createdAt and its '
-          'rev + 1', () async {
+      test('keepMine writes my dishes with the server createdAt, built on the '
+          "server's revId", () async {
         when(
           () => mockService.saveRevision(any()),
         ).thenThrow(WeekPlanConflictException(remote));
@@ -968,11 +977,130 @@ void main() {
         expect(await viewModel.keepMine(conflict), isTrue);
 
         final written = saved.single;
-        expect(written.rev, remote.rev + 1);
+        expect(written.baseRevId, remote.revId);
+        expect(written.revId, isNot(remote.revId));
         expect(written.createdAt, remote.createdAt);
         expect(written.entries, same(conflict.local.entries));
         expect(viewModel.plan, same(written));
         expect(viewModel.error, isNull);
+      });
+    });
+
+    // BUT-2215: another caller of the service wrote a week on this device (the
+    // recipe scrub, the placement flow). The shown week is re-read, so the
+    // next edit here is built on what was written rather than refused as a
+    // save from another device.
+    group('a week written elsewhere on this device is re-read (BUT-2215)', () {
+      final shown = _plan(
+        entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+      ).nextRevision();
+      final written = shown.copyWith(entries: const []).nextRevision();
+
+      setUp(() async {
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(shown));
+        await viewModel.loadWeek(shown.weekStartDate);
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(written));
+      });
+
+      test(
+        'a write of the shown week puts what was written on screen',
+        () async {
+          weekWrites.add(shown.id);
+          await pumpEventQueue();
+
+          expect(viewModel.plan, same(written));
+          expect(viewModel.error, isNull);
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
+
+      test('a write of any week (the recipe scrub) does too', () async {
+        weekWrites.add(null);
+        await pumpEventQueue();
+
+        expect(viewModel.plan, same(written));
+      });
+
+      test('the next edit is built on what was written', () async {
+        final saved = <WeeklyMenuPlan>[];
+        when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
+        });
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenAnswer(
+          (inv) => (inv.namedArguments[#plan] as WeeklyMenuPlan).copyWith(
+            entries: [_entry(day: DayOfWeek.tue, slot: MealSlot.middag)],
+          ),
+        );
+        weekWrites.add(null);
+        await pumpEventQueue();
+
+        await viewModel.assignRecipe(
+          day: DayOfWeek.tue,
+          slot: MealSlot.middag,
+          recipe: _recipe(),
+        );
+
+        expect(saved.single.baseRevId, written.revId);
+      });
+
+      test('a write of another week reads nothing', () async {
+        weekWrites.add('some-other-week');
+        await pumpEventQueue();
+
+        expect(viewModel.plan, same(shown));
+        verify(() => mockService.readWeek(any())).called(1);
+      });
+
+      test(
+        'a failed re-read leaves the shown week and sets no error',
+        () async {
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+          );
+          weekWrites.add(shown.id);
+          await pumpEventQueue();
+
+          expect(viewModel.plan, same(shown));
+          expect(viewModel.error, isNull);
+        },
+      );
+
+      test('an edit published while the re-read is in flight is not '
+          'overwritten', () async {
+        final read = Completer<WeeklyMenuPlanRead>();
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) => read.future);
+        when(
+          () => mockService.removeEntry(
+            plan: any(named: 'plan'),
+            entryId: any(named: 'entryId'),
+          ),
+        ).thenAnswer(
+          (inv) => (inv.namedArguments[#plan] as WeeklyMenuPlan).copyWith(
+            entries: const [],
+          ),
+        );
+        weekWrites.add(shown.id);
+        await Future<void>.delayed(Duration.zero);
+        await viewModel.removeEntry('entry-1');
+        final edited = viewModel.plan;
+        read.complete(_read(written));
+        await pumpEventQueue();
+
+        expect(viewModel.plan, same(edited));
+        expect(edited, isNot(same(written)));
       });
     });
 

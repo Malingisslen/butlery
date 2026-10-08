@@ -187,8 +187,11 @@ class _ViewModePersistence extends PersistenceService {
   Future<bool> getIsGridView() async => grid;
 }
 
-class _MockWeeklyMenuPlanService extends Mock
-    implements WeeklyMenuPlanService {}
+class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockPantryService extends Mock implements PantryService {}
 

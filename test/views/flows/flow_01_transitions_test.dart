@@ -270,13 +270,47 @@ void main() {
 
         final kept = h.repository.plans[id]!;
         expect(h.repository.saves, [kept]);
-        expect(kept.rev, other.rev + 1);
+        expect(kept.baseRevId, other.revId);
+        expect(kept.revId, isNot(other.revId));
         expect(kept.createdAt, other.createdAt);
         expect(kept.entries.map((e) => e.recipeId).toSet(), {
           'dinner-1',
           'dinner-2',
           'dinner-3',
         });
+      });
+    });
+
+    testWidgets('a recipe deleted on this device while the week is open '
+        'leaves the next edit without a conflict snackbar', (tester) async {
+      await runOnMonday(() async {
+        h.seedWeek(2);
+        await h.pump(tester);
+        await tester.pumpAndSettle();
+        final id = h.repository.plans.keys.single;
+
+        // Deleting a recipe scrubs it from every week through the service
+        // (personal_recipe_crud.dart), a new revision of this week.
+        expect(
+          await h.planService.removeRecipeFromAllPlans('saved-recipe-0'),
+          1,
+        );
+        await tester.pumpAndSettle();
+        final scrubbed = h.repository.plans[id]!;
+
+        await h.generate(tester, 'tre middagar');
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(_sv.commonContinue));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.text(_sv.conflictWeekSavedElsewhere), findsNothing);
+        final saved = h.repository.saves.single;
+        expect(saved.baseRevId, scrubbed.revId);
+        expect(
+          saved.entries.map((e) => e.recipeId),
+          isNot(contains('saved-recipe-0')),
+        );
       });
     });
   });

@@ -475,20 +475,28 @@ void main() {
     });
 
     test(
-      'saves and returns the read week one revision on (BUT-2215)',
+      'saves and returns a revision built on the read week (BUT-2215)',
       () async {
         // The week menu adopts the returned plan and builds its next edit on
         // it, so a plan without the saved revision would make that edit a
         // false conflict.
+        final read = _plan().nextRevision();
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: read, readFailed: false),
+        );
         final vm = buildVm();
         await vm.init();
-        final readRev = vm.plan!.rev;
+        final readRevId = vm.plan!.revId;
+        expect(readRevId, isNotNull, reason: 'premise: the read week has one');
         vm.placeSelectedAt(DayOfWeek.wed);
 
         final result = await vm.confirm();
 
-        expect(savedPlans.single.rev, readRev + 1);
-        expect(result?.plan.rev, readRev + 1);
+        final saved = savedPlans.single;
+        expect(saved.baseRevId, readRevId);
+        expect(saved.revId, isNotNull);
+        expect(saved.revId, isNot(readRevId));
+        expect(result?.plan, same(saved));
       },
     );
 

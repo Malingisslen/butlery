@@ -36,8 +36,11 @@ import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
 import '../golden/golden_helper.dart';
 
-class _MockWeeklyMenuPlanService extends Mock
-    implements WeeklyMenuPlanService {}
+class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 

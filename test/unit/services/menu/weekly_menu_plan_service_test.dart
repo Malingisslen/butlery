@@ -1,13 +1,19 @@
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/factories/mock_factory.dart';
 
 class _MockRepo extends Mock implements WeeklyMenuPlanRepository {}
 
@@ -103,105 +109,167 @@ void main() {
     });
   });
 
-  // BUT-2215: `firestore.rules` accepts a week update only one revision past
-  // the stored one, so every write path must advance `rev` exactly once. One
-  // test per path; each reads a week stored at rev 4.
-  group('every write path saves the read rev + 1 (BUT-2215)', () {
-    setUpAll(() => registerFallbackValue(_FakeWeeklyMenuPlan()));
+  // BUT-2215: `firestore.rules` accepts a week update only when it names the
+  // stored revId as its base, so every write path must save a new revision of
+  // the copy it read. One test per path; each reads a week stored at
+  // 'rev-stored'.
+  group(
+    'every write path saves a revision built on the read one (BUT-2215)',
+    () {
+      setUpAll(() => registerFallbackValue(_FakeWeeklyMenuPlan()));
 
-    final nextMon = mon.add(const Duration(days: 7));
-    WeeklyMenuPlan stored(DateTime weekStart, {bool withEntry = false}) {
-      final base = WeeklyMenuPlan(
-        id: 'u_${weekStart.toIso8601String()}',
-        userId: 'u',
-        weekStartDate: weekStart,
-        entries: [
-          if (withEntry)
-            WeeklyMenuPlanEntry(
-              id: 'e1',
-              day: DayOfWeek.mon,
-              slot: MealSlot.middag,
-              recipeId: 'r-stored',
-              recipeTitle: 'Stored',
-            ),
-        ],
-        createdAt: DateTime(2026, 4, 1),
-        updatedAt: DateTime(2026, 4, 1),
-        rev: 4,
-      );
-      return base;
-    }
+      final nextMon = mon.add(const Duration(days: 7));
+      WeeklyMenuPlan stored(DateTime weekStart, {bool withEntry = false}) {
+        final base = WeeklyMenuPlan(
+          id: 'u_${weekStart.toIso8601String()}',
+          userId: 'u',
+          weekStartDate: weekStart,
+          entries: [
+            if (withEntry)
+              WeeklyMenuPlanEntry(
+                id: 'e1',
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                recipeId: 'r-stored',
+                recipeTitle: 'Stored',
+              ),
+          ],
+          createdAt: DateTime(2026, 4, 1),
+          updatedAt: DateTime(2026, 4, 1),
+          revId: 'rev-stored',
+        );
+        return base;
+      }
 
-    setUp(() {
-      when(() => userService.currentUserProfile).thenReturn(_profile('u'));
-      when(() => repo.save(any())).thenAnswer((_) async {});
-      when(
-        () => repo.fetchForWeek(
-          userId: any(named: 'userId'),
-          weekStart: any(named: 'weekStart'),
-        ),
-      ).thenAnswer((inv) async {
-        final weekStart = inv.namedArguments[#weekStart] as DateTime;
-        return stored(weekStart, withEntry: weekStart == mon);
+      setUp(() {
+        when(() => userService.currentUserProfile).thenReturn(_profile('u'));
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        when(
+          () => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ),
+        ).thenAnswer((inv) async {
+          final weekStart = inv.namedArguments[#weekStart] as DateTime;
+          return stored(weekStart, withEntry: weekStart == mon);
+        });
       });
-    });
 
-    int savedRev() =>
-        (verify(() => repo.save(captureAny())).captured.single
-                as WeeklyMenuPlan)
-            .rev;
+      WeeklyMenuPlan saved() =>
+          verify(() => repo.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
 
-    test('save', () async {
-      await service.save(stored(mon));
-      expect(savedRev(), 5);
-    });
+      void expectBuiltOnStored() {
+        final plan = saved();
+        expect(plan.baseRevId, 'rev-stored');
+        expect(plan.revId, isNotNull);
+        expect(plan.revId, isNot('rev-stored'));
+      }
 
-    test('saveRevision writes the rev it is given', () async {
-      await service.saveRevision(stored(mon).nextRevision());
-      expect(savedRev(), 5);
-    });
+      test('save', () async {
+        await service.save(stored(mon));
+        expectBuiltOnStored();
+      });
 
-    test('copyWeek', () async {
-      final copied = await service.copyWeek(
-        fromWeekStart: mon,
-        toWeekStart: nextMon,
+      test('saveRevision writes the revision it is given', () async {
+        final given = stored(mon).nextRevision();
+        await service.saveRevision(given);
+        expect(saved(), same(given));
+      });
+
+      test(
+        'save tells weekWrites which week it wrote; saveRevision does not',
+        () async {
+          final written = <String?>[];
+          final sub = service.weekWrites.listen(written.add);
+          await service.save(stored(mon));
+          await service.saveRevision(stored(nextMon).nextRevision());
+          await Future<void>.delayed(Duration.zero);
+          await sub.cancel();
+          expect(written, [stored(mon).id]);
+        },
       );
-      expect(copied, 1);
-      expect(savedRev(), 5);
-    });
 
-    test('bulkMoveEntries', () async {
-      final moved = await service.bulkMoveEntries(
-        weekStart: mon,
-        entryIds: ['e1'],
-        toDay: DayOfWeek.tue,
-        toSlot: MealSlot.middag,
-      );
-      expect(moved, 1);
-      expect(savedRev(), 5);
-    });
+      test('a refused save tells weekWrites nothing', () async {
+        when(() => repo.save(any())).thenThrow(StateError('refused'));
+        final written = <String?>[];
+        final sub = service.weekWrites.listen(written.add);
+        await expectLater(service.save(stored(mon)), throwsStateError);
+        await Future<void>.delayed(Duration.zero);
+        await sub.cancel();
+        expect(written, isEmpty);
+      });
 
-    test('bulkAssignRecipes', () async {
-      final result = await service.bulkAssignRecipes(
-        weekStart: mon,
-        startDay: DayOfWeek.tue,
-        slot: MealSlot.middag,
-        recipes: [_recipe('a')],
+      test(
+        'a recipe scrub that changed a week tells weekWrites, as any week',
+        () async {
+          // executeServiceOperation's auth pre-flight reads the locator.
+          production.ServiceLocator.initialize(DIContainer());
+          await TestServiceLocator.initialize();
+          addTearDown(TestServiceLocator.reset);
+          TestServiceLocator.registerMock<AuthRepository>(
+            MockFactory.createAuthRepository(
+              isAuthenticated: true,
+              userId: 'u',
+            ),
+          );
+          when(
+            () => repo.removeRecipeFromAllPlans(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+            ),
+          ).thenAnswer((_) async => 1);
+          final written = <String?>[];
+          final sub = service.weekWrites.listen(written.add);
+          expect(await service.removeRecipeFromAllPlans('r-stored'), 1);
+          await Future<void>.delayed(Duration.zero);
+          await sub.cancel();
+          expect(written, [null]);
+        },
       );
-      expect(result.added, 1);
-      expect(savedRev(), 5);
-    });
 
-    test('assignRecipeToTargets', () async {
-      final placed = await service.assignRecipeToTargets(
-        weekStart: mon,
-        recipe: _recipe('b'),
-        targets: const [(day: DayOfWeek.wed, slot: MealSlot.middag)],
-      );
-      expect(placed, 1);
-      expect(savedRev(), 5);
-    });
-  });
+      test('copyWeek', () async {
+        final copied = await service.copyWeek(
+          fromWeekStart: mon,
+          toWeekStart: nextMon,
+        );
+        expect(copied, 1);
+        expectBuiltOnStored();
+      });
+
+      test('bulkMoveEntries', () async {
+        final moved = await service.bulkMoveEntries(
+          weekStart: mon,
+          entryIds: ['e1'],
+          toDay: DayOfWeek.tue,
+          toSlot: MealSlot.middag,
+        );
+        expect(moved, 1);
+        expectBuiltOnStored();
+      });
+
+      test('bulkAssignRecipes', () async {
+        final result = await service.bulkAssignRecipes(
+          weekStart: mon,
+          startDay: DayOfWeek.tue,
+          slot: MealSlot.middag,
+          recipes: [_recipe('a')],
+        );
+        expect(result.added, 1);
+        expectBuiltOnStored();
+      });
+
+      test('assignRecipeToTargets', () async {
+        final placed = await service.assignRecipeToTargets(
+          weekStart: mon,
+          recipe: _recipe('b'),
+          targets: const [(day: DayOfWeek.wed, slot: MealSlot.middag)],
+        );
+        expect(placed, 1);
+        expectBuiltOnStored();
+      });
+    },
+  );
 
   group('distributeFromGeneratedMenu — lunch/middag chronological fill', () {
     test('Mon anchor: 3 dinners land on Mon/Tue/Wed', () {
