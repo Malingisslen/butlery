@@ -151,41 +151,44 @@ void main() {
       await TestServiceLocator.reset();
     });
 
-    test('a rename from a stale copy leaves the stored history alone', () async {
-      final created = await repository.create(
-        UnifiedShoppingList(
-          name: 'Veckohandling',
-          ownerId: userId,
-          ownerDisplayName: 'Malin',
-        ),
-      );
-      final listDoc = firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.unifiedShoppingLists)
-          .doc(created.id);
-      final newer = ShoppingRowSnapshot(
-        id: 'removed-after-the-copy-was-taken',
-        name: 'Mjölk',
-        amount: 1,
-        unit: '',
-        category: ShoppingCategory.other,
-        at: DateTime.utc(2026, 10, 8),
-      );
-      await listDoc.update({
-        'recentlyRemoved': [newer.toFirestore()],
-      });
+    test(
+      'a rename from a stale copy leaves the stored history alone',
+      () async {
+        final created = await repository.create(
+          UnifiedShoppingList(
+            name: 'Veckohandling',
+            ownerId: userId,
+            ownerDisplayName: 'Malin',
+          ),
+        );
+        final listDoc = firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.unifiedShoppingLists)
+            .doc(created.id);
+        final newer = ShoppingRowSnapshot(
+          id: 'removed-after-the-copy-was-taken',
+          name: 'Mjölk',
+          amount: 1,
+          unit: '',
+          category: ShoppingCategory.other,
+          at: DateTime.utc(2026, 10, 8),
+        );
+        await listDoc.update({
+          'recentlyRemoved': [newer.toFirestore()],
+        });
 
-      // `created` predates the removal and has an empty history.
-      await repository.update(created.copyWith(name: 'Söndagshandel'));
+        // `created` predates the removal and has an empty history.
+        await repository.update(created.copyWith(name: 'Söndagshandel'));
 
-      final stored = (await listDoc.get()).data()!;
-      expect(stored['name'], 'Söndagshandel');
-      expect(stored['recentlyRemoved'], hasLength(1));
-      expect(
-        (stored['recentlyRemoved'] as List).single['id'],
-        newer.id,
-      );
-    });
+        final stored = (await listDoc.get()).data()!;
+        expect(stored['name'], 'Söndagshandel');
+        expect(stored['recentlyRemoved'], hasLength(1));
+        expect(
+          (stored['recentlyRemoved'] as List).single['id'],
+          newer.id,
+        );
+      },
+    );
   });
 }

@@ -68,51 +68,58 @@ void main() {
   }
 
   group('ShoppingRowSnapshot', () {
-    test('holds exactly id, name, amount, unit, category, note and the time', () {
-      final snapshot = ShoppingRowSnapshot.fromItem(attributed, at);
-      const expected = {
-        'id',
-        'name',
-        'amount',
-        'unit',
-        'category',
-        'note',
-        'at',
-      };
-      expect(snapshot.toFirestore().keys.toSet(), expected);
-      expect(snapshot.toJson().keys.toSet(), expected);
-    });
+    test(
+      'holds exactly id, name, amount, unit, category, note and the time',
+      () {
+        final snapshot = ShoppingRowSnapshot.fromItem(attributed, at);
+        const expected = {
+          'id',
+          'name',
+          'amount',
+          'unit',
+          'category',
+          'note',
+          'at',
+        };
+        expect(snapshot.toFirestore().keys.toSet(), expected);
+        expect(snapshot.toJson().keys.toSet(), expected);
+      },
+    );
 
-    test('a full list carries no *UserId or *DisplayName inside a snapshot', () {
-      final list = listWithHistory();
+    test(
+      'a full list carries no *UserId or *DisplayName inside a snapshot',
+      () {
+        final list = listWithHistory();
 
-      for (final serialised in [list.toFirestore(), list.toJson()]) {
-        final snapshots = [
-          ...(serialised['recentlyRemoved'] as List),
-          (serialised['items'] as List).cast<Map>().single['previous'],
-        ];
-        expect(snapshots, hasLength(2));
-        final offending = allKeys(
-          snapshots,
-        ).where((k) => k.endsWith('UserId') || k.endsWith('DisplayName'));
-        expect(offending, isEmpty);
+        for (final serialised in [list.toFirestore(), list.toJson()]) {
+          final snapshots = [
+            ...(serialised['recentlyRemoved'] as List),
+            (serialised['items'] as List).cast<Map>().single['previous'],
+          ];
+          expect(snapshots, hasLength(2));
+          final offending = allKeys(
+            snapshots,
+          ).where((k) => k.endsWith('UserId') || k.endsWith('DisplayName'));
+          expect(offending, isEmpty);
 
-        final encoded = jsonEncode(
-          snapshots,
-          toEncodable: (o) => o is Timestamp ? o.toDate().toIso8601String() : o,
-        );
-        for (final value in [
-          'uid-alice',
-          'uid-bob',
-          'uid-cecilia',
-          'Alice A',
-          'Bob B',
-          'Cecilia C',
-        ]) {
-          expect(encoded, isNot(contains(value)));
+          final encoded = jsonEncode(
+            snapshots,
+            toEncodable: (o) =>
+                o is Timestamp ? o.toDate().toIso8601String() : o,
+          );
+          for (final value in [
+            'uid-alice',
+            'uid-bob',
+            'uid-cecilia',
+            'Alice A',
+            'Bob B',
+            'Cecilia C',
+          ]) {
+            expect(encoded, isNot(contains(value)));
+          }
         }
-      }
-    });
+      },
+    );
 
     test('round-trips through the Firestore and JSON shapes', () {
       final snapshot = ShoppingRowSnapshot.fromItem(attributed, at);

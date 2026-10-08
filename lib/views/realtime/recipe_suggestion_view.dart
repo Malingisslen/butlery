@@ -88,12 +88,11 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
     return svc.diffAgainstLive(widget.suggestion);
   }
 
-  String _keptUntil(BuildContext context) =>
-      ContentTimeLabels.dateLabel(
-        context.l10n,
-        widget.suggestion.expiresAt,
-        clock.now(),
-      );
+  String _keptUntil(BuildContext context) => ContentTimeLabels.dateLabel(
+    context.l10n,
+    widget.suggestion.expiresAt,
+    clock.now(),
+  );
 
   Future<void> _decide(_Decision decision) async {
     final svc = _service;
