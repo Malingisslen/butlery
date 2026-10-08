@@ -292,7 +292,9 @@ class FriendsManagementOperations extends BaseService {
       await _updateFriendRequestStatus(rejectedRequest);
       _removeIncomingRequestInternal(requestId);
 
-      AppLogger.success('Friend request rejected from ${request.fromUserId}');
+      AppLogger.success(
+        'Friend request rejected from ${request.fromUserId.maskedUserId}',
+      );
       return true;
     }, operationName: 'Reject Friend Request');
     return result == true;
@@ -321,7 +323,9 @@ class FriendsManagementOperations extends BaseService {
       await _updateFriendRequestStatus(cancelledRequest);
       _removeOutgoingRequestInternal(requestId);
 
-      AppLogger.success('Friend request cancelled to ${request.toUserId}');
+      AppLogger.success(
+        'Friend request cancelled to ${request.toUserId.maskedUserId}',
+      );
       return true;
     }, operationName: 'Cancel Friend Request');
     return result == true;
@@ -765,7 +769,7 @@ class FriendsManagementOperations extends BaseService {
       );
 
       AppLogger.success(
-        'Friend request accepted notification sent to ${request.fromUserId}',
+        'Friend request accepted notification sent to ${request.fromUserId.maskedUserId}',
       );
     } catch (e) {
       AppLogger.warning(

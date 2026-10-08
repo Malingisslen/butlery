@@ -53,7 +53,7 @@ class MessageSendingOperations {
         throw AuthenticationException('User must be authenticated');
       }
       AppLogger.debug(
-        '📤 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})',
+        '📤 [MessagingService] Current user: ${currentUser.uid.maskedUserId} (${currentUser.displayName})',
       );
 
       if (content.trim().isEmpty) {

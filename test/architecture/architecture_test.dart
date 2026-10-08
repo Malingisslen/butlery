@@ -449,8 +449,19 @@ void main() {
     // caught. Both are zero-instance today; this guards the common case.
     test('no raw \$userId / \$uid interpolated into AppLogger calls in lib/ '
         '(use .maskedUserId)', () {
+      // BUT-1964: a list of exact spellings missed `$currentUserId` and
+      // `$participantId`, so the arm matches person-id SUFFIXES instead. The
+      // braced form refuses a last segment starting with `masked`, which is
+      // what lets `${userId.maskedUserId}` through.
+      const personId =
+          r'(?:\w*[uU]serId|\w*[uU]id|\w*[fF]riendId|\w*[mM]emberId'
+          r'|\w*[iI]nviteeId|\w*[oO]wnerId|\w*[pP]articipantId|\w*[sS]enderId)';
       final pattern = RegExp(
-        r'AppLogger\.\w+\([^;]*(\$userId\b|\$\{userId\}|\$uid\b|\$\{uid\})',
+        r'AppLogger\.\w+\([^;]*(\$'
+        '$personId'
+        r'\b|\$\{(?:\w+\.)*(?!masked)'
+        '$personId'
+        r'\})',
       );
 
       final violations = <String>[];

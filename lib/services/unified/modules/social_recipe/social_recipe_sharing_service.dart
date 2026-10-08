@@ -13,6 +13,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// BUT-1503: outcome of a recipe share, distinguishing "the recipient can open
 /// the recipe" from "the share is also discoverable in inbox/group queries".
@@ -504,7 +505,9 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         } else {
           // If friend not found, use fallback display name
           memberMap[memberId] = AppLocale.current.displayUnknownUser;
-          AppLogger.warning('Friend $memberId not found in friends list');
+          AppLogger.warning(
+            'Friend ${memberId.maskedUserId} not found in friends list',
+          );
         }
       }
 

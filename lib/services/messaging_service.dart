@@ -124,10 +124,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
       AppLogger.info('🔍 [MessagingService] startDirectConversation called');
       AppLogger.debug(
-        '🔍 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})',
+        '🔍 [MessagingService] Current user: ${currentUser.uid.maskedUserId} (${currentUser.displayName})',
       );
       AppLogger.debug(
-        '🔍 [MessagingService] Other user: $otherUserId ($otherUserDisplayName)',
+        '🔍 [MessagingService] Other user: ${otherUserId.maskedUserId} ($otherUserDisplayName)',
       );
 
       // FIXED: Skip findDirectConversation query lookup - go directly to createDirectConversation
@@ -152,7 +152,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return conversationId;
     } catch (e) {
       AppLogger.error(
-        '❌ [MessagingService] Failed to start direct conversation with $otherUserId',
+        '❌ [MessagingService] Failed to start direct conversation with ${otherUserId.maskedUserId}',
         e,
       );
       rethrow;
@@ -602,7 +602,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       });
 
       AppLogger.debug(
-        'Typing indicator set for $currentUserId in ${conversationId.maskedConversationId}',
+        'Typing indicator set for ${currentUserId.maskedUserId} in ${conversationId.maskedConversationId}',
       );
     } catch (e) {
       AppLogger.error('Failed to set typing indicator', e);

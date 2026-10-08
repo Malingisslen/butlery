@@ -25,6 +25,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// HIGH-10: Recipe sync status of a write this module sent to Firebase
 /// itself. A write that went through the offline queue is not tracked here;
@@ -202,7 +203,7 @@ class PersonalRecipeModule {
           try {
             await _userRepository.incrementPublicRecipeCount(currentUserId);
             AppLogger.debug(
-              '✅ Incremented public recipe count for user $currentUserId',
+              '✅ Incremented public recipe count for user ${currentUserId.maskedUserId}',
             );
           } catch (e) {
             AppLogger.warning('⚠️ Failed to increment recipe count: $e');
@@ -388,7 +389,7 @@ class PersonalRecipeModule {
             try {
               await _userRepository.decrementPublicRecipeCount(currentUserId);
               AppLogger.debug(
-                '✅ Decremented public recipe count for user $currentUserId',
+                '✅ Decremented public recipe count for user ${currentUserId.maskedUserId}',
               );
             } catch (e) {
               AppLogger.warning('⚠️ Failed to decrement recipe count: $e');

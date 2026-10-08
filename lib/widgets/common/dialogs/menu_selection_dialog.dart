@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Simple dialog for selecting a menu to share with a group
 class MenuSelectionDialog extends StatefulWidget {
@@ -49,7 +50,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
 
       AppLogger.debug('🔍 [MenuDialog] Starting initialization');
       AppLogger.debug('   Service initialized: ${_menuService.isInitialized}');
-      AppLogger.debug('   Current user: $currentUserId');
+      AppLogger.debug('   Current user: ${currentUserId.maskedUserId}');
       AppLogger.debug(
         '   Is authenticated: ${permissionService.isAuthenticated}',
       );

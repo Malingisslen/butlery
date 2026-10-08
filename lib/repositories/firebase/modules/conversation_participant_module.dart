@@ -56,7 +56,7 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-      'Added participant $participantId to conversation ${conversationId.maskedConversationId} (subcollection)',
+      'Added participant ${participantId.maskedUserId} to conversation ${conversationId.maskedConversationId} (subcollection)',
     );
   }
 
@@ -121,7 +121,7 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-      'Removed participant $participantId from conversation ${conversationId.maskedConversationId} (subcollection)',
+      'Removed participant ${participantId.maskedUserId} from conversation ${conversationId.maskedConversationId} (subcollection)',
     );
   }
 

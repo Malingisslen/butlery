@@ -124,10 +124,10 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
     if (_selectedMemberIds.contains(friendId)) {
       _selectedMemberIds.remove(friendId);
-      AppLogger.debug('Ta bort vän $friendId från grupp');
+      AppLogger.debug('Ta bort vän ${friendId.maskedUserId} från grupp');
     } else {
       _selectedMemberIds.add(friendId);
-      AppLogger.debug('Lägg till vän $friendId i grupp');
+      AppLogger.debug('Lägg till vän ${friendId.maskedUserId} i grupp');
     }
 
     _validateGroupCreation();

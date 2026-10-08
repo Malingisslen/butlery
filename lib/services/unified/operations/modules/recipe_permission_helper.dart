@@ -6,6 +6,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Recipe permission checking module handling access validation, user capabilities, legacy compatibility, and permission level determination.
 class RecipePermissionHelper {
@@ -99,7 +100,7 @@ class RecipePermissionHelper {
 
       if (!canDelete) {
         AppLogger.debug(
-          '🔍 Delete permission denied - Owner: $ownerId, Current: $currentUserId',
+          '🔍 Delete permission denied - Owner: ${ownerId.maskedUserId}, Current: ${currentUserId.maskedUserId}',
         );
       }
 
