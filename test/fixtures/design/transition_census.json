@@ -1,5 +1,5 @@
 {
-  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges, and the transition's canonical outcome is met. PARTIAL means the transition is built and reachable and its tests drive it, but its defining canonical outcome is not met today; known_gap names what fails, the Linear ticket and, where there is one, the test that pins today's behaviour. PARTIAL does not count as done. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. Every entry that is not TESTED names a BUT-#### Linear ticket and a reason (for PARTIAL, in known_gap). Checked by test/views/flows/flow_transition_coverage_test.dart.",
+  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges, and the transition's canonical outcome is met. PARTIAL means the transition is built and reachable and its tests drive it, but its defining canonical outcome is not met today; known_gap names what fails, the Linear ticket and, where there is one, the test that pins today's behaviour. PARTIAL does not count as done. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. RESTING means Malin has put the requirement to rest; it names the decision and its ticket and does not count as a known failure. Every entry that is not TESTED names a BUT-#### Linear ticket and a reason (for PARTIAL, in known_gap). Checked by test/views/flows/flow_transition_coverage_test.dart.",
   "TRANSITION_SET_HASH": "51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e",
   "entries": [
     {
@@ -690,12 +690,21 @@
     {
       "id": "TR::FLOW::06::byt-epost::omverifiering-bada",
       "flow": "06",
-      "status": "MISSING",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
-      "ticket": "BUT-2171",
-      "reason": "Only the new address is confirmed (verifyBeforeUpdateEmail, lib/services/auth_service.dart:483). The old address gets Firebase's notice, not a confirmation step."
+      "status": "TESTED",
+      "test_file": "test/widget/views/settings/account_security_email_change_test.dart",
+      "test_name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication",
+      "tests": [
+        {
+          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication"
+        },
+        {
+          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "name": "a refused reauthentication never asks for the change"
+        }
+      ],
+      "ticket": null,
+      "reason": "BUT-2171 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): Firebase's flow is kept and the requirement changed. Only the new address confirms (verifyBeforeUpdateEmail after reauthentication); the current address is told once the change applies and can undo it. Kontosäkerhet says so before the change is asked for."
     },
     {
       "id": "TR::FLOW::06::export::tre-felorsaker",
@@ -1297,12 +1306,13 @@
     {
       "id": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
       "flow": "08",
-      "status": "MISSING",
+      "status": "RESTING",
       "test_file": null,
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2163",
-      "reason": "Not built: the app cannot read free disk space, and it has no download the user starts."
+      "reason": "BUT-2163 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): the requirement rests until the app has a download the user starts. Today it has none, and it cannot read free disk space.",
+      "decision": "fas2/produktbeslut-2026-10-07.json BUT-2163"
     },
     {
       "id": "TR::FLOW::08::online::offline",

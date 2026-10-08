@@ -8,6 +8,8 @@
 /// deterministic.
 library;
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tools/design_migration_census.dart';
@@ -72,10 +74,15 @@ void main() {
       expect(t['required'], 81);
       expect(t['required_in_block288'], 81);
       expect(sum(t['by_status']), 81);
+      final byStatus = t['by_status']! as Map;
+      // A RESTING requirement is listed apart, never as not done.
       expect(
         (t['not_done']! as List).length,
-        81 - ((t['by_status']! as Map)['TESTED'] as int? ?? 0),
+        81 -
+            (byStatus['TESTED'] as int? ?? 0) -
+            (byStatus['RESTING'] as int? ?? 0),
       );
+      expect((t['resting']! as List).length, byStatus['RESTING'] ?? 0);
     }
     final s = section('states53');
     if (s['status'] == present) {
@@ -201,6 +208,30 @@ void main() {
       (v['accepted_failures']! as int) + 1,
     );
     expect(afterHost['known_failures'], v['known_failures']);
+  });
+
+  test('a resting transition requirement is counted apart, never as a '
+      'known failure (BUT-2163 = A)', () {
+    const file = 'test/fixtures/design/transition_census.json';
+    final source = CensusSource('.').read(file)!;
+    const id = 'TR::FLOW::06::aterstall::satt-nytt';
+    final fixture = jsonDecode(source) as Map<String, dynamic>;
+    final entry = (fixture['entries'] as List)
+        .cast<Map<String, dynamic>>()
+        .singleWhere((e) => e['id'] == id);
+    expect(entry['status'], isNot('RESTING'));
+    entry['status'] = 'RESTING';
+    final v = census['verdict']! as Map;
+    final after =
+        buildCensus(
+              CensusSource('.', overrides: {file: jsonEncode(fixture)}),
+            )['verdict']!
+            as Map;
+    expect(
+      after['resting_transitions'],
+      (v['resting_transitions']! as int) + 1,
+    );
+    expect(after['known_failures'], (v['known_failures']! as int) - 1);
   });
 
   test('two runs give byte-identical output', () {
