@@ -835,6 +835,12 @@ because access can come from ownership.
 
   So: still deferred, but on "not proven to round-trip", NOT on "no live path".
   Scope the ticket to that sync path. Do not cite the original wording to close it.
+- **SUPERSEDED 2026-10-08 (BUT-2213)** — the sync-path half of the entry above.
+  `firebase_sync_manager.dart` reads no realtime collection, `firestore.rules` has no
+  `realtime_recipes` block, and a production count (measure-production run 37810901681)
+  printed `realtime_recipes_docs=0`. Retires "`firebase_sync_manager.dart:225` deserializes
+  every `realtime_recipes` document". The second deserializer in `recipe_serialization.dart`
+  is unchanged.
 - **A revoke does not trim `shared_content.sharedToUserIds`.** A revoked member loses the recipe
   document but keeps the discovery row — title, description, image — and its Art. 15 export line.
   Pre-existing for `removeMember`; this ticket makes it more visible because the copy now promises

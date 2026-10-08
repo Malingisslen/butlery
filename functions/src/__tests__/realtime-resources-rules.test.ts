@@ -278,7 +278,7 @@ test("only the owner deletes", async () => {
 // BUT-2213: no block matches `realtime_recipes` any more, so the terminal
 // deny answers. The payload carries every field the removed create rule
 // required, and the read is by the seeded document's own owner.
-test("realtime_recipes is denied to its owner, read and create", async () => {
+test("realtime_recipes is denied to its owner, every verb", async () => {
   await env.withSecurityRulesDisabled(async (ctx) => {
     await ctx.firestore().doc("realtime_recipes/legacy-1").set({
       ownerId: OWNER_UID,
@@ -298,6 +298,15 @@ test("realtime_recipes is denied to its owner, read and create", async () => {
       recipe: { title: "Nytt recept" },
       createdAt: CREATED_AT,
     })
+  );
+  await assertFails(
+    db.doc("realtime_recipes/legacy-1").update({ recipe: { title: "Ny" } })
+  );
+  await assertFails(db.doc("realtime_recipes/legacy-1").delete());
+  await assertFails(
+    db
+      .doc(`realtime_recipes/legacy-1/presence/${OWNER_UID}`)
+      .set({ userId: OWNER_UID })
   );
 });
 

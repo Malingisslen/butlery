@@ -68,8 +68,7 @@ void normalizeTimestampPaths(Map<String, dynamic> row, List<String> paths) {
 /// These are the fields `RecipeSerialization.toFirestore` delegates to a
 /// `toJson()` rather than writing as a `Timestamp`. They are enumerated rather
 /// than discovered, so a field added to one of those `toJson()` methods is NOT
-/// covered until it is named here — and there is deliberately ONE list, because
-/// two sections embed this document at different depths.
+/// covered until it is named here — and there is deliberately ONE list.
 ///
 /// Both the `core.`-nested and the flat spelling are carried: the live writer
 /// nests, while `RecipeSerialization.fromMap` still reads a flat document as a

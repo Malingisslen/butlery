@@ -57,7 +57,7 @@ class RealtimeMenuService extends ChangeNotifier
   /// account, never a name they chose to expose, and invisible to the systems
   /// that maintain such copies. `on-profile-updated.ts` propagates the PROFILE
   /// name to `ownerDisplayName` and `lastEditedByDisplayName`.
-  /// `deleteRealtimeMenus` deletes the documents a
+  /// `deleteRealtimeResources` deletes the documents a
   /// user OWNS together with their `presence` and `votes` subcollections,
   /// `scrubLastEditor` anonymizes `lastEditedByDisplayName` on the ones they
   /// only edited, and `removeRealtimeParticipation` drops their `presence` doc,
