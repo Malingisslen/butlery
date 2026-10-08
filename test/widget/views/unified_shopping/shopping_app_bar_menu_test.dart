@@ -199,7 +199,7 @@ void main() {
       expect(find.text('Återställ varor'), findsNothing);
     });
 
-    testWidgets('is absent with nothing to restore or without edit rights', (
+    testWidgets('is absent with nothing to restore', (
       tester,
     ) async {
       when(
