@@ -1403,11 +1403,6 @@ void main() {
     });
   });
 
-  // BUT-2028: the section's USE of `fetchCapped`. The primitive's boundary is
-  // pinned centrally, but `if (entries.truncated) 'truncated': true` is
-  // deletable with every other test green — and an undeclared truncation is the
-  // dangerous direction, because the data subject reads a clipped bundle as a
-  // complete one.
   // BUT-2140 (conditions P1, P2): the restore history rides inside the list
   // document and the rows. The shared-list export only drops display names at
   // the TOP level of a row, so a snapshot that carried a name or uid would
@@ -1548,6 +1543,11 @@ void main() {
     );
   });
 
+  // BUT-2028: the section's USE of `fetchCapped`. The primitive's boundary is
+  // pinned centrally, but `if (entries.truncated) 'truncated': true` is
+  // deletable with every other test green — and an undeclared truncation is the
+  // dangerous direction, because the data subject reads a clipped bundle as a
+  // complete one.
   group('ingredient suggestions truncation (BUT-2028)', () {
     Map<String, dynamic> row(String id) => {
       'id': id,
