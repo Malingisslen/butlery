@@ -339,6 +339,32 @@ void main() {
     });
   });
 
+  group('FeedbackFAB — text style at the app mount point', () {
+    setUp(() async {
+      await _bindAuth(isAuthenticated: true);
+    });
+
+    testWidgets('the "!" draws without the fallback underline', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_appLike(const Scaffold(body: SizedBox())));
+      await tester.pump();
+
+      final glyph = tester.widget<RichText>(
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.byType(RichText),
+        ),
+      );
+      final decoration = glyph.text.style?.decoration;
+      expect(
+        decoration == null || decoration == TextDecoration.none,
+        isTrue,
+        reason: 'got $decoration',
+      );
+    });
+  });
+
   group('FeedbackFAB — steps aside for a snackbar', () {
     late BuildContext pageContext;
 

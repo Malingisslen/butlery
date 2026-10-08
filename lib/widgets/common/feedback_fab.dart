@@ -118,9 +118,7 @@ class _FeedbackFABState extends State<FeedbackFAB> {
         // Positioned high enough to clear both standard Scaffold FABs
         // (bottom: 16, 56px tall) and extended FABs at the same slot (e.g.
         // the shopping "Lägg till vara" and veckomeny "Till inköpslistan"
-        // buttons). Extended FABs sit roughly at global bottom 76-132 when
-        // the main shell's BottomNavigationBar (~60px) is underneath, so
-        // we stack above them via the shared offset constant.
+        // buttons).
         return Positioned(
           bottom: AppDimensions.feedbackFabBottomOffset,
           right: 16,
@@ -139,18 +137,27 @@ class _FeedbackFABState extends State<FeedbackFAB> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: _onTap,
-              child: Container(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  boxShadow: AppShadows.card,
-                ),
-                child: Center(
-                  child: Text(
-                    '!',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: cs.onSurface,
+              // The button sits beside the Navigator, above every page's
+              // Material, so without its own the "!" inherits the framework's
+              // fallback text style and its yellow double underline.
+              child: Material(
+                type: MaterialType.transparency,
+                child: Container(
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
+                  // Skarmar v12 etapp 9 #fbknapp: paper with a hairline edge,
+                  // so the square still reads where it meets the page colour.
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    border: Border.all(color: cs.outlineVariant),
+                    boxShadow: AppShadows.card,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '!',
+                      style: AppTextStyles.headlineSmall.copyWith(
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
                 ),
