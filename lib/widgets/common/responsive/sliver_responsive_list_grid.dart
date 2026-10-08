@@ -4,9 +4,9 @@ import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 
-/// [ResponsiveListGrid] as a sliver, for a scroll view that has other
-/// slivers above the items: a list with spacing on a phone, a fixed-column
-/// grid on a tablet or desktop. Items are built lazily, the same way.
+/// For a scroll view that has other slivers above the items: a list with
+/// spacing on a phone, a fixed-column grid on a tablet or desktop. Items are
+/// built lazily.
 class SliverResponsiveListGrid<T> extends StatelessWidget {
   const SliverResponsiveListGrid({
     super.key,
