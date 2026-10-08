@@ -561,6 +561,39 @@ void main() {
       expect(savedImages(), ['a', 'queued']);
     });
 
+    test(
+      'the device copy gives the thumbnail when the form has none',
+      () async {
+        when(() => mockImageManager.validImageUrls).thenReturn(['a']);
+        when(() => offline.getOfflineRecipeForUser('r1', 'u1')).thenAnswer(
+          (_) async =>
+              RecipeFactory.build(id: 'r1', imageUrls: ['a', 'queued'])
+                ..core.thumbnailUrl = 'queued-thumb',
+        );
+
+        await save();
+
+        verify(
+          () => mockState.createRecipe(
+            recipeId: 'r1',
+            imageUrls: any(named: 'imageUrls'),
+            thumbnailUrl: 'queued-thumb',
+          ),
+        ).called(1);
+      },
+    );
+
+    test('a device copy that cannot be read saves the form as it is', () async {
+      when(() => mockImageManager.validImageUrls).thenReturn(['a']);
+      when(
+        () => offline.getOfflineRecipeForUser('r1', 'u1'),
+      ).thenThrow(StateError('closed'));
+
+      expect(await save(), isNotNull);
+
+      expect(savedImages(), ['a']);
+    });
+
     test('an image removed in the form stays removed', () async {
       when(() => mockImageManager.validImageUrls).thenReturn(['a']);
       onDevice(['a', 'b']);

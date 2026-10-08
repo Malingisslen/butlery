@@ -215,6 +215,11 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             );
           }
 
+          final heirloomDraft = pendingHeirloom;
+          final heirloom = heirloomDraft == null
+              ? null
+              : await _uploadHeirloom(heirloomDraft, recipeId);
+
           final handoff = OfflineImageHandoff(
             _imageManager,
             ServiceLocator.tryGet<OfflineService>(),
@@ -235,11 +240,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           AppLogger.info(
             '📝 Creating recipe with ${validImageUrls.length} validated image URLs',
           );
-
-          final heirloomDraft = pendingHeirloom;
-          final heirloom = heirloomDraft == null
-              ? null
-              : await _uploadHeirloom(heirloomDraft, recipeId);
 
           final recipe = _state.createRecipe(
             recipeId: recipeId,
