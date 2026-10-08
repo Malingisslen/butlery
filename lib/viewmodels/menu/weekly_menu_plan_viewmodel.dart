@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
@@ -48,6 +49,14 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   final WeeklyMenuOverflowTrayStore _trayStore;
 
   WeeklyMenuPlan? _plan;
+
+  final StreamController<WeekConflict> _weekConflicts =
+      StreamController<WeekConflict>.broadcast();
+
+  /// BUT-2215: a save of the visible week lost to a save made elsewhere first
+  /// (the owner's other device). The week menu shows it as the 30 s conflict
+  /// snackbar with "Behåll min". Not an error: [error] stays clear.
+  Stream<WeekConflict> get weekConflicts => _weekConflicts.stream;
 
   /// P5-U23/U24: the overflow tray, "ett arbetsförråd, inte en notis"
   /// (produktregler.md:1123-1127). Its recipes, the meal type each was
@@ -307,6 +316,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     try {
       await operation();
       return true;
+    } on WeekPlanConflictException {
+      // BUT-2215: reported on [weekConflicts], never as this error (D-04).
+      return false;
     } catch (e) {
       AppLogger.error(errorPrefix, e);
       if (!isDisposed) setError(errorPrefix);
@@ -326,23 +338,73 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     WeeklyMenuPlan updated,
     WeeklyMenuPlan previous,
   ) async {
-    _plan = updated;
+    // BUT-2215: the published copy is the one saved, so a second quick edit,
+    // offline too, builds on this revision and is written one past it.
+    final next = updated.nextRevision();
+    _plan = next;
     notifyListeners();
     // Released HERE, not when the save acks. A guard held across the save
     // lasts the whole outage and allows exactly one offline edit.
     _publishInFlight = false;
     try {
-      await _service.save(updated);
+      await _service.saveRevision(next);
+    } on WeekPlanConflictException catch (e) {
+      _adoptConflict(next, e);
+      rethrow;
     } catch (_) {
       // Roll back only what is still on screen. The user may have navigated to
       // another week, or a later edit may have superseded this one, while the
       // refusal was in flight — restoring unconditionally would drag the
       // calendar back to a week they had left.
-      if (!isDisposed && identical(_plan, updated)) {
+      if (!isDisposed && identical(_plan, next)) {
         _plan = previous;
         notifyListeners();
       }
       rethrow;
+    }
+  }
+
+  /// BUT-2215: the server's week replaces [sent] on screen, and the user is
+  /// told, only while [sent] is still what the calendar shows. Otherwise the
+  /// user has left the week or a later edit superseded this one, and that
+  /// later save reports for itself, so only the last refused save of a run
+  /// says anything.
+  void _adoptConflict(WeeklyMenuPlan sent, WeekPlanConflictException e) {
+    if (isDisposed || !identical(_plan, sent)) return;
+    _plan = e.remote;
+    notifyListeners();
+    _weekConflicts.add(WeekConflict(local: sent, remote: e.remote));
+  }
+
+  /// BUT-2215: "Behåll min". Writes [conflict]'s dishes and presence over the
+  /// server's week, keeping the server's `createdAt` (the rules refuse a
+  /// changed one) and one revision past the week it builds on: the one on
+  /// screen when the user is still on it, else the server's.
+  ///
+  /// Returns false when this save lost to yet another save while the week is
+  /// on screen; that one is on [weekConflicts] already. Throws otherwise when
+  /// the save fails.
+  Future<bool> keepMine(WeekConflict conflict) async {
+    if (isDisposed) return false;
+    final shown = _plan;
+    final onScreen = shown != null && shown.id == conflict.remote.id;
+    final base = onScreen ? shown : conflict.remote;
+    final mine = base.copyWith(
+      entries: conflict.local.entries,
+      presenceBySlot: conflict.local.presenceBySlot,
+    );
+    if (!onScreen) {
+      // Nothing on screen to update or to report a new conflict on, so any
+      // failure here, a conflict included, is the snackbar's to report.
+      await _service.saveRevision(mine.nextRevision());
+      return true;
+    }
+    clearError();
+    try {
+      await _publishThenSave(mine, base);
+      return true;
+    } on WeekPlanConflictException {
+      return false;
     }
   }
 
@@ -500,7 +562,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         // BUT-1975/BUT-1965: publish FIRST. The old order awaited the save
         // before assigning `_plan`, so offline the generated week was never
         // rendered at all.
-        _plan = result.plan;
+        final next = result.plan.nextRevision();
+        _plan = next;
         _lastApplyLeftWeekUnchanged = false;
         _setTray(
           _OverflowTray(
@@ -522,20 +585,31 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         } catch (e) {
           AppLogger.error('applyGeneratedMenu: onPublished threw', e);
         }
+        void restoreApplyState() {
+          _setTray(previousTray);
+          _recentlyPlacedEntryIds = previousPlacedIds;
+          _placementOrder = previousOrder;
+          _lastParsedRequest = previousParsedRequest;
+        }
+
         try {
-          await _service.save(result.plan);
+          await _service.saveRevision(next);
+        } on WeekPlanConflictException catch (e) {
+          // BUT-2215: caught here, before `_executeWrite`'s error handler, so
+          // BUT-2132's one message is not touched. The server's week goes on
+          // screen and the generated week waits behind "Behåll min".
+          if (!isDisposed && identical(_plan, next)) restoreApplyState();
+          _adoptConflict(next, e);
+          rethrow;
         } catch (_) {
           // Every piece this method set, including the parsed request the
           // header chips read — a refused distribution must not leave them
           // describing a week that was rejected. Only while it is still the
           // resident plan: the user may have moved on while the refusal was
           // in flight.
-          if (!isDisposed && identical(_plan, result.plan)) {
+          if (!isDisposed && identical(_plan, next)) {
             _plan = previousPlan;
-            _setTray(previousTray);
-            _recentlyPlacedEntryIds = previousPlacedIds;
-            _placementOrder = previousOrder;
-            _lastParsedRequest = previousParsedRequest;
+            restoreApplyState();
             _lastApplyLeftWeekUnchanged = true;
             notifyListeners();
           }
@@ -636,8 +710,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final previousOverflow = _tray;
     return _executeWrite(
       () async {
-        final cleared = _service.clearWeek(current);
+        final clearedPlan = _service.clearWeek(current);
         if (isDisposed) return;
+        final cleared = identical(clearedPlan, current)
+            ? current
+            : clearedPlan.nextRevision();
         // Snapshots read the PRE-clear values, so they are taken from `current`
         // and `_overflow` before the assignments below.
         _preClearEntries = List.unmodifiable(current.entries);
@@ -648,7 +725,15 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         _publishInFlight = false;
         if (identical(cleared, current)) return;
         try {
-          await _service.save(cleared);
+          await _service.saveRevision(cleared);
+        } on WeekPlanConflictException catch (e) {
+          if (!isDisposed && identical(_plan, cleared)) {
+            _setTray(previousOverflow);
+            _preClearEntries = null;
+            _preClearOverflow = null;
+          }
+          _adoptConflict(cleared, e);
+          rethrow;
         } catch (_) {
           // The clear was shown before it was persisted, so a refusal puts
           // back all four pieces — plan, tray, and both halves of the undo
@@ -679,7 +764,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final previousOverflow = _tray;
     await _executeWrite(
       () async {
-        final restored = _service.restoreWeek(current, snapshot);
+        final restored = _service.restoreWeek(current, snapshot).nextRevision();
         if (isDisposed) return;
         _plan = restored;
         // Restore the tray too — clearWeek wiped it, so undo must bring it back
@@ -690,7 +775,13 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         notifyListeners();
         _publishInFlight = false;
         try {
-          await _service.save(restored);
+          await _service.saveRevision(restored);
+        } on WeekPlanConflictException catch (e) {
+          if (!isDisposed && identical(_plan, restored)) {
+            _setTray(previousOverflow);
+          }
+          _adoptConflict(restored, e);
+          rethrow;
         } catch (_) {
           // Shown before persisted, so a refusal puts the cleared week back
           // AND re-arms the snapshot — otherwise the user has neither their
@@ -878,14 +969,22 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         );
         final showsTarget = _plan?.weekStartDate == target;
         final previousPlan = _plan;
-        if (showsTarget) _plan = result.plan;
+        final next = result.plan.nextRevision();
+        if (showsTarget) _plan = next;
         notifyListeners();
         try {
-          await _service.save(result.plan);
+          await _service.saveRevision(next);
+        } on WeekPlanConflictException catch (e) {
+          if (!isDisposed) {
+            _setTray(before);
+            notifyListeners();
+          }
+          _adoptConflict(next, e);
+          rethrow;
         } catch (_) {
           if (!isDisposed) {
             _setTray(before);
-            if (showsTarget && identical(_plan, result.plan)) {
+            if (showsTarget && identical(_plan, next)) {
               _plan = previousPlan;
             }
             notifyListeners();
@@ -1015,6 +1114,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   @override
   void dispose() {
     _stopPendingTray();
+    unawaited(_weekConflicts.close());
     super.dispose();
   }
 
@@ -1162,6 +1262,15 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (!ok) return null;
     return moved;
   }
+}
+
+/// BUT-2215: a refused save of the week. [local] is the copy the user's edit
+/// produced, [remote] the week the server kept.
+class WeekConflict {
+  const WeekConflict({required this.local, required this.remote});
+
+  final WeeklyMenuPlan local;
+  final WeeklyMenuPlan remote;
 }
 
 /// P5-U23/U24: the overflow tray's state. Immutable, so a rollback can put

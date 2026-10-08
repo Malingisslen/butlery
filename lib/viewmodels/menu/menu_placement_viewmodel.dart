@@ -265,10 +265,13 @@ class MenuPlacementViewModel extends BaseViewModel {
       setError(weeklyPlanReadFailedMessage);
       return null;
     }
-    final current = _plan;
-    if (current == null || !hasPlacements) return null;
+    final working = _plan;
+    if (working == null || !hasPlacements) return null;
+    // BUT-2215: the week menu adopts the returned plan and builds its next
+    // edit on it, so it must carry the revision that was saved.
+    final current = working.nextRevision();
     final ok = await executeAsyncVoid(
-      () => _service.save(current),
+      () => _service.saveRevision(current),
       errorPrefix: AppLocale.current.weeklyMenuSaveError,
     );
     if (!ok) return null;

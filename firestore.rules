@@ -1103,6 +1103,19 @@ service cloud.firestore {
     // ========================================
     // Doc ID is `{userId}_{YYYY}-W{WW}` so ownership is encoded in the path.
     // Owner-only read/write — no sharing in Phase 1.
+    //
+    // weekRevAdvancesByOne (BUT-2215): an update that carries `rev` must move
+    // it exactly one past the stored value (a missing stored `rev` reads as 0).
+    // A save built on a stale copy of the week, typically from the owner's
+    // other device, is refused, and the app turns that refusal into the
+    // "Veckan sparades på en annan enhet" snackbar. An update WITHOUT `rev`
+    // passes: that is an app version from before this check. No `get()`.
+
+    function weekRevAdvancesByOne() {
+      return !('rev' in request.resource.data)
+        || (request.resource.data.rev is int
+            && request.resource.data.rev == resource.data.get('rev', 0) + 1);
+    }
 
     match /weekly_menu_plans/{planId} {
       allow read: if isAuthenticated()
@@ -1116,7 +1129,8 @@ service cloud.firestore {
         && planId.matches('^' + request.auth.uid + '_.*')
         && request.auth.uid == resource.data.userId
         && request.auth.uid == request.resource.data.userId
-        && cannotModify(['userId', 'createdAt']);
+        && cannotModify(['userId', 'createdAt'])
+        && weekRevAdvancesByOne();
 
       allow delete: if isAuthenticated()
         && planId.matches('^' + request.auth.uid + '_.*');

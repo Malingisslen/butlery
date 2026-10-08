@@ -42,6 +42,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { increment } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-weekly-menu-plans";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -154,6 +155,84 @@ test("an edit that preserves createdAt is allowed", async () => {
           updatedAt: LATER,
         })
       )
+  );
+});
+
+// R1-R6 (BUT-2215): `weekRevAdvancesByOne` on the update limb. Each body is
+// built from `planBody`, so it keeps createdAt and userId and only `rev` can
+// decide. R2 and R3 are the deny pair for R1; R4 is the older-app path.
+test("a week save one revision ahead is allowed", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 4 }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(planBody(OWNER_UID, { rev: 5, updatedAt: LATER }))
+  );
+});
+
+test("a week save on a stale revision is denied", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 5 }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(planBody(OWNER_UID, { rev: 5, updatedAt: LATER }))
+  );
+});
+
+test("a week save that skips a revision is denied", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 4 }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(planBody(OWNER_UID, { rev: 6, updatedAt: LATER }))
+  );
+});
+
+test("a save without rev from an older app is allowed", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID, { rev: 4 }));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(planBody(OWNER_UID, { updatedAt: LATER }))
+  );
+});
+
+test("the first rev on a document without one is 1", async () => {
+  await seed(OWNED_ID, planBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(planBody(OWNER_UID, { rev: 2, updatedAt: LATER }))
+  );
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .set(planBody(OWNER_UID, { rev: 1, updatedAt: LATER }))
+  );
+});
+
+test("a recipe scrub that increments rev is allowed", async () => {
+  await seed(
+    OWNED_ID,
+    planBody(OWNER_UID, { rev: 3, entries: [{ recipeId: "r1", day: "mon" }] })
+  );
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${OWNED_ID}`)
+      .update({ entries: [], rev: increment(1) })
   );
 });
 

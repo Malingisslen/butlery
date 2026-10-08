@@ -22,6 +22,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -58,7 +59,10 @@ const flowUserId = 'flow-user-1';
 /// no day (weekly_menu_plan_service.dart distributeFromGeneratedMenu).
 final flowMonday = DateTime(2026, 9, 21, 8);
 
-/// The plan repository, in memory.
+/// The plan repository, in memory. BUT-2215: [save] follows the revision rule
+/// of `firestore.rules` (`weekRevAdvancesByOne`, and an unchanged
+/// `createdAt`), and answers a refusal the way the Firebase repository does,
+/// with a [WeekPlanConflictException] carrying the stored week.
 class MemoryPlanRepository implements WeeklyMenuPlanRepository {
   final Map<String, WeeklyMenuPlan> plans = {};
   final List<WeeklyMenuPlan> saves = [];
@@ -71,6 +75,12 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {
+    final stored = plans[plan.id];
+    if (stored != null &&
+        (plan.rev != stored.rev + 1 ||
+            !plan.createdAt.isAtSameMomentAs(stored.createdAt))) {
+      throw WeekPlanConflictException(stored);
+    }
     saves.add(plan);
     plans[plan.id] = plan;
   }

@@ -262,6 +262,40 @@ void main() {
       expect(restored.schemaVersion, 1);
       expect(restored.entries, isEmpty);
     });
+
+    // BUT-2215: the week's revision, checked by `firestore.rules`.
+    test('rev round-trips through toFirestore and fromMap', () {
+      final plan = planWith([]).nextRevision().nextRevision();
+      final restored = WeeklyMenuPlan.fromMap(plan.id, plan.toFirestore());
+      expect(plan.toFirestore()['rev'], 2);
+      expect(restored.rev, 2);
+    });
+
+    test('a document without rev reads as 0, and empty starts at 0', () {
+      final restored = WeeklyMenuPlan.fromMap('id', {
+        'userId': 'u1',
+        'weekStartDate': '2026-01-05T00:00:00.000Z',
+        'createdAt': '2026-01-05T00:00:00.000Z',
+        'updatedAt': '2026-01-05T00:00:00.000Z',
+        'entries': const [],
+      });
+      expect(restored.rev, 0);
+      expect(WeeklyMenuPlan.empty(userId: 'u1', date: DateTime(2026)).rev, 0);
+    });
+
+    test('nextRevision is rev + 1 and changes nothing else; copyWith keeps '
+        'rev', () {
+      final base = planWith([
+        entry(DayOfWeek.mon, MealSlot.middag, 'e1'),
+      ]).nextRevision();
+      final next = base.nextRevision();
+      expect(next.rev, base.rev + 1);
+      expect(next.id, base.id);
+      expect(next.entries, base.entries);
+      expect(next.createdAt, base.createdAt);
+      expect(next.updatedAt, base.updatedAt);
+      expect(base.copyWith(entries: const []).rev, base.rev);
+    });
   });
 
   group('WeeklyMenuPlan per-slot presence (BUT-1611)', () {

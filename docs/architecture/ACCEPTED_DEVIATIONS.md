@@ -2550,6 +2550,19 @@ Windows, Chrome and Edge, so the "unverified on a device" half of the sentence a
 A refused save now rolls the calendar back, guarded on the published plan still being the
 resident one. Malin's decision, 2026-08-28.
 
+**AMENDED 2026-10-08 (BUT-2215).** Retires, for the week-menu path only: "what is lost is
+the user's own local edit, plus an unexplained failure." When a save from
+`WeeklyMenuPlanViewModel` is refused, `FirebaseWeeklyMenuPlanRepository.save` reads the
+stored week once from the server and throws `WeekPlanConflictException` when the stored
+`rev` is not the one the save was built on or the stored `createdAt` differs. The week menu
+then shows the stored week, sets no error, and shows "Veckan sparades på en annan enhet" for
+30 s with "Behåll min"; the button writes the user's dishes and who's-home choices over the
+stored week and says "Din version sparades" or "Kunde inte spara din version". Without the
+tap the user's edit is lost, as before. On the meal-poll path (BUT-1925) a save whose week
+moved on between the poll's read and its write is now refused rather than written over the
+other save, and reaches the user through the message BUT-1925 already shows.
+`acceptCachedAbsence` is unchanged and still passed only by `fetchForWeek`.
+
 ## The weekly-menu `save` audits refusals only (BUT-1981, 2026-08-28)
 
 
@@ -5698,3 +5711,20 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   "Removing other people's uids is a default awaiting Malin's answer." `exportSharedResidue`
   keeps the requester's uid and the list owner's uid on a left list's rows and removes every
   other uid and display name.
+
+## BUT-2215 — the week plan's revision check (2026-10-08)
+
+`weekly_menu_plans` carries an integer `rev`. `firestore.rules`' update limb
+(`weekRevAdvancesByOne`) accepts an update that carries `rev` only when it is the stored
+value (0 when absent) plus one; every app write path advances it once, and
+`removeRecipeFromAllPlans` writes `FieldValue.increment(1)`. Malin answered A1, B1, C1 and D1
+on 2026-10-08.
+
+- **An app version from before the check bypasses it (BUT-2215, 2026-10-08).** An update
+  without `rev` is allowed, so an older app still overwrites a newer save silently. Its
+  whole-document `set()` also drops `rev`, so the next save from a current app finds the
+  stored week at 0 and shows the conflict notice; the older app did save in between.
+- **A conflict with the user's own other device keeps no 30-day copy (BUT-2215, D1, Malin
+  2026-10-08).** The 30 s "Behåll min" is the only rescue. Nothing is written to the
+  overwritten-versions store, the same rule `RealtimeSyncService._keepOverwritten` applies
+  when the winning save is the user's own.

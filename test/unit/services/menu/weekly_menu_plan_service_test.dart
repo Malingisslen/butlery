@@ -88,16 +88,118 @@ void main() {
   // This has to live at the SERVICE layer: the viewmodel suite mocks the
   // service, so restoring the wrapper leaves that suite green (probed).
   group('save', () {
+    setUpAll(() => registerFallbackValue(_FakeWeeklyMenuPlan()));
+
     test('propagates a refusal instead of swallowing it', () async {
       final plan = _emptyPlan(mon);
       when(
-        () => repo.save(plan),
+        () => repo.save(any()),
       ).thenThrow(StateError('refused by the repository'));
 
       await expectLater(
         () => service.save(plan),
         throwsA(isA<StateError>()),
       );
+    });
+  });
+
+  // BUT-2215: `firestore.rules` accepts a week update only one revision past
+  // the stored one, so every write path must advance `rev` exactly once. One
+  // test per path; each reads a week stored at rev 4.
+  group('every write path saves the read rev + 1 (BUT-2215)', () {
+    setUpAll(() => registerFallbackValue(_FakeWeeklyMenuPlan()));
+
+    final nextMon = mon.add(const Duration(days: 7));
+    WeeklyMenuPlan stored(DateTime weekStart, {bool withEntry = false}) {
+      final base = WeeklyMenuPlan(
+        id: 'u_${weekStart.toIso8601String()}',
+        userId: 'u',
+        weekStartDate: weekStart,
+        entries: [
+          if (withEntry)
+            WeeklyMenuPlanEntry(
+              id: 'e1',
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              recipeId: 'r-stored',
+              recipeTitle: 'Stored',
+            ),
+        ],
+        createdAt: DateTime(2026, 4, 1),
+        updatedAt: DateTime(2026, 4, 1),
+        rev: 4,
+      );
+      return base;
+    }
+
+    setUp(() {
+      when(() => userService.currentUserProfile).thenReturn(_profile('u'));
+      when(() => repo.save(any())).thenAnswer((_) async {});
+      when(
+        () => repo.fetchForWeek(
+          userId: any(named: 'userId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenAnswer((inv) async {
+        final weekStart = inv.namedArguments[#weekStart] as DateTime;
+        return stored(weekStart, withEntry: weekStart == mon);
+      });
+    });
+
+    int savedRev() =>
+        (verify(() => repo.save(captureAny())).captured.single
+                as WeeklyMenuPlan)
+            .rev;
+
+    test('save', () async {
+      await service.save(stored(mon));
+      expect(savedRev(), 5);
+    });
+
+    test('saveRevision writes the rev it is given', () async {
+      await service.saveRevision(stored(mon).nextRevision());
+      expect(savedRev(), 5);
+    });
+
+    test('copyWeek', () async {
+      final copied = await service.copyWeek(
+        fromWeekStart: mon,
+        toWeekStart: nextMon,
+      );
+      expect(copied, 1);
+      expect(savedRev(), 5);
+    });
+
+    test('bulkMoveEntries', () async {
+      final moved = await service.bulkMoveEntries(
+        weekStart: mon,
+        entryIds: ['e1'],
+        toDay: DayOfWeek.tue,
+        toSlot: MealSlot.middag,
+      );
+      expect(moved, 1);
+      expect(savedRev(), 5);
+    });
+
+    test('bulkAssignRecipes', () async {
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.tue,
+        slot: MealSlot.middag,
+        recipes: [_recipe('a')],
+      );
+      expect(result.added, 1);
+      expect(savedRev(), 5);
+    });
+
+    test('assignRecipeToTargets', () async {
+      final placed = await service.assignRecipeToTargets(
+        weekStart: mon,
+        recipe: _recipe('b'),
+        targets: const [(day: DayOfWeek.wed, slot: MealSlot.middag)],
+      );
+      expect(placed, 1);
+      expect(savedRev(), 5);
     });
   });
 

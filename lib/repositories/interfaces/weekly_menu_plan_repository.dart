@@ -17,6 +17,10 @@ abstract class WeeklyMenuPlanRepository {
 
   /// Upsert the plan. Uses the deterministic doc ID; same `(userId, week)`
   /// always overwrites the same document.
+  ///
+  /// Writes `plan.rev` as it is; the caller advances it (BUT-2215). Throws
+  /// `WeekPlanConflictException` when the stored week moved on since [plan]
+  /// was read.
   Future<void> save(WeeklyMenuPlan plan);
 
   /// Delete every weekly plan owned by [userId] (for GDPR cascade).

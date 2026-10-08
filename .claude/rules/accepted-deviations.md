@@ -40,6 +40,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - SUPERSEDED 2026-08-30 by ADR-0010: the trail's premise did not hold, and the granted row is restored on the GROUP repository. (BUT-1971, 2026-08-30)
 - An OFFLINE read of a weekly menu plan trusts a cached "this week is empty" … Do NOT pass this flag on anything an allergen or a permission decision reads (BUT-1961, 2026-08-27)
 - `readWeek` also calls `fetchForWeek` and mints `readFailed: false` for any null (BUT-1961, 2026-08-27)
+- AMENDED (BUT-2215, 2026-10-08): on the week-menu path the refused write from a stale read is now a 30 s "Veckan sparades på en annan enhet" notice with "Behåll min", not a lost edit plus an unexplained failure; the poll path reports it with BUT-1925's message; `acceptCachedAbsence` stands
 - The recipe GRID card draws no dietary row … Do not propose adding it back "for consistency with the list view" (BUT-1906, 2026-08-23)
 - The conversation roster's bootstrap branch is GONE, and so is the read fallback … Do not re-introduce either hatch (BUT-1838, 2026-08-13)
 - Account deletion erases `conversations/{id}/participants/{uid}` in TWO legs, and one leg alone is not enough (BUT-1822, BUT-1838, 2026-08-15)
@@ -193,3 +194,5 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - SUPERSEDES "erasable, not exportable" in the BUT-1716 line: `shared_content/{id}/items` rows naming the requester, and every row under their own shares, are exported by `exportSharedResidue` (BUT-1747, 2026-10-07)
 - Another account can make the `shared_lists_left` section decline by creating shared lists whose `contributorUserIds` names the requester; the failure is reported in the section and the rest of the bundle ships (BUT-1747, 2026-10-07)
 - RESOLVED 2026-10-08 — Malin: other people's uids are removed from a left list's rows in `exportSharedResidue`; the requester's and the list owner's stay. Retires "a default awaiting Malin" in the BUT-1747 line (BUT-1747, 2026-10-08)
+- A week save without `rev` (an app from before BUT-2215) passes `weekRevAdvancesByOne` and overwrites silently; its `set()` drops `rev`, so the next current-app save shows the conflict notice (BUT-2215, 2026-10-08)
+- A week conflict with the user's own other device keeps no 30-day copy; the 30 s "Behåll min" is the only rescue (BUT-2215, D1, Malin 2026-10-08)

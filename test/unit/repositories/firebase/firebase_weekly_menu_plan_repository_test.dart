@@ -25,6 +25,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
@@ -415,6 +416,165 @@ void main() {
         expect(saved.exists, isFalse);
       },
     );
+  });
+
+  group('save turns a refusal into a week conflict (BUT-2215)', () {
+    // `fake_cloud_firestore` does not run `firestore.rules`, so the refusal is
+    // staged with a mocked reference: `set` answers permission-denied, and
+    // `get` answers the week as the server holds it.
+    final stored = WeeklyMenuPlan(
+      id: '${_alice}_2026-W16',
+      userId: _alice,
+      weekStartDate: DateTime.utc(2026, 4, 13),
+      entries: const [],
+      createdAt: DateTime.utc(2026, 4, 1, 10),
+      updatedAt: DateTime.utc(2026, 4, 1, 10),
+      rev: 5,
+    );
+
+    FirebaseWeeklyMenuPlanRepository refusingRepo(
+      _MockDocRef ref,
+      WeeklyMenuPlan server,
+    ) {
+      when(() => ref.set(any())).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
+      );
+      final snapshot = _MockSnapshot();
+      when(() => snapshot.exists).thenReturn(true);
+      when(() => snapshot.id).thenReturn(server.id);
+      when(() => snapshot.data()).thenReturn(server.toFirestore());
+      when(() => ref.get(any())).thenAnswer((_) async => snapshot);
+      final col = _MockCollectionRef();
+      when(() => col.doc(any())).thenReturn(ref);
+      final firestore = _MockFirestore();
+      when(
+        () => firestore.collection(FirestoreCollections.weeklyMenuPlans),
+      ).thenReturn(col);
+      final mockAuth = FakeAuthRepository();
+      mockAuth.setAuthState(
+        user: FakeUser(uid: _alice),
+        userId: _alice,
+        isAuthenticated: true,
+      );
+      return FirebaseWeeklyMenuPlanRepository(
+        firestore: firestore,
+        authRepository: mockAuth,
+      );
+    }
+
+    WeeklyMenuPlan sentOn(int baseRev, {DateTime? createdAt}) => WeeklyMenuPlan(
+      id: stored.id,
+      userId: _alice,
+      weekStartDate: stored.weekStartDate,
+      entries: const [],
+      createdAt: createdAt ?? stored.createdAt,
+      updatedAt: DateTime.utc(2026, 4, 2),
+      rev: baseRev,
+    ).nextRevision();
+
+    test('permission-denied with another rev on the server is a conflict '
+        'carrying the server week', () async {
+      final ref = _MockDocRef();
+      final repo = refusingRepo(ref, stored);
+
+      await expectLater(
+        repo.save(sentOn(3)),
+        throwsA(
+          isA<WeekPlanConflictException>().having(
+            (e) => e.remote.rev,
+            'remote.rev',
+            5,
+          ),
+        ),
+      );
+      final sources = verify(
+        () => ref.get(captureAny()),
+      ).captured.cast<GetOptions>().map((o) => o.source);
+      expect(sources, [Source.server], reason: 'one SERVER read, no cache');
+    });
+
+    test('the same rev and createdAt rethrows the refusal as today', () async {
+      final ref = _MockDocRef();
+      final repo = refusingRepo(ref, stored);
+
+      await expectLater(
+        repo.save(sentOn(5)),
+        throwsA(
+          isA<FirebaseException>().having(
+            (e) => e.code,
+            'code',
+            'permission-denied',
+          ),
+        ),
+      );
+    });
+
+    test(
+      'another createdAt on the same rev is a conflict (BUT-1961)',
+      () async {
+        final ref = _MockDocRef();
+        final repo = refusingRepo(ref, stored);
+
+        await expectLater(
+          repo.save(sentOn(5, createdAt: DateTime.utc(2026, 4, 2, 9))),
+          throwsA(isA<WeekPlanConflictException>()),
+        );
+      },
+    );
+
+    test('a granted save writes rev as it is', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final plan = sentOn(5);
+
+      await repo.save(plan);
+
+      final saved = await firestore
+          .collection(FirestoreCollections.weeklyMenuPlans)
+          .doc(plan.id)
+          .get();
+      expect(saved.data()!['rev'], 6);
+    });
+  });
+
+  test('removeRecipeFromAllPlans advances rev on every plan it changes '
+      '(BUT-2215)', () async {
+    final firestore = FakeFirebaseFirestore();
+    final withRecipe = _plan(
+      userId: _alice,
+      date: DateTime.utc(2026, 1, 12),
+      withSharedRecipe: true,
+    ).nextRevision().nextRevision();
+    final legacy = _plan(
+      userId: _alice,
+      date: DateTime.utc(2026, 1, 19),
+      withSharedRecipe: true,
+    );
+    final untouched = _plan(
+      userId: _alice,
+      date: DateTime.utc(2026, 1, 26),
+    ).nextRevision();
+    await _seed(firestore, withRecipe);
+    final legacyBody = legacy.toFirestore()..remove('rev');
+    await firestore
+        .collection(FirestoreCollections.weeklyMenuPlans)
+        .doc(legacy.id)
+        .set(legacyBody);
+    await _seed(firestore, untouched);
+
+    await _repo(
+      firestore,
+    ).removeRecipeFromAllPlans(userId: _alice, recipeId: _sharedRecipe);
+
+    Future<Object?> revOf(String id) async =>
+        (await firestore
+                .collection(FirestoreCollections.weeklyMenuPlans)
+                .doc(id)
+                .get())
+            .data()!['rev'];
+    expect(await revOf(withRecipe.id), 3);
+    expect(await revOf(legacy.id), 1, reason: 'a missing rev counts as 0');
+    expect(await revOf(untouched.id), 1, reason: 'not changed, not advanced');
   });
 }
 

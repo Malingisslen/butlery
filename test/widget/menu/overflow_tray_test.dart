@@ -179,7 +179,7 @@ void main() {
 
     setUp(() {
       service = _MockService();
-      when(() => service.save(any())).thenAnswer((_) async {});
+      when(() => service.saveRevision(any())).thenAnswer((_) async {});
       when(() => service.overflowTrayOwnerId).thenReturn(null);
       when(() => service.readWeek(any())).thenAnswer(
         (_) async =>

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -149,7 +150,39 @@ class FirebaseWeeklyMenuPlanRepository
         userId: plan.userId,
       );
     }
-    await collection.doc(plan.id).set(toFirestore(plan));
+    try {
+      await collection.doc(plan.id).set(toFirestore(plan));
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+      final remote = await _conflictingWeek(plan);
+      if (remote == null) rethrow;
+      throw WeekPlanConflictException(remote, originalError: e);
+    }
+  }
+
+  /// BUT-2215: whether a refused save lost to another save of the same week.
+  ///
+  /// One server read, only on a refusal. The week has moved on when the
+  /// stored `rev` is not the one [plan] was built on (`plan.rev - 1`), or when
+  /// the stored `createdAt` differs — a plan started from an empty week over a
+  /// week that exists (BUT-1961). Anything else, an absent document included,
+  /// is not a conflict and the refusal keeps its own meaning.
+  Future<WeeklyMenuPlan?> _conflictingWeek(WeeklyMenuPlan plan) async {
+    final DocumentSnapshot<Map<String, dynamic>> snapshot;
+    try {
+      snapshot = await collection
+          .doc(plan.id)
+          .get(const GetOptions(source: Source.server));
+    } catch (e) {
+      AppLogger.warning('Could not read the week after a refused save: $e');
+      return null;
+    }
+    if (!snapshot.exists) return null;
+    final remote = fromFirestore(snapshot);
+    final moved =
+        remote.rev != plan.rev - 1 ||
+        !remote.createdAt.isAtSameMomentAs(plan.createdAt);
+    return moved ? remote : null;
   }
 
   @override
@@ -237,7 +270,12 @@ class FirebaseWeeklyMenuPlanRepository
     for (var i = 0; i < affected.length; i++) {
       // batch.update (not set) so concurrent writers can't lose fields
       // added outside the entries array — partial update by design.
-      batch.update(affected[i].reference, {'entries': scrubbedEntries[i]});
+      // `rev` advances with it: `firestore.rules` refuses an update whose
+      // `rev` is not the stored one plus one (BUT-2215).
+      batch.update(affected[i].reference, {
+        'entries': scrubbedEntries[i],
+        'rev': FieldValue.increment(1),
+      });
     }
     await batch.commit();
 
