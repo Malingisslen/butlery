@@ -1,7 +1,7 @@
 ANVÄNDARVILLKOR FÖR BUTLERY
 
-Version: 1.0
-Senast uppdaterad: 2026-02-28
+Version: 1.1
+Senast uppdaterad: 2026-10-07
 
 1. GODKÄNNANDE AV VILLKOR
 
@@ -29,7 +29,7 @@ Du förbinder dig att:
 - Inte missbruka Tjänsten
 - Inte distribuera skadligt, hotfullt eller olagligt innehåll
 - Inte försöka skada eller störa Tjänstens drift
-- Följa våra Gemenskapsriktlinjer (`community_guidelines_sv.md`), som beskriver acceptabel användning av sociala funktioner i detalj
+- Följa våra Gemenskapsriktlinjer, som du hittar under Inställningar i appen och som beskriver acceptabel användning av sociala funktioner i detalj
 
 5. INNEHÅLL
 
