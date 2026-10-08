@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 class SimpleImageWidget extends StatelessWidget {
   final String? imageUrl;
@@ -399,7 +400,10 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
       });
     }
 
-    if (_isExpanded) {
+    final target = _isExpanded ? 1.0 : 0.0;
+    if (isReducedMotion(context)) {
+      _animationController.value = target;
+    } else if (_isExpanded) {
       _animationController.forward();
     } else {
       _animationController.reverse();

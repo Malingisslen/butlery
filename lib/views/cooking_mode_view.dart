@@ -42,6 +42,7 @@ import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// How cooking mode was left, returned to the recipe detail view that
 /// pushed it.
@@ -1044,7 +1045,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
         Scrollable.ensureVisible(
           stepContext,
           alignment: 0.3,
-          duration: AppMotion.standard,
+          duration: AppMotion.standard.respectingMotion(context),
           curve: Curves.easeInOut,
         );
       }

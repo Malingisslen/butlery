@@ -8,9 +8,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/widgets/common/profile/utils/result_displayer.dart';
 
-/// A wait, not motion (produktbeslut R8-9 = A).
-const Duration _afterDialogWait = Duration(milliseconds: 300);
-
 /// Handler for backup and restore operations.
 ///
 /// [closeModal] says whether [BuildContext] sits in a modal (the profile
@@ -135,7 +132,7 @@ class BackupRestoreHandler {
     }
     final navigator = Navigator.of(context);
     navigator.pop();
-    Future.delayed(_afterDialogWait, () {
+    Future.delayed(ResultDisplayer.afterDialogWait, () {
       if (!navigator.mounted) return;
       SnackBarUtils.showFailure(
         navigator.context,

@@ -8,9 +8,6 @@ import 'package:butlery/widgets/common/input/instruction_editor.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
 
-/// A wait, not motion (produktbeslut R8-9 = A).
-const Duration _checkboxDebounce = Duration(milliseconds: 300);
-
 /// Facade for input components. Delegates to specialized input modules.
 class InputComponents {
   /// Creates a dynamic instruction editor with step management.
@@ -55,7 +52,7 @@ class InputComponents {
     required bool value,
     required ValueChanged<bool?>? onChanged,
     Color? activeColor,
-    Duration debounceDuration = _checkboxDebounce,
+    Duration debounceDuration = DebouncedCheckbox.defaultDebounce,
   }) {
     return DebouncedCheckbox(
       value: value,

@@ -5,9 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
-/// A wait, not motion (produktbeslut R8-9 = A).
-const Duration _defaultDebounce = Duration(milliseconds: 300);
-
 /// Checkbox with debounce functionality to prevent spam clicking
 /// This widget wraps a standard checkbox and provides debouncing to prevent
 /// multiple rapid state changes that could overwhelm the system.
@@ -17,12 +14,15 @@ class DebouncedCheckbox extends StatefulWidget {
   final Color? activeColor;
   final Duration debounceDuration;
 
+  /// A wait, not motion (produktbeslut R8-9 = A).
+  static const Duration defaultDebounce = Duration(milliseconds: 300);
+
   const DebouncedCheckbox({
     super.key,
     required this.value,
     required this.onChanged,
     this.activeColor,
-    this.debounceDuration = _defaultDebounce,
+    this.debounceDuration = defaultDebounce,
   });
 
   @override

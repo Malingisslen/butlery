@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// Animated filters panel with all filter groups
 class FiltersPanelWidget extends StatelessWidget {
@@ -83,7 +84,7 @@ class FiltersPanelWidget extends StatelessWidget {
     final maxFilterHeight = screenHeight * 0.5; // Max 50% of screen height
 
     return AnimatedSize(
-      duration: AppMotion.micro,
+      duration: AppMotion.micro.respectingMotion(context),
       curve: Curves.easeInOut,
       child: showFilters
           ? DecoratedBox(
