@@ -1,5 +1,7 @@
 /**
  * BUT-2278: read-only count of minor public profiles that are searchable.
+ * BUT-2260: read-only count of documents left in `globalRecipeCache`, the
+ * collection BUT-2244 stopped using.
  *
  * Prints counts only, never a uid, so the job log can be read by anyone with
  * access to the repository. Writes nothing.
@@ -47,6 +49,9 @@ async function main() {
   console.log(`searchable_public_profiles=${ids.length}`);
   console.log(`searchable_minor_profiles=${minors}`);
   console.log(`searchable_profiles_without_user_doc=${missingUserDoc}`);
+
+  const cache = await db.collection("globalRecipeCache").count().get();
+  console.log(`global_recipe_cache_docs=${cache.data().count}`);
 }
 
 main().catch((err) => {
