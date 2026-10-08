@@ -2132,6 +2132,14 @@ Firestore TTL deletes whole documents, not fields. There is no nightly job.
 values in the `previous` of the item it holds, so after a save the same user made on another
 device it writes back the version that copy carries, not the newer one. BUT-1683 shape.
 
+### Shopping: the same rule for rows and removed rows (ADR-0024, 2026-10-08)
+
+**Verdict: Malin's call, 2026-10-08.** A shopping row's `previous` older than 30 days is not
+offered by "Återställ varor" and stays on the row until that row is written again or deleted. A
+`recentlyRemoved` entry older than 30 days stays on the list until `RestorableRows.withRemoved`
+runs again: on a shared list at its next online row write, on a personal list at its next
+removal. Both are in the Art. 15 export meanwhile. There is no nightly job.
+
 ## Poll votes on non-poll messages, and the missing `memberSince` cut-off (BUT-1832, 2026-08-17)
 
 **Decision (Malin, 2026-08-17): ship, fix separately, record it.**
