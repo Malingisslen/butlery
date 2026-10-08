@@ -2429,7 +2429,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuWeekBadgeWithCount.
   ///
   /// In sv, this message translates to:
-  /// **'Vecka {week} · {count} rätter'**
+  /// **'Vecka {week} · {count, plural, =1{1 rätt} other{{count} rätter}}'**
   String menuWeekBadgeWithCount(int week, int count);
 
   /// No description provided for @menuToShoppingList.
@@ -25804,6 +25804,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vecka {week} · inget planerat'**
   String menuWeekBadgeEmpty(int week);
+
+  /// The line under "Veckomeny" on the root bar while the week has not been read, or its read failed, so it cannot say how many dishes are planned.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week}'**
+  String menuWeekBadgeOnly(int week);
 
   /// Name of the one overflow button on the Inköp and Veckomeny root bars (Skarmar v12 del 2 #inkop).
   ///

@@ -8,13 +8,14 @@ library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/bootstrap/emulator/app_check_token_stub.dart'
     if (dart.library.js_interop) 'package:butlery/core/bootstrap/emulator/app_check_token_web.dart';
+import 'package:butlery/core/bootstrap/emulator/auth_emulator_stub.dart'
+    if (dart.library.js_interop) 'package:butlery/core/bootstrap/emulator/auth_emulator_web.dart';
 
 class EmulatorBootstrap {
   static const bool enabled = bool.fromEnvironment('USE_FIREBASE_EMULATOR');
@@ -58,6 +59,13 @@ class EmulatorBootstrap {
     );
   }
 
+  /// Must run before `Firebase.initializeApp`: Auth is wired while that call
+  /// creates it, so a page reloaded while signed in stays on the emulator.
+  static void prepare({bool releaseMode = kReleaseMode, bool isWeb = kIsWeb}) {
+    _refuseOutsideLocalWeb(releaseMode: releaseMode, isWeb: isWeb);
+    wireAuthEmulatorAtStartup(host, authPort);
+  }
+
   /// Firestore is wired separately by [connectFirestore], through
   /// `FirestoreBootstrap.configure`, so its settings land first.
   static Future<void> configure({
@@ -74,7 +82,6 @@ class EmulatorBootstrap {
     }
 
     installEmulatorAppCheckToken(app.options.appId);
-    await FirebaseAuth.instance.useAuthEmulator(host, authPort);
     await FirebaseStorage.instance.useStorageEmulator(host, storagePort);
     for (final region in functionRegions) {
       FirebaseFunctions.instanceFor(
