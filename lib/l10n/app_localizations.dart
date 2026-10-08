@@ -21743,6 +21743,12 @@ abstract class AppLocalizations {
   /// **'Verifieringslänk skickad till ny e-postadress'**
   String get accountSecurityEmailVerificationSent;
 
+  /// No description provided for @accountSecurityEmailChangeHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickar en länk till den nya adressen. Bytet gäller först när du har öppnat den, och då får din nuvarande adress ett mejl där bytet kan ångras.'**
+  String get accountSecurityEmailChangeHow;
+
   /// No description provided for @accountSecurityPasswordMismatch.
   ///
   /// In sv, this message translates to:

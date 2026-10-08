@@ -146,7 +146,7 @@ const cases: UnitCase[] = [
         false,
         "cache hit"
       );
-      for (const strategy of ["youtube", "tiktok", "instagram", "cache"]) {
+      for (const strategy of ["youtube", "tiktok", "instagram"]) {
         assertEqual(
           countsForSite(sanitizeParseEvent({ ...live, strategy })),
           false,

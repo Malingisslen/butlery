@@ -86,7 +86,6 @@ class ImportEvent {
 
   /// The ids [strategyId] can return, in the order it tests them.
   static const strategyIds = [
-    'cache',
     'youtube',
     'tiktok',
     'instagram',
