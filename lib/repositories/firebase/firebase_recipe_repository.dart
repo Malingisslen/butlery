@@ -238,7 +238,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// BUT-955: defense-in-depth cap on the share-set size of a Recipe document.
   /// All service-layer share entry points should fail-fast with a localized
   /// error before reaching this guard — but multiple writer paths
-  /// (addMemberToRecipe, addMember, addCollaborators, repo.addCollaborator,
+  /// (addMemberToRecipe, addMember, repo.addCollaborator,
   /// shareRecipe, shareRecipeWithUsers) feed update/create, and capping at
   /// every callsite is bypass-prone. This is the chokepoint for every write
   /// THROUGH THIS REPOSITORY.
@@ -373,7 +373,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         // BUT-955: cap-guard before read+validation. Catches every writer
         // path that builds an over-cap Recipe and calls update, including
-        // addCollaborator, addMemberToRecipe, addCollaborators, etc.
+        // addCollaborator, addMemberToRecipe, etc.
         _enforceShareCap(entity);
 
         // First check if recipe exists and user owns it
