@@ -491,18 +491,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ButtonSegment(
               value: MatchMode.all,
               label: Text(context.l10n.ruleMatchModeAllConditions),
-              icon: const ButleryIcon(
-                Icons.all_inclusive,
-                size: AppDimensions.iconSize18,
-              ),
             ),
             ButtonSegment(
               value: MatchMode.any,
               label: Text(context.l10n.ruleMatchModeAnyCondition),
-              icon: const ButleryIcon(
-                Icons.call_split,
-                size: AppDimensions.iconSize18,
-              ),
             ),
           ],
           selected: {_matchMode},

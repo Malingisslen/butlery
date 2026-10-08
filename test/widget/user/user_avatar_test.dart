@@ -458,8 +458,8 @@ void main() {
       });
     });
 
-    // R8-4 = C: a profile photo scales to 97 % while pressed; initials keep
-    // the press the design session has not decided (PressUnchanged).
+    // R8-4 = C: a profile photo scales to 97 % while pressed, and so does an
+    // initials avatar (BUT-2266).
     group('press', () {
       double scale(WidgetTester tester) => tester
           .widget<AnimatedScale>(
@@ -493,23 +493,30 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('an initials avatar keeps the old press and never scales', (
+      testWidgets('a pressed initials avatar scales to 97 % and still taps', (
         tester,
       ) async {
+        var tapped = false;
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: UserAvatar(displayName: 'Erik Eriksson', onTap: () {}),
+            child: UserAvatar(
+              displayName: 'Erik Eriksson',
+              onTap: () => tapped = true,
+            ),
           ),
         );
         final avatar = find.byType(UserAvatar);
         expect(
-          find.descendant(of: avatar, matching: find.byType(PressScale)),
+          find.descendant(of: avatar, matching: find.byType(PressUnchanged)),
           findsNothing,
         );
-        expect(
-          find.descendant(of: avatar, matching: find.byType(PressUnchanged)),
-          findsOneWidget,
-        );
+        expect(scale(tester), 1);
+        final gesture = await holdPress(tester, avatar);
+        expect(scale(tester), PressScale.pressedScale);
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(scale(tester), 1);
+        expect(tapped, isTrue);
       });
     });
   });

@@ -167,12 +167,25 @@ void main() {
         )
         .first;
     Color? fill() => tester.widget<Material>(saffron).color;
+    Color? labelColor() => tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byKey(const ValueKey('test-lagg-till-import-url')),
+            matching: find.byType(Text),
+          ),
+        )
+        .style
+        ?.color;
     expect(fill(), const Color(0xFFCE7C1E));
+    // BUT-2266: ink on saffron at rest, paper on the pressed saffron.
+    expect(labelColor(), const Color(0xFF17251D));
     final link = await holdPress(tester, saffron);
     expect(fill(), const Color(0xFF9A5C14));
+    expect(labelColor(), const Color(0xFFF5F4ED));
     await link.cancel();
     await tester.pumpAndSettle();
     expect(fill(), const Color(0xFFCE7C1E));
+    expect(labelColor(), const Color(0xFF17251D));
 
     final label = find.descendant(
       of: find.byKey(const ValueKey('test-lagg-till-write-manually')),

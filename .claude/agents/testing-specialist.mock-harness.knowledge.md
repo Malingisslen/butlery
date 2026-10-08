@@ -214,3 +214,4 @@
   mutation driver into `head` (SIGPIPE kills its own cleanup).
 - A probe file lives in scratch, not `test/` — a `// delete after` header is not a deletion. Close
   every round with `git status --porcelain`.
+- **A service test is only as authenticated as the PRODUCTION `ServiceLocator` says.** `executeServiceOperation`'s pre-flight reads `AuthRepository` there; unwired, the closure never runs and a shape assertion (`isA<Result>`, `anyOf(isTrue,isFalse)`) matches the fallback. Register an authenticated `AuthRepository` in the file-level setUp and add one discriminating assertion per delegating test (a forwarded error string, a spy `callCount`, a `reason` the fallback does not produce). Once the closure runs, check the next layer too: `RealtimeRecipeOperations` is built with no sync service, so `startRealtimeEditing` is false whatever the wiring (BUT-1937).

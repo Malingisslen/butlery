@@ -13014,6 +13014,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Verifieringslänk skickad till ny e-postadress';
 
   @override
+  String get accountSecurityEmailChangeHow =>
+      'Vi skickar en länk till den nya adressen. Bytet gäller först när du har öppnat den, och då får din nuvarande adress ett mejl där bytet kan ångras.';
+
+  @override
   String get accountSecurityPasswordMismatch => 'Lösenorden matchar inte';
 
   @override

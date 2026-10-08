@@ -12991,6 +12991,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Verification link sent to new email address';
 
   @override
+  String get accountSecurityEmailChangeHow =>
+      'We send a link to the new address. The change applies only once you have opened it, and your current address then gets an email where the change can be undone.';
+
+  @override
   String get accountSecurityPasswordMismatch => 'Passwords do not match';
 
   @override
