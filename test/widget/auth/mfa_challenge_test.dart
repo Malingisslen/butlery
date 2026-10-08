@@ -9,6 +9,7 @@ import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
+import 'package:butlery/views/settings/mfa_backup_codes_dialog.dart';
 import 'package:butlery/views/settings/mfa_settings_view.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';

@@ -270,6 +270,11 @@ class AuthMfaService extends ChangeNotifier
     }
   }
 
+  /// Deletes codes that were generated for an enrollment that did not
+  /// happen. Never throws, so a cleanup cannot hide the error that ended the
+  /// enrollment.
+  Future<void> discardBackupCodes() => _clearBackupCodes();
+
   MfaResolverInfo createMfaResolver(MultiFactorResolver resolver) {
     final phoneHint = resolver.hints
         .whereType<PhoneMultiFactorInfo>()

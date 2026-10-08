@@ -14771,7 +14771,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackEmailHint => 'you@email.com';
 
   @override
-  String get mfaPhoneHint => '+46 70 123 45 67';
+  String get mfaNationalNumberHint => '070 123 45 67';
 
   @override
   String get dialogEmailLabel => 'Email';
@@ -16568,6 +16568,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mfaBackupCodesFailed =>
       'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
+
+  @override
+  String get mfaCountryCodeLabel => 'Country code';
+
+  @override
+  String get mfaCountryCodeInvalid =>
+      'The country code must start with + and have 1–4 digits, for example +46. Correct the country code and try again.';
+
+  @override
+  String get mfaPhoneDigitsOnly =>
+      'The number can only contain digits, spaces and hyphens. Correct the number and try again.';
+
+  @override
+  String get mfaPhoneTooLong =>
+      'The number is too long. Including the country code, a phone number can have at most 15 digits. Correct the number and try again.';
+
+  @override
+  String mfaCodeWillBeSentTo(String phone) {
+    return 'The code will be sent to $phone';
+  }
+
+  @override
+  String get mfaErrorUnverifiedEmail =>
+      'Two-step verification was not switched on, because your email address is not verified. Open the email we sent you, tap the verification link and try again.';
+
+  @override
+  String get mfaErrorSecondFactorInUse =>
+      'Two-step verification was not switched on, because this phone number is already used for two-step verification on an account. Enter a different number.';
+
+  @override
+  String get mfaErrorRequiresRecentLogin =>
+      'Two-step verification was not switched on, because your sign-in is too old. Sign out, sign in again and try once more.';
 
   @override
   String get permAllow => 'Allow';

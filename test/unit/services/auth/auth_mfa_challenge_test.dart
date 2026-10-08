@@ -320,6 +320,20 @@ void main() {
       });
     });
 
+    test('discardBackupCodes asks the server and swallows a failure', () async {
+      final clear = _MockCallable();
+      when(
+        () => functions.httpsCallable('clearMfaBackupCodes'),
+      ).thenReturn(clear);
+      when(() => clear.call<dynamic>()).thenThrow(
+        FirebaseFunctionsException(message: 'x', code: 'unavailable'),
+      );
+
+      await mfa.discardBackupCodes();
+
+      verify(() => clear.call<dynamic>()).called(1);
+    });
+
     test('without the callables there are no codes and no recovery', () async {
       final offline = AuthMfaService(
         analyticsService: analytics,
