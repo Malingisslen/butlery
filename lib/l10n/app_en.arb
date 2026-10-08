@@ -1045,7 +1045,7 @@
   },
   "menuNoMoreRecipes": "No more recipes available for swap",
   "menuGenerateError": "Could not generate menu",
-  "menuWeekBadgeWithCount": "Week {week} · {count} dishes",
+  "menuWeekBadgeWithCount": "Week {week} · {count, plural, =1{1 dish} other{{count} dishes}}",
   "@menuWeekBadgeWithCount": {
     "placeholders": {
       "week": {
@@ -11448,6 +11448,14 @@
   },
   "menuWeekBadgeEmpty": "Week {week} · nothing planned",
   "@menuWeekBadgeEmpty": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "menuWeekBadgeOnly": "Week {week}",
+  "@menuWeekBadgeOnly": {
     "placeholders": {
       "week": {
         "type": "int"

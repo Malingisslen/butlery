@@ -68,11 +68,18 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
   final Map<String, WeeklyMenuPlan> plans = {};
   final List<WeeklyMenuPlan> saves = [];
 
+  /// Thrown by every read while set, the way an unreachable Firestore read is.
+  Object? fetchError;
+
   @override
   Future<WeeklyMenuPlan?> fetchForWeek({
     required String userId,
     required DateTime weekStart,
-  }) async => plans[IsoWeekUtils.weekIdFor(userId, weekStart)];
+  }) async {
+    final error = fetchError;
+    if (error != null) throw error;
+    return plans[IsoWeekUtils.weekIdFor(userId, weekStart)];
+  }
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {
