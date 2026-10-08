@@ -20796,3 +20796,16 @@ edit site `[0]` -> 116/116 GREEN — E1, the only DM edit deny, seats the blocke
 mirror image of the original L1 gap. Edit scope disjunct -> `false` reddens only E5. The principle
 already said "per call site"; the second gap appeared on the call site added after it was written.
 Filed Medium, non-blocking, with an E1b remediation.
+
+### 2026-10-07 — BUT-2115 comment reaction scrub review [gdpr]
+Commit-gate review of `comment_reactions` (six `reactions.<key>` arrayRemove sweeps, cap 2000
+declining per key, continue past a declined key; six uncapped `count()` probe legs with their
+own catch). Step order after tier 1 (which anonymizes, never deletes, comments) is safe; decline
+and probe both reach `gdprCompliant:false`. No index: COLLECTION-scoped array-contains on a map
+subfield, no fieldOverrides exemption on `recipe_comments`. The fake's dotted-path arrayRemove
+change touches no earlier scenario — grep showed `reactions.${key}` is the only dotted arrayRemove
+in functions/src. Finding (Medium): `scenario_reactionKeysAgreeAcrossRulesAppAndCascade` parses
+`lib/widgets/common/emoji_reaction_picker.dart` and `firestore.rules`, neither in
+cloud-functions-unit.yml `paths:`, and does not call `assertGuardTriggersCoverItsDartInputs`
+(BUT-2002 precedent). Folded into the gdpr-erasure chapter's index bullet and a new CI-trigger
+bullet. Verdict pass (0 blocking).

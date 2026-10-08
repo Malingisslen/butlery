@@ -5631,3 +5631,23 @@ await her confirmation on the PR.
   `OfflineAccessControlChangeException`, a `PermissionDeniedException` subtype, and
   `shoppingFailureMessage` maps it to `errorNetwork`. The refusal itself is unchanged. The
   *empty roster* residual of the same entry is unchanged and stays accepted.
+
+## BUT-2115 — emoji reactions on recipe comments (2026-10-07)
+
+Two `allow update` limbs on `recipe_comments` admit the client's dotted
+`reactions.<key>` arrayUnion/arrayRemove: ADD and REMOVE, each limited to the caller's own
+uid, the six `reactionKeys()` and comments the caller can read (`canReadComment()`).
+
+- **Art. 15 keeps withholding reactions.** The requester's own comments are exported without
+  the `reactions` map (`ActivityExportManager.commentFieldsWithheld`). The requester's own
+  reactions on other people's comments are not in the bundle; they go with comment likes in
+  BUT-2114.
+- **A block stops adding, not removing.** Someone blocked by the recipe owner (gated only when
+  `recipeOwnerId` is present, BUT-2057's shape) or by the comment author cannot add a
+  reaction, and can always remove their own. The REMOVE limb also skips the age claim and the
+  soft-delete check.
+- **No `isAccountMatured()` and no rate-limit stamp on the ADD limb.** Both can add document
+  reads to a reaction, and a stamp needs a client change in `comment_reactions_system.dart`.
+- **Deploy order: functions before rules.** `scrubCommentReactions` (step `comment_reactions`)
+  and the six `comment reaction <key>` probe legs must be live before the rules let a
+  reaction be written.

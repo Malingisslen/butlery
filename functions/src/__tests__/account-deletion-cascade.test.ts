@@ -108,6 +108,11 @@ function applyFieldPath(
   if (rest.length === 0) {
     if (isDeleteOp(value)) {
       delete target[head];
+    } else if (isArrayRemoveOp(value)) {
+      // BUT-2115: `reactions.<key>` is an arrayRemove at a dotted path; storing
+      // the marker would read as the other reactors' uids being wiped.
+      const cur = Array.isArray(target[head]) ? (target[head] as unknown[]) : [];
+      target[head] = cur.filter((item) => !value.values.includes(item));
     } else {
       target[head] = value;
     }
@@ -9387,6 +9392,182 @@ async function scenario_probeSeesLeftoverCommentTraces(): Promise<void> {
 }
 
 /**
+ * BUT-2115: the erased uid leaves every reaction list it is in, on any key,
+ * and every other reactor stays.
+ */
+async function scenario_commentReactionsLoseOnlyTheErasedUid(): Promise<void> {
+  const { scrubCommentReactions } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_comments/c1", {
+    authorId: OTHER,
+    text: "gott",
+    reactions: { heart: [UID, THIRD], thinking: [UID], fire: [THIRD] },
+  });
+  db.set("recipe_comments/c2", {
+    authorId: OTHER,
+    reactions: { yum: [OTHER, UID] },
+  });
+  db.set("recipe_comments/c3", {
+    authorId: OTHER,
+    reactions: { heart: [THIRD] },
+  });
+  db.set("recipe_comments/c4", { authorId: OTHER });
+
+  const ok = await scrubCommentReactions(asDb(db), UID);
+
+  check("the reaction scrub reports success", ok === true);
+  check(
+    "the erased uid leaves each list and the other reactors stay",
+    JSON.stringify(db.get("recipe_comments/c1")?.reactions) ===
+      JSON.stringify({ heart: [THIRD], thinking: [], fire: [THIRD] }) &&
+      JSON.stringify(db.get("recipe_comments/c2")?.reactions) ===
+        JSON.stringify({ yum: [OTHER] }),
+    JSON.stringify([db.get("recipe_comments/c1"), db.get("recipe_comments/c2")]),
+  );
+  check(
+    "the comment text and author survive",
+    db.get("recipe_comments/c1")?.text === "gott" &&
+      db.get("recipe_comments/c1")?.authorId === OTHER,
+  );
+  check(
+    "comments without the erased uid are not written to",
+    !db.updatedPaths.includes("recipe_comments/c3") &&
+      !db.updatedPaths.includes("recipe_comments/c4"),
+    JSON.stringify(db.updatedPaths),
+  );
+
+  const residual = emptyResult();
+  await probeAfter(db, residual);
+  check(
+    "after the scrub the probe reads zero",
+    !sawResidual(residual),
+    `failed: ${JSON.stringify(residual.failedCollections)}`,
+  );
+}
+
+async function probeAfter(db: FakeFirestore, result: DeletionResult): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+  await probeResidualData(asDb(db), UID, result);
+}
+
+/**
+ * BUT-2115: over the cap on one key that key declines and writes nothing, the
+ * other keys are still swept, and the step fails.
+ */
+async function scenario_implausibleReactionSweepDeclines(): Promise<void> {
+  const {
+    scrubCommentReactions,
+    MAX_COMMENT_REACTION_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const over = new FakeFirestore();
+  for (let i = 0; i <= MAX_COMMENT_REACTION_SWEEP_ROWS; i++) {
+    over.set(`recipe_comments/h-${i}`, { authorId: `p-${i}`, reactions: { heart: [UID] } });
+  }
+  over.set("recipe_comments/f", { authorId: OTHER, reactions: { fire: [UID, THIRD] } });
+  const overOk = await scrubCommentReactions(asDb(over), UID);
+  check("the reaction scrub fails the step when one key is over its cap", overOk === false);
+  check(
+    "the over-cap key is not written to",
+    !over.updatedPaths.some((p) => p.startsWith("recipe_comments/h-")),
+  );
+  check(
+    "the other keys are still swept",
+    JSON.stringify(over.get("recipe_comments/f")?.reactions) ===
+      JSON.stringify({ fire: [THIRD] }),
+    JSON.stringify(over.get("recipe_comments/f")),
+  );
+
+  const atCap = new FakeFirestore();
+  for (let i = 0; i < MAX_COMMENT_REACTION_SWEEP_ROWS; i++) {
+    atCap.set(`recipe_comments/h-${i}`, { authorId: `p-${i}`, reactions: { heart: [UID] } });
+  }
+  check(
+    "the reaction scrub runs at exactly its cap",
+    (await scrubCommentReactions(asDb(atCap), UID)) === true &&
+      atCap.updatedPaths.length === MAX_COMMENT_REACTION_SWEEP_ROWS,
+  );
+
+  const fails = new FakeFirestore();
+  fails.set("recipe_comments/x", { authorId: OTHER, reactions: { yum: [UID] } });
+  fails.batchFailures.set("recipe_comments/x", 13);
+  check(
+    "a rejected reaction-scrub chunk fails the step",
+    (await scrubCommentReactions(asDb(fails), UID)) === false,
+  );
+}
+
+/**
+ * BUT-2115: each reaction key's probe leg fires on its own residue, and
+ * another person's reaction does not fire it.
+ */
+async function scenario_probeSeesLeftoverReactions(): Promise<void> {
+  const { COMMENT_REACTION_KEYS } = require("../account/account-deletion-cascade");
+  const quiet: string[] = [];
+  for (const key of COMMENT_REACTION_KEYS as readonly string[]) {
+    const db = new FakeFirestore();
+    db.set("recipe_comments/x", { authorId: OTHER, reactions: { [key]: [THIRD, UID] } });
+    const r = emptyResult();
+    await probeAfter(db, r);
+    if (!sawResidual(r)) quiet.push(key);
+  }
+  check(
+    "a surviving reaction on every key is residual",
+    quiet.length === 0,
+    `keys the probe missed: ${quiet.join(", ")}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set("recipe_comments/x", { authorId: OTHER, reactions: { heart: [THIRD] } });
+  const r = emptyResult();
+  await probeAfter(clean, r);
+  check("another person's reaction does not fire the probe", !sawResidual(r));
+}
+
+/**
+ * BUT-2115: one reaction key list in three places — the rules' `reactionKeys()`,
+ * the app's `kReactionEmojis` and the cascade's `COMMENT_REACTION_KEYS`. A key
+ * the rules accept and the cascade does not sweep would survive an erasure; a
+ * key the app offers and the rules refuse would fail on every tap.
+ */
+async function scenario_reactionKeysAgreeAcrossRulesAppAndCascade(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const { COMMENT_REACTION_KEYS } = require("../account/account-deletion-cascade");
+  const repoRoot = path.resolve(__dirname, "..", "..", "..");
+  assertGuardTriggersCoverItsDartInputs(repoRoot, [
+    path.join(repoRoot, "lib", "widgets", "common", "emoji_reaction_picker.dart"),
+  ]);
+  const quoted = (body: string): string[] =>
+    [...body.matchAll(/['"]([A-Za-z_]+)['"]\s*[,:\]]/g)].map((m) => m[1]);
+
+  const rules = fs.readFileSync(path.join(repoRoot, "firestore.rules"), "utf8") as string;
+  const rulesFn = rules.match(/function reactionKeys\(\)\s*\{\s*return\s*\[([^\]]*)\]/);
+  const rulesKeys = rulesFn ? quoted(rulesFn[1] + "]") : [];
+
+  const dart = fs.readFileSync(
+    path.join(repoRoot, "lib", "widgets", "common", "emoji_reaction_picker.dart"),
+    "utf8",
+  ) as string;
+  const dartMap = dart.match(/const Map<String, String> kReactionEmojis = \{([\s\S]*?)\n\};/);
+  const dartKeys = dartMap ? quoted(dartMap[1]) : [];
+
+  const cascade = JSON.stringify([...COMMENT_REACTION_KEYS]);
+  check(
+    "the rules' reactionKeys() equals COMMENT_REACTION_KEYS",
+    rulesKeys.length > 0 && JSON.stringify(rulesKeys) === cascade,
+    `rules ${JSON.stringify(rulesKeys)} vs cascade ${cascade}`,
+  );
+  check(
+    "the app's kReactionEmojis keys equal COMMENT_REACTION_KEYS",
+    dartKeys.length > 0 && JSON.stringify(dartKeys) === cascade,
+    `app ${JSON.stringify(dartKeys)} vs cascade ${cascade}`,
+  );
+}
+
+/**
  * BUT-2169: a block holds the erased user off someone else's share. The scrub
  * removes them from the held list and drops the entry that would restore them,
  * and leaves every other held person in place.
@@ -9835,6 +10016,10 @@ async function main(): Promise<void> {
   await scenario_commentSweepsRunAtTheCap();
   await scenario_commentSweepFailures();
   await scenario_probeSeesLeftoverCommentTraces();
+  await scenario_commentReactionsLoseOnlyTheErasedUid();
+  await scenario_implausibleReactionSweepDeclines();
+  await scenario_probeSeesLeftoverReactions();
+  await scenario_reactionKeysAgreeAcrossRulesAppAndCascade();
   await scenario_commentLikeIndexIsDeclared();
   await scenario_blockHeldShareLosesOnlyTheErasedUid();
   await scenario_recipeMemberKeyIsRemoved();

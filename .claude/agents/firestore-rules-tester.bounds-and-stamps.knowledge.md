@@ -95,6 +95,13 @@
   superset-allow / drop-deny already pinned, and a SERVER sentinel (the leave-path CF's
   `arrayUnion`) runs under the Admin SDK, which never evaluates rules at all; its coverage
   belongs in the callable's own suite.
+- **A set-difference guard (`after.toSet().difference(before.toSet()).hasOnly([uid])`) is
+  blind to MULTIPLICITY, so "only your own uid changes" is false for any list whose LENGTH
+  the app renders.** Measured on `recipe_comments.reactions` (BUT-2115): `[S] -> [S,S]`
+  (another person's uid duplicated), `[S] -> [S, me x10]` and `[me,S] -> [S,S]` were all
+  ALLOWED while the display reads `userIds.length`. `after.toSet().size() == after.size()`
+  closed all three and kept the six-key worst-case budget test green. Probe duplicates on
+  every `toSet()`-based list guard before passing an identity claim.
 - **An Admin-SDK write can put a document PAST a cap the rules enforce, and whether the
   resulting client freeze is permanent is a question about a CLIENT-SIDE PRUNE, not about
   the rule.** Every writer that APPENDS to the trail prunes it — the client in

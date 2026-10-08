@@ -34,10 +34,12 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { serverTimestamp } from "firebase/firestore";
+import { arrayRemove, arrayUnion, deleteField, serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-recipe-comments";
-const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
+const RULES_PATH =
+  process.env.PROBE_RULES_PATH ??
+  path.resolve(__dirname, "../../../firestore.rules");
 
 const OWNER_UID = "recipe-owner-uid";
 const AUTHOR_UID = "comment-author-uid";
@@ -634,6 +636,287 @@ test("user_notifications: self-notification still allowed", async () => {
       .doc(`user_notifications/n-self-${RUN}`)
       .set(validNotificationBody(AUTHOR_UID, AUTHOR_UID))
   );
+});
+
+// ----------------------------------------------------------------------------
+// BUT-2115: recipe_comments update — emoji reactions
+//
+// The client toggles one key per tap with a dotted
+// `reactions.<key>: arrayUnion/arrayRemove([uid])` inside a transaction
+// (comment_reactions_system.dart). Each deny below has an allow twin that
+// differs in the one fact named in its title.
+// ----------------------------------------------------------------------------
+
+const AGE_OK = { ageCompliant: true };
+const NO_AGE_CLAIM = { email_verified: true };
+
+function rid(tag: string): string {
+  return `c-react-${tag}-${RUN}`;
+}
+
+async function seedReactionComment(
+  tag: string,
+  extra: Record<string, unknown> = {}
+): Promise<string> {
+  const id = rid(tag);
+  await seedComment(id, validCommentBody(AUTHOR_UID, extra));
+  return id;
+}
+
+async function blockedBy(blocker: string, tag: string): Promise<string> {
+  const uid = `rc-react-blocked-${tag}-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`blocks/${blocker}_${uid}`).set({
+      blockerId: blocker,
+      blockedId: uid,
+      blockedAt: new Date().toISOString(),
+    });
+  });
+  return uid;
+}
+
+function react(
+  uid: string,
+  commentId: string,
+  data: Record<string, unknown>,
+  claims: Record<string, unknown> = AGE_OK
+): Promise<void> {
+  return env
+    .authenticatedContext(uid, claims)
+    .firestore()
+    .doc(`recipe_comments/${commentId}`)
+    .update(data);
+}
+
+function others(prefix: string, n: number): string[] {
+  return Array.from({ length: n }, (_, i) => `${prefix}-${i}`);
+}
+
+// RED on main before BUT-2115: the app's own write was refused.
+test("reactions: recipe owner adds a heart (the app's dotted arrayUnion)", async () => {
+  const id = await seedReactionComment("owner");
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": arrayUnion(OWNER_UID) }));
+});
+
+test("reactions: shared recipient adds a heart", async () => {
+  const id = await seedReactionComment("shared");
+  await assertSucceeds(react(SHARED_UID, id, { "reactions.heart": arrayUnion(SHARED_UID) }));
+});
+
+test("reactions: comment author adds a heart", async () => {
+  const id = await seedReactionComment("author");
+  await assertSucceeds(react(AUTHOR_UID, id, { "reactions.heart": arrayUnion(AUTHOR_UID) }));
+});
+
+test("reactions: a stranger who cannot read the comment cannot add", async () => {
+  const id = await seedReactionComment("stranger");
+  await assertFails(react(STRANGER_UID, id, { "reactions.heart": arrayUnion(STRANGER_UID) }));
+});
+
+test("reactions: a stranger cannot remove even their own uid", async () => {
+  const id = await seedReactionComment("stranger-rm", { reactions: { heart: [STRANGER_UID] } });
+  await assertFails(react(STRANGER_UID, id, { "reactions.heart": arrayRemove(STRANGER_UID) }));
+});
+
+test("reactions: removing your own uid is allowed", async () => {
+  const id = await seedReactionComment("rm-own", { reactions: { heart: [OWNER_UID, SHARED_UID] } });
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": arrayRemove(OWNER_UID) }));
+});
+
+test("reactions: adding someone else's uid is denied", async () => {
+  const id = await seedReactionComment("add-other");
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": arrayUnion(SHARED_UID) }));
+});
+
+test("reactions: removing someone else's uid is denied", async () => {
+  const id = await seedReactionComment("rm-other", { reactions: { heart: [OWNER_UID, SHARED_UID] } });
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": arrayRemove(SHARED_UID) }));
+});
+
+// Each key's check is written out by hand in the rules, so each key gets its
+// own deny and its single-variable allow twin.
+for (const key of ["thumbs_up", "heart", "fire", "laughing", "yum", "thinking"]) {
+  test(`reactions: adding someone else's uid on ${key} is denied`, async () => {
+    const id = await seedReactionComment(`add-other-${key}`);
+    await assertFails(react(OWNER_UID, id, { [`reactions.${key}`]: arrayUnion(SHARED_UID) }));
+  });
+
+  test(`reactions: adding your own uid on ${key} is allowed (control)`, async () => {
+    const id = await seedReactionComment(`add-own-${key}`);
+    await assertSucceeds(react(OWNER_UID, id, { [`reactions.${key}`]: arrayUnion(OWNER_UID) }));
+  });
+}
+
+// Duplicates: the app shows a list's length as the count.
+test("reactions: duplicating someone else's uid is denied", async () => {
+  const id = await seedReactionComment("dup-other", { reactions: { heart: [SHARED_UID] } });
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": [SHARED_UID, SHARED_UID] }));
+});
+
+test("reactions: adding your own uid several times is denied", async () => {
+  const id = await seedReactionComment("dup-own", { reactions: { heart: [SHARED_UID] } });
+  await assertFails(
+    react(OWNER_UID, id, { "reactions.heart": [SHARED_UID, OWNER_UID, OWNER_UID] })
+  );
+});
+
+test("reactions: adding your own uid once as a whole list is allowed (control)", async () => {
+  const id = await seedReactionComment("dup-ctl", { reactions: { heart: [SHARED_UID] } });
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": [SHARED_UID, OWNER_UID] }));
+});
+
+test("reactions: removing yourself while duplicating another uid is denied", async () => {
+  const id = await seedReactionComment("dup-rm", { reactions: { heart: [OWNER_UID, SHARED_UID] } });
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": [SHARED_UID, SHARED_UID] }));
+});
+
+test("reactions: a key outside the six is denied", async () => {
+  const id = await seedReactionComment("unknown-key");
+  await assertFails(react(OWNER_UID, id, { "reactions.clap": arrayUnion(OWNER_UID) }));
+});
+
+test("reactions: a write mixing reactions and text is denied", async () => {
+  const id = await seedReactionComment("mixed");
+  await assertFails(
+    react(AUTHOR_UID, id, { "reactions.heart": arrayUnion(AUTHOR_UID), text: "ändrad" })
+  );
+});
+
+test("reactions: deleting a key list that holds others' uids is denied", async () => {
+  const id = await seedReactionComment("del-key-others", { reactions: { heart: [OWNER_UID, SHARED_UID] } });
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": deleteField() }));
+});
+
+test("reactions: deleting a key list that holds only your uid is allowed", async () => {
+  const id = await seedReactionComment("del-key-own", { reactions: { heart: [OWNER_UID] } });
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": deleteField() }));
+});
+
+// The allow twin also fills the other five keys to 499, the largest map a
+// request evaluates, so it doubles as the expression-budget check.
+test("reactions: an add that reaches 500 in one list is allowed", async () => {
+  const full: Record<string, string[]> = {};
+  for (const k of ["thumbs_up", "heart", "fire", "laughing", "yum", "thinking"]) {
+    full[k] = others(`u-${k}`, 499);
+  }
+  const id = await seedReactionComment("at-cap", { reactions: full });
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": arrayUnion(OWNER_UID) }));
+});
+
+test("reactions: an add that makes a list 501 is denied", async () => {
+  const id = await seedReactionComment("over-cap", { reactions: { heart: others("u-heart", 500) } });
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": arrayUnion(OWNER_UID) }));
+});
+
+test("reactions: blocked by the recipe owner — add denied", async () => {
+  const uid = await blockedBy(OWNER_UID, "owner-add");
+  const id = await seedReactionComment("blk-owner-add", { sharedWithUserIds: [uid] });
+  await assertFails(react(uid, id, { "reactions.heart": arrayUnion(uid) }));
+});
+
+test("reactions: blocked by the recipe owner — remove allowed", async () => {
+  const uid = await blockedBy(OWNER_UID, "owner-rm");
+  const id = await seedReactionComment("blk-owner-rm", {
+    sharedWithUserIds: [uid],
+    reactions: { heart: [uid] },
+  });
+  await assertSucceeds(react(uid, id, { "reactions.heart": arrayRemove(uid) }));
+});
+
+test("reactions: blocked by the recipe owner, no recipeOwnerId on the comment — add allowed", async () => {
+  const uid = await blockedBy(OWNER_UID, "owner-noowner");
+  const id = rid("blk-owner-noowner");
+  const body = validCommentBody(AUTHOR_UID, { sharedWithUserIds: [uid] });
+  delete body.recipeOwnerId;
+  await seedComment(id, body);
+  await assertSucceeds(react(uid, id, { "reactions.heart": arrayUnion(uid) }));
+});
+
+test("reactions: blocked by the comment author — add denied", async () => {
+  const uid = await blockedBy(AUTHOR_UID, "author-add");
+  const id = await seedReactionComment("blk-author-add", { sharedWithUserIds: [uid] });
+  await assertFails(react(uid, id, { "reactions.heart": arrayUnion(uid) }));
+});
+
+test("reactions: no ageCompliant claim — add denied", async () => {
+  const id = await seedReactionComment("noage-add");
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": arrayUnion(OWNER_UID) }, NO_AGE_CLAIM));
+});
+
+test("reactions: no ageCompliant claim — remove allowed", async () => {
+  const id = await seedReactionComment("noage-rm", { reactions: { heart: [OWNER_UID] } });
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": arrayRemove(OWNER_UID) }, NO_AGE_CLAIM));
+});
+
+test("reactions: soft-deleted comment — add denied", async () => {
+  const id = await seedReactionComment("deleted-add", { isDeleted: true });
+  await assertFails(react(OWNER_UID, id, { "reactions.heart": arrayUnion(OWNER_UID) }));
+});
+
+test("reactions: soft-deleted comment — remove allowed", async () => {
+  const id = await seedReactionComment("deleted-rm", { isDeleted: true, reactions: { heart: [OWNER_UID] } });
+  await assertSucceeds(react(OWNER_UID, id, { "reactions.heart": arrayRemove(OWNER_UID) }));
+});
+
+test("reactions: the first reaction on a comment with no reactions map is allowed", async () => {
+  const id = await seedReactionComment("first");
+  await assertSucceeds(react(SHARED_UID, id, { "reactions.yum": arrayUnion(SHARED_UID) }));
+});
+
+test("reactions: blocked by the comment author — remove allowed", async () => {
+  const uid = await blockedBy(AUTHOR_UID, "author-rm");
+  const id = await seedReactionComment("blk-author-rm", {
+    sharedWithUserIds: [uid],
+    reactions: { thinking: [uid] },
+  });
+  await assertSucceeds(react(uid, id, { "reactions.thinking": arrayRemove(uid) }));
+});
+
+// Expression budget: a remove is evaluated by both update limbs against one
+// 1000-expression budget per request.
+test("reactions: a shared recipient removes their uid from the last key", async () => {
+  const id = await seedReactionComment("rm-last-key", { reactions: { thinking: [SHARED_UID] } });
+  await assertSucceeds(react(SHARED_UID, id, { "reactions.thinking": arrayRemove(SHARED_UID) }));
+});
+
+// Expression budget, worst case: every key changed, every list at the cap,
+// and the longest canReadComment() path. The app writes one key at a time;
+// one more shape check in the remove limb turns this red.
+test("reactions: removing your uid from all six full keys in one write is allowed", async () => {
+  const full: Record<string, string[]> = {};
+  const update: Record<string, unknown> = {};
+  for (const k of ["thumbs_up", "heart", "fire", "laughing", "yum", "thinking"]) {
+    full[k] = [...others(`u-${k}`, 499), SHARED_UID];
+    update[`reactions.${k}`] = arrayRemove(SHARED_UID);
+  }
+  const id = await seedReactionComment("rm-all-six", { reactions: full });
+  await assertSucceeds(react(SHARED_UID, id, update));
+});
+
+// The write toggleCommentReaction commits: read inside the transaction, then
+// arrayUnion if the uid is absent and arrayRemove if present.
+async function appToggle(uid: string, commentId: string, key: string): Promise<void> {
+  const db = env.authenticatedContext(uid, AGE_OK).firestore();
+  const ref = db.doc(`recipe_comments/${commentId}`);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const list = ((snap.data()?.reactions ?? {})[key] ?? []) as string[];
+    tx.update(ref, {
+      [`reactions.${key}`]: list.includes(uid) ? arrayRemove(uid) : arrayUnion(uid),
+    });
+  });
+}
+
+test("reactions: the app's transaction toggles a reaction on and off", async () => {
+  const id = await seedReactionComment("txn", { reactions: { fire: [AUTHOR_UID] } });
+  await assertSucceeds(appToggle(SHARED_UID, id, "fire"));
+  await assertSucceeds(appToggle(SHARED_UID, id, "fire"));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const snap = await ctx.firestore().doc(`recipe_comments/${id}`).get();
+    if (JSON.stringify(snap.data()?.reactions) !== JSON.stringify({ fire: [AUTHOR_UID] })) {
+      throw new Error(`toggle did not round-trip: ${JSON.stringify(snap.data()?.reactions)}`);
+    }
+  });
 });
 
 async function run(): Promise<void> {
