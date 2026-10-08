@@ -428,7 +428,8 @@ void main() {
           expect(
             result.error,
             equals(errorMessage),
-            reason: 'The manager\'s own error string must be forwarded, not '
+            reason:
+                'The manager\'s own error string must be forwarded, not '
                 'replaced by the facade fallback',
           );
         },
@@ -507,7 +508,8 @@ void main() {
           expect(
             result.metadata['reason'],
             equals('unknown_platform'),
-            reason: 'the manager\'s reason is forwarded, not the facade fallback',
+            reason:
+                'the manager\'s reason is forwarded, not the facade fallback',
           );
         },
       );
