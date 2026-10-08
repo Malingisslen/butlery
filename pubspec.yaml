@@ -16,7 +16,6 @@ dependencies:
     sdk: flutter
 
   # ==================== CORE DEPENDENCIES ====================
-  cupertino_icons: ^1.0.9
   meta: ^1.16.0                # @visibleForTesting etc. — pure-Dart annotations, safe under the Dart VM (used by lib/services/rating/canonical_pool_key.dart, which is imported by the dart-run tools/ harness, so it must NOT depend on Flutter)
 
   # ==================== FIREBASE & BACKEND ====================
@@ -127,7 +126,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
 
   # ==================== CORE TESTING ====================
   test: ^1.26.2
@@ -157,8 +155,6 @@ dev_dependencies:
     sdk: flutter
 
   # ==================== BUILD TOOLS ====================
-  # analyzer provided by test package - let pub determine compatible version
-  cli_util: ^0.4.2  # For CLI utilities
   # sembast: needed by test/unit/core/cache/cache_dao_web_test.dart for the
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
