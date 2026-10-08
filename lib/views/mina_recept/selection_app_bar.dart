@@ -292,8 +292,6 @@ Future<void> _confirmBulkDelete(
 }
 
 /// BUT-933: open the bulk-share dialog with the selected recipes.
-/// Friends + groups are fetched best-effort
-/// matching `recipe_social_handler.showSocialShareDialog`.
 Future<void> _openBulkShareDialog(
   BuildContext context,
   RecipeListViewModel viewModel,
@@ -304,12 +302,22 @@ Future<void> _openBulkShareDialog(
   final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
   final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
-  List<UserProfile> availableFriends = const [];
+  final List<UserProfile> availableFriends;
   try {
     if (!friendsService.isInitialized) await friendsService.initialize();
     availableFriends = friendsService.friends;
-  } catch (_) {
-    // Silently continue with empty friends list.
+  } catch (e) {
+    // An empty list would open a sheet that says there is nobody to share
+    // with, which is not what happened.
+    AppLogger.error('Bulk share could not load friends', e);
+    if (context.mounted) {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.bulkShareFriendsLoadFailed,
+        preserved: context.l10n.bulkShareSelectionKept,
+      );
+    }
+    return;
   }
   final List<FriendCategory> availableGroups = friendsService.categoriesList;
 
