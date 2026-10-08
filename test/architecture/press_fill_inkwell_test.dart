@@ -34,13 +34,11 @@ const _waiting = <String, int>{
   // One on surface.raised.
   'lib/widgets/image/components/upload_progress_widgets.dart': 1,
   // A surface the rule does not cover, for the design session (BUT-2232):
-  // the danger tint, a photo, the scanned page, initials, and a send button
+  // the danger tint, a photo, and a send button
   // that is paper in dark mode.
   'lib/widgets/common/profile/builders/menu_item_builders.dart': 1,
   'lib/widgets/recipe/comment_form_widget.dart': 1,
-  'lib/widgets/recipe/heirloom_section.dart': 1,
   'lib/widgets/social/ping_compose_sheet.dart': 1,
-  'lib/widgets/user/user_avatar_widgets.dart': 1,
   // Never pressed: onTap is null at every caller, or the widget has none.
   'lib/widgets/cooking/substitution_bottom_sheet.dart': 1,
   'lib/widgets/social/collaborative/components/collaborative_permissions_widgets.dart':
@@ -154,8 +152,6 @@ void main() {
   test('the design-session surfaces sit in PressUnchanged', () {
     const unchanged = <String, int>{
       'lib/widgets/recipe/comment_form_widget.dart': 1,
-      'lib/widgets/recipe/heirloom_section.dart': 1,
-      'lib/widgets/user/user_avatar_widgets.dart': 1,
     };
     final missing = <String>[];
     for (final e in unchanged.entries) {
