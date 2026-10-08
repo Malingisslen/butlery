@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -196,6 +197,7 @@ class _PantrySections extends StatelessWidget {
             title: l10n.pantrySectionExpiring,
             items: expiring,
             initiallyExpanded: true,
+            urgent: true,
           ),
         _PantrySection(
           title: l10n.pantrySectionFridge,
@@ -223,18 +225,26 @@ class _PantrySection extends StatelessWidget {
     required this.title,
     required this.items,
     this.initiallyExpanded = false,
+    this.urgent = false,
   });
 
   final String title;
   final List<PantryItem> items;
   final bool initiallyExpanded;
 
+  /// "Går snart ut" takes the danger tone on its edge; the places do not.
+  final bool urgent;
+
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
 
     final cs = Theme.of(context).colorScheme;
+    final isDark = cs.brightness == Brightness.dark;
 
+    // Skarmar v12 etapp 2 #skafferivyn: a group sits on paper (ink in dark)
+    // with a muted edge and a hairline under it, never the recipe card's
+    // ink edge and saffron rule.
     return Container(
       margin: const EdgeInsets.fromLTRB(
         AppDimensions.spacingLg,
@@ -243,19 +253,18 @@ class _PantrySection extends StatelessWidget {
         AppDimensions.spacingMd,
       ),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: isDark ? AppColorsDark.forestGreen : cs.surface,
         border: Border(
-          left: BorderSide(color: cs.onSurface, width: 4),
-          bottom: BorderSide(
-            color: context.modeColors.recipeCardBottomBorder,
-            width: 3,
-          ),
+          left: BorderSide(color: urgent ? cs.error : cs.outline, width: 4),
+          bottom: BorderSide(color: cs.outlineVariant, width: 3),
         ),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
+          iconColor: cs.onSurfaceVariant,
+          collapsedIconColor: cs.onSurfaceVariant,
           tilePadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
             vertical: AppDimensions.spacingXs,
@@ -265,15 +274,16 @@ class _PantrySection extends StatelessWidget {
             children: [
               Text(
                 title.toLowerCase(),
-                style: AppTextStyles.titleSmall.copyWith(
+                style: AppTextStyles.bodySmall.copyWith(
                   letterSpacing: 2,
                   fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 '${items.length}',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,
                 ),
               ),
@@ -297,8 +307,10 @@ class _PantryFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // An ink square in light (#skafferivyn); ink on the dark page would not
+    // show, so dark turns it to paper with an ink plus.
     return Material(
-      color: cs.primary,
+      color: cs.onSurface,
       elevation: 4,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: Semantics(
@@ -313,7 +325,7 @@ class _PantryFab extends StatelessWidget {
               height: 56,
               child: ButleryIcon(
                 ButleryIcons.plus,
-                color: cs.onPrimary,
+                color: cs.surface,
                 size: AppDimensions.iconSizeL,
               ),
             ),

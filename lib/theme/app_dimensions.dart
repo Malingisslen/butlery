@@ -255,7 +255,7 @@ class AppDimensions {
 
   /// Feedback FAB stacks above other bottom-anchored FABs (shopping /
   /// menu / add views) so it stays reachable even when those are present.
-  static const double feedbackFabBottomOffset = 150.0;
+  static const double feedbackFabBottomOffset = 208.0;
 
   /// Thin border width
   static const double borderWidthThin = 0.5;
