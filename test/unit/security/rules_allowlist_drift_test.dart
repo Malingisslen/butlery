@@ -574,6 +574,13 @@ const _knowinglyUncovered = <_Uncovered>[
         'projection',
     'match /ingredient_suggestions/{suggestionId}',
   ),
+  // BUT-2115: the allowlist is over the keys of the `reactions` map, not the
+  // document's, and the writer is the emoji picker's key list. Those two and
+  // COMMENT_REACTION_KEYS are held equal by a functions test instead.
+  _Uncovered(
+    'recipe_comments reactions — kReactionEmojis keys',
+    'function reactionShapeOk(',
+  ),
 ];
 
 /// Matches the allowlist form this guard covers, tolerating the line wrap the
@@ -909,9 +916,12 @@ void main() {
     // _allowlists.
     // BUT-2243 added rate_limits/imports: one keys().hasOnly, guarded above in
     // _allowlists.
+    // BUT-2115 added the recipe_comments reaction update: one keys().hasOnly
+    // over the `reactions` MAP (in _knowinglyUncovered), one
+    // affectedKeys().hasOnly(['reactions']) and one set difference.
     expect(
       'hasOnly('.allMatches(rules).length,
-      45,
+      48,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
