@@ -4107,8 +4107,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Security and access history (GDPR Article 15)';
 
   @override
-  String get dataExportOnlyYourData =>
-      'Note: The export only contains your own data. No data from other users is included.';
+  String get dataExportSharedDataNote =>
+      'Note: The export contains your own data. For what you share with others, such as shared shopping lists, conversations and notifications, it also includes some details about them, such as names or user IDs.';
 
   @override
   String get dateToday => 'Today';
@@ -13147,13 +13147,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legalOpenSourceLicenses => 'Open Source Licenses';
-
-  @override
-  String get authAgeConfirmation => 'I confirm that I am at least 15 years old';
-
-  @override
-  String get authAgeConfirmationRequired =>
-      'You must confirm your age to create an account';
 
   @override
   String get authTermsAcceptPrefix => 'I accept the ';

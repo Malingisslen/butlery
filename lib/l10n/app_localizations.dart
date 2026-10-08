@@ -6889,11 +6889,11 @@ abstract class AppLocalizations {
   /// **'Säkerhets- och åtkomsthistorik (GDPR Artikel 15)'**
   String get dataExportIncludesAuditLogs;
 
-  /// No description provided for @dataExportOnlyYourData.
+  /// No description provided for @dataExportSharedDataNote.
   ///
   /// In sv, this message translates to:
-  /// **'OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.'**
-  String get dataExportOnlyYourData;
+  /// **'OBS: Exporten innehåller din egen data. För det du har gemensamt med andra, som delade inköpslistor, konversationer och notiser, ingår även vissa uppgifter om dem, till exempel namn eller användar-id.'**
+  String get dataExportSharedDataNote;
 
   /// No description provided for @dateToday.
   ///
@@ -22012,18 +22012,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Öppen källkod-licenser'**
   String get legalOpenSourceLicenses;
-
-  /// No description provided for @authAgeConfirmation.
-  ///
-  /// In sv, this message translates to:
-  /// **'Jag bekräftar att jag är minst 15 år'**
-  String get authAgeConfirmation;
-
-  /// No description provided for @authAgeConfirmationRequired.
-  ///
-  /// In sv, this message translates to:
-  /// **'Du måste bekräfta din ålder för att skapa ett konto'**
-  String get authAgeConfirmationRequired;
 
   /// No description provided for @authTermsAcceptPrefix.
   ///

@@ -276,15 +276,15 @@ void main() {
       await pumpRegisterMode(tester);
 
       // BUT-1426 / WCAG 2.5.5: the consent boxes were SizedBox(24,24), which
-      // clamped the hit area to half the minimum. Both the age-confirm and
-      // terms-accept checkboxes must now sit in a >=48dp box. Asserting the
+      // clamped the hit area to half the minimum. The terms-accept checkbox
+      // must now sit in a >=48dp box. Asserting the
       // rendered size (not a literal in the widget) keeps this honest against
       // a refactor that swaps the SizedBox for Padding/constraints.
       final checkboxFinders = find.byType(Checkbox);
       expect(
         checkboxFinders,
-        findsNWidgets(2),
-        reason: 'register mode shows the age + terms consent checkboxes',
+        findsOneWidget,
+        reason: 'register mode shows the terms consent checkbox',
       );
 
       for (final element in checkboxFinders.evaluate()) {
