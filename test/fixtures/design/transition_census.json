@@ -705,12 +705,29 @@
     {
       "id": "TR::FLOW::06::aterstall::satt-nytt",
       "flow": "06",
-      "status": "MISSING",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
-      "ticket": "BUT-2170",
-      "reason": "The reset link opens Firebase's own page. The app has no view for setting the new password: no confirmPasswordReset or verifyPasswordResetCode in lib/."
+      "status": "TESTED",
+      "test_file": "test/widget/views/auth/set_new_password_view_test.dart",
+      "test_name": "names the account and, once saved, goes to sign-in with the address",
+      "tests": [
+        {
+          "file": "test/widget/views/auth/set_new_password_view_test.dart",
+          "name": "names the account and, once saved, goes to sign-in with the address"
+        },
+        {
+          "file": "test/widget/views/auth/set_new_password_view_test.dart",
+          "name": "a dead link offers a new one and hands that to sign-in"
+        },
+        {
+          "file": "test/widget/core/deep_link_password_reset_test.dart",
+          "name": "a reset link opens the view with its code; the replay does not"
+        },
+        {
+          "file": "test/widget/views/auth/auth_view_password_reset_handoff_test.dart",
+          "name": "a saved password: address filled in and the receipt shown"
+        }
+      ],
+      "ticket": null,
+      "reason": "BUT-2170 (A1, B1, Malin 2026-10-08): the reset mail opens the app through Firebase's mobile link, the app checks the code, sets the new password with sign-up's rule and goes to sign-in with the address filled in; a dead link offers a new one. Without the app, Firebase's own page opens."
     },
     {
       "id": "TR::FLOW::06::byt-epost::galler-vid-oppnad-lank",

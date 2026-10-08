@@ -17,6 +17,7 @@ import 'package:butlery/core/router/modules/messaging_deferred_module.dart';
 
 // Auth view (eager - always needed)
 import 'package:butlery/views/auth_view.dart';
+import 'package:butlery/views/auth/set_new_password_view.dart';
 
 // Onboarding (eager - needed before home screen for new users)
 import 'package:butlery/views/onboarding/onboarding_view.dart';
@@ -179,6 +180,15 @@ class AppRouter {
         case Routes.auth:
           return _buildRoute(
             const AuthView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
+
+        case Routes.setNewPassword:
+          final code = settings.arguments;
+          if (code is! String) return _errorRoute();
+          return _buildRoute(
+            SetNewPasswordView(code: code),
             settings,
             Routes.getAnimationType(routeName),
           );

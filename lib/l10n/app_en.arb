@@ -13563,5 +13563,21 @@
   },
   "pantryRestorePreviousAction": "Restore",
   "pantryPreviousRestored": "Previous version restored",
-  "pantryRestorePreviousFailed": "Couldn't restore the previous version"
+  "pantryRestorePreviousFailed": "Couldn't restore the previous version",
+  "setNewPasswordTitle": "Choose a new password",
+  "setNewPasswordChecking": "Checking the link …",
+  "setNewPasswordForAccount": "For the account {email}.",
+  "setNewPasswordRepeat": "Repeat new password",
+  "setNewPasswordSave": "Save password",
+  "setNewPasswordWeak": "The password is too simple. Choose a longer one, ideally with numbers and symbols.",
+  "setNewPasswordSaveFailed": "The password couldn't be saved.",
+  "setNewPasswordSaveFailedBecause": "The password couldn't be saved. {cause}",
+  "setNewPasswordNothingChanged": "Your old password still works.",
+  "setNewPasswordCheckFailed": "The link couldn't be checked.",
+  "setNewPasswordLinkInvalidTitle": "This link no longer works",
+  "setNewPasswordLinkInvalidBody": "It has already been used or is too old. Ask for a new link and it will come to your email.",
+  "setNewPasswordRequestNew": "Send a new link",
+  "setNewPasswordClose": "Close",
+  "setNewPasswordSavedOther": "The password for {email} has been changed.",
+  "passwordResetDoneNotice": "Your password has been changed. Log in with the new one."
 }

@@ -1,0 +1,62 @@
+# Publishes web/.well-known/ (the files that let the "glömt lösenord" link and
+# other app links open the app, BUT-2170) on the live `app` Hosting site
+# WITHOUT republishing the web app: tools/hosting/patch_live_files.py clones
+# the live version and swaps only these two files. Rollback = re-release the
+# previous version in the Firebase console (Hosting → release history).
+name: Deploy app link files
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show what would change"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-app-link-files
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate the files
+        run: |
+          python3 -c "import json; json.load(open('web/.well-known/assetlinks.json')); json.load(open('web/.well-known/apple-app-site-association'))"
+          if grep -q REPLACE_ME web/.well-known/assetlinks.json web/.well-known/apple-app-site-association; then
+            echo "::error::A placeholder is still in web/.well-known/." >&2
+            exit 1
+          fi
+
+      - name: Patch the live site
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured (see deploy-firebase.yml)." >&2
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          python3 tools/hosting/patch_live_files.py \
+            --site butlery-app-1 --key "$RUNNER_TEMP/sa.json" \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
+            /.well-known/assetlinks.json=web/.well-known/assetlinks.json \
+            /.well-known/apple-app-site-association=web/.well-known/apple-app-site-association
+          rm -f "$RUNNER_TEMP/sa.json"
+
+      - name: Check what the site serves
+        if: ${{ !inputs.dry_run }}
+        run: |
+          for host in butlery-app-1.firebaseapp.com butlery-app-1.web.app; do
+            curl -fsS "https://$host/.well-known/assetlinks.json" | grep -q D5:5E:2C
+            curl -fsS "https://$host/.well-known/apple-app-site-association" | grep -q F6SFW9MP8T
+            echo "$host serves the new files"
+          done

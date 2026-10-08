@@ -214,7 +214,7 @@ void main() {
       'known failure (BUT-2163 = A)', () {
     const file = 'test/fixtures/design/transition_census.json';
     final source = CensusSource('.').read(file)!;
-    const id = 'TR::FLOW::06::aterstall::satt-nytt';
+    const id = 'TR::FLOW::03::foto-ocr::otolkad-text';
     final fixture = jsonDecode(source) as Map<String, dynamic>;
     final entry = (fixture['entries'] as List)
         .cast<Map<String, dynamic>>()

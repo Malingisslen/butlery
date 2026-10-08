@@ -11,6 +11,8 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 
 // All ViewModels
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
+import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
@@ -100,6 +102,7 @@ class UIModule implements DIModule {
   List<Type> get provides => [
     // Core ViewModels
     AuthViewModel,
+    PasswordResetViewModel,
     UserProfileViewModel,
     ProfileViewModel,
 
@@ -182,6 +185,13 @@ class UIModule implements DIModule {
       // Auth ViewModel - Auth service dependency
       container.registerFactory<AuthViewModel>(
         () => AuthViewModel(
+          authService: container<AuthService>(),
+        ),
+      );
+
+      container.registerFactory<PasswordResetViewModel>(
+        () => PasswordResetViewModel(
+          resetService: container<PasswordResetService>(),
           authService: container<AuthService>(),
         ),
       );

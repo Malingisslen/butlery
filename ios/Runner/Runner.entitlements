@@ -5,6 +5,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:butlery.app</string>
+		<string>applinks:butlery-app-1.firebaseapp.com</string>
 	</array>
 	<key>aps-environment</key>
 	<string>development</string>

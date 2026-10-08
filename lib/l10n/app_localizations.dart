@@ -29014,6 +29014,102 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte återställa förra versionen'**
   String get pantryRestorePreviousFailed;
+
+  /// BUT-2170: title of the view a reset link opens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj nytt lösenord'**
+  String get setNewPasswordTitle;
+
+  /// BUT-2170: shown while the reset link is checked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollerar länken …'**
+  String get setNewPasswordChecking;
+
+  /// BUT-2170: names the account the reset link belongs to.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller kontot {email}.'**
+  String setNewPasswordForAccount(String email);
+
+  /// BUT-2170: second password field, label from Skarmar v12 etapp 6.
+  ///
+  /// In sv, this message translates to:
+  /// **'Upprepa nytt lösenord'**
+  String get setNewPasswordRepeat;
+
+  /// BUT-2170: primary button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara lösenordet'**
+  String get setNewPasswordSave;
+
+  /// BUT-2170: Firebase's password policy refused the new password.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet är för enkelt. Välj ett längre, gärna med siffror och tecken.'**
+  String get setNewPasswordWeak;
+
+  /// BUT-2170: Part 1 when saving failed for an unknown reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte sparas.'**
+  String get setNewPasswordSaveFailed;
+
+  /// BUT-2170: Part 1 with a mapped cause (network, too many attempts).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte sparas. {cause}'**
+  String setNewPasswordSaveFailedBecause(String cause);
+
+  /// BUT-2170: Part 2 of an error: what is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt gamla lösenord gäller fortfarande.'**
+  String get setNewPasswordNothingChanged;
+
+  /// BUT-2170: Part 1 when checking the link failed but the link may still work.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länken kunde inte kontrolleras.'**
+  String get setNewPasswordCheckFailed;
+
+  /// BUT-2170: the reset link is used or expired (flow 05/06 wording).
+  ///
+  /// In sv, this message translates to:
+  /// **'Länken gäller inte längre'**
+  String get setNewPasswordLinkInvalidTitle;
+
+  /// BUT-2170: body under the expired-link title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den har redan använts eller blivit för gammal. Be om en ny länk, så kommer den till din e-post.'**
+  String get setNewPasswordLinkInvalidBody;
+
+  /// BUT-2170: opens Glömt lösenord on the sign-in screen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka ny länk'**
+  String get setNewPasswordRequestNew;
+
+  /// BUT-2170: leaves the view when this device is signed in to another account.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng'**
+  String get setNewPasswordClose;
+
+  /// BUT-2170: snackbar when the device is signed in to another account.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet för {email} är bytt.'**
+  String setNewPasswordSavedOther(String email);
+
+  /// BUT-2170: notice on the sign-in screen after a reset (decision B1).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet är bytt. Logga in med det nya.'**
+  String get passwordResetDoneNotice;
 }
 
 class _AppLocalizationsDelegate
