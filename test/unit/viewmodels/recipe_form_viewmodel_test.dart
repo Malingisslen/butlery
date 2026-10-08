@@ -31,7 +31,6 @@ import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
 // ImageUploadService import for local mock
 import 'package:butlery/services/upload/image_upload_service.dart';
@@ -79,7 +78,6 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Bridge production ServiceLocator to TestServiceLocator
-      // Required because RecipeCollaborativeManager calls ServiceLocator.get() directly
       final productionContainer = DIContainer();
       prod_locator.ServiceLocator.initialize(productionContainer);
 
@@ -141,9 +139,7 @@ void main() {
         mockImageUploadService,
       );
 
-      // Register additional dependencies for RecipeCollaborativeManager
-      // These are required by the managers inside RecipeFormViewModel
-      final mockCollaborativeRepo = MockCollaborativeRecipeRepository();
+      // Connectivity dependency of the managers inside RecipeFormViewModel
       final mockConnectivityService = MockConnectivityMonitoringService();
 
       // Setup connectivity service mock behaviors
@@ -159,9 +155,6 @@ void main() {
       ).thenReturn('Ansluten');
       when(() => mockConnectivityService.startMonitoring()).thenReturn(null);
 
-      TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-        mockCollaborativeRepo,
-      );
       TestServiceLocator.registerMock<ConnectivityMonitoringService>(
         mockConnectivityService,
       );

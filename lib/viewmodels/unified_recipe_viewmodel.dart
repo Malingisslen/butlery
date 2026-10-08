@@ -17,7 +17,6 @@ import 'package:butlery/models/recipe/recipe_insights.dart';
 // Import focused ViewModels
 import 'package:butlery/viewmodels/recipe/personal_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/viewmodels/recipe/realtime_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
@@ -33,9 +32,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   /// Social recipe operations ViewModel
   late final SocialRecipeViewModel _socialViewModel;
 
-  /// Real-time editing ViewModel
-  late final RealtimeRecipeViewModel _realtimeViewModel;
-
   /// Recipe querying and analytics ViewModel
   late final RecipeQueryViewModel _queryViewModel;
 
@@ -47,7 +43,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
       recipeService: ServiceLocator.get(),
       userService: ServiceLocator.get(),
     );
-    _realtimeViewModel = RealtimeRecipeViewModel();
     _queryViewModel = RecipeQueryViewModel();
 
     // Set up state synchronization
@@ -56,7 +51,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     );
     _personalViewModel.addListener(_onServiceUpdate);
     _socialViewModel.addListener(_onServiceUpdate);
-    _realtimeViewModel.addListener(_onServiceUpdate);
     _queryViewModel.addListener(_onServiceUpdate);
   }
 
@@ -69,9 +63,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
 
   /// Access to social recipe operations
   SocialRecipeViewModel get social => _socialViewModel;
-
-  /// Access to real-time editing operations
-  RealtimeRecipeViewModel get realtime => _realtimeViewModel;
 
   /// Access to recipe querying operations
   RecipeQueryViewModel get query => _queryViewModel;
@@ -271,26 +262,17 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     return _queryViewModel.recipeInsights;
   }
 
-  /// Check if real-time editing is connected
-  bool get isRealtimeConnected => _realtimeViewModel.isRealtimeConnected;
-
-  /// Stream for real-time connection status
-  Stream<bool> get realtimeConnectionStream =>
-      _realtimeViewModel.realtimeConnectionStream;
-
   @override
   void dispose() {
     // Clean up listeners
     _recipeServiceSubscription?.cancel();
     _personalViewModel.removeListener(_onServiceUpdate);
     _socialViewModel.removeListener(_onServiceUpdate);
-    _realtimeViewModel.removeListener(_onServiceUpdate);
     _queryViewModel.removeListener(_onServiceUpdate);
 
     // Dispose focused ViewModels
     _personalViewModel.dispose();
     _socialViewModel.dispose();
-    _realtimeViewModel.dispose();
     _queryViewModel.dispose();
 
     // Clean up streams

@@ -16,7 +16,6 @@ import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/offline_image_handoff.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart';
@@ -33,7 +32,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   final RecipeFormState _state;
   final RecipeImageManager _imageManager;
-  final RecipeCollaborativeManager _collaborativeManager;
   final RecipePermissionManager _permissionManager;
   final AnalyticsService? _analyticsService;
   final RecipeEditAnalyticsEmitter _editEmitter;
@@ -64,7 +62,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     required UnifiedRecipeService recipeService,
     required RecipeFormState state,
     required RecipeImageManager imageManager,
-    required RecipeCollaborativeManager collaborativeManager,
     required RecipePermissionManager permissionManager,
     AnalyticsService? analyticsService,
     RecipeEditAnalyticsEmitter? editEmitter,
@@ -73,7 +70,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
        _heirloomUploader = heirloomUploader,
        _state = state,
        _imageManager = imageManager,
-       _collaborativeManager = collaborativeManager,
        _permissionManager = permissionManager,
        _analyticsService =
            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
@@ -83,7 +79,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
   /// Saves recipe with atomic coordination, preventing concurrent saves and ensuring image upload completion.
   Future<Recipe?> saveRecipe({
-    required bool isCollaborative,
     required void Function() onNotify,
   }) async {
     _isFirstRecipe = false;
@@ -306,17 +301,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           // in Storage but the save is preserved.
           await _imageManager.commitPendingStorageDeletes();
 
-          if (isCollaborative && !_disposed) {
-            try {
-              await _collaborativeManager.updateRecipeInFirebase(savedRecipe);
-              AppLogger.info(
-                '🔄 Collaborative state updated for recipe: ${savedRecipe.id}',
-              );
-            } catch (e) {
-              AppLogger.error('❌ Failed to update collaborative state: $e');
-            }
-          }
-
           return savedRecipe;
         },
         operationName: 'Save Recipe',
@@ -467,8 +451,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
   }
 
-  /// Deletes recipe with collaborative cleanup and permission validation.
-  Future<bool> deleteRecipe({required bool isCollaborative}) async {
+  /// Deletes recipe with permission validation.
+  Future<bool> deleteRecipe() async {
     if (_state.originalRecipe == null) {
       _state.setError(AppLocale.current.errorNoRecipeToDelete);
       return false;
@@ -484,10 +468,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     final result = await safeExecute<bool>(
       () async {
         await _recipeService.deleteRecipe(_state.originalRecipe!.id);
-
-        if (isCollaborative) {
-          await _collaborativeManager.leaveCollaborativeMode();
-        }
 
         await _imageManager.clearAllImages();
         AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');

@@ -1,16 +1,10 @@
-/// BUT-2015: the shared disposal guard, and the two managers that gained it.
+/// BUT-2015: the shared disposal guard.
 ///
 /// The genuine async case — dispose while an `await` is in flight, via a
-/// `Completer`, then let the future land — is asserted twice, in two places,
-/// because they prove different things.
-///
-/// Here, against the MIXIN, using a purpose-built host: since BUT-2015 the
+/// `Completer`, then let the future land — is asserted
+/// here, against the MIXIN, using a purpose-built host: since BUT-2015 the
 /// guard is one implementation, so the case proving the implementation works
 /// belongs with it.
-///
-/// And in `test/unit/viewmodels/recipe_collaborative_manager_test.dart`,
-/// against a REAL manager: its collaborators are constructor-injected, so a
-/// `Completer` reaches a genuine await there.
 ///
 /// `SocialEngagementManager` has no such case and cannot get one: its awaits
 /// go through `CommentLikesSystem`, which is entirely static over a static

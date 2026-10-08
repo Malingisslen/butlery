@@ -15,7 +15,6 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -105,7 +104,6 @@ void main() {
     late mocks.MockRatingsRepository mockRatingsRepository;
     late mocks.MockNotificationsRepository mockNotificationsRepository;
     late mocks.FakeFirestoreRepository mockFirestoreRepository;
-    late mocks.MockCollaborativeRecipeRepository mockCollaborativeRepository;
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
@@ -118,7 +116,6 @@ void main() {
       mockRatingsRepository = mocks.MockRatingsRepository();
       mockNotificationsRepository = mocks.MockNotificationsRepository();
       mockFirestoreRepository = mocks.FakeFirestoreRepository();
-      mockCollaborativeRepository = mocks.MockCollaborativeRecipeRepository();
 
       final mockUser = MockFactory.createMockUser(uid: 'test_user_123');
       mockAuthRepository.setAuthState(
@@ -146,9 +143,6 @@ void main() {
       );
       TestServiceLocator.registerMock<FirestoreRepository>(
         mockFirestoreRepository,
-      );
-      TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-        mockCollaborativeRepository,
       );
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
         _MockFirebaseRecipePresenceRepository(),

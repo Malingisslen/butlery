@@ -25,7 +25,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
@@ -40,9 +39,6 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 class _MockRecipeFormState extends Mock implements RecipeFormState {}
 
 class _MockRecipeImageManager extends Mock implements RecipeImageManager {}
-
-class _MockRecipeCollaborativeManager extends Mock
-    implements RecipeCollaborativeManager {}
 
 class _MockRecipePermissionManager extends Mock
     implements RecipePermissionManager {}
@@ -61,7 +57,6 @@ void main() {
 
   late _MockRecipeFormState mockState;
   late _MockRecipeImageManager mockImageManager;
-  late _MockRecipeCollaborativeManager mockCollabManager;
   late _MockRecipePermissionManager mockPermissionManager;
   late MockUnifiedRecipeService mockRecipeService;
   late _MockPersonalRecipeOperations mockPersonalOps;
@@ -70,7 +65,6 @@ void main() {
   setUp(() {
     mockState = _MockRecipeFormState();
     mockImageManager = _MockRecipeImageManager();
-    mockCollabManager = _MockRecipeCollaborativeManager();
     mockPermissionManager = _MockRecipePermissionManager();
     mockRecipeService = MockUnifiedRecipeService();
     mockPersonalOps = _MockPersonalRecipeOperations();
@@ -119,7 +113,6 @@ void main() {
       recipeService: mockRecipeService,
       state: mockState,
       imageManager: mockImageManager,
-      collaborativeManager: mockCollabManager,
       permissionManager: mockPermissionManager,
     );
   });
@@ -133,7 +126,6 @@ void main() {
         );
 
         final result = await manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
 
@@ -156,7 +148,6 @@ void main() {
       );
 
       final result = await manager.saveRecipe(
-        isCollaborative: false,
         onNotify: () {},
       );
 
@@ -196,7 +187,6 @@ void main() {
       );
 
       final saving = manager.saveRecipe(
-        isCollaborative: false,
         onNotify: () {},
       );
       // Let the save reach the upload await.
@@ -259,7 +249,6 @@ void main() {
           (_) async => RecipeOperationResult.success('Recipe saved'),
         );
         final previous = await manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
         expect(previous, isNotNull);
@@ -270,12 +259,10 @@ void main() {
         // already set when the second call lands; the yields only make that
         // explicit.
         final inFlight = manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
         await Future<void>.delayed(Duration.zero);
         final queued = manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
         await Future<void>.delayed(Duration.zero);
@@ -320,7 +307,6 @@ void main() {
           (_) async => RecipeOperationResult.success('Recipe saved'),
         );
         final previous = await manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
         expect(previous, isNotNull);
@@ -328,12 +314,10 @@ void main() {
         final gate = gateTheWrite();
 
         final inFlight = manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
         await Future<void>.delayed(Duration.zero);
         final queued = manager.saveRecipe(
-          isCollaborative: false,
           onNotify: () {},
         );
         await Future<void>.delayed(Duration.zero);
@@ -371,7 +355,6 @@ void main() {
       ).thenAnswer((_) async => throw StateError('prefs unavailable'));
 
       final result = await manager.saveRecipe(
-        isCollaborative: false,
         onNotify: () {},
       );
 
@@ -418,8 +401,7 @@ void main() {
       GetIt.instance.unregister<OfflineService>();
     });
 
-    Future<Recipe?> save() =>
-        manager.saveRecipe(isCollaborative: false, onNotify: () {});
+    Future<Recipe?> save() => manager.saveRecipe(onNotify: () {});
 
     test('an image the network failed is queued after the recipe is saved, '
         'and only then leaves the form', () async {
@@ -549,8 +531,7 @@ void main() {
             ).captured.last
             as List<String>;
 
-    Future<Recipe?> save() =>
-        manager.saveRecipe(isCollaborative: false, onNotify: () {});
+    Future<Recipe?> save() => manager.saveRecipe(onNotify: () {});
 
     test('is kept beside the images the form saves', () async {
       when(() => mockImageManager.validImageUrls).thenReturn(['a']);

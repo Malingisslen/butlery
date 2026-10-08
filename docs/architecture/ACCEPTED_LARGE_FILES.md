@@ -96,15 +96,12 @@ Already modular services or well-organized modules within service facades. Furth
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
-| `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
 | `user_service.dart` | 1098 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1251 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 687 | Add/remove/block friends operations |
-| `collaboration_management_module.dart` | 668 | Realtime collaboration session management |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 636 | Friend category CRUD operations |
-| `realtime_notification_module.dart` | 602 | Realtime notification dispatch; SRP module (explicit "does not contain" comment) |
 | `social_menu_coordinator.dart` | 626 | Social menu sharing coordinator |
 | `rating_statistics.dart` | 601 | Recipe rating stats calculations |
 | `unified_friends_service.dart` | 616 | Friends service facade |
@@ -117,7 +114,6 @@ Already modular services or well-organized modules within service facades. Furth
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
 | `unified_shopping_service.dart` | 888 | Shopping service facade. BUT-2140 added the restore module's wiring and two delegates; the restore logic lives in `shopping_restore_module.dart`. |
 | `shopping_item_management_module.dart` | 588 | Per-item facade over the active list (add, merge-add, edit, remove, tick), each with its optimistic local change and rollback. Was 556 with no row when BUT-2140 PR 3 added the two copies the repository needs for the 30-day restore (`before`, `removed`); the bulk actions already went to `shopping_bulk_item_module.dart`. |
-| `realtime_recipe_service.dart` | 525 | Explicit facade; delegates to RecipeContentOperations + RecipeParticipants |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 643 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
 | `search_service.dart` | 538 | Recipe/content search service |
@@ -140,7 +136,6 @@ Already modular services or well-organized modules within service facades. Furth
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |
 | `social_shopping_coordinator.dart` | 528 | Direct-collaboration coordinator extending base; single shopping-list domain |
 | `menu_service.dart` | 613 | Single-algorithm service for Swedish NLP menu generation; coherent domain (grew with BUT-1320/1321/1324 personalization + combined cuisine/protein diversity pass) |
-| `presence_tracking_module.dart` | 510 | SRP module for presence only; explicit "does not contain" guards in comments |
 | `persistence_service.dart` | 693 | SharedPreferences local persistence service; large due to many recipe+menu fields across platforms |
 | `personal_tag_crud_service.dart` | 666 | CRUD service extracted from PersonalTagService to keep each service under 500 lines |
 | `universal_share_dialog_viewmodel.dart` | 540 | Dialog VM for multi-content sharing (recipes, menus, lists); single dialog scope |

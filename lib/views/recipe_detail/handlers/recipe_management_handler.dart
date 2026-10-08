@@ -301,10 +301,11 @@ class RecipeManagementHandler {
 
     if (confirmed == true && selectedIds.isNotEmpty) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.realtime.enableCollaborativeEditing(
-        recipe.id,
-        selectedIds.toList(),
-      );
+      final success = await recipeService.collaboration
+          .enableCollaborativeEditing(
+            recipe.id,
+            selectedIds.toList(),
+          );
 
       if (!context.mounted) return;
       if (success) {
@@ -343,9 +344,10 @@ class RecipeManagementHandler {
 
     if (confirmed == true) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.realtime.disableCollaborativeEditing(
-        recipe.id,
-      );
+      final success = await recipeService.collaboration
+          .disableCollaborativeEditing(
+            recipe.id,
+          );
 
       if (!context.mounted) return;
       if (success) {

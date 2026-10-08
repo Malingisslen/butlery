@@ -1416,7 +1416,7 @@ final Color _disabledOnInk = AppModeColors.textDisabledOnInk();
 /// (content-style-guide.md:87-97): the swap was not saved, the recipe is
 /// unchanged, and Försök igen saves the same swap again. The service reports
 /// most failures by returning false rather than throwing
-/// (personal_recipe_module.dart, realtime_ingredient_operations.dart), so
+/// (personal_recipe_module.dart), so
 /// false is a failure too.
 @visibleForTesting
 Future<void> persistCookingSubstitution(

@@ -36,7 +36,6 @@ import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -69,10 +68,8 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/recipe_comment.dart';
-import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
-import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart'; // For MenuOperationError
 import 'package:butlery/services/realtime/modules/menu_operations.dart'; // For MenuOperationError class
 import 'package:butlery/services/realtime_sync_service.dart' as realtime;
@@ -92,11 +89,9 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
-import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
-import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
@@ -941,37 +936,6 @@ class FakeFirestoreRepository extends Fake implements FirestoreRepository {
   }
 }
 
-/// Mock implementation of CollaborativeRecipeRepository
-class MockCollaborativeRecipeRepository extends Mock
-    implements CollaborativeRecipeRepository {
-  // Configuration state
-  Map<String, RealtimeRecipe> _realtimeRecipes = {};
-  Map<String, Map<String, Map<String, dynamic>>> _presenceData = {};
-  Map<String, List<LiveEditor>> _participants = {};
-  Map<String, Map<String, dynamic>> _userDocuments = {};
-
-  /// Configure mock state for collaborative repository
-  void setCollaborativeState({
-    Map<String, RealtimeRecipe>? realtimeRecipes,
-    Map<String, Map<String, Map<String, dynamic>>>? presenceData,
-    Map<String, List<LiveEditor>>? participants,
-    Map<String, Map<String, dynamic>>? userDocuments,
-  }) {
-    if (realtimeRecipes != null) _realtimeRecipes = realtimeRecipes;
-    if (presenceData != null) _presenceData = presenceData;
-    if (participants != null) _participants = participants;
-    if (userDocuments != null) _userDocuments = userDocuments;
-  }
-
-  // Getters for configured state (for tests that need them)
-  Map<String, RealtimeRecipe> get realtimeRecipes => _realtimeRecipes;
-  Map<String, Map<String, Map<String, dynamic>>> get presenceData =>
-      _presenceData;
-  Map<String, List<LiveEditor>> get participants => _participants;
-
-  // All other methods left without implementation to allow stubbing with when()
-}
-
 /// Mock implementation of FirebaseAuthRepository (concrete class)
 class MockFirebaseAuthRepository extends Mock
     implements FirebaseAuthRepository {
@@ -1063,16 +1027,11 @@ class MockUnifiedRecipeService extends Mock
   }
 
   final _mockSocial = FakeSocialRecipeOperations();
-  final _mockRealtime = MockRealtimeRecipeOperations();
 
   @override
   SocialRecipeOperations get social => _mockSocial;
 
-  @override
-  RealtimeRecipeOperations get realtime => _mockRealtime;
-
   FakeSocialRecipeOperations get mockSocial => _mockSocial;
-  MockRealtimeRecipeOperations get mockRealtime => _mockRealtime;
 
   @override
   List<Recipe> get recipes => List.unmodifiable(_recipes);
@@ -3225,283 +3184,6 @@ class MockAccountDeletionRepository extends Mock {
 /// Tier 3 - Single occurrence mock classes
 class MockWebScraper extends Mock implements WebScraper {}
 
-/// Mock implementation of RealtimeRecipeOperations - COMPREHENSIVE INTERFACE
-class MockRealtimeRecipeOperations extends Mock
-    implements RealtimeRecipeOperations {
-  // ===== REAL-TIME WATCHING OPERATIONS =====
-
-  /// ✅ FIXED: Replace Recipe.empty() with null streams - Phase 5A ultrathink approach
-  @override
-  Stream<Recipe> watchRecipe(String recipeId) => const Stream.empty();
-
-  @override
-  Stream<Recipe> watchRecipeWithRetry(
-    String recipeId, {
-    int maxRetries = 3,
-    Duration retryDelay = const Duration(seconds: 2),
-  }) => const Stream.empty();
-
-  @override
-  Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) =>
-      Stream.value([]);
-
-  @override
-  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(
-    List<String> recipeIds,
-  ) => Stream.value({});
-
-  bool _connected = false;
-
-  void setRealtimeState({bool? connected}) {
-    if (connected != null) _connected = connected;
-  }
-
-  @override
-  bool get isConnected => _connected;
-
-  @override
-  Stream<bool> get connectionStream => Stream.value(_connected);
-
-  @override
-  Future<bool> waitForConnection({
-    Duration timeout = const Duration(seconds: 10),
-  }) async => true;
-
-  @override
-  Stream<ConnectionStatus> monitorConnectionStatus() => Stream.value(
-    ConnectionStatus(
-      isConnected: true,
-      timestamp: DateTime.now(),
-      hasRealtimeService: true,
-    ),
-  );
-
-  @override
-  StreamSubscription<Recipe> startWatchingRecipe(
-    String recipeId,
-    void Function(Recipe) onRecipeUpdated, {
-    void Function(dynamic)? onError,
-  }) => Stream<Recipe>.empty().listen(onRecipeUpdated, onError: onError);
-
-  @override
-  StreamSubscription<List<Recipe>> startWatchingMultipleRecipes(
-    List<String> recipeIds,
-    void Function(List<Recipe>) onRecipesUpdated, {
-    void Function(dynamic)? onError,
-  }) => Stream<List<Recipe>>.empty().listen(onRecipesUpdated, onError: onError);
-
-  @override
-  bool isWatchingAvailable() => true;
-
-  @override
-  Map<String, bool> getWatchingCapabilities() => {
-    'realtime': true,
-    'offline': true,
-  };
-
-  // ===== REAL-TIME EDITING OPERATIONS =====
-
-  @override
-  Future<bool> startRealtimeEditing(String recipeId) async => true;
-
-  @override
-  Future<bool> stopRealtimeEditing(String recipeId) async => true;
-
-  @override
-  bool isInRealtimeEditingMode(String recipeId) => true;
-
-  @override
-  Future<bool> makeRealtimeEdit({
-    required String recipeId,
-    required Map<String, dynamic> changes,
-    String? editDescription,
-  }) async => true;
-
-  @override
-  Future<bool> makeBatchRealtimeEdits({
-    required String recipeId,
-    required List<Map<String, dynamic>> changeList,
-    String? batchDescription,
-  }) async => true;
-
-  @override
-  Future<bool> undoLastRealtimeEdit(String recipeId) async => true;
-
-  @override
-  Future<bool> resolveConflict({
-    required String recipeId,
-    required Recipe localVersion,
-    required Recipe remoteVersion,
-    required String resolution,
-    String? localActiveField,
-  }) async => true;
-
-  @override
-  Future<bool> autoResolveConflict({
-    required String recipeId,
-    required Recipe localVersion,
-    required Recipe remoteVersion,
-    String strategy = 'merge',
-    String? localActiveField,
-  }) async => true;
-
-  @override
-  Future<List<ConflictInfo>> getPendingConflicts(String recipeId) async =>
-      <ConflictInfo>[];
-
-  @override
-  bool validateEditChanges(String recipeId, Map<String, dynamic> changes) =>
-      true;
-
-  @override
-  Map<String, dynamic> getEditValidationRules() => {};
-
-  @override
-  Map<String, dynamic> getEditingStatus(String recipeId) => {};
-
-  // ===== COLLABORATION FEATURES =====
-
-  @override
-  Future<bool> enableCollaborativeEditing(
-    String recipeId,
-    List<String> memberIds,
-  ) async => true;
-
-  @override
-  Future<bool> disableCollaborativeEditing(String recipeId) async => true;
-
-  @override
-  bool canEnableCollaboration(String recipeId) => true;
-
-  @override
-  bool canDisableCollaboration(String recipeId) => true;
-
-  @override
-  Future<bool> addCollaborators(
-    String recipeId,
-    List<String> memberIds,
-  ) async => true;
-
-  @override
-  Future<bool> removeCollaborators(
-    String recipeId,
-    List<String> memberIds,
-  ) async => true;
-
-  @override
-  Future<bool> updateMemberPermissions(
-    String recipeId,
-    Map<String, String> memberPermissions,
-  ) async => true;
-
-  @override
-  Future<bool> transferOwnership(String recipeId, String newOwnerId) async =>
-      true;
-
-  @override
-  Future<bool> leaveCollaboration(String recipeId) async => true;
-
-  @override
-  Map<String, dynamic> getCollaborationDetails(String recipeId) => {};
-
-  @override
-  Map<String, dynamic> getCollaborationStats(String recipeId) => {};
-
-  @override
-  Future<List<Map<String, dynamic>>> getCollaborationHistory(
-    String recipeId,
-  ) async => [];
-
-  @override
-  Future<List<Map<String, dynamic>>> getEditHistory(String recipeId) async =>
-      [];
-
-  @override
-  Map<String, String> validateCollaborationSettings({
-    required List<String> memberIds,
-    Map<String, String>? memberPermissions,
-  }) => {};
-
-  @override
-  bool isWithinCollaborationLimits(String recipeId, int additionalMembers) =>
-      true;
-
-  @override
-  Map<String, dynamic> getCollaborationStatus(String recipeId) => {};
-
-  // ===== PRESENCE FEATURES =====
-
-  @override
-  Future<bool> showPresence(String recipeId) async => true;
-
-  @override
-  Future<bool> hidePresence(String recipeId) async => true;
-
-  @override
-  Future<bool> updatePresenceHeartbeat(String recipeId) async => true;
-
-  @override
-  Future<List<Map<String, dynamic>>> getRecipePresence(String recipeId) async =>
-      [];
-
-  @override
-  Future<Map<String, List<Map<String, dynamic>>>> getMultipleRecipePresence(
-    List<String> recipeIds,
-  ) async => {};
-
-  @override
-  bool isUserPresent(String recipeId, String userId) => true;
-
-  @override
-  int getPresenceCount(String recipeId) => 1;
-
-  @override
-  Stream<List<Map<String, dynamic>>> watchRecipePresence(String recipeId) =>
-      Stream.value([]);
-
-  @override
-  Stream<Map<String, List<Map<String, dynamic>>>> watchMultipleRecipePresence(
-    List<String> recipeIds,
-  ) => Stream.value({});
-
-  @override
-  Stream<int> watchPresenceCount(String recipeId) => Stream.value(1);
-
-  @override
-  StreamSubscription<void>? startAutomaticPresenceTracking(
-    String recipeId, {
-    Duration heartbeatInterval = const Duration(seconds: 30),
-  }) => Stream<void>.empty().listen(null);
-
-  @override
-  Future<void> updateMultipleRecipePresence(
-    Map<String, bool> recipePresenceMap,
-  ) async {}
-
-  @override
-  Future<void> clearAllPresence() async {}
-
-  @override
-  Map<String, dynamic> getPresenceStatistics() => {};
-
-  @override
-  List<Map<String, dynamic>> getUserPresenceHistory(String userId) => [];
-
-  // ===== LEGACY METHODS =====
-
-  @override
-  List<String> getActiveEditors(String recipeId) => [];
-
-  // ===== MODULE STATUS AND DIAGNOSTICS =====
-
-  @override
-  Map<String, dynamic> getModuleStatus() => {};
-
-  @override
-  Map<String, dynamic> getRealtimeOperationsStatus() => {};
-}
-
-/// Mock implementation of PermissionProvider - ⭐ FIXED: Implements correct interface
 class MockPermissionProvider extends Mock implements PermissionProvider {
   /// Check permission status - FIXED: Correct types (Permission -> PermissionStatus)
   @override
@@ -3566,30 +3248,6 @@ class MockNotificationRepository extends Mock {
   Future<void> markDeviceInactive(String userId, String deviceId) async {
     // Mock device deactivation
   }
-}
-
-/// ✅ FIXED: Complete NotificationParent mock implementation - PHASE 4B SUCCESS!
-class MockNotificationParent extends Mock implements NotificationParent {
-  // Configuration state for notification parent
-  Map<String, dynamic> _parentState = {};
-
-  /// Configure mock state for notification parent testing - ✅ FIXED: Added missing parameters
-  void setNotificationParentState({
-    Map<String, dynamic>? parentState,
-    String? currentUserId,
-    String? currentUserDisplayName,
-  }) {
-    if (parentState != null) _parentState = parentState;
-    if (currentUserId != null) _parentState['currentUserId'] = currentUserId;
-    if (currentUserDisplayName != null) {
-      _parentState['currentUserDisplayName'] = currentUserDisplayName;
-    }
-  }
-
-  // Getters for configured state
-  Map<String, dynamic> get parentState => _parentState;
-
-  // All other methods left without implementation to allow stubbing with when()
 }
 
 class MockMenuCollaborationRepository extends Mock

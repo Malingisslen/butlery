@@ -27,7 +27,6 @@ import 'package:butlery/repositories/firestore_repository.dart';
 // Recipe repositories and interfaces
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
 // Cook-event log (BUT-838)
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
@@ -187,7 +186,6 @@ class ContentModule implements DIModule {
     ImagePickerService,
     ImageUploadService,
     OfflineService,
-    CollaborativeRecipeRepository,
     BackupService,
     SocialMediaExtractor,
     ExtractionManager,
@@ -391,14 +389,6 @@ class ContentModule implements DIModule {
           authRepository: container<auth.AuthRepository>(),
           recipeRepository:
               container<RecipeRepository>() as FirebaseRecipeRepository,
-        ),
-      );
-
-      // Collaborative recipe repository with permission validation and audit logging
-      container.registerLazySingleton<CollaborativeRecipeRepository>(
-        () => CollaborativeRecipeRepository(
-          authRepository: container<auth.AuthRepository>(),
-          auditRepository: container<FirebaseAuditRepository>(),
         ),
       );
 
@@ -760,8 +750,6 @@ class ContentModule implements DIModule {
         'ShareService': container<ShareService>(),
         'StorageService': container<StorageService>(),
         'ImagePickerService': container<ImagePickerService>(),
-        'CollaborativeRecipeRepository':
-            container<CollaborativeRecipeRepository>(),
         'BackupService': container<BackupService>(),
         'SocialMediaExtractor': container<SocialMediaExtractor>(),
         'ExtractionManager': container<ExtractionManager>(),

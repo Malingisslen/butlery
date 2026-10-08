@@ -6,21 +6,18 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
-import '../../../../infrastructure/mocks/firestore_singleton.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   group('RecipeCacheModule', () {
     late RecipeCacheModule module;
     late FakeJsonCacheHelper mockCacheHelper;
-    late FakeFirebaseFirestore fakeFirestore;
     late Recipe testRecipe;
 
     String? currentUserId;
@@ -32,7 +29,6 @@ void main() {
 
     setUp(() {
       mockCacheHelper = FakeJsonCacheHelper();
-      fakeFirestore = FirestoreSingleton.instance;
 
       currentUserId = 'test-user-123';
       notifyListenersCalled = 0;
@@ -44,7 +40,6 @@ void main() {
       );
 
       module = RecipeCacheModule(
-        firestore: fakeFirestore,
         cacheHelper: mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         setError: (error) {},
@@ -142,20 +137,6 @@ void main() {
         await module.stopFirebaseSync();
         expect(module.isSyncing, isFalse);
       });
-
-      test('should not start sync when no Firestore instance', () async {
-        final noFirestoreModule = RecipeCacheModule(
-          firestore: null,
-          cacheHelper: mockCacheHelper,
-          getCurrentUserId: () => currentUserId,
-          setError: (error) {},
-          notifyListeners: () {},
-        );
-
-        await noFirestoreModule.startFirebaseSync();
-        expect(noFirestoreModule.isSyncing, isFalse);
-        await noFirestoreModule.dispose();
-      });
     });
 
     group('Debounced Sync Operations', () {
@@ -244,7 +225,6 @@ void main() {
         Set<String> unsent, {
         Map<String, Recipe> server = const {},
       }) => RecipeCacheModule(
-        firestore: fakeFirestore,
         cacheHelper: mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         setError: (error) {},
@@ -344,7 +324,6 @@ void main() {
           'module does NOT notify (callback owns the signal)', () async {
         final updated = <Recipe>[];
         final webModule = RecipeCacheModule(
-          firestore: fakeFirestore,
           cacheHelper: mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           setError: (error) {},
@@ -402,7 +381,6 @@ void main() {
           'module does NOT notify', () async {
         final removed = <String>[];
         final webModule = RecipeCacheModule(
-          firestore: fakeFirestore,
           cacheHelper: mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           setError: (error) {},
