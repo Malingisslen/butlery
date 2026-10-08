@@ -5,7 +5,7 @@
 # carries the deleted user's uid.
 #
 # Uses the deploy service account, which lives behind the `production`
-# environment, so each run waits for an approval under "Review deployments".
+# environment.
 name: Measure production (read-only)
 
 on:
