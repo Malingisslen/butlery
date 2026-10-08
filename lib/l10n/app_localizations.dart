@@ -28942,6 +28942,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Utkastet slängdes} other{{count} utkast slängdes}}'**
   String draftsDiscarded(int count);
+
+  /// Overflow menu row and sheet title for putting back items removed or changed in the last 30 days (BUT-2140).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ varor'**
+  String get shoppingRestoreItems;
+
+  /// Sheet group heading for rows removed from the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Borttagna'**
+  String get shoppingRestoreGroupRemoved;
+
+  /// Sheet group heading for rows whose content was edited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändrade'**
+  String get shoppingRestoreGroupChanged;
+
+  /// Button on one line in the restore sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ'**
+  String get shoppingRestoreButton;
+
+  /// Accessible name of the restore button on one line.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ {name}'**
+  String shoppingRestoreButtonFor(String name);
+
+  /// A changed row in the restore sheet: the earlier value, then the current one. label is e.g. 'Ägg 12 st', current e.g. '6 st'.
+  ///
+  /// In sv, this message translates to:
+  /// **'{label} (nu: {current})'**
+  String shoppingRestoreChangedLine(String label, String current);
+
+  /// Restore sheet when no removed or changed rows are left.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att återställa.'**
+  String get shoppingRestoreEmpty;
+
+  /// Snackbar after a removed row was restored; Ångra removes it again.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} är tillbaka på listan.'**
+  String shoppingRestoredRemoved(String name);
+
+  /// Snackbar after a changed row was swapped back; Ångra swaps it again.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har fått sin förra version tillbaka.'**
+  String shoppingRestoredChanged(String name);
 }
 
 class _AppLocalizationsDelegate

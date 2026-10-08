@@ -17620,4 +17620,39 @@ class AppLocalizationsSv extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get shoppingRestoreItems => 'Återställ varor';
+
+  @override
+  String get shoppingRestoreGroupRemoved => 'Borttagna';
+
+  @override
+  String get shoppingRestoreGroupChanged => 'Ändrade';
+
+  @override
+  String get shoppingRestoreButton => 'Återställ';
+
+  @override
+  String shoppingRestoreButtonFor(String name) {
+    return 'Återställ $name';
+  }
+
+  @override
+  String shoppingRestoreChangedLine(String label, String current) {
+    return '$label (nu: $current)';
+  }
+
+  @override
+  String get shoppingRestoreEmpty => 'Inget att återställa.';
+
+  @override
+  String shoppingRestoredRemoved(String name) {
+    return '$name är tillbaka på listan.';
+  }
+
+  @override
+  String shoppingRestoredChanged(String name) {
+    return '$name har fått sin förra version tillbaka.';
+  }
 }

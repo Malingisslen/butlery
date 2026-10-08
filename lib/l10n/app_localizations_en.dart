@@ -17602,4 +17602,39 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get shoppingRestoreItems => 'Restore items';
+
+  @override
+  String get shoppingRestoreGroupRemoved => 'Removed';
+
+  @override
+  String get shoppingRestoreGroupChanged => 'Changed';
+
+  @override
+  String get shoppingRestoreButton => 'Restore';
+
+  @override
+  String shoppingRestoreButtonFor(String name) {
+    return 'Restore $name';
+  }
+
+  @override
+  String shoppingRestoreChangedLine(String label, String current) {
+    return '$label (now: $current)';
+  }
+
+  @override
+  String get shoppingRestoreEmpty => 'Nothing to restore.';
+
+  @override
+  String shoppingRestoredRemoved(String name) {
+    return '$name is back on the list.';
+  }
+
+  @override
+  String shoppingRestoredChanged(String name) {
+    return '$name is back to its earlier version.';
+  }
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 
@@ -20,6 +21,7 @@ Future<void> _pumpMenu(
   UnifiedShoppingViewModel viewModel, {
   VoidCallback? onSortCategories,
   VoidCallback? onUncheckAll,
+  VoidCallback? onRestoreItems,
 }) async {
   await tester.pumpWidget(
     createLocalizedTestApp(
@@ -36,6 +38,7 @@ Future<void> _pumpMenu(
               () {},
               onSortCategories: onSortCategories,
               onUncheckAll: onUncheckAll,
+              onRestoreItems: onRestoreItems,
             ),
           ),
         ),
@@ -54,6 +57,7 @@ void main() {
     when(() => viewModel.hasItems).thenReturn(false);
     when(() => viewModel.boughtItems).thenReturn(0);
     when(() => viewModel.activeList).thenReturn(null);
+    when(() => viewModel.canEditActiveList).thenReturn(true);
   });
 
   testWidgets(
@@ -126,4 +130,96 @@ void main() {
       expect(find.text('Avmarkera alla'), findsNothing);
     },
   );
+
+  group('Återställ varor (BUT-2140)', () {
+    ShoppingRowSnapshot removedAt(DateTime at) => ShoppingRowSnapshot(
+      id: 'gone',
+      name: 'Mjölk',
+      amount: 1,
+      unit: 'liter',
+      category: 'Mejeri',
+      at: at,
+    );
+
+    testWidgets('shows with a row removed within 30 days and calls back', (
+      tester,
+    ) async {
+      when(() => viewModel.activeList).thenReturn(
+        ShoppingListFactory.build().copyWith(
+          recentlyRemoved: [
+            removedAt(DateTime.now().subtract(const Duration(days: 29))),
+          ],
+        ),
+      );
+      var opened = 0;
+
+      await _pumpMenu(tester, viewModel, onRestoreItems: () => opened++);
+
+      await tester.tap(find.text('Återställ varor'));
+      await tester.pumpAndSettle();
+      expect(opened, 1);
+    });
+
+    testWidgets('shows with a row whose previous version is within 30 days', (
+      tester,
+    ) async {
+      final changed =
+          ShoppingListFactory.buildItem(
+            id: 'egg',
+            name: 'Ägg',
+            amount: 6,
+          ).withPreviousSnapshot(
+            removedAt(DateTime.now().subtract(const Duration(days: 2))),
+          );
+      when(() => viewModel.activeList).thenReturn(
+        ShoppingListFactory.build(items: [changed]),
+      );
+
+      await _pumpMenu(tester, viewModel, onRestoreItems: () {});
+
+      expect(find.text('Återställ varor'), findsOneWidget);
+    });
+
+    testWidgets('is absent when everything is older than 30 days', (
+      tester,
+    ) async {
+      final old = DateTime.now().subtract(const Duration(days: 31));
+      final changed = ShoppingListFactory.buildItem(
+        id: 'egg',
+        name: 'Ägg',
+      ).withPreviousSnapshot(removedAt(old));
+      when(() => viewModel.activeList).thenReturn(
+        ShoppingListFactory.build(items: [changed]).copyWith(
+          recentlyRemoved: [removedAt(old)],
+        ),
+      );
+
+      await _pumpMenu(tester, viewModel, onRestoreItems: () {});
+
+      expect(find.text('Återställ varor'), findsNothing);
+    });
+
+    testWidgets('is absent with nothing to restore or without edit rights', (
+      tester,
+    ) async {
+      when(
+        () => viewModel.activeList,
+      ).thenReturn(ShoppingListFactory.build());
+      await _pumpMenu(tester, viewModel, onRestoreItems: () {});
+      expect(find.text('Återställ varor'), findsNothing);
+    });
+
+    testWidgets('is absent for a reader of the list', (tester) async {
+      when(() => viewModel.activeList).thenReturn(
+        ShoppingListFactory.build().copyWith(
+          recentlyRemoved: [removedAt(DateTime.now())],
+        ),
+      );
+      when(() => viewModel.canEditActiveList).thenReturn(false);
+
+      await _pumpMenu(tester, viewModel, onRestoreItems: () {});
+
+      expect(find.text('Återställ varor'), findsNothing);
+    });
+  });
 }

@@ -84,4 +84,19 @@ abstract final class RestorableRows {
     for (final s in list.recentlyRemoved)
       if (s.restorableAt(now)) s,
   ]..sort((a, b) => b.at.compareTo(a.at));
+
+  /// The rows of [list] whose `previous` is still within 30 days at [now] and
+  /// differs from what the row says now, newest first.
+  static List<UnifiedShoppingItem> changedAt(
+    UnifiedShoppingList list,
+    DateTime now,
+  ) => [
+    for (final item in list.items)
+      if (item.previous case final p?
+          when p.restorableAt(now) && contentChanged(item, p.toItem()))
+        item,
+  ]..sort((a, b) => b.previous!.at.compareTo(a.previous!.at));
+
+  static bool hasRestorable(UnifiedShoppingList list, DateTime now) =>
+      restorableAt(list, now).isNotEmpty || changedAt(list, now).isNotEmpty;
 }

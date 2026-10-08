@@ -13829,5 +13829,64 @@
         "type": "int"
       }
     }
+  },
+  "shoppingRestoreItems": "Återställ varor",
+  "@shoppingRestoreItems": {
+    "description": "Overflow menu row and sheet title for putting back items removed or changed in the last 30 days (BUT-2140)."
+  },
+  "shoppingRestoreGroupRemoved": "Borttagna",
+  "@shoppingRestoreGroupRemoved": {
+    "description": "Sheet group heading for rows removed from the list."
+  },
+  "shoppingRestoreGroupChanged": "Ändrade",
+  "@shoppingRestoreGroupChanged": {
+    "description": "Sheet group heading for rows whose content was edited."
+  },
+  "shoppingRestoreButton": "Återställ",
+  "@shoppingRestoreButton": {
+    "description": "Button on one line in the restore sheet."
+  },
+  "shoppingRestoreButtonFor": "Återställ {name}",
+  "@shoppingRestoreButtonFor": {
+    "description": "Accessible name of the restore button on one line.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRestoreChangedLine": "{label} (nu: {current})",
+  "@shoppingRestoreChangedLine": {
+    "description": "A changed row in the restore sheet: the earlier value, then the current one. label is e.g. 'Ägg 12 st', current e.g. '6 st'.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRestoreEmpty": "Inget att återställa.",
+  "@shoppingRestoreEmpty": {
+    "description": "Restore sheet when no removed or changed rows are left."
+  },
+  "shoppingRestoredRemoved": "{name} är tillbaka på listan.",
+  "@shoppingRestoredRemoved": {
+    "description": "Snackbar after a removed row was restored; Ångra removes it again.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRestoredChanged": "{name} har fått sin förra version tillbaka.",
+  "@shoppingRestoredChanged": {
+    "description": "Snackbar after a changed row was swapped back; Ångra swaps it again.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
