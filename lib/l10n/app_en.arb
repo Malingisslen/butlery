@@ -12290,7 +12290,7 @@
   "mfaBackupCodeSubmit": "Sign in with the backup code",
   "mfaBackupCodeBack": "Back to the text message code",
   "mfaBackupCodeRejected": "The password or the backup code does not match. A used code cannot be used again.",
-  "mfaBackupCodeLocked": "Too many backup code attempts. Wait an hour before you try again.",
+  "mfaBackupCodeLocked": "Too many backup code attempts. Try again later; it can take up to an hour.",
   "mfaBackupCodeUnavailable": "The backup code could not be checked right now. Nothing on your account has changed.",
   "mfaBackupCodeRecovered": "Two-step verification is off. Add a phone number again under Account security.",
   "mfaBackupCodesTitle": "Ten backup codes",

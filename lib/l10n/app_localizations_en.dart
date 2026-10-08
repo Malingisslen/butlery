@@ -16511,7 +16511,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaBackupCodeLocked =>
-      'Too many backup code attempts. Wait an hour before you try again.';
+      'Too many backup code attempts. Try again later; it can take up to an hour.';
 
   @override
   String get mfaBackupCodeUnavailable =>
