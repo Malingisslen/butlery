@@ -303,7 +303,7 @@ void main() {
 
         // 1/3 = 33%
         expect(find.textContaining('33%'), findsOneWidget);
-        expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.hourglass), findsOneWidget);
       });
 
       testWidgets('shows complete state when all items bought', (
@@ -345,7 +345,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.hourglass_empty), findsNothing);
+        expect(find.byIcon(ButleryIcons.hourglass), findsNothing);
         expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
       });
     });

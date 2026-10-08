@@ -486,7 +486,7 @@ class SocialCollaborativeComponents {
         );
       case 'admin':
         return _PermissionConfig(
-          icon: Icons.admin_panel_settings,
+          icon: ButleryIcons.crown,
           label: context?.l10n.socialPermissionAdmin ?? 'Admin',
           color: cs?.onSurface ?? AppColors.forestGreen,
         );

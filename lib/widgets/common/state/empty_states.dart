@@ -3,7 +3,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
@@ -197,7 +196,7 @@ class EmptyStates {
         );
       case EmptyStateVariant.noSavedMenus:
         return _EmptyStateConfig(
-          icon: PendingGlyphs.savedTemplateOutline,
+          icon: ButleryIcons.savedTemplateOutline,
           illustration: VegetableType.peaPod,
           title: l10n.emptyNoSavedMenusTitle,
           subtitle: l10n.emptyNoSavedMenusSubtitle,
@@ -222,7 +221,7 @@ class EmptyStates {
         // BUT-986: branded illustration instead of generic bell icon.
         // PeaPod chosen for the quiet/at-rest connotation.
         return _EmptyStateConfig(
-          icon: Icons.notifications_none,
+          icon: ButleryIcons.bell,
           illustration: VegetableType.peaPod,
           title: l10n.notificationsEmpty,
           subtitle: null,

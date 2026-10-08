@@ -207,7 +207,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           ButleryIcon(
-                            Icons.mark_email_unread_outlined,
+                            ButleryIcons.mail,
                             size: 80,
                             color: cs.onSurface,
                           ),

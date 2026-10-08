@@ -668,7 +668,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      Icons.rate_review_outlined,
+                                      ButleryIcons.star,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -810,8 +810,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   children: [
                                     ButleryIcon(
                                       recipe.isCollaborative
-                                          ? Icons.group_off_outlined
-                                          : Icons.group_add_outlined,
+                                          ? ButleryIcons.x
+                                          : ButleryIcons.usersPlus,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -860,7 +860,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      Icons.description_outlined,
+                                      ButleryIcons.file,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
@@ -877,7 +877,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      Icons.print_outlined,
+                                      ButleryIcons.file,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),

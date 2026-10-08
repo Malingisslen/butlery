@@ -108,7 +108,7 @@ class PersonalTagTile extends StatelessWidget {
                           ),
                         ),
                         child: ButleryIcon(
-                          Icons.auto_awesome,
+                          ButleryIcons.sparkles,
                           size: 10,
                           color: colorScheme.surfaceContainerHighest,
                         ),
@@ -319,7 +319,7 @@ class UnusedTagsSection extends StatelessWidget {
 
     return ExpansionTile(
       leading: ButleryIcon(
-        Icons.label_off,
+        ButleryIcons.tag,
         color: colorScheme.onSurfaceVariant,
         size: AppDimensions.iconSizeM,
       ),

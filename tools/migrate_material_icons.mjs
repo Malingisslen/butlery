@@ -176,10 +176,152 @@ export const MAP = {
   // shield-check — Verifierad
   verified: 'shieldCheck', verified_user: 'shieldCheck',
   verified_user_outlined: 'shieldCheck',
-  // zap — Snabbt
-  flash_on: 'zap',
+  // zap — Snabbt (also "slow down": requests came too fast)
+  flash_on: 'zap', speed_outlined: 'zap',
   // volume — Tysta uppläsningen
   volume_up: 'volume', volume_off: 'volume',
+  // Round 2 (BUT-2166): the 27 glyphs design drew for the remaining residue,
+  // and the existing glyphs whose meaning covers what is left.
+  // flag — Rapportera
+  flag: 'flag',
+  // send — the sent-requests tab and its empty state
+  outbox: 'send', outbox_outlined: 'send',
+  // user-plus / users-plus — Lägg till person / i grupp
+  person_add_alt_1: 'userPlus', group_add_outlined: 'usersPlus',
+  // users — Flera personer / grupp
+  group_work_outlined: 'users', manage_accounts: 'users',
+  // circle-check — Bekräftad ("Bekräfta vilka som åt", upload done, saved)
+  how_to_reg: 'circleCheck', cloud_done: 'circleCheck',
+  cloud_done_outlined: 'circleCheck',
+  // vote — Rösta / föreslå alternativ
+  poll_outlined: 'vote',
+  // history — Historik, återställ (unarchive restores from the archive)
+  unarchive: 'history', history_outlined: 'history',
+  // mail — E-post
+  mark_email_unread_outlined: 'mail',
+  // message-square — Meddelande (the admin feedback inbox)
+  feedback: 'messageSquare', feedback_outlined: 'messageSquare',
+  // x — Stäng; drawn for stop sharing and remove (see close above)
+  link_off: 'x', group_off_outlined: 'x', folder_off: 'x',
+  cancel_outlined: 'x',
+  // clock — Tid (expired, rate per minute/hour, updated date, digest time)
+  timer_off: 'clock', update: 'clock',
+  summarize_outlined: 'clock',
+  // move — Flytta (a dish, a shopping item, an ingredient line)
+  drive_file_move_outline: 'move', low_priority: 'move',
+  // eye — Visa (preview, show online status)
+  preview: 'eye', podcasts: 'eye',
+  // pencil — Redigera (handwritten text)
+  draw_outlined: 'pencil',
+  // shopping-cart — Inköp (join a shared list)
+  add_shopping_cart: 'shoppingCart',
+  // list — Lista
+  view_list: 'list', format_list_numbered: 'list', list_alt: 'list',
+  list_alt_outlined: 'list', library_books: 'list',
+  // grid — Kategori, rutnätsvy
+  grid_view: 'grid', emoji_emotions: 'grid',
+  // shield — Säkerhet, integritet (privacy, allergen safety)
+  privacy_tip_rounded: 'shield', policy_rounded: 'shield',
+  health_and_safety: 'shield', health_and_safety_outlined: 'shield',
+  // info — Information
+  tips_and_updates_outlined: 'info', celebration_outlined: 'info',
+  // folder — Samling
+  folder_shared_outlined: 'folder',
+  // tag — Egen tagg (untagged recipes)
+  label_off: 'tag',
+  // square — Ej markerad (deselect all)
+  deselect: 'square',
+  // triangle-alert — Varning / fel
+  videocam_off: 'triangleAlert', sync_problem_outlined: 'triangleAlert',
+  // download — Import, installera (see download above)
+  install_mobile: 'download', file_upload: 'download',
+  // upload — Ladda upp, återställ från säkerhetskopia
+  upload: 'upload', upload_outlined: 'upload', cloud_upload: 'upload',
+  // utensils — Meny / måltid (meal types, times cooked, no steps)
+  no_meals: 'utensils', free_breakfast: 'utensils', local_cafe: 'utensils',
+  cake_outlined: 'utensils',
+  local_fire_department: 'utensils',
+  // search-off — Inga träffar
+  no_meals_outlined: 'searchOff',
+  // activity — Aktivitetsflöde
+  dynamic_feed: 'activity',
+  // house — Hem, hushåll
+  home: 'house',
+  // star-half — Halvt betyg
+  star_half: 'starHalf',
+  // dot — Online (statusprick)
+  circle: 'dot',
+  // leaf — växtbaserat (vegetable illustration fallback)
+  grass: 'leaf',
+  // bell / bell-off — Avisering / aviseringar av, stör ej
+  notifications_outlined: 'bell', notifications_rounded: 'bell',
+  notifications_active_outlined: 'bell', notifications_none: 'bell',
+  notifications_off_outlined: 'bellOff', do_not_disturb_on_outlined: 'bellOff',
+  do_not_disturb: 'bellOff',
+  // settings — Inställningar (maintenance, follow the system theme)
+  build_circle_outlined: 'settings', settings_suggest: 'settings',
+  // sparkles — Automatiskt, AI, förslag (AI processing and limits, rules)
+  auto_awesome: 'sparkles', auto_awesome_rounded: 'sparkles',
+  smart_toy_outlined: 'sparkles', rule: 'sparkles', rule_outlined: 'sparkles',
+  // bar-chart — Statistik
+  analytics: 'barChart', analytics_rounded: 'barChart',
+  analytics_outlined: 'barChart', bar_chart: 'barChart', insights: 'barChart',
+  pie_chart_outline: 'barChart', attach_money_outlined: 'barChart',
+  repeat: 'barChart',
+  // file — Fil (documents: terms, licences, descriptions, plain text)
+  description: 'file', description_outlined: 'file', article_outlined: 'file',
+  text_snippet_outlined: 'file', gavel_outlined: 'file', code: 'file',
+  auto_fix_off_outlined: 'file',
+  // check — Bockad (mark as read)
+  mark_chat_read: 'check',
+  // check-check — Levererat / läst
+  done_all: 'checkCheck',
+  // hand — Gest, gör själv
+  back_hand_outlined: 'hand', swipe: 'hand', touch_app: 'hand',
+  // circle-help — Hjälp
+  help_outline: 'circleHelp',
+  // merge — Slå ihop
+  merge: 'merge', merge_type: 'merge',
+  // crown — Administratör / ägare
+  admin_panel_settings: 'crown',
+  // smartphone — Telefon, mobilnummer
+  phone: 'smartphone', phone_outlined: 'smartphone',
+  phone_android: 'smartphone',
+  // arrow-up / arrow-down
+  arrow_upward: 'arrowUp', arrow_downward: 'arrowDown',
+  // hash — Antal, siffror
+  calculate: 'hash', numbers: 'hash',
+  // type — Text, titel
+  title: 'type', text_fields: 'type',
+  // book-open — Recept, receptsamling
+  menu_book: 'bookOpen',
+  // hourglass — Väntar / pågår
+  hourglass_empty: 'hourglass', pending: 'hourglass',
+  pending_outlined: 'hourglass',
+  // clipboard — Klistra in
+  content_paste: 'clipboard',
+  // external-link — Öppna utanför appen
+  open_in_new: 'externalLink',
+  // play-outline — Starta, återuppta, spela upp
+  play_arrow: 'playOutline',
+  // video — Video (YouTube and TikTok sources)
+  play_circle_outline: 'video', music_note: 'video',
+  // sun / moon — Ljust / mörkt läge
+  light_mode: 'sun', dark_mode: 'moon',
+  // undo — Ångra, återkalla
+  undo: 'undo',
+  // globe — Offentligt
+  public: 'globe',
+  // refrigerator — Skafferi, det du har hemma
+  kitchen_outlined: 'refrigerator',
+  // star — Betyg (write a review)
+  rate_review_outlined: 'star',
+  // file — print the recipe
+  print_outlined: 'file',
+  // history — the consent log
+  fact_check_outlined: 'history',
+  // camera — Kamera (the camera permission notice; the text says it is off)
+  no_photography_outlined: 'camera',
 };
 
 // Per-file meaning where the same Material name means different things.
@@ -202,11 +344,37 @@ export const SITE = {
   'lib/widgets/common/social_components/social_collaborative_components.dart':
     { help_outline: 'circleHelp' },
   'lib/widgets/menu/parsed_extraction_chips.dart': { help_outline: 'circleHelp' },
-  // Kept Material: the glyph's icons.json meaning is not this use.
-  // stop = "Stoppa inspelning i matlagningsläget", not stopping uploads.
-  'lib/widgets/image/components/upload_progress_widgets.dart': { stop: null },
+  // stop = "Stoppa inspelning i matlagningsläget"; stopping uploads is the
+  // close/cancel x.
+  'lib/widgets/image/components/upload_progress_widgets.dart': { stop: 'x' },
   // more-vertical = "Fler åtgärder (kebab)"; these dots mean "is typing".
-  'lib/widgets/messaging/typing_indicator.dart': { more_horiz: null },
+  'lib/widgets/messaging/typing_indicator.dart': { more_horiz: 'ellipsis' },
+  // Round 2 (BUT-2166).
+  // Importing the archive brings recipes in: download "Import".
+  'lib/views/importera_fran_arkiv_view.dart': { upload: 'download' },
+  // The recipe parsing admin tab and its empty state: parsed text, a file.
+  'lib/views/admin/admin_shell.dart': { rule: 'file', rule_outlined: 'file' },
+  'lib/views/admin/parsing_details_view.dart': { rule: 'file' },
+  // "Hidden by your allergies" next to the family's users: one user.
+  'lib/widgets/menu/menu_content_widgets.dart': { no_meals: 'user' },
+  // A tag result that is out of date needs a re-run: refresh-cw.
+  'lib/widgets/tagging/tag_result_display.dart': { update: 'refreshCw' },
+  // Shared menus are menus.
+  'lib/widgets/common/social_components/social_builder_components.dart':
+    { menu_book: 'utensils' },
+  // A menu shared in chat is a menu.
+  'lib/widgets/messaging/builders/message_content_builder.dart':
+    { list_alt: 'utensils' },
+  // Meal categories of a shared menu are meals.
+  'lib/views/social/menu_preview_view.dart':
+    { cookie: 'utensils', cake: 'utensils' },
+  // Allergens not assessed: diet and allergen status is info (icons.json
+  // diet_icons).
+  'lib/widgets/recipe/recipe_card.dart': { help_outline: 'info' },
+  // Berries and citrus in the vegetable illustration are round shapes, not a
+  // status dot.
+  'lib/widgets/common/illustrations/vegetable_illustration.dart':
+    { circle: 'circle' },
   // Presence at home: house "Hemma (närvaro)".
   'lib/views/family/who_is_eating_sheet.dart': { home_outlined: 'house' },
   'lib/widgets/menu/calendar/presence_overview.dart': { home_outlined: 'house' },
@@ -236,8 +404,11 @@ export const PROTECTED = new Set([
 const SKIP_DIRS = ['lib/widgets/common/icons/', 'lib/l10n/'];
 
 function adaptiveTables() {
-  const src = fs.readFileSync(
-    'lib/widgets/common/icons/adaptive_icon.dart', 'utf8');
+  // adaptive_icon.dart is gone since the first run; later runs only rewrite
+  // Icons.<name>.
+  const file = 'lib/widgets/common/icons/adaptive_icon.dart';
+  if (!fs.existsSync(file)) return { ctor: {}, getter: {} };
+  const src = fs.readFileSync(file, 'utf8');
   const ctor = {};
   for (const m of src.matchAll(
     /const AdaptiveIcon\.(\w+)\(\{[^}]*\}\) : materialIcon = Icons\.(\w+)/g)) {
@@ -260,10 +431,10 @@ const ALIAS = {
   favouriteOutline: 'ButleryIcons.favouriteOutline',
   primaryFilled: 'ButleryIcons.primary',
   primaryOutline: 'ButleryIcons.primaryOutline',
-  savedTemplate: 'PendingGlyphs.savedTemplate',
-  savedTemplateOutline: 'PendingGlyphs.savedTemplateOutline',
-  bookmark: 'PendingGlyphs.savedTemplate',
-  bookmarkOutlined: 'PendingGlyphs.savedTemplateOutline',
+  savedTemplate: 'ButleryIcons.savedTemplate',
+  savedTemplateOutline: 'ButleryIcons.savedTemplateOutline',
+  bookmark: 'ButleryIcons.savedTemplate',
+  bookmarkOutlined: 'ButleryIcons.savedTemplateOutline',
 };
 
 function iconExpr(rel, name) {
@@ -285,8 +456,6 @@ const IMPORT_ICONS =
   "import 'package:butlery/widgets/common/icons/butlery_icons.dart';";
 const IMPORT_GLYPH =
   "import 'package:butlery/widgets/common/icons/butlery_glyph.dart';";
-const IMPORT_PENDING =
-  "import 'package:butlery/widgets/common/icons/pending_glyphs.dart';";
 
 function addImport(src, line) {
   if (src.includes(line)) return src;
@@ -336,7 +505,6 @@ export function migrate(rel, src, tables, { rewriteIconCtor }) {
     /^import '(package:butlery\/widgets\/common\/icons\/|[./]*)adaptive_icon\.dart';\r?\n/m, '');
   if (/\bButleryIcons\./.test(out)) out = addImport(out, IMPORT_ICONS);
   if (/\bButleryIcon\(/.test(out)) out = addImport(out, IMPORT_GLYPH);
-  if (/\bPendingGlyphs\./.test(out)) out = addImport(out, IMPORT_PENDING);
   return out;
 }
 

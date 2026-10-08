@@ -465,7 +465,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: _withdraw,
-                icon: const ButleryIcon(Icons.undo, size: 16),
+                icon: const ButleryIcon(ButleryIcons.undo, size: 16),
                 label: Text(l10n.familyWithdrawAllergenConsent),
                 style: TextButton.styleFrom(
                   foregroundColor: cs.error,

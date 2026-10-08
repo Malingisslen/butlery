@@ -452,7 +452,7 @@ class _ActionButtons extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () =>
                         onChoice(DuplicateMergeChoice.mergeBestFields),
-                    icon: const ButleryIcon(Icons.merge_type, size: 18),
+                    icon: const ButleryIcon(ButleryIcons.merge, size: 18),
                     label: Text(l10n.duplicateMergeBestFields),
                     style: FilledButton.styleFrom(
                       minimumSize: minSize,

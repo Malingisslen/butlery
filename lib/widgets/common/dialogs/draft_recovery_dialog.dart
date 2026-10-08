@@ -153,7 +153,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                     ),
                   ),
                   child: ButleryIcon(
-                    Icons.article_outlined,
+                    ButleryIcons.file,
                     color: Theme.of(context).colorScheme.onSurface,
                     size: AppDimensions.iconSizeM,
                   ),

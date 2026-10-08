@@ -140,8 +140,8 @@ class AdminRail extends StatelessWidget {
           labelType: NavigationRailLabelType.all,
           destinations: [
             _destination(
-              Icons.feedback_outlined,
-              Icons.feedback,
+              ButleryIcons.messageSquare,
+              ButleryIcons.messageSquare,
               l10n.adminNavFeedback,
             ),
             _destination(
@@ -154,7 +154,11 @@ class AdminRail extends StatelessWidget {
               ButleryIcons.users,
               l10n.adminNavEngagement,
             ),
-            _destination(Icons.rule_outlined, Icons.rule, l10n.adminNavParsing),
+            _destination(
+              ButleryIcons.file,
+              ButleryIcons.file,
+              l10n.adminNavParsing,
+            ),
             _destination(
               ButleryIcons.utensils,
               ButleryIcons.utensils,

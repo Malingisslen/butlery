@@ -73,7 +73,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
           TextButton.icon(
             onPressed: _toggleAll,
             icon: ButleryIcon(
-              _allSelected ? Icons.deselect : ButleryIcons.checkSquare,
+              _allSelected ? ButleryIcons.square : ButleryIcons.checkSquare,
               size: AppDimensions.iconSizeS,
             ),
             label: Text(

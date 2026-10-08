@@ -19,6 +19,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -341,7 +342,7 @@ void main() {
         await tester.tap(find.text('Show'));
         await tester.pumpAndSettle();
 
-        final box = _boxAround(tester, find.byIcon(Icons.article_outlined));
+        final box = _boxAround(tester, find.byIcon(ButleryIcons.file));
         expect(box.color, theme.colorScheme.surfaceContainerHighest);
       });
     }

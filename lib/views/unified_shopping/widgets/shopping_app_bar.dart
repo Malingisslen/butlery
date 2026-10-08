@@ -11,7 +11,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 enum _ShoppingRootAction {
@@ -83,7 +82,7 @@ class ShoppingAppBar {
             if (onBrowseTemplates != null)
               _item(
                 _ShoppingRootAction.templates,
-                Icons.list_alt_outlined,
+                ButleryIcons.list,
                 context.l10n.shoppingTemplateBrowse,
               ),
             if (hasActiveList && onSortCategories != null)
@@ -190,16 +189,15 @@ class ShoppingAppBar {
           case SharedListPermission.edit:
             return ButleryIcons.users;
           case SharedListPermission.admin:
-            return Icons.admin_panel_settings; // No SF Symbol equivalent
+            return ButleryIcons.crown; // No SF Symbol equivalent
           default:
             // If not in permissions map, check if owner
             return activeList.ownerId == currentUserId
-                ? Icons
-                      .admin_panel_settings // No SF Symbol equivalent
+                ? ButleryIcons.crown
                 : ButleryIcons.users;
         }
       case ListType.template:
-        return PendingGlyphs.savedTemplate;
+        return ButleryIcons.savedTemplate;
     }
   }
 

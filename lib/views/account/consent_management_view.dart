@@ -104,7 +104,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             Row(
               children: [
                 ButleryIcon(
-                  Icons.privacy_tip_rounded,
+                  ButleryIcons.shield,
                   size: 32,
                   color: cs.onSurface,
                 ),
@@ -288,7 +288,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel,
           context.l10n.consentAnalytics,
           context.l10n.consentAnalyticsDescription,
-          Icons.analytics_rounded,
+          ButleryIcons.barChart,
           viewModel.analytics,
           viewModel.setAnalytics,
         ),
@@ -306,7 +306,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel,
           context.l10n.consentPushNotifications,
           context.l10n.consentPushNotificationsDescription,
-          Icons.notifications_rounded,
+          ButleryIcons.bell,
           viewModel.pushNotifications,
           viewModel.setPushNotifications,
         ),
@@ -319,7 +319,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel,
           context.l10n.consentAiProcessing,
           context.l10n.consentAiProcessingDescription,
-          Icons.auto_awesome_rounded,
+          ButleryIcons.sparkles,
           viewModel.aiProcessing,
           viewModel.setAiProcessing,
         ),
@@ -467,7 +467,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             AppDimensions.spacingMd,
           ),
           leading: ButleryIcon(
-            Icons.fact_check_outlined,
+            ButleryIcons.history,
             size: AppDimensions.iconSizeM,
             color: cs.onSurfaceVariant,
           ),

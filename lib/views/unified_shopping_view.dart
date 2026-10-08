@@ -231,7 +231,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                   text: context.l10n.shoppingTabLists,
                 ),
                 Tab(
-                  icon: const ButleryIcon(Icons.kitchen_outlined),
+                  icon: const ButleryIcon(ButleryIcons.refrigerator),
                   text: context.l10n.shoppingTabPantry,
                 ),
               ],

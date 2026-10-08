@@ -195,7 +195,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return FilledButton.icon(
       onPressed: viewModel.isAddingItem ? null : onAddItem,
       icon: ButleryIcon(
-        viewModel.isAddingItem ? Icons.hourglass_empty : ButleryIcons.plus,
+        viewModel.isAddingItem ? ButleryIcons.hourglass : ButleryIcons.plus,
       ),
       label: Text(
         viewModel.isAddingItem
@@ -380,7 +380,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
   /// Get add button icon based on current state
   IconData getAddButtonIcon() {
     if (viewModel.isAddingItem) {
-      return Icons.hourglass_empty;
+      return ButleryIcons.hourglass;
     }
     return ButleryIcons.plus;
   }

@@ -42,6 +42,7 @@ import 'package:butlery/views/hem/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart'
     show LayoutScaffolds;
 
@@ -849,13 +850,13 @@ List<Widget> minaReceptRootActions(
     // feature (previously only reachable via Cmd+K). Distinct
     // kitchen icon so it doesn't read as the in-list text filter.
     IconButton(
-      icon: const ButleryIcon(Icons.kitchen_outlined),
+      icon: const ButleryIcon(ButleryIcons.refrigerator),
       tooltip: context.l10n.ingredientSearchTitle,
       onPressed: () => Navigator.of(context).pushNamed(Routes.ingredientSearch),
     ),
     IconButton(
       icon: ButleryIcon(
-        viewModel.isGridView ? Icons.view_list : Icons.grid_view,
+        viewModel.isGridView ? ButleryIcons.list : ButleryIcons.grid,
       ),
       tooltip: viewModel.isGridView
           ? context.l10n.viewModeList

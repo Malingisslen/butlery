@@ -244,7 +244,7 @@ class InvitationDisplays {
       case 'expired':
         return ButleryIcons.clock;
       default:
-        return Icons.pending;
+        return ButleryIcons.hourglass;
     }
   }
 

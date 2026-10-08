@@ -47,9 +47,9 @@ class MessageStatusWidget extends StatelessWidget {
       case MessageStatus.sent:
         return ButleryIcons.check;
       case MessageStatus.delivered:
-        return Icons.done_all;
+        return ButleryIcons.checkCheck;
       case MessageStatus.read:
-        return Icons.done_all;
+        return ButleryIcons.checkCheck;
       case MessageStatus.failed:
         return ButleryIcons.triangleAlert;
     }

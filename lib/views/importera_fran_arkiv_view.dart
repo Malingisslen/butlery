@@ -423,7 +423,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   : context.l10n.importAllCount(
                       viewModel.archivedRecipes.length,
                     ),
-              icon: Icons.upload,
+              icon: ButleryIcons.download,
               onPressed: viewModel.isImporting
                   ? null
                   : () => _handleImport(context, viewModel),

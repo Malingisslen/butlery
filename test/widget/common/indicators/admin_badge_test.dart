@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
@@ -22,7 +23,7 @@ void main() {
     await tester.pumpWidget(_wrap(const AdminBadge()));
     // Default label is AppLocale.current.adminYouAreAdmin — verify the
     // text is rendered (any non-empty Swedish string).
-    expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.crown), findsOneWidget);
     expect(find.byType(Text), findsOneWidget);
     final text = tester.widget<Text>(find.byType(Text));
     expect(text.data, isNotEmpty);
@@ -35,7 +36,7 @@ void main() {
 
   testWidgets('uses admin_panel_settings icon', (tester) async {
     await tester.pumpWidget(_wrap(const AdminBadge()));
-    expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.crown), findsOneWidget);
   });
 
   testWidgets('container has rounded border decoration', (

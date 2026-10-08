@@ -299,7 +299,7 @@ class MenuContentWidgets {
       child: Row(
         children: [
           ButleryIcon(
-            isFamilyScope ? ButleryIcons.users : Icons.no_meals,
+            isFamilyScope ? ButleryIcons.users : ButleryIcons.user,
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),

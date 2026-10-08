@@ -129,7 +129,7 @@ class MessageContentBuilder {
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
-      icon: Icons.list_alt,
+      icon: ButleryIcons.utensils,
       label: context.l10n.messagingMenuShared,
       title: menuTitle,
     );
@@ -357,7 +357,7 @@ class MessageContentBuilder {
         mainAxisSize: MainAxisSize.min,
         children: [
           ButleryIcon(
-            Icons.play_arrow,
+            ButleryIcons.playOutline,
             color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           ),
           const SizedBox(width: AppDimensions.paddingS),

@@ -392,7 +392,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.phone), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.smartphone), findsOneWidget);
         expect(find.text('Phone'), findsOneWidget);
       });
 

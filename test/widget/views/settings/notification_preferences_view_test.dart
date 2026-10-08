@@ -33,6 +33,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -133,7 +134,7 @@ void main() {
 
       final paper = AppTheme.darkTheme.colorScheme.onSurface;
       final glyphs = tester.widgetList<Icon>(
-        find.byIcon(Icons.do_not_disturb_on_outlined),
+        find.byIcon(ButleryIcons.bellOff),
       );
       expect(glyphs, isNotEmpty);
       for (final glyph in glyphs) {

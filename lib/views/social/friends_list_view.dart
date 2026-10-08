@@ -231,7 +231,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
                           ButleryTab(
-                            icon: const ButleryIcon(Icons.dynamic_feed),
+                            icon: const ButleryIcon(ButleryIcons.activity),
                             text: context.l10n.socialFeed,
                           ),
                           ButleryTab(
@@ -381,7 +381,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               onPressed: () => _tabController.animateTo(3),
               tooltip: context.l10n.socialAddFriend,
               child: const ButleryIcon(
-                Icons.person_add_alt_1,
+                ButleryIcons.userPlus,
                 size: AppDimensions.iconSizeL,
               ),
             ),

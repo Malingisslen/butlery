@@ -209,7 +209,7 @@ class SelectionActionBar extends StatelessWidget {
           ),
           TextButton.icon(
             onPressed: selectedCount > 0 ? onMove : null,
-            icon: const ButleryIcon(Icons.drive_file_move_outline),
+            icon: const ButleryIcon(ButleryIcons.move),
             label: Text(context.l10n.weeklyMenuMoveSelectionAction),
             style: TextButton.styleFrom(
               foregroundColor: cs.onPrimaryContainer,
