@@ -175,7 +175,7 @@ class _StepIndicator extends StatelessWidget {
         AnimatedContainer(
           duration: AnimationUtils.getDuration(
             context,
-            const Duration(milliseconds: 250),
+            AppMotion.micro,
           ),
           width: 36,
           height: 36,
@@ -241,7 +241,7 @@ class _StepConnector extends StatelessWidget {
       child: AnimatedContainer(
         duration: AnimationUtils.getDuration(
           context,
-          const Duration(milliseconds: 250),
+          AppMotion.micro,
         ),
         width: 40,
         height: 2,

@@ -70,7 +70,7 @@ class _PortionScalerState extends State<PortionScaler>
       vsync: this,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+      CurvedAnimation(parent: _animationController, curve: AppMotion.curve),
     );
   }
 

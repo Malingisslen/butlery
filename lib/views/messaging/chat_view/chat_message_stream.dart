@@ -23,6 +23,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
@@ -196,8 +197,13 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
+      final target = _scrollController.position.maxScrollExtent;
+      if (isReducedMotion(context)) {
+        _scrollController.jumpTo(target);
+        return;
+      }
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        target,
         duration: AppMotion.standard,
         curve: Curves.easeOut,
       );

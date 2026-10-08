@@ -101,7 +101,7 @@ class _PlateLineState extends State<PlateLine>
       Tween<double>(begin: 1.0, end: PlateLine.pulseMinOpacity).animate(
         CurvedAnimation(
           parent: _pulse,
-          curve: const Cubic(0.33, 0, 0.2, 1),
+          curve: AppMotion.curve,
         ),
       );
 
@@ -284,7 +284,7 @@ class _ButtonPlateLineState extends State<ButtonPlateLine>
   // Samma puls som den fristående linjen (tokens.json motion.easing.standard).
   late final Animation<double> _opacity =
       Tween<double>(begin: 1.0, end: PlateLine.pulseMinOpacity).animate(
-        CurvedAnimation(parent: _pulse, curve: const Cubic(0.33, 0, 0.2, 1)),
+        CurvedAnimation(parent: _pulse, curve: AppMotion.curve),
       );
 
   @override

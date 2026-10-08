@@ -18,6 +18,7 @@ import 'package:butlery/widgets/image/components/edit_actions_panel.dart';
 import 'package:butlery/widgets/image/components/primary_badge.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// Editable image widget with individual progress tracking for recipe editing.
 class EditableImageWidget extends StatefulWidget {
@@ -355,11 +356,15 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     if (widget.config.enableHapticFeedback) {
       HapticFeedback.lightImpact();
     }
-    _pageController.animateToPage(
-      index,
-      duration: AppMotion.standard,
-      curve: Curves.easeInOut,
-    );
+    if (isReducedMotion(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppMotion.standard,
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> _addImage() async {
@@ -428,11 +433,15 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
     if (_currentIndex >= newUrls.length && newUrls.isNotEmpty) {
       _currentIndex = newUrls.length - 1;
-      _pageController.animateToPage(
-        _currentIndex,
-        duration: AppMotion.standard,
-        curve: Curves.easeInOut,
-      );
+      if (isReducedMotion(context)) {
+        _pageController.jumpToPage(_currentIndex);
+      } else {
+        _pageController.animateToPage(
+          _currentIndex,
+          duration: AppMotion.standard,
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 

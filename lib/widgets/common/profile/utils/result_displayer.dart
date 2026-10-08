@@ -5,9 +5,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
-/// A wait, not motion (produktbeslut R8-9 = A).
-const Duration _afterDialogWait = Duration(milliseconds: 300);
-
 /// Utility for displaying operation results via snackbars.
 ///
 /// Every result is the ink snackbar (Komponentark v1:745-750; produktbeslut
@@ -16,6 +13,9 @@ const Duration _afterDialogWait = Duration(milliseconds: 300);
 /// user closes it, like every failure through SnackBarUtils.showFailure
 /// (content-style-guide.md:97; Komponentark v1:750, never "OK").
 class ResultDisplayer {
+  /// A wait, not motion (produktbeslut R8-9 = A).
+  static const Duration afterDialogWait = Duration(milliseconds: 300);
+
   /// Show an operation result with consistent styling.
   ///
   /// [context] - The build context.
@@ -38,7 +38,7 @@ class ResultDisplayer {
 
       Navigator.of(context).pop();
 
-      Future.delayed(_afterDialogWait, () {
+      Future.delayed(afterDialogWait, () {
         _showSnackBarDirect(scaffoldMessenger, message, closeLabel);
       });
     } else {

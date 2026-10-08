@@ -10,6 +10,7 @@ import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/services/performance/optimized_image_loader.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 class RecipeImageWidget extends StatefulWidget {
   final List<String> imageUrls;
@@ -319,11 +320,15 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       HapticFeedback.lightImpact();
     }
 
-    _pageController.animateToPage(
-      index,
-      duration: AppMotion.standard,
-      curve: Curves.easeInOut,
-    );
+    if (isReducedMotion(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppMotion.standard,
+        curve: Curves.easeInOut,
+      );
+    }
   }
 }
 
@@ -439,10 +444,14 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
       HapticFeedback.lightImpact();
     }
 
-    _pageController.animateToPage(
-      index,
-      duration: AppMotion.standard,
-      curve: Curves.easeInOut,
-    );
+    if (isReducedMotion(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppMotion.standard,
+        curve: Curves.easeInOut,
+      );
+    }
   }
 }

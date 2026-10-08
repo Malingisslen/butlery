@@ -20,8 +20,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 /// - `colorScheme.surface` background, `colorScheme.onPrimaryContainer` numerals.
 /// - Square container (plain `Container`, no `BorderRadius`).
 /// - On expiry: `modeColors.starGold` pulse via `AnimationController` running
-///   `AppMotion.standard` in reverse-repeat until the user
-///   dismisses the sheet.
+///   `AppMotion.pulseHalf` in reverse-repeat (one loop is `AppMotion.pulse`)
+///   until the user dismisses the sheet.
 ///
 /// The widget has three visible states:
 /// - **running** — shows remaining `mm:ss`, "Pausa" + "Återställ" buttons.
@@ -84,7 +84,7 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: AppMotion.standard,
+      duration: AppMotion.pulseHalf,
     );
     // Auto-start once at mount — no need to re-check on every rebuild.
     WidgetsBinding.instance.addPostFrameCallback((_) async {

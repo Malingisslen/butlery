@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 
 Widget _wrap(Widget child, {bool disableAnimations = false}) => MaterialApp(
@@ -15,6 +16,12 @@ Widget _wrap(Widget child, {bool disableAnimations = false}) => MaterialApp(
 
 void main() {
   group('AnimatedListItem', () {
+    test('defaults to the standard motion duration and curve', () {
+      const item = AnimatedListItem(index: 0, child: SizedBox());
+      expect(item.duration, AppMotion.standard);
+      expect(item.curve, AppMotion.curve);
+    });
+
     testWidgets('renders supplied child', (tester) async {
       await tester.pumpWidget(
         _wrap(
