@@ -4,6 +4,7 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Focused module for comment likes system
 /// This module handles ONLY comment like functionality:
@@ -23,7 +24,7 @@ class CommentLikesSystem {
   }) async {
     try {
       AppLogger.info(
-        '👍 Toggling like on comment $commentId for user $currentUserId',
+        '👍 Toggling like on comment $commentId for user ${currentUserId.maskedUserId}',
       );
 
       // Check current like status

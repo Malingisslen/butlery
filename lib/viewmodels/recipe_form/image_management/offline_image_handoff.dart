@@ -8,6 +8,7 @@ library;
 import 'dart:io';
 
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 
@@ -38,5 +39,40 @@ class OfflineImageHandoff {
       }
     }
     if (formAlive) _images.releaseToOfflineQueue(queued);
+  }
+
+  /// BUT-2293: the queue adds an image it has finished sending to the
+  /// recipe's copy on the device. A form that read the recipe before that
+  /// never showed the image, so saving the form's list as it stands would
+  /// send the recipe without it. [formHad] is the list the device copy held
+  /// as far as this form knows: as opened, or as this form last saved it.
+  Future<({List<String> imageUrls, String? thumbnailUrl})> keepQueuedImages(
+    String recipeId,
+    String? userId, {
+    required List<String> formHad,
+    required List<String> imageUrls,
+    required String? thumbnailUrl,
+  }) async {
+    final unchanged = (imageUrls: imageUrls, thumbnailUrl: thumbnailUrl);
+    final queue = _queue;
+    if (queue == null || !queue.isQueueReady || userId == null) {
+      return unchanged;
+    }
+    final Recipe? onDevice;
+    try {
+      onDevice = await queue.getOfflineRecipeForUser(recipeId, userId);
+    } catch (e) {
+      AppLogger.error('❌ Receptets bilder på enheten kunde inte läsas: $e');
+      return unchanged;
+    }
+    if (onDevice == null) return unchanged;
+    final added = onDevice.imageUrls
+        .where((url) => !formHad.contains(url) && !imageUrls.contains(url))
+        .toList();
+    if (added.isEmpty) return unchanged;
+    return (
+      imageUrls: [...imageUrls, ...added],
+      thumbnailUrl: thumbnailUrl ?? onDevice.core.thumbnailUrl,
+    );
   }
 }

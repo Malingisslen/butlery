@@ -56,6 +56,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Comprehensive permission validation mixin implementing robust security enforcement for Firebase repository operations in cooking-focused applications.
 /// This mixin serves as the central security enforcement layer for all repository operations throughout
@@ -116,7 +117,7 @@ mixin PermissionValidationMixin {
 
     if (currentUserId != resourceOwnerId) {
       AppLogger.warning(
-        'Permission denied: User $currentUserId attempted to access $resourceType owned by $resourceOwnerId',
+        'Permission denied: User ${currentUserId.maskedUserId} attempted to access $resourceType owned by ${resourceOwnerId.maskedUserId}',
       );
       throw PermissionDeniedException(
         'User does not own this $resourceType',
@@ -249,7 +250,7 @@ mixin PermissionValidationMixin {
     }
 
     AppLogger.warning(
-      'Write permission denied: User $currentUserId attempted to modify $resourceType owned by $resourceOwnerId',
+      'Write permission denied: User ${currentUserId.maskedUserId} attempted to modify $resourceType owned by ${resourceOwnerId.maskedUserId}',
     );
     throw PermissionDeniedException(
       'User lacks write permission for this $resourceType',

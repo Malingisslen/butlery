@@ -3,7 +3,7 @@
 import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -255,11 +255,11 @@ class BackupService extends BaseService {
               coreTitle ??
               recipeJson['title'] ??
               AppLocale.current.backupUnknownRecipe;
-          // The exception goes to the log without the title, which is the
-          // user's own content.
+          // Neither the title nor the exception text goes to the log: both
+          // can carry the user's own recipe content.
           AppLogger.error(
-            'Import av recept misslyckades',
-            e,
+            'Import av recept misslyckades: ${importFailureLabel(e)}',
+            null,
             'BackupService',
             stackTrace,
           );
@@ -280,10 +280,20 @@ class BackupService extends BaseService {
         skippedTitles: skippedTitles,
       );
     } catch (e, stackTrace) {
-      AppLogger.error('Import misslyckades', e, 'BackupService', stackTrace);
+      AppLogger.error(
+        'Import misslyckades: ${importFailureLabel(e)}',
+        null,
+        'BackupService',
+        stackTrace,
+      );
       return ImportResult.unexpected();
     }
   }
+
+  /// BUT-2230: a `FormatException` from `json.decode` prints an excerpt of
+  /// the backup file, so an import failure is logged by its type alone.
+  @visibleForTesting
+  static String importFailureLabel(Object error) => '${error.runtimeType}';
 
   String _formatDate(DateTime date) {
     final months = [

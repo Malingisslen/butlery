@@ -10,6 +10,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Presence tracking module
 /// This module handles ONLY user presence tracking:
@@ -142,7 +143,7 @@ class PresenceTrackingModule {
       }
 
       AppLogger.debug(
-        'Updated presence heartbeat for user: $currentUserId in recipe: $recipeId',
+        'Updated presence heartbeat for user: ${currentUserId.maskedUserId} in recipe: $recipeId',
       );
       return true;
     } catch (e) {
