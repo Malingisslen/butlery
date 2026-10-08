@@ -9109,6 +9109,7 @@
   "accountSecurityMfaSettings": "Tvåfaktorsautentisering",
   "accountSecurityPasswordChanged": "Lösenordet har ändrats",
   "accountSecurityEmailVerificationSent": "Verifieringslänk skickad till ny e-postadress",
+  "accountSecurityEmailChangeHow": "Vi skickar en länk till den nya adressen. Bytet gäller först när du har öppnat den, och då får din nuvarande adress ett mejl där bytet kan ångras.",
   "accountSecurityPasswordMismatch": "Lösenorden matchar inte",
   "profileAccountSecurity": "Kontosäkerhet",
   "profileAccountSecuritySubtitle": "Lösenord, e-post och tvåfaktorsautentisering",
@@ -12403,6 +12404,15 @@
       },
       "list": {
         "type": "String"
+      }
+    }
+  },
+  "shoppingMergeConcurrentChange": "{count, plural, =1{Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.} other{Listan hade ändrats på en annan enhet. Dina {count} varor lades till och inget skrevs över.}}",
+  "@shoppingMergeConcurrentChange": {
+    "description": "BUT-2140: receipt with Ångra after a merge, when the list had been changed on another device (same account) before the write.",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },

@@ -21749,6 +21749,12 @@ abstract class AppLocalizations {
   /// **'Verifieringslänk skickad till ny e-postadress'**
   String get accountSecurityEmailVerificationSent;
 
+  /// No description provided for @accountSecurityEmailChangeHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi skickar en länk till den nya adressen. Bytet gäller först när du har öppnat den, och då får din nuvarande adress ett mejl där bytet kan ångras.'**
+  String get accountSecurityEmailChangeHow;
+
   /// No description provided for @accountSecurityPasswordMismatch.
   ///
   /// In sv, this message translates to:
@@ -26794,6 +26800,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{list} har nu {count, plural, =1{1 vara} other{{count} varor}} från veckan. Dina egna varor finns kvar.'**
   String shoppingMergeReplaced(int count, String list);
+
+  /// BUT-2140: receipt with Ångra after a merge, when the list had been changed on another device (same account) before the write.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.} other{Listan hade ändrats på en annan enhet. Dina {count} varor lades till och inget skrevs över.}}'**
+  String shoppingMergeConcurrentChange(int count);
 
   /// P6-U02: failure, what happened.
   ///

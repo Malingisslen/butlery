@@ -58,7 +58,6 @@ export const VALID_STRATEGIES = [
   "instagram",
   "archive",
   "file",
-  "cache",
   "unknown",
 ];
 export const VALID_OUTCOMES = ["recipe", "assistance", "failure"];
@@ -261,7 +260,7 @@ export function isLoggable(fields: SanitizedParseEvent): boolean {
 }
 
 /** Strategies that answer a link without running the site's own parser. */
-const NOT_SITE_PARSERS = ["youtube", "tiktok", "instagram", "cache"];
+const NOT_SITE_PARSERS = ["youtube", "tiktok", "instagram"];
 
 /**
  * Whether an event moves the site_configs counters, which feed

@@ -1,5 +1,5 @@
 {
-  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges, and the transition's canonical outcome is met. PARTIAL means the transition is built and reachable and its tests drive it, but its defining canonical outcome is not met today; known_gap names what fails, the Linear ticket and, where there is one, the test that pins today's behaviour. PARTIAL does not count as done. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. Every entry that is not TESTED names a BUT-#### Linear ticket and a reason (for PARTIAL, in known_gap). Checked by test/views/flows/flow_transition_coverage_test.dart.",
+  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges, and the transition's canonical outcome is met. PARTIAL means the transition is built and reachable and its tests drive it, but its defining canonical outcome is not met today; known_gap names what fails, the Linear ticket and, where there is one, the test that pins today's behaviour. PARTIAL does not count as done. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. RESTING means Malin has put the requirement to rest; it names the decision and its ticket and does not count as a known failure. Every entry that is not TESTED names a BUT-#### Linear ticket and a reason (for PARTIAL, in known_gap). Checked by test/views/flows/flow_transition_coverage_test.dart.",
   "TRANSITION_SET_HASH": "51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e",
   "entries": [
     {
@@ -189,18 +189,58 @@
     {
       "id": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",
       "flow": "02",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-      "test_name": "rows that reached the list after the sheet opened are kept: the merge builds on the list as it is at the write",
+      "status": "TESTED",
+      "test_file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+      "test_name": "another device added a row and ran its own merge: every row stays, menuItemIds keeps theirs and ours, and the change is reported",
       "tests": [
         {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "another device added a row and ran its own merge: every row stays, menuItemIds keeps theirs and ours, and the change is reported",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "nothing changed elsewhere: no change is reported",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ersätt listan carries over a tick the other device made on a recipe row",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ersätt listan does not bring back a recipe row the other device deleted, and Ångra has nothing of it to restore",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "offline: the rows are queued from memory, nothing is reported, and menuItemIds is extended with arrayUnion, not overwritten",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "writes of this device still waiting to sync are not reported as another device's change",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ångra after a change elsewhere takes off only our rows and our ids",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
           "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-          "name": "rows that reached the list after the sheet opened are kept: the merge builds on the list as it is at the write",
+          "name": "a change made on another device reaches the receipt, which takes its removed rows from the server for Ångra",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/widget/views/veckomeny_shopping_merge_receipt_test.dart",
+          "name": "a change on another device is named in the receipt, and Ångra is still offered",
           "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
         }
       ],
-      "ticket": "BUT-2140",
-      "reason": "The merge builds on the list the service holds at the write, so nothing it knows of is overwritten (tested). But the generated list is owner-only (lib/services/shopping/menu_shopping_list_generator.dart:260-264), so another person cannot change it; the same account on a second device is not merged, and the user is never told a conflict happened. Merging per operation is BUT-2140; realtime is BUT-2151."
+      "ticket": null,
+      "reason": "BUT-2140, 2026-10-08, with the plan's defaults A1/B1/C1. A1: the other writer is the same account on another device, on the personal week list. The merge writes per operation against the server's copy (arrayUnion on menuItemIds, a transaction only for Ersätt listan), so nothing another device wrote is overwritten, and the receipt says the list had been changed on another device, with Ångra (C1). B1: offline, Ersätt listan replaces from the copy in memory, an accepted deviation."
     },
     {
       "id": "TR::FLOW::02::merge-ark::ersätt-listan-på",
@@ -690,12 +730,21 @@
     {
       "id": "TR::FLOW::06::byt-epost::omverifiering-bada",
       "flow": "06",
-      "status": "MISSING",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
-      "ticket": "BUT-2171",
-      "reason": "Only the new address is confirmed (verifyBeforeUpdateEmail, lib/services/auth_service.dart:483). The old address gets Firebase's notice, not a confirmation step."
+      "status": "TESTED",
+      "test_file": "test/widget/views/settings/account_security_email_change_test.dart",
+      "test_name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication",
+      "tests": [
+        {
+          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication"
+        },
+        {
+          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "name": "a refused reauthentication never asks for the change"
+        }
+      ],
+      "ticket": null,
+      "reason": "BUT-2171 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): Firebase's flow is kept and the requirement changed. Only the new address confirms (verifyBeforeUpdateEmail after reauthentication); the current address is told once the change applies and can undo it. Kontosäkerhet says so before the change is asked for."
     },
     {
       "id": "TR::FLOW::06::export::tre-felorsaker",
@@ -1302,12 +1351,13 @@
     {
       "id": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
       "flow": "08",
-      "status": "MISSING",
+      "status": "RESTING",
       "test_file": null,
       "test_name": null,
       "tests": [],
       "ticket": "BUT-2163",
-      "reason": "Not built: the app cannot read free disk space, and it has no download the user starts."
+      "reason": "BUT-2163 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): the requirement rests until the app has a download the user starts. Today it has none, and it cannot read free disk space.",
+      "decision": "fas2/produktbeslut-2026-10-07.json BUT-2163"
     },
     {
       "id": "TR::FLOW::08::online::offline",

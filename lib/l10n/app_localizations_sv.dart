@@ -13015,6 +13015,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Verifieringslänk skickad till ny e-postadress';
 
   @override
+  String get accountSecurityEmailChangeHow =>
+      'Vi skickar en länk till den nya adressen. Bytet gäller först när du har öppnat den, och då får din nuvarande adress ett mejl där bytet kan ångras.';
+
+  @override
   String get accountSecurityPasswordMismatch => 'Lösenorden matchar inte';
 
   @override
@@ -16184,6 +16188,19 @@ class AppLocalizationsSv extends AppLocalizations {
       one: '1 vara',
     );
     return '$list har nu $_temp0 från veckan. Dina egna varor finns kvar.';
+  }
+
+  @override
+  String shoppingMergeConcurrentChange(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Listan hade ändrats på en annan enhet. Dina $count varor lades till och inget skrevs över.',
+      one:
+          'Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.',
+    );
+    return '$_temp0';
   }
 
   @override

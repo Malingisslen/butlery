@@ -12,16 +12,6 @@ import 'package:butlery/widgets/common/press_fill.dart';
 /// v1:81-89 draws 40 px). The hitbox around it is 48 dp.
 const double _paperRingSize = 40;
 
-/// The ring paints its own press, so the 48 dp hitbox around it paints none
-/// while pressed or hovered; focus keeps the theme's colour.
-final WidgetStateProperty<Color?> _noBoxPress = WidgetStateProperty.resolveWith(
-  (states) =>
-      states.contains(WidgetState.pressed) ||
-          states.contains(WidgetState.hovered)
-      ? Colors.transparent
-      : null,
-);
-
 /// An icon button on the media hero: an ink icon in a paper ring, 48 dp
 /// hitbox, the canonical focus ring around the hitbox (Komponentark
 /// v1:81-89 "Ikonknappar i pappersringar"; Grafisk manual v6:381).
@@ -63,7 +53,7 @@ class _RecipeHeroButtonState extends State<RecipeHeroButton> {
         type: MaterialType.transparency,
         child: InkWell(
           customBorder: const CircleBorder(),
-          overlayColor: _noBoxPress,
+          overlayColor: ownPressOverlay,
           onHighlightChanged: (value) => setState(() => _pressed = value),
           onHover: (value) => setState(() => _hovered = value),
           onTap: () {
@@ -176,7 +166,7 @@ class _RecipeHeroMenuButtonState<T> extends State<RecipeHeroMenuButton<T>> {
               surface: PressSurface.base,
               child: PopupMenuButton<T>(
                 padding: EdgeInsets.zero,
-                style: ButtonStyle(overlayColor: _noBoxPress),
+                style: ButtonStyle(overlayColor: ownPressOverlay),
                 icon: _PaperRing(
                   pressed: _pressed || _hovered,
                   child: ButleryIcon(

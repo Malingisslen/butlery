@@ -12991,6 +12991,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Verification link sent to new email address';
 
   @override
+  String get accountSecurityEmailChangeHow =>
+      'We send a link to the new address. The change applies only once you have opened it, and your current address then gets an email where the change can be undone.';
+
+  @override
   String get accountSecurityPasswordMismatch => 'Passwords do not match';
 
   @override
@@ -16158,6 +16162,19 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '1 item',
     );
     return '$list now has $_temp0 from the week. Your own items are still there.';
+  }
+
+  @override
+  String shoppingMergeConcurrentChange(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The list had been changed on another device. Your $count items were added and nothing was overwritten.',
+      one:
+          'The list had been changed on another device. Your item was added and nothing was overwritten.',
+    );
+    return '$_temp0';
   }
 
   @override

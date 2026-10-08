@@ -54,3 +54,4 @@ A new deviation in this area is appended HERE and in that document, in the same 
   that it would pass a dangerous scheme behind a leading control character or null byte. Keep
   the discriminator fixture.
 
+- "Ersätt listan" offline replaces the personal week list from the copy in memory, so a tick made on a recipe row on another device meanwhile can be lost; an offline add stays safe (`arrayUnion` on `menuItemIds`), and the receipt reports no change on that path. BUT-1683 shape (BUT-2140, B1, 2026-10-08)

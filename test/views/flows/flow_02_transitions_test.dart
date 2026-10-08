@@ -14,6 +14,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
@@ -31,6 +32,12 @@ final _sv = AppLocalizationsSv();
 
 void main() {
   late VeckomenyFlowHarness h;
+
+  setUpAll(() {
+    registerFallbackValue(
+      PersonalMergeRequest(rows: (_) => const [], replace: false),
+    );
+  });
 
   setUp(() async {
     h = VeckomenyFlowHarness();
@@ -64,6 +71,7 @@ void main() {
 
         final shopping = TestServiceLocator.get<UnifiedShoppingService>();
         verifyNever(() => shopping.updateList(any()));
+        verifyNever(() => shopping.applyPersonalMerge(any(), any()));
         verifyNever(() => shopping.createPersonalList(any()));
       });
     });

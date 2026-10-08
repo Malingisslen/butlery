@@ -16,6 +16,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_repository_routing_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_repository_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_item_operations_module.dart';
+import 'package:butlery/repositories/firebase/modules/shopping_personal_merge_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_template_operations_module.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -57,6 +58,7 @@ class FirebaseShoppingRepository
   late final ShoppingRepositoryQueryModule _queryModule;
   late final ShoppingItemOperationsModule _itemOpsModule;
   late final ShoppingTemplateOperationsModule _templateOpsModule;
+  late final ShoppingPersonalMergeModule _mergeModule;
 
   FirebaseShoppingRepository({
     super.firestore,
@@ -113,6 +115,15 @@ class FirebaseShoppingRepository
       // stamp survives both.
       resolveDisplayName: () =>
           ServiceLocator.tryGet<UserService>()?.profileDisplayName,
+    );
+
+    _mergeModule = ShoppingPersonalMergeModule(
+      firestore: firestore,
+      requireCurrentUserId: requireCurrentUserId,
+      getUserCollection: getUserCollection,
+      fromFirestore: fromFirestore,
+      validateOwnership: validateOwnership,
+      logPermissionCheck: logPermissionCheck,
     );
 
     _templateOpsModule = ShoppingTemplateOperationsModule(
@@ -400,6 +411,23 @@ class FirebaseShoppingRepository
       await create(list);
     }
   }
+
+  @override
+  Future<PersonalMergeResult> applyPersonalMerge(
+    UnifiedShoppingList base,
+    PersonalMergeRequest request,
+  ) => _mergeModule.applyPersonalMerge(base, request);
+
+  @override
+  Future<UnifiedShoppingList> undoPersonalMerge(
+    UnifiedShoppingList base, {
+    required List<String> addedIds,
+    required List<UnifiedShoppingItem> restore,
+  }) => _mergeModule.undoPersonalMerge(
+    base,
+    addedIds: addedIds,
+    restore: restore,
+  );
 
   @override
   Future<UnifiedShoppingList> mutateCollaborativeList(

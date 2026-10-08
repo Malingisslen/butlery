@@ -53,13 +53,14 @@ class PressFill extends StatelessWidget {
 
 /// Transparent while pressed or hovered, so the widget draws its own press;
 /// the theme's focus colour otherwise, so a keyboard user still sees focus.
-final WidgetStateProperty<Color?> _ownPress = WidgetStateProperty.resolveWith(
-  (states) =>
-      states.contains(WidgetState.pressed) ||
-          states.contains(WidgetState.hovered)
-      ? Colors.transparent
-      : null,
-);
+final WidgetStateProperty<Color?> ownPressOverlay =
+    WidgetStateProperty.resolveWith(
+      (states) =>
+          states.contains(WidgetState.pressed) ||
+              states.contains(WidgetState.hovered)
+          ? Colors.transparent
+          : null,
+    );
 
 /// A saffron (action.primary) button that presses and hovers to
 /// action.primaryPressed, its glyph or label to text.onActionPrimaryPressed
@@ -99,7 +100,7 @@ class _SaffronPressState extends State<SaffronPress> {
       child: InkWell(
         onTap: widget.onTap,
         customBorder: widget.shape,
-        overlayColor: _ownPress,
+        overlayColor: ownPressOverlay,
         onHighlightChanged: (value) => setState(() => _pressed = value),
         onHover: (value) => setState(() => _hovered = value),
         child: widget.builder(context, on),
@@ -131,7 +132,7 @@ class _PressScaleState extends State<PressScale> {
     final still = MediaQuery.disableAnimationsOf(context);
     return InkWell(
       onTap: widget.onTap,
-      overlayColor: _ownPress,
+      overlayColor: ownPressOverlay,
       onHighlightChanged: (value) => setState(() => _pressed = value),
       child: AnimatedScale(
         scale: _pressed && !still ? PressScale.pressedScale : 1,
@@ -144,8 +145,7 @@ class _PressScaleState extends State<PressScale> {
 }
 
 /// Keeps the press and hover a widget had before BUT-2205 on a surface the
-/// rule does not cover: the error colour, a photo
-/// or a scanned page. The design session decides them (BUT-2232).
+/// rule does not cover: the error colour or a photo.
 class PressUnchanged extends StatelessWidget {
   const PressUnchanged({required this.child, super.key});
 

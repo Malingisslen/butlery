@@ -420,6 +420,25 @@ offline fallback re-opens BUT-1665 / client-side merge forbidden by AC2" against
 `_mutateFromCache` — decided. Revisit only if `items` becomes a map keyed by item id, which would
 make per-row offline writes mergeable. — 2026-07-26
 
+### [Shopping/Offline] "Ersätt listan" offline may drop a tick made on another device (BUT-2140, B1)
+`ShoppingPersonalMergeModule.applyPersonalMerge` writes the week menu's rows into the personal
+week list per operation. Online it reads the server's copy, and "Ersätt listan" runs a
+transaction that reads the recipe rows `menuItemIds` names and carries their bought ticks over.
+When the server read or the transaction fails with `unavailable` / `deadline-exceeded`,
+`_mergeFromMemory` takes over, in the BUT-1683 shape:
+- **An add is safe.** The rows are their own documents and `menuItemIds` is extended with
+  `FieldValue.arrayUnion`, so the queued write merges on replay.
+- **A replace is computed from the copy in memory.** It deletes the recipe rows that copy knows
+  of, carries ticks from that copy, and sets `menuItemIds` outright. A tick the same account made
+  on a recipe row on another device in the meantime can be lost, and a recipe row another
+  device's merge added meanwhile is not taken off and drops out of `menuItemIds`. **Accepted.**
+- The receipt reports no change from another device on this path, because none could be read.
+**Why:** the BUT-2140 plan's recommended default B1, applied 2026-10-08: shopping lists stay on Firestore's cache
+and not in the offline queue (BUT-2162 F3-1), and a sheet that refuses "Ersätt listan" in a shop
+without reception is worse than the narrow window. Do NOT file "the offline replace overwrites
+another device's tick" against `_mergeFromMemory` — decided. The alternative, B2, is switching
+"Ersätt listan" off offline with the sheet saying why. — 2026-10-08
+
 ### [Tagging/Safety] A colon-terminated bare GLUTEN word stays an ingredient; other allergens keep colon-wins (BUT-1691 → BUT-1714)
 `RecipeSectionDetector.componentSubHeadingLabel` is the single hinge that decides whether an
 imported line is a component heading (pulled OUT of the flat ingredient list that tagging reads)
