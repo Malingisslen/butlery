@@ -23,6 +23,9 @@ import 'package:flutter/material.dart';
 ///
 /// Cards are stretched to their row's height, so a card that draws less than
 /// its neighbour keeps the same box rather than ending short of it.
+///
+/// Kept although only tests build it: [SliverContentSizedGrid] below is the
+/// app's form of it and its doc points here for the measurements above.
 class ContentSizedGrid extends StatelessWidget {
   const ContentSizedGrid({
     super.key,

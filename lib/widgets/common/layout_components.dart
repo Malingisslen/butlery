@@ -254,48 +254,6 @@ class LayoutComponents {
     );
   }
 
-  /// Responsive list/grid that switches between ListView (mobile) and GridView (tablet/desktop)
-  /// **Usage Example:**
-  /// ```dart
-  /// LayoutComponents.responsiveListGrid<Recipe>(
-  ///   items: recipes,
-  ///   itemBuilder: (context, recipe) => RecipeCard(recipe: recipe),
-  ///   animate: true, // Staggered entrance animations
-  /// );
-  /// ```
-  /// NOT for cells that carry TEXT. `childAspectRatio` ties a tile's height to
-  /// its width, and a text block does the opposite — it grows with the OS text
-  /// scale and shrinks with width — so a ratio is wrong at one end whatever it
-  /// is set to, and being wrong means silent clipping in a release build. Use
-  /// `ContentSizedGrid` for those (BUT-1911).
-  static Widget responsiveListGrid<T>({
-    required List<T> items,
-    required Widget Function(BuildContext context, T item) itemBuilder,
-    double? gridBreakpoint,
-    int? tabletColumns,
-    int? desktopColumns,
-    double? spacing,
-    EdgeInsetsGeometry? padding,
-    bool shrinkWrap = false,
-    ScrollPhysics? physics,
-    double? gridChildAspectRatio,
-    bool animate = false,
-  }) {
-    return ResponsiveListGrid<T>(
-      items: items,
-      itemBuilder: itemBuilder,
-      gridBreakpoint: gridBreakpoint,
-      tabletColumns: tabletColumns,
-      desktopColumns: desktopColumns,
-      spacing: spacing,
-      padding: padding,
-      shrinkWrap: shrinkWrap,
-      physics: physics,
-      gridChildAspectRatio: gridChildAspectRatio,
-      animate: animate,
-    );
-  }
-
   /// Check if current screen is mobile (< 600px)
   static bool isMobile(BuildContext context) => Breakpoints.isMobile(context);
 

@@ -1,5 +1,5 @@
 /// Widget tests for ResponsiveGrid + ResponsiveGridExtent + ResponsiveWrap +
-/// ResponsiveStaggeredGrid + ResponsiveListGrid.
+/// ResponsiveStaggeredGrid.
 library;
 
 import 'package:flutter/material.dart';
@@ -315,48 +315,6 @@ void main() {
         ),
       );
       expect(find.byType(Expanded), findsNWidgets(3));
-    });
-  });
-
-  group('ResponsiveListGrid', () {
-    testWidgets('mobile → ListView.separated (no GridView)', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        400,
-        ResponsiveListGrid<String>(
-          items: const ['x', 'y'],
-          itemBuilder: (ctx, item) => Text(item),
-        ),
-      );
-      expect(find.byType(ListView), findsOneWidget);
-      expect(find.byType(GridView), findsNothing);
-      expect(find.text('x'), findsOneWidget);
-      expect(find.text('y'), findsOneWidget);
-    });
-
-    testWidgets('tablet → GridView (no ListView)', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        800,
-        ResponsiveListGrid<int>(
-          items: const [1, 2, 3, 4],
-          itemBuilder: (ctx, n) => Text('item-$n'),
-        ),
-      );
-      expect(find.byType(GridView), findsOneWidget);
-      expect(find.byType(ListView), findsNothing);
-    });
-
-    testWidgets('desktop → GridView with desktop column count', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        1400,
-        ResponsiveListGrid<int>(
-          items: const [1, 2, 3, 4, 5, 6],
-          itemBuilder: (ctx, n) => Text('n=$n'),
-        ),
-      );
-      expect(_fixedDelegate(tester).crossAxisCount, 3);
     });
   });
 }
