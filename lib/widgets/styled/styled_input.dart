@@ -184,7 +184,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.phone,
        textInputAction = TextInputAction.done,
        inputFormatters = null,
-       prefixIcon = const ButleryIcon(Icons.phone),
+       prefixIcon = const ButleryIcon(ButleryIcons.smartphone),
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.telephoneNumber],

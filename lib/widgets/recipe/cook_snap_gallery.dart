@@ -247,7 +247,7 @@ class _SnapThumbnail extends StatelessWidget {
               )
             else
               ListTile(
-                leading: const ButleryIcon(Icons.flag),
+                leading: const ButleryIcon(ButleryIcons.flag),
                 title: Text(context.l10n.cookSnapReport),
                 onTap: () {
                   Navigator.pop(context);

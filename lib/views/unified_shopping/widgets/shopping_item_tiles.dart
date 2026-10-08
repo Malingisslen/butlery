@@ -379,7 +379,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           _buildDragHandle(context, cs),
         if (widget.onMoveToCategory != null && !widget.isCompleted)
           AppIconButton(
-            icon: Icons.drive_file_move_outline,
+            icon: ButleryIcons.move,
             onPressed: widget.onMoveToCategory,
             semanticLabel: context.l10n.shoppingMoveToCategory,
             color: cs.onSurfaceVariant,

@@ -21,7 +21,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byIcon(ButleryIcons.leaf), findsOneWidget);
-        expect(find.byIcon(Icons.cancel_outlined), findsNothing);
+        expect(find.byIcon(ButleryIcons.x), findsNothing);
         expect(find.byIcon(ButleryIcons.info), findsNothing);
       });
 
@@ -36,7 +36,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.cancel_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
         expect(find.byIcon(ButleryIcons.leaf), findsNothing);
         expect(find.byIcon(ButleryIcons.info), findsNothing);
       });

@@ -129,7 +129,7 @@ abstract final class PersonalTagDialogs {
             if (hasRules && !allRulesEnabled)
               ListTile(
                 leading: ButleryIcon(
-                  Icons.play_arrow,
+                  ButleryIcons.playOutline,
                   color: context.modeColors.success,
                 ),
                 title: Text(context.l10n.personalTagEnableAllRules),
@@ -674,7 +674,7 @@ abstract final class PersonalTagDialogs {
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, ''),
             child: ListTile(
-              leading: const ButleryIcon(Icons.folder_off),
+              leading: const ButleryIcon(ButleryIcons.x),
               title: Text(context.l10n.personalTagNoGroup),
               contentPadding: EdgeInsets.zero,
             ),

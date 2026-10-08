@@ -99,7 +99,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ButleryIcon(Icons.celebration_outlined, color: cs.onSurface),
+            ButleryIcon(ButleryIcons.info, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(

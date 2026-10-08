@@ -60,7 +60,7 @@ class TagDetailRulesSection extends StatelessWidget {
   Widget _buildSectionHeader(BuildContext context) {
     return Row(
       children: [
-        const ButleryIcon(Icons.auto_awesome, size: AppDimensions.iconSizeM),
+        const ButleryIcon(ButleryIcons.sparkles, size: AppDimensions.iconSizeM),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
           child: Text(
@@ -92,7 +92,7 @@ class TagDetailRulesSection extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingXl),
         child: Column(
           children: [
-            const ButleryIcon(Icons.rule, size: 48),
+            const ButleryIcon(ButleryIcons.sparkles, size: 48),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               context.l10n.tagDetailRulesEmptyTitle,

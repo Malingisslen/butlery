@@ -80,15 +80,15 @@ class PlatformBadgeWidget extends StatelessWidget {
   IconData _getIconForPlatform(Platform platform) {
     switch (platform) {
       case Platform.youtube:
-        return Icons.play_circle_outline;
+        return ButleryIcons.video;
       case Platform.tiktok:
-        return Icons.music_note;
+        return ButleryIcons.video;
       case Platform.instagram:
         return ButleryIcons.camera;
       case Platform.website:
         return ButleryIcons.globe;
       case Platform.unknown:
-        return Icons.text_snippet_outlined;
+        return ButleryIcons.file;
     }
   }
 

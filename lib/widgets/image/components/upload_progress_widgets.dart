@@ -150,7 +150,7 @@ class UploadProgressWidgets {
         if (canBulkCancel && onCancelAllActive != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.stop,
+              icon: ButleryIcons.x,
               label: context.l10n.uploadStopAllCount(active),
               onTap: onCancelAllActive,
               color: cs.onSurfaceVariant,

@@ -24,7 +24,7 @@ class SwipeHintBanner extends StatefulWidget {
   const SwipeHintBanner({
     super.key,
     this.seenKey = recipeSwipeSeenKey,
-    this.icon = Icons.swipe,
+    this.icon = ButleryIcons.hand,
     this.message,
   });
 

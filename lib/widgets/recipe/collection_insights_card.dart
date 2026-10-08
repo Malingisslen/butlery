@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/base/base_service.dart' show StringExtensions;
@@ -39,7 +40,7 @@ class CollectionInsightsCard extends StatelessWidget {
       padding: AppDimensions.responsiveContentPadding(context),
       child: ExpansionTile(
         leading: ButleryIcon(
-          Icons.insights,
+          ButleryIcons.barChart,
           color: colorScheme.onSurface,
           size: AppDimensions.iconSizeM,
         ),

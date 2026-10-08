@@ -237,7 +237,7 @@ class PortionScalerUI {
             mainAxisSize: MainAxisSize.min,
             children: [
               ButleryIcon(
-                convertToSwedish ? ButleryIcons.globe : Icons.calculate,
+                convertToSwedish ? ButleryIcons.globe : ButleryIcons.hash,
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),

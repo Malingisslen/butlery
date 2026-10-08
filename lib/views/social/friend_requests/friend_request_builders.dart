@@ -67,7 +67,7 @@ class FriendRequestsHeaderBuilder {
               icon: Badge(
                 isLabelVisible: viewModel.sentRequests.isNotEmpty,
                 label: Text('${viewModel.sentRequests.length}'),
-                child: const ButleryIcon(Icons.outbox),
+                child: const ButleryIcon(ButleryIcons.send),
               ),
               text: context.l10n.socialSent,
             ),
@@ -321,7 +321,7 @@ class SentRequestsTabBuilder {
       return StateWidget.empty(
         title: context.l10n.socialNoSentRequests,
         subtitle: context.l10n.socialNoSentRequestsDescription,
-        icon: Icons.outbox_outlined,
+        icon: ButleryIcons.send,
       );
     }
 

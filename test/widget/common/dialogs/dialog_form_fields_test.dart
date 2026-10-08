@@ -352,7 +352,7 @@ void main() {
       );
       expect(find.text('Beskrivning'), findsOneWidget);
       expect(find.text('Valfri beskrivning...'), findsOneWidget);
-      expect(find.byIcon(Icons.description_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.file), findsOneWidget);
     });
 
     testWidgets('description is optional → empty validates true', (
@@ -409,7 +409,7 @@ void main() {
       );
       expect(find.text('Antal'), findsOneWidget);
       expect(find.text('Ange antal...'), findsOneWidget);
-      expect(find.byIcon(Icons.numbers), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
     });
 
     testWidgets('keyboard is decimal-numeric and the separator is a comma', (
@@ -865,7 +865,7 @@ void main() {
         ),
       );
       expect(find.text('Telefonnummer'), findsOneWidget);
-      expect(find.byIcon(Icons.phone_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.smartphone), findsOneWidget);
       expect(
         formKey.currentState!.validate(),
         isTrue,

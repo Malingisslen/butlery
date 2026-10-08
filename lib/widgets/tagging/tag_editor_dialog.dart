@@ -361,7 +361,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         backgroundColor: cs.surface,
         side: BorderSide(color: cs.outlineVariant),
         avatar: ButleryIcon(
-          Icons.undo,
+          ButleryIcons.undo,
           size: AppDimensions.iconSizeS,
           color: cs.onSurfaceVariant,
         ),

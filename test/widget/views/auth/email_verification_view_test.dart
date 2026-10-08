@@ -30,6 +30,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/theme/app_theme.dart';
 
@@ -200,7 +201,7 @@ void main() {
     await tester.pump();
 
     final glyph = tester.widget<Icon>(
-      find.byIcon(Icons.mark_email_unread_outlined),
+      find.byIcon(ButleryIcons.mail),
     );
     expect(glyph.color, AppTheme.darkTheme.colorScheme.onSurface);
     expect(glyph.color, isNot(AppTheme.darkTheme.colorScheme.primary));

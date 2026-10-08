@@ -834,7 +834,7 @@ void main() {
           );
 
           expect(find.byIcon(ButleryIcons.users), findsOneWidget);
-          expect(find.byIcon(Icons.public), findsNothing);
+          expect(find.byIcon(ButleryIcons.globe), findsNothing);
           expect(find.byIcon(ButleryIcons.lock), findsNothing);
         },
       );
@@ -856,7 +856,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.public), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.globe), findsOneWidget);
         expect(find.byIcon(ButleryIcons.users), findsNothing);
         expect(find.byIcon(ButleryIcons.lock), findsNothing);
       });
@@ -880,7 +880,7 @@ void main() {
 
         expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
         expect(find.byIcon(ButleryIcons.users), findsNothing);
-        expect(find.byIcon(Icons.public), findsNothing);
+        expect(find.byIcon(ButleryIcons.globe), findsNothing);
       });
     });
 

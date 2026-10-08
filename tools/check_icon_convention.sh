@@ -3,8 +3,8 @@
 # from eroding. P7-U08 replaced AdaptiveIcons with the Butlery icon family
 # (beslutslogg.md:9, B-02); the concept glyphs have one home each:
 #   heart    -> ButleryIcons.favourite / favouriteOutline  (favourite, like)
-#   bookmark -> PendingGlyphs.savedTemplate / savedTemplateOutline
-#               (template/saved; a Material stand-in until design draws it)
+#   bookmark -> ButleryIcons.savedTemplate / savedTemplateOutline
+#               (template/saved)
 #
 # This guard FAILS CI when raw `Icons.favorite*` or `Icons.bookmark*` appears in
 # lib/views/ or lib/widgets/ — both glyphs have NO legitimate non-concept use, so
@@ -15,8 +15,6 @@
 # so a hard ban would false-positive. The "star = primary/featured" concept is
 # left to manual review / the design-system audit. (See BUT-1213 for the colour
 # half, still pending a product decision.)
-#
-# pending_glyphs.dart is the one allowed home for the raw bookmark glyphs.
 
 set -euo pipefail
 
@@ -43,14 +41,12 @@ fi
 # because favourite + bookmark have no legitimate non-concept use.
 PATTERN='Icons\.(favorite|bookmark)(_[a-z]+)*\b'
 
-# PendingGlyphs legitimately holds the bookmark stand-ins.
 matches="$(grep -rnE "$PATTERN" "${SEARCH_PATHS[@]}" \
-  --include='*.dart' \
-  --exclude='pending_glyphs.dart' || true)"
+  --include='*.dart' || true)"
 
 if [[ -n "$matches" ]]; then
   echo "❌ Icon-convention violation (BUT-944/BUT-1213): raw favourite/bookmark glyph in lib/views|lib/widgets."
-  echo "   Use ButleryIcons.favourite/favouriteOutline (heart) or PendingGlyphs.savedTemplate/savedTemplateOutline (bookmark)."
+  echo "   Use ButleryIcons.favourite/favouriteOutline (heart) or ButleryIcons.savedTemplate/savedTemplateOutline (bookmark)."
   echo ""
   echo "$matches"
   exit 1

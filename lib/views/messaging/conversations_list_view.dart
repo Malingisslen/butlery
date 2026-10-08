@@ -379,7 +379,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ),
           ListTile(
             leading: ButleryIcon(
-              conversation.isArchived ? Icons.unarchive : ButleryIcons.archive,
+              conversation.isArchived
+                  ? ButleryIcons.history
+                  : ButleryIcons.archive,
             ),
             title: Text(
               conversation.isArchived
@@ -392,7 +394,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             },
           ),
           ListTile(
-            leading: const ButleryIcon(Icons.mark_chat_read),
+            leading: const ButleryIcon(ButleryIcons.check),
             title: Text(l10n.messagingMarkAsRead),
             onTap: () {
               Navigator.pop(context);

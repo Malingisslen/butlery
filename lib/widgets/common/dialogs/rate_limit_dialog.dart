@@ -137,7 +137,7 @@ class RateLimitDialog extends StatelessWidget {
     if (_isLlmLimit(rateLimitResult.limitType) && onTryWithoutAi != null) {
       actions.add(
         _ActionTile(
-          icon: Icons.auto_fix_off_outlined,
+          icon: ButleryIcons.file,
           title: context.l10n.dialogImportWithoutAi,
           subtitle: context.l10n.dialogUsesSimpleExtraction,
           onTap: () {
@@ -193,15 +193,15 @@ class RateLimitDialog extends StatelessWidget {
     switch (type) {
       case LimitType.perMinute:
       case LimitType.perHour:
-        return Icons.speed_outlined;
+        return ButleryIcons.zap;
       case LimitType.perDay:
         return ButleryIcons.calendar;
       case LimitType.llmDaily:
       case LimitType.llmMonthly:
-        return Icons.smart_toy_outlined;
+        return ButleryIcons.sparkles;
       case LimitType.costDaily:
       case LimitType.costMonthly:
-        return Icons.attach_money_outlined;
+        return ButleryIcons.barChart;
     }
   }
 

@@ -157,7 +157,7 @@ class _HeroBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
+              card(ButleryIcons.bookOpen, totalRecipes, l10n.statsTotalRecipes),
               const SizedBox(width: AppDimensions.spacingMd),
               card(
                 ButleryIcons.favourite,
@@ -170,7 +170,7 @@ class _HeroBanner extends StatelessWidget {
           Row(
             children: [
               card(
-                Icons.local_fire_department,
+                ButleryIcons.utensils,
                 recentlyCooked,
                 l10n.statsRecentlyCooked,
               ),

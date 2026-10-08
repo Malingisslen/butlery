@@ -45,8 +45,8 @@ void main() {
       final items = <AdaptiveNavigationItem>[
         const AdaptiveNavigationItem(
           label: 'Recept',
-          icon: Icons.grid_view,
-          activeIcon: Icons.grid_view,
+          icon: ButleryIcons.grid,
+          activeIcon: ButleryIcons.grid,
           route: '/',
         ),
         const AdaptiveNavigationItem(

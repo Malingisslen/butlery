@@ -227,7 +227,7 @@ class TagResultDisplay extends StatelessWidget {
       child: Row(
         children: [
           ButleryIcon(
-            Icons.update,
+            ButleryIcons.refreshCw,
             color: warningColor,
             size: AppDimensions.iconSize18,
           ),
@@ -290,7 +290,7 @@ class TagResultDisplay extends StatelessWidget {
         Row(
           children: [
             ButleryIcon(
-              Icons.analytics_outlined,
+              ButleryIcons.barChart,
               color: cs.onSurface,
               size: compact
                   ? AppDimensions.iconSizeS

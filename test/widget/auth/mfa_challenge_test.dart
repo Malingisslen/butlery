@@ -294,7 +294,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('mfaChallenge.backupSubmit')));
     await tester.pump();
 
-    expect(find.textContaining('Vänta en timme'), findsOneWidget);
+    expect(find.textContaining('upp till en timme'), findsOneWidget);
     await _drain(tester);
   });
 

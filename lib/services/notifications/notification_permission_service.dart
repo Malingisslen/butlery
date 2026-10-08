@@ -15,6 +15,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 // Re-export the shared gateway so existing callers importing this file keep
 // compiling without touching their imports.
@@ -209,7 +210,7 @@ class NotificationPermissionService extends BaseService {
       body: l10n.timerNotifDeniedBody,
       grantLabel: l10n.timerNotifDeniedStart,
       declineLabel: l10n.permOpenSettings,
-      icon: Icons.notifications_off_outlined,
+      icon: ButleryIcons.bellOff,
     );
     if (choice == false) await openSystemSettings();
     return true;

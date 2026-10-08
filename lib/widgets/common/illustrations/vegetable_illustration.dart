@@ -151,10 +151,10 @@ class VegetableIllustration extends StatelessWidget {
       case VegetableType.asparagus:
       case VegetableType.rhubarb:
       case VegetableType.cabbage:
-        return Icons.grass;
+        return ButleryIcons.leaf;
       case VegetableType.berry:
       case VegetableType.citrus:
-        return Icons.circle;
+        return ButleryIcons.circle;
       case VegetableType.pumpkin:
       case VegetableType.beetroot:
         return ButleryIcons.leaf;

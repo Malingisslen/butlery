@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -59,7 +60,7 @@ void main() {
       isNull,
       reason: 'RenderFlex overflow at phone width is the BUT-1230 bug',
     );
-    expect(find.byIcon(Icons.tips_and_updates_outlined), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.info), findsOneWidget);
   });
 
   testWidgets('completeness banner renders without overflow at 320px '

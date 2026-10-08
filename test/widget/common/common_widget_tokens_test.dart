@@ -212,7 +212,7 @@ void main() {
           ),
         );
 
-        final glyph = find.byIcon(Icons.hourglass_empty);
+        final glyph = find.byIcon(ButleryIcons.hourglass);
         final deco = _decorationAbove(tester, glyph);
         final warningText = AppModeColors.textWarning(theme.brightness);
         expect(deco.color, modeColors.surfaceTintWarning);
@@ -299,7 +299,7 @@ void main() {
           expect(deco.border, isNull);
           expect(_textColor(tester, find.text('Admin')), cs.onSurface);
           expect(
-            _glyphColor(tester, find.byIcon(Icons.admin_panel_settings)),
+            _glyphColor(tester, find.byIcon(ButleryIcons.crown)),
             cs.onSurface,
           );
         },

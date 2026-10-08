@@ -117,9 +117,7 @@ class CategorySelectionWidgets {
           mainAxisSize: MainAxisSize.min,
           children: [
             ButleryIcon(
-              category.emoji != null
-                  ? Icons.emoji_emotions
-                  : ButleryIcons.users,
+              category.emoji != null ? ButleryIcons.grid : ButleryIcons.users,
               size: AppDimensions.iconSizeS,
               color: isSelected
                   ? Theme.of(context).colorScheme.onPrimary

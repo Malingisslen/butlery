@@ -12622,7 +12622,7 @@
   "mfaBackupCodeSubmit": "Logga in med reservkoden",
   "mfaBackupCodeBack": "Tillbaka till SMS-koden",
   "mfaBackupCodeRejected": "Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.",
-  "mfaBackupCodeLocked": "För många försök med reservkod. Vänta en timme innan du försöker igen.",
+  "mfaBackupCodeLocked": "För många försök med reservkod. Försök igen senare, det kan dröja upp till en timme.",
   "mfaBackupCodeUnavailable": "Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.",
   "mfaBackupCodeRecovered": "Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.",
   "mfaBackupCodesTitle": "Tio reservkoder",

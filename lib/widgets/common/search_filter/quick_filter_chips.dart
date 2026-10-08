@@ -80,7 +80,7 @@ class QuickFilterChips extends StatelessWidget {
     QuickFilterOption(
       id: RecipeFilters.filterPantry,
       label: context.l10n.filterWithMyIngredients,
-      icon: Icons.kitchen_outlined,
+      icon: ButleryIcons.refrigerator,
     ),
     QuickFilterOption(
       id: RecipeFilters.filterIngredientSearch,

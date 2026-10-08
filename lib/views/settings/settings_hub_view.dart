@@ -87,7 +87,7 @@ class SettingsHubView extends StatelessWidget {
                   title: context.l10n.settingsSectionNotifications,
                 ),
                 _SettingsTile(
-                  icon: Icons.notifications_outlined,
+                  icon: ButleryIcons.bell,
                   title: context.l10n.notificationTitle,
                   onTap: () => Navigator.pushNamed(
                     context,
@@ -117,7 +117,7 @@ class SettingsHubView extends StatelessWidget {
                   ),
                 ),
                 _SettingsTile(
-                  icon: Icons.upload_outlined,
+                  icon: ButleryIcons.upload,
                   title: context.l10n.profileRestoreFromBackup,
                   onTap: () => BackupRestoreHandler.handleRestore(
                     context,
@@ -151,12 +151,12 @@ class SettingsHubView extends StatelessWidget {
                       Navigator.pushNamed(context, Routes.settingsAbout),
                 ),
                 _SettingsTile(
-                  icon: Icons.help_outline,
+                  icon: ButleryIcons.circleHelp,
                   title: context.l10n.profileFaq,
                   onTap: () => Navigator.pushNamed(context, Routes.faq),
                 ),
                 _SettingsTile(
-                  icon: Icons.description_outlined,
+                  icon: ButleryIcons.file,
                   title: context.l10n.legalTermsOfService,
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.termsOfService),
@@ -360,7 +360,7 @@ class _AutoAddPantryTileState extends State<AutoAddPantryTile> {
         _userService.currentUserProfile?.autoAddBoughtToPantry ?? false;
     return SwitchListTile(
       secondary: ButleryIcon(
-        Icons.kitchen_outlined,
+        ButleryIcons.refrigerator,
         color: cs.onSurfaceVariant,
       ),
       title: Text(

@@ -17,7 +17,6 @@ import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_m
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 
 /// Comprehensive sharing status dialog showing detailed information about list collaboration
 class ShoppingShareStatusDialog extends StatelessWidget {
@@ -85,7 +84,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           ActionButtons.secondaryButton(
             context,
             label: context.l10n.shoppingManageSharing,
-            icon: Icons.manage_accounts,
+            icon: ButleryIcons.users,
             onPressed: () {
               Navigator.pop(context);
               _showManageSharing(context);
@@ -174,7 +173,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     if (isOwner) {
       permissionLabel = context.l10n.shoppingAdminOwner;
       permissionDescription = context.l10n.shoppingAdminOwnerDescription;
-      permissionIcon = Icons.admin_panel_settings;
+      permissionIcon = ButleryIcons.crown;
       permissionColor = cs.onSurface;
     } else {
       switch (userPermission) {
@@ -200,7 +199,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionLabel = context.l10n.shoppingPermissionAdministrator;
           permissionDescription =
               context.l10n.shoppingPermissionAdminDescription;
-          permissionIcon = Icons.admin_panel_settings;
+          permissionIcon = ButleryIcons.crown;
           permissionColor = cs.onSurface;
           break;
         default:
@@ -317,7 +316,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
     if (isOwner) {
       permissionLabel = context.l10n.shoppingPermissionOwner;
-      permissionIcon = Icons.admin_panel_settings;
+      permissionIcon = ButleryIcons.crown;
       permissionColor = cs.onSurface;
       permissionTextColor = cs.onSurface;
     } else {
@@ -340,7 +339,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdmin;
-          permissionIcon = Icons.admin_panel_settings;
+          permissionIcon = ButleryIcons.crown;
           permissionColor = cs.onSurface;
           permissionTextColor = cs.onSurface;
           break;
@@ -486,7 +485,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       case ListType.collaborative:
         return ButleryIcons.users;
       case ListType.template:
-        return PendingGlyphs.savedTemplate;
+        return ButleryIcons.savedTemplate;
     }
   }
 

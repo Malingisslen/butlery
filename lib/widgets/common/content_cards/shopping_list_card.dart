@@ -392,7 +392,7 @@ class ShoppingListCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ButleryIcon(
-            isComplete ? ButleryIcons.circleCheck : Icons.hourglass_empty,
+            isComplete ? ButleryIcons.circleCheck : ButleryIcons.hourglass,
             size: AppDimensions.iconSizeS,
             color: onColor,
           ),
