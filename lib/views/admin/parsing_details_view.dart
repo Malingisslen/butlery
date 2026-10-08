@@ -8,7 +8,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/parsing_details_viewmodel.dart';
 import 'package:butlery/views/admin/widgets/admin_help_text.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only parsing-details tab: per-domain correction counts + the field the
@@ -52,11 +54,11 @@ class _ParsingDetailsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ParsingDetailsViewModel>();
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.adminParsingTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             tooltip: context.l10n.adminRefresh,
             onPressed: vm.isLoading ? null : vm.refresh,
           ),
@@ -69,7 +71,7 @@ class _ParsingDetailsContent extends StatelessWidget {
   Widget _body(BuildContext context, ParsingDetailsViewModel vm) {
     final l10n = context.l10n;
     if (vm.isLoading && vm.stats.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingParsingStats);
     }
     if (vm.error != null && vm.stats.isEmpty) {
       return StateWidget.error(message: vm.error!, onAction: vm.refresh);
@@ -77,7 +79,7 @@ class _ParsingDetailsContent extends StatelessWidget {
     if (vm.stats.isEmpty) {
       return StateWidget.empty(
         title: l10n.adminParsingEmpty,
-        icon: Icons.rule,
+        icon: ButleryIcons.file,
       );
     }
     return Column(

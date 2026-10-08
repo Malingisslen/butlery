@@ -8,6 +8,10 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Editable card for a single rule condition with type, operator, and value fields.
 class RuleConditionCard extends StatefulWidget {
@@ -61,68 +65,93 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<ConditionType>(
-                    initialValue: widget.condition.type,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.paddingMs,
+                  child: PressFill(
+                    surface: PressSurface.base,
+                    child: DropdownButtonFormField<ConditionType>(
+                      iconEnabledColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      iconDisabledColor: AppModeColors.textDisabled(
+                        Theme.of(context).brightness,
                       ),
-                      border: OutlineInputBorder(),
-                    ),
-                    items: ConditionType.values.map((type) {
-                      return DropdownMenuItem(
-                        value: type,
-                        child: Text(
-                          type.label,
-                          style: AppTextStyles.formOption,
+                      initialValue: widget.condition.type,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.paddingM,
+                          vertical: AppDimensions.space8,
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        widget.onTypeChanged(value);
-                        final newOperators = OperatorRegistry.getValidOperators(
-                          value,
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ConditionType.values.map((type) {
+                        return DropdownMenuItem(
+                          value: type,
+                          child: Text(
+                            type.label,
+                            style: AppTextStyles.formOption,
+                          ),
                         );
-                        if (!newOperators.contains(widget.condition.operator)) {
-                          widget.onOperatorChanged(newOperators.first);
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          widget.onTypeChanged(value);
+                          final newOperators =
+                              OperatorRegistry.getValidOperators(
+                                value,
+                              );
+                          if (!newOperators.contains(
+                            widget.condition.operator,
+                          )) {
+                            widget.onOperatorChanged(newOperators.first);
+                          }
                         }
-                      }
-                    },
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: DropdownButtonFormField<ConditionOperator>(
-                    initialValue: operators.contains(widget.condition.operator)
-                        ? widget.condition.operator
-                        : operators.first,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.paddingMs,
+                  child: PressFill(
+                    surface: PressSurface.base,
+                    child: DropdownButtonFormField<ConditionOperator>(
+                      iconEnabledColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      iconDisabledColor: AppModeColors.textDisabled(
+                        Theme.of(context).brightness,
                       ),
-                      border: OutlineInputBorder(),
+                      initialValue:
+                          operators.contains(widget.condition.operator)
+                          ? widget.condition.operator
+                          : operators.first,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.paddingM,
+                          vertical: AppDimensions.space8,
+                        ),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: operators.map((op) {
+                        return DropdownMenuItem(
+                          value: op,
+                          child: Text(
+                            op.label,
+                            style: AppTextStyles.formOption,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) widget.onOperatorChanged(value);
+                      },
                     ),
-                    items: operators.map((op) {
-                      return DropdownMenuItem(
-                        value: op,
-                        child: Text(op.label, style: AppTextStyles.formOption),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) widget.onOperatorChanged(value);
-                    },
                   ),
                 ),
                 if (widget.canDelete) ...[
                   const SizedBox(width: AppDimensions.spacingSm),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close,
+                    icon: const ButleryIcon(
+                      ButleryIcons.x,
                       size: AppDimensions.iconSizeM,
                     ),
                     onPressed: widget.onDelete,

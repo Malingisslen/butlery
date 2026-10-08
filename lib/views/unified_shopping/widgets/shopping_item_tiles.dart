@@ -8,11 +8,13 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Static API surface for shopping item tiles.
 ///
@@ -82,7 +84,7 @@ class ShoppingItemTiles {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: 64,
             color: cs.onSurfaceVariant,
@@ -156,21 +158,21 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: ThemeConstants.durationFast,
+      duration: AppMotion.micro,
     );
     _pulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween(
           begin: 1.0,
           end: _pulseScale,
-        ).chain(CurveTween(curve: ThemeConstants.standardCurve)),
+        ).chain(CurveTween(curve: AppMotion.curve)),
         weight: 50,
       ),
       TweenSequenceItem(
         tween: Tween(
           begin: _pulseScale,
           end: 1.0,
-        ).chain(CurveTween(curve: ThemeConstants.standardCurve)),
+        ).chain(CurveTween(curve: AppMotion.curve)),
         weight: 50,
       ),
     ]).animate(_pulseController);
@@ -205,15 +207,19 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
 
     return RepaintBoundary(
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+        margin: const EdgeInsets.only(bottom: AppDimensions.space4),
+        // A chosen row is surface.selected with a 1.5 px text.primary
+        // border, never a 12 % ink tint (enhet-3 valda tonplattor
+        // shopping_item_tiles.dart:211; tokens.json:40-53, surface.selected;
+        // Skarmar v12 etapp 9 #flerbar). primaryContainer is surface.selected
+        // and onSurface text.primary in both schemes; cs.primary is ink in
+        // both modes and would vanish on dark.
         decoration: BoxDecoration(
-          color: selected
-              ? cs.primary.withValues(alpha: 0.12)
-              : cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          color: selected ? cs.primaryContainer : cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
-            color: selected ? cs.primary : cs.outlineVariant,
-            width: AppDimensions.borderWidthStandard,
+            color: selected ? cs.onSurface : cs.outlineVariant,
+            width: selected ? 1.5 : AppDimensions.borderWidthStandard,
           ),
         ),
         child: Semantics(
@@ -246,15 +252,17 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
               onLongPress: (selection == null || selectionMode)
                   ? null
                   : () => selection.enterSelectionMode(widget.item.id),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 child: Row(
                   children: [
                     if (selectionMode) ...[
-                      Icon(
-                        selected ? Icons.check_circle : Icons.circle_outlined,
-                        color: selected ? cs.primary : cs.onSurfaceVariant,
+                      ButleryIcon(
+                        selected
+                            ? ButleryIcons.circleCheck
+                            : ButleryIcons.circle,
+                        color: selected ? cs.onSurface : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.paddingM),
@@ -278,25 +286,28 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     return ScaleTransition(
       scale: _pulseAnimation,
       child: AnimatedContainer(
-        duration: ThemeConstants.durationStandard.respectingMotion(context),
-        curve: ThemeConstants.standardCurve,
+        duration: AppMotion.micro.respectingMotion(context),
+        curve: AppMotion.curve,
         width: _checkboxSize,
         height: _checkboxSize,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          // Ticked: control.checked.background, ink in both modes, edge
+          // and fill (tokens.json:145-148). Unticked: a text.primary edge
+          // (onSurface), ink on light, paper on dark, where ink vanished.
           border: Border.all(
-            color: cs.primary,
+            color: widget.isCompleted ? cs.primary : cs.onSurface,
             width: _checkboxBorderWidth,
           ),
           color: widget.isCompleted ? cs.primary : cs.surfaceContainerHighest,
         ),
         child: AnimatedSwitcher(
-          duration: ThemeConstants.durationFast.respectingMotion(context),
-          switchInCurve: ThemeConstants.standardCurve,
-          switchOutCurve: ThemeConstants.standardCurve,
+          duration: AppMotion.micro.respectingMotion(context),
+          switchInCurve: AppMotion.curve,
+          switchOutCurve: AppMotion.curve,
           child: widget.isCompleted
-              ? Icon(
-                  Icons.check,
+              ? ButleryIcon(
+                  ButleryIcons.check,
                   key: const ValueKey('check-icon'),
                   size: _checkIconSize,
                   color: cs.surfaceContainerHighest,
@@ -308,10 +319,13 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
   }
 
   Widget _buildItemDetails(ColorScheme cs) {
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // BUT-2193 (Malin, 2026-10-03): a row may cut a long name at the
+          // normal text size.
           Text(
             widget.item.displayText,
             style: AppTextStyles.contentTitle.copyWith(
@@ -320,25 +334,21 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                   ? TextDecoration.lineThrough
                   : TextDecoration.none,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            maxLines: largeText ? null : 2,
+            overflow: largeText ? null : TextOverflow.ellipsis,
           ),
           if (widget.item.note?.isNotEmpty == true) ...[
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               widget.item.note!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: widget.isCompleted
-                    ? cs.onSurfaceVariant.withValues(
-                        alpha: AppDimensions.opacityVeryDark,
-                      )
-                    : cs.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
                 decoration: widget.isCompleted
                     ? TextDecoration.lineThrough
                     : TextDecoration.none,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: largeText ? null : 1,
+              overflow: largeText ? null : TextOverflow.ellipsis,
             ),
           ],
         ],
@@ -369,26 +379,24 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           _buildDragHandle(context, cs),
         if (widget.onMoveToCategory != null && !widget.isCompleted)
           AppIconButton(
-            icon: Icons.drive_file_move_outline,
+            icon: ButleryIcons.move,
             onPressed: widget.onMoveToCategory,
             semanticLabel: context.l10n.shoppingMoveToCategory,
             color: cs.onSurfaceVariant,
             iconSize: AppDimensions.iconSizeS,
           ),
         AppIconButton(
-          icon: Icons.edit,
+          icon: ButleryIcons.pencil,
           onPressed: () => widget.onEditItem(widget.item),
           semanticLabel: context.l10n.a11yEditItem(widget.item.name),
           color: cs.onSurfaceVariant,
           iconSize: AppDimensions.iconSizeS,
         ),
         AppIconButton(
-          icon: Icons.delete,
+          icon: ButleryIcons.trash2,
           onPressed: () => widget.onDeleteItem(widget.item),
           semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
-          color: cs.onSurfaceVariant.withValues(
-            alpha: AppDimensions.opacityDark,
-          ),
+          color: cs.onSurfaceVariant,
           iconSize: AppDimensions.iconSizeS,
         ),
       ],
@@ -403,14 +411,14 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
       data: widget.item,
       feedback: Material(
         elevation: 4,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            border: Border.all(color: cs.primary, width: 2),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            border: Border.all(color: cs.onSurface, width: 2),
           ),
           child: Text(
             widget.item.displayText,
@@ -426,8 +434,8 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         // it doesn't respond to a screen-reader activate/tap (the accessible
         // path is the move-to-category button). `button: true` was misleading.
         label: context.l10n.a11yShoppingReorderHandle(widget.item.name),
-        child: Icon(
-          Icons.drag_handle,
+        child: ButleryIcon(
+          ButleryIcons.drag,
           color: cs.onSurfaceVariant,
           size: AppDimensions.iconSizeS,
         ),
@@ -439,7 +447,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     switch (priority) {
       case 4:
       case 5:
-        return cs.primary;
+        return cs.onSurface;
       default:
         return cs.onSurfaceVariant;
     }

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog for handling unknown ingredients found during recipe tagging.
 ///
@@ -143,15 +145,28 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
             onPressed: _isSaving ? null : _previous,
             child: Text(context.l10n.commonPrevious),
           ),
-        FilledButton(
-          onPressed: _isSaving ? null : _saveAndNext,
-          child: _isSaving
-              ? const LoadingIndicator(size: 16, strokeWidth: 2)
-              : Text(
-                  _isLast
-                      ? context.l10n.commonSaveAndClose
-                      : context.l10n.commonSaveAndNext,
-                ),
+        // Busy: the button keeps its name and colours and gets the plate
+        // line along its bottom edge (Komponentark v1:365, :372;
+        // produktregler.md:902), never a spinner (B-18).
+        BusyButtonSemantics(
+          busy: _isSaving,
+          name: _isLast
+              ? context.l10n.commonSaveAndClose
+              : context.l10n.commonSaveAndNext,
+          child: FilledButton(
+            onPressed: _isSaving ? PlateLineButton.ignore : _saveAndNext,
+            style: _isSaving
+                ? PlateLineButton.busyStyle(
+                    null,
+                    Theme.of(context).filledButtonTheme.style,
+                  )
+                : null,
+            child: Text(
+              _isLast
+                  ? context.l10n.commonSaveAndClose
+                  : context.l10n.commonSaveAndNext,
+            ),
+          ),
         ),
       ],
     );
@@ -174,18 +189,21 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       runSpacing: 8,
       children: commonAllergens.map((allergen) {
         final isSelected = _current.properties.contains(allergen.$1);
-        return FilterChip(
-          label: Text(allergen.$2),
-          selected: isSelected,
-          onSelected: (selected) {
-            setState(() {
-              if (selected) {
-                _current.properties.add(allergen.$1);
-              } else {
-                _current.properties.remove(allergen.$1);
-              }
-            });
-          },
+        return PressFill(
+          surface: isSelected ? PressSurface.ink : PressSurface.base,
+          child: FilterChip(
+            label: Text(allergen.$2),
+            selected: isSelected,
+            onSelected: (selected) {
+              setState(() {
+                if (selected) {
+                  _current.properties.add(allergen.$1);
+                } else {
+                  _current.properties.remove(allergen.$1);
+                }
+              });
+            },
+          ),
         );
       }).toList(),
     );
@@ -208,18 +226,21 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       runSpacing: 8,
       children: dietaryOptions.map((option) {
         final isSelected = _current.properties.contains(option.$1);
-        return FilterChip(
-          label: Text(option.$2),
-          selected: isSelected,
-          onSelected: (selected) {
-            setState(() {
-              if (selected) {
-                _current.properties.add(option.$1);
-              } else {
-                _current.properties.remove(option.$1);
-              }
-            });
-          },
+        return PressFill(
+          surface: isSelected ? PressSurface.ink : PressSurface.base,
+          child: FilterChip(
+            label: Text(option.$2),
+            selected: isSelected,
+            onSelected: (selected) {
+              setState(() {
+                if (selected) {
+                  _current.properties.add(option.$1);
+                } else {
+                  _current.properties.remove(option.$1);
+                }
+              });
+            },
+          ),
         );
       }).toList(),
     );
@@ -273,9 +294,12 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       if (!mounted) return;
       setState(() => _isSaving = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dialogCouldNotSave(e.toString())),
+        // The ink snackbar (PQ-09 = A), with the cause in words, never the
+        // raw exception (content-style-guide.md:96).
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.dialogCouldNotSave(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

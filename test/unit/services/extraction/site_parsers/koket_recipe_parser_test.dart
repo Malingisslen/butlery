@@ -67,13 +67,8 @@ void main() {
         final instructions = recipe['recipeInstructions'] as List;
         expect(instructions.length, equals(3));
 
-        // Instructions should be HowToStep objects or strings
-        final firstStep = instructions[0];
-        if (firstStep is Map) {
-          expect(firstStep['text'], contains('Blanda alla ingredienser'));
-        } else {
-          expect(firstStep, contains('Blanda alla ingredienser'));
-        }
+        expect(instructions, everyElement(isA<String>()));
+        expect(instructions[0], contains('Blanda alla ingredienser'));
       });
     });
 
@@ -203,13 +198,10 @@ void main() {
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
 
-        for (final instruction in instructions) {
-          if (instruction is String) {
-            expect(instruction, equals(instruction.trim()));
-          } else if (instruction is Map && instruction['text'] != null) {
-            final text = instruction['text'].toString();
-            expect(text, equals(text.trim()));
-          }
+        expect(instructions, isNotEmpty);
+        expect(instructions, everyElement(isA<String>()));
+        for (final instruction in instructions.cast<String>()) {
+          expect(instruction, equals(instruction.trim()));
         }
       });
 
@@ -267,13 +259,8 @@ void main() {
         expect(instructions.length, greaterThanOrEqualTo(4));
 
         // Check for instruction content
-        final instructionTexts = instructions.map((inst) {
-          if (inst is String) return inst;
-          if (inst is Map && inst['text'] != null) {
-            return inst['text'].toString();
-          }
-          return '';
-        }).toList();
+        expect(instructions, everyElement(isA<String>()));
+        final instructionTexts = instructions.cast<String>();
 
         expect(
           instructionTexts.any((text) => text.contains('Vispa ägg')),

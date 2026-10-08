@@ -4,19 +4,37 @@ import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/views/settings/mfa_backup_codes_dialog.dart';
+import 'package:butlery/views/settings/mfa_enrollment_forms.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for managing Multi-Factor Authentication settings.
-/// Allows users to enroll or unenroll phone-based MFA.
+///
+/// Turning two-step verification ON is still hidden (produktbeslut PQ-16 = A,
+/// 2026-09-23; Linear BUT-2142). P6-U09 built the sign-in challenge
+/// (MfaChallengeView), the ten backup codes shown and acknowledged before
+/// the phone is enrolled (below), and the recovery with a code
+/// (functions/src/account/mfa-backup-codes.ts). The switch stays off until
+/// those callables are deployed with their `IDENTITY_TOOLKIT_API_KEY`
+/// parameter and have passed the security review: a recovery that cannot
+/// run is the lock-out §14.2 forbids (produktregler.md:749). Someone who
+/// already has it on still sees the registered method and can remove it.
 class MfaSettingsView extends StatefulWidget {
-  const MfaSettingsView({super.key});
+  const MfaSettingsView({this.offersEnrollment = false, super.key});
+
+  /// Whether the view offers to turn two-step verification on (the phone
+  /// form and "Skicka kod"). False in the app until the sign-in challenge
+  /// and the fallback exist (PQ-16, BUT-2142); tests build the form with it.
+  final bool offersEnrollment;
 
   @override
   State<MfaSettingsView> createState() => _MfaSettingsViewState();
@@ -24,13 +42,18 @@ class MfaSettingsView extends StatefulWidget {
 
 class _MfaSettingsViewState extends State<MfaSettingsView> {
   final AuthMfaService _authService = ServiceLocator.get<AuthMfaService>();
+  final TextEditingController _countryCodeController = TextEditingController(
+    text: '+46',
+  );
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
 
   bool _isLoading = false;
   bool _hasMfa = false;
   bool _isEnrolling = false;
+  bool _verifyingCode = false;
   String? _verificationId;
+  String _sentTo = '';
   String? _errorMessage;
   List<MfaFactorInfo> _enrolledFactors = [];
 
@@ -42,6 +65,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   @override
   void dispose() {
+    // Leaving on the code step abandons an enrollment whose codes already
+    // exist on the server; discardBackupCodes never throws. Not while the
+    // code is being verified: the factor may still land, and clearing its
+    // codes then would leave two-step verification on with none.
+    if (_isEnrolling && !_verifyingCode) _authService.discardBackupCodes();
+    _countryCodeController.dispose();
     _phoneController.dispose();
     _codeController.dispose();
     super.dispose();
@@ -61,10 +90,33 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     setState(() => _isLoading = false);
   }
 
+  MfaPhoneParse _parsePhone() => parseMfaPhone(
+    countryCode: _countryCodeController.text,
+    national: _phoneController.text,
+  );
+
+  String _phoneProblemMessage(MfaPhoneProblem problem) {
+    switch (problem) {
+      case MfaPhoneProblem.countryCode:
+        return context.l10n.mfaCountryCodeInvalid;
+      case MfaPhoneProblem.number:
+        return context.l10n.mfaPhoneDigitsOnly;
+      case MfaPhoneProblem.tooLong:
+        return context.l10n.mfaPhoneTooLong;
+    }
+  }
+
   Future<void> _startEnrollment() async {
-    final phone = _phoneController.text.trim();
-    if (phone.isEmpty) {
+    if (_phoneController.text.trim().isEmpty) {
       setState(() => _errorMessage = context.l10n.mfaEnterPhoneNumber);
+      return;
+    }
+    // Validated before the password is asked for: a number Firebase would
+    // refuse must not cost the user a re-authentication and ten new codes.
+    final parsed = _parsePhone();
+    final number = parsed.number;
+    if (number == null) {
+      setState(() => _errorMessage = _phoneProblemMessage(parsed.problem!));
       return;
     }
 
@@ -77,8 +129,31 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     );
     if (!reauthSuccess || !mounted) return;
 
-    // Ensure phone number has country code
-    final formattedPhone = phone.startsWith('+') ? phone : '+46$phone';
+    // Ten one-time codes BEFORE the protection applies: "Reservkoder hör i
+    // påslagningen — tio engångskoder innan skyddet gäller"
+    // (produktregler.md:748; Skarmar v12 etapp 6 #mfaaktiv). No codes, or
+    // codes not acknowledged, and nothing is enrolled.
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    final codes = await _authService.generateBackupCodes();
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    if (codes == null) {
+      setState(() {
+        _errorMessage =
+            _authService.errorMessage ?? context.l10n.mfaBackupCodesFailed;
+      });
+      return;
+    }
+    final acknowledged = await MfaBackupCodesDialog.show(context, codes);
+    if (!acknowledged) {
+      // Codes exist on the server but no factor will ever use them.
+      await _authService.discardBackupCodes();
+      return;
+    }
+    if (!mounted) return;
 
     setState(() {
       _isLoading = true;
@@ -86,20 +161,29 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     });
 
     await _authService.startMfaEnrollment(
-      formattedPhone,
+      number.e164,
       onCodeSent: (verificationId) {
         if (!mounted) return;
         setState(() {
           _verificationId = verificationId;
+          _sentTo = number.display;
           _isEnrolling = true;
           _isLoading = false;
         });
       },
       onError: (error) {
+        // Runs even if the view is gone: the codes must not outlive a
+        // failed enrollment.
+        _authService.discardBackupCodes();
         if (!mounted) return;
+        // Back to the phone step: with the codes gone, the code form must not
+        // stay open to finish an enrollment that has none.
         setState(() {
           _errorMessage = _mapErrorMessage(error.code);
           _isLoading = false;
+          _isEnrolling = false;
+          _verificationId = null;
+          _codeController.clear();
         });
       },
       onAutoVerified: () {
@@ -126,16 +210,23 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       _errorMessage = null;
     });
 
-    final success = await _authService.completeMfaEnrollment(
-      _verificationId!,
-      code,
-    );
+    _verifyingCode = true;
+    final bool success;
+    try {
+      success = await _authService.completeMfaEnrollment(
+        _verificationId!,
+        code,
+      );
+    } finally {
+      _verifyingCode = false;
+    }
 
     if (!mounted) return;
 
     if (success) {
       _codeController.clear();
       _phoneController.clear();
+      _countryCodeController.text = '+46';
       setState(() {
         _isEnrolling = false;
         _verificationId = null;
@@ -205,13 +296,19 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  Future<void> _cancelCodeEntry() async {
+    setState(() {
+      _isEnrolling = false;
+      _verificationId = null;
+      _errorMessage = null;
+      _codeController.clear();
+    });
+    // The codes were made for this attempt and no factor will use them.
+    await _authService.discardBackupCodes();
+  }
+
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.butleryColors.success,
-      ),
-    );
+    SnackBarUtils.showSuccess(context, message);
   }
 
   String _mapErrorMessage(String code) {
@@ -222,6 +319,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         return context.l10n.mfaQuotaExceeded;
       case 'invalid-verification-code':
         return context.l10n.mfaInvalidCode;
+      case 'unverified-email':
+        return context.l10n.mfaErrorUnverifiedEmail;
+      case 'second-factor-already-in-use':
+        return context.l10n.mfaErrorSecondFactorInUse;
+      case 'requires-recent-login':
+        return context.l10n.mfaErrorRequiresRecentLogin;
       default:
         return context.l10n.errorGeneric;
     }
@@ -230,11 +333,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.mfaTitle,
+        backTo: context.l10n.accountSecurityTitle,
       ),
       body: _isLoading && !_isEnrolling
-          ? StateWidget.loading()
+          ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),
@@ -247,11 +351,11 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                       const SizedBox(height: AppDimensions.spacingLg),
                       if (_hasMfa)
                         _buildEnrolledSection()
-                      else
+                      else if (widget.offersEnrollment)
                         _buildEnrollSection(),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: AppDimensions.spacingMd),
-                        _buildErrorMessage(),
+                        MfaErrorBanner(message: _errorMessage!),
                       ],
                     ],
                   ),
@@ -267,11 +371,11 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Row(
           children: [
-            Icon(
-              _hasMfa ? Icons.verified_user : Icons.security,
+            ButleryIcon(
+              _hasMfa ? ButleryIcons.shieldCheck : ButleryIcons.shield,
               color: _hasMfa
-                  ? context.butleryColors.success
-                  : context.butleryColors.warning,
+                  ? context.modeColors.success
+                  : context.modeColors.warning,
               size: 40,
             ),
             const SizedBox(width: AppDimensions.spacingMd),
@@ -286,12 +390,16 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                     style: AppTextStyles.titleBold,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    _hasMfa
-                        ? context.l10n.mfaAccountProtected
-                        : context.l10n.mfaEnableForSecurity,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  // Without the form, "Aktivera MFA för extra säkerhet" would
+                  // point at something the view no longer offers
+                  // (PQ-16).
+                  if (_hasMfa || widget.offersEnrollment)
+                    Text(
+                      _hasMfa
+                          ? context.l10n.mfaAccountProtected
+                          : context.l10n.mfaEnableForSecurity,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                 ],
               ),
             ),
@@ -313,7 +421,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         ..._enrolledFactors.map(
           (factor) => Card(
             child: ListTile(
-              leading: const Icon(Icons.phone_android),
+              leading: const ButleryIcon(ButleryIcons.smartphone),
               title: Text(factor.displayName ?? context.l10n.mfaPhone),
               subtitle: Text(
                 context.l10n.mfaRegistered(
@@ -321,8 +429,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                 ),
               ),
               trailing: IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
+                icon: ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 onPressed: () => _unenrollMfa(factor),
@@ -336,141 +444,28 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   Widget _buildEnrollSection() {
     if (_isEnrolling) {
-      return _buildCodeVerificationForm();
+      return MfaCodeVerificationForm(
+        sentTo: _sentTo,
+        codeController: _codeController,
+        busy: _isLoading,
+        onCancel: _cancelCodeEntry,
+        onVerify: _completeEnrollment,
+      );
     }
-    return _buildPhoneInputForm();
-  }
-
-  Widget _buildPhoneInputForm() {
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.mfaAddPhoneNumber,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Text(context.l10n.mfaSmsDescription),
-            const SizedBox(height: AppDimensions.spacingMd),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: context.l10n.mfaPhoneNumber,
-                hintText: context.l10n.mfaPhoneHint,
-                prefixIcon: const Icon(Icons.phone),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            ActionButtons.primaryButton(
-              context,
-              label: context.l10n.mfaSendCode,
-              onPressed: _isLoading ? null : _startEnrollment,
-              isLoading: _isLoading,
-              isExpanded: true,
-            ),
-          ],
-        ),
-      ),
+    return MfaPhoneInputForm(
+      countryCodeController: _countryCodeController,
+      phoneController: _phoneController,
+      busy: _isLoading,
+      onSend: _startEnrollment,
     );
   }
 
-  Widget _buildCodeVerificationForm() {
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.mfaEnterVerificationCode,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Text(context.l10n.mfaCodeSentTo(_phoneController.text)),
-            const SizedBox(height: AppDimensions.spacingMd),
-            TextField(
-              controller: _codeController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: InputDecoration(
-                labelText: context.l10n.mfaSixDigitCode,
-                prefixIcon: const Icon(Icons.lock),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Row(
-              children: [
-                Expanded(
-                  child: ActionButtons.secondaryButton(
-                    context,
-                    label: context.l10n.commonCancel,
-                    onPressed: () {
-                      setState(() {
-                        _isEnrolling = false;
-                        _verificationId = null;
-                        _codeController.clear();
-                      });
-                    },
-                    isExpanded: true,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingL),
-                Expanded(
-                  child: ActionButtons.primaryButton(
-                    context,
-                    label: context.l10n.mfaVerify,
-                    onPressed: _isLoading ? null : _completeEnrollment,
-                    isLoading: _isLoading,
-                    isExpanded: true,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorMessage() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: Theme.of(context).colorScheme.onErrorContainer,
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(
-            child: Text(
-              _errorMessage!,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onErrorContainer,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // firebase_auth reports the enrollment time in seconds on every platform.
   String _formatEnrollmentTime(double? timestamp) {
     if (timestamp == null) return context.l10n.commonUnknown;
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp.toInt());
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      (timestamp * 1000).toInt(),
+    );
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

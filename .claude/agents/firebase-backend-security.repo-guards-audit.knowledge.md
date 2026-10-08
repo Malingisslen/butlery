@@ -121,6 +121,13 @@
   inheriting a stray default (`updatedAt ?? now()`) that restamps every "clean" write.
   `validateRequiredFields` checks `containsKey` only — never credit it with rejecting an
   empty/blank value.
+- An embedded PREVIOUS-VERSION snapshot (`previous: {fields, at}` written in the same update)
+  needs a key allowlist at BOTH ends — the writer's `storedValues` and the reader's `fromMap` —
+  so an actor field (`updatedBy`) never enters and a hand-written key is never restored. A
+  "no uid in it" test is vacuous for the filter unless its change map could carry the actor
+  key. Firestore TTL deletes DOCUMENTS, never a field, so an "N-day restore window" on such a
+  field is a UI window, not a retention bound: the old free text stays until the next save
+  or the item's deletion — ask for the decision record, not only a code comment citing it.
 - UPDATE permission checks must load the STORED doc's ownership field, not the submitted
   entity's. A `not-in`/`in` filter silently excludes docs where the discriminator is
   absent; replacing a PREDICATE with an ENUMERATION reclassifies HISTORY — derive the list

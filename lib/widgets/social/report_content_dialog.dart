@@ -4,7 +4,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 /// Reusable report dialog for any content type.
 ///
@@ -24,46 +30,67 @@ class ReportContentDialog {
     required String contentId,
     String? contentOwnerId,
   }) async {
-    final outcome = await _showReasonDialog(context);
+    final outcome = await _showReasonDialog(context, contentType);
     if (outcome == null || !context.mounted) return;
 
+    await _submit(
+      context,
+      contentType: contentType,
+      contentId: contentId,
+      contentOwnerId: contentOwnerId,
+      outcome: outcome,
+    );
+  }
+
+  /// Sends the report and says how it went: "Anmälan har skickats", or the
+  /// failure snackbar with what happened and Försök igen, which sends the
+  /// same report again (content-style-guide.md:87-97).
+  static Future<void> _submit(
+    BuildContext context, {
+    required ContentType contentType,
+    required String contentId,
+    required String? contentOwnerId,
+    required _ReportOutcome outcome,
+  }) async {
+    var success = false;
     try {
       final reportService = ServiceLocator.get<ReportService>();
-      final success = await reportService.submitReport(
+      success = await reportService.submitReport(
         contentType: contentType,
         contentId: contentId,
         reason: outcome.reason,
         contentOwnerId: contentOwnerId,
         description: outcome.description,
       );
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? context.l10n.reportSubmitted
-                  : context.l10n.reportSubmitFailed,
-            ),
-            backgroundColor: success
-                ? context.butleryColors.success
-                : Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.reportSubmitFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
+    } catch (_) {
+      success = false;
     }
+
+    if (!context.mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, context.l10n.reportSubmitted);
+      return;
+    }
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.reportSubmitFailed,
+      action: FailureAction.retry(() {
+        if (!context.mounted) return;
+        _submit(
+          context,
+          contentType: contentType,
+          contentId: contentId,
+          contentOwnerId: contentOwnerId,
+          outcome: outcome,
+        );
+      }),
+    );
   }
 
-  static Future<_ReportOutcome?> _showReasonDialog(BuildContext context) async {
+  static Future<_ReportOutcome?> _showReasonDialog(
+    BuildContext context,
+    ContentType contentType,
+  ) async {
     String? selectedReason;
     final descriptionController = TextEditingController();
 
@@ -93,10 +120,32 @@ class ReportContentDialog {
               selectedReason != null && (!isOther || descriptionFilled);
 
           return AlertDialog(
-            title: Text(l10n.reportDialogTitle),
+            // "Anmäl det här receptet" for a recipe, as drawn (Skarmar v12
+            // etapp 9 #fbanmal:507). Interpretation: the other content types
+            // have no drawn title and say "Anmäl innehåll".
+            title: Text(
+              contentType == ContentType.recipe
+                  ? l10n.reportDialogTitleRecipe
+                  : l10n.reportDialogTitle,
+            ),
+            // Five 48 dp reasons, the free-text field and the note do not fit
+            // a short screen or large text, so the content scrolls rather
+            // than clipping (tillganglighetshandoff:85, 200 % text).
+            scrollable: true,
             content: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // The drawn intro under the title (Skarmar v12 etapp 9
+                // #fbanmal:508): who reads the report, a person
+                // (produktregler.md:940).
+                Text(
+                  l10n.reportDialogIntro,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 RadioGroup<String>(
                   groupValue: selectedReason,
                   onChanged: (value) => setState(() => selectedReason = value),
@@ -104,9 +153,15 @@ class ReportContentDialog {
                     mainAxisSize: MainAxisSize.min,
                     children: reasons
                         .map(
-                          (reason) => RadioListTile<String>(
-                            title: Text(reason),
-                            value: reason,
+                          // Each reason is a 48 dp row with the canonical focus
+                          // ring around it, never a saffron focus tint
+                          // (Skarmar v12 etapp 9 #fbanmal, "48 px radhöjd";
+                          // Grafisk manual v6:209, :381).
+                          (reason) => ButleryControlFocus(
+                            child: RadioListTile<String>(
+                              title: Text(reason),
+                              value: reason,
+                            ),
                           ),
                         )
                         .toList(),
@@ -122,14 +177,22 @@ class ReportContentDialog {
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       hintText: l10n.reportDescriptionHint,
+                      // "Krävs när du väljer Annat." with the 0 / 500 counter
+                      // beside it, as drawn (#fbanmal:516;
+                      // produktregler.md:938). Interpretation: the drawn bold
+                      // on "Krävs" is left out; the helper is plain text.
+                      helperText: l10n.reportDescriptionRequiredHelper,
                       border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
                 const SizedBox(height: 12),
+                // "Vi bedömer mot våra riktlinjer — den version du ser nu är
+                // den vi dömer efter." (#fbanmal:518; produktregler.md:939).
                 _GuidelinesNote(
                   prefix: l10n.reportDialogGuidelinesNotePrefix,
                   linkText: l10n.reportDialogGuidelinesLink,
+                  suffix: l10n.reportDialogGuidelinesNoteSuffix,
                 ),
               ],
             ),
@@ -138,7 +201,22 @@ class ReportContentDialog {
                 onPressed: () => Navigator.pop(context),
                 child: Text(l10n.commonCancel),
               ),
-              ElevatedButton(
+              // The dialog's one saffron action, "Skicka anmälan" (Skarmar
+              // v12 etapp 9 #fbanmal:523; Komponentark v1:843-844).
+              // Interpretation that departs from the drawing: #fbanmal draws
+              // a full-width 48 px block with no Avbryt beside it; here it is
+              // sized to its label in the AlertDialog action row next to
+              // Avbryt. The dialog says "anmälan" throughout, as drawn.
+              FilledButton(
+                key: const ValueKey('reportContent.submit'),
+                style:
+                    ComponentThemes.heroButtonStyle(
+                      Theme.of(context).colorScheme,
+                    ).copyWith(
+                      minimumSize: const WidgetStatePropertyAll(
+                        Size(0, AppDimensions.minTouchTarget),
+                      ),
+                    ),
                 onPressed: canSubmit
                     ? () => Navigator.pop(
                         context,
@@ -174,43 +252,48 @@ class _ReportOutcome {
 /// Tap on the linked phrase opens the guidelines view; the visible
 /// version is implicitly the version stamped on the resulting report record.
 class _GuidelinesNote extends StatelessWidget {
-  const _GuidelinesNote({required this.prefix, required this.linkText});
+  const _GuidelinesNote({
+    required this.prefix,
+    required this.linkText,
+    required this.suffix,
+  });
 
   final String prefix;
   final String linkText;
+  final String suffix;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final base = theme.textTheme.bodySmall ?? const TextStyle(fontSize: 12);
+    final base = theme.textTheme.bodySmall ?? AppTextStyles.bodySmall;
     return Text.rich(
       TextSpan(
-        style: base.copyWith(color: base.color?.withValues(alpha: 0.75)),
+        // text.secondary, not the body colour at 75 %: opacity is never a
+        // colour (tokens.json:40-53).
+        style: base.copyWith(color: theme.colorScheme.onSurfaceVariant),
         children: [
           TextSpan(text: '$prefix '),
           // BUT-1446: WidgetSpan + Semantics(link:) so the guidelines link is
           // announced as a link with a name (was an inline TapGestureRecognizer
-          // — no link role, invisible to the a11y audit scanner). Dropping the
+          // — no link role). Dropping the
           // recognizer also lets this be a StatelessWidget.
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
-            child: Semantics(
-              link: true,
-              label: linkText,
-              child: GestureDetector(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(Routes.communityGuidelines),
-                child: Text(
-                  linkText,
-                  style: base.copyWith(
-                    color: theme.colorScheme.primary,
-                    decoration: TextDecoration.underline,
-                  ),
+            child: ButleryLink(
+              semanticLabel: linkText,
+              onTap: () =>
+                  Navigator.of(context).pushNamed(Routes.communityGuidelines),
+              child: Text(
+                linkText,
+                style: base.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
                 ),
               ),
             ),
           ),
+          TextSpan(text: ' $suffix'),
         ],
       ),
     );

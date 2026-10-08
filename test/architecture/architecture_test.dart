@@ -168,6 +168,9 @@ void main() {
         // account-deletion CF callable. Singleton access lives here so the
         // service stays mockable.
         'lib/core/di/modules/core_module.dart',
+        // Local test mode points the SDK singletons at the emulators before
+        // the DI graph exists, the same moment main.dart configures them.
+        'lib/core/bootstrap/emulator_bootstrap.dart',
 
         // FCM token-manager: structurally a service but named without
         // "_service" suffix; Firebase Messaging singleton is the contract.
@@ -446,8 +449,19 @@ void main() {
     // caught. Both are zero-instance today; this guards the common case.
     test('no raw \$userId / \$uid interpolated into AppLogger calls in lib/ '
         '(use .maskedUserId)', () {
+      // BUT-1964: a list of exact spellings missed `$currentUserId` and
+      // `$participantId`, so the arm matches person-id SUFFIXES instead. The
+      // braced form refuses a last segment starting with `masked`, which is
+      // what lets `${userId.maskedUserId}` through.
+      const personId =
+          r'(?:\w*[uU]serId|\w*[uU]id|\w*[fF]riendId|\w*[mM]emberId'
+          r'|\w*[iI]nviteeId|\w*[oO]wnerId|\w*[pP]articipantId|\w*[sS]enderId)';
       final pattern = RegExp(
-        r'AppLogger\.\w+\([^;]*(\$userId\b|\$\{userId\}|\$uid\b|\$\{uid\})',
+        r'AppLogger\.\w+\([^;]*(\$'
+        '$personId'
+        r'\b|\$\{(?:\w+\.)*(?!masked)'
+        '$personId'
+        r'\})',
       );
 
       final violations = <String>[];
@@ -648,33 +662,22 @@ void main() {
       );
     });
 
-    // BUT-885: raw CircularProgressIndicator in lib/widgets/ bypasses the
-    // LoadingIndicator wrapper that adds platform-adaptive rendering (Cupertino
-    // on iOS), consistent sizing, and screen-reader live-region semantics.
-    // All new spinner usage in lib/widgets/ must go through LoadingIndicator.
+    // B-18 (beslutslogg.md:25) and produktregler.md:163: loading is the
+    // plate line plus text, never a spinner. The BUT-885 / BUT-1168 guard
+    // once routed every spinner in lib/widgets/ through LoadingIndicator;
+    // package 7 (P7-Z) deleted LoadingIndicator and AdaptiveActivityIndicator,
+    // so no spinner is allowed at all. Loading is PlateLine or
+    // StateWidget.loading(message:).
     //
-    // Exempt paths (they define the adaptation layer itself):
-    //   lib/widgets/common/indicators/ — LoadingIndicator + AdaptiveActivityIndicator
+    // Exempt paths (the canonical loading-state layers):
     //   lib/widgets/common/state/      — canonical loading-state widgets
     //   lib/widgets/common/loading/    — overlay/utility loading components
-    //
-    // The long-tail migration (BUT-885 → BUT-1168) is COMPLETE: the allowlist
-    // below is now empty, so every spinner in lib/widgets/ routes through
-    // LoadingIndicator. The guard now enforces zero raw CircularProgressIndicator.
-    test('no raw CircularProgressIndicator in lib/widgets/ '
-        'outside common/{indicators,state,loading}/ '
-        '(use LoadingIndicator wrapper)', () {
-      // Exempt prefixes — the adapter + canonical state layer.
+    test('no CircularProgressIndicator in lib/widgets/ '
+        'outside common/{state,loading}/ (use PlateLine or StateWidget)', () {
       const exemptPrefixes = <String>[
-        'lib/widgets/common/indicators/',
         'lib/widgets/common/state/',
         'lib/widgets/common/loading/',
       ];
-
-      // Empty — the BUT-885 / BUT-1168 long-tail migration finished (iter-113 +
-      // waves 2-4, 2026-06-01). Every spinner in lib/widgets/ now routes through
-      // LoadingIndicator. Do NOT add new entries; fix the file instead.
-      const allowList = <String>{};
 
       final pattern = RegExp(r'\bCircularProgressIndicator\s*\(');
       final violations = <String>[];
@@ -683,11 +686,7 @@ void main() {
         final relPath = relPathOf(file);
         if (!relPath.startsWith('lib/widgets/')) continue;
 
-        // Skip the exempt adapter/state/loading layers.
         if (exemptPrefixes.any((p) => relPath.startsWith(p))) continue;
-
-        // Skip known pre-existing violations.
-        if (allowList.contains(relPath)) continue;
 
         final content = file.readAsStringSync();
         final stripped = content
@@ -703,27 +702,17 @@ void main() {
         violations,
         isEmpty,
         reason:
-            'Raw CircularProgressIndicator in lib/widgets/ bypasses '
-            'the LoadingIndicator wrapper (platform-adaptive, a11y, '
-            'consistent sizing). Use LoadingIndicator instead.\n'
+            'A spinner in lib/widgets/ breaks B-18: loading is the plate '
+            'line plus text. Use PlateLine or StateWidget.loading(message:).\n'
             'New violations:\n${violations.join('\n')}',
       );
     });
 
-    // BUT-1066 (BUT-885 follow-up): the same LoadingIndicator-wrapper rule
-    // applies to lib/views/. Unlike lib/widgets/ (which still carries a
-    // long-tail allowlist), the views layer is already 100% clean — every
-    // view routes spinners through LoadingIndicator / StateWidget. So this
-    // guard ships with a ZERO allowlist: it's pure regression-prevention.
-    // A new raw CircularProgressIndicator( anywhere under lib/views/
-    // (onboarding/, account/, social/, etc.) breaks the build immediately.
-    //
-    // Scope note: lib/core/ still has 4 infra spinners (dialog_factory,
-    // snackbar_utils, application_provider, base_action_handler). Those are
-    // the infrastructure layer, not the UI-component layer this rule governs,
-    // and are intentionally out of scope here.
-    test('no raw CircularProgressIndicator in lib/views/ '
-        '(use LoadingIndicator wrapper) — zero allowlist', () {
+    // BUT-1066 (BUT-885 follow-up): the same rule for lib/views/, with a
+    // zero allowlist. A CircularProgressIndicator( anywhere under lib/views/
+    // breaks the build.
+    test('no CircularProgressIndicator in lib/views/ '
+        '(use PlateLine or StateWidget) — zero allowlist', () {
       final pattern = RegExp(r'\bCircularProgressIndicator\s*\(');
       final violations = <String>[];
 
@@ -745,9 +734,8 @@ void main() {
         violations,
         isEmpty,
         reason:
-            'Raw CircularProgressIndicator in lib/views/ bypasses the '
-            'LoadingIndicator wrapper (platform-adaptive, a11y, consistent '
-            'sizing). Use LoadingIndicator or StateWidget instead.\n'
+            'A spinner in lib/views/ breaks B-18: loading is the plate line '
+            'plus text. Use PlateLine or StateWidget.loading(message:).\n'
             'Violations:\n${violations.join('\n')}',
       );
     });
@@ -790,10 +778,6 @@ void main() {
         "lib/services/account/export/preferences_export_manager.dart::'body': data['body'] ?? '',",
         "lib/models/shared_shopping_list.dart::originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',",
         "lib/services/import/pipelines/tiktok_pipeline.dart::String title = match.group(1) ?? match.group(0) ?? '';",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::id: realtimeRecipe['id'] ?? '',",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::title: realtimeRecipe['name'] ?? '',",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::description: realtimeRecipe['description'] ?? '',",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::userId: recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '',",
         "lib/services/group_shared_content_service.dart::sharedByUserId: data['sharedByUserId'] ?? '',",
         "lib/services/import/llm/llm_enhancement_service.dart::final text = partial.extractedText ?? partial.rawHtml ?? '';",
         "lib/services/unified/operations/modules/recipe_sharing_manager.dart::'description': recipeData.description ?? '',",

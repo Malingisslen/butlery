@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
 import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
 import 'package:butlery/widgets/messaging/messaging_ui_components.dart';
@@ -24,6 +26,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Conversations list view showing all user's messaging conversations.
 /// Delegates all state management to ConversationsViewModel.
@@ -56,6 +60,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         builder: (context) => ChatViewFacade(
           conversationId: conversation.id,
           conversation: conversation,
+          backTo: context.l10n.messagingTitle,
         ),
       ),
     );
@@ -86,7 +91,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       actions: [
         IconButton(
           onPressed: _showNewConversationDialog,
-          icon: const Icon(Icons.add),
+          icon: const ButleryIcon(ButleryIcons.plus),
           tooltip: l10n.messagingNewConversation,
         ),
       ],
@@ -154,9 +159,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           return EmptyStates.buildEmptyState(
             context,
             variant: EmptyStateVariant.generic,
-            icon: Icons.error_outline,
-            title: l10n.errorGeneric,
-            subtitle: vm.conversationsError!,
+            icon: ButleryIcons.triangleAlert,
+            // The VM's error names what failed (errorCouldNotLoad), so it is
+            // the title; no causeless errorGeneric (content-style-guide.md:95).
+            title: vm.conversationsError!,
             customAction: ActionButtons.primaryButton(
               context,
               label: l10n.commonRetry,
@@ -170,7 +176,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             return EmptyStates.buildEmptyState(
               context,
               variant: EmptyStateVariant.noSearchResults,
-              icon: Icons.search_off,
+              icon: ButleryIcons.searchOff,
               title: l10n.messagingNoConversationsFound,
               subtitle: l10n.messagingTryAnotherSearch,
             );
@@ -178,7 +184,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             return EmptyStates.buildEmptyState(
               context,
               variant: EmptyStateVariant.generic,
-              icon: Icons.chat_bubble_outline,
+              icon: ButleryIcons.messageSquare,
               title: l10n.messagingNoConversationsYet,
               subtitle: l10n.messagingStartFirstConversation,
               customAction: ActionButtons.primaryButton(
@@ -197,7 +203,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         final items = <Widget>[
           if (pinned.isNotEmpty) ...[
             _buildSectionHeader(
-              icon: Icons.push_pin,
+              icon: ButleryIcons.pin,
               label: context.l10n.messagingPinned,
             ),
             ...pinned.map((c) => _buildConversationItem(vm, c)),
@@ -235,7 +241,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         header: true,
         child: Row(
           children: [
-            Icon(
+            ButleryIcon(
               icon,
               size: AppDimensions.iconSize14,
               color: cs.onSurfaceVariant,
@@ -267,38 +273,44 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           label: context.l10n.a11yArchivedConversationsToggle,
           button: true,
           toggled: _archivedExpanded,
-          child: InkWell(
-            onTap: () => setState(() => _archivedExpanded = !_archivedExpanded),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppDimensions.minTouchTarget,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: () =>
+                  setState(() => _archivedExpanded = !_archivedExpanded),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.archive,
-                      size: AppDimensions.iconSizeM,
-                      color: cs.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        context.l10n.messagingArchivedCount(archived.length),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.onSurfaceVariant,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingL,
+                    vertical: AppDimensions.paddingM,
+                  ),
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.archive,
+                        size: AppDimensions.iconSizeM,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Expanded(
+                        child: Text(
+                          context.l10n.messagingArchivedCount(archived.length),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(
-                      _archivedExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ],
+                      ButleryIcon(
+                        _archivedExpanded
+                            ? ButleryIcons.chevronUp
+                            : ButleryIcons.chevronDown,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -330,7 +342,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         Divider(
           height: 1,
           color: Theme.of(context).dividerColor,
-          indent: AppDimensions.spacingHuge,
+          indent: ConversationListItem.textInset,
         ),
       ],
     );
@@ -350,8 +362,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             conversation.getDisplayTitle(vm.currentUserId.orEmpty()),
           ),
           ListTile(
-            leading: Icon(
-              conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+            leading: const ButleryIcon(
+              // One glyph for both states until design draws the second one
+              // (P7-U08 open question); the tooltip/label carries the state.
+              ButleryIcons.pin,
             ),
             title: Text(
               conversation.isPinned
@@ -364,8 +378,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             },
           ),
           ListTile(
-            leading: Icon(
-              conversation.isArchived ? Icons.unarchive : Icons.archive,
+            leading: ButleryIcon(
+              conversation.isArchived
+                  ? ButleryIcons.history
+                  : ButleryIcons.archive,
             ),
             title: Text(
               conversation.isArchived
@@ -378,7 +394,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.mark_chat_read),
+            leading: const ButleryIcon(ButleryIcons.check),
             title: Text(l10n.messagingMarkAsRead),
             onTap: () {
               Navigator.pop(context);
@@ -387,7 +403,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ),
           if (conversation.isGroup) ...[
             ListTile(
-              leading: const Icon(Icons.info_outline),
+              leading: const ButleryIcon(ButleryIcons.info),
               title: Text(l10n.messagingGroupInfo),
               onTap: () {
                 Navigator.pop(context);
@@ -395,7 +411,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.exit_to_app),
+              leading: const ButleryIcon(ButleryIcons.logOut),
               title: Text(l10n.messagingLeaveGroup),
               onTap: () {
                 Navigator.pop(context);
@@ -404,7 +420,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             ),
           ] else ...[
             ListTile(
-              leading: const Icon(Icons.person),
+              leading: const ButleryIcon(ButleryIcons.user),
               title: Text(l10n.messagingViewProfile),
               onTap: () {
                 Navigator.pop(context);
@@ -423,7 +439,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           // takes an emptied group down properly.
           if (conversation.groupId == null)
             ErrorListTile(
-              icon: Icons.delete_outline,
+              icon: ButleryIcons.trash2,
               title: l10n.messagingDeleteConversation,
               onTap: () {
                 Navigator.pop(context);
@@ -458,9 +474,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 if (success) {
                   SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
                 } else {
-                  SnackBarUtils.showError(
+                  SnackBarUtils.showFailure(
                     context,
-                    vm.error ?? l10n.messagingCouldNotLeaveGroup(''),
+                    what: vm.error ?? l10n.groupLeaveFailed,
                   );
                 }
               }
@@ -501,9 +517,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                     ),
                   );
                 } else {
-                  SnackBarUtils.showError(
+                  SnackBarUtils.showFailure(
                     context,
-                    l10n.messagingCouldNotDeleteConversation(''),
+                    what: l10n.conversationDeleteFailed,
                   );
                 }
               }
@@ -565,12 +581,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
-          context,
-          l10n.messagingCouldNotShowProfile(
-            SnackBarUtils.userFriendlyMessage(context, e),
-          ),
-        );
+        AppLogger.error('Failed to open profile', e);
+        SnackBarUtils.showFailure(context, what: l10n.profileOpenFailed);
       }
     }
   }

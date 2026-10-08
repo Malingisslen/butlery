@@ -5,11 +5,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
@@ -66,10 +69,15 @@ class CookSnapGallery extends StatelessWidget {
                 ),
               ),
               if (isUploading)
-                const LoadingIndicator(size: 20, strokeWidth: 2)
+                SizedBox(
+                  width: AppDimensions.minTouchTarget,
+                  child: PlateLine(
+                    semanticLabel: context.l10n.uploadingCookSnap,
+                  ),
+                )
               else
                 IconButton(
-                  icon: const Icon(Icons.add_a_photo),
+                  icon: const ButleryIcon(ButleryIcons.camera),
                   tooltip: context.l10n.cookSnapAddTooltip,
                   onPressed: onAdd,
                   iconSize: AppDimensions.iconSizeM,
@@ -80,11 +88,12 @@ class CookSnapGallery extends StatelessWidget {
 
         // Content
         if (isLoading && snaps.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
-            child: Center(
-              child: LoadingIndicator(size: 24, strokeWidth: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingMd,
+              horizontal: AppDimensions.spacingLg,
             ),
+            child: PlateLine(semanticLabel: context.l10n.loadingCookSnaps),
           )
         else if (error != null)
           Padding(
@@ -100,7 +109,7 @@ class CookSnapGallery extends StatelessWidget {
               vertical: AppDimensions.spacingSm,
             ),
             child: StateWidget.empty(
-              icon: Icons.camera_alt,
+              icon: ButleryIcons.camera,
               title: context.l10n.cookSnapEmptyTitle,
               subtitle: context.l10n.cookSnapEmptySubtitle,
             ),
@@ -179,8 +188,8 @@ class _SnapThumbnail extends StatelessWidget {
                         ),
                         errorWidget: (_, __, ___) => ColoredBox(
                           color: colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            Icons.broken_image,
+                          child: ButleryIcon(
+                            ButleryIcons.imageOff,
                             color: colorScheme.onSurfaceVariant,
                           ),
                         ),
@@ -226,8 +235,8 @@ class _SnapThumbnail extends StatelessWidget {
           children: [
             if (isOwn)
               ListTile(
-                leading: Icon(
-                  Icons.delete,
+                leading: ButleryIcon(
+                  ButleryIcons.trash2,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(context.l10n.cookSnapDelete),
@@ -238,7 +247,7 @@ class _SnapThumbnail extends StatelessWidget {
               )
             else
               ListTile(
-                leading: const Icon(Icons.flag),
+                leading: const ButleryIcon(ButleryIcons.flag),
                 title: Text(context.l10n.cookSnapReport),
                 onTap: () {
                   Navigator.pop(context);
@@ -252,7 +261,8 @@ class _SnapThumbnail extends StatelessWidget {
   }
 }
 
-/// BUT-949: small overlay badge marking a multi-photo album thumbnail.
+/// BUT-949: small overlay badge marking a multi-photo album thumbnail, drawn
+/// as a translucent paper tile (overlay.paperCard) with ink text (B83-3).
 class _PhotoCountBadge extends StatelessWidget {
   const _PhotoCountBadge({required this.count});
 
@@ -260,18 +270,19 @@ class _PhotoCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ink = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      color: Colors.black.withValues(alpha: 0.6),
+      color: context.modeColors.overlayPaperCard,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.collections, size: 12, color: Colors.white),
+          ButleryIcon(ButleryIcons.image, size: 12, color: ink),
           const SizedBox(width: 2),
           Text(
             '$count',
             style: AppTextStyles.labelSmall.copyWith(
-              color: Colors.white,
+              color: ink,
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -1,14 +1,13 @@
 /// BUT-1300: unit tests for [RecipeDetailViewModel.reextractFromSource].
 ///
-/// The production method constructed `UrlImportStrategy()` / `TextImportStrategy()`
-/// inline, so it could not be exercised without hitting real network/parsing and
-/// had zero coverage. BUT-1300 added a [ReextractStrategyFactory] seam; these
-/// tests drive a fake strategy through it to prove the documented contract:
-///   * strategy selection (url → url strategy; everything else → text strategy),
+/// BUT-2279: the re-extract goes through [ImportManager.reimportFromArtefact],
+/// which picks the strategy (tested beside the manager), so these drive a
+/// mocked manager to prove the view model's own contract:
+///   * the ORIGINAL artefact is what the manager is asked to re-read,
 ///   * identity preservation on success (id/createdAt unchanged, original
 ///     sourceArtefact re-attached),
 ///   * parsed-field overwrite from the re-extraction,
-///   * all three failure paths leave the in-memory recipe untouched.
+///   * every failure path leaves the in-memory recipe untouched.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -17,9 +16,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
-import 'package:butlery/services/import/import_strategy.dart';
-import 'package:butlery/services/import/text_import_strategy.dart';
-import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -28,53 +25,6 @@ import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
-
-/// A scripted [ImportStrategy]: records the input it was asked to import and
-/// returns a canned [ImportResult]. Either succeeds with [_result]'s recipe,
-/// fails, returns a null recipe, or throws — covering every branch the
-/// re-extract method inspects. Only [import] is meaningful; the other
-/// interface members are unused by the VM.
-class _ScriptedStrategy implements ImportStrategy {
-  _ScriptedStrategy.success(Recipe recipe)
-    : _result = ImportResult.success(recipe),
-      _throws = false;
-  _ScriptedStrategy.failure()
-    : _result = ImportResult.failure('nope'),
-      _throws = false;
-  _ScriptedStrategy.nullRecipe()
-    // A "success" flag with a null recipe — the second failure branch the
-    // method guards (`!result.isSuccess || extracted == null`).
-    : _result = ImportResult.success(null),
-      _throws = false;
-  _ScriptedStrategy.throwing()
-    : _result = ImportResult.failure('unused'),
-      _throws = true;
-
-  final ImportResult _result;
-  final bool _throws;
-  String? capturedInput;
-
-  @override
-  Future<ImportResult> import(
-    String input, {
-    Map<String, dynamic>? options,
-  }) async {
-    capturedInput = input;
-    if (_throws) throw Exception('import blew up');
-    return _result;
-  }
-
-  @override
-  bool canHandle(String input) => true;
-  @override
-  bool validateInput(String input) => true;
-  @override
-  String get strategyName => 'scripted';
-  @override
-  String get inputExample => '';
-  @override
-  String get description => '';
-}
 
 /// Pure mocktail mock so `updateRecipe` / `getRecipeById` / `stateStream` are
 /// all stubbable. The shared [MockUnifiedRecipeService] hardcodes
@@ -85,6 +35,7 @@ class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 void main() {
   group('RecipeDetailViewModel.reextractFromSource (BUT-1300)', () {
     late _MockUnifiedRecipeService recipeService;
+    late MockImportManager importManager;
     late MockAnalyticsService analyticsService;
     late MockRecipeCookingService cookingService;
     late Recipe original;
@@ -106,6 +57,7 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
+      registerFallbackValue(originalArtefact);
     });
 
     setUp(() async {
@@ -113,6 +65,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       recipeService = _MockUnifiedRecipeService();
+      importManager = MockImportManager();
       analyticsService = MockFactory.createAnalyticsService();
       cookingService = MockFactory.createRecipeCookingService();
 
@@ -170,112 +123,34 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    RecipeDetailViewModel buildViewModel(ReextractStrategyFactory factory) {
+    void reimportAnswers(Future<ImportManagerResult> Function() answer) => when(
+      () => importManager.reimportFromArtefact(any()),
+    ).thenAnswer((_) => answer());
+
+    RecipeDetailViewModel buildViewModel() {
       return RecipeDetailViewModel(
         recipe: original,
         recipeService: recipeService,
         analyticsService: analyticsService,
         cookingService: cookingService,
-        reextractStrategyFactory: factory,
+        importManager: importManager,
       );
     }
 
-    // BUT-1300 gap: every test below injects a FAKE factory through the seam,
-    // so the PRODUCTION default (the real url-vs-text decision the seam wraps)
-    // had no coverage — a regression flipping that condition would ship green.
-    // These assert the default mapping directly via the @visibleForTesting hook.
-    group('production default strategy factory', () {
-      test('url-type artefacts route to UrlImportStrategy', () {
-        expect(
-          defaultReextractStrategyForTest(SourceArtefactType.url),
-          isA<UrlImportStrategy>(),
-        );
-      });
+    test('asks the import manager to re-read the original artefact', () async {
+      when(
+        () => recipeService.updateRecipe(any()),
+      ).thenAnswer((_) async => true);
+      reimportAnswers(() async => ImportManagerResult.success(extracted));
+      final vm = buildViewModel();
+      addTearDown(vm.dispose);
 
-      test('every non-url artefact type routes to TextImportStrategy', () {
-        for (final type in SourceArtefactType.values.where(
-          (t) => t != SourceArtefactType.url,
-        )) {
-          expect(
-            defaultReextractStrategyForTest(type),
-            isA<TextImportStrategy>(),
-            reason: 'type=$type must use the text strategy',
-          );
-        }
-      });
-    });
+      final outcome = await vm.reextractFromSource(originalArtefact);
 
-    group('strategy selection', () {
-      test(
-        'url artefact selects the url strategy and feeds it the payload',
-        () async {
-          when(
-            () => recipeService.updateRecipe(any()),
-          ).thenAnswer((_) async => true);
-
-          SourceArtefactType? selectedType;
-          late _ScriptedStrategy strategy;
-          final vm = buildViewModel((type) {
-            selectedType = type;
-            strategy = _ScriptedStrategy.success(extracted);
-            return strategy;
-          });
-          addTearDown(vm.dispose);
-
-          final artefact = SourceArtefact(
-            type: SourceArtefactType.url,
-            payload: 'https://example.com/re',
-            fetchedAt: DateTime(2024, 6, 1),
-          );
-
-          final outcome = await vm.reextractFromSource(artefact);
-
-          expect(outcome, ReextractOutcome.success);
-          expect(selectedType, SourceArtefactType.url);
-          // The artefact payload IS the extraction input — the URL here.
-          expect(strategy.capturedInput, 'https://example.com/re');
-        },
-      );
-
-      test('every non-url artefact type routes through the text strategy '
-          'with the raw payload', () async {
-        // The default factory sends url→UrlImportStrategy and EVERYTHING else
-        // →TextImportStrategy; this asserts the seam preserves that mapping for
-        // each non-url type by checking the type the VM hands the factory and
-        // that the raw payload (not a URL) is what gets imported.
-        when(
-          () => recipeService.updateRecipe(any()),
-        ).thenAnswer((_) async => true);
-
-        for (final type in SourceArtefactType.values.where(
-          (t) => t != SourceArtefactType.url,
-        )) {
-          SourceArtefactType? selectedType;
-          late _ScriptedStrategy strategy;
-          final vm = buildViewModel((t) {
-            selectedType = t;
-            strategy = _ScriptedStrategy.success(extracted);
-            return strategy;
-          });
-
-          final artefact = SourceArtefact(
-            type: type,
-            payload: 'raw transcript/caption/OCR text for $type',
-            fetchedAt: DateTime(2024, 6, 1),
-          );
-
-          final outcome = await vm.reextractFromSource(artefact);
-
-          expect(outcome, ReextractOutcome.success, reason: 'type=$type');
-          expect(selectedType, type, reason: 'type=$type');
-          expect(
-            strategy.capturedInput,
-            'raw transcript/caption/OCR text for $type',
-            reason: 'type=$type',
-          );
-          vm.dispose();
-        }
-      });
+      expect(outcome, ReextractOutcome.success);
+      verify(
+        () => importManager.reimportFromArtefact(originalArtefact),
+      ).called(1);
     });
 
     group('success path', () {
@@ -288,9 +163,8 @@ void main() {
             return true;
           });
 
-          final vm = buildViewModel(
-            (_) => _ScriptedStrategy.success(extracted),
-          );
+          reimportAnswers(() async => ImportManagerResult.success(extracted));
+          final vm = buildViewModel();
           addTearDown(vm.dispose);
 
           final outcome = await vm.reextractFromSource(originalArtefact);
@@ -316,9 +190,8 @@ void main() {
           return true;
         });
 
-        final vm = buildViewModel(
-          (_) => _ScriptedStrategy.success(extracted),
-        );
+        reimportAnswers(() async => ImportManagerResult.success(extracted));
+        final vm = buildViewModel();
         addTearDown(vm.dispose);
 
         await vm.reextractFromSource(originalArtefact);
@@ -341,7 +214,8 @@ void main() {
 
     group('failure paths leave the recipe untouched', () {
       test('import throwing → failure, in-memory recipe unchanged', () async {
-        final vm = buildViewModel((_) => _ScriptedStrategy.throwing());
+        reimportAnswers(() async => throw Exception('import blew up'));
+        final vm = buildViewModel();
         addTearDown(vm.dispose);
 
         final outcome = await vm.reextractFromSource(originalArtefact);
@@ -355,11 +229,14 @@ void main() {
       test(
         'import returning failure/null recipe → failure, recipe unchanged',
         () async {
-          for (final strategy in [
-            _ScriptedStrategy.failure(),
-            _ScriptedStrategy.nullRecipe(),
+          for (final result in [
+            ImportManagerResult.failure('nope'),
+            // A "success" flag with a null recipe — the second failure branch
+            // the method guards.
+            ImportManagerResult.success(null),
           ]) {
-            final vm = buildViewModel((_) => strategy);
+            reimportAnswers(() async => result);
+            final vm = buildViewModel();
 
             final outcome = await vm.reextractFromSource(originalArtefact);
 
@@ -376,9 +253,8 @@ void main() {
           () => recipeService.updateRecipe(any()),
         ).thenAnswer((_) async => false);
 
-        final vm = buildViewModel(
-          (_) => _ScriptedStrategy.success(extracted),
-        );
+        reimportAnswers(() async => ImportManagerResult.success(extracted));
+        final vm = buildViewModel();
         addTearDown(vm.dispose);
 
         final outcome = await vm.reextractFromSource(originalArtefact);
@@ -393,9 +269,8 @@ void main() {
           () => recipeService.updateRecipe(any()),
         ).thenThrow(Exception('write rejected'));
 
-        final vm = buildViewModel(
-          (_) => _ScriptedStrategy.success(extracted),
-        );
+        reimportAnswers(() async => ImportManagerResult.success(extracted));
+        final vm = buildViewModel();
         addTearDown(vm.dispose);
 
         final outcome = await vm.reextractFromSource(originalArtefact);

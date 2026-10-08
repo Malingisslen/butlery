@@ -4,13 +4,15 @@
 /// Covers the two pieces of real, self-contained logic in this file: the
 /// Swedish relative-time formatter (clock-driven, pinned with withClock) and the
 /// k/M number abbreviation. The display-name / online / avatar / invitation
-/// helpers just forward to SocialFacade, and getSocialColorScheme needs a
-/// BuildContext — those belong with the facade tests / widget tests, not here.
+/// helpers just forward to SocialFacade — those belong with the facade tests /
+/// widget tests, not here.
 library;
 
 import 'package:clock/clock.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/social_components/social_formatters.dart';
 
 void main() {
@@ -61,5 +63,47 @@ void main() {
       expect(SocialFormatters.formatNumberWithAbbreviation(1000000), '1M');
       expect(SocialFormatters.formatNumberWithAbbreviation(2500000), '2.5M');
     });
+  });
+
+  // BUT-2183: 'secondary' is the surface.raised fill and 'info' the
+  // text.secondary colour, not 10 % / 70 % tints of onSurface.
+  group('getSocialColorScheme', () {
+    for (final (name, theme, raised, secondaryText) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        const Color(0xFFE6EAD9),
+        const Color(0xFF5B6959),
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        const Color(0xFF2F4437),
+        const Color(0xFFA9B2A0),
+      ),
+    ]) {
+      testWidgets(
+        '$name: secondary is surface.raised, info is text.secondary',
+        (
+          tester,
+        ) async {
+          late Map<String, Color> scheme;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: theme,
+              home: Builder(
+                builder: (context) {
+                  scheme = SocialFormatters.getSocialColorScheme(context);
+                  return const SizedBox();
+                },
+              ),
+            ),
+          );
+
+          expect(scheme['secondary'], raised);
+          expect(scheme['info'], secondaryText);
+        },
+      );
+    }
   });
 }

@@ -48,6 +48,8 @@ import {
   deleteActivityEvents,
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
+  deleteRecipeSuggestions,
+  deleteMfaRecoveryData,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
   deleteNotificationEffectiveness,
@@ -57,11 +59,14 @@ import {
   deleteMessages,
   deleteChatGroupMemberships,
   removeFromSharedContent,
+  scrubBlockHeldShares,
   deleteCommentsAndRatings,
   scrubRatingRecipeOwner,
   scrubCommentRecipeOwner,
   scrubCommentSharedWith,
   deleteCommentLikes,
+  scrubRecipeMemberPermissions,
+  scrubCommentReactions,
   deletePingsByUser,
   deleteUserReports,
   deleteModerationSystemEvents,
@@ -73,8 +78,8 @@ import {
   deleteNotificationPreferences,
   deleteNotifications,
   deleteNotificationAnalytics,
-  deleteRealtimeRecipes,
   deleteRealtimeMenus,
+  deleteRealtimeResources,
   deleteUserPreferences,
   deleteConsentRecords,
   deleteUserSubcollections,
@@ -82,6 +87,8 @@ import {
   USER_MODERATION,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import { Collections } from "../shared/collections";
+import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 import {
   REPORTER_RETENTION_BASIS,
   REPORTS,
@@ -221,6 +228,35 @@ export async function runAccountDeletionWithDeps(
     retained: [],
   };
 
+  // BUT-2169: first, so every `blocks` delete below fires a release that finds
+  // it. The scrubs clear held entries naming this user, but a hold committed
+  // after a scrub would otherwise be released by tier 1's own `blocks` delete
+  // and put this user back on someone else's share. Not a `runStep`: it erases
+  // nothing.
+  //
+  // Never deleted here, only by its TTL: a release that checked the account
+  // before the Auth delete can still be working through its rows afterwards,
+  // and only the marker stops it there. Kept after a failed Auth delete too,
+  // because the scrubs have already cleared every held entry naming this user,
+  // so no release has anything of theirs to bring back.
+  const erasureMarker = database
+    .collection(Collections.erasuresInProgress)
+    .doc(uid);
+  const markerStartedAtMs = Date.now();
+  try {
+    await erasureMarker.set({
+      startedAtMs: markerStartedAtMs,
+      expireAt: admin.firestore.Timestamp.fromMillis(
+        markerStartedAtMs + 2 * ERASURE_MARKER_WINDOW_MS,
+      ),
+    });
+  } catch (err) {
+    result.errors.push(
+      `erasure_marker: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    logger.error("[requestAccountDeletion] erasure marker write failed", { err });
+  }
+
   // BUT-2046 follow-up: evaluate the legal hold BEFORE tier 1, because steps
   // inside it, the residual probe, and the `onUserDeleted` trigger afterwards
   // all need the answer — and an answer computed twice at two times is two
@@ -249,6 +285,13 @@ export async function runAccountDeletionWithDeps(
     (r) => r.resourceType === USER_MODERATION,
   );
 
+  // BUT-2169: BEFORE tier 1, because tier 1's `blocks` delete fires the
+  // release in `holdSharesOnBlock`, and a held entry still naming this user
+  // would put them back on someone else's share after the erasure.
+  await runStep("shared_content_block_held", result, () =>
+    scrubBlockHeldShares(database, uid),
+  );
+
   // Tier 1 (parallel): own content + own writes on cross-user surfaces.
   const tier1: Array<[string, () => Promise<boolean>]> = [
     ["recipes", () => deleteRecipes(database, uid)],
@@ -271,6 +314,12 @@ export async function runAccountDeletionWithDeps(
       "household_allergen_shares",
       () => deleteHouseholdAllergenShares(database, uid),
     ],
+    // P5-U27b: suggestions to shared recipes, both as suggester and as the
+    // recipe's owner. Ships with its two probe legs.
+    ["recipe_suggestions", () => deleteRecipeSuggestions(database, uid)],
+    // P6-U09: the backup-code hashes and the per-account wrong-code counter,
+    // both keyed by the uid. Ships with its two existence probe legs.
+    ["mfa_recovery_data", () => deleteMfaRecoveryData(database, uid)],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
     // BUT-1800: `analytics/retention/events` and `analytics/lapsed_users/events`.
@@ -347,10 +396,9 @@ export async function runAccountDeletionWithDeps(
       "notification_effectiveness",
       () => deleteNotificationEffectiveness(database, uid),
     ],
-    ["realtime_recipes", () => deleteRealtimeRecipes(database, uid)],
-    // BUT-1768: `realtime_menus` had no tier entry at all — the sibling
-    // collection was cascaded, this one survived every erasure.
+    // BUT-1768: `realtime_menus` had no tier entry at all.
     ["realtime_menus", () => deleteRealtimeMenus(database, uid)],
+    ["realtime_resources", () => deleteRealtimeResources(database, uid)],
     ["storage_files", () => deleteUserStorageFiles(storage, uid)],
   ];
   await Promise.all(tier1.map(([name, fn]) => runStep(name, result, fn)));
@@ -369,6 +417,12 @@ export async function runAccountDeletionWithDeps(
   // maintenance chain rather than left as an unexported function.
   await runStep("block_mirrors", result, () =>
     deleteBlockMirrors(database, uid),
+  );
+
+  // BUT-2169: again after tier 1. A block written just before the erasure can
+  // commit its hold after the first pass ran; this is the later word on it.
+  await runStep("shared_content_block_held_after_tier1", result, () =>
+    scrubBlockHeldShares(database, uid),
   );
 
   // BUT-2046: the erased uid as a REPORTER, on rows under OTHER people's
@@ -398,6 +452,15 @@ export async function runAccountDeletionWithDeps(
   );
   await runStep("comment_likes", result, () =>
     deleteCommentLikes(database, uid),
+  );
+  // BUT-2115: the user's emoji reactions on other people's comments.
+  await runStep("comment_reactions", result, () =>
+    scrubCommentReactions(database, uid),
+  );
+
+  // BUT-2272: the uid as a member of other people's shared recipes.
+  await runStep("recipe_member_permissions", result, () =>
+    scrubRecipeMemberPermissions(database, uid),
   );
 
   // Tier 2 (parallel after T1): subcollections under users/{uid}.

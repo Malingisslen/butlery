@@ -363,6 +363,52 @@ void main() {
       );
     });
 
+    group('BUT-2271: the share names its groups', () {
+      Future<Map<String, dynamic>> row(String id) async =>
+          (await fakeFirestore.collection('shared_content').doc(id).get())
+              .data()!;
+
+      test(
+        'a group share writes groupIds; a plain share writes none',
+        () async {
+          final groupShare = await repository.createSharedRecipe(
+            createSharedRecipe(sharedByUserId: testUserId),
+            recipientIds: [testFriendId],
+            groupIds: ['grp-1'],
+          );
+          expect((await row(groupShare))['groupIds'], ['grp-1']);
+
+          final plain = await repository.createSharedRecipe(
+            createSharedRecipe(
+              sharedByUserId: testUserId,
+              originalRecipeId: 'another-recipe',
+            ),
+            recipientIds: [testFriendId],
+          );
+          expect((await row(plain)).containsKey('groupIds'), isFalse);
+        },
+      );
+
+      test(
+        're-sharing the same recipe to a second group adds it to the row',
+        () async {
+          final first = await repository.createSharedRecipe(
+            createSharedRecipe(sharedByUserId: testUserId),
+            recipientIds: [testFriendId],
+            groupIds: ['grp-1'],
+          );
+          final second = await repository.createSharedRecipe(
+            createSharedRecipe(sharedByUserId: testUserId),
+            recipientIds: [testFriendId],
+            groupIds: ['grp-2'],
+          );
+
+          expect(second, first, reason: 'premise: the row is reused');
+          expect((await row(first))['groupIds'], ['grp-1', 'grp-2']);
+        },
+      );
+    });
+
     // ===== STATUS MANAGEMENT (SUBCOLLECTIONS) =====
 
     group('Status Management - Subcollections', () {
@@ -530,6 +576,44 @@ void main() {
       // to the emulator lane (markAsViewed -> addMetadata uses
       // FieldValue.serverTimestamp) — see
       // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
+    });
+
+    group('getSourceRecipe (BUT-2268)', () {
+      SharedRecipe shareFrom(String ownerId) => SharedRecipe.create(
+        originalRecipeId: testOriginalRecipeId,
+        sharedByUserId: ownerId,
+        sharedByDisplayName: 'Other',
+        sharedToUserIds: const [testUserId],
+        recipeSnapshot: createTestRecipe(testOriginalRecipeId, ownerId),
+      );
+
+      test('reads the recipe from the sharer\'s collection', () async {
+        await fakeFirestore
+            .collection('users')
+            .doc(testOtherUserId)
+            .collection('recipes')
+            .doc(testOriginalRecipeId)
+            .set(
+              createTestRecipe(
+                testOriginalRecipeId,
+                testOtherUserId,
+              ).toFirestore(),
+            );
+
+        final recipe = await repository.getSourceRecipe(
+          shareFrom(testOtherUserId),
+        );
+
+        expect(recipe?.title, 'Test Recipe $testOriginalRecipeId');
+        expect(recipe?.ingredients, ['Ingredient 1', 'Ingredient 2']);
+      });
+
+      test('returns null when the recipe is gone', () async {
+        expect(
+          await repository.getSourceRecipe(shareFrom(testOtherUserId)),
+          isNull,
+        );
+      });
     });
   });
 }

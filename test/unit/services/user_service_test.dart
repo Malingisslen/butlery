@@ -10,6 +10,10 @@ import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/models/household_allergen_share.dart';
+import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
 
@@ -21,6 +25,11 @@ import '../../infrastructure/di/test_service_locator.dart';
 /// Local mocktail subclass — the production [FakeAuthRepository] extends
 /// [Fake] (BUT-1074) and cannot be used with `when(...)`.
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockShareRepository extends Mock
+    implements HouseholdAllergenShareRepository {}
 
 class _MockProfileSearchabilityService extends Mock
     implements ProfileSearchabilityService {}
@@ -153,6 +162,26 @@ void main() {
         );
       });
 
+      // BUT-2264: the public document carries no address, so the signed-in
+      // user's own address comes from Auth.
+      test('own profile takes its address from Auth', () async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile.copyWith(email: ''));
+
+        await userService.initialize();
+
+        expect(userService.currentUserProfile?.email, 'test@example.com');
+      });
+
       test('should initialize without user when not authenticated', () async {
         // Arrange
         mockAuthRepository.setAuthState(
@@ -237,6 +266,82 @@ void main() {
         expect(userService.currentUserProfile, isNotNull);
         expect(userService.currentUserProfile?.uid, equals('test_user_123'));
       });
+
+      // createUser signs in before updateDisplayName runs, so the Auth user
+      // still has no display name when the profile is auto-created. The name
+      // is held for test1@example.com.
+      Future<String?> autoCreatedName({
+        required String email,
+        String? authDisplayName,
+      }) async {
+        final freshUser = MockFactory.createMockUser(
+          uid: 'test_user_123',
+          email: email,
+          displayName: authDisplayName,
+        );
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: freshUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => mockAuthRepository.registrationDisplayNameFor(any()),
+        ).thenAnswer(
+          (inv) => inv.positionalArguments.first == 'test1@example.com'
+              ? 'Testperson Ett'
+              : null,
+        );
+        when(
+          () => mockUserRepository.ensureBaseUserDocument(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => null);
+        final saved = <UserProfile>[];
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as UserProfile);
+        });
+        when(
+          () => mockUserRepository.recordTermsAcceptance(any(), any()),
+        ).thenAnswer((_) async {});
+
+        await userService.initialize();
+
+        expect(saved, isNotEmpty, reason: 'premise: the profile was created');
+        return saved.first.displayName;
+      }
+
+      test('a profile created on the registration sign-in takes the name typed '
+          'at registration, not the e-mail prefix', () async {
+        expect(
+          await autoCreatedName(email: 'test1@example.com'),
+          'Testperson Ett',
+        );
+      });
+
+      test('another account never takes a name held for a different '
+          'address', () async {
+        expect(await autoCreatedName(email: 'other@example.com'), 'other');
+      });
+
+      test('a display name already on the Auth user wins over a held '
+          'name', () async {
+        expect(
+          await autoCreatedName(
+            email: 'test1@example.com',
+            authDisplayName: 'Auth Namn',
+          ),
+          'Auth Namn',
+        );
+      });
     });
 
     group('Profile Management', () {
@@ -279,6 +384,29 @@ void main() {
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
           ),
         ).called(1);
+      });
+
+      test('a profile the service CREATES is settings-merged: it wrote the '
+          'first settings doc itself, so the menu must not floor the first '
+          'session as a failed read', () async {
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => null);
+        expect(userService.currentUserProfile, isNull);
+
+        final result = await userService.createOrUpdateProfile(
+          displayName: 'Ny användare',
+        );
+
+        expect(result?.settingsMerged, isTrue);
+        expect(result?.allergenPreferences, isNull);
+        expect(userService.currentUserProfile?.settingsMerged, isTrue);
       });
 
       test('should not update profile when not authenticated', () async {
@@ -1151,6 +1279,95 @@ void main() {
             true,
           ),
         ).called(1);
+      });
+    });
+
+    group('Allergen settings and the household share (BUT-2267, DPIA R4)', () {
+      final share = HouseholdAllergenShare(
+        householdId: 'hh-1',
+        userId: 'test_user_123',
+        trackedAllergens: const {'ägg'},
+        trackedDietary: const {},
+        includeUnknownInMenu: true,
+        consentGranted: true,
+        consentVersion: HouseholdAllergenShare.currentConsentVersion,
+        consentGrantedAt: DateTime.utc(2026, 8, 12),
+        updatedAt: DateTime.utc(2026, 8, 12),
+      );
+      const prefs = UserAllergenPreferences(
+        trackedAllergens: {'jordnötter'},
+        trackedDietary: {},
+      );
+      late _MockShareRepository shares;
+
+      setUp(() async {
+        registerFallbackValue(<HouseholdAllergenShare>[]);
+        registerFallbackValue(prefs);
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+        await userService.initialize();
+
+        final households = _MockHouseholdRepository();
+        when(() => households.getForUser('test_user_123')).thenAnswer(
+          (_) async => [Household.create(creatorId: 'test_user_123')],
+        );
+        shares = _MockShareRepository();
+        when(() => shares.getOwn(any())).thenAnswer((_) async => share);
+        TestServiceLocator.registerMock<HouseholdRepository>(households);
+        TestServiceLocator.registerMock<HouseholdAllergenShareRepository>(
+          shares,
+        );
+        when(
+          () => mockUserRepository.updateAllergenPreferences(
+            any(),
+            prefs,
+            sharedCopies: any(named: 'sharedCopies'),
+          ),
+        ).thenAnswer((_) async {});
+      });
+
+      test(
+        'the save hands the repository the share with the new list',
+        () async {
+          expect(await userService.updateAllergenPreferences(prefs), isTrue);
+
+          final captured =
+              verify(
+                    () => mockUserRepository.updateAllergenPreferences(
+                      'test_user_123',
+                      prefs,
+                      sharedCopies: captureAny(named: 'sharedCopies'),
+                    ),
+                  ).captured.single
+                  as List<HouseholdAllergenShare>;
+          expect(captured.single.trackedAllergens, {'jordnötter'});
+          expect(captured.single.id, share.id);
+        },
+      );
+
+      test('a share that cannot be read stops the save', () async {
+        when(() => shares.getOwn(any())).thenThrow(StateError('offline'));
+
+        expect(await userService.updateAllergenPreferences(prefs), isFalse);
+        verifyNever(
+          () => mockUserRepository.updateAllergenPreferences(
+            any(),
+            any(),
+            sharedCopies: any(named: 'sharedCopies'),
+          ),
+        );
       });
     });
 

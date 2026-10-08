@@ -9,12 +9,17 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/views/settings/notification_category_items.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Sentinel value paired with [AnalyticsEvents.notificationPreferenceChanged]
 /// when the master toggle flips. Per-category toggles emit the
@@ -32,15 +37,55 @@ class NotificationPreferencesView extends StatefulWidget {
 }
 
 class _NotificationPreferencesViewState
-    extends State<NotificationPreferencesView> {
+    extends State<NotificationPreferencesView>
+    with WidgetsBindingObserver {
   NotificationPreferences _preferences = NotificationPreferences.defaults();
   bool _isLoading = true;
   bool _hasError = false;
 
+  /// Notifications are off for Butlery in the phone's settings. Then no
+  /// choice here means anything: a row at the top leads to the system
+  /// settings, and the switches stay visible but inactive
+  /// (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
+  bool _systemOff = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadPreferences();
+    _checkSystemPermission();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Coming back from the system settings: read the answer again.
+    if (state == AppLifecycleState.resumed) _checkSystemPermission();
+  }
+
+  Future<void> _checkSystemPermission() async {
+    var off = false;
+    try {
+      off = await ServiceLocator.get<NotificationPermissionService>()
+          .blockedInSystem();
+    } catch (_) {
+      // Unknown means not off: never hide the switches on a guess.
+      off = false;
+    }
+    if (mounted && off != _systemOff) setState(() => _systemOff = off);
+  }
+
+  Future<void> _openSystemSettings() async {
+    try {
+      await ServiceLocator.get<NotificationPermissionService>()
+          .openSystemSettings();
+    } catch (_) {}
   }
 
   Future<void> _loadPreferences() async {
@@ -116,12 +161,9 @@ class _NotificationPreferencesViewState
     } catch (e) {
       if (mounted) {
         setState(() => _preferences = previous);
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.notificationSaveError),
-            backgroundColor: cs.error,
-          ),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.notificationSaveError,
         );
       }
     }
@@ -130,13 +172,17 @@ class _NotificationPreferencesViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(title: context.l10n.notificationTitle),
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.notificationTitle,
+      ),
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),
           Expanded(
             child: _isLoading
-                ? StateWidget.loading()
+                ? StateWidget.loading(
+                    message: context.l10n.loadingNotificationPreferences,
+                  )
                 : _hasError
                 ? StateWidget.error(
                     message: context.l10n.errorCouldNotLoad(
@@ -157,6 +203,10 @@ class _NotificationPreferencesViewState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (_systemOff) ...[
+                                _buildSystemOffRow(),
+                                const SizedBox(height: AppDimensions.spacingLg),
+                              ],
                               _buildMasterToggle(),
                               const SizedBox(height: AppDimensions.spacingXl),
                               _buildCategorySection(),
@@ -176,9 +226,73 @@ class _NotificationPreferencesViewState
     );
   }
 
+  /// The row at the top when notifications are off in the phone
+  /// (produktregler.md:739; Skarmar v12 etapp 3 #behnotiser :570): a 1.5 px
+  /// outline, a warning glyph and the text in error red, #9C3B23 light /
+  /// #DE9078 dark = cs.error in both schemes, and a way to the system
+  /// settings.
+  Widget _buildSystemOffRow() {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    return Container(
+      key: const ValueKey('notification-system-off-row'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(color: cs.error, width: 1.5),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExcludeSemantics(
+                child: ButleryIcon(
+                  ButleryIcons.triangleAlert,
+                  color: cs.error,
+                  size: AppDimensions.iconSizeS,
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                child: Text(
+                  l10n.notifSystemOffRow,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Semantics(
+              button: true,
+              label: l10n.a11yOpenSystemSettings,
+              excludeSemantics: true,
+              child: TextButton(
+                key: const ValueKey('notification-system-off-open'),
+                onPressed: _openSystemSettings,
+                child: Text(l10n.permOpenSettings),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMasterToggle() {
     final cs = Theme.of(context).colorScheme;
 
+    // The switches take the theme's look: control.checked.background track
+    // with a paper thumb in both modes (tokens.json:145-154). The ink thumb
+    // on a half-ink track they had vanished on the dark page.
     return SwitchListTile(
       title: Text(
         context.l10n.notificationEnableTitle,
@@ -188,17 +302,13 @@ class _NotificationPreferencesViewState
         context.l10n.notificationEnableSubtitle,
         style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
       ),
-      secondary: Icon(
-        _preferences.enabled
-            ? Icons.notifications_active_outlined
-            : Icons.notifications_off_outlined,
-        color: cs.primary,
+      secondary: ButleryIcon(
+        _preferences.enabled ? ButleryIcons.bell : ButleryIcons.bellOff,
+        color: cs.onSurface,
         size: AppDimensions.iconSizeL,
       ),
       value: _preferences.enabled,
-      onChanged: (value) => _onMasterToggle(value),
-      activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-      thumbColor: _primaryThumbColor(cs),
+      onChanged: _systemOff ? null : (value) => _onMasterToggle(value),
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -223,38 +333,41 @@ class _NotificationPreferencesViewState
     final cs = Theme.of(context).colorScheme;
     final isEnabled = _preferences.categorySettings[item.category] ?? true;
 
-    return Opacity(
-      // Dim category toggles when master toggle is off
-      opacity: _preferences.enabled ? 1.0 : AppDimensions.opacityMedium,
-      child: SwitchListTile(
-        title: Text(item.label, style: AppTextStyles.titleMedium),
-        secondary: Icon(
-          item.icon,
-          color: cs.primary,
-          size: AppDimensions.iconSizeL,
-        ),
-        value: isEnabled,
-        onChanged: _preferences.enabled
-            ? (value) {
-                final updatedSettings = Map<NotificationCategory, bool>.from(
-                  _preferences.categorySettings,
-                );
-                updatedSettings[item.category] = value;
-                _savePreferences(
-                  _copyPreferences(categorySettings: updatedSettings),
-                );
-                _logPreferenceChange(
-                  category: item.category.name,
-                  enabled: value,
-                );
-              }
-            : null,
-        activeTrackColor: cs.primary.withValues(
-          alpha: AppDimensions.opacityHalf,
-        ),
-        thumbColor: _primaryThumbColor(cs),
-        contentPadding: EdgeInsets.zero,
+    // A category that cannot be switched (the master toggle or the system
+    // setting is off) is drawn disabled, in text.disabled, never faded
+    // (tokens.json:41, :120-123, :198; Butlery tillganglighetshandoff).
+    final disabled = !_preferences.enabled || _systemOff;
+    final fg = disabled
+        ? AppModeColors.textDisabled(cs.brightness)
+        : cs.onSurface;
+
+    return SwitchListTile(
+      title: Text(
+        item.label,
+        style: AppTextStyles.titleMedium.copyWith(color: fg),
       ),
+      secondary: ButleryIcon(
+        item.icon,
+        color: fg,
+        size: AppDimensions.iconSizeL,
+      ),
+      value: isEnabled,
+      onChanged: !disabled
+          ? (value) {
+              final updatedSettings = Map<NotificationCategory, bool>.from(
+                _preferences.categorySettings,
+              );
+              updatedSettings[item.category] = value;
+              _savePreferences(
+                _copyPreferences(categorySettings: updatedSettings),
+              );
+              _logPreferenceChange(
+                category: item.category.name,
+                enabled: value,
+              );
+            }
+          : null,
+      contentPadding: EdgeInsets.zero,
     );
   }
 
@@ -277,29 +390,38 @@ class _NotificationPreferencesViewState
         const SizedBox(height: AppDimensions.spacingMd),
         InputDecorator(
           decoration: InputDecoration(
-            prefixIcon: Icon(
-              Icons.summarize_outlined,
-              color: cs.primary,
+            prefixIcon: ButleryIcon(
+              ButleryIcons.clock,
+              color: cs.onSurface,
               size: AppDimensions.iconSizeL,
             ),
             border: const OutlineInputBorder(),
             contentPadding: AppDimensions.paddingSymmetric16x12,
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<DigestFrequency>(
-              value: _preferences.digestFrequency,
-              isDense: true,
-              isExpanded: true,
-              items: _digestFrequencyItems(l10n),
-              onChanged: _preferences.enabled
-                  ? (value) {
-                      if (value != null) {
-                        _savePreferences(
-                          _copyPreferences(digestFrequency: value),
-                        );
+            child: PressFill(
+              surface: PressSurface.base,
+              child: DropdownButton<DigestFrequency>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
+                value: _preferences.digestFrequency,
+                isDense: true,
+                isExpanded: true,
+                items: _digestFrequencyItems(l10n),
+                onChanged: _preferences.enabled && !_systemOff
+                    ? (value) {
+                        if (value != null) {
+                          _savePreferences(
+                            _copyPreferences(digestFrequency: value),
+                          );
+                        }
                       }
-                    }
-                  : null,
+                    : null,
+              ),
             ),
           ),
         ),
@@ -351,32 +473,30 @@ class _NotificationPreferencesViewState
             context.l10n.notificationQuietHoursSubtitle,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
-          secondary: Icon(
-            Icons.do_not_disturb_on_outlined,
-            color: cs.primary,
+          secondary: ButleryIcon(
+            ButleryIcons.bellOff,
+            color: cs.onSurface,
             size: AppDimensions.iconSizeL,
           ),
           value: hasQuietHours,
-          onChanged: (value) {
-            if (value) {
-              // Enable with defaults 22:00-08:00
-              _savePreferences(
-                _copyPreferences(
-                  quietHoursStart: const TimeOfDay(hour: 22, minute: 0),
-                  quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),
-                  clearQuietHours: false,
-                ),
-              );
-            } else {
-              _savePreferences(
-                _copyPreferences(clearQuietHours: true),
-              );
-            }
-          },
-          activeTrackColor: cs.primary.withValues(
-            alpha: AppDimensions.opacityHalf,
-          ),
-          thumbColor: _primaryThumbColor(cs),
+          onChanged: _systemOff
+              ? null
+              : (value) {
+                  if (value) {
+                    // Enable with defaults 22:00-08:00
+                    _savePreferences(
+                      _copyPreferences(
+                        quietHoursStart: const TimeOfDay(hour: 22, minute: 0),
+                        quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),
+                        clearQuietHours: false,
+                      ),
+                    );
+                  } else {
+                    _savePreferences(
+                      _copyPreferences(clearQuietHours: true),
+                    );
+                  }
+                },
           contentPadding: EdgeInsets.zero,
         ),
         if (hasQuietHours) ...[
@@ -406,8 +526,8 @@ class _NotificationPreferencesViewState
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingSm,
           ),
-          child: Icon(
-            Icons.arrow_forward,
+          child: ButleryIcon(
+            ButleryIcons.arrowRight,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -432,29 +552,32 @@ class _NotificationPreferencesViewState
     return Semantics(
       label: context.l10n.a11yPickTime(label, time),
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: Column(
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            decoration: BoxDecoration(
+              border: Border.all(color: cs.outlineVariant),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                time,
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: cs.primary,
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  time,
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: cs.onSurface,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -482,15 +605,6 @@ class _NotificationPreferencesViewState
         );
       }
     }
-  }
-
-  WidgetStateProperty<Color?> _primaryThumbColor(ColorScheme cs) {
-    return WidgetStateProperty.resolveWith((states) {
-      if (states.contains(WidgetState.selected)) {
-        return cs.primary;
-      }
-      return null;
-    });
   }
 
   /// Manual copyWith since the model doesn't provide one.

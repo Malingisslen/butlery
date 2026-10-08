@@ -32,6 +32,20 @@ StorageUploadException? mapFirebaseStorageException(Object e) {
   return null;
 }
 
+/// Refuses [bytes] that `storage.rules` would refuse for size: every upload
+/// path there allows less than [UploadConstants.maxStorageFileBytes]. The
+/// server answers such a file with `unauthorized`, which reads as a
+/// permission problem, so the size is checked here, on the bytes that would
+/// be sent (BUT-2162).
+void checkStorageUploadSize(int bytes) {
+  if (bytes >= UploadConstants.maxStorageFileBytes) {
+    throw StorageUploadException(
+      StorageUploadException.tooLargeCode,
+      'Image is $bytes bytes after compression',
+    );
+  }
+}
+
 /// Firebase implementation of the StorageRepository interface with security validation.
 /// This repository provides Firebase Storage functionality while maintaining
 /// the abstraction required for dependency injection and testability.
@@ -271,6 +285,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     Function(double progress)? onProgress,
     String? cacheControl,
   }) async {
+    checkStorageUploadSize(imageData.length);
     return await FirebasePerformanceService.traceImageUpload(
       (trace) async {
         // Progress listener is cancelled in `finally` so it never outlives the

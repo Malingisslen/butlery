@@ -3,8 +3,13 @@
 // lib/views/social/friend_profile_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
@@ -23,11 +28,11 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
@@ -75,56 +80,60 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage (Skarmar v12 del 3 #vanprofil; Komponentark v1 §01
+      // pattern 2). The name is shown as written.
+      appBar: ButleryTopBar.undersida(
         title: friend.displayName,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'block') {
-                _blockFriend();
-              } else if (value == 'report') {
-                ReportContentDialog.show(
-                  context: context,
-                  contentType: ContentType.profile,
-                  contentId: friend.uid,
-                  contentOwnerId: friend.uid,
-                );
-              }
-            },
-            itemBuilder: (context) => [
-              // isBlocked, not getFriendshipStatus (BUT-2022): the enum
-              // answers `friends` before `blocked`, which would offer
-              // "Blockera" for someone already blocked.
-              if (!_friendsViewModel.isBlocked(friend.uid))
-                PopupMenuItem(
-                  value: 'block',
+          PressFill(
+            surface: PressSurface.base,
+            child: PopupMenuButton<String>(
+              icon: const ButleryIcon(ButleryIcons.moreVertical),
+              onSelected: (value) {
+                if (value == 'block') {
+                  _blockFriend();
+                } else if (value == 'report') {
+                  ReportContentDialog.show(
+                    context: context,
+                    contentType: ContentType.profile,
+                    contentId: friend.uid,
+                    contentOwnerId: friend.uid,
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                // isBlocked, not getFriendshipStatus (BUT-2022): the enum
+                // answers `friends` before `blocked`, which would offer
+                // "Blockera" for someone already blocked.
+                if (!_friendsViewModel.isBlocked(friend.uid))
+                  ButleryMenuItem(
+                    value: 'block',
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.block,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingSm),
+                        Text(context.l10n.socialBlock),
+                      ],
+                    ),
+                  ),
+                ButleryMenuItem(
+                  value: 'report',
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.block,
+                      ButleryIcon(
+                        ButleryIcons.flag,
                         color: Theme.of(context).colorScheme.error,
                       ),
                       const SizedBox(width: AppDimensions.spacingSm),
-                      Text(context.l10n.socialBlock),
+                      Text(context.l10n.reportContent),
                     ],
                   ),
                 ),
-              PopupMenuItem(
-                value: 'report',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.flag_outlined,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(context.l10n.reportContent),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -205,12 +214,12 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                     StatItemWidget(
                                       label: context.l10n.socialFriends,
                                       value: '${friend.friendsCount}',
-                                      icon: Icons.people,
+                                      icon: ButleryIcons.users,
                                     ),
                                     StatItemWidget(
                                       label: context.l10n.socialRecipes,
                                       value: '${friend.publicRecipeCount}',
-                                      icon: Icons.restaurant_menu,
+                                      icon: ButleryIcons.utensils,
                                     ),
                                   ],
                                 ),
@@ -229,7 +238,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   Routes.publicProfile,
                                   arguments: friend.uid,
                                 ),
-                                icon: const Icon(Icons.restaurant_menu),
+                                icon: const ButleryIcon(ButleryIcons.utensils),
                                 label: Text(
                                   context.l10n.publicProfilePublicRecipes,
                                 ),
@@ -250,7 +259,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   ),
                                 ),
                               ),
-                              icon: const Icon(Icons.folder_shared_outlined),
+                              icon: const ButleryIcon(
+                                ButleryIcons.folder,
+                              ),
                               label: Text(
                                 context.l10n.sharedRecipesByFriendButton,
                               ),
@@ -264,31 +275,34 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                             children: [
                               Row(
                                 children: [
-                                  Flexible(
-                                    child: OutlinedButton.icon(
-                                      onPressed: _isStartingConversation
-                                          ? null
-                                          : () => _startConversation(context),
-                                      icon: _isStartingConversation
-                                          ? const LoadingIndicator(
-                                              size: 16,
-                                              strokeWidth: 2,
-                                            )
-                                          : const Icon(Icons.message),
-                                      label: Text(
-                                        context.l10n.socialSendMessage,
-                                      ),
+                                  // Opening the chat keeps the name and draws
+                                  // the plate line (Komponentark v1:365).
+                                  Expanded(
+                                    child: ActionButtons.outlinedButton(
+                                      context,
+                                      label: context.l10n.socialSendMessage,
+                                      icon: ButleryIcons.messageSquare,
+                                      onPressed: () =>
+                                          _startConversation(context),
+                                      isLoading: _isStartingConversation,
+                                      isExpanded: true,
                                     ),
                                   ),
                                   const SizedBox(width: AppDimensions.spacingL),
-                                  Flexible(
-                                    child: ElevatedButton.icon(
+                                  // PQ-19 = A (produktbeslut 2026-09-23): the
+                                  // profile's one saffron action is "Dela
+                                  // recept" (Skarmar v12 etapp 5-7 'Vänprofil
+                                  // — delningslagret'; Grafisk manual v6:219).
+                                  Expanded(
+                                    child: HeroButton(
+                                      key: const ValueKey(
+                                        'friendProfile.shareRecipe',
+                                      ),
+                                      label: context.l10n.socialShareRecipe,
+                                      icon: ButleryIcons.share2,
                                       onPressed: () =>
                                           _showRecipeSelection(context),
-                                      icon: const Icon(Icons.share),
-                                      label: Text(
-                                        context.l10n.socialShareRecipe,
-                                      ),
+                                      expand: true,
                                     ),
                                   ),
                                 ],
@@ -298,7 +312,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                 width: double.infinity,
                                 child: OutlinedButton.icon(
                                   onPressed: () => _shareProfile(context),
-                                  icon: const Icon(Icons.link),
+                                  icon: const ButleryIcon(ButleryIcons.link),
                                   label: Text(
                                     context.l10n.publicProfileShareButton,
                                   ),
@@ -313,7 +327,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   style: ComponentThemes.deleteButtonStyle(
                                     Theme.of(context).colorScheme,
                                   ),
-                                  icon: const Icon(Icons.person_remove),
+                                  icon: const ButleryIcon(
+                                    ButleryIcons.userMinus,
+                                  ),
                                   label: Text(context.l10n.socialRemoveFriend),
                                 ),
                               ),
@@ -364,11 +380,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     } catch (e) {
       AppLogger.error('Failed to start conversation', e);
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialCouldNotStartConversation(
-          SnackBarUtils.userFriendlyMessage(context, e),
-        ),
+        what: context.l10n.conversationStartFailed,
       );
     } finally {
       if (mounted) {
@@ -406,9 +420,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
       } else {
         // Was silently swallowed: a network/permission failure left the
         // friend in place with no feedback. Surface it.
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.socialCouldNotRemoveFriend,
+          what: context.l10n.socialCouldNotRemoveFriend,
         );
       }
     }

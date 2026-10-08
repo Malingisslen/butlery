@@ -8,7 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/related_recipes_picker_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Edit-form section for managing related-recipe links.
 ///
@@ -58,8 +61,8 @@ class RelatedRecipesEditor extends StatelessWidget {
         // Chips for currently linked recipes
         if (relatedRecipes.isNotEmpty) ...[
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: relatedRecipes.map((r) {
               return _RelatedChip(
                 key: ValueKey(r.id),
@@ -68,14 +71,14 @@ class RelatedRecipesEditor extends StatelessWidget {
               );
             }).toList(),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
         ],
 
         // Link button — OutlinedButton is a Material primitive that already
         // carries its own Semantics; no extra wrapper needed per ui-conventions.
         OutlinedButton.icon(
           onPressed: () => _openPicker(context),
-          icon: const Icon(Icons.link),
+          icon: const ButleryIcon(ButleryIcons.link),
           label: Text(
             context.l10n.recipeRelatedLinkButton,
             style: AppTextStyles.bodyMedium,
@@ -88,8 +91,8 @@ class RelatedRecipesEditor extends StatelessWidget {
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
             ),
-            side: BorderSide(color: cs.primary),
-            foregroundColor: cs.primary,
+            side: BorderSide(color: cs.onSurface),
+            foregroundColor: cs.onSurface,
           ),
         ),
       ],
@@ -154,19 +157,15 @@ class _RelatedChip extends StatelessWidget {
       label: context.l10n.a11yRelatedRecipeChip(title),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-          border: Border.all(
-            color: cs.primary.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          color: cs.surfaceContainerHighest,
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingS,
+                start: AppDimensions.space4,
                 end: AppDimensions.spacingXs,
                 top: AppDimensions.spacingXs,
                 bottom: AppDimensions.spacingXs,
@@ -174,26 +173,32 @@ class _RelatedChip extends StatelessWidget {
               child: Text(
                 title,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
             ),
             Semantics(
               label: context.l10n.a11yRemoveRelatedRecipe(title),
               button: true,
-              child: InkWell(
-                onTap: onRemove,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: AppDimensions.spacingXs,
-                    end: AppDimensions.spacingS,
-                    top: AppDimensions.spacingXs,
-                    bottom: AppDimensions.spacingXs,
-                  ),
-                  child: Icon(
-                    Icons.close,
-                    size: AppDimensions.iconSizeS,
-                    color: cs.primary,
+              child: Material(
+                type: MaterialType.transparency,
+                child: PressFill(
+                  surface: PressSurface.raised,
+                  child: InkWell(
+                    onTap: onRemove,
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: AppDimensions.spacingXs,
+                        end: AppDimensions.space4,
+                        top: AppDimensions.spacingXs,
+                        bottom: AppDimensions.spacingXs,
+                      ),
+                      child: ButleryIcon(
+                        ButleryIcons.x,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.onSurface,
+                      ),
+                    ),
                   ),
                 ),
               ),

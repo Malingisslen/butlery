@@ -10,9 +10,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedShoppingListCard - Card for displaying shared shopping lists
 /// Displays shared shopping list information with view/join/dismiss actions
@@ -34,70 +37,76 @@ class SharedShoppingListCard {
       elevation: isRead
           ? AppDimensions.elevationLow
           : AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
         label: context.l10n.a11ySharedShoppingList(sharedShoppingList.listName),
         button: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          onTap: () {
-            if (!isRead) {
-              viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
-            }
-            _showShoppingListPreview(context, viewModel, sharedShoppingList);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: !isRead
-                  ? Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2,
-                    )
-                  : null,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with sharing info
-                SharedCardHeader(
-                  displayName: sharedShoppingList.sharedByDisplayName,
-                  timestampText: sharedShoppingList.timeAgoText,
-                  isRead: isRead,
-                  onDismiss: () => SharedContentActions.dismissShoppingList(
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            onTap: () {
+              if (!isRead) {
+                viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
+              }
+              _showShoppingListPreview(context, viewModel, sharedShoppingList);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                border: !isRead
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      )
+                    : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with sharing info
+                  SharedCardHeader(
+                    displayName: sharedShoppingList.sharedByDisplayName,
+                    timestampText: sharedShoppingList.timeAgoText,
+                    isRead: isRead,
+                    onDismiss: () => SharedContentActions.dismissShoppingList(
+                      context,
+                      viewModel,
+                      sharedShoppingList,
+                    ),
+                    onUnshare: () => SharedContentActions.unshareShoppingList(
+                      context,
+                      viewModel,
+                      sharedShoppingList,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Shopping list content
+                  _buildShoppingListContent(context, sharedShoppingList),
+
+                  // Message from sharer
+                  if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
+                    const SizedBox(height: AppDimensions.space4),
+                    _buildShareMessage(
+                      context,
+                      sharedShoppingList.shareMessage!,
+                    ),
+                  ],
+
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Action buttons
+                  _buildActionButtons(
                     context,
                     viewModel,
                     sharedShoppingList,
+                    isRead,
+                    isJoined,
                   ),
-                  onUnshare: () => SharedContentActions.unshareShoppingList(
-                    context,
-                    viewModel,
-                    sharedShoppingList,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingS),
-
-                // Shopping list content
-                _buildShoppingListContent(context, sharedShoppingList),
-
-                // Message from sharer
-                if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
-                  _buildShareMessage(context, sharedShoppingList.shareMessage!),
                 ],
-
-                const SizedBox(height: AppDimensions.spacingS),
-
-                // Action buttons
-                _buildActionButtons(
-                  context,
-                  viewModel,
-                  sharedShoppingList,
-                  isRead,
-                  isJoined,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -116,15 +125,15 @@ class SharedShoppingListCard {
           height: 100,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
-          child: Icon(
-            Icons.shopping_cart,
+          child: ButleryIcon(
+            ButleryIcons.shoppingCart,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,8 +165,8 @@ class SharedShoppingListCard {
               const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
-                  Icon(
-                    Icons.shopping_basket,
+                  ButleryIcon(
+                    ButleryIcons.shoppingCart,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -166,9 +175,9 @@ class SharedShoppingListCard {
                     sharedShoppingList.itemCountText,
                     style: AppTextStyles.bodySmall,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Icon(
-                    Icons.person,
+                  const SizedBox(width: AppDimensions.space4),
+                  ButleryIcon(
+                    ButleryIcons.user,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -189,10 +198,10 @@ class SharedShoppingListCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '"$message"',
@@ -216,7 +225,7 @@ class SharedShoppingListCard {
           child: ActionButtons.secondaryButton(
             context,
             label: context.l10n.commonView,
-            icon: Icons.visibility,
+            icon: ButleryIcons.eye,
             onPressed: () {
               if (!isRead) {
                 viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
@@ -225,14 +234,14 @@ class SharedShoppingListCard {
             },
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: ActionButtons.primaryButton(
             context,
             label: isJoined
                 ? context.l10n.sharedMember
                 : context.l10n.sharedJoin,
-            icon: isJoined ? Icons.check : Icons.add_shopping_cart,
+            icon: isJoined ? ButleryIcons.check : ButleryIcons.shoppingCart,
             isLoading: viewModel.shoppingViewModel.isOperating,
             onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                 ? null
@@ -284,7 +293,7 @@ class SharedShoppingListCard {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: Column(
@@ -294,11 +303,11 @@ class SharedShoppingListCard {
             width: 32,
             height: 4,
             margin: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingS,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
           ),
 
@@ -320,7 +329,7 @@ class SharedShoppingListCard {
                   ),
                 ),
                 if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
                   _buildShareMessage(context, sharedShoppingList.shareMessage!),
                 ],
               ],
@@ -337,8 +346,8 @@ class SharedShoppingListCard {
               itemCount: 1,
               itemBuilder: (context, index) {
                 return ListTile(
-                  leading: const Icon(
-                    Icons.shopping_basket_outlined,
+                  leading: const ButleryIcon(
+                    ButleryIcons.shoppingCart,
                     size: AppDimensions.iconSizeM,
                   ),
                   title: Text(
@@ -347,8 +356,8 @@ class SharedShoppingListCard {
                     ),
                   ),
                   subtitle: Text(context.l10n.sharedTapToSeeAllItems),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
+                  trailing: const ButleryIcon(
+                    ButleryIcons.chevronRight,
                     size: AppDimensions.iconSizeS,
                   ),
                 );
@@ -375,7 +384,9 @@ class SharedShoppingListCard {
                     label: isJoined
                         ? context.l10n.sharedAlreadyMember
                         : context.l10n.sharedJoinList,
-                    icon: isJoined ? Icons.check : Icons.add_shopping_cart,
+                    icon: isJoined
+                        ? ButleryIcons.check
+                        : ButleryIcons.shoppingCart,
                     isLoading: viewModel.shoppingViewModel.isOperating,
                     onPressed:
                         isJoined || viewModel.shoppingViewModel.isOperating

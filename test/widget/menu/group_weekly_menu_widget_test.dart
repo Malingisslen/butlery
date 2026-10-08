@@ -29,6 +29,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/group_weekly_menu_widget.dart';
 
 class _MockService extends Mock implements GroupWeeklyMenuPlanService {}
@@ -307,7 +308,7 @@ void main() {
         ),
       ).thenThrow(saveError);
       await pump(tester);
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
     }
 
@@ -349,7 +350,7 @@ void main() {
       await pump(tester);
 
       expect(find.text('Linsgryta med spetskål'), findsOne);
-      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
       expect(
         find.text('Du kan se gruppens meny men inte ändra i den.'),
         findsOne,
@@ -413,7 +414,7 @@ void main() {
 
       // The SECOND dish's control. A single per-day control could only ever
       // reach the first, which left the other meal unremovable.
-      final buttons = find.byIcon(Icons.close);
+      final buttons = find.byIcon(ButleryIcons.x);
       expect(buttons, findsNWidgets(2));
       await tester.tap(buttons.last);
       await tester.pumpAndSettle();
@@ -448,7 +449,7 @@ void main() {
       ).thenAnswer((_) async {});
 
       await pump(tester);
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
       expect(find.text('Linsgryta med spetskål'), findsNothing);
@@ -494,7 +495,7 @@ void main() {
       });
 
       await pump(tester);
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
       failing = true;

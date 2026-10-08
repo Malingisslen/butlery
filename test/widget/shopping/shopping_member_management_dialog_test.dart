@@ -40,6 +40,7 @@ import 'package:butlery/services/unified/operations/collaborative_shopping_opera
 import 'package:butlery/services/unified/shopping_failure_message.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../helpers/user_profile_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -53,7 +54,14 @@ const _friendId = 'cecilia';
 /// handlers are what this file separates.
 class _RefusingCollaborativeOps extends Fake
     implements CollaborativeShoppingOperations {
-  _RefusingCollaborativeOps({this.permissionChangeSucceeds = false});
+  _RefusingCollaborativeOps({
+    this.permissionChangeSucceeds = false,
+    this.throws = false,
+  });
+
+  /// P7-A1: every operation throws instead of refusing, so the dialog's
+  /// catch branches run.
+  final bool throws;
 
   /// The one operation this file lets succeed, for the BUT-1777 rebase test —
   /// everything else stays refusing, which is what the rest of the file is for.
@@ -68,13 +76,19 @@ class _RefusingCollaborativeOps extends Fake
     required String userId,
     required String userDisplayName,
     SharedListPermission permission = SharedListPermission.edit,
-  }) async => false;
+  }) async {
+    if (throws) throw Exception('firestore exploded');
+    return false;
+  }
 
   @override
   Future<bool> removeMember({
     required String listId,
     required String userId,
-  }) async => false;
+  }) async {
+    if (throws) throw Exception('firestore exploded');
+    return false;
+  }
 
   @override
   Future<bool> updateMemberPermission({
@@ -86,6 +100,7 @@ class _RefusingCollaborativeOps extends Fake
     // BUT-1777: recorded so a caller that stops declaring the copy it rendered
     // cannot pass this file by refusing anyway.
     declaredBases.add(viewedBase);
+    if (throws) throw Exception('firestore exploded');
     return permissionChangeSucceeds;
   }
 }
@@ -97,9 +112,11 @@ class _RefusingShoppingService extends Fake implements UnifiedShoppingService {
   _RefusingShoppingService({
     String? reason,
     bool permissionChangeSucceeds = false,
+    bool throws = false,
   }) : _reason = reason,
        _ops = _RefusingCollaborativeOps(
          permissionChangeSucceeds: permissionChangeSucceeds,
+         throws: throws,
        );
 
   final _RefusingCollaborativeOps _ops;
@@ -175,11 +192,13 @@ void main() {
     required String? parkedReason,
     bool permissionChangeSucceeds = false,
     bool ownerSeated = true,
+    bool throws = false,
   }) async {
     registerService(
       _RefusingShoppingService(
         reason: parkedReason,
         permissionChangeSucceeds: permissionChangeSucceeds,
+        throws: throws,
       ),
     );
 
@@ -231,7 +250,7 @@ void main() {
   }
 
   Future<void> removeBob(WidgetTester tester) async {
-    await tester.tap(find.byIcon(Icons.person_remove));
+    await tester.tap(find.byIcon(ButleryIcons.userMinus));
     await tester.pumpAndSettle();
     // The confirmation dialog's primary button. Its title is "Ta bort medlem",
     // a different string, so the bare verb is unambiguous.
@@ -381,5 +400,55 @@ void main() {
             'change as drift the user caused themselves',
       );
     });
+  });
+
+  // P7-A1: a thrown change says what failed and never shows the exception
+  // (content-style-guide.md:95; the exception goes to the log).
+  group('a thrown change names what failed, never the exception', () {
+    testWidgets('changing a permission', (tester) async {
+      await pumpDialog(tester, parkedReason: null, throws: true);
+      await changeBobToAdmin(tester);
+
+      expect(find.text(l10n.shoppingCouldNotUpdatePermission), findsOneWidget);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.textContaining('firestore exploded'), findsNothing);
+    });
+
+    testWidgets('removing a member', (tester) async {
+      await pumpDialog(tester, parkedReason: null, throws: true);
+      await removeBob(tester);
+
+      expect(find.text(l10n.shoppingCouldNotRemoveMember), findsOneWidget);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.textContaining('firestore exploded'), findsNothing);
+    });
+
+    testWidgets('adding a friend', (tester) async {
+      await pumpDialog(tester, parkedReason: null, throws: true);
+      await addCecilia(tester);
+
+      expect(find.text(l10n.shoppingCouldNotAddMembers), findsOneWidget);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.textContaining('firestore exploded'), findsNothing);
+    });
+  });
+
+  // BUT-2190 (Malin, 2026-09-30, Q6 = A): the role picker sits on its own row
+  // under the member's name, so it is not squeezed between the avatar and the
+  // remove button.
+  testWidgets('the role picker has its own row under the name', (tester) async {
+    await pumpDialog(tester, parkedReason: null);
+
+    final name = tester.getRect(find.text('Bob'));
+    final picker = tester.getRect(
+      find.byType(DropdownButton<SharedListPermission>),
+    );
+    final remove = tester.getRect(find.byIcon(ButleryIcons.userMinus));
+
+    expect(picker.top, greaterThanOrEqualTo(name.bottom));
+    expect(picker.left, name.left);
+    // It reaches under the remove button, which a subtitle beside it
+    // could not.
+    expect(picker.right, greaterThan(remove.left));
   });
 }

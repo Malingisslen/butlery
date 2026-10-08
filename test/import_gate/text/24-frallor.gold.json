@@ -1,0 +1,24 @@
+{
+  "form": "\"ca\" före mängden",
+  "title": "Frukostfrallor",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "jäst"
+    },
+    {
+      "key": "vatten"
+    },
+    {
+      "key": "olja"
+    },
+    {
+      "key": "salt"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    }
+  ],
+  "headings": []
+}

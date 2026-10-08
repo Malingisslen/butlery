@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -21,7 +22,7 @@ class SearchTab {
       return StateWidget.empty(
         title: context.l10n.socialSearchForNewFriends,
         subtitle: context.l10n.socialSearchForNewFriendsDescription,
-        icon: Icons.search,
+        icon: ButleryIcons.search,
       );
     }
 
@@ -47,7 +48,7 @@ class SearchTab {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       itemCount: viewModel.searchResults.length,
       separatorBuilder: (context, index) =>
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
       itemBuilder: (context, index) {
         final user = viewModel.searchResults[index];
         return AnimatedListItem(

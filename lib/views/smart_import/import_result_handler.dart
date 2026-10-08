@@ -1,11 +1,11 @@
 // Duplicate-detection and post-import navigation extracted from
 // smart_import_view.dart to keep the parent under the 620-line baseline.
-// All logic is identical — this is a pure relocation.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -13,10 +13,12 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/import/cache/content_fingerprint.dart';
+import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
+import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
 
-/// Handles the two post-import actions: duplicate detection and navigation.
+/// Handles the post-import actions: duplicate detection and navigation.
 ///
 /// Extracted from _SmartImportViewContentState so the parent stays under the
 /// 620-line baseline. Call [checkForDuplicatesAndNavigate] after a successful
@@ -51,6 +53,13 @@ abstract final class ImportResultHandler {
   static double clampToExactMatchFloor(double score) =>
       score < _exactMatchMinScore ? _exactMatchMinScore : score;
 
+  /// A pasted or archived recipe carries a source label rather than an
+  /// address, and every recipe from that source shares it, so matching on it
+  /// would offer any earlier one as the duplicate.
+  @visibleForTesting
+  static bool isDedupableSourceUrl(String? sourceUrl) =>
+      isSafeExternalUrl(sourceUrl);
+
   /// Checks for duplicates and, if none (or user chose "save as new"),
   /// navigates to the recipe editor.
   ///
@@ -69,8 +78,8 @@ abstract final class ImportResultHandler {
       List<Recipe> matches = [];
       double matchScore = 1.0;
 
-      if (sourceUrl != null && sourceUrl.isNotEmpty) {
-        matches = await recipeService.findBySourceUrl(sourceUrl);
+      if (isDedupableSourceUrl(sourceUrl)) {
+        matches = await recipeService.findBySourceUrl(sourceUrl!);
       }
 
       // Fall back to title match
@@ -149,31 +158,7 @@ abstract final class ImportResultHandler {
             imageUrls: recipe.imageUrls,
             sourceUrl: recipe.sourceUrl,
           );
-          // BUT-1784 class: `updateRecipe` returns a bool and a refused write
-          // used to land on the error screen. Since BUT-1779 routes to the
-          // detail view with the in-memory object, discarding this would show
-          // a success snackbar AND a screen rendering content that was never
-          // saved — a failure the user cannot see until the next load.
-          final saved = await recipeService.updateRecipe(merged);
-          if (context.mounted) {
-            if (!saved) {
-              SnackBarUtils.showError(
-                context,
-                context.l10n.duplicateMergeFailed,
-              );
-              return false;
-            }
-            SnackBarUtils.showSuccess(
-              context,
-              context.l10n.duplicateMergeSuccess,
-            );
-            // BUT-1779: pass the just-persisted Recipe — a bare id decodes to
-            // null on the detail route, and `matches.first` is now stale.
-            Navigator.of(context).pushReplacementNamed(
-              Routes.recipeDetail,
-              arguments: merged,
-            );
-          }
+          await saveMergeAndOpen(context, recipeService, merged);
           return false;
 
         case DuplicateMergeChoice.saveAsNew:
@@ -181,37 +166,51 @@ abstract final class ImportResultHandler {
 
         case DuplicateMergeChoice.mergeBestFields:
           final merged = result.buildMergedRecipe();
-          // BUT-1784 class: `updateRecipe` returns a bool and a refused write
-          // used to land on the error screen. Since BUT-1779 routes to the
-          // detail view with the in-memory object, discarding this would show
-          // a success snackbar AND a screen rendering content that was never
-          // saved — a failure the user cannot see until the next load.
-          final saved = await recipeService.updateRecipe(merged);
-          if (context.mounted) {
-            if (!saved) {
-              SnackBarUtils.showError(
-                context,
-                context.l10n.duplicateMergeFailed,
-              );
-              return false;
-            }
-            SnackBarUtils.showSuccess(
-              context,
-              context.l10n.duplicateMergeSuccess,
-            );
-            // BUT-1779: pass the just-persisted Recipe — a bare id decodes to
-            // null on the detail route, and `matches.first` is now stale.
-            Navigator.of(context).pushReplacementNamed(
-              Routes.recipeDetail,
-              arguments: merged,
-            );
-          }
+          await saveMergeAndOpen(context, recipeService, merged);
           return false;
       }
     } catch (_) {
       // If duplicate check fails, let the user proceed with the import
       return true;
     }
+  }
+
+  /// Saves a merged duplicate and opens it.
+  ///
+  /// BUT-1784 class: `updateRecipe` returns a bool and a refused write used
+  /// to land on the error screen. Since BUT-1779 routes to the detail view
+  /// with the in-memory object, discarding this would show a success
+  /// snackbar AND a screen rendering content that was never saved.
+  ///
+  /// P5-U06: a refused save is three-part (content-style-guide.md:87-97):
+  /// what happened, that the existing recipe is unchanged (the write was
+  /// refused), and Försök igen, which saves the same merge again.
+  @visibleForTesting
+  static Future<void> saveMergeAndOpen(
+    BuildContext context,
+    UnifiedRecipeService recipeService,
+    Recipe merged,
+  ) async {
+    final saved = await recipeService.updateRecipe(merged);
+    if (!context.mounted) return;
+    if (!saved) {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.duplicateMergeFailed,
+        preserved: context.l10n.duplicateMergeFailedPreserved,
+        action: FailureAction.retry(
+          () => saveMergeAndOpen(context, recipeService, merged),
+        ),
+      );
+      return;
+    }
+    SnackBarUtils.showSuccess(context, context.l10n.duplicateMergeSuccess);
+    // BUT-1779: pass the just-persisted Recipe — a bare id decodes to null on
+    // the detail route, and the matched recipe is now stale.
+    Navigator.of(context).pushReplacementNamed(
+      Routes.recipeDetail,
+      arguments: merged,
+    );
   }
 
   /// Navigates to the recipe editor with the imported recipe.
@@ -240,5 +239,43 @@ abstract final class ImportResultHandler {
         'isTemplate': true,
       },
     );
+  }
+
+  /// The text import's multi-recipe handoff
+  /// (FranSocialaMedierView._pickAndSaveMultiple): tick, save, land on the list.
+  static Future<void> pickAndSaveMultiple(
+    BuildContext context,
+    SmartImportViewModel viewModel,
+    List<Recipe> recipes,
+  ) async {
+    final selected = await Navigator.push<List<Recipe>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BatchImportPreview(
+          recipes: recipes,
+          backTo: context.l10n.importRecipeTitle,
+        ),
+      ),
+    );
+    if (!context.mounted || selected == null || selected.isEmpty) return;
+
+    final ok = await viewModel.saveSelectedRecipes(selected);
+    if (!context.mounted) return;
+    if (!ok) {
+      SnackBarUtils.showFailure(
+        context,
+        what: viewModel.error ?? context.l10n.recipeSaveFailed,
+      );
+      return;
+    }
+    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+    if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
+      AllergenSetupBanner.show(context);
+    }
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.importComplete(selected.length, 0),
+    );
+    Navigator.of(context).pushNamedAndRemoveUntil(Routes.home, (_) => false);
   }
 }

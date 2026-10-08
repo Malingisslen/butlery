@@ -6,6 +6,8 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class OnboardingAllergenPage extends StatefulWidget {
   const OnboardingAllergenPage({super.key});
@@ -18,35 +20,35 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
   bool _showAll = false;
 
   /// Primary allergens (most common, always visible).
-  static const Map<String, IconData> _primaryAllergenIcons = {
-    'gluten': Icons.grain,
-    'mjölk': Icons.water_drop_outlined,
-    'nötter': Icons.eco_outlined,
-    'ägg': Icons.egg_outlined,
-    'soja': Icons.spa_outlined,
-    'fisk': Icons.set_meal_outlined,
-    'skaldjur': Icons.catching_pokemon,
-    'sesam': Icons.grass_outlined,
-  };
+  static const List<String> _primaryAllergens = [
+    'gluten',
+    'mjölk',
+    'nötter',
+    'ägg',
+    'soja',
+    'fisk',
+    'skaldjur',
+    'sesam',
+  ];
 
   /// Extended allergens (remaining EU-14 + lactose).
-  static const Map<String, IconData> _extendedAllergenIcons = {
-    'laktos': Icons.water_drop_outlined,
-    'selleri': Icons.local_florist_outlined,
-    'senap': Icons.local_florist_outlined,
-    'lupin': Icons.local_florist_outlined,
-    'sulfiter': Icons.science_outlined,
-    'jordnötter': Icons.eco_outlined,
-    'trädnötter': Icons.eco_outlined,
-    'kräftdjur': Icons.catching_pokemon,
-    'blötdjur': Icons.catching_pokemon,
-  };
+  static const List<String> _extendedAllergens = [
+    'laktos',
+    'selleri',
+    'senap',
+    'lupin',
+    'sulfiter',
+    'jordnötter',
+    'trädnötter',
+    'kräftdjur',
+    'blötdjur',
+  ];
 
   /// All allergens combined (precomputed to avoid per-build allocation).
-  static const Map<String, IconData> _allAllergenIcons = {
-    ..._primaryAllergenIcons,
-    ..._extendedAllergenIcons,
-  };
+  static const List<String> _allAllergens = [
+    ..._primaryAllergens,
+    ..._extendedAllergens,
+  ];
 
   static String _allergenLabel(BuildContext context, String key) {
     final l10n = context.l10n;
@@ -77,11 +79,12 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    final allergens = _showAll ? _allAllergenIcons : _primaryAllergenIcons;
-    final allergenEntries = allergens.entries.toList();
+    final allergens = _showAll ? _allAllergens : _primaryAllergens;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -89,7 +92,7 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
           Text(
             context.l10n.onboardingAllergenTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -108,21 +111,20 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
                 mainAxisSpacing: AppDimensions.spacingSm,
                 childAspectRatio: 2.5,
               ),
-              itemCount: allergenEntries.length + 1, // +1 for toggle button
+              itemCount: allergens.length + 1, // +1 for toggle button
               itemBuilder: (context, index) {
-                if (index == allergenEntries.length) {
+                if (index == allergens.length) {
                   return _ShowAllToggle(
                     showAll: _showAll,
                     onToggle: () => setState(() => _showAll = !_showAll),
                   );
                 }
-                final entry = allergenEntries[index];
-                final isSelected = viewModel.isAllergenSelected(entry.key);
+                final key = allergens[index];
+                final isSelected = viewModel.isAllergenSelected(key);
                 return _AllergenToggleCard(
-                  label: _allergenLabel(context, entry.key),
-                  icon: entry.value,
+                  label: _allergenLabel(context, key),
                   isSelected: isSelected,
-                  onTap: () => viewModel.toggleAllergen(entry.key),
+                  onTap: () => viewModel.toggleAllergen(key),
                 );
               },
             ),
@@ -163,10 +165,10 @@ class _ShowAllToggle extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                showAll ? Icons.expand_less : Icons.expand_more,
+              ButleryIcon(
+                showAll ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                 size: AppDimensions.iconSizeM,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingXs),
               Flexible(
@@ -175,7 +177,7 @@ class _ShowAllToggle extends StatelessWidget {
                       ? context.l10n.onboardingShowFewerAllergens
                       : context.l10n.onboardingShowAllAllergens,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -190,13 +192,11 @@ class _ShowAllToggle extends StatelessWidget {
 
 class _AllergenToggleCard extends StatelessWidget {
   final String label;
-  final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _AllergenToggleCard({
     required this.label,
-    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
@@ -216,13 +216,16 @@ class _AllergenToggleCard extends StatelessWidget {
             context,
             const Duration(milliseconds: 200),
           ),
+          // Chosen is a real border, never a tint (Grafisk manual v6:209,
+          // "Vald = riktig border"; tokens.json:40-53). The fill stays
+          // surface.raised (surfaceContainerHighest), which is also
+          // surface.selected (tokens.json:108-119), and the border is
+          // text.primary: ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: isSelected
-                ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
-                : cs.surfaceContainerHighest,
+            color: cs.surfaceContainerHighest,
             border: Border.all(
-              color: isSelected ? cs.primary : cs.outlineVariant,
-              width: isSelected ? 2 : 1,
+              color: isSelected ? cs.onSurface : cs.outlineVariant,
+              width: isSelected ? 1.5 : 1,
             ),
           ),
           padding: const EdgeInsets.symmetric(
@@ -231,25 +234,19 @@ class _AllergenToggleCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: AppDimensions.iconSizeL,
-                color: isSelected ? cs.primary : cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
               Expanded(
                 child: Text(
                   label,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: isSelected ? cs.primary : cs.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check,
+                ButleryIcon(
+                  ButleryIcons.check,
                   size: AppDimensions.iconSizeM,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
             ],
           ),

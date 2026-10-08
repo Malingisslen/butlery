@@ -168,7 +168,9 @@ class UnifiedErrorInfo {
       case ErrorRecoveryAction.navigate:
         return AppLocale.current.actionGoBack;
       case ErrorRecoveryAction.ignore:
-        return AppLocale.current.commonOk;
+        // The button only dismisses: "Stäng", never "OK"
+        // (content-style-guide.md:77).
+        return AppLocale.current.commonClose;
       case ErrorRecoveryAction.escalate:
         return AppLocale.current.actionReport;
     }

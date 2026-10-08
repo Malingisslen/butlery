@@ -1,7 +1,10 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -36,7 +39,7 @@ class LegalContactFooter extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingL),
           ElevatedButton.icon(
             onPressed: () => _handleContactUs(context),
-            icon: const Icon(Icons.email_rounded),
+            icon: const ButleryIcon(ButleryIcons.mail),
             label: Text(context.l10n.privacyContactUs),
             style: ElevatedButton.styleFrom(
               backgroundColor: cs.primary,
@@ -73,21 +76,9 @@ class LegalContactFooter extends StatelessWidget {
     }
   }
 
+  /// The ink snackbar (Komponentark v1:745-750; PQ-09 = A), never a red
+  /// status fill (Komponentark v1:300); the message says what failed.
   void _showError(BuildContext context, String message) {
-    final cs = Theme.of(context).colorScheme;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error_outline, color: cs.onError),
-            const SizedBox(width: AppDimensions.spacingSm),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: cs.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackBarUtils.showFailure(context, what: message);
   }
 }

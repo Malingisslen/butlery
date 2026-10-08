@@ -1,0 +1,38 @@
+{
+  "form": "jordnötter, fisksås och lime utan mängd",
+  "title": "Kycklingwok med jordnötter",
+  "steps": 4,
+  "ingredients": [
+    {
+      "key": "kycklingfilé"
+    },
+    {
+      "key": "äggnudlar",
+      "allergen": "gluten"
+    },
+    {
+      "key": "paprika"
+    },
+    {
+      "key": "broccoli"
+    },
+    {
+      "key": "sojasås",
+      "allergen": "soja"
+    },
+    {
+      "key": "fisksås",
+      "allergen": "fisk"
+    },
+    {
+      "key": "jordnötter",
+      "allergen": "jordnötter"
+    },
+    {
+      "key": "lime"
+    }
+  ],
+  "headings": [
+    "Gör så här"
+  ]
+}

@@ -6,12 +6,14 @@ import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Add or edit a non-account family member, with the two-tier GDPR consent UX:
@@ -154,8 +156,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       listenable: _vm,
       builder: (context, _) {
         return Scaffold(
-          appBar: AdaptiveAppBar(
+          // A subpage of Min familj (Komponentark v1:71-78).
+          appBar: ButleryTopBar.undersida(
             title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
+            backTo: l10n.familyTitle,
           ),
           body: Center(
             child: ConstrainedBox(
@@ -186,7 +190,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     ActionButtons.primaryButton(
                       context,
                       label: l10n.commonSave,
-                      icon: Icons.save,
+                      icon: ButleryIcons.save,
                       isExpanded: true,
                       isLoading: _vm.isLoading,
                       onPressed: _canSave ? _save : null,
@@ -195,7 +199,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                       const SizedBox(height: AppDimensions.spacingM),
                       TextButton.icon(
                         onPressed: _delete,
-                        icon: const Icon(Icons.delete_outline),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         label: Text(l10n.familyDeleteMember),
                         style: TextButton.styleFrom(
                           foregroundColor: cs.error,
@@ -245,7 +249,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: parseAvatarColor(hex),
+                      color: parseAvatarColor(context, hex),
                       border: Border.all(
                         color: _color == hex
                             ? cs.onSurface
@@ -295,7 +299,9 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         child: Text(
                           ageBandLabel(l10n, band),
                           style: AppTextStyles.captionText.copyWith(
-                            color: _band == band ? Colors.white : cs.outline,
+                            color: _band == band
+                                ? cs.onPrimary
+                                : cs.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -311,7 +317,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           child: Text(
             l10n.familyAgeBandHint,
             style: AppTextStyles.captionText.copyWith(
-              color: cs.outline,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -336,6 +342,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     String badge,
     Color badgeColor, {
     Color? titleColor,
+    Color? badgeTextColor,
   }) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -348,7 +355,9 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         decoration: BoxDecoration(border: Border.all(color: badgeColor)),
         child: Text(
           badge,
-          style: AppTextStyles.captionText.copyWith(color: badgeColor),
+          style: AppTextStyles.captionText.copyWith(
+            color: badgeTextColor ?? badgeColor,
+          ),
         ),
       ),
     ],
@@ -363,7 +372,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 3),
         ),
       ),
       child: Column(
@@ -372,8 +381,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           _consentHeader(
             l10n.familyConsentSectionTitle,
             l10n.familyConsentRequiredBadge,
-            cs.primary,
-            titleColor: cs.primary,
+            cs.onSurface,
+            titleColor: cs.onSurface,
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
@@ -403,7 +412,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: context.butleryColors.warning, width: 3),
+          left: BorderSide(color: context.modeColors.warning, width: 3),
         ),
       ),
       child: Column(
@@ -413,9 +422,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             l10n.familyAllergenSectionTitle,
             l10n.familyOptionalBadge,
             cs.outline,
-            titleColor: cs.secondary,
+            titleColor: context.modeColors.textAccent,
+            badgeTextColor: cs.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             l10n.familyAllergenHealthNote,
             style: AppTextStyles.captionText.copyWith(
@@ -438,7 +448,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             ),
           ),
           if (_allergenConsent) ...[
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -455,7 +465,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: _withdraw,
-                icon: const Icon(Icons.undo, size: 16),
+                icon: const ButleryIcon(ButleryIcons.undo, size: 16),
                 label: Text(l10n.familyWithdrawAllergenConsent),
                 style: TextButton.styleFrom(
                   foregroundColor: cs.error,
@@ -485,16 +495,21 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         }),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          // Chosen is surface.selected with a real border, never a tint
+          // (tokens.json:41, :116-119; Grafisk manual v6:209). surface.selected
+          // is surfaceContainerHighest in both schemes; the border and text
+          // are text.primary (onSurface): ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: selected ? cs.error.withValues(alpha: 0.1) : cs.surface,
+            color: selected ? cs.surfaceContainerHighest : cs.surface,
             border: Border.all(
-              color: selected ? cs.error : cs.outlineVariant,
+              color: selected ? cs.onSurface : cs.outlineVariant,
+              width: selected ? 1.5 : 1,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? cs.error : cs.outline,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -524,16 +539,17 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             l10n.familyDislikesSectionTitle,
             l10n.familyOptionalBadge,
             cs.outline,
-            titleColor: cs.secondary,
+            titleColor: context.modeColors.textAccent,
+            badgeTextColor: cs.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             l10n.familyDislikesNote,
             style: AppTextStyles.captionText.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
             spacing: 6,
             runSpacing: 6,
@@ -564,16 +580,21 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         }),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          // Chosen is surface.selected with a real border, never a tint
+          // (tokens.json:41, :116-119; Grafisk manual v6:209). surface.selected
+          // is surfaceContainerHighest in both schemes; the border and text
+          // are text.primary (onSurface): ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: selected ? cs.secondary.withValues(alpha: 0.1) : cs.surface,
+            color: selected ? cs.surfaceContainerHighest : cs.surface,
             border: Border.all(
-              color: selected ? cs.secondary : cs.outlineVariant,
+              color: selected ? cs.onSurface : cs.outlineVariant,
+              width: selected ? 1.5 : 1,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? cs.secondary : cs.outline,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -594,20 +615,20 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          color: context.butleryColors.heroPaleGreen,
+          color: context.modeColors.heroPaleGreen,
           child: Row(
             children: [
-              Icon(
-                Icons.verified_user_outlined,
+              ButleryIcon(
+                ButleryIcons.shieldCheck,
                 size: 18,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '${l10n.familyConsentGivenPrefix} $date · ${consent.consentVersion}',
                   style: AppTextStyles.captionText.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ),

@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -1195,6 +1196,49 @@ void main() {
           expect(lineRows, 6);
         },
       );
+    });
+
+    // Resa 11: a dictated recipe was saved with no source stamp, because
+    // the form rebuilt the recipe without it.
+    group('source artefact survives the form', () {
+      final artefact = SourceArtefact(
+        type: SourceArtefactType.voiceDictation,
+        payload: 'Pannkakor',
+        fetchedAt: DateTime.utc(2026, 10, 6),
+      );
+
+      test('an import opened as a template keeps its stamp', () {
+        final imported = RecipeFactory.build(
+          title: 'Pannkakor',
+          ingredients: ['3 dl mjölk'],
+        ).copyWith(sourceArtefact: artefact);
+        formState = RecipeFormState(initialRecipe: imported, isTemplate: true);
+
+        expect(formState.createRecipe().core.sourceArtefact, artefact);
+      });
+
+      test('editing a saved recipe does not erase its stamp', () {
+        final saved = RecipeFactory.build(
+          title: 'Pannkakor',
+          ingredients: ['3 dl mjölk'],
+        ).copyWith(sourceArtefact: artefact);
+        formState = RecipeFormState(initialRecipe: saved);
+        formState.setTitle('Tunna pannkakor');
+
+        expect(formState.createRecipe().core.sourceArtefact, artefact);
+      });
+
+      test('resetForm drops the stamp', () {
+        formState = RecipeFormState(
+          initialRecipe: RecipeFactory.build(
+            title: 'Pannkakor',
+          ).copyWith(sourceArtefact: artefact),
+        );
+        formState.resetForm();
+        formState.setTitle('Ny');
+
+        expect(formState.createRecipe().core.sourceArtefact, isNull);
+      });
     });
 
     group('BUT-1232 structured ingredient derivation at save', () {

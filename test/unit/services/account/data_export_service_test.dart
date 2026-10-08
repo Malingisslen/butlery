@@ -4,14 +4,16 @@
 library;
 
 import 'package:cloud_functions/cloud_functions.dart';
-// `UserMetadata` only — `User` would clash with the project's own models.
-import 'package:firebase_auth/firebase_auth.dart' show UserMetadata;
+// `User` would clash with the project's own models.
+import 'package:firebase_auth/firebase_auth.dart'
+    show MultiFactor, MultiFactorInfo, UserMetadata;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
+import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
@@ -124,12 +126,39 @@ class _EmptyHttpsCallable extends Fake implements HttpsCallable {
   }
 }
 
+/// BUT-2142: an account that has no backup codes.
+class _NoBackupCodesHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    return _EmptyHttpsCallableResult<T>(
+      <String, dynamic>{
+            'hasBackupCodes': false,
+            'createdAt': null,
+            'total': 0,
+            'unused': 0,
+            'algorithm': null,
+          }
+          as T,
+    );
+  }
+}
+
+HttpsCallable? _mfaCallableFor(String name) =>
+    name == 'exportMfaRecoveryData' ? _NoBackupCodesHttpsCallable() : null;
+
+class _NoFactorsMultiFactor extends Fake implements MultiFactor {
+  @override
+  Future<List<MultiFactorInfo>> getEnrolledFactors() async => const [];
+}
+
 class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {
   @override
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _EmptyHttpsCallable();
+  }) => _mfaCallableFor(name) ?? _EmptyHttpsCallable();
 }
 
 /// BUT-864: HttpsCallable stub that simulates a transient backend failure on
@@ -153,7 +182,7 @@ class _TransientFirebaseFunctions extends Fake implements FirebaseFunctions {
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _TransientHttpsCallable();
+  }) => _mfaCallableFor(name) ?? _TransientHttpsCallable();
 }
 
 /// BUT-865: HttpsCallable that succeeds on call #1 (returns one row + a
@@ -282,7 +311,7 @@ class _LeakyAuditLogFirebaseFunctions extends Fake
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _LeakyAuditLogHttpsCallable();
+  }) => _mfaCallableFor(name) ?? _LeakyAuditLogHttpsCallable();
 }
 
 /// BUT-1760: fails the `preferences` read with an exception whose text names
@@ -319,26 +348,61 @@ class _LeakySettingsExportRepository extends FirebaseDataExportRepository {
 /// BUT-1721 (fix round): the PARTIAL shape — a section that sets `error_code`
 /// but NOT `error`.
 ///
-/// `SharedShoppingListExport` does this deliberately: its contributor probe is
-/// the only one a rules refusal can stop, so a transient failure there leaves
-/// the owner and member probes' lists in the section body along with an
-/// accurate note. The section WAS exported; one of its three lookups was not.
-///
-/// A non-`permission-denied` exception is what makes it a warning rather than
-/// the documented rules-refusal note, so the throw below is a `StateError`.
-class _TransientContributorProbeRepository
-    extends FirebaseDataExportRepository {
-  _TransientContributorProbeRepository({
+/// `PreferencesExportManager.exportPreferences` isolates its settings
+/// collection read, so a failure there leaves the `preferences` document in the
+/// section body with a partial token. The section WAS exported; one of its
+/// lookups was not.
+class _PartialSettingsExportRepository extends FirebaseDataExportRepository {
+  _PartialSettingsExportRepository({
     required super.firestore,
     required super.authRepository,
   });
 
   @override
-  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsContributor(
+  Future<List<Map<String, dynamic>>> exportUserSettings(
     String userId, {
-    int maxDocuments = 500,
-  }) async => throw StateError('deadline exceeded on the contributor probe');
+    int maxDocuments = 50,
+  }) async => throw StateError('deadline exceeded on the settings read');
 }
+
+/// BUT-1747: the `exportSharedResidue` callable. Answers with an empty
+/// residue, or throws [error] when one is given.
+class _SharedResidueHttpsCallable extends Fake implements HttpsCallable {
+  _SharedResidueHttpsCallable(this.error);
+  final Object? error;
+
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    if (error != null) throw error!;
+    return _EmptyHttpsCallableResult<T>(
+      <dynamic, dynamic>{
+            'shared_lists_left': const <dynamic>[],
+            'shared_content_items': const <dynamic>[],
+            'known_gaps': const <dynamic>['a-gap'],
+          }
+          as T,
+    );
+  }
+}
+
+class _SharedResidueFunctions extends Fake implements FirebaseFunctions {
+  _SharedResidueFunctions([this.error]);
+  final Object? error;
+
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) {
+    expect(name, SharedResidueExportManager.callableName);
+    return _SharedResidueHttpsCallable(error);
+  }
+}
+
+SharedResidueExportManager _sharedResidueOk() =>
+    SharedResidueExportManager(functions: _SharedResidueFunctions());
 
 class _SuccessThenTransientFirebaseFunctions extends Fake
     implements FirebaseFunctions {
@@ -348,7 +412,7 @@ class _SuccessThenTransientFirebaseFunctions extends Fake
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _callable;
+  }) => _mfaCallableFor(name) ?? _callable;
 }
 
 void main() {
@@ -379,6 +443,7 @@ void main() {
       HouseholdRepository? householdRepository,
       DinerProfileRepository? dinerProfileRepository,
       FamilyRatingRepository? familyRatingRepository,
+      SharedResidueExportManager? sharedResidueExportManager,
     }) {
       return DataExportService(
         authRepository: mockAuthRepository,
@@ -391,7 +456,10 @@ void main() {
         // BUT-842: also inject a fake-firestore-backed dataExportRepository so
         // exportConsentRecords doesn't fall through to ServiceLocator (the
         // manager re-throws unknown errors instead of swallowing them).
+        sharedResidueExportManager:
+            sharedResidueExportManager ?? _sharedResidueOk(),
         complianceExportManager: ComplianceExportManager(
+          authRepository: mockAuthRepository,
           functions: _FakeFirebaseFunctions(),
           dataExportRepository: FirebaseDataExportRepository(
             firestore: fakeFirestore,
@@ -470,6 +538,7 @@ void main() {
       // `_exportUserProfile`.
       when(() => mockUser.emailVerified).thenReturn(true);
       when(() => mockUser.metadata).thenReturn(_FakeUserMetadata());
+      when(() => mockUser.multiFactor).thenReturn(_NoFactorsMultiFactor());
       mockAuthRepository.setAuthState(
         user: mockUser,
         userId: testUserId,
@@ -523,7 +592,9 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -784,31 +855,6 @@ void main() {
                 'updatedAt': Timestamp.fromDate(DateTime(2026, 2, 4, 5)),
               });
 
-          // `realtime_recipes` embeds a WHOLE serialised recipe under `recipe`,
-          // so the same zone-less stamps appear one level deeper. The section
-          // was empty in this fixture, which is why the walk was green over it.
-          await fakeFirestore.collection('realtime_recipes').doc('zone-rt').set(
-            {
-              'ownerId': testUserId,
-              'recipe': {
-                'core': {
-                  'title': 'Semlor',
-                  'sourceArtefact': {
-                    'type': 'url',
-                    'payload': 'https://example.test/semlor',
-                    'fetchedAt': DateTime(2026, 2, 7, 8).toIso8601String(),
-                  },
-                },
-                'realtimeData': {
-                  'lastEditedAt': DateTime(2026, 2, 8, 9).toIso8601String(),
-                  'lastSeenAt': {
-                    testUserId: DateTime(2026, 2, 8, 10).toIso8601String(),
-                  },
-                },
-              },
-            },
-          );
-
           // The family section serialises MODELS, so its stamps never pass a
           // Firestore document at all — `toJson()` emits `toIso8601String()`
           // on a LOCAL `DateTime`. The group's default household repository
@@ -944,9 +990,6 @@ void main() {
               '/recipes/recipes[0]/data/realtimeData/lastSeenAt/$testUserId',
               '/recipes/recipes[1]/data/sourceArtefact/fetchedAt',
               '/recipes/recipes[1]/data/tagOverrides/lastEditedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/core/sourceArtefact/fetchedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastEditedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastSeenAt/$testUserId',
             ]),
           );
         },
@@ -1037,7 +1080,8 @@ void main() {
         // satisfied even when the user has none of this data.
         expect(data['reports'], isNotNull);
         expect(data['pings'], isNotNull);
-        expect(data['realtime_recipes'], isNotNull);
+        // BUT-2151: live menus, empty for a user with none.
+        expect(data['live_menus']['total_count'], 0);
         expect(data['group_weekly_menu_plans'], isNotNull);
         // BUT-1450: notification-analytics sections the deletion cascade
         // erases must each be present for Art. 15 right-of-access.
@@ -1295,28 +1339,6 @@ void main() {
         );
       });
 
-      test('BUT-1396: collaborative recipes the user owns export under '
-          'realtime_recipes (total_count==1)', () async {
-        // `realtime_recipes` is keyed on `ownerId` (the model\'s authoritative
-        // field), not the cascade CF\'s no-op `userId`. The export queries
-        // ownerId so the bundle ⊇ what deletion erases.
-        await fakeFirestore.collection('realtime_recipes').doc('rt-1').set({
-          'ownerId': testUserId,
-          'title': 'Delat recept',
-        });
-
-        final jsonString = await service.exportUserData();
-        final data = json.decode(jsonString) as Map<String, dynamic>;
-
-        final section = data['realtime_recipes'] as Map<String, dynamic>;
-        expect(section.containsKey('error'), isFalse);
-        expect(section['total_count'], 1);
-        final recipes = section['realtime_recipes'] as List<dynamic>;
-        final recipe = recipes.single as Map<String, dynamic>;
-        expect(recipe['recipe_id'], 'rt-1');
-        expect(recipe['data']['title'], 'Delat recept');
-      });
-
       test('BUT-2028: ingredient suggestions the user submitted export, '
           'projected, and another user\'s does not', () async {
         // The cascade erases these (`deleteIngredientSuggestions`), so Art. 15
@@ -1389,6 +1411,64 @@ void main() {
         final note = section['data_minimisation'] as String;
         expect(note, contains('reviewed'));
         expect(note, contains('notes'));
+      });
+
+      test('P5-U27b: recipe suggestions export in both directions, and a '
+          'suggestion between two other people does not', () async {
+        // The cascade erases a suggestion with either account
+        // (`deleteRecipeSuggestions`), so Art. 15 must reach both: the ones
+        // the user made and the ones made to the user's recipes. `createdAt`
+        // is a real Timestamp so a section that stops calling
+        // `sanitizeForJson` makes `jsonEncode` throw and reddens here.
+        final createdAt = DateTime.utc(2026, 9, 20, 8);
+        Map<String, dynamic> row(String suggester, String owner, String t) => {
+          'recipeId': 'recipe-$t',
+          'ownerId': owner,
+          'suggesterId': suggester,
+          'suggestion': {'title': t},
+          'status': 'pending',
+          'createdAt': Timestamp.fromDate(createdAt),
+          'expiresAt': Timestamp.fromDate(
+            createdAt.add(const Duration(days: 7)),
+          ),
+        };
+        final suggestions = fakeFirestore.collection('recipe_suggestions');
+        await suggestions
+            .doc('i-suggested')
+            .set(row(testUserId, 'other-user', 'Mer vitlök'));
+        await suggestions
+            .doc('made-to-me')
+            .set(row('other-user', testUserId, 'Mindre salt'));
+        await suggestions
+            .doc('between-others')
+            .set(row('other-user', 'third-user', 'Inte min'));
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['recipe_suggestions'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse);
+        expect(section['total_count'], 2);
+        expect(section.containsKey('truncated'), isFalse);
+
+        final made =
+            (section['suggestions_made'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        expect(made['suggestion_id'], 'i-suggested');
+        expect(made['data']['suggestion']['title'], 'Mer vitlök');
+        expect(
+          DateTime.parse(made['data']['createdAt'] as String).toUtc(),
+          createdAt,
+        );
+
+        final received =
+            (section['suggestions_received'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        expect(received['suggestion_id'], 'made-to-me');
+        expect(received['data']['suggestion']['title'], 'Mindre salt');
+
+        expect(jsonString, isNot(contains('between-others')));
+        expect(section['data_minimisation'] as String, contains('7 days'));
       });
 
       test(
@@ -1518,7 +1598,7 @@ void main() {
 
       test('BUT-1396: a user with none of the new PII data still gets the '
           'sections present with no error (empty-safe Art. 15)', () async {
-        // No reports/pings/realtime_recipes/group menus seeded — the export
+        // No reports/pings/group menus seeded — the export
         // must still surface every section as an empty, error-free shape so
         // the bundle is honest about "you have none of this" rather than
         // omitting the section or carrying a swallowed error.
@@ -1528,7 +1608,6 @@ void main() {
         for (final key in const [
           'reports',
           'pings',
-          'realtime_recipes',
           'group_weekly_menu_plans',
           // BUT-2028. The zero-row case is not an edge case for this
           // section — no code in the app creates a suggestion, so it is the
@@ -1536,6 +1615,8 @@ void main() {
           'ingredient_suggestions',
           // BUT-1693: no share is seeded, so the zero-row case is under test.
           'household_allergen_shares',
+          // P5-U27b: no suggestion is seeded.
+          'recipe_suggestions',
         ]) {
           final section = data[key] as Map<String, dynamic>;
           expect(
@@ -1546,9 +1627,9 @@ void main() {
         }
         expect(data['reports']['total'], 0);
         expect(data['pings']['total'], 0);
-        expect(data['realtime_recipes']['total_count'], 0);
         expect(data['group_weekly_menu_plans']['total_count'], 0);
         expect(data['ingredient_suggestions']['total_count'], 0);
+        expect(data['recipe_suggestions']['total_count'], 0);
       });
     });
 
@@ -1820,7 +1901,9 @@ void main() {
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
+            sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
+              authRepository: mockAuthRepository,
               functions: _TransientFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
@@ -1922,7 +2005,9 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -1984,7 +2069,9 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -2070,14 +2157,16 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
               authRepository: mockAuthRepository,
             ),
           ),
-          dataExportRepository: _TransientContributorProbeRepository(
+          dataExportRepository: _PartialSettingsExportRepository(
             firestore: fakeFirestore,
             authRepository: mockAuthRepository,
           ),
@@ -2090,11 +2179,11 @@ void main() {
         // Premise: the section really is in the partial shape. Without this the
         // assertions below would pass against any section that simply succeeded.
         final section =
-            data['shared_shopping_lists'] as Map<String, dynamic>? ??
+            data['preferences'] as Map<String, dynamic>? ??
             const <String, dynamic>{};
         expect(
           section['error_code'],
-          'shared-shopping-lists-contributor-probe-failed',
+          'preferences-partial-export-failure',
           reason: 'fixture must stage the error_code-without-error shape',
         );
         expect(
@@ -2106,19 +2195,19 @@ void main() {
         final warnings =
             data['export_metadata']['warnings'] as List<dynamic>? ??
             const <dynamic>[];
-        final listWarning = warnings
+        final sectionWarning = warnings
             .cast<Map<String, dynamic>>()
-            .where((w) => w['section'] == 'shared_shopping_lists')
+            .where((w) => w['section'] == 'preferences')
             .toList();
-        expect(listWarning, hasLength(1));
+        expect(sectionWarning, hasLength(1));
         expect(
-          listWarning.single['message'],
+          sectionWarning.single['message'],
           isNot(contains('could not be exported')),
           reason:
               'the section WAS exported; claiming otherwise at bundle root is '
               'the over-claiming half of this ticket',
         );
-        expect(listWarning.single['message'], contains('may be incomplete'));
+        expect(sectionWarning.single['message'], contains('may be incomplete'));
       });
 
       test(
@@ -2137,7 +2226,9 @@ void main() {
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
+            sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
+              authRepository: mockAuthRepository,
               functions: _LeakyAuditLogFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
@@ -2222,7 +2313,9 @@ void main() {
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
+            sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
+              authRepository: mockAuthRepository,
               functions: _FakeFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
@@ -2257,6 +2350,80 @@ void main() {
       );
     });
 
+    group('BUT-1747: shared_lists_left section', () {
+      test('a success ships the callable keys and raises no warning', () async {
+        final data =
+            json.decode(await buildService().exportUserData())
+                as Map<String, dynamic>;
+
+        final section = data['shared_lists_left'] as Map<String, dynamic>;
+        expect(section['shared_lists_left'], isEmpty);
+        expect(section['shared_content_items'], isEmpty);
+        expect(section['known_gaps'], ['a-gap']);
+        final warnings =
+            data['export_metadata']['warnings'] as List<dynamic>? ??
+            const <dynamic>[];
+        expect(
+          warnings.cast<Map<String, dynamic>>().map((w) => w['section']),
+          isNot(contains('shared_lists_left')),
+        );
+      });
+
+      final failures = <String, (Object, String)>{
+        'unavailable (transient)': (
+          FirebaseFunctionsException(code: 'unavailable', message: 'down'),
+          'shared-lists-left-unavailable',
+        ),
+        'failed-precondition shared-residue-too-large': (
+          FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'too large',
+            details: const {'error_code': 'shared-residue-too-large'},
+          ),
+          'shared-residue-too-large',
+        ),
+        'unauthenticated': (
+          FirebaseFunctionsException(code: 'unauthenticated', message: 'x'),
+          'shared-lists-left-unauthenticated',
+        ),
+      };
+
+      for (final MapEntry(key: name, value: (error, code))
+          in failures.entries) {
+        test('$name becomes the section error_code and a warning, and the '
+            'rest of the bundle still builds', () async {
+          final service = buildService(
+            sharedResidueExportManager: SharedResidueExportManager(
+              functions: _SharedResidueFunctions(error),
+            ),
+          );
+
+          final data =
+              json.decode(await service.exportUserData())
+                  as Map<String, dynamic>;
+
+          final section = data['shared_lists_left'] as Map<String, dynamic>;
+          expect(section['error_code'], code);
+          expect(section.containsKey('shared_lists_left'), isFalse);
+
+          final metadata = data['export_metadata'] as Map<String, dynamic>;
+          final warning =
+              (metadata['warnings'] as List<dynamic>? ?? const <dynamic>[])
+                  .cast<Map<String, dynamic>>()
+                  .where((w) => w['section'] == 'shared_lists_left')
+                  .toList();
+          expect(warning, hasLength(1));
+          expect(warning.single['error_code'], code);
+          expect(warning.single['message'], contains('could not be exported'));
+          expect(metadata['data_completeness'], contains('shared_lists_left'));
+
+          // One gap, not the whole bundle: the neighbouring sections shipped.
+          expect(data['shared_shopping_lists'], contains('total_count'));
+          expect(data['profile'], contains('firebase_auth'));
+        });
+      }
+    });
+
     group('BUT-865: partial-recovery contract (page #1 success + page #2 '
         'transient throw)', () {
       test('partial rows from page #1 are discarded when page #2 throws — '
@@ -2265,7 +2432,9 @@ void main() {
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
+          sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _SuccessThenTransientFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,

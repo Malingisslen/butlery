@@ -9,8 +9,15 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
@@ -34,6 +41,7 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
+      registerFallbackValue(SyncOperation.update);
     });
 
     setUp(() async {
@@ -155,6 +163,130 @@ void main() {
         );
         expect(result, isNull);
         expect(lastError, isNotNull);
+      });
+
+      test('a created recipe carries parsed ingredients', () async {
+        // The menu's shopping list sums amounts from these; without them
+        // '1 gul lök' from three recipes became one row of 1.
+        final id = await module.createPersonalRecipe(
+          title: 'Kycklingcurry',
+          ingredients: ['1 gul lök', '2 msk currypulver', 'Salt'],
+          instructions: ['Koka'],
+        );
+        expect(id, isNotNull);
+
+        final saved = module.popLastCreatedRecipe()!;
+        final structured = saved.core.structuredIngredients!;
+        expect(structured[0].amount, 1);
+        expect(structured[0].name, 'gul lök');
+        expect(structured[1].amount, 2);
+        expect(structured[1].unit, 'msk');
+        expect(structured[2].amount, isNull);
+      });
+
+      group('BUT-2280: a new recipe is stored whole', () {
+        HeirloomMetadata heirloomBy(String uid) => HeirloomMetadata(
+          sourceImageUrl: 'https://storage/heirloom/abc.jpg',
+          writerName: 'Farmor Elsa',
+          addedAt: DateTime(2026, 10, 7),
+          addedByUserId: uid,
+        );
+
+        Recipe draft({
+          required HeirloomMetadata heirloom,
+          String createdBy = 'test-user-123',
+        }) => Recipe(
+          core: RecipeCore(
+            id: 'form-id-1',
+            title: '  Farmors bullar ',
+            description: '',
+            ingredients: const ['2 dl mjölk'],
+            structuredIngredients: const [
+              RecipeIngredient(
+                amount: 2,
+                unit: 'dl',
+                name: 'mjölk',
+                section: 'Degen',
+                raw: '2 dl mjölk',
+              ),
+            ],
+            instructions: const ['Baka.'],
+            mealType: 'Middag',
+            createdBy: createdBy,
+            cookCount: 7,
+            relatedRecipeIds: const ['bas-1'],
+            sourceArtefact: SourceArtefact(
+              type: SourceArtefactType.url,
+              payload: 'https://example.com/bullar',
+              fetchedAt: DateTime(2026, 10, 6),
+            ),
+            tagOverrides: const TagOverrides(addedTags: {'fika'}),
+          ),
+          type: RecipeType.personal,
+        )..core.heirloom = heirloom;
+
+        test('keeps the id, sections, source, tag corrections and the '
+            "user's own heirloom", () async {
+          final heirloom = heirloomBy('test-user-123');
+
+          final id = await module.createPersonalRecipeFrom(
+            draft(heirloom: heirloom),
+          );
+
+          expect(id, 'form-id-1');
+          final saved = module.popLastCreatedRecipe()!;
+          expect(saved.id, 'form-id-1');
+          expect(saved.title, 'Farmors bullar');
+          expect(saved.core.heirloom, same(heirloom));
+          expect(saved.core.structuredIngredients!.single.section, 'Degen');
+          expect(
+            saved.core.sourceArtefact!.payload,
+            'https://example.com/bullar',
+          );
+          expect(saved.core.tagOverrides!.addedTags, {'fika'});
+          expect(saved.core.relatedRecipeIds, ['bas-1']);
+          expect(saved.core.createdBy, 'test-user-123');
+        });
+
+        test(
+          'a draft with no owner yet keeps its tag corrections and source',
+          () async {
+            await module.createPersonalRecipeFrom(
+              draft(heirloom: heirloomBy('test-user-123'), createdBy: ''),
+            );
+
+            final saved = module.popLastCreatedRecipe()!;
+            expect(saved.core.tagOverrides!.addedTags, {'fika'});
+            expect(saved.core.sourceArtefact, isNotNull);
+            expect(saved.core.relatedRecipeIds, ['bas-1']);
+          },
+        );
+
+        test("drops another person's heirloom and cook history", () async {
+          await module.createPersonalRecipeFrom(
+            draft(heirloom: heirloomBy('someone-else')),
+          );
+
+          final saved = module.popLastCreatedRecipe()!;
+          expect(saved.core.heirloom, isNull);
+          expect(saved.core.cookCount, isNull);
+        });
+
+        test("another person's recipe leaves their tag corrections, source "
+            'capture and related recipes behind', () async {
+          await module.createPersonalRecipeFrom(
+            draft(
+              heirloom: heirloomBy('someone-else'),
+              createdBy: 'someone-else',
+            ),
+          );
+
+          final saved = module.popLastCreatedRecipe()!;
+          expect(saved.core.tagOverrides, isNull);
+          expect(saved.core.sourceArtefact, isNull);
+          expect(saved.core.relatedRecipeIds, isNull);
+          expect(saved.core.structuredIngredients!.single.section, 'Degen');
+        });
       });
 
       test('should fail update when not authenticated', () async {
@@ -317,6 +449,169 @@ void main() {
       });
     });
 
+    group('Raw save (batch re-tag)', () {
+      // "Uppdatera alla recept" saves through saveRecipeRaw. It used to sync
+      // under an operation name neither sync path writes for, so the new tags
+      // never reached Firebase.
+      test('writes the recipe to Firebase', () async {
+        final adapter = _RecordingAdapter();
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+        );
+
+        await module.saveRecipeRaw(testRecipe);
+        await pumpEventQueue();
+
+        expect(adapter.updatedIds, ['test-recipe-1']);
+        expect(
+          module.getSyncStatus('test-recipe-1'),
+          RecipeSyncStatus.synced,
+        );
+      });
+    });
+
+    group('Offline queue (BUT-2162)', () {
+      late _MockOfflineQueue queue;
+      late _RecordingAdapter adapter;
+
+      setUp(() {
+        queue = _MockOfflineQueue();
+        adapter = _RecordingAdapter();
+        when(() => queue.isQueueReady).thenReturn(true);
+        when(
+          () => queue.queueRecipeWrite(
+            any(),
+            any(),
+            operation: any(named: 'operation'),
+            queueTagging: any(named: 'queueTagging'),
+          ),
+        ).thenAnswer((_) async => 'op');
+        when(
+          () => queue.queueRecipeDelete(any(), any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockUserRepository.decrementPublicRecipeCount(any()),
+        ).thenAnswer((_) async {});
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+          getOfflineQueue: () => queue,
+        );
+      });
+
+      test('a new recipe is queued as a create, not sent', () async {
+        final id = await module.createPersonalRecipe(title: 'Köttbullar');
+
+        expect(id, isNotNull);
+        final captured = verify(
+          () => queue.queueRecipeWrite(
+            captureAny(),
+            'test-user-123',
+            operation: SyncOperation.create,
+            queueTagging: false,
+          ),
+        ).captured;
+        expect((captured.single as Recipe).id, id);
+        expect(adapter.updatedIds, isEmpty);
+      });
+
+      test('an edit is queued as an update', () async {
+        final ok = await module.updatePersonalRecipe(testRecipe);
+
+        expect(ok, isTrue);
+        verify(
+          () => queue.queueRecipeWrite(
+            any(that: isA<Recipe>().having((r) => r.id, 'id', testRecipe.id)),
+            'test-user-123',
+            operation: SyncOperation.update,
+            queueTagging: false,
+          ),
+        ).called(1);
+      });
+
+      test('a recipe whose tagging failed queues its tagging too', () async {
+        final tagging = _MockTaggingService();
+        when(() => tagging.generateTags(any())).thenThrow(Exception('down'));
+        module = PersonalRecipeModule(
+          recipeRepository: mockRepository,
+          userRepository: mockUserRepository,
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) => lastError = error,
+          notifyListeners: () => notifyListenersCalled++,
+          getServiceAdapter: () => adapter,
+          getOfflineQueue: () => queue,
+          taggingService: tagging,
+        );
+
+        await module.updatePersonalRecipe(testRecipe);
+
+        verify(
+          () => queue.queueRecipeWrite(
+            any(),
+            any(),
+            operation: SyncOperation.update,
+            queueTagging: true,
+          ),
+        ).called(1);
+      });
+
+      test('a delete is queued and leaves the local cache', () async {
+        await mockCacheHelper.saveJson(testRecipe.id, testRecipe.toJson());
+
+        final ok = await module.deletePersonalRecipe(testRecipe.id);
+
+        expect(ok, isTrue);
+        verify(
+          () => queue.queueRecipeDelete(testRecipe.id, 'test-user-123'),
+        ).called(1);
+        expect(await mockCacheHelper.loadJson(testRecipe.id), isNull);
+      });
+
+      test('deleting a recipe whose deletion is already queued counts it '
+          'down once', () async {
+        when(
+          () => queue.queueRecipeDelete(any(), any()),
+        ).thenAnswer((_) async => false);
+
+        final ok = await module.deletePersonalRecipe(testRecipe.id);
+
+        expect(ok, isTrue);
+        verifyNever(() => mockUserRepository.decrementPublicRecipeCount(any()));
+      });
+
+      test('without a ready queue the write goes to the server and is '
+          'awaited', () async {
+        when(() => queue.isQueueReady).thenReturn(false);
+
+        await module.saveRecipeRaw(testRecipe);
+
+        expect(adapter.updatedIds, [testRecipe.id]);
+        verifyNever(
+          () => queue.queueRecipeWrite(
+            any(),
+            any(),
+            operation: any(named: 'operation'),
+            queueTagging: any(named: 'queueTagging'),
+          ),
+        );
+      });
+    });
+
     group('Import', () {
       test('should fail import when not authenticated', () async {
         currentUserId = null;
@@ -366,4 +661,18 @@ void main() {
       });
     });
   });
+}
+
+class _MockOfflineQueue extends Mock implements OfflineService {}
+
+class _MockTaggingService extends Mock implements TaggingService {}
+
+class _RecordingAdapter extends MockRecipeServiceAdapter {
+  final List<String> updatedIds = [];
+
+  @override
+  Future<bool> updateRecipe(Recipe recipe) async {
+    updatedIds.add(recipe.id);
+    return true;
+  }
 }

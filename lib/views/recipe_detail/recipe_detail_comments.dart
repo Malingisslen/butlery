@@ -1,10 +1,13 @@
 // lib/views/recipe_detail/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
@@ -12,7 +15,6 @@ import 'package:butlery/services/unified/operations/modules/comment_likes_system
 import 'package:butlery/services/unified/operations/modules/comment_reactions_system.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -21,6 +23,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -105,73 +108,88 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       label: context.l10n.a11yCommentsToggle,
       button: true,
       toggled: _isExpanded,
-      child: InkWell(
-        onTap: () {
-          if (!mounted) return;
-          setState(() => _isExpanded = !_isExpanded);
-          if (_isExpanded) {
-            vm.startWatchingComments(widget.recipe.id);
-          } else {
-            vm.stopWatchingComments();
-          }
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.comment_outlined,
-                color: cs.primary,
-                size: AppDimensions.iconSizeAction,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.raised,
+          child: InkWell(
+            onTap: () {
+              if (!mounted) return;
+              setState(() => _isExpanded = !_isExpanded);
+              if (_isExpanded) {
+                vm.startWatchingComments(widget.recipe.id);
+              } else {
+                vm.stopWatchingComments();
+              }
+            },
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            child: Ink(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  border: Border.all(color: cs.outlineVariant),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                ),
+                child: Row(
                   children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        context.l10n.socialComments,
-                        style: AppTextStyles.titleMedium,
+                    ButleryIcon(
+                      ButleryIcons.messageSquare,
+                      color: cs.onSurface,
+                      size: AppDimensions.iconSizeAction,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              context.l10n.socialComments,
+                              style: AppTextStyles.titleMedium,
+                            ),
+                          ),
+                          if ((vm.commentCount ?? 0) > 0) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Text(
+                              context.l10n.socialCommentsCount(
+                                vm.commentCount!,
+                              ),
+                              style: AppTextStyles.titleMedium,
+                            ),
+                          ],
+                          // Preview snippet when collapsed
+                          if (!_isExpanded &&
+                              vm.topLevelComments.isNotEmpty) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Text(
+                              vm.topLevelComments.first.text,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    if ((vm.commentCount ?? 0) > 0) ...[
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        context.l10n.socialCommentsCount(vm.commentCount!),
-                        style: AppTextStyles.titleMedium,
-                      ),
-                    ],
-                    // Preview snippet when collapsed
-                    if (!_isExpanded && vm.topLevelComments.isNotEmpty) ...[
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        vm.topLevelComments.first.text,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                    ButleryIcon(
+                      _isExpanded
+                          ? ButleryIcons.chevronUp
+                          : ButleryIcons.chevronDown,
+                      color: cs.onSurfaceVariant,
+                      size: AppDimensions.iconSizeAction,
+                    ),
                   ],
                 ),
               ),
-              Icon(
-                _isExpanded
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
-                color: cs.onSurfaceVariant,
-                size: AppDimensions.iconSizeAction,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -235,26 +253,32 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       child: Semantics(
         label: context.l10n.recipeCommentVisibleTo(audienceStr),
         button: true,
-        child: InkWell(
-          onTap: () => _showAudienceDialog(context, vm),
-          child: Row(
-            children: [
-              Icon(
-                Icons.visibility_outlined,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.spacingXxs),
-              Flexible(
-                child: Text(
-                  context.l10n.recipeCommentVisibleTo(audienceStr),
-                  style: AppTextStyles.bodySmall.copyWith(
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.raised,
+            child: InkWell(
+              onTap: () => _showAudienceDialog(context, vm),
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.eye,
+                    size: AppDimensions.iconSizeS,
                     color: cs.onSurfaceVariant,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: AppDimensions.space4),
+                  Flexible(
+                    child: Text(
+                      context.l10n.recipeCommentVisibleTo(audienceStr),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -280,8 +304,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(
-                Icons.visibility_outlined,
+              ButleryIcon(
+                ButleryIcons.eye,
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
@@ -309,8 +333,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.person_outline,
+                              ButleryIcon(
+                                ButleryIcons.user,
                                 size: AppDimensions.iconSizeS,
                                 color: cs.onSurfaceVariant,
                               ),
@@ -327,7 +351,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       if (unresolved > 0)
                         Padding(
                           padding: const EdgeInsets.only(
-                            top: AppDimensions.spacingXxs,
+                            top: AppDimensions.space4,
                           ),
                           child: Text(
                             ctx.l10n.recipeCommentAudienceOthers(unresolved),
@@ -356,7 +380,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
@@ -497,7 +521,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           ? '${comment.text.substring(0, 40)}...'
           : comment.text,
       itemType: 'kommentar',
-      icon: Icons.comment_outlined,
+      icon: ButleryIcons.messageSquare,
     );
     if (confirmed != true || !mounted) return;
 
@@ -505,20 +529,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     // the snackbar closes — undo tap short-circuits, timeout commits the
     // delete. Comment stays visible during the window (no optimistic
     // removal), which doubles as a "deleting…" indicator without extra UI.
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
+    ScaffoldMessenger.of(context).clearSnackBars();
     var undone = false;
-    final controller = messenger.showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.commentDeletedUndoMessage),
-        duration: const Duration(seconds: 7),
-        action: SnackBarAction(
-          label: context.l10n.commonUndo,
-          onPressed: () => undone = true,
-        ),
-      ),
+    final controller = SnackBarUtils.showUndo(
+      context,
+      context.l10n.commentDeletedUndoMessage,
+      onUndo: () => undone = true,
     );
-    await controller.closed;
+    await controller?.closed;
     if (undone || !mounted) return;
 
     try {
@@ -643,12 +661,18 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
-    final cs = Theme.of(context).colorScheme;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? cs.error : context.butleryColors.success,
-      ),
-    );
+    // The ink snackbar for both outcomes (PQ-09 = A; Komponentark
+    // v1:745-750): the message says what happened, not a status fill. A
+    // failure carries Stäng and the alert role (content-style-guide.md:96;
+    // tillganglighetshandoff:172); a confirmation closes by itself after 4 s.
+    if (isError) {
+      SnackBarUtils.showFailure(context, what: message);
+    } else {
+      SnackBarUtils.showSuccess(
+        context,
+        message,
+        duration: const Duration(seconds: 4),
+      );
+    }
   }
 }

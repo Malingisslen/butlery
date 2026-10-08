@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// UI components for the portion scaler widget.
 ///
@@ -71,26 +74,32 @@ class PortionScalerUI {
     Animation<double> scaleAnimation,
     Function(int) onUpdatePortions,
   ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          context.l10n.scalerPortionsLabel,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
+    // A Wrap, so the controls move under the label when large text leaves
+    // no room beside it; full width, as the Row was, so a caller's
+    // background still spans the row.
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: AppDimensions.spacingMd,
+        children: [
+          Text(
+            context.l10n.scalerPortionsLabel,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        const SizedBox(width: AppDimensions.spacingMd),
-        _buildPortionControls(
-          context,
-          currentPortions,
-          minPortions,
-          maxPortions,
-          scaleAnimation,
-          onUpdatePortions,
-        ),
-      ],
+          _buildPortionControls(
+            context,
+            currentPortions,
+            minPortions,
+            maxPortions,
+            scaleAnimation,
+            onUpdatePortions,
+          ),
+        ],
+      ),
     );
   }
 
@@ -114,7 +123,7 @@ class PortionScalerUI {
               // Minus button
               _buildControlButton(
                 context,
-                icon: Icons.remove,
+                icon: ButleryIcons.minus,
                 onPressed: currentPortions > minPortions
                     ? () => onUpdatePortions(currentPortions - 1)
                     : null,
@@ -127,10 +136,8 @@ class PortionScalerUI {
                 ),
                 child: Text(
                   '$currentPortions',
-                  style: AppTextStyles.bodyBold.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primary,
+                  style: AppTextStyles.titleLarge.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -139,7 +146,7 @@ class PortionScalerUI {
               // Plus button
               _buildControlButton(
                 context,
-                icon: Icons.add,
+                icon: ButleryIcons.plus,
                 onPressed: currentPortions < maxPortions
                     ? () => onUpdatePortions(currentPortions + 1)
                     : null,
@@ -158,7 +165,7 @@ class PortionScalerUI {
     required VoidCallback? onPressed,
   }) {
     final cs = Theme.of(context).colorScheme;
-    final label = icon == Icons.remove
+    final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
     return Semantics(
@@ -167,24 +174,40 @@ class PortionScalerUI {
       enabled: onPressed != null,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.zero,
-          child: Container(
-            width: AppDimensions.minTouchTarget,
-            height: AppDimensions.minTouchTarget,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
-              border: Border.all(
-                color: onPressed != null ? cs.primary : cs.outlineVariant,
-                width: 2.0,
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.raised,
+            child: InkWell(
+              onTap: onPressed,
+              borderRadius: BorderRadius.zero,
+              child: Ink(
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest,
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: onPressed != null
+                          ? cs.onSurface
+                          : cs.outlineVariant,
+                      width: 2.0,
+                    ),
+                  ),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: ButleryIcon(
+                      icon,
+                      size: AppDimensions.iconSizeL,
+                      color: onPressed != null
+                          ? cs.onSurface
+                          : cs.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Icon(
-              icon,
-              size: AppDimensions.iconSizeL,
-              color: onPressed != null ? cs.primary : cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -203,18 +226,18 @@ class PortionScalerUI {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
+            horizontal: AppDimensions.space4,
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                convertToSwedish ? Icons.language : Icons.calculate,
+              ButleryIcon(
+                convertToSwedish ? ButleryIcons.globe : ButleryIcons.hash,
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
@@ -247,14 +270,16 @@ class PortionScalerUI {
     VoidCallback onToggleUnitConversion,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           Expanded(
             child: OutlinedButton.icon(
               onPressed: onToggleUnitConversion,
-              icon: Icon(
-                convertToSwedish ? Icons.check_circle : Icons.language,
+              icon: ButleryIcon(
+                convertToSwedish
+                    ? ButleryIcons.circleCheck
+                    : ButleryIcons.globe,
                 size: AppDimensions.iconSizeS,
               ),
               label: Text(
@@ -265,20 +290,21 @@ class PortionScalerUI {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: convertToSwedish
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.onSurface,
+                // Selected is the raised surface with a 1.5 px text.primary
+                // border (B83-1).
                 side: BorderSide(
                   color: convertToSwedish
-                      ? Theme.of(context).colorScheme.primary
+                      ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).colorScheme.outline,
+                  width: convertToSwedish ? 1.5 : 1,
                 ),
                 backgroundColor: convertToSwedish
-                    ? Theme.of(context).colorScheme.primaryContainer.withValues(
-                        alpha: AppDimensions.opacityMediumLight,
-                      )
+                    ? Theme.of(context).colorScheme.surfaceContainerHighest
                     : null,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
               ),

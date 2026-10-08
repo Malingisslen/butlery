@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 // Import test factories - ultrathink approach: use existing infrastructure
 import '../../infrastructure/factories/social_factory.dart';
@@ -235,9 +236,9 @@ void main() {
           ),
         );
 
-        // Verify emoji icon is used (Icons.emoji_emotions)
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget);
-        expect(find.byIcon(Icons.group), findsNothing);
+        // Verify emoji icon is used (ButleryIcons.grid)
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsNothing);
         expect(tester.takeException(), isNull);
       });
 
@@ -261,8 +262,8 @@ void main() {
         );
 
         // Verify default group icon is used
-        expect(find.byIcon(Icons.group), findsOneWidget);
-        expect(find.byIcon(Icons.emoji_emotions), findsNothing);
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.grid), findsNothing);
         expect(tester.takeException(), isNull);
       });
     });
@@ -404,7 +405,7 @@ void main() {
         // Verify Swedish text renders correctly
         expect(find.text('Kött & Fiskälskare'), findsOneWidget);
         expect(find.text('(3)'), findsOneWidget); // 3 friends
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget); // Emoji icon
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget); // Emoji icon
         expect(tester.takeException(), isNull);
       });
     });
@@ -431,7 +432,7 @@ void main() {
         // Verify zero count displays correctly
         expect(find.text('Tom kategori'), findsOneWidget);
         expect(find.text('(0)'), findsOneWidget); // Zero friends
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget); // Has emoji
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget); // Has emoji
         expect(tester.takeException(), isNull);
       });
 
@@ -457,7 +458,7 @@ void main() {
         expect(find.text('Grannar'), findsOneWidget);
         expect(find.text('(1)'), findsOneWidget); // One friend
         expect(
-          find.byIcon(Icons.group),
+          find.byIcon(ButleryIcons.users),
           findsOneWidget,
         ); // No emoji, default icon
         expect(tester.takeException(), isNull);
@@ -492,9 +493,9 @@ void main() {
 
         // Verify default icon is used for null emoji
         expect(find.text('Ingen Emoji'), findsOneWidget);
-        expect(find.byIcon(Icons.group), findsOneWidget); // Default icon
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget); // Default icon
         expect(
-          find.byIcon(Icons.emoji_emotions),
+          find.byIcon(ButleryIcons.grid),
           findsNothing,
         ); // No emoji icon
         expect(tester.takeException(), isNull);
@@ -532,10 +533,10 @@ void main() {
         // Verify emoji icon is used for empty string (empty string != null in production code)
         expect(find.text('Tom Emoji'), findsOneWidget);
         expect(
-          find.byIcon(Icons.emoji_emotions),
+          find.byIcon(ButleryIcons.grid),
           findsOneWidget,
         ); // Empty string is != null, so emoji icon
-        expect(find.byIcon(Icons.group), findsNothing);
+        expect(find.byIcon(ButleryIcons.users), findsNothing);
         expect(tester.takeException(), isNull);
       });
     });

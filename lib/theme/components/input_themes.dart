@@ -10,12 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
-
-/// BUT-533: keyboard-focus ring for text fields. Rust accent at 3px gives
-/// ≥3:1 contrast against cream and against the field's own fill color —
-/// satisfies WCAG 1.4.11 (non-text contrast) and 2.4.7 (focus visible).
-const double _kFocusRingWidth = 3.0;
 
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
@@ -24,51 +20,75 @@ class InputThemes {
 
   /// Input decoration theme
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
+    // Fields take the control radius, 8 (tokens.json space.radius.control).
     return InputDecorationTheme(
       filled: true,
       fillColor: cs.surfaceContainerHighest,
+      // BUT-2205: a filled field rests on surface.raised, so hover takes the
+      // step on raised.
+      hoverColor: ModeColors.of(cs.brightness).pressedOnRaised,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.outlineVariant,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.outlineVariant,
           width: 1,
         ),
       ),
+      // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
+      // StyledInput and ButlerySearchBox are): the
+      // canonical ring colour and width, ink on light and paper on dark,
+      // never saffron (tokens.json:155-160; Komponentark v1:657). A theme's
+      // input border can only draw on the field's own edge, so this is the
+      // ring without its 3 px offset, and the edge goes from 1 to 2 px: the
+      // recorded fallback of decision D3, kept only until package 4 moves
+      // the remaining bare fields onto the ring. It replaces BUT-533's 3 px
+      // saffron edge.
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        // BUT-533: rust ring at 3px — visible on cream where the previous
-        // 2px primary-color border faded into the surrounding surface.
-        borderSide: const BorderSide(
-          color: AppColors.rust,
-          width: _kFocusRingWidth,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderSide: BorderSide(
+          color: AppModeColors.focusRing(cs.brightness),
+          width: AppDimensions.focusRingWidth,
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
           color: cs.error,
           width: 1,
         ),
       ),
+      // Focused with an error: the same D3 fallback ring on the edge. The
+      // 2 px error edge was a thicker-border focus expression; the error
+      // itself stays told by the error text under the field.
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         borderSide: BorderSide(
-          color: cs.error,
-          width: 2,
+          color: AppModeColors.focusRing(cs.brightness),
+          width: AppDimensions.focusRingWidth,
+        ),
+      ),
+      // Disabled field: 1 px surface.disabled edge on the unchanged
+      // surface.raised fill, never opacity (Grafisk manual v6:423;
+      // Komponentark v1:423 light, :514 dark).
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderSide: BorderSide(
+          color: AppModeColors.surfaceDisabled(cs.brightness),
+          width: 1,
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
-      hintStyle: TextStyle(color: cs.outline),
+      hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       errorStyle: AppTextStyles.errorText.copyWith(color: cs.error),
     );
@@ -76,12 +96,13 @@ class InputThemes {
 
   /// Card theme
   static CardThemeData cardTheme(ColorScheme cs) {
+    // Cards take the card radius, 12 (tokens.json space.radius.card).
     return CardThemeData(
       color: cs.surfaceContainerHighest,
       elevation: 0,
       shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
           color: cs.outlineVariant,
           width: 1,
@@ -95,12 +116,40 @@ class InputThemes {
   }
 
   /// List tile theme
+  ///
+  /// Icons, and the selected row's icon and label: text.primary through
+  /// cs.onSurface, ink #24382C light and paper #F5F4ED dark (tokens.json:
+  /// 54-57). They used to be cs.primary (and Material's selected default,
+  /// also cs.primary), ink in both schemes: 1.27:1 on the dark base #17251D
+  /// and about 1.5:1 on the dark tile, surface.raised #2F4437. Light is
+  /// unchanged: there cs.onSurface == cs.primary.
+  ///
+  /// Interpretation: the screens' dark variable set draws standalone icons
+  /// as --ikon-fristaende-a #C9D3C4, text.bodyMuted (Skarmar v12 del 4:30;
+  /// tokens.json:174-177), which has no generated member; the dark panel
+  /// draws its list glyphs in paper (Komponentark v1:556), which stands.
   static ListTileThemeData listTileTheme(ColorScheme cs) {
     return ListTileThemeData(
       tileColor: cs.surfaceContainerHighest,
       selectedTileColor: cs.primaryContainer,
-      iconColor: cs.primary,
-      textColor: cs.onSurface,
+      iconColor: cs.onSurface,
+      selectedColor: cs.onSurface,
+      // A disabled row's label is secondary text, never opacity (decision
+      // D5; Komponentark v1:164 and :174, the disabled radio and switch
+      // rows). Those rows are drawn on paper, but this theme paints every
+      // tile surface.raised (tileColor above), and the row takes the role's
+      // on-raised value, text.secondary.onRaised: #5B6959 light, #A9B2A0 dark
+      // (tokens.json:184-187). Switch and radio rows are ListTiles and the
+      // theme cannot tell them apart from other rows, so every disabled
+      // list row gets it. Without this, Flutter falls back to
+      // ThemeData.disabledColor. Selected and enabled rows
+      // are text.primary (onSurface); see the selected colour above.
+      textColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppModeColors.textSecondaryOnRaised(cs.brightness);
+        }
+        return cs.onSurface;
+      }),
       titleTextStyle: AppTextStyles.listTileTitle.copyWith(
         color: cs.onSurface,
       ),
@@ -113,19 +162,47 @@ class InputThemes {
       ),
       minVerticalPadding: AppDimensions.spacingSm,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
     );
   }
 
   /// Chip theme
+  ///
+  /// The chosen chip is an ink fill, control.checked.background #24382C in
+  /// both modes (tokens.json:145-148), drawn so in the dark panel too
+  /// (Komponentark v1:523). On the dark base #17251D that fill is 1.27:1,
+  /// so dark mode edges it the way the panel draws it:
+  ///
+  /// * chosen: a 1 px paper edge and a paper check (v1:523; "Bocken i en
+  ///   bockad kontroll är alltid papper", v1:491);
+  /// * resting: a 1 px paper edge at 40 %, overlay.paperWash, the screens'
+  ///   dark control outline (Skarmar v12 etapp 2:37, --ram-kontroll-a);
+  /// * disabled: a 1 px surface.disabled #4A5C50 edge, no fill and a
+  ///   text.secondary label (v1:525).
+  ///
+  /// Interpretation: the panel draws the resting edge at paper 35 %
+  /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
+  /// has a generated member, as for the outlined button. Light mode sets no
+  /// side and no check colour.
   static ChipThemeData chipTheme(ColorScheme cs) {
+    final dark = cs.brightness == Brightness.dark;
     return ChipThemeData(
       backgroundColor: cs.surfaceContainerHigh,
       selectedColor: cs.primary,
-      disabledColor: cs.outlineVariant,
+      checkmarkColor: dark ? cs.onSurface : null,
+      side: dark ? _darkChipSide(cs) : null,
+      disabledColor: dark ? Colors.transparent : cs.outlineVariant,
       labelStyle: AppTextStyles.labelMedium.copyWith(
-        color: cs.onSurface,
+        // A chosen chip sits on the ink fill, so its label is paper in both
+        // modes (cs.onPrimary), never ink on ink.
+        color: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return cs.onPrimary;
+          if (dark && states.contains(WidgetState.disabled)) {
+            return cs.onSurfaceVariant;
+          }
+          return cs.onSurface;
+        }),
       ),
       secondaryLabelStyle: AppTextStyles.labelMedium.copyWith(
         color: cs.onPrimary,
@@ -135,10 +212,25 @@ class InputThemes {
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.paddingS,
       ),
+      // Chips are pill-shaped: tokens.json controls.chip.radius = "pill".
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppDimensions.radiusPill),
+        ),
       ),
     );
+  }
+
+  static BorderSide _darkChipSide(ColorScheme cs) {
+    return WidgetStateBorderSide.resolveWith((states) {
+      if (states.contains(WidgetState.disabled)) {
+        return BorderSide(color: AppModeColors.surfaceDisabled(cs.brightness));
+      }
+      if (states.contains(WidgetState.selected)) {
+        return BorderSide(color: cs.onSurface);
+      }
+      return BorderSide(color: AppModeColors.paperWash(cs.brightness));
+    });
   }
 
   /// Recipe card decoration - Left green border + bottom rust border.
@@ -159,43 +251,6 @@ class InputThemes {
     boxShadow: AppShadows.cardLifted,
   );
 
-  /// Trending recipe card decoration
-  static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
-    color: AppColors.primaryContainer.withValues(
-      alpha: AppDimensions.opacityVeryLight,
-    ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-    border: Border.all(
-      color: AppColors.forestGreen.withValues(
-        alpha: AppDimensions.opacityLight,
-      ),
-    ),
-  );
-
-  /// Activity timeline item decoration
-  static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
-    color: AppColors.secondaryContainer.withValues(
-      alpha: AppDimensions.opacityVeryLight,
-    ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-    border: Border.all(
-      color: AppColors.rust.withValues(alpha: AppDimensions.opacityLight),
-    ),
-  );
-
-  /// Empty state container decoration
-  static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
-    color: AppColors.primaryContainer.withValues(
-      alpha: AppDimensions.opacityVeryLight,
-    ),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-    border: Border.all(
-      color: AppColors.forestGreen.withValues(
-        alpha: AppDimensions.opacityLight,
-      ),
-    ),
-  );
-
   /// Search box decoration — green+rust border always visible
   static BoxDecoration get searchBoxDecoration => BoxDecoration(
     color: AppColors.cardWhite,
@@ -204,18 +259,6 @@ class InputThemes {
       left: BorderSide(color: AppColors.forestGreen, width: 1),
       right: BorderSide(color: AppColors.forestGreen, width: 1),
       bottom: BorderSide(color: AppColors.rust, width: 2),
-    ),
-    boxShadow: AppShadows.searchBox,
-  );
-
-  /// Search box decoration (focused) — heavier green+rust border
-  static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
-    color: AppColors.cardWhite,
-    border: const Border(
-      top: BorderSide(color: AppColors.forestGreen, width: 2),
-      left: BorderSide(color: AppColors.forestGreen, width: 2),
-      right: BorderSide(color: AppColors.forestGreen, width: 2),
-      bottom: BorderSide(color: AppColors.rust, width: 4),
     ),
     boxShadow: AppShadows.searchBox,
   );

@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/group_draft_codec.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -159,10 +161,19 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         icon: _selectedEmoji,
-        initialMemberIds: _selectedFriendIds.toList(),
       );
 
       if (categoryId != null) {
+        // Invited here rather than through `createCategory` so the dialog
+        // learns who was not reached and can say so (BUT-2270).
+        final invitees = _selectedFriendIds.toList();
+        final failed = invitees.isEmpty
+            ? 0
+            : (await friendsService.invitations.sendGroupInvitations(
+                userIds: invitees,
+                groupId: categoryId,
+              )).values.where((sent) => !sent).length;
+
         // Get the created category to return it
         final createdCategory = friendsService.categories.getCategoryById(
           categoryId,
@@ -173,24 +184,31 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         await _draftManager.clear();
 
         if (mounted) {
+          if (failed > 0) {
+            SnackBarUtils.showWarning(
+              context,
+              context.l10n.groupInvitationsPartlyFailed(
+                failed,
+                invitees.length,
+              ),
+            );
+          }
           Navigator.of(context).pop(createdCategory);
         }
       } else {
         if (mounted) {
           setState(() {
-            _error = context.l10n.errorCouldNotCreate(
-              context.l10n.socialGroupName.toLowerCase(),
-            );
+            _error = context.l10n.errorCouldNotCreateGroup;
           });
         }
       }
     } catch (e) {
+      AppLogger.error('Error creating group', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.errorWithContext(
-            context.l10n.statusCreating.toLowerCase(),
-            e.toString(),
-          );
+          // What did not happen, never the exception's text
+          // (content-style-guide.md:95).
+          _error = context.l10n.errorCouldNotCreateGroup;
         });
       }
     } finally {
@@ -219,7 +237,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               // Header
               DialogHeader(
                 title: context.l10n.groupCreateNew,
-                icon: Icons.group_add,
+                icon: ButleryIcons.usersPlus,
                 onClose: () => Navigator.of(context).pop(),
               ),
 
@@ -252,7 +270,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         controller: _nameController,
                         labelText: context.l10n.socialGroupName,
                         hintText: context.l10n.groupNameHint,
-                        prefixIcon: Icons.group,
+                        prefixIcon: ButleryIcons.users,
                         maxLength: 50,
                       ),
 
@@ -280,7 +298,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                           ),
                           style: AppTextStyles.titleMedium,
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           context.l10n.groupInvitationNote,
                           style: AppTextStyles.bodySmall.copyWith(
@@ -310,7 +328,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 onPrimaryAction: _isCreating ? null : _createGroup,
                 onSecondaryAction: () => Navigator.of(context).pop(),
                 isLoading: _isCreating,
-                primaryActionIcon: Icons.group_add,
+                primaryActionIcon: ButleryIcons.usersPlus,
               ),
             ],
           ),
@@ -338,7 +356,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 context.l10n.groupSelectMembers,
                 style: AppTextStyles.titleMedium,
               ),
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 context.l10n.groupNoFriendsToAdd,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -366,7 +384,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               context.l10n.groupSelectMembers,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.groupSelectFriendsToInvite,
               style: AppTextStyles.bodySmall.copyWith(

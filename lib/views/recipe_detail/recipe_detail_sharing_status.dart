@@ -10,6 +10,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Shows sharing status for a recipe the user owns.
 /// Displays shared members/groups with per-item revoke buttons.
@@ -74,30 +77,30 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
           // Header
           Row(
             children: [
-              Icon(
-                Icons.share_outlined,
+              ButleryIcon(
+                ButleryIcons.share2,
                 size: AppDimensions.iconSizeM,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 context.l10n.recipeSharingStatus,
                 style: Theme.of(
                   context,
-                ).textTheme.titleSmall?.copyWith(color: cs.primary),
+                ).textTheme.titleSmall?.copyWith(color: cs.onSurface),
               ),
               const Spacer(),
               // Stop sharing with all
               TextButton.icon(
                 onPressed: () => _confirmStopAll(context),
-                icon: Icon(
-                  Icons.close,
+                icon: ButleryIcon(
+                  ButleryIcons.x,
                   size: AppDimensions.iconSizeS,
                   color: cs.error,
                 ),
                 label: Text(
                   context.l10n.recipeSharingStopAll,
-                  style: TextStyle(color: cs.error, fontSize: 12),
+                  style: AppTextStyles.captionBase.copyWith(color: cs.error),
                 ),
               ),
             ],
@@ -120,7 +123,7 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               final displayName = friend?.displayName ?? userId;
               return _ShareeRow(
                 name: displayName,
-                icon: Icons.person_outline,
+                icon: ButleryIcons.user,
                 onRevoke: () => _confirmRevokeMember(
                   context,
                   userId,
@@ -149,7 +152,7 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               final displayName = group?.name ?? groupId;
               return _ShareeRow(
                 name: displayName,
-                icon: Icons.group_outlined,
+                icon: ButleryIcons.users,
                 onRevoke: () => _confirmRevokeMember(
                   context,
                   groupId,
@@ -186,11 +189,14 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
         );
         onSharingChanged();
       } else {
-        SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.commonUnknownError,
+        );
       }
     } catch (_) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
     }
   }
 
@@ -258,11 +264,14 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
         );
         onSharingChanged();
       } else {
-        SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.commonUnknownError,
+        );
       }
     } catch (_) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
+      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
     }
   }
 }
@@ -282,18 +291,22 @@ class _ShareeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXxs),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
-          Icon(icon, size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+          ButleryIcon(
+            icon,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant,
+          ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(name, style: Theme.of(context).textTheme.bodyMedium),
           ),
           IconButton(
             onPressed: onRevoke,
-            icon: Icon(
-              Icons.close,
+            icon: ButleryIcon(
+              ButleryIcons.x,
               size: AppDimensions.iconSizeS,
               color: cs.error,
             ),

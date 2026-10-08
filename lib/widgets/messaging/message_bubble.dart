@@ -7,8 +7,9 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/messaging/builders/message_content_builder.dart';
@@ -16,6 +17,8 @@ import 'package:butlery/widgets/messaging/components/message_status_widget.dart'
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Message bubble component for chat messages.
 /// Uses extracted components from [MessageContentBuilder],
@@ -83,7 +86,7 @@ class _MessageBubbleState extends State<MessageBubble>
     super.initState();
     _swipeController = AnimationController(
       vsync: this,
-      duration: AppDimensions.animationDurationMedium,
+      duration: AppMotion.micro,
     );
     _swipeAnimation =
         Tween<Offset>(
@@ -104,7 +107,7 @@ class _MessageBubbleState extends State<MessageBubble>
     if (_reduceMotion) {
       _swipeController.duration = Duration.zero;
     } else {
-      _swipeController.duration = AppDimensions.animationDurationMedium;
+      _swipeController.duration = AppMotion.micro;
     }
   }
 
@@ -204,9 +207,9 @@ class _MessageBubbleState extends State<MessageBubble>
                           child: Opacity(
                             opacity: (_dragExtent.abs() / _swipeThreshold)
                                 .clamp(0.0, 1.0),
-                            child: Icon(
-                              Icons.reply,
-                              color: context.butleryColors.success,
+                            child: ButleryIcon(
+                              ButleryIcons.reply,
+                              color: context.modeColors.success,
                               size: AppDimensions.iconSizeL,
                             ),
                           ),
@@ -307,7 +310,7 @@ class _MessageBubbleState extends State<MessageBubble>
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: cs.secondary.withValues(alpha: AppDimensions.opacityLight),
+        color: cs.surfaceContainerHighest,
       ),
       child: widget.message.senderAvatarUrl != null
           ? SimpleImageWidget(
@@ -328,7 +331,7 @@ class _MessageBubbleState extends State<MessageBubble>
             ? widget.message.senderDisplayName[0].toUpperCase()
             : '?',
         style: AppTextStyles.labelMedium.copyWith(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -392,7 +395,7 @@ class _MessageBubbleState extends State<MessageBubble>
         // Reaction display below the bubble
         if (widget.message.reactions.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: EmojiReactionDisplay(
               reactions: widget.message.reactions,
               currentUserId: widget.currentUserId,
@@ -446,7 +449,7 @@ class _MessageBubbleState extends State<MessageBubble>
       color: _isFromCurrentUser
           ? Theme.of(context).colorScheme.primary
           : Theme.of(context).colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     );
     return HoverableCard(
       restDecoration: restDecoration,

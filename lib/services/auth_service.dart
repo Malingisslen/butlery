@@ -17,7 +17,10 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:get_it/get_it.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
@@ -33,6 +36,14 @@ class AuthService extends ChangeNotifier
   StreamSubscription<User?>? _authStateSubscription;
 
   bool _sessionExpired = false; // ignore: prefer_final_fields
+
+  /// A sign-in waiting for its second factor (P6-U09; Skarmar v12 etapp 3
+  /// #authmfa). The password was right; the account has two-step
+  /// verification, so Firebase handed back a resolver instead of a user.
+  MfaResolverInfo? _pendingMfa;
+
+  /// The challenge the sign-in screen must show, or null.
+  MfaResolverInfo? get pendingMfaChallenge => _pendingMfa;
 
   User? get currentUser => _currentUser;
   String? get currentUserDisplayName => _currentUser?.displayName;
@@ -99,6 +110,10 @@ class AuthService extends ChangeNotifier
       clearError();
       setLoading(true);
 
+      _authRepository.holdRegistrationDisplayName(
+        email: email,
+        displayName: displayName,
+      );
       final UserCredential credential = await _authRepository.createUser(
         email,
         password,
@@ -154,6 +169,7 @@ class AuthService extends ChangeNotifier
     try {
       clearError();
       setLoading(true);
+      _pendingMfa = null;
 
       AppLogger.debug(
         'Attempting login for email: ${email.substring(0, 3)}...',
@@ -176,6 +192,21 @@ class AuthService extends ChangeNotifier
       await DIContainer().pushUserScope();
       await _analyticsService.logLogin(method: 'email');
       return true;
+    } on FirebaseAuthMultiFactorException catch (e) {
+      // Not an error: the first factor passed and the second is asked for.
+      // Before P6-U09 nothing caught this, so an account with two-step
+      // verification could not sign in at all.
+      setLoading(false);
+      final hint = e.resolver.hints
+          .whereType<PhoneMultiFactorInfo>()
+          .firstOrNull;
+      _pendingMfa = MfaResolverInfo(
+        resolver: e.resolver,
+        phoneHint: hint?.phoneNumber,
+      );
+      AppLogger.info('Sign-in waits for the second factor');
+      notifyListeners();
+      return false;
     } on FirebaseAuthException catch (e) {
       setLoading(false);
       AppLogger.error('Firebase Auth Error: ${e.code} - ${e.message}');
@@ -201,20 +232,66 @@ class AuthService extends ChangeNotifier
     }
   }
 
+  /// Completes a sign-in whose second factor was just resolved, by the code
+  /// or by the phone reading it itself. Returns whether a user is signed in.
+  Future<bool> finishMfaSignIn() async {
+    _pendingMfa = null;
+    _currentUser = _authRepository.currentUser;
+    if (_currentUser == null) {
+      notifyListeners();
+      return false;
+    }
+    _sessionExpired = false;
+    await DIContainer().pushUserScope();
+    notifyListeners();
+    return true;
+  }
+
+  /// Drops a waiting challenge (the user went back to the sign-in form).
+  void clearPendingMfa() {
+    if (_pendingMfa == null) return;
+    _pendingMfa = null;
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
     await executeAsync(() async {
+      // Read before the sign-out clears it: only this person's tray goes.
+      final userId = (_currentUser ?? _authRepository.currentUser)?.uid;
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
+      await clearDeviceDraftsOnExplicitSignOut(userId);
       await _analyticsService.logLogout();
     }).catchError((e) {
       setError(AppLocale.current.errorCouldNotLogOut);
     });
   }
 
+  /// The device drafts a sign-out the user made herself deletes.
+  ///
+  /// PQ-12 = A (produktbeslut-2026-09-23.json): drafts go when the user logs
+  /// out herself (produktregler.md:164-172), never at an automatic logout, so
+  /// [logoutDueToInactivity] and [forceSignOut] do not call this. The one
+  /// user-initiated path that runs through [logoutDueToInactivity], "Logga ut
+  /// nu" in the timeout warning, calls it separately
+  /// (SessionTimeoutService.forceLogout). Neither store is the offline queue,
+  /// which no sign-out clears by itself (produktregler.md:193, :833).
+  /// Best-effort: both stores log and never throw.
+  static Future<void> clearDeviceDraftsOnExplicitSignOut(
+    String? userId,
+  ) async {
+    await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
+    await RecipeFormAutoSaveManager.clearDraftsFor(userId);
+  }
+
   /// Logout for session timeout - tracks separately for security monitoring.
+  ///
+  /// Never touches the offline queue or the device drafts: "En utloggning på
+  /// grund av timeout får aldrig rensa kön" (produktregler.md:833), and PQ-12
+  /// = A keeps the drafts.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
       _clearConsentCacheIfAvailable();
@@ -328,7 +405,13 @@ class AuthService extends ChangeNotifier
 
   Future<bool> sendPasswordResetEmail(String email) async {
     return await executeAsync(() async {
-      await _authRepository.sendPasswordResetEmail(email);
+      try {
+        await _authRepository.sendPasswordResetEmail(email);
+      } on FirebaseAuthException catch (e) {
+        // An unknown address gets the same answer as a known one, so the
+        // reset form cannot be used to find out who has an account.
+        if (e.code != 'user-not-found') rethrow;
+      }
       return true;
     }).catchError((e) {
       if (e is FirebaseAuthException) {

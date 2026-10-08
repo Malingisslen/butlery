@@ -86,6 +86,7 @@ class PhotoLlmVision {
       final failure = llmResult as ImportFailure;
       return ImportResult.failure(
         failure.message,
+        errorCode: failure.errorCode,
         metadata: {
           'strategy': strategyName,
           'method': 'llm-vision-handwritten',

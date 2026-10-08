@@ -1,9 +1,14 @@
+import 'dart:ui' show SemanticsFlag;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:url_launcher_platform_interface/link.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/views/legal/markdown_body.dart';
+
+import '../../../infrastructure/helpers/widget_test_app.dart';
 
 /// Captures the URLs handed to url_launcher so a tapped legal-doc link's
 /// outcome can be asserted without opening a real browser.
@@ -113,5 +118,52 @@ void main() {
     );
 
     handle.dispose();
+  });
+
+  group('offline (P5-U30, Grafisk manual v6:665)', () {
+    Future<void> pumpOffline(WidgetTester tester, String data) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: MarkdownBody(data: data, webLinksEnabled: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a web link is inactive, has no link role, and one line says '
+        'why', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpOffline(tester, 'Se [vår policy](https://butlery.se/x) här.');
+
+      expect(
+        find.text(AppLocalizationsSv().legalLinksNeedConnection),
+        findsOneWidget,
+      );
+      // No GestureDetector-backed link widget: the label is plain text.
+      expect(find.text('vår policy'), findsNothing);
+      expect(find.textContaining('vår policy'), findsOneWidget);
+      await tester.tap(find.textContaining('vår policy'));
+      await tester.pump();
+      expect(launcher.launched, isEmpty);
+
+      final linkNodes = find.semantics.byFlag(SemanticsFlag.isLink);
+      expect(linkNodes, findsNothing);
+      handle.dispose();
+    });
+
+    testWidgets('a mail link stays active: the mail app needs no connection', (
+      tester,
+    ) async {
+      await pumpOffline(tester, 'Mejla [oss](mailto:integritet@butlery.se).');
+
+      expect(
+        find.text(AppLocalizationsSv().legalLinksNeedConnection),
+        findsNothing,
+      );
+      await tester.tap(find.text('oss'));
+      await tester.pump();
+      expect(launcher.launched, contains('mailto:integritet@butlery.se'));
+    });
   });
 }

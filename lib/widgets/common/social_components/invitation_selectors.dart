@@ -3,6 +3,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Invitation target selection widgets.
 class InvitationSelectors {
@@ -159,7 +163,7 @@ class InvitationSelectors {
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint,
-    IconData prefixIcon = Icons.search,
+    IconData prefixIcon = ButleryIcons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
@@ -172,7 +176,7 @@ class InvitationSelectors {
           autofocus: autofocus,
           decoration: InputDecoration(
             hintText: hint ?? context.l10n.invitationSearchTargets,
-            prefixIcon: Icon(prefixIcon),
+            prefixIcon: ButleryIcon(prefixIcon),
             border: const OutlineInputBorder(),
           ),
           onChanged: onSearchChanged,
@@ -197,20 +201,23 @@ class InvitationSelectors {
         spacing: spacing,
         children: availableTypes.map((type) {
           final isSelected = selectedTypes?.contains(type) ?? false;
-          return FilterChip(
-            label: Text(type),
-            selected: isSelected,
-            onSelected: (selected) {
-              if (onTypesChanged != null) {
-                final newSelection = List<String>.from(selectedTypes ?? []);
-                if (selected) {
-                  newSelection.add(type);
-                } else {
-                  newSelection.remove(type);
+          return PressFill(
+            surface: isSelected ? PressSurface.ink : PressSurface.base,
+            child: FilterChip(
+              label: Text(type),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (onTypesChanged != null) {
+                  final newSelection = List<String>.from(selectedTypes ?? []);
+                  if (selected) {
+                    newSelection.add(type);
+                  } else {
+                    newSelection.remove(type);
+                  }
+                  onTypesChanged(newSelection);
                 }
-                onTypesChanged(newSelection);
-              }
-            },
+              },
+            ),
           );
         }).toList(),
       ),
@@ -282,49 +289,59 @@ class InvitationSelectors {
                     style: AppTextStyles.contentLabel,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
-                  DropdownButton<String>(
-                    value: 'name',
-                    items: [
-                      DropdownMenuItem(
-                        value: 'name',
-                        child: Text(context.l10n.invitationSortByName),
+                  PressFill(
+                    surface: PressSurface.base,
+                    child: DropdownButton<String>(
+                      iconEnabledColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      iconDisabledColor: AppModeColors.textDisabled(
+                        Theme.of(context).brightness,
                       ),
-                      DropdownMenuItem(
-                        value: 'type',
-                        child: Text(context.l10n.invitationSortByType),
-                      ),
-                      DropdownMenuItem(
-                        value: 'members',
-                        child: Text(context.l10n.invitationSortByMembers),
-                      ),
-                    ],
-                    onChanged: (sortBy) {
-                      if (onFilterChanged != null && sortBy != null) {
-                        final sorted = List<InvitationTarget>.from(
-                          filteredTargets,
-                        );
-                        switch (sortBy) {
-                          case 'name':
-                            sorted.sort(
-                              (a, b) => a.displayName.compareTo(b.displayName),
-                            );
-                            break;
-                          case 'type':
-                            sorted.sort(
-                              (a, b) => a.type.name.compareTo(b.type.name),
-                            );
-                            break;
-                          case 'members':
-                            sorted.sort(
-                              (a, b) => (b.memberCount ?? 0).compareTo(
-                                a.memberCount ?? 0,
-                              ),
-                            );
-                            break;
+                      value: 'name',
+                      items: [
+                        DropdownMenuItem(
+                          value: 'name',
+                          child: Text(context.l10n.invitationSortByName),
+                        ),
+                        DropdownMenuItem(
+                          value: 'type',
+                          child: Text(context.l10n.invitationSortByType),
+                        ),
+                        DropdownMenuItem(
+                          value: 'members',
+                          child: Text(context.l10n.invitationSortByMembers),
+                        ),
+                      ],
+                      onChanged: (sortBy) {
+                        if (onFilterChanged != null && sortBy != null) {
+                          final sorted = List<InvitationTarget>.from(
+                            filteredTargets,
+                          );
+                          switch (sortBy) {
+                            case 'name':
+                              sorted.sort(
+                                (a, b) =>
+                                    a.displayName.compareTo(b.displayName),
+                              );
+                              break;
+                            case 'type':
+                              sorted.sort(
+                                (a, b) => a.type.name.compareTo(b.type.name),
+                              );
+                              break;
+                            case 'members':
+                              sorted.sort(
+                                (a, b) => (b.memberCount ?? 0).compareTo(
+                                  a.memberCount ?? 0,
+                                ),
+                              );
+                              break;
+                          }
+                          onFilterChanged(sorted);
                         }
-                        onFilterChanged(sorted);
-                      }
-                    },
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -352,14 +369,10 @@ class InvitationSelectors {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Column(
@@ -392,13 +405,17 @@ class InvitationSelectors {
               spacing: 8.0,
               runSpacing: 4.0,
               children: selectedTargets.map((target) {
-                return Chip(
-                  label: Text(target.displayName),
-                  onDeleted: onRemoveTarget != null
-                      ? () => onRemoveTarget(target)
-                      : null,
-                  backgroundColor: Theme.of(context).colorScheme.primary
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                return PressFill(
+                  surface: PressSurface.raised,
+                  child: Chip(
+                    label: Text(target.displayName),
+                    onDeleted: onRemoveTarget != null
+                        ? () => onRemoveTarget(target)
+                        : null,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                  ),
                 );
               }).toList(),
             ),
@@ -481,8 +498,8 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
                   : Colors.transparent,
             ),
             child: isSelected
-                ? Icon(
-                    Icons.check,
+                ? ButleryIcon(
+                    ButleryIcons.check,
                     size: 14,
                     color: Theme.of(
                       context,

@@ -39,6 +39,12 @@
   reads as covered** — `conversations`' `createdAt` and `participantIds` sat that way
   through two tickets because ONE builder supplied both sides. Audit a deny-list key by
   key, asking which test MOVES it; "the payload round-trips" is the smell (BUT-1831).
+- **An UNROLLED per-key chain (`(!(keys[i] in changed) || ok(keys[i])) && …` over a fixed
+  list) needs a deny per INDEX — a suite whose denies all use one key grades one link.**
+  Measured on `recipe_comments.reactions` (BUT-2115): neutralising the `heart` link killed 8,
+  each of the other five links survived 56/56, so a copy-paste `keys[4]` twice would open
+  another person's uid on `thinking` silently. A shared function body does not discharge the
+  call sites; each index is its own conjunct.
 - **Two new conjuncts can mask each other**: a missing-required-key test alone can pass
   even with the neighbouring `is list`/`is map` type-guard deleted, because the absent
   key already CEL-errors first. Pin the type guard separately with a WRONG-TYPE payload,
@@ -144,6 +150,13 @@
   Measured on `recipe_ratings` (BUT-2057): the suite went 7/7 with the merge-add case absent,
   and that case is the only one the `cannotModify` hardening would redden. Read the
   repository's real write verb before choosing the fixture's verb.
+- **An `affectedKeys().hasAny(['f'])` SCOPE needs its "other updates untouched" ALLOW sent
+  against a document that already STORES `f`.** With `f` absent from the fixture, the
+  presence spelling (`!('f' in request.resource.data) || gate`) is indistinguishable from
+  the diff spelling, because a merge of unrelated keys carries no `f` either way. Measured
+  on BUT-2246: that mutant left `conversations-rules` 110/110 while refusing a blocked
+  person's read receipt on any conversation with a preview, which is every real one. Seed the
+  production state (the field present) in the scope's allow control.
 - **A conjunct on `resource.data.<f>` (PRE-state) is only proven by a payload that MOVES
   `<f>`.** A deny whose payload leaves the field alone passes identically under
   `request.resource.data.<f>` — the likeliest wrong edit, since both spellings read as "the

@@ -72,7 +72,7 @@ class NotificationBatchManager {
         // Check rate limiting first
         if (_isRateLimited(targetUserId, strategy.category)) {
           AppLogger.warning(
-            '⚠️ Rate limit exceeded for user $targetUserId in ${strategy.category.name}',
+            '⚠️ Rate limit exceeded for user ${targetUserId.maskedUserId} in ${strategy.category.name}',
           );
           continue;
         }
@@ -340,7 +340,7 @@ class NotificationBatchManager {
         await _sendBatchCallback!(processedBatch);
       } else {
         AppLogger.info(
-          '📋 [DEV] Would send batched notification to ${batch.userId}: ${combinedNotification.title}',
+          '📋 [DEV] Would send batched notification to ${batch.userId.maskedUserId}: ${combinedNotification.title}',
         );
       }
 

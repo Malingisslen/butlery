@@ -5,13 +5,15 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_breakdown_viewmodel.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Collapsible recipe-detail section: the household's family-rating breakdown
 /// (average + per-diner rows), with community + personal comparison for shared
@@ -100,30 +102,38 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       button: true,
       toggled: _expanded,
       label: l10n.a11yToggleRatingBreakdown,
-      child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: Border(left: BorderSide(color: cs.secondary, width: 3)),
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 10),
-              Text(
-                l10n.familyRatingSectionTitle,
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: cs.primary,
-                ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.raised,
+          child: InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: cs.secondary, width: 3)),
               ),
-              const SizedBox(width: 10),
-              _familyPill(context, vm.familyAverageDisplay),
-              const Spacer(),
-              Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
-                color: cs.outline,
+              child: Row(
+                children: [
+                  const SizedBox(width: 10),
+                  Text(
+                    l10n.familyRatingSectionTitle,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _familyPill(context, vm.familyAverageDisplay),
+                  const Spacer(),
+                  ButleryIcon(
+                    _expanded
+                        ? ButleryIcons.chevronUp
+                        : ButleryIcons.chevronDown,
+                    color: cs.outline,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -138,12 +148,12 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.groups_outlined, size: 14, color: cs.surface),
+          ButleryIcon(ButleryIcons.users, size: 14, color: cs.onPrimary),
           const SizedBox(width: 4),
           Text(
             value,
             style: AppTextStyles.labelSmall.copyWith(
-              color: cs.surface,
+              color: cs.onPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -161,10 +171,13 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.butleryColors.heroPaleGreen,
+        color: context.modeColors.heroPaleGreen,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 4),
+          bottom: BorderSide(
+            color: context.modeColors.recipeCardBottomBorder,
+            width: 3,
+          ),
         ),
       ),
       child: Row(
@@ -183,7 +196,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               Text(
                 l10n.familyRatingCount(vm.familyCount),
                 style: AppTextStyles.captionText.copyWith(
-                  color: cs.outline,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
@@ -204,69 +217,75 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     return Semantics(
       button: true,
       label: l10n.a11yEditMemberRating(row.member.displayName),
-      child: InkWell(
-        onTap: () => _editMember(context, row.member.memberId),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: cs.surface, width: 1),
-            ),
-          ),
-          child: Row(
-            children: [
-              FamilyAvatar(
-                name: row.member.displayName,
-                color: parseAvatarColor(row.member.avatarColor),
-                size: 34,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            row.member.displayName,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isHolder) ...[
-                          const SizedBox(width: 6),
-                          Text(
-                            l10n.familyRatingYou,
-                            style: AppTextStyles.captionText.copyWith(
-                              color: cs.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (row.isProxy && row.enteredByName != null)
-                      Text(
-                        l10n.familyRatingProxyEntered(row.enteredByName!),
-                        style: AppTextStyles.captionText.copyWith(
-                          color: cs.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    Text(
-                      l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
-                      style: AppTextStyles.captionText.copyWith(
-                        color: cs.outline,
-                      ),
-                    ),
-                  ],
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.raised,
+          child: InkWell(
+            onTap: () => _editMember(context, row.member.memberId),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: cs.surface, width: 1),
                 ),
               ),
-              StarRatingRow(rating: row.stars.toDouble(), size: 16),
-            ],
+              child: Row(
+                children: [
+                  FamilyAvatar(
+                    name: row.member.displayName,
+                    color: parseAvatarColor(context, row.member.avatarColor),
+                    size: 34,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                row.member.displayName,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (isHolder) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                l10n.familyRatingYou,
+                                style: AppTextStyles.captionText.copyWith(
+                                  color: cs.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (row.isProxy && row.enteredByName != null)
+                          Text(
+                            l10n.familyRatingProxyEntered(row.enteredByName!),
+                            style: AppTextStyles.captionText.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        Text(
+                          l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
+                          style: AppTextStyles.captionText.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  StarRatingRow(rating: row.stars.toDouble(), size: 16),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -308,7 +327,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: cs.outline,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                   if (communityCount != null) ...[
@@ -327,7 +346,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           if (showPersonal)
             _compareRow(
               context,
-              color: context.butleryColors.warning,
+              color: context.modeColors.warning,
               label: l10n.familyRatingYourOwnLabel,
               trailing: StarRatingRow(rating: personal, size: 16),
             ),
@@ -347,8 +366,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             size: 14,
             color: cs.outline,
           ),

@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -13,8 +13,11 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
 /// Displays shared recipe information with action buttons.
@@ -31,77 +34,75 @@ class SharedRecipeCard {
       elevation: isRead
           ? AppDimensions.elevationLow
           : AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
         label: context.l10n.a11ySharedRecipe(sharedRecipe.recipeTitle),
         button: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          onTap: () {
-            if (!isRead) {
-              viewModel.recipeViewModel.markAsViewed(sharedRecipe);
-            }
-            // Use contentSnapshot which provides minimal recipe from denormalized fields
-            Navigator.pushNamed(
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            onTap: () => SharedContentActions.viewRecipe(
               context,
-              Routes.recipeDetail,
-              arguments: sharedRecipe.contentSnapshot,
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: !isRead
-                  ? Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2,
-                    )
-                  : null,
+              viewModel,
+              sharedRecipe,
+              isRead: isRead,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header med delningsinfo
-                SharedCardHeader(
-                  displayName: sharedRecipe.sharedByDisplayName,
-                  timestampText: timeago.format(
-                    sharedRecipe.sharedAt,
-                    locale: 'sv',
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                border: !isRead
+                    ? Border.all(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 2,
+                      )
+                    : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header med delningsinfo
+                  SharedCardHeader(
+                    displayName: sharedRecipe.sharedByDisplayName,
+                    timestampText: timeago.format(
+                      sharedRecipe.sharedAt,
+                      locale: 'sv',
+                    ),
+                    isRead: isRead,
+                    onDismiss: () => SharedContentActions.dismissRecipe(
+                      context,
+                      viewModel,
+                      sharedRecipe,
+                    ),
+                    onUnshare: () => SharedContentActions.unshareRecipe(
+                      context,
+                      sharedRecipe,
+                    ),
                   ),
-                  isRead: isRead,
-                  onDismiss: () => SharedContentActions.dismissRecipe(
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Recept content - uses denormalized fields for V2 efficiency
+                  _buildRecipeContent(context, sharedRecipe),
+
+                  // Message from the sharer
+                  if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
+                    const SizedBox(height: AppDimensions.space4),
+                    _buildShareMessage(context, sharedRecipe.shareMessage!),
+                  ],
+
+                  const SizedBox(height: AppDimensions.space4),
+
+                  // Action buttons
+                  _buildActionButtons(
                     context,
                     viewModel,
                     sharedRecipe,
+                    isRead,
+                    isImported,
                   ),
-                  onUnshare: () => SharedContentActions.unshareRecipe(
-                    context,
-                    sharedRecipe,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingS),
-
-                // Recept content - uses denormalized fields for V2 efficiency
-                _buildRecipeContent(context, sharedRecipe),
-
-                // Message from the sharer
-                if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
-                  _buildShareMessage(context, sharedRecipe.shareMessage!),
                 ],
-
-                const SizedBox(height: AppDimensions.spacingS),
-
-                // Action buttons
-                _buildActionButtons(
-                  context,
-                  viewModel,
-                  sharedRecipe,
-                  isRead,
-                  isImported,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -126,7 +127,7 @@ class SharedRecipeCard {
       children: [
         if (hasImage)
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               width: 100,
               height: 100,
@@ -140,21 +141,21 @@ class SharedRecipeCard {
           ),
         if (!hasImage)
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Container(
               width: 100,
               height: 100,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainer,
               ),
-              child: Icon(
-                Icons.restaurant,
+              child: ButleryIcon(
+                ButleryIcons.utensils,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: AppDimensions.iconSizeM,
               ),
             ),
           ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,8 +176,8 @@ class SharedRecipeCard {
               const SizedBox(height: AppDimensions.spacingXs),
               Row(
                 children: [
-                  Icon(
-                    Icons.restaurant,
+                  ButleryIcon(
+                    ButleryIcons.utensils,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -187,9 +188,9 @@ class SharedRecipeCard {
                     ),
                     style: AppTextStyles.bodySmall,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Icon(
-                    Icons.access_time,
+                  const SizedBox(width: AppDimensions.space4),
+                  ButleryIcon(
+                    ButleryIcons.clock,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -210,10 +211,10 @@ class SharedRecipeCard {
   static Widget _buildShareMessage(BuildContext context, String message) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '"$message"',
@@ -236,22 +237,18 @@ class SharedRecipeCard {
         Expanded(
           child: SocialBuilderComponents.socialActionButton(
             text: context.l10n.commonView,
-            onPressed: () {
-              if (!isRead) {
-                viewModel.recipeViewModel.markAsViewed(sharedRecipe);
-              }
-              Navigator.pushNamed(
-                context,
-                Routes.recipeDetail,
-                arguments: sharedRecipe.contentSnapshot,
-              );
-            },
-            icon: Icons.visibility,
+            onPressed: () => SharedContentActions.viewRecipe(
+              context,
+              viewModel,
+              sharedRecipe,
+              isRead: isRead,
+            ),
+            icon: ButleryIcons.eye,
             outlined: true,
             compact: true,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: SocialBuilderComponents.socialActionButton(
             text: isImported
@@ -267,15 +264,15 @@ class SharedRecipeCard {
               }
             },
             icon: isImported
-                ? Icons.check
+                ? ButleryIcons.check
                 : viewModel.recipeViewModel.isOperating
                 ? null // Loading handled by facade
-                : Icons.download,
+                : ButleryIcons.download,
             loading: viewModel.recipeViewModel.isOperating,
             compact: true,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: _ReplyButton(sharedRecipe: sharedRecipe),
         ),
@@ -321,9 +318,10 @@ class _ReplyButtonState extends State<_ReplyButton> {
       );
     } catch (e) {
       if (!mounted) return;
-      SnackBarUtils.showError(
+      AppLogger.error('Failed to start conversation', e);
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialCouldNotStartConversation(e.toString()),
+        what: context.l10n.conversationStartFailed,
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -335,7 +333,7 @@ class _ReplyButtonState extends State<_ReplyButton> {
     return SocialBuilderComponents.socialActionButton(
       text: context.l10n.sharedReplyToSender,
       onPressed: _startConversation,
-      icon: _isLoading ? null : Icons.reply,
+      icon: _isLoading ? null : ButleryIcons.reply,
       loading: _isLoading,
       outlined: true,
       compact: true,

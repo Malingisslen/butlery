@@ -24,9 +24,10 @@
  *
  * **What it is NOT**: it evaluates no security rules, it has no isolation,
  * contention, abort or retry (the callback runs exactly once, single-threaded),
- * and its query primitive is "the direct children of this collection",
- * optionally `.limit()`ed, `.select()`ed, and filtered by `==` or `array-contains` — no
- * ordering, no ranges, no indexes, so a query that would need a composite index
+ * and its query primitive is "the direct children of this collection" (or,
+ * for `collectionGroup`, every document whose own collection has that id),
+ * optionally `.limit()`ed, `.select()`ed, and filtered by `==`, `array-contains` or a
+ * `>=`/`<` bound on `FieldPath.documentId()` — no ordering, no other ranges, no indexes, so a query that would need a composite index
  * in production answers happily here. Nothing may be cited as evidence about
  * concurrency or index coverage; both live on the emulator lane.
  */
@@ -62,6 +63,8 @@ export interface FakeDocSnap {
 export interface FakeDocRef {
   id: string;
   path: string;
+  /** The containing collection; its `parent` is null for a top-level one. */
+  readonly parent: { id: string; path: string; parent: FakeDocRef | null };
   collection(name: string): FakeColRef;
   get(): Promise<FakeDocSnap>;
   set(data: FakeDoc): Promise<void>;
@@ -81,8 +84,11 @@ export interface FakeQuery {
    * quietly, and every suite inheriting this fake would carry that.
    */
   select(...fields: string[]): FakeQuery;
-  /** Only `==` and `array-contains` are modelled; anything else throws. */
-  where(field: string, op: string, value: unknown): FakeQuery;
+  /**
+   * Only `==`, `array-contains` and a `>=`/`<` document-id bound are modelled;
+   * anything else throws.
+   */
+  where(field: string | admin.firestore.FieldPath, op: string, value: unknown): FakeQuery;
   get(): Promise<{ size: number; empty: boolean; docs: FakeDocSnap[] }>;
 }
 
@@ -193,6 +199,40 @@ interface Filter {
   field: string;
   op: string;
   value: unknown;
+}
+
+const DOCUMENT_ID = "__name__";
+
+/**
+ * Segment by segment, each compared as UTF-8 bytes, which is how Firestore
+ * orders document paths; a whole-string compare would sort `a/b` against
+ * `a-c/d` on the separator.
+ */
+function comparePaths(a: string, b: string): number {
+  const x = a.split("/");
+  const y = b.split("/");
+  for (let i = 0; i < Math.min(x.length, y.length); i++) {
+    const c = Buffer.compare(Buffer.from(x[i], "utf8"), Buffer.from(y[i], "utf8"));
+    if (c !== 0) return c;
+  }
+  return x.length - y.length;
+}
+
+function matchesDocumentId(path: string, filter: Filter): boolean {
+  const bound = (filter.value as { path?: unknown } | null)?.path;
+  if (typeof bound !== "string") {
+    throw new Error("fake-firestore: a documentId() bound must be a document reference");
+  }
+  switch (filter.op) {
+    case ">=":
+      return comparePaths(path, bound) >= 0;
+    case "<":
+      return comparePaths(path, bound) < 0;
+    default:
+      throw new Error(
+        `fake-firestore: documentId() operator ${filter.op} is not modelled — teach the fake about it`,
+      );
+  }
 }
 
 /**
@@ -314,8 +354,15 @@ export class FakeFirestore {
     throw new Error("fake-firestore: batch() is not modelled — add it if a SUT starts using it");
   }
 
-  collectionGroup(): never {
-    throw new Error("fake-firestore: collectionGroup() is not modelled");
+  collectionGroup(name: string): FakeQuery {
+    return this.query(() =>
+      [...this.docs.keys()]
+        .filter((path) => {
+          const segments = path.split("/");
+          return segments.length >= 2 && segments[segments.length - 2] === name;
+        })
+        .sort(),
+    );
   }
 
   // --- internals -------------------------------------------------------------
@@ -351,10 +398,23 @@ export class FakeFirestore {
   }
 
   private docRef(path: string): FakeDocRef {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
     const segments = path.split("/");
+    const collectionSegments = segments.slice(0, -1);
     return {
       id: segments[segments.length - 1],
       path,
+      get parent() {
+        return {
+          id: collectionSegments[collectionSegments.length - 1],
+          path: collectionSegments.join("/"),
+          parent:
+            collectionSegments.length > 1
+              ? self.docRef(collectionSegments.slice(0, -1).join("/"))
+              : null,
+        };
+      },
       collection: (name: string) => this.colRef(`${path}/${name}`),
       get: async () => this.snapshot(path),
       set: async (data: FakeDoc) => this.apply({ op: "set", path, data }),
@@ -371,6 +431,23 @@ export class FakeFirestore {
   }
 
   private colRef(path: string): FakeColRef {
+    return {
+      path,
+      doc: (id?: string) => this.docRef(`${path}/${id ?? `auto-${++this.autoId}`}`),
+      add: async (data: FakeDoc) => {
+        if (this.options.failAdds) {
+          throw Object.assign(new Error("fake-firestore: add refused"), { code: 13 });
+        }
+        const ref = this.docRef(`${path}/auto-${++this.autoId}`);
+        this.apply({ op: "set", path: ref.path, data });
+        return ref;
+      },
+      ...this.query(() => this.childPaths(path)),
+    };
+  }
+
+  /** A query over the paths `candidates` yields, filtered and limited. */
+  private query(candidates: () => string[]): FakeQuery {
     const query = (
       limit: number | null,
       filters: Filter[],
@@ -391,14 +468,27 @@ export class FakeFirestore {
         }
         return query(limit, filters, f);
       },
-      where: (field: string, op: string, value: unknown) =>
-        query(limit, [...filters, { field, op, value }], fields),
+      where: (field: string | admin.firestore.FieldPath, op: string, value: unknown) => {
+        let name: string;
+        if (typeof field === "string") {
+          name = field;
+        } else if (field.isEqual(admin.firestore.FieldPath.documentId())) {
+          name = DOCUMENT_ID;
+        } else {
+          throw new Error("fake-firestore: a FieldPath other than documentId() is not modelled");
+        }
+        return query(limit, [...filters, { field: name, op, value }], fields);
+      },
       get: async () => {
-        const matching = this.childPaths(path).filter((p) => {
+        const matching = candidates().filter((p) => {
           const stored = this.docs.get(p);
           return (
             stored !== undefined &&
-            filters.every((f) => matches(getAt(stored, f.field.split(".")), f))
+            filters.every((f) =>
+              f.field === DOCUMENT_ID
+                ? matchesDocumentId(p, f)
+                : matches(getAt(stored, f.field.split(".")), f),
+            )
           );
         });
         const page = (limit === null ? matching : matching.slice(0, limit)).map(
@@ -407,19 +497,7 @@ export class FakeFirestore {
         return { size: page.length, empty: page.length === 0, docs: page };
       },
     });
-    return {
-      path,
-      doc: (id?: string) => this.docRef(`${path}/${id ?? `auto-${++this.autoId}`}`),
-      add: async (data: FakeDoc) => {
-        if (this.options.failAdds) {
-          throw Object.assign(new Error("fake-firestore: add refused"), { code: 13 });
-        }
-        const ref = this.docRef(`${path}/auto-${++this.autoId}`);
-        this.apply({ op: "set", path: ref.path, data });
-        return ref;
-      },
-      ...query(null, []),
-    };
+    return query(null, []);
   }
 
   private apply(write: Pending): void {

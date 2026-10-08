@@ -23,7 +23,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_permission_ma
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
     show ShoppingItemOperationsManager, ClaimOutcome, ClaimResult;
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Shopping list item grouping mode for the collaborative view (BUT-238).
@@ -94,10 +94,86 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     if (state is ShoppingStateData) {
       final updated = state.lists.firstWhereOrNull((l) => l.id == listId);
       if (updated != null) {
+        _checkForUpdatedByNotice(updated);
         _currentList = updated;
+        _followEditAccess();
         notifyListeners();
       }
     }
+  }
+
+  /// BUT-2187: "Listan uppdaterades av namn" (produktregler.md).
+  /// `lastActivityAt` / `lastActivityByUserId` / `lastActivityByDisplayName`
+  /// ([UnifiedShoppingList]) already exist — no new Firestore field.
+  String? _updatedByNotice;
+
+  /// The header notice text, or null when there is nothing to show.
+  String? get updatedByNotice => _updatedByNotice;
+
+  /// Dismisses the current notice. A later, differing remote update shows a
+  /// fresh one — this only clears what is on screen now.
+  void dismissUpdatedByNotice() {
+    if (isDisposed || _updatedByNotice == null) return;
+    _updatedByNotice = null;
+    notifyListeners();
+  }
+
+  /// A cold open has no previous snapshot — [_currentList] is still null
+  /// before the first load lands, so there is nothing yet to call new.
+  void _checkForUpdatedByNotice(UnifiedShoppingList updated) {
+    final previous = _currentList;
+    if (previous == null) return;
+
+    final activityAt = updated.lastActivityAt;
+    final activityUserId = updated.lastActivityByUserId;
+    if (activityAt == null || activityUserId == null) return;
+
+    // The (timestamp, uid) pair must differ from the previous snapshot's,
+    // not `isAfter`: clocks differ across devices, and a queued offline
+    // edit can replay with its original — possibly older — timestamp. The
+    // pair-differs check still suppresses a re-broadcast of the same
+    // unchanged document.
+    final previousAt = previous.lastActivityAt;
+    final isSameActivity =
+        previousAt != null &&
+        activityAt.isAtSameMomentAs(previousAt) &&
+        activityUserId == previous.lastActivityByUserId;
+    if (isSameActivity) return;
+
+    // currentUserId is the permission/identity check (CLAUDE.md data-source
+    // rule) — this compares who acted, not their profile.
+    if (activityUserId == currentUserId) return;
+
+    final name = updated.lastActivityByDisplayName;
+    final l = AppLocale.current;
+    _updatedByNotice = (name == null || name.isEmpty)
+        ? l.shoppingListUpdatedByUnknown
+        : l.shoppingListUpdatedByNotice(name);
+  }
+
+  /// P6-U05: the last seen answer to [canEdit], so a drop to read-only while
+  /// the list is open is told apart from a list that was read-only from the
+  /// start. Null until the first update.
+  bool? _couldEdit;
+  bool _editAccessLost = false;
+
+  /// The role on this list dropped to read-only while it was open
+  /// (flows-roles-budget.md:83, :132). The view says why once and calls
+  /// [consumeEditAccessLost]; the add field is already gone, because it is
+  /// drawn only while [canEdit] holds.
+  bool get editAccessLost => _editAccessLost;
+
+  /// Returns [editAccessLost] and clears it, so it is told once.
+  bool consumeEditAccessLost() {
+    final lost = _editAccessLost;
+    _editAccessLost = false;
+    return lost;
+  }
+
+  void _followEditAccess() {
+    final can = canEdit;
+    if (_couldEdit == true && !can) _editAccessLost = true;
+    _couldEdit = can;
   }
 
   void _onManagerChanged() {
@@ -330,10 +406,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   }
 
   // UI display helpers - delegate to display manager
-  Color getStatusColor(ColorScheme cs, ButleryColors butleryColors) =>
-      _displayManager.getStatusColor(cs, butleryColors, hasData, statusText);
-  Color getProgressColor(ColorScheme cs, ButleryColors butleryColors) =>
-      _displayManager.getProgressColor(cs, butleryColors, completionPercentage);
+  Color getStatusColor(ColorScheme cs, ModeColors modeColors) =>
+      _displayManager.getStatusColor(cs, modeColors, hasData, statusText);
+  Color getProgressColor(ColorScheme cs, ModeColors modeColors) =>
+      _displayManager.getProgressColor(cs, modeColors, completionPercentage);
   String? getItemSubtitle(UnifiedShoppingItem item) =>
       _displayManager.getItemSubtitle(item);
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) =>

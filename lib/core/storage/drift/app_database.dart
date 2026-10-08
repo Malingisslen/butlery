@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:sqlite3/open.dart';
+// The generated sync-queue table creates each opId with Uuid (tables/sync_queue.dart).
+import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
@@ -21,6 +23,9 @@ import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/daos/cache_dao.dart';
 import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
+import 'package:butlery/core/storage/drift/queue_counts.dart';
+
+export 'package:butlery/core/storage/drift/queue_counts.dart';
 
 part 'app_database.g.dart';
 
@@ -47,8 +52,13 @@ class AppDatabase extends _$AppDatabase {
   /// For testing: create an in-memory database
   AppDatabase.forTesting(super.e);
 
+  /// 3: the offline queue's schema (produktregler.md:183-193, § 3.1) —
+  /// opId, entity type, dependsOn and a permanent-failure flag.
+  /// 4: the retry schedule (produktregler.md:188) — when a sync entry may be
+  /// sent again, and when its first attempt failed.
+  /// 5: the same two columns on the upload queue (BUT-2162).
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -61,6 +71,14 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           await m.createTable(uploadQueueEntries);
         }
+        if (from < 3) {
+          // Rebuilds the queues in their current shape, schemas 4 and 5
+          // included.
+          await _migrateQueuesToV3(m);
+        } else {
+          if (from < 4) await _migrateSyncQueueToV4(m);
+          if (from < 5) await _migrateUploadQueueToV5(m);
+        }
       },
       beforeOpen: (details) async {
         // Enable foreign keys
@@ -68,6 +86,236 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   }
+
+  /// Schema 2 → 3. Both queue tables are rebuilt in place with
+  /// [Migrator.alterTable], which copies every row, so no queued change is
+  /// lost (produktregler.md:192: the app never deletes a queue entry without
+  /// a server confirmation or showing it to the user).
+  ///
+  /// Every existing sync entry gets a fresh random UUID v4 as its opId, the
+  /// same format new entries get, and the entity type "recipe", the only entity the queue carried before
+  /// schema 3. No entry is marked permanently failed.
+  Future<void> _migrateQueuesToV3(Migrator m) async {
+    await m.alterTable(
+      TableMigration(
+        syncQueueEntries,
+        columnTransformer: {
+          syncQueueEntries.opId: const CustomExpression<String>(
+            _uuidV4Sql,
+          ),
+        },
+        newColumns: [
+          syncQueueEntries.opId,
+          syncQueueEntries.entityType,
+          syncQueueEntries.dependsOn,
+          syncQueueEntries.permanentlyFailed,
+          // Schema 4: the table is rebuilt in its current shape.
+          syncQueueEntries.nextAttemptAt,
+          syncQueueEntries.firstFailedAt,
+        ],
+      ),
+    );
+    await m.alterTable(
+      TableMigration(
+        uploadQueueEntries,
+        newColumns: [
+          uploadQueueEntries.dependsOn,
+          uploadQueueEntries.permanentlyFailed,
+          // Schema 5: the table is rebuilt in its current shape.
+          uploadQueueEntries.nextAttemptAt,
+          uploadQueueEntries.firstFailedAt,
+        ],
+      ),
+    );
+  }
+
+  /// Schema 3 → 4: two nullable columns for the retry schedule
+  /// (produktregler.md:188). Adding a column keeps every row as it is, so
+  /// no queued change is lost (produktregler.md:192); a migrated entry has
+  /// never failed under the new schedule and is sent at the next pass.
+  Future<void> _migrateSyncQueueToV4(Migrator m) async {
+    await m.addColumn(syncQueueEntries, syncQueueEntries.nextAttemptAt);
+    await m.addColumn(syncQueueEntries, syncQueueEntries.firstFailedAt);
+  }
+
+  /// Schema 4 → 5: the retry columns of schema 4 on the upload queue. As
+  /// there, every row is kept and a migrated upload is tried at the next
+  /// pass.
+  Future<void> _migrateUploadQueueToV5(Migrator m) async {
+    await m.addColumn(uploadQueueEntries, uploadQueueEntries.nextAttemptAt);
+    await m.addColumn(uploadQueueEntries, uploadQueueEntries.firstFailedAt);
+  }
+
+  /// A random UUID v4 per row, in SQL, so migrated opIds have the same
+  /// format as the ones new entries get.
+  static const String _uuidV4Sql =
+      "lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' "
+      "|| substr(lower(hex(randomblob(2))), 2) || '-' "
+      "|| substr('89ab', 1 + (abs(random()) % 4), 1) "
+      "|| substr(lower(hex(randomblob(2))), 2) || '-' "
+      '|| lower(hex(randomblob(6)))';
+
+  /// The user's queue counts across both queues, live. See [QueueCounts].
+  ///
+  /// An upload counts while it is pending, uploading, or failed; a completed
+  /// or cancelled one does not. A failed upload counts as draining until it
+  /// is marked permanently failed: no caller yet passes a retry limit to
+  /// [UploadQueueDao.getRetryableUploads], so the count cannot tell an
+  /// upload with retries left from one that has run out (open question for
+  /// when the count is surfaced, produktregler.md:188-189).
+  Stream<QueueCounts> watchQueueCounts(String userId) {
+    return customSelect(
+      _queueCountsSql,
+      variables: [Variable.withString(userId)],
+      readsFrom: {syncQueueEntries, uploadQueueEntries},
+    ).watchSingle().map(
+      (row) => QueueCounts(
+        draining: row.read<int>('draining'),
+        needsUser: row.read<int>('needs_user'),
+      ),
+    );
+  }
+
+  /// The combined number of the user's changes not yet saved, live: one
+  /// number across the sync and upload queues ([QueueCounts.waiting]).
+  Stream<int> watchPendingCount(String userId) =>
+      watchQueueCounts(userId).map((c) => c.waiting).distinct();
+
+  static const String _queueCountsSql = """
+SELECT
+  (SELECT COUNT(*) FROM sync_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 0)
+  + (SELECT COUNT(*) FROM upload_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 0
+       AND status IN ('pending', 'uploading', 'failed')) AS draining,
+  (SELECT COUNT(*) FROM sync_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 1)
+  + (SELECT COUNT(*) FROM upload_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 1
+       AND status NOT IN ('completed', 'cancelled')) AS needs_user
+""";
+
+  /// Marks the operation [opId] and every entry that depends on it, directly
+  /// or through another entry, as permanently failed — in both queues and
+  /// in one transaction. "Om beroendet permanent misslyckas markeras hela
+  /// kedjan som misslyckad — aldrig halvvägs" (produktregler.md:187).
+  ///
+  /// Nothing is deleted. Returns the opIds that were marked (for an upload,
+  /// its id).
+  ///
+  /// [reason] is stored on every marked entry. When [rootReason] is given,
+  /// [opId] itself gets that instead, so the entry that failed keeps its own
+  /// cause and the ones after it say they hang on it.
+  Future<Set<String>> markChainPermanentlyFailed(
+    String userId,
+    String opId, {
+    String? reason,
+    String? rootReason,
+  }) {
+    return transaction(() async {
+      final syncRows = await (select(
+        syncQueueEntries,
+      )..where((e) => e.userId.equals(userId))).get();
+      final uploadRows = await (select(
+        uploadQueueEntries,
+      )..where((e) => e.userId.equals(userId))).get();
+
+      final dependants = <String, Set<String>>{};
+      void link(String id, String? stored) {
+        for (final dep in decodeDependsOn(stored)) {
+          (dependants[dep] ??= <String>{}).add(id);
+        }
+      }
+
+      for (final row in syncRows) {
+        link(row.opId, row.dependsOn);
+      }
+      for (final row in uploadRows) {
+        link(row.id, row.dependsOn);
+      }
+
+      final failed = <String>{};
+      final toVisit = <String>[opId];
+      while (toVisit.isNotEmpty) {
+        final id = toVisit.removeLast();
+        if (!failed.add(id)) continue;
+        toVisit.addAll(dependants[id] ?? const <String>{});
+      }
+
+      final syncIds = syncRows
+          .map((r) => r.opId)
+          .where(failed.contains)
+          .toList();
+      final uploadIds = uploadRows
+          .map((r) => r.id)
+          .where(failed.contains)
+          .toList();
+      final Value<String?> error = reason == null
+          ? const Value.absent()
+          : Value(reason);
+      if (syncIds.isNotEmpty) {
+        await (update(
+          syncQueueEntries,
+        )..where((e) => e.opId.isIn(syncIds))).write(
+          SyncQueueEntriesCompanion(
+            permanentlyFailed: const Value(true),
+            lastError: error,
+          ),
+        );
+      }
+      if (uploadIds.isNotEmpty) {
+        await (update(
+          uploadQueueEntries,
+        )..where((e) => e.id.isIn(uploadIds))).write(
+          UploadQueueEntriesCompanion(
+            permanentlyFailed: const Value(true),
+            lastError: error,
+          ),
+        );
+      }
+      if (rootReason != null) {
+        await (update(syncQueueEntries)..where(
+              (e) => e.userId.equals(userId) & e.opId.equals(opId),
+            ))
+            .write(SyncQueueEntriesCompanion(lastError: Value(rootReason)));
+        await (update(uploadQueueEntries)..where(
+              (e) => e.userId.equals(userId) & e.id.equals(opId),
+            ))
+            .write(UploadQueueEntriesCompanion(lastError: Value(rootReason)));
+      }
+      return {...syncIds, ...uploadIds};
+    });
+  }
+
+  /// The ids of the user's entries in both queues that have not reached the
+  /// server: [waiting] are still sent by the queue, [failed] wait for the
+  /// user. A sync entry is known by its opId, an upload by its id
+  /// (produktregler.md:185, :187). Completed and cancelled uploads are in
+  /// neither set.
+  Future<({Set<String> waiting, Set<String> failed})> queuedOpIds(
+    String userId,
+  ) async {
+    final rows = await customSelect(
+      _queuedOpIdsSql,
+      variables: [Variable.withString(userId)],
+      readsFrom: {syncQueueEntries, uploadQueueEntries},
+    ).get();
+    final waiting = <String>{};
+    final failed = <String>{};
+    for (final row in rows) {
+      final id = row.read<String>('op_id');
+      (row.read<bool>('failed') ? failed : waiting).add(id);
+    }
+    return (waiting: waiting, failed: failed);
+  }
+
+  static const String _queuedOpIdsSql = """
+SELECT op_id, permanently_failed AS failed FROM sync_queue_entries
+  WHERE user_id = ?1
+UNION ALL
+SELECT id AS op_id, permanently_failed AS failed FROM upload_queue_entries
+  WHERE user_id = ?1 AND status NOT IN ('completed', 'cancelled')
+""";
 
   /// Clear all data (for testing or user logout)
   Future<void> clearAllData() async {
@@ -78,8 +326,9 @@ class AppDatabase extends _$AppDatabase {
     await delete(uploadQueueEntries).go();
   }
 
-  /// Clear all data for a specific user
-  Future<void> clearUserData(String userId) async {
+  /// Clear all data for a specific user, all of it or none: a queue entry
+  /// left without its recipe row, or the reverse, is a half-thrown change.
+  Future<void> clearUserData(String userId) => transaction(() async {
     await (delete(offlineRecipes)..where((t) => t.userId.equals(userId))).go();
     await (delete(
       syncQueueEntries,
@@ -93,7 +342,7 @@ class AppDatabase extends _$AppDatabase {
     await (delete(
       uploadQueueEntries,
     )..where((t) => t.userId.equals(userId))).go();
-  }
+  });
 
   /// Get database statistics
   Future<Map<String, int>> getStats() async {

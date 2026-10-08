@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('SelectionCard Widget Tests', () {
@@ -76,7 +78,7 @@ void main() {
         final shape = card.shape as RoundedRectangleBorder;
         expect(
           shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+          equals(BorderRadius.circular(AppDimensions.radiusCard)),
         );
       });
     });
@@ -292,10 +294,10 @@ void main() {
             home: Scaffold(
               body: SelectionCard(
                 child: ListTile(
-                  leading: Icon(Icons.person),
+                  leading: ButleryIcon(ButleryIcons.user),
                   title: Text('John Doe'),
                   subtitle: Text('Friend'),
-                  trailing: Icon(Icons.check),
+                  trailing: ButleryIcon(ButleryIcons.check),
                 ),
               ),
             ),
@@ -305,8 +307,8 @@ void main() {
         expect(find.byType(ListTile), findsOneWidget);
         expect(find.text('John Doe'), findsOneWidget);
         expect(find.text('Friend'), findsOneWidget);
-        expect(find.byIcon(Icons.person), findsOneWidget);
-        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.user), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsOneWidget);
       });
 
       testWidgets('should work with Column child', (WidgetTester tester) async {
@@ -318,7 +320,7 @@ void main() {
                   children: [
                     Text('Title'),
                     Text('Subtitle'),
-                    Icon(Icons.star),
+                    ButleryIcon(ButleryIcons.star),
                   ],
                 ),
               ),
@@ -329,7 +331,7 @@ void main() {
         expect(find.byType(Column), findsOneWidget);
         expect(find.text('Title'), findsOneWidget);
         expect(find.text('Subtitle'), findsOneWidget);
-        expect(find.byIcon(Icons.star), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.star), findsOneWidget);
       });
 
       testWidgets('should work with Row child', (WidgetTester tester) async {
@@ -339,7 +341,7 @@ void main() {
               body: SelectionCard(
                 child: Row(
                   children: [
-                    Icon(Icons.folder),
+                    ButleryIcon(ButleryIcons.folder),
                     SizedBox(width: 8),
                     Text('Document'),
                   ],
@@ -350,7 +352,7 @@ void main() {
         );
 
         expect(find.byType(Row), findsOneWidget);
-        expect(find.byIcon(Icons.folder), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.folder), findsOneWidget);
         expect(find.text('Document'), findsOneWidget);
       });
 
@@ -491,8 +493,11 @@ void main() {
                     ),
                     title: const Text('John Doe'),
                     trailing: selected
-                        ? const Icon(Icons.check_circle, color: Colors.green)
-                        : const Icon(Icons.radio_button_unchecked),
+                        ? const ButleryIcon(
+                            ButleryIcons.circleCheck,
+                            color: Colors.green,
+                          )
+                        : const Icon(ButleryIcons.circle),
                   ),
                 ),
               ),
@@ -500,14 +505,14 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
-        expect(find.byIcon(Icons.check_circle), findsNothing);
+        expect(find.byIcon(ButleryIcons.circle), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
 
         await tester.tap(find.text('John Doe'));
         await tester.pump();
 
-        expect(find.byIcon(Icons.radio_button_unchecked), findsNothing);
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circle), findsNothing);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
       });
 
       testWidgets('should work for item selection', (

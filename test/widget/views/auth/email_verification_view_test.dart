@@ -23,13 +23,20 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/status_indicators.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
+import '../../../infrastructure/helpers/offline_banner_support.dart';
 
 const _testEmail = 'anna@example.com';
 
@@ -52,6 +59,7 @@ void main() {
     final container = DIContainer();
     container.container.registerSingleton<AuthService>(authService);
     ServiceLocator.initialize(container);
+    ensureOfflineService();
   });
 
   tearDown(() async {
@@ -116,6 +124,33 @@ void main() {
     );
   });
 
+  // BUT-2182: the screen carries the offline banner, as a status the user
+  // cannot tap (Malin, 2026-10-03).
+  testWidgets('the offline banner is a status, not a control', (tester) async {
+    await tester.pumpWidget(buildView());
+    await tester.pump();
+
+    final banner = find.byType(OfflineIndicator);
+    expect(banner, findsOneWidget);
+    expect(tester.widget<OfflineIndicator>(banner).onTap, isNull);
+  });
+
+  // BUT-2182: the screen can show before a signed-in user's services are
+  // registered, OfflineService among them.
+  testWidgets('renders without an OfflineService registered', (tester) async {
+    GetIt.instance.unregister<OfflineService>();
+
+    await tester.pumpWidget(buildView());
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(OfflineIndicator), findsOneWidget);
+    expect(
+      find.text(AppLocalizationsSv().emailVerificationTitle),
+      findsOneWidget,
+    );
+  });
+
   // ────────────────────────────────────────────────────────────────────────────
   // Test 2: tapping "Fortsätt ändå" calls onDismiss.
   //
@@ -146,5 +181,87 @@ void main() {
           'Tapping the continue-anyway button must call onDismiss '
           'exactly once so the caller can decide what to show next.',
     );
+  });
+
+  // P4-T6: the gate's envelope glyph is text.primary (onSurface), paper on
+  // the dark page. cs.primary is ink in both schemes and vanished there
+  // (tokens.json:54-57, :104-115).
+  testWidgets('dark mode: the envelope glyph is paper, not ink', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Theme(
+          data: AppTheme.darkTheme,
+          child: const EmailVerificationView(email: _testEmail),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final glyph = tester.widget<Icon>(
+      find.byIcon(ButleryIcons.mail),
+    );
+    expect(glyph.color, AppTheme.darkTheme.colorScheme.onSurface);
+    expect(glyph.color, isNot(AppTheme.darkTheme.colorScheme.primary));
+  });
+
+  // P5-U02 (auth-otp ERROR): a failed resend is the three-part inline error
+  // (content-style-guide.md:87-97) in a live region with the alert role
+  // (Butlery tillganglighetshandoff.dc.html:156, :172). The service's own
+  // text is never shown on its own.
+  group('a failed resend', () {
+    Future<void> failResend(
+      WidgetTester tester, {
+      String? serviceError,
+      Object? thrown,
+    }) async {
+      authService.setAuthState(isAuthenticated: true, error: serviceError);
+      when(
+        () => authService.sendEmailVerification(),
+      ).thenThrow(thrown ?? Exception('firebase: internal-error'));
+      await tester.pumpWidget(buildView());
+      await tester.pump();
+      await tester.tap(find.text(AppLocalizationsSv().emailVerificationResend));
+      await tester.pump();
+      await tester.pump();
+    }
+
+    testWidgets('says what happened and that the address is unchanged', (
+      tester,
+    ) async {
+      await failResend(tester, serviceError: 'Ett oväntat fel uppstod');
+      final l10n = AppLocalizationsSv();
+
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.text(l10n.emailVerificationResendFailed), findsOneWidget);
+      expect(find.text(l10n.emailVerificationAddressUnchanged), findsOneWidget);
+      expect(find.text('Ett oväntat fel uppstod'), findsNothing);
+      expect(find.textContaining('firebase'), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Semantics && w.properties.liveRegion == true,
+        ),
+        findsWidgets,
+      );
+    });
+
+    testWidgets('names a cause the user can act on', (tester) async {
+      final l10n = AppLocalizationsSv();
+      // The cause comes from the Firebase code, not from the service text.
+      await failResend(
+        tester,
+        serviceError: 'unrelated text',
+        thrown: FirebaseAuthException(code: 'too-many-requests'),
+      );
+
+      expect(
+        find.text(
+          l10n.emailVerificationResendFailedBecause(l10n.errorTooManyAttempts),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 }

@@ -12,12 +12,19 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/realtime/overwritten_version.dart';
+import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
+import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
 
 // Realtime modules
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime/connection_state_module.dart';
 import 'package:butlery/services/realtime/resource_parser_module.dart';
 import 'package:butlery/services/realtime/conflict_resolution_module.dart';
+import 'package:butlery/services/realtime/conflict_release_gate.dart';
+import 'package:butlery/services/realtime/queued_recipe_conflicts.dart';
 
 /// Real-time synchronization service with modular connection, parsing, and conflict resolution.
 class RealtimeSyncService extends BaseService with StreamManagementMixin {
@@ -26,16 +33,42 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   final FirestoreRepository _firestoreRepository;
   final auth.AuthRepository _authRepository;
 
+  /// P5-U26b: where a version the user loses to another person's save is kept
+  /// for 30 days (produktregler.md:109). Null keeps nothing (tests that do not
+  /// exercise it, and any build without the repository registered).
+  final OverwrittenVersionRepository? _overwrittenVersions;
+
+  /// P5-U27b: where a change to someone else's shared recipe is kept as a
+  /// suggestion for 7 days (produktregler.md:103). Null keeps none, and the
+  /// package 5 choice applies instead (PQ-02 = A).
+  final RecipeSuggestionRepository? _suggestions;
+
+  /// BUT-2213: how "Behåll min version" saves a queued recipe edit.
+  final OwnRecipeWriter? _writeOwnRecipe;
+
   // Modules
   late final ConnectionStateModule _connectionModule;
   late final ResourceParserModule _parserModule;
   late final ConflictResolutionModule _conflictModule;
+  late final QueuedRecipeConflicts _queuedRecipes;
+
+  /// P6-U08b: conflict notices wait here until the offline queue has
+  /// emptied and the device is online (produktregler.md:189). Null lets
+  /// every notice through at once.
+  ConflictReleaseGate? _conflictGate;
 
   RealtimeSyncService({
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
+    OverwrittenVersionRepository? overwrittenVersions,
+    RecipeSuggestionRepository? suggestions,
+    Stream<bool> Function()? queueSettled,
+    OwnRecipeWriter? writeOwnRecipe,
   }) : _firestoreRepository = firestoreRepository,
-       _authRepository = authRepository {
+       _authRepository = authRepository,
+       _overwrittenVersions = overwrittenVersions,
+       _suggestions = suggestions,
+       _writeOwnRecipe = writeOwnRecipe {
     // Initialize StreamControllers using StreamManagementMixin
     _connectionController = createBroadcastController<bool>(
       name: 'connection_state',
@@ -46,6 +79,12 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     _conflictController = createBroadcastController<ConflictEvent>(
       name: 'sync_conflicts',
     );
+    if (queueSettled != null) {
+      _conflictGate = ConflictReleaseGate(
+        settled: queueSettled,
+        release: _publishConflict,
+      );
+    }
 
     // Initialize modules
     _initializeModules();
@@ -81,6 +120,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       notifyListeners: () => notifyListeners(),
       onUserLoggedOut: () {
         _cachedResources.clear();
+        _queuedRecipes.clear();
       },
     );
 
@@ -93,12 +133,31 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       getLatestResource: _parserModule.getLatestResource,
       // BUT-1031: route resolved conflicts onto the broadcast stream so the
       // ConflictBanner widget can surface silent last-write-wins picks.
+      // P6-U08b: through the gate, so the banner shows when the queue has
+      // emptied, not while the app is offline (produktregler.md:189).
       onConflict: (event) {
-        if (!_conflictController.isClosed) {
-          _conflictController.add(event);
+        final gate = _conflictGate;
+        if (gate == null) {
+          _publishConflict(event);
+        } else {
+          gate.offer(event);
         }
       },
     );
+
+    _queuedRecipes = QueuedRecipeConflicts(
+      conflicts: _conflictModule,
+      currentUserId: () => _currentUserId,
+      overwrittenVersions: _overwrittenVersions,
+      writeOwnRecipe: _writeOwnRecipe,
+    );
+  }
+
+  void _publishConflict(ConflictEvent event) {
+    _queuedRecipes.remember(event);
+    if (!_conflictController.isClosed) {
+      _conflictController.add(event);
+    }
   }
 
   /// Are we connected to Firebase?
@@ -118,11 +177,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// Global side-channel of synchronization errors.
   ///
   /// BUT-1069 made `watchResource` propagate errors on BOTH the main stream
-  /// AND this side-channel. BUT-1082 explicitly chose NOT to re-expose this
-  /// stream through downstream wrappers (`RealtimeRecipeService`,
-  /// `realtime_watching_module`) because zero production consumers exist
-  /// today; speculative wrapper-forwarding plumbing was deferred until a
-  /// real consumer arrives. If you need global error logging, subscribe
+  /// AND this side-channel. If you need global error logging, subscribe
   /// to this getter directly on the underlying `RealtimeSyncService`.
   Stream<SyncError> get errorStream => _errorController.stream;
 
@@ -229,7 +284,10 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
   /// Update a resource with conflict resolution
   Future<void> updateResource<T extends RealtimeResource>(T resource) async {
-    if (_currentUserId == null) {
+    // Read once: a sign-out during the awaits below must not turn into a
+    // null-check error halfway through the update.
+    final userId = _currentUserId;
+    if (userId == null) {
       throw SyncError(
         type: SyncErrorType.permissionDenied,
         message: AppLocale.current.errorUserNotLoggedIn,
@@ -244,7 +302,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
     try {
       // Check permission (from the model, not business logic here)
-      if (!resource.canUserEdit(_currentUserId!)) {
+      if (!resource.canUserEdit(userId)) {
         throw SyncError(
           type: SyncErrorType.permissionDenied,
           message: AppLocale.current.errorNoEditPermission,
@@ -252,6 +310,16 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
           resourceType: resource.type,
         );
       }
+
+      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241): a member
+      // never writes someone else's recipe, and firestore.rules lets only
+      // the owner update it. So this user's edit of someone else's shared
+      // recipe is never written here: outside a conflict it is refused
+      // before it reaches the server (a member's edit is sent as a
+      // suggestion from the recipe editor instead), and in a conflict it
+      // becomes a suggestion or nothing (below).
+      final isMemberOfShared =
+          resource.conflictEntityFor(userId) == ConflictEntity.recipeShared;
 
       final docRef = _parserModule.getResourceDocRef(resource.id);
 
@@ -269,8 +337,55 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       final T persisted;
       if (shouldResolveConflict) {
         final remote = await _parserModule.getLatestResource<T>(resource.id);
-        persisted = await _conflictModule.resolveConflict<T>(resource, remote);
-        await _conflictModule.performUpdate(docRef, persisted);
+        // The model declares which conflict rule applies to this user's
+        // edit (produktregler.md:97-107), for the user who started it.
+        final entity = resource.conflictEntityFor(userId);
+        // P5-U27b: someone else's shared recipe. The owner's version wins and
+        // this edit becomes a suggestion (produktregler.md:103, :241), so
+        // nothing is written to the shared recipe, whether or not the
+        // suggestion could be stored (Q6-08 = A).
+        final kept = isMemberOfShared
+            ? await _keepAsSuggestion(userId, resource, remote)
+            : null;
+        if (kept != null) {
+          persisted = remote;
+          // Q6-12 = B: the notice says when it replaced the waiting one.
+          _conflictModule.announceSuggestion<T>(
+            resource,
+            remote,
+            suggestionId: kept.id,
+            replaced: kept.wasReplaced,
+          );
+        } else if (isMemberOfShared) {
+          // No suggestion was stored (no store, or storing failed). The
+          // package 5 choice cannot apply: both "Behåll min version" and
+          // "Använd deras version" write the owner's recipe, which the
+          // server refuses a member. So nothing is written, the owner's
+          // version stays, and the notice says the change was neither saved
+          // nor sent.
+          persisted = remote;
+          _conflictModule.announceMemberNotSent<T>(resource, remote);
+        } else {
+          persisted = await _conflictModule.resolveConflict<T>(
+            resource,
+            remote,
+            entity: entity,
+          );
+          // P5-U26b: the user's version lost, so keep it before the winner is
+          // written (produktregler.md:109). The resolver hands back the remote
+          // instance itself when the remote wins, including on its error path.
+          if (identical(persisted, remote)) {
+            await _keepOverwritten(userId, entity, resource, remote);
+          }
+          await _conflictModule.performUpdate(docRef, persisted);
+        }
+      } else if (isMemberOfShared) {
+        throw SyncError(
+          type: SyncErrorType.permissionDenied,
+          message: AppLocale.current.errorNoEditPermission,
+          resourceId: resource.id,
+          resourceType: resource.type,
+        );
       } else {
         persisted = resource;
         await _conflictModule.performUpdate(docRef, resource);
@@ -302,6 +417,71 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         );
       }
       rethrow;
+    }
+  }
+
+  /// P5-U26b: keeps [lost] for [userId] for 30 days when [entity] is one whose
+  /// overwritten versions are kept (the week menu and the user's own recipe,
+  /// PQ-01 = A). A failure is logged and does not stop the sync: the 30 s
+  /// conflict notice still carries the version and can re-apply it
+  /// (ConflictSnackBar, ConflictBanner), so nothing is dropped unannounced.
+  Future<void> _keepOverwritten(
+    String userId,
+    ConflictEntity entity,
+    RealtimeResource lost,
+    RealtimeResource winner,
+  ) async {
+    final store = _overwrittenVersions;
+    if (store == null) return;
+    if (!OverwrittenVersion.keptEntities.contains(entity)) return;
+    // The user's own save from another device is not another person's save
+    // overwriting theirs (produktregler.md:109), so there is nothing to keep.
+    if (winner.lastEditedBy == userId) return;
+    try {
+      await store.keep(
+        OverwrittenVersion.capture(
+          ownerId: userId,
+          entity: entity,
+          lost: lost,
+          winner: winner,
+          at: clock.now(),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error(
+        '❌ Den överskrivna versionen kunde inte sparas för ${lost.id}',
+        e,
+      );
+    }
+  }
+
+  /// P5-U27b: keeps [edit], this user's change to someone else's shared
+  /// recipe, as a suggestion to its owner and returns it. When this user
+  /// already has a suggestion to the recipe waiting for the owner, [edit]
+  /// replaces it (Q6-07 = B, one pending suggestion per member and recipe;
+  /// Q6-12 = B, produktbeslut 2026-09-27b, the new one replaces the waiting
+  /// one). Null when there is no store, when [remote] is this user's own save
+  /// from another device (that is not the owner's version winning), or when
+  /// storing fails; the caller then writes nothing and says so, since a
+  /// member cannot write the owner's recipe (Q6-08 = A).
+  Future<RecipeSuggestion?> _keepAsSuggestion(
+    String userId,
+    RealtimeResource edit,
+    RealtimeResource remote,
+  ) async {
+    final store = _suggestions;
+    if (store == null) return null;
+    if (remote.lastEditedBy == userId) return null;
+    try {
+      return await store.keepOrReplace(
+        recipeId: edit.id,
+        ownerId: remote.ownerId,
+        suggesterId: userId,
+        suggestion: edit.toFirestore(),
+      );
+    } catch (e) {
+      AppLogger.error('❌ Förslaget kunde inte sparas för ${edit.id}', e);
+      return null;
     }
   }
 
@@ -341,6 +521,23 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
     await updateResource<T>(recovered);
   }
+
+  /// BUT-2213: a queued edit of the user's own recipe met a newer server
+  /// version and was not written. The notice goes through the queue gate.
+  Future<void> announceQueuedRecipeConflict(Recipe local, Recipe remote) =>
+      _queuedRecipes.announce(local, remote);
+
+  /// The queue notice for [recipeId] the user has not yet chosen on or
+  /// closed, for a recipe screen opened after it was shown.
+  ConflictEvent? pendingQueuedConflict(String recipeId) =>
+      _queuedRecipes.pendingFor(recipeId);
+
+  void clearQueuedConflict(String recipeId) => _queuedRecipes.forget(recipeId);
+
+  /// "Behåll min version" on a queue notice: saved through the recipe's own
+  /// queue on the server's revision, never through `realtime_resources`.
+  Future<void> keepQueuedRecipe(ConflictEvent event) =>
+      _queuedRecipes.keepLocal(event);
 
   /// Ta bort en realtidsresurs
   Future<void> deleteResource(
@@ -459,8 +656,10 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
   @override
   Future<void> onDispose() async {
+    _conflictGate?.dispose();
     await disposeStreamResources(); // StreamManagementMixin handles controllers and subscriptions
     _cachedResources.clear();
+    _queuedRecipes.clear();
     _conflictModule.clearTracking();
     _connectionModule.dispose();
   }

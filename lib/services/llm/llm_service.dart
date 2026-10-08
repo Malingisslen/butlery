@@ -5,7 +5,6 @@
 /// - Image-to-recipe OCR (ocrRecipeImage)
 /// - Selective ingredient line parsing (parseIngredientLines)
 /// - Rate limiting integration
-/// - Cost tracking
 library;
 
 import 'dart:typed_data';
@@ -120,6 +119,7 @@ class LlmService extends BaseService {
         error: message,
         estimatedCost: 0.0,
       ),
+      recordUsageOnFailure: true,
     );
 
     if (response.success) {
@@ -260,6 +260,7 @@ class LlmService extends BaseService {
         error: message,
         estimatedCost: 0.0,
       ),
+      recordUsageOnFailure: true,
     );
 
     if (response.success) {
@@ -309,7 +310,7 @@ class LlmService extends BaseService {
   /// 1. GDPR consent check
   /// 2. Rate-limit guard
   /// 3. Firebase Cloud Function call + response parsing
-  /// 4. Usage recording (on success, or always if [recordUsageOnFailure])
+  /// 4. Usage recording (on success, or on a billed failure if [recordUsageOnFailure])
   /// 5. Error handling (Firebase and generic exceptions)
   Future<T> _executeLlmCall<T>({
     required ImportOperation operation,
@@ -364,16 +365,21 @@ class LlmService extends BaseService {
       _backendBreaker.recordSuccess();
 
       final success = _isSuccessful(response);
-      if (success || recordUsageOnFailure) {
-        final cost = _extractCost(response);
-        await _rateLimiter.recordUsage(operation, llmCost: cost);
+      final cost = _extractCost(response);
+      if (success || (recordUsageOnFailure && cost > 0)) {
+        await _rateLimiter.recordUsage(operation);
       }
 
       return response;
     } on FirebaseFunctionsException catch (e) {
-      _backendBreaker.recordFailure();
+      final error = LlmException.fromFirebase(e);
+      // The user's AI cost ceiling is an answer from a healthy backend, not
+      // an outage, so it must not trip the breaker.
+      if (error.code != LlmException.costCeilingCode) {
+        _backendBreaker.recordFailure();
+      }
       AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
-      throw LlmException.fromFirebase(e);
+      throw error;
     } catch (e) {
       _backendBreaker.recordFailure();
       AppLogger.error('LlmService: Unexpected error - $e');

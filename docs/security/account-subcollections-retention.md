@@ -15,7 +15,7 @@ whether or not it is exported.
 | `ingredients` | The user's own ingredient entries | Their personal ingredient library | `firebase_user_ingredient_repository.dart` | **Exported** |
 | `onboarding` | Progress flags through first-run setup | Resume onboarding where the user left off | `onboarding_progress_service.dart` | **Exported** |
 | `acquisition` | Install attribution: source, medium, campaign, first-seen stamp | Growth measurement (BUT-612) | `firebase_acquisition_repository.dart` | **Exported, unprojected** |
-| `rate_limits` | Burst stamps (a timestamp and the key of the guarded write, bounded by the rules to expire within 4 days, ADR-0020), import usage counters, a one-time migration flag | Anti-abuse throttling | `firebase_activity_event_repository.dart` and others | **Exempt** |
+| `rate_limits` | Burst stamps (a timestamp and the key of the guarded write, bounded by the rules to expire within 4 days, ADR-0020), import usage counters, the AI cost ledger `llm_cost` (cost today and this month, BUT-2243), a one-time migration flag | Anti-abuse throttling; the per-user AI cost ceiling | `firebase_activity_event_repository.dart` and others; `llm_cost` only by `functions/src/middleware/llm_cost_ledger.ts` | **Exempt** |
 | `counters` | Unread-badge totals over shared content | Render unread badges | `base_shared_content_repository.dart` | **Exempt** |
 | `report_throttle` | Cooldown between abuse reports | Anti-abuse throttling | `firebase_report_repository.dart` | **Exempt** |
 | `block_mirror` | The uids of everyone who has blocked this user, in one `current` document | Let `firestore.rules` refuse a blocked person's poll vote without a per-participant read of `blocks` | `sync-block-mirror.ts` (Admin SDK only; every client write is denied) | **Exempt** |
@@ -80,10 +80,10 @@ blocked THEM. Their uid inside OTHER people's mirrors is a cross-user sweep,
 `MAX_MIRROR_SWEEP_ROWS`. Deleting only the first leg would leave the uid behind in every
 mirror naming it.
 
-⚠ `firestore.indexes.json` declares `expireAt` collection-group TTLs whose ids collide with
-`ingredients`. Whether user-scoped documents carry that field is unmeasured
-and tracked as BUT-1996 — a TTL armed over a user's own ingredient library would delete
-content this register says is retained until account deletion.
+⚠ `firestore.indexes.json` declares an `expireAt` TTL on collection group `ingredients`, and
+a collection-group policy also covers `users/{uid}/ingredients`. No writer of the user's
+library stamps `expireAt`, so nothing there is deleted; `firestore-ttl-policies.test.ts` fails
+if one starts to (BUT-1996).
 
 ## Art. 15 export treatment
 

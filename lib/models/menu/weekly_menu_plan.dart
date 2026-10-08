@@ -234,6 +234,18 @@ class WeeklyMenuPlan {
   /// filtering". Additive: docs saved before this field parse to an empty map.
   final Map<DayOfWeek, Map<MealSlot, List<String>>> presenceBySlot;
 
+  /// BUT-2215: the id of the save that wrote this copy, or null for a week
+  /// no current app has saved yet. Every save mints a new one.
+  final String? revId;
+
+  /// BUT-2215: the [revId] of the copy this one was built on, or null when
+  /// that copy had none. `firestore.rules` (`weekSaveBuiltOnStored`) accepts
+  /// an update that carries [revId] only when this equals the stored
+  /// [revId], so a save built on a stale copy is refused instead of
+  /// silently overwriting the save that landed first — however many saves
+  /// either side queued.
+  final String? baseRevId;
+
   const WeeklyMenuPlan({
     required this.id,
     required this.userId,
@@ -243,6 +255,8 @@ class WeeklyMenuPlan {
     required this.updatedAt,
     this.schemaVersion = 1,
     this.presenceBySlot = const {},
+    this.revId,
+    this.baseRevId,
   });
 
   /// Creates an empty plan for the ISO week containing [date].
@@ -343,8 +357,25 @@ class WeeklyMenuPlan {
       updatedAt: updatedAt ?? clock.now(),
       schemaVersion: schemaVersion ?? this.schemaVersion,
       presenceBySlot: presenceBySlot ?? this.presenceBySlot,
+      revId: revId,
+      baseRevId: baseRevId,
     );
   }
+
+  /// The copy to save next: the same plan as a new revision built on this
+  /// one. Every save of a week goes through this exactly once (BUT-2215).
+  WeeklyMenuPlan nextRevision() => WeeklyMenuPlan(
+    id: id,
+    userId: userId,
+    weekStartDate: weekStartDate,
+    entries: entries,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+    schemaVersion: schemaVersion,
+    presenceBySlot: presenceBySlot,
+    revId: const Uuid().v4(),
+    baseRevId: revId,
+  );
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -354,6 +385,8 @@ class WeeklyMenuPlan {
       'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
       'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
       'schemaVersion': schemaVersion,
+      if (revId != null) 'revId': revId,
+      if (baseRevId != null) 'baseRevId': baseRevId,
       if (presenceBySlot.isNotEmpty)
         'presenceBySlot': presenceBySlot.map(
           (day, bySlot) => MapEntry(
@@ -384,6 +417,8 @@ class WeeklyMenuPlan {
       updatedAt: SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
       presenceBySlot: _parsePresenceBySlot(data['presenceBySlot']),
+      revId: SerializationUtils.safeNullableString(data, 'revId'),
+      baseRevId: SerializationUtils.safeNullableString(data, 'baseRevId'),
     );
   }
 

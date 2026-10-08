@@ -16,6 +16,7 @@ import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, normalizeRecipeDocumentStamps, sanitizeForJson;
 import 'package:butlery/services/account/export/shared_shopping_list_export.dart';
+import 'package:butlery/services/account/export/live_menu_export.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -257,6 +258,9 @@ class ContentExportManager {
   /// each live with the code that applies them.
   Future<Map<String, dynamic>> exportSharedShoppingLists(String userId) =>
       SharedShoppingListExport(_exports).export(userId);
+
+  Future<Map<String, dynamic>> exportLiveMenus(String userId) =>
+      LiveMenuExport(_exports).export(userId);
 
   /// Export all personal tags with embedded rules (GDPR Article 20).
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {
@@ -568,28 +572,6 @@ class ContentExportManager {
     }
   }
 
-  /// BUT-1396: Export collaborative recipes the user owns (`realtime_recipes`
-  /// where `ownerId == uid`). The deletion cascade erases these, so Art. 15
-  /// requires them in the export.
-  Future<Map<String, dynamic>> exportRealtimeRecipes(String userId) async {
-    try {
-      final recipes = await _exports.exportRealtimeRecipesByOwner(userId);
-      return {
-        'realtime_recipes': recipes.map((entry) {
-          // A realtime document embeds a WHOLE serialised recipe under
-          // `recipe` (`RecipeSerialization.serializeRealtimeContent`), so
-          // it carries the same zone-less stamps one level deeper.
-          final row = sanitizeForJson(entry['data']) as Map<String, dynamic>;
-          normalizeRecipeDocumentStamps(row, prefix: 'recipe');
-          return {'recipe_id': entry['id'], 'data': row};
-        }).toList(),
-        'total_count': recipes.length,
-      };
-    } catch (e) {
-      return _failed('realtime recipes', 'realtime-recipes-export-failed', e);
-    }
-  }
-
   /// Fields of an ingredient suggestion that reach the Art. 15 bundle.
   ///
   /// An allowlist rather than a deny-list, so the section FAILS CLOSED: a field
@@ -663,6 +645,52 @@ class ContentExportManager {
       return _failed(
         'ingredient suggestions',
         'ingredient-suggestions-export-failed',
+        e,
+      );
+    }
+  }
+
+  /// P5-U27b: suggestions to shared recipes, both directions — the ones the
+  /// user made to someone else's recipe (`suggesterId`) and the ones made to
+  /// the user's own recipes (`ownerId`). The deletion cascade erases both
+  /// (`deleteRecipeSuggestions`), so Art. 15 reaches both first.
+  ///
+  /// Rows are reproduced as stored, like `overwritten_versions`: the other
+  /// person on a row is named only by the uid the app already resolves to a
+  /// name for the user, and a suggestion made to the user's recipe is content
+  /// the user was shown in order to decide on it.
+  Future<Map<String, dynamic>> exportRecipeSuggestions(String userId) async {
+    try {
+      final made = await ExportPaginationHelper.fetchCapped(
+        type: 'recipe_suggestions_made',
+        fetch: (max) =>
+            _exports.exportRecipeSuggestionsMade(userId, maxDocuments: max),
+      );
+      final received = await ExportPaginationHelper.fetchCapped(
+        type: 'recipe_suggestions_received',
+        fetch: (max) =>
+            _exports.exportRecipeSuggestionsReceived(userId, maxDocuments: max),
+      );
+      List<Map<String, dynamic>> rows(List<Map<String, dynamic>> items) => [
+        for (final entry in items)
+          {
+            'suggestion_id': entry['id'],
+            'data': sanitizeForJson(entry['data']),
+          },
+      ];
+      return {
+        'total_count': made.items.length + received.items.length,
+        'suggestions_made': rows(made.items),
+        'suggestions_received': rows(received.items),
+        'data_minimisation':
+            'A suggestion is kept for 7 days and then deleted, so only '
+            'suggestions from the last 7 days are included.',
+        if (made.truncated || received.truncated) 'truncated': true,
+      };
+    } catch (e) {
+      return _failed(
+        'recipe suggestions',
+        'recipe-suggestions-export-failed',
         e,
       );
     }

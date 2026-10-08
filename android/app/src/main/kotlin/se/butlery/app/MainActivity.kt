@@ -12,12 +12,13 @@ import java.io.File
  * BUT-941: receive shared photos (single ACTION_SEND or multi SEND_MULTIPLE)
  * from the OS share sheet and hand the image file paths to Flutter.
  *
- * Scope guard: we ONLY claim SEND/SEND_MULTIPLE intents whose MIME type
- * starts with "image/" (any image subtype). NOTE: avoid writing the bare
+ * NOTE: avoid writing the bare
  * image-slash-star glob here — Kotlin nests block comments, so a literal
  * slash-star inside this comment opens a nested comment and swallows the file.
- * ACTION_VIEW deep-links and text SEND stay with app_links — the two
- * share-receivers partition the intent space so neither swallows the other.
+ * ACTION_VIEW deep-links stay with app_links.
+ *
+ * BUT-2241: a text SEND (a link or recipe text shared from another app) is
+ * read here too, from EXTRA_TEXT.
  *
  * Content Uris (content://) are transient and not readable as plain paths, so
  * each is copied into cacheDir and the absolute file path is returned — that's
@@ -30,6 +31,9 @@ class MainActivity : FlutterActivity() {
     /** Cold-start paths captured before the Dart channel was ready. */
     private var pendingInitialPaths: List<String>? = null
 
+    /** Cold-start shared text captured before the Dart channel was ready. */
+    private var pendingInitialText: String? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
@@ -40,6 +44,10 @@ class MainActivity : FlutterActivity() {
                 "getInitialMedia" -> {
                     result.success(pendingInitialPaths ?: emptyList<String>())
                     pendingInitialPaths = null
+                }
+                "getInitialText" -> {
+                    result.success(pendingInitialText)
+                    pendingInitialText = null
                 }
                 else -> result.notImplemented()
             }
@@ -52,7 +60,16 @@ class MainActivity : FlutterActivity() {
         // image(s) into cacheDir (OS-managed, reclaimed under storage
         // pressure), so it must run exactly once per launch intent — running
         // it again in configureFlutterEngine would double-copy every photo.
+        // A recreated activity (restored state, or reopened from Recents)
+        // carries the launch intent of a share that was already handled;
+        // reading it again would import the same share twice.
+        if (savedInstanceState != null ||
+            (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+        ) {
+            return
+        }
         pendingInitialPaths = extractImagePaths(intent)
+        pendingInitialText = extractSharedText(intent)
     }
 
     // Warm-start: app already running when the user shares. Push straight to Dart.
@@ -63,6 +80,19 @@ class MainActivity : FlutterActivity() {
         if (paths.isNotEmpty()) {
             channel?.invokeMethod("onMedia", paths)
         }
+        val text = extractSharedText(intent)
+        if (text != null) {
+            channel?.invokeMethod("onText", text)
+        }
+    }
+
+    /** The text of a text SEND intent, or null when this isn't one. */
+    private fun extractSharedText(intent: Intent?): String? {
+        if (intent == null || intent.action != Intent.ACTION_SEND) return null
+        val type = intent.type ?: return null
+        if (!type.startsWith("text/")) return null
+        val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+        return text?.takeIf { it.isNotBlank() }
     }
 
     /**

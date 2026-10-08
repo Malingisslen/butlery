@@ -22,6 +22,8 @@ import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/social/activity_pings_feed.dart';
 
+import '../../infrastructure/helpers/ink_fill.dart';
+
 class _FakePingService implements PingService {
   final StreamController<List<Ping>> controller =
       StreamController<List<Ping>>.broadcast();
@@ -325,6 +327,35 @@ void main() {
       expect(pings.ackCalls, hasLength(1));
       expect(pings.ackCalls.first.pingId, 'p1');
       expect(pings.ackCalls.first.groupId, 'g1');
+    });
+
+    // BUT-2205: the feed's surface fill used to sit above the ink layer,
+    // so a pressed row showed nothing.
+    testWidgets('a pressed ping row shows surface.raised', (tester) async {
+      final pings = _FakePingService();
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: _FakeActivityRepo(const []),
+            friendsService: _friendsWithGroup(me: 'me', memberIds: ['erik']),
+          ),
+        ),
+      );
+      pings.controller.add([_ping(id: 'p1', from: 'erik')]);
+      await tester.pump();
+      await tester.pump();
+
+      final row = find.byKey(const Key('ping-row-ack'));
+      expect(pressIsCovered(tester, row), isFalse);
+      final gesture = await holdPress(tester, row);
+      final raised = Theme.of(tester.element(row)).colorScheme;
+      expect(
+        paintsInkFill(tester, row, raised.surfaceContainerHighest),
+        isTrue,
+      );
+      await gesture.cancel();
     });
 
     testWidgets('addedIngredient activity renders Swedish copy', (

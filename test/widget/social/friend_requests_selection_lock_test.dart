@@ -12,6 +12,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
@@ -24,13 +25,17 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 void main() {
   late MockUnifiedFriendsService mockFriendsService;
@@ -43,7 +48,7 @@ void main() {
   /// bar in either state, since it renders an empty box when idle.
   Finder activeBar() => find.descendant(
     of: find.byType(BatchActivityBar),
-    matching: find.byType(LinearProgressIndicator),
+    matching: find.byType(PlateLine),
   );
 
   /// The RegExp form is the portable one: a host that merges its descendants'
@@ -51,12 +56,13 @@ void main() {
   Finder loadingLabel(AppLocalizations l10n) =>
       find.bySemanticsLabel(RegExp(RegExp.escape(l10n.a11yLoading)));
 
-  FriendRequest incoming(String id) => FriendRequest(
+  FriendRequest incoming(String id, {String? message}) => FriendRequest(
     id: id,
     fromUserId: 'sender-$id',
     toUserId: currentUserId,
     status: FriendRequestStatus.pending,
     sentAt: DateTime(2026, 9, 1),
+    message: message,
   );
 
   FriendRequest outgoing(String id) => FriendRequest(
@@ -148,9 +154,10 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester, {ThemeData? theme}) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: theme,
         locale: const Locale('sv', 'SE'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
@@ -191,8 +198,8 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byIcon(Icons.checklist),
+        of: find.byType(ButleryTopBar),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
     );
     await settle(tester);
@@ -211,11 +218,37 @@ void main() {
   bool menuEnabled(WidgetTester tester) => tester
       .widget<PopupMenuButton<String>>(
         find.descendant(
-          of: find.byType(AppBar),
+          of: find.byType(ButleryTopBar),
           matching: find.byType(PopupMenuButton<String>),
         ),
       )
       .enabled;
+
+  // PQ-18 = A (produktbeslut 2026-09-23, after the prototype): every
+  // incoming row keeps a saffron "Acceptera", as drawn in Skarmar v12 del 3
+  // #forfragningar. A deliberate exception to one saffron action per view.
+  testWidgets('every incoming row offers the saffron Acceptera', (
+    tester,
+  ) async {
+    await pumpView(tester);
+
+    final heroes = find.byType(HeroButton);
+    expect(heroes, findsNWidgets(requestIds.length));
+    for (final id in requestIds) {
+      final accept = find.byKey(ValueKey('friendRequest.accept.$id'));
+      expect(accept, findsOneWidget);
+      final button = tester.widget<FilledButton>(
+        find.descendant(
+          of: accept,
+          matching: find.byWidgetPredicate((w) => w is FilledButton),
+        ),
+      );
+      expect(
+        button.style!.backgroundColor!.resolve({}),
+        AppModeColors.actionPrimary(Brightness.light),
+      );
+    }
+  });
 
   testWidgets('a partial batch leaves the ids that failed selected', (
     tester,
@@ -245,8 +278,8 @@ void main() {
     expect(find.byType(FloatingActionButton), findsNothing);
     expect(
       find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byIcon(Icons.checklist),
+        of: find.byType(ButleryTopBar),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
       findsNothing,
     );
@@ -267,11 +300,11 @@ void main() {
     expect(menuEnabled(tester), isFalse);
     expect(activeBar(), findsOneWidget);
     // The screen-level count, which `activeBar()` cannot carry: that finder is
-    // scoped to the bar's own subtree, so a spinner put back into a control is
-    // invisible to it. BUT-2041 made the bar the batch's only signal, and a
-    // control that grows its own again puts a second live region on screen for
-    // one batch.
-    expect(find.byType(LoadingIndicator), findsNothing);
+    // scoped to the bar's own subtree, so a loading line put back into a
+    // control is invisible to it. BUT-2041 made the bar the batch's only
+    // signal, and a control that grows its own again puts a second live region
+    // on screen for one batch. The one plate line on screen is the bar's.
+    expect(find.byType(PlateLine), findsOneWidget);
 
     mockManagement.releaseRequests();
     await settle(tester);
@@ -321,8 +354,8 @@ void main() {
     );
     await tester.tap(
       find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byIcon(Icons.checklist),
+        of: find.byType(ButleryTopBar),
+        matching: find.byIcon(ButleryIcons.listCheck),
       ),
     );
     await settle(tester);
@@ -493,7 +526,7 @@ void main() {
     );
 
     Finder cancelTooltip(AppLocalizations l10n, int count) => find.descendant(
-      of: find.byType(AppBar),
+      of: find.byType(ButleryTopBar),
       matching: find.byTooltip(l10n.socialCancelCount(count)),
     );
 
@@ -543,9 +576,9 @@ void main() {
       // is what says so, and it lives in the screen rather than in a control.
       expect(activeBar(), findsOneWidget);
       // The same screen-level count as on the incoming tab, repeated because
-      // this is the tab where the cancel button renders: a spinner put back
-      // into ITS icon slot is invisible to every other assertion here.
-      expect(find.byType(LoadingIndicator), findsNothing);
+      // this is the tab where the cancel button renders: a loading line put
+      // back into ITS icon slot is invisible to every other assertion here.
+      expect(find.byType(PlateLine), findsOneWidget);
       // The announcement, not only the widget. Scoped to the bar WIDGET: the
       // request cards render an unstubbed display name starting with the same
       // word, so an unscoped finder matches them too.
@@ -571,4 +604,52 @@ void main() {
       handle.dispose();
     });
   });
+
+  // BUT-2183: the selection bar and the request's own message stand on
+  // surface tokens instead of faded washes.
+  for (final (name, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    testWidgets('$name: the selection bar is surface.raised and the message '
+        'inset is surface.base on the raised card', (tester) async {
+      final withMessage = [
+        incoming('req-1', message: 'Hej, vi lagar ihop!'),
+        incoming('req-2'),
+      ];
+      mockFriendsService.setFriendsState(incomingRequests: withMessage);
+      mockManagement.setManagementState(incomingRequests: withMessage);
+      await pumpView(tester, theme: theme);
+
+      await tester.tap(find.byType(Checkbox).first);
+      await tester.pump();
+
+      final context = tester.element(find.byType(FriendRequestsView));
+      final l10n = AppLocalizations.of(context);
+      final cs = Theme.of(context).colorScheme;
+
+      Color? fillOf(Finder of) =>
+          (tester
+                      .widget<Container>(
+                        find
+                            .ancestor(of: of, matching: find.byType(Container))
+                            .first,
+                      )
+                      .decoration
+                  as BoxDecoration?)
+              ?.color;
+
+      final bar = find.text(l10n.socialRequestsSelected(1));
+      expect(bar, findsOneWidget);
+      expect(
+        tester
+            .widget<Container>(
+              find.ancestor(of: bar, matching: find.byType(Container)).first,
+            )
+            .color,
+        cs.surfaceContainerHighest,
+      );
+      expect(fillOf(find.text('"Hej, vi lagar ihop!"')), cs.surface);
+    });
+  }
 }

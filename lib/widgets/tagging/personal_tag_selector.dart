@@ -4,16 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
 ///
@@ -45,40 +49,16 @@ class PersonalTagSelector extends StatefulWidget {
 
 class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   late PersonalTagViewModel _viewModel;
-  bool _initialized = false;
-  String? _error; // HIGH-7: Track error state
 
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<PersonalTagViewModel>();
-    // Singleton is already initialized by DI
-    _initialized = true;
   }
 
-  Future<void> _retryLoad() async {
-    setState(() {
-      _initialized = false;
-      _error = null;
-    });
-    // Re-initialize from the singleton
-    try {
-      await _viewModel.initialize();
-      if (mounted) {
-        setState(() {
-          _initialized = true;
-          _error = null;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _initialized = true;
-          _error = context.l10n.personalTagCouldNotLoad;
-        });
-      }
-    }
-  }
+  // A failed load ends in the view model's own error, which the Consumer
+  // below reads.
+  Future<void> _retryLoad() => _viewModel.initialize();
 
   @override
   void dispose() {
@@ -130,13 +110,13 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               if (widget.showManageButton)
                 TextButton.icon(
                   onPressed: _openTagManager,
-                  icon: const Icon(
-                    Icons.settings,
+                  icon: const ButleryIcon(
+                    ButleryIcons.settings,
                     size: AppDimensions.iconSize18,
                   ),
                   label: Text(context.l10n.personalTagManage),
                   style: TextButton.styleFrom(
-                    foregroundColor: cs.primary,
+                    foregroundColor: cs.onPrimaryContainer,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingS,
                     ),
@@ -144,23 +124,27 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
 
           // Tags
           Consumer<PersonalTagViewModel>(
             builder: (context, viewModel, _) {
-              if (!_initialized || viewModel.isLoading) {
-                return const Padding(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  child: Center(
-                    child: LoadingIndicator(size: 24, strokeWidth: 2),
+              if (viewModel.isLoading) {
+                // The plate line with what is being fetched, never a
+                // spinner (produktregler.md:163, B-18).
+                return Padding(
+                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  child: PlateLineMessage(
+                    message: context.l10n.loadingPersonalTags,
                   ),
                 );
               }
 
-              // HIGH-7: Show error state if loading failed
-              if (_error != null) {
-                return _buildErrorState(_error!);
+              // A failed refresh keeps the tags it had, so the error only
+              // replaces an empty list: an empty list is what a failed first
+              // load leaves behind, and it must not read as "no tags yet".
+              if (viewModel.loadFailed && !viewModel.hasTags) {
+                return _buildErrorState(context.l10n.personalTagCouldNotLoad);
               }
 
               if (!viewModel.hasTags) {
@@ -181,16 +165,14 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.label_outline,
-            color: cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityHalf,
-            ),
+          ButleryIcon(
+            ButleryIcons.tag,
+            color: AppModeColors.textDisabled(cs.brightness),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
@@ -216,17 +198,14 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
+        color: context.modeColors.surfaceTintDanger,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: cs.error,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
+            color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -234,7 +213,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             child: Text(
               message,
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.error,
+                color: cs.onErrorContainer,
               ),
             ),
           ),
@@ -249,8 +228,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   Widget _buildTagChips(List<PersonalTag> tags) {
     return Wrap(
-      spacing: AppDimensions.spacingS,
-      runSpacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: tags.map((tag) {
         final isSelected = _isTagSelected(tag);
         return _PersonalTagChip(
@@ -284,28 +263,36 @@ class _PersonalTagChip extends StatelessWidget {
           : context.l10n.personalTagChipUnselectedA11y(tag.name),
       selected: isSelected,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        backgroundColor: cs.surface,
-        selectedColor: cs.primary.withValues(alpha: AppDimensions.opacityLight),
-        checkmarkColor: cs.primary,
-        side: BorderSide(
-          color: isSelected ? cs.primary : cs.outlineVariant,
+      child: PressFill(
+        surface: isSelected ? PressSurface.raised : PressSurface.base,
+        child: FilterChip(
+          label: Text(tag.name),
+          selected: isSelected,
+          onSelected: (_) => onTap(),
+          backgroundColor: cs.surface,
+          // Chosen tags and choices sit on the raised surface with a real border,
+          // never an ink tint.
+          // primaryContainer = surface.raised/selected, onPrimaryContainer and
+          // onSurface = text.primary, outline = border.control, in both schemes.
+          // cs.primary is ink in both modes and vanished on dark.
+          selectedColor: cs.primaryContainer,
+          checkmarkColor: cs.onPrimaryContainer,
+          side: BorderSide(
+            color: isSelected ? cs.onPrimaryContainer : cs.outlineVariant,
+          ),
+          labelStyle: AppTextStyles.bodySmall.copyWith(
+            color: isSelected ? cs.onPrimaryContainer : cs.onSurface,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+          avatar: isSelected
+              ? null
+              : ButleryIcon(
+                  ButleryIcons.tag,
+                  size: AppDimensions.iconSize14,
+                  color: cs.onPrimaryContainer,
+                ),
+          showCheckmark: isSelected,
         ),
-        labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: isSelected ? cs.primary : cs.onSurface,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-        avatar: isSelected
-            ? null
-            : Icon(
-                Icons.label_outline,
-                size: AppDimensions.iconSize14,
-                color: cs.primary,
-              ),
-        showCheckmark: isSelected,
       ),
     );
   }
@@ -361,7 +348,7 @@ class PersonalTagDisplay extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
             child: Text(
               '+$remainingCount',
@@ -390,27 +377,24 @@ class _MiniTagChip extends StatelessWidget {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          border: Border.all(
-            color: cs.primary.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          color: cs.primaryContainer,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+          // border.control (outline), never a faded ink (tokens.json:40-53).
+          border: Border.all(color: cs.outline),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.label,
+            ButleryIcon(
+              ButleryIcons.tag,
               size: AppDimensions.iconSizeXs,
-              color: cs.primary,
+              color: cs.onPrimaryContainer,
             ),
-            const SizedBox(width: AppDimensions.spacingXxs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               tag.name,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.primary,
+                color: cs.onPrimaryContainer,
               ),
             ),
           ],
@@ -432,25 +416,25 @@ class _PlaceholderTagChip extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        color: cs.primaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outline,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.label_outline,
+          ButleryIcon(
+            ButleryIcons.tag,
             size: AppDimensions.iconSizeXs,
-            color: cs.primary,
+            color: cs.onPrimaryContainer,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           SkeletonComponents.skeletonBox(
             width: 48,
             height: 12,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ],
       ),
@@ -672,7 +656,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
             ),
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
             child: Text(
               '+$remainingCount',

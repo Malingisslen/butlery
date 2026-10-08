@@ -7,6 +7,9 @@
 // ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -16,7 +19,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
@@ -30,6 +33,9 @@ import 'package:butlery/views/social/user_profile_edit/identity_sections.dart';
 import 'package:butlery/views/social/user_profile_edit/cooking_identity_section.dart';
 import 'package:butlery/views/social/user_profile_edit/privacy_section.dart';
 import 'package:butlery/views/social/user_profile_edit/preferences_sections.dart';
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _errorClearWait = Duration(milliseconds: 500);
 
 class UserProfileEditView extends StatefulWidget {
   const UserProfileEditView({super.key});
@@ -163,14 +169,11 @@ class _UserProfileEditViewContentState
     showDialog(
       context: context,
       barrierDismissible: false,
+      // The plate line with what is happening, never a spinner
+      // (produktregler.md:163, B-18).
       builder: (context) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingL),
-            Text(context.l10n.profileUploadingAvatar),
-          ],
+        content: PlateLineMessage(
+          message: context.l10n.profileUploadingAvatar,
         ),
       ),
     );
@@ -189,7 +192,7 @@ class _UserProfileEditViewContentState
         final errorMsg =
             viewModel.error ?? context.l10n.profileCouldNotUploadAvatar;
         AppLogger.error('🎨 VIEW: Upload failed, showing error: $errorMsg');
-        SnackBarUtils.showError(context, errorMsg);
+        SnackBarUtils.showFailure(context, what: errorMsg);
       }
     }
   }
@@ -212,9 +215,9 @@ class _UserProfileEditViewContentState
         SnackBarUtils.showSuccess(context, context.l10n.profileSaved);
         Navigator.pop(context);
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.profileCouldNotSave,
+          what: viewModel.error ?? context.l10n.profileCouldNotSave,
         );
       }
     }
@@ -301,7 +304,7 @@ class _UserProfileEditViewContentState
                 additionalActions: [
                   if (viewModel.hasError)
                     IconButton(
-                      icon: const Icon(Icons.refresh),
+                      icon: const ButleryIcon(ButleryIcons.refreshCw),
                       onPressed: viewModel.clearError,
                       tooltip: context.l10n.commonClearError,
                     ),
@@ -317,16 +320,7 @@ class _UserProfileEditViewContentState
   Widget _buildForm(UserProfileViewModel viewModel) {
     // Show loading state for initial profile load
     if (viewModel.isLoading && !viewModel.hasProfile) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(context.l10n.profileLoading),
-          ],
-        ),
-      );
+      return StateWidget.loading(message: context.l10n.profileLoading);
     }
 
     return KeyboardSubmittableForm(
@@ -351,7 +345,7 @@ class _UserProfileEditViewContentState
               viewModel.updateDisplayName(value);
               // Clear previous validation errors when user types
               if (viewModel.displayNameError != null) {
-                Future.delayed(AppDimensions.animationDurationLong, () {
+                Future.delayed(_errorClearWait, () {
                   if (mounted && _displayNameController.text == value) {
                     _checkDisplayNameAvailability();
                   }

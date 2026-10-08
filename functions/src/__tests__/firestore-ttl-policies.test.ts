@@ -177,20 +177,56 @@ const TARGETS: {
       "lib/repositories/firebase/firebase_shopping_presence_repository.dart",
     stamp: /'expiresAt':\s*PresenceTtl\.computeExpiresAt\(\)/,
   },
+  // P5-U26b — a user's overwritten week menu or own recipe, kept 30 days
+  // behind "Återställ" (produktregler.md:109). One writer: the model's
+  // `toFirestore`, which RealtimeSyncService stores through the repository.
+  // firestore.rules pins expiresAt to overwrittenAt + 30 d on create.
+  {
+    group: "overwritten_versions",
+    field: "expiresAt",
+    retention: "30d",
+    writer: "lib/models/realtime/overwritten_version.dart",
+    stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
+  },
+  // BUT-2169 — the marker an account erasure leaves so a release still running
+  // after the Auth delete declines. Two hours from the cascade's start.
+  {
+    group: "erasures_in_progress",
+    field: "expireAt",
+    retention: "2h",
+    writer: "functions/src/account/request-account-deletion.ts",
+    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
+  // P6-U09 security review — the backup-code recovery counters (per IP, per
+  // account, global). Kept for their window or lock, at most about an hour.
+  {
+    group: "mfa_recovery_attempts",
+    field: "expiresAt",
+    retention: "1h",
+    writer: "functions/src/account/mfa-backup-codes.ts",
+    stamp: /expiresAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
+  },
+  // P5-U27b — a change to someone else's shared recipe, kept 7 days as a
+  // suggestion (produktregler.md:103). One writer: the model's `toFirestore`,
+  // which RealtimeSyncService stores through the repository. firestore.rules
+  // pins expiresAt to createdAt + 7 d on create.
+  {
+    group: "recipe_suggestions",
+    field: "expiresAt",
+    retention: "7d",
+    writer: "lib/models/recipe_suggestion.dart",
+    stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
+  },
 ];
 
 /**
- * Every TTL policy declared today: 13 pre-existing + 2 (BUT-1699) + 4 (BUT-1792)
- * + 1 (BUT-2046, `report_history`).
- *
  * The SET, not just the count. A count catches a `--force` prune (net loss),
  * which is the main threat — but it stays green when one entry is deleted and
  * another added in the same edit. Since the groups are named anyway, asserting
  * the set costs nothing and catches the swap too.
  *
  * Verified against production 2026-07-31 (`gcloud firestore fields ttls list`):
- * 13 of these were live and ACTIVE before the BUT-1699 deploy, and the 2 that
- * ticket added went from absent to present after it — which is also the
+ * the 2 entries BUT-1699 added went from absent to present after its deploy — which is also the
  * empirical proof that declaring in this file is what creates a policy. The 4
  * BUT-1792 entries have NOT been checked against a project, and neither has the
  * BUT-2046 one: they are declared here and become real on the next
@@ -203,18 +239,21 @@ const EXPECTED_TTL_GROUPS = [
   "deletion_audit_logs",
   "dismissals",
   "engagements",
-  "globalRecipeCache",
+  "erasures_in_progress",
   "ingredients",
   "llm_response_samples",
+  "mfa_recovery_attempts",
   "notification_delivery",
   "notification_engagement",
   "notification_history",
   "notification_opened_events",
   "notification_send_events",
+  "overwritten_versions",
   "parse_events",
   "report_history",
   "report_processing_markers",
   "rate_limits",
+  "recipe_suggestions",
   "scheduled_notifications",
   "system_ip_audit_caps",
   "views",
@@ -285,8 +324,96 @@ function ttlPoliciesDeclared(): void {
   );
 }
 
+/**
+ * BUT-1996. A TTL policy binds a collection-group ID, not a path, so the
+ * policy declared for the shared `ingredients` catalogue also covers
+ * `users/{uid}/ingredients` — the user's own library, which is kept until
+ * account deletion. It deletes nothing there only because no writer of that
+ * subcollection stamps the policy's field. This pins that.
+ *
+ * The writers are discovered, not listed. On the Dart side every file under
+ * lib/ that names the `ingredients` collection is checked, plus the model the
+ * repositories serialise: a repository on `UserScopedFirebaseRepository` names
+ * only `.ingredients`, because the base class adds `users/{uid}`. On the TS side
+ * a file under functions/src is flagged when it reaches the subcollection
+ * (a `collectionGroup("ingredients")`, or a `users` doc chained into
+ * `.collection("ingredients")`) and also writes the field; the shared catalogue
+ * writers stamp it legitimately through `db.collection("ingredients")`.
+ */
+const USER_INGREDIENT_MODEL = "lib/models/tagging/ingredient_data.dart";
+
+function listFiles(dir: string, ext: string): string[] {
+  const out: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listFiles(full, ext));
+    else if (entry.name.endsWith(ext)) out.push(full);
+  }
+  return out;
+}
+
+function userIngredientsCarryNoTtlField(): void {
+  const repoRoot = path.resolve(__dirname, "..", "..", "..");
+  const policy = loadOverrides().find(
+    (o) => o.collectionGroup === "ingredients" && o.ttl === true,
+  );
+  if (policy === undefined) {
+    // No policy on the group means nothing to arm; the set assertion above
+    // already reports the missing entry.
+    return;
+  }
+  const field = policy.fieldPath;
+
+  const relative = (file: string): string =>
+    path.relative(repoRoot, file).split(path.sep).join("/");
+  const namesIngredients = /FirestoreCollections\.ingredients\b|collection\(\s*['"]ingredients['"]\s*\)/;
+  const writers = listFiles(path.join(repoRoot, "lib"), ".dart")
+    .filter((file) => namesIngredients.test(fs.readFileSync(file, "utf8")))
+    .map(relative);
+
+  record(
+    "the users/{uid}/ingredients writer is found (the scan below is not vacuous)",
+    writers.includes(
+      "lib/repositories/firebase/firebase_user_ingredient_repository.dart",
+    ),
+    `found: ${writers.join(", ") || "none"} — if the repository moved or stopped naming FirestoreCollections, fix the discovery rather than this check`,
+  );
+
+  // A quoted key is how Dart writes a map field; a bare identifier in prose
+  // or a variable name is not a write.
+  const quotedKey = new RegExp(`['"]${field}['"]`);
+  for (const file of [...writers, USER_INGREDIENT_MODEL]) {
+    const src = fs.readFileSync(path.join(repoRoot, file), "utf8");
+    record(
+      `${file} writes no '${field}' key, so the ingredients TTL cannot reach users/{uid}/ingredients`,
+      !quotedKey.test(src),
+      `'${field}' is the field the collection-group TTL on \`ingredients\` deletes by, and that policy also covers users/{uid}/ingredients — stamping it there deletes the user's own ingredients. Use another field name.`,
+    );
+  }
+
+  const reachesSubcollection = new RegExp(
+    String.raw`collectionGroup\(\s*["']ingredients["']\s*\)` +
+      "|" +
+      String.raw`collection\(\s*["']users["']\s*\)[^;]*?\.collection\(\s*["']ingredients["']\s*\)`,
+  );
+  const writesField = new RegExp(String.raw`\b${field}\s*:|["']${field}["']`);
+  const tsWriters = listFiles(path.join(repoRoot, "functions", "src"), ".ts")
+    .filter((file) => !file.includes(`${path.sep}__tests__${path.sep}`))
+    .filter((file) => {
+      const src = fs.readFileSync(file, "utf8");
+      return reachesSubcollection.test(src) && writesField.test(src);
+    })
+    .map(relative);
+  record(
+    `no Cloud Functions file reaches users/{uid}/ingredients and writes '${field}'`,
+    tsWriters.length === 0,
+    `found: ${tsWriters.join(", ")} — the ingredients TTL would delete the user's own rows this file stamps`,
+  );
+}
+
 function main(): void {
   ttlPoliciesDeclared();
+  userIngredientsCarryNoTtlField();
 
   let failed = 0;
   for (const r of results) {

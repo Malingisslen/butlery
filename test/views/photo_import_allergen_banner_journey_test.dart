@@ -29,6 +29,7 @@ import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/factories/recipe_factory.dart';
 import '../infrastructure/mocks/production_mocks.dart' as mocks;
 import '../test_support/base_unit_test.dart';
+import '../infrastructure/helpers/offline_banner_support.dart';
 
 class _MockUserService extends Mock implements UserService {}
 
@@ -90,6 +91,7 @@ void main() {
   setUp(() async {
     await TestServiceLocator.initialize();
     production.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
   });
 
   tearDown(() async {

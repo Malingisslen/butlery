@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Realtime status widget showing connection status
 class RealtimeStatusWidget extends StatelessWidget {
@@ -28,14 +30,14 @@ class RealtimeStatusWidget extends StatelessWidget {
     return Tooltip(
       message: statusDescription,
       child: Container(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedSwitcher(
               duration: AnimationUtils.getDuration(
                 context,
-                AppDimensions.animationDurationCommon,
+                AppMotion.standard,
               ),
               child: Text(
                 statusEmoji,
@@ -48,7 +50,7 @@ class RealtimeStatusWidget extends StatelessWidget {
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
                   context,
-                  AppDimensions.animationDurationCommon,
+                  AppMotion.standard,
                 ),
                 child: Text(
                   statusDescription,
@@ -57,9 +59,8 @@ class RealtimeStatusWidget extends StatelessWidget {
                       ? AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         )
-                      : AppTextStyles.bodyBold.copyWith(
+                      : AppTextStyles.labelMedium.copyWith(
                           color: Theme.of(context).colorScheme.error,
-                          fontSize: 12,
                         ),
                 ),
               ),
@@ -94,9 +95,9 @@ class RealtimeStatusBanner extends StatelessWidget {
       padding: const EdgeInsets.all(
         (AppDimensions.spacingSm + AppDimensions.spacingXs),
       ),
-      color: Theme.of(
-        context,
-      ).colorScheme.error.withValues(alpha: AppDimensions.opacityVeryLight),
+      // An error notice (B83-2): the mode's tint with no border, and the
+      // title in the on-colour that reads on that tint.
+      color: context.modeColors.surfaceTintDanger,
       child: Row(
         children: [
           Text(
@@ -116,7 +117,7 @@ class RealtimeStatusBanner extends StatelessWidget {
                 Text(
                   context.l10n.realtimeOffline,
                   style: AppTextStyles.titleBold.copyWith(
-                    color: Theme.of(context).colorScheme.error,
+                    color: Theme.of(context).colorScheme.onErrorContainer,
                   ),
                 ),
                 Text(

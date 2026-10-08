@@ -1,10 +1,16 @@
 /// BUT-1031: Banner widget that surfaces silent collaborative-edit conflict
 /// resolutions to the user.
 ///
+/// P3-U08: the anatomy is the drawn conflict banner (Komponentark v1:755-758):
+/// the triangle-alert glyph, a bold
+/// title that names what has two versions, and body text saying who changed it
+/// and that the user's version is still there. No channel is chosen here: which
+/// entity gets a banner and which a snackbar is package 4's mounting work.
+///
 /// Last-write-wins used to be invisible — `ConflictResolutionModule.resolveConflict`
 /// would pick a winner, the loser's edit would disappear, and no UI hinted at
 /// the loss. This widget subscribes to [RealtimeSyncService.conflictStream] and
-/// renders a non-blocking [MaterialBanner] when an event arrives.
+/// renders a non-blocking banner when an event arrives.
 ///
 /// The widget is opt-in. Wrap it around (or sibling to) the collaborative
 /// surface — recipe edit, menu plan, shopping list — to make conflicts visible
@@ -17,14 +23,19 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
 
-/// Listens to the realtime sync service's [conflictStream] and renders a
-/// [MaterialBanner] for the most recent event until the user dismisses it.
+/// Listens to the realtime sync service's [conflictStream] and renders the
+/// conflict banner for the most recent event until the user dismisses it.
 ///
 /// Place above the main content of a collaborative surface — the banner takes
 /// vertical space when visible and collapses to nothing otherwise.
@@ -62,6 +73,10 @@ class _ConflictBannerState extends State<ConflictBanner> {
   void _subscribe() {
     final svc = ServiceLocator.tryGet<RealtimeSyncService>();
     if (svc == null) return;
+    // BUT-2213: a queue notice released while this recipe was not on screen
+    // waits in the service until the user chooses or closes it.
+    final filter = widget.filterDocId;
+    if (filter != null) _activeEvent = svc.pendingQueuedConflict(filter);
     _sub = svc.conflictStream.listen((event) {
       if (!mounted) return;
       final filter = widget.filterDocId;
@@ -79,6 +94,12 @@ class _ConflictBannerState extends State<ConflictBanner> {
   }
 
   void _dismiss() {
+    final event = _activeEvent;
+    if (event != null && event.origin == ConflictOrigin.queue) {
+      ServiceLocator.tryGet<RealtimeSyncService>()?.clearQueuedConflict(
+        event.docId,
+      );
+    }
     setState(() {
       _activeEvent = null;
     });
@@ -93,7 +114,79 @@ class _ConflictBannerState extends State<ConflictBanner> {
       override();
       return;
     }
-    ConflictDiffView.show(context, event);
+    // P5-U27b: the edit was kept as a suggestion, so "Se ditt förslag" opens
+    // it (produktregler.md:103). Without one the package 5 choice applies.
+    final suggestionId = event.suggestionId;
+    if (suggestionId != null) {
+      RecipeSuggestionNotice.openMine(
+        context,
+        recipeId: event.docId,
+        suggestionId: suggestionId,
+      );
+      return;
+    }
+    unawaited(
+      ConflictDiffView.show(context, event).then((_) {
+        // A choice made there clears the service's notice; then this one goes.
+        if (!mounted || event.origin != ConflictOrigin.queue) return;
+        final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+        if (svc != null && svc.pendingQueuedConflict(event.docId) == null) {
+          setState(() => _activeEvent = null);
+        }
+      }),
+    );
+  }
+
+  /// P5-U27b: someone else's shared recipe whose owner's version stayed,
+  /// with this user's edit kept as a suggestion (produktregler.md:103).
+  static bool _isSuggestion(ConflictEvent event) =>
+      event.entity == ConflictEntity.recipeShared && event.suggestionId != null;
+
+  /// The drawn title names what has two versions (Komponentark v1:756 draws
+  /// "Två versioner av listan"). P5-U27b: on someone else's shared recipe
+  /// there are not two versions to choose between, so the title says the
+  /// owner's version stays. Q6-08 = A: that holds without a stored
+  /// suggestion too, since a member never writes the owner's recipe.
+  String _title(BuildContext context, ConflictEvent event) {
+    final l = context.l10n;
+    return switch (event.entity) {
+      ConflictEntity.recipeOwn => l.conflictBannerTitleRecipe,
+      ConflictEntity.recipeShared => l.conflictBannerTitleSuggestion,
+      ConflictEntity.weekMenu => l.conflictBannerTitleWeek,
+    };
+  }
+
+  /// Who made the other change comes from the remote snapshot's cached
+  /// display name, never from the collection or position.
+  String _body(BuildContext context, ConflictEvent event) {
+    // B1 (Malin, 2026-10-08): only the owner writes their recipe, so a queue
+    // conflict is the user's own save from another device.
+    if (event.origin == ConflictOrigin.queue) {
+      return context.l10n.conflictBannerBodyOtherDevice;
+    }
+    final name = event.remoteValue.lastEditedByDisplayName.trim();
+    if (_isSuggestion(event)) {
+      // Q6-12 = B: the member is told when the edit replaced the suggestion
+      // that was waiting.
+      if (event.suggestionReplaced) {
+        return name.isEmpty
+            ? context.l10n.conflictBannerBodySuggestionReplacedUnnamed
+            : context.l10n.conflictBannerBodySuggestionReplaced(name);
+      }
+      return name.isEmpty
+          ? context.l10n.conflictBannerBodySuggestionUnnamed
+          : context.l10n.conflictBannerBodySuggestion(name);
+    }
+    // Q6-08 = A: someone else's recipe, and no suggestion was stored (no
+    // store, or storing failed). Nothing was written.
+    if (event.entity == ConflictEntity.recipeShared) {
+      return name.isEmpty
+          ? context.l10n.conflictBannerBodyMemberNotSentUnnamed
+          : context.l10n.conflictBannerBodyMemberNotSent(name);
+    }
+    return name.isEmpty
+        ? context.l10n.conflictBannerBodyUnnamed
+        : context.l10n.conflictBannerBody(name);
   }
 
   @override
@@ -101,59 +194,96 @@ class _ConflictBannerState extends State<ConflictBanner> {
     final event = _activeEvent;
     if (event == null) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    // Komponentark v1:755-757. The glyph is text.danger (colorScheme.error:
+    // #9C3B23 light, #DE9078 dark, tokens.json) and carries the kind in
+    // dark mode, where every tint is the same colour. Title text.primary
+    // (onSurface: #24382C / #F5F4ED, tokens.json), body text.body
+    // (#37453A / #F5F4ED, tokens.json).
+    final danger = cs.error;
+    final bodyColor = AppModeColors.textBody(theme.brightness);
 
-    return Material(
-      color: cs.surface,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
-        ),
-        decoration: BoxDecoration(
-          color: context.butleryColors.warning.withValues(
-            alpha: AppDimensions.opacityVeryLight,
+    // A new event is a new live region, so a screen reader hears each
+    // conflict once and a rebuild of the same event stays silent.
+    return KeyedSubtree(
+      key: ObjectKey(event),
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingS,
           ),
-          border: Border(
-            left: BorderSide(
-              color: context.butleryColors.warning,
-              width: AppDimensions.borderWidthThick,
+          child: Material(
+            color: context.modeColors.surfaceTintDanger,
+            // Komponentark v1:755 border-radius:8px = radius.control
+            // (tokens.json:479, :483 'control 8 = knappar, fält, brickor').
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusControl,
+              ),
             ),
-            bottom: BorderSide(
-              color: context.butleryColors.warning.withValues(
-                alpha: AppDimensions.opacityMediumLight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.space12,
+                AppDimensions.paddingM,
+                AppDimensions.spacingXs,
+                AppDimensions.paddingM,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: AppDimensions.space4,
+                    ),
+                    child: ButleryIcon(
+                      ButleryIcons.triangleAlert,
+                      color: danger,
+                      size: AppDimensions.iconSize18,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.space8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _title(context, event),
+                          style: AppTextStyles.labelMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.space4),
+                        Text(
+                          _body(context, event),
+                          style: AppTextStyles.captionBase.copyWith(
+                            color: bodyColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _onViewChange(event),
+                    child: Text(
+                      _isSuggestion(event)
+                          ? context.l10n.recipeSuggestionSeeMine
+                          : context.l10n.commonView,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.l10n.a11yConflictBannerDismiss,
+                    icon: const ButleryIcon(ButleryIcons.x),
+                    onPressed: _dismiss,
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.sync_problem,
-              color: context.butleryColors.warning,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Text(
-                context.l10n.conflictBannerMessage,
-                style: TextStyle(
-                  color: context.butleryColors.onWarningContainer,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => _onViewChange(event),
-              child: Text(context.l10n.commonView),
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            IconButton(
-              tooltip: context.l10n.a11yConflictBannerDismiss,
-              icon: const Icon(Icons.close),
-              onPressed: _dismiss,
-            ),
-          ],
         ),
       ),
     );

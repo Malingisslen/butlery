@@ -4,7 +4,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
 abstract class BaseDialog<T> extends StatefulWidget {
@@ -49,11 +54,11 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       icon: widget.titleIcon != null
-          ? Icon(
+          ? ButleryIcon(
               widget.titleIcon!,
               color: widget.isDangerous
                   ? cs.error
-                  : widget.primaryActionColor ?? cs.primary,
+                  : widget.primaryActionColor ?? cs.onSurface,
               size: AppDimensions.iconSizeXxl,
             )
           : null,
@@ -101,45 +106,47 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     if (widget.primaryActionText != null) return widget.primaryActionText!;
     if (widget.isDangerous) return context.l10n.commonDelete;
     if (widget is BaseFormDialog) return context.l10n.commonSave;
-    return 'OK';
+    // A dialog that names no action only closes: "Stäng", never "OK"
+    // (content-style-guide.md:77; Q-P7-03).
+    return context.l10n.commonClose;
   }
 
+  /// The primary action. While it works it keeps its colours and its name
+  /// and gets the plate line along its bottom edge (Komponentark v1:365,
+  /// :372; produktregler.md:902, "Låsningen behåller knappens namn").
   Widget _buildPrimaryButton() {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final buttonColor = widget.isDangerous
         ? cs.error
         : (widget.primaryActionColor ?? cs.primary);
     final resolvedText = _resolvedPrimaryActionText();
-    if (widget.isDangerous) {
-      return FilledButton.icon(
-        onPressed: _isLoading ? null : _onPrimaryAction,
-        style: FilledButton.styleFrom(
-          backgroundColor: buttonColor,
-          foregroundColor: cs.surfaceContainerHighest,
-        ),
+    final ownStyle = widget.isDangerous
+        ? FilledButton.styleFrom(
+            backgroundColor: buttonColor,
+            foregroundColor: cs.surfaceContainerHighest,
+          )
+        : FilledButton.styleFrom(backgroundColor: buttonColor);
+    return BusyButtonSemantics(
+      busy: _isLoading,
+      name: resolvedText,
+      child: FilledButton.icon(
+        onPressed: _isLoading ? PlateLineButton.ignore : _onPrimaryAction,
+        style: _isLoading
+            ? PlateLineButton.busyStyle(ownStyle, theme.filledButtonTheme.style)
+            : ownStyle,
+        // Busy: the words only, as drawn (Komponentark v1:372).
         icon: _isLoading
-            ? LoadingIndicator(
-                size: 16,
-                strokeWidth: 2,
-                color: cs.surfaceContainerHighest,
-              )
-            : Icon(widget.primaryActionIcon ?? Icons.delete),
-        label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
-      );
-    } else {
-      return FilledButton.icon(
-        onPressed: _isLoading ? null : _onPrimaryAction,
-        style: FilledButton.styleFrom(backgroundColor: buttonColor),
-        icon: _isLoading
-            ? LoadingIndicator(
-                size: 16,
-                strokeWidth: 2,
-                color: cs.surfaceContainerHighest,
-              )
-            : Icon(widget.primaryActionIcon ?? Icons.check),
-        label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
-      );
-    }
+            ? null
+            : ButleryIcon(
+                widget.primaryActionIcon ??
+                    (widget.isDangerous
+                        ? ButleryIcons.trash2
+                        : ButleryIcons.check),
+              ),
+        label: Text(resolvedText),
+      ),
+    );
   }
 
   Future<void> _onPrimaryAction() async {
@@ -158,7 +165,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     } catch (e, stackTrace) {
       AppLogger.error('Dialog action failed: $e', stackTrace);
       if (mounted) {
-        setState(() => _error = e.toString());
+        setState(() => _error = _failureText(e));
       }
     } finally {
       if (mounted) {
@@ -167,29 +174,20 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     }
   }
 
+  String _failureText(Object error) => _dialogFailureText(context, error);
+
+  /// P5-U04: the failed action as the three-part inline error, with
+  /// Försök igen, and the dialog stays open (content-style-guide.md:87-97).
+  /// A form dialog keeps what was filled in, so it says so (:92).
   Widget _buildErrorDisplay() {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: cs.error),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Text(
-              _error!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final l = context.l10n;
+    return InlineError(
+      what: _error!,
+      preserved: widget is BaseFormDialog ? l.errorPreservedForm : null,
+      actionLabel: l.commonRetry,
+      // The error is cleared when the action starts, so this never runs
+      // twice at once.
+      onAction: _onPrimaryAction,
     );
   }
 }
@@ -205,7 +203,7 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.subtitle,
     super.primaryActionText,
     super.secondaryActionText,
-    super.primaryActionIcon = Icons.save,
+    super.primaryActionIcon = ButleryIcons.save,
     super.primaryActionColor,
   });
 
@@ -240,7 +238,9 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required this.message,
     this.customContent,
     super.titleIcon,
-    super.primaryActionText = 'OK',
+    // The button says what happens (content-style-guide.md:77), so every
+    // caller names it; there is no "OK" default.
+    required String super.primaryActionText,
     super.secondaryActionText,
     super.isDangerous = false,
     super.primaryActionIcon,
@@ -262,7 +262,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required String message,
     Widget? customContent,
     IconData? titleIcon,
-    String primaryActionText = 'OK',
+    required String primaryActionText,
     String? secondaryActionText,
     bool isDangerous = false,
     IconData? primaryActionIcon,
@@ -298,9 +298,9 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     super.primaryActionText,
     super.secondaryActionText,
   }) : super(
-         titleIcon: Icons.warning_amber_rounded,
+         titleIcon: ButleryIcons.triangleAlert,
          isDangerous: true,
-         primaryActionIcon: Icons.delete,
+         primaryActionIcon: ButleryIcons.trash2,
        );
 
   @override
@@ -311,11 +311,14 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
             style: AppTextStyles.bodyMedium,
             children: [
               TextSpan(text: message),
-              TextSpan(
-                text: ' "$itemName"',
-                style: AppTextStyles.bodyBold,
-              ),
-              const TextSpan(text: '?'),
+              // A caller without a name gives a complete message.
+              if (itemName.isNotEmpty) ...[
+                TextSpan(
+                  text: ' "$itemName"',
+                  style: AppTextStyles.bodyBold,
+                ),
+                const TextSpan(text: '?'),
+              ],
             ],
           ),
         );
@@ -349,6 +352,18 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
   }
 }
 
+/// Part one of a dialog's error (content-style-guide.md:90, :95): the cause
+/// when one is known (network, permission, not found), else what did not
+/// happen. Never the exception's own text; that goes to the log.
+String _dialogFailureText(BuildContext context, Object error) {
+  // The sanitizer speaks AppLocale.current, so its generic text is
+  // compared in the same language.
+  final cause = sanitizeErrorForUser(error);
+  return cause == AppLocale.current.errorGeneric
+      ? context.l10n.dialogActionFailed
+      : cause;
+}
+
 /// Base action dialog class with error handling and loading states for delete/edit operations.
 abstract class BaseActionDialog<T> extends StatefulWidget {
   const BaseActionDialog({super.key});
@@ -362,7 +377,7 @@ abstract class BaseActionDialog<T> extends StatefulWidget {
   String? get cancelButtonText => null;
   String actionButtonLabel(BuildContext context);
   String? loadingButtonLabel(BuildContext context) => null;
-  Widget get actionButtonIcon => const Icon(Icons.check);
+  Widget get actionButtonIcon => const ButleryIcon(ButleryIcons.check);
   ButtonStyle? actionButtonStyleFor(BuildContext context) => null;
   bool get isDestructiveAction => false;
 
@@ -408,37 +423,31 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     );
   }
 
+  /// The action. While it works it says what it does
+  /// ([BaseActionDialog.loadingButtonLabel], e.g. "Skickar …") or keeps its
+  /// own name, and gets the plate line along its bottom edge (Komponentark
+  /// v1:365, :372; content-style-guide.md:63).
   Widget _buildActionButton() {
-    final cs = Theme.of(context).colorScheme;
-    final loadingText =
-        widget.loadingButtonLabel(context) ?? context.l10n.commonWorking;
+    final theme = Theme.of(context);
+    final name = widget.actionButtonLabel(context);
+    final busyLabel = widget.loadingButtonLabel(context);
     final actionStyle = widget.actionButtonStyleFor(context);
-    if (actionStyle != null) {
-      return FilledButton.icon(
-        onPressed: isLoading ? null : _performAction,
-        style: actionStyle,
-        icon: isLoading
-            ? LoadingIndicator(
-                size: 16,
-                strokeWidth: 2,
-                color: cs.surfaceContainerHighest,
+    return BusyButtonSemantics(
+      busy: isLoading,
+      name: name,
+      busyLabel: busyLabel,
+      child: FilledButton.icon(
+        onPressed: isLoading ? PlateLineButton.ignore : _performAction,
+        style: isLoading
+            ? PlateLineButton.busyStyle(
+                actionStyle,
+                theme.filledButtonTheme.style,
               )
-            : widget.actionButtonIcon,
-        label: Text(
-          isLoading ? loadingText : widget.actionButtonLabel(context),
-        ),
-      );
-    } else {
-      return FilledButton.icon(
-        onPressed: isLoading ? null : _performAction,
-        icon: isLoading
-            ? const LoadingIndicator(size: 16, strokeWidth: 2)
-            : widget.actionButtonIcon,
-        label: Text(
-          isLoading ? loadingText : widget.actionButtonLabel(context),
-        ),
-      );
-    }
+            : actionStyle,
+        icon: isLoading ? null : widget.actionButtonIcon,
+        label: Text(isLoading ? (busyLabel ?? name) : name),
+      ),
+    );
   }
 
   Future<void> _performAction() async {
@@ -457,7 +466,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     } catch (e, stackTrace) {
       AppLogger.error('Dialog action failed: $e', stackTrace);
       if (mounted) {
-        setState(() => error = e.toString());
+        // Never the exception's own text (content-style-guide.md:95).
+        setState(() => error = _dialogFailureText(context, e));
       }
     } finally {
       if (mounted) {
@@ -466,29 +476,16 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     }
   }
 
+  /// The failed action as the three-part inline error with Försök igen,
+  /// and the dialog stays open, as in [BaseDialog]
+  /// (content-style-guide.md:87-97).
   Widget _buildErrorDisplay() {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: cs.error),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Text(
-              error!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.error,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return InlineError(
+      what: error!,
+      actionLabel: context.l10n.commonRetry,
+      // The error is cleared when the action starts, so this never runs
+      // twice at once.
+      onAction: _performAction,
     );
   }
 }
@@ -509,11 +506,17 @@ class LoadingDialog extends StatelessWidget {
     return PopScope(
       canPop: canCancel,
       child: AlertDialog(
-        content: Row(
+        // Plate line plus text (produktregler.md:163, B-18): the text says
+        // what is being done, the line only that something is going on. The
+        // line carries the message as its semantic label, so the text is
+        // not read a second time.
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const LoadingIndicator(),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(child: Text(message)),
+            ExcludeSemantics(child: Text(message)),
+            const SizedBox(height: AppDimensions.spacingM),
+            PlateLine(semanticLabel: message),
           ],
         ),
       ),

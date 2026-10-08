@@ -28,8 +28,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
-import 'package:butlery/models/realtime/realtime_recipe.dart';
-import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -116,24 +114,6 @@ class MockFactory {
   /// Create mock shopping repository
   static production.MockShoppingRepository createShoppingRepository() {
     return production.MockShoppingRepository();
-  }
-
-  /// Create mock collaborative recipe repository
-  static production.MockCollaborativeRecipeRepository
-  createCollaborativeRecipeRepository({
-    Map<String, RealtimeRecipe>? realtimeRecipes,
-    Map<String, Map<String, Map<String, dynamic>>>? presenceData,
-    Map<String, List<LiveEditor>>? participants,
-    Map<String, Map<String, dynamic>>? userDocuments,
-  }) {
-    final mock = production.MockCollaborativeRecipeRepository();
-    mock.setCollaborativeState(
-      realtimeRecipes: realtimeRecipes,
-      presenceData: presenceData,
-      participants: participants,
-      userDocuments: userDocuments,
-    );
-    return mock;
   }
 
   /// Create mock messaging repository
@@ -492,29 +472,6 @@ class MockFactory {
       isAuthenticated: isAuthenticated,
       userId: isAuthenticated ? 'test_user_123' : null,
       email: isAuthenticated ? 'test@example.com' : null,
-    );
-    return mock;
-  }
-
-  /// Create mock URL import viewmodel
-  static production.MockUrlImportViewModel createUrlImportViewModel({
-    bool isLoading = false,
-    String? error,
-    String url = '',
-    String extractedText = '',
-    bool hasExtractedText = false,
-    bool canFetch = false,
-    String sourceUrl = '',
-  }) {
-    final mock = production.MockUrlImportViewModel();
-    mock.setUrlImportState(
-      isLoading: isLoading,
-      error: error,
-      url: url,
-      extractedText: extractedText,
-      hasExtractedText: hasExtractedText,
-      canFetch: canFetch,
-      sourceUrl: sourceUrl,
     );
     return mock;
   }

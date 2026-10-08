@@ -5,10 +5,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Focused module for menu card components
 /// This module handles ONLY menu card display responsibilities:
@@ -48,7 +51,7 @@ class MenuCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final restDecoration = BoxDecoration(
       color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       border: Border.all(
         color: cs.outline,
         width: AppDimensions.borderWidthThin,
@@ -60,9 +63,12 @@ class MenuCard extends StatelessWidget {
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
         restDecoration: restDecoration,
-        // Subtle shadow on hover (web/desktop) — border + square corners
-        // unchanged, matching the design system's reserved hover elevation.
-        hoverDecoration: restDecoration.copyWith(boxShadow: AppShadows.subtle),
+        // Hover fills to surface.raised (B83-1 = A, BUT-2183,
+        // produktbeslut-2026-09-30.json).
+        hoverDecoration: restDecoration.copyWith(
+          color: cs.surfaceContainerHighest,
+          boxShadow: AppShadows.subtle,
+        ),
         child: Material(
           color: Colors.transparent,
           child: Semantics(
@@ -71,7 +77,8 @@ class MenuCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              overlayColor: HoverableCard.inkOverlay(cs),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
                 child: _buildContent(context),
@@ -100,7 +107,7 @@ class MenuCard extends StatelessWidget {
       children: [
         _buildMenuHeader(context),
         if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildMenuMetadata(context),
         ],
         if (showPreview) ...[
@@ -145,7 +152,7 @@ class MenuCard extends StatelessWidget {
           _buildMenuMetadata(context),
         ],
         if (showSharingStatus) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildSharingIndicator(context),
         ],
       ],
@@ -156,12 +163,12 @@ class MenuCard extends StatelessWidget {
     final title = _getMenuTitle(context);
     return Row(
       children: [
-        Icon(
-          Icons.restaurant_menu,
+        ButleryIcon(
+          ButleryIcons.utensils,
           size: AppDimensions.iconSizeM,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             title,
@@ -206,16 +213,16 @@ class MenuCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.info_outline,
+            ButleryIcon(
+              ButleryIcons.info,
               size: AppDimensions.iconSizeS,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.menuCardNoRecipes,
               style: AppTextStyles.metadataEmphasized,
@@ -234,7 +241,7 @@ class MenuCard extends StatelessWidget {
           context.l10n.menuCardRecipesInMenu,
           style: AppTextStyles.labelMediumMuted,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...recipesToShow.map(
           (recipe) => Padding(
             padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
@@ -248,7 +255,7 @@ class MenuCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     _getRecipeTitle(recipe),
@@ -285,29 +292,28 @@ class MenuCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
+      // A neutral info chip: the raised surface with no border (B83-2).
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
-          width: AppDimensions.borderWidthThin,
-        ),
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.people,
+          ButleryIcon(
+            ButleryIcons.users,
             size: AppDimensions.iconSizeS,
-            color: cs.primary,
+            color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             memberCount > 0
                 ? context.l10n.menuCardSharedWithCount(memberCount)
                 : context.l10n.menuCardSharedMenu,
-            style: AppTextStyles.linkSmall,
+            style: AppTextStyles.linkSmall.copyWith(
+              color: context.modeColors.textLink,
+            ),
           ),
         ],
       ),
@@ -328,10 +334,10 @@ class MenuCard extends StatelessWidget {
         color: cs.primary,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.people,
+      child: ButleryIcon(
+        ButleryIcons.users,
         size: AppDimensions.iconSizeS,
-        color: cs.surfaceContainerHighest,
+        color: cs.onPrimary,
       ),
     );
   }
@@ -426,7 +432,7 @@ class MenuCard extends StatelessWidget {
       case MenuCardStyle.compact:
         return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case MenuCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case MenuCardStyle.detailed:
         return EdgeInsets.zero;
     }
@@ -436,13 +442,13 @@ class MenuCard extends StatelessWidget {
     switch (style) {
       case MenuCardStyle.compact:
         return const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         );
       case MenuCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case MenuCardStyle.detailed:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
     }
   }
 }

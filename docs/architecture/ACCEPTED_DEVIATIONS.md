@@ -420,6 +420,44 @@ offline fallback re-opens BUT-1665 / client-side merge forbidden by AC2" against
 `_mutateFromCache` — decided. Revisit only if `items` becomes a map keyed by item id, which would
 make per-row offline writes mergeable. — 2026-07-26
 
+### [Shopping/Offline] "Ersätt listan" offline may drop a tick made on another device (BUT-2140, B1)
+`ShoppingPersonalMergeModule.applyPersonalMerge` writes the week menu's rows into the personal
+week list per operation. Online it reads the server's copy, and "Ersätt listan" runs a
+transaction that reads the recipe rows `menuItemIds` names and carries their bought ticks over.
+When the server read or the transaction fails with `unavailable` / `deadline-exceeded`,
+`_mergeFromMemory` takes over, in the BUT-1683 shape:
+- **An add is safe.** The rows are their own documents and `menuItemIds` is extended with
+  `FieldValue.arrayUnion`, so the queued write merges on replay.
+- **A replace is computed from the copy in memory.** It deletes the recipe rows that copy knows
+  of, carries ticks from that copy, and sets `menuItemIds` outright. A tick the same account made
+  on a recipe row on another device in the meantime can be lost, and a recipe row another
+  device's merge added meanwhile is not taken off and drops out of `menuItemIds`. **Accepted.**
+- The receipt reports no change from another device on this path, because none could be read.
+**Why:** the BUT-2140 plan's recommended default B1, applied 2026-10-08: shopping lists stay on Firestore's cache
+and not in the offline queue (BUT-2162 F3-1), and a sheet that refuses "Ersätt listan" in a shop
+without reception is worse than the narrow window. Do NOT file "the offline replace overwrites
+another device's tick" against `_mergeFromMemory` — decided. The alternative, B2, is switching
+"Ersätt listan" off offline with the sheet saying why. — 2026-10-08
+
+### [Shopping/Offline] A version lost to an offline cached-base replay is not kept for restore (BUT-2140, PR 3)
+The 30-day restore keeps a row's earlier version (`previous`) and a removed row
+(`recentlyRemoved`) in the same write as the change, computed from the document that write
+starts from. Offline, `_mutateFromCache` starts from the cached copy and queues the whole
+`items` array (BUT-1683). When that replay overwrites another member's edit or tick made in the
+meantime, the overwritten version is not in `previous` or `recentlyRemoved`: the writing device
+never saw it. **Accepted.**
+**Why:** it is the same window as the BUT-1683 entry above and has the same cause; catching it
+needs the server's copy, which an offline write does not have. `recentlyRemoved` itself is queued
+as `arrayUnion` (a restore with no new entry as `arrayRemove`), never as the cached array, so an
+offline write cannot drop entries another device added. Entries older than 30 days are not
+pruned offline. Offline, a removal past 30 cached entries is not kept for restore. — 2026-10-08
+
+### [Shopping/Compat] An app version from before BUT-2140 drops `previous` on a shared list (BUT-2140, PR 3)
+A shared list's rows sit inline in `items`. An app
+from before BUT-2140 does not know `UnifiedShoppingItem.previous`.
+**Accepted.** No current content is lost, only the restore point. `recentlyRemoved` is a
+top-level field such an app never sends, so its merge-set leaves it as stored. — 2026-10-08
+
 ### [Tagging/Safety] A colon-terminated bare GLUTEN word stays an ingredient; other allergens keep colon-wins (BUT-1691 → BUT-1714)
 `RecipeSectionDetector.componentSubHeadingLabel` is the single hinge that decides whether an
 imported line is a component heading (pulled OUT of the flat ingredient list that tagging reads)
@@ -797,6 +835,12 @@ because access can come from ownership.
 
   So: still deferred, but on "not proven to round-trip", NOT on "no live path".
   Scope the ticket to that sync path. Do not cite the original wording to close it.
+- **SUPERSEDED 2026-10-08 (BUT-2213)** — the sync-path half of the entry above.
+  `firebase_sync_manager.dart` reads no realtime collection, `firestore.rules` has no
+  `realtime_recipes` block, and a production count (measure-production run 37810901681)
+  printed `realtime_recipes_docs=0`. Retires "`firebase_sync_manager.dart:225` deserializes
+  every `realtime_recipes` document". The second deserializer in `recipe_serialization.dart`
+  is unchanged.
 - **A revoke does not trim `shared_content.sharedToUserIds`.** A revoked member loses the recipe
   document but keeps the discovery row — title, description, image — and its Art. 15 export line.
   Pre-existing for `removeMember`; this ticket makes it more visible because the copy now promises
@@ -2077,6 +2121,31 @@ harmonisation mutant — test 8 is the one that catches it.
 that line carries a pointer back. It existed before, but this change makes it durable, because
 opening and saving no longer normalises the unit away.
 
+## Pantry — Återställ the previous version (BUT-2140, 2026-10-08)
+
+### An older version stays in the document after 30 days (Malin, 2026-10-08)
+
+**Verdict: Malin's call, 2026-10-08.** An edit-sheet save writes `previous: {fields, at}` on
+the pantry item in the same update. The sheet offers Återställ only while
+`PantryPreviousVersion.isRestorableAt` holds (younger than `restoreWindow`, 30 days). After
+that the version stays in the document, unshown, until the next edit-sheet save replaces it
+or the item or the account is deleted, and until then it is in the Art. 15 pantry export.
+Firestore TTL deletes whole documents, not fields. There is no nightly job.
+
+### Återställ can use a local copy older than another device's save (2026-10-08)
+
+`PantryViewModel` loads the pantry once and holds no live stream. `restorePrevious` swaps the
+values in the `previous` of the item it holds, so after a save the same user made on another
+device it writes back the version that copy carries, not the newer one. BUT-1683 shape.
+
+### Shopping: the same rule for rows and removed rows (ADR-0024, 2026-10-08)
+
+**Verdict: Malin's call, 2026-10-08.** A shopping row's `previous` older than 30 days is not
+offered by "Återställ varor" and stays on the row until that row is written again or deleted. A
+`recentlyRemoved` entry older than 30 days stays on the list until `RestorableRows.withRemoved`
+runs again: on a shared list at its next online row write, on a personal list at its next
+removal. Both are in the Art. 15 export meanwhile. There is no nightly job.
+
 ## Poll votes on non-poll messages, and the missing `memberSince` cut-off (BUT-1832, 2026-08-17)
 
 **Decision (Malin, 2026-08-17): ship, fix separately, record it.**
@@ -2549,6 +2618,19 @@ That measurement is on BUT-1965. It was NOT reproduced on a phone; this machine 
 Windows, Chrome and Edge, so the "unverified on a device" half of the sentence above stands.
 A refused save now rolls the calendar back, guarded on the published plan still being the
 resident one. Malin's decision, 2026-08-28.
+
+**AMENDED 2026-10-08 (BUT-2215).** Retires, for the week-menu path only: "what is lost is
+the user's own local edit, plus an unexplained failure." When a save from
+`WeeklyMenuPlanViewModel` is refused, `FirebaseWeeklyMenuPlanRepository.save` reads the
+stored week once from the server and throws `WeekPlanConflictException` when the stored
+`revId` is not the save's `baseRevId` or the stored `createdAt` differs. The week menu
+then shows the stored week, sets no error, and shows "Veckan sparades på en annan enhet" for
+30 s with "Behåll min"; the button writes the user's dishes and who's-home choices over the
+stored week and says "Din version sparades" or "Kunde inte spara din version". Without the
+tap the user's edit is lost, as before. On the meal-poll path (BUT-1925) a save whose week
+moved on between the poll's read and its write is now refused rather than written over the
+other save, and reaches the user through the message BUT-1925 already shows.
+`acceptCachedAbsence` is unchanged and still passed only by `fetchForWeek`.
 
 ## The weekly-menu `save` audits refusals only (BUT-1981, 2026-08-28)
 
@@ -5393,3 +5475,398 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   This does not save money. Cloud Scheduler's three free jobs are long since spent, so the
   job costs a marginal ~1 kr/month; the deletion writes and the index storage are
   fractions of an öre. The motive is capping unbounded growth.
+
+## BUT-2151 — live menus in `realtime_resources` (2026-10-02)
+
+- **A recipe resource is refused until a writer for it exists (BUT-2151, BUT-2213,
+  2026-10-02).** `realtimeResourceShapeOk` in `firestore.rules` admits `type == 'menu'`
+  only. No production path writes a recipe document to `realtime_resources`: the app's
+  recipe sharing runs on `socialData.memberPermissions` on `users/{owner}/recipes/{id}`,
+  and the recipe editor's live role reads that document (`watchSharedRecipe`). Malin,
+  2026-10-02: "bygg det som är mest robust och modulärt" — one home per fact. Opening
+  the recipe type belongs to BUT-2213, together with its writer and an id of the form
+  `{ownerId}_{recipeId}`. Do not open the type "for completeness".
+- **A client holding a copy read BEFORE an erasure can write the erased uid back through a
+  whole-document save (BUT-2151, 2026-10-02).** `ConflictResolutionModule.performUpdate`
+  writes the whole resource (`merge: false`) so that "Återställ" drops what only the newer
+  version had. A stale copy carries the roster as it was. This
+  is the BUT-1971 shape, accepted on the same reasoning.
+- **RESOLVED 2026-10-02 — Malin: a live-menu participant with an edit role may write any
+  text into `ownerDisplayName` / `lastEditedByDisplayName` (BUT-2151).** The rules pin the
+  uid fields (`ownerId` is immutable; `lastEditedBy` is the caller or unchanged) and not the
+  cached names beside them; pinning the names would cost a profile read on every save. Same
+  class as the forgeable group-menu provenance entry (2026-08-29). Do not re-propose a
+  profile-read check without new cause.
+
+## BUT-2214 — dishes inside shared menus (2026-10-03)
+
+- **A dish is scrubbed only on menus the erasure already finds (BUT-2214, 2026-10-03).**
+  The app stores a menu dish as the recipe's core without personal tags or the
+  social/realtime blocks (`Recipe.toMenuDish`). At erasure, `scrubDishCreator` rewrites every
+  dish that mentions the uid as such a dish, with the uid replaced by `"deleted"` as a value
+  and removed as a key, on the `realtime_resources` and `realtime_menus` the person was a
+  participant of and on `shared_content` shared with them. A uid inside an array element
+  cannot be queried, so a dish of theirs on a menu they never joined keeps it, and, if the dish is stored as a
+  whole recipe, the display names beside it; no probe leg can see what is left. A conflict copy in `overwritten_versions` is
+  not scrubbed either; its TTL on `expiresAt` removes it. Malin approved the plan, option A,
+  2026-10-03.
+- **A failed dish scrub is logged, not reported (BUT-2214, 2026-10-03).** Each menu is
+  rewritten in its own transaction and a failure is a warning, as in `scrubLastEditor`; it
+  does not mark the step incomplete.
+
+## BUT-2196 — rendered text under the contrast floor (2026-10-03)
+
+- **RESOLVED 2026-10-03 — Malin: the remaining TEXT_CONTRAST findings are accepted as a
+  measurement difference.** The listed texts (the top bar's secondary line, the recipe meta
+  line, the selected "Hem" tab, the chat rows) use design tokens whose colour pairs clear
+  their WCAG floors (text.secondary on surface.base: 5.28:1 light, 7.25:1 dark); Flutter's
+  textContrastGuideline estimates contrast from the rendered glyph pixels and measures them
+  under. WCAG computes contrast on the specified colours. The entries stay in
+  `known_a11y_findings.dart` so the matrix still reddens on any new or changed finding.
+
+## BUT-2017 — blocking reaches chat, DMs and menu votes (2026-10-05)
+
+- **The BUT-1917 mirror decisions now cover two more surfaces (BUT-2017, 2026-10-05).**
+  `notBlockedByAnyOf(participantIds)` is the one implementation of the mirror check;
+  `poll_votes` calls it, and so do `messages` create and `realtime_menus/{id}/votes` create
+  and update. Everything the two BUT-1917 entries above decide — fail-OPEN on a missing
+  mirror, the unread `truncated` flag, one direction only, reads not gated — holds on those
+  surfaces unchanged. The vote gate on update also refuses a blocked participant's resolve
+  and add-alternative writes, which are updates to the same row; intended.
+- **A two-person room is gated EXACTLY, not through the mirror (BUT-2017, 2026-10-05).**
+  `conversations` create reads `blocks/{other}_{me}` for the one counterparty
+  `directIdBinds` pins, and `messages` create does the same when the room's
+  `participantIds.size() == 2`, before the mirror arm. The mirror is written by a trigger
+  seconds after the block row, and a DM is where a block is used first; the exact arm closes
+  that window at one more document read. Pinned by `a DM message is refused on the block
+  row alone, before the mirror exists`. Do not fold the DM arm into the mirror arm for
+  uniformity.
+- **Cost: more billed reads on every user's writes (BUT-2017, 2026-10-05).** `exists()` on
+  an absent document is a read. Counted from the rules: a group message pays one more (the
+  mirror), a DM message two more (the block row and the mirror, both arms run), a menu vote
+  one more, a DM create one more. Cents at test-group scale.
+- **A menu owner edited out of their own `participantIds` is outside the vote gate
+  (BUT-2017, 2026-10-05).** `menuRoster()` reads `participantIds` only, while
+  `isRealtimeParticipant` also admits `ownerId`, and any participant may rewrite
+  `participantIds` on `realtime_menus`. Create puts the owner in the array, so reaching
+  the gap takes a hostile edit by another participant first. Named, not closed.
+- **A room document without `participantIds` DENIES (BUT-2017, 2026-10-05).** The `hasAny`
+  on a missing key is an evaluation error. Do not guard it with `.get('participantIds', [])`:
+  that turns a missing roster into a fail-open.
+
+- **SUPERSEDES one clause of the ADR-0020 burst-guard entry (BUT-2244, 2026-10-05).** Retired:
+  "`globalRecipeCache` create keeps the old `rateLimitWrite`, pending BUT-1826." The
+  `match /globalRecipeCache/{docId}` block is deleted from `firestore.rules`; `rateLimitWrite`
+  stays defined there with no caller.
+
+## BUT-2267 — household membership and the share cap (2026-10-06)
+
+- **SUPERSEDES the 2026-09-15 entry "Leaving or being removed from a household does NOT
+  delete that member's `household_allergen_shares` row" (BUT-2267, 2026-10-06).** Retired:
+  "Nothing in the app adds or removes a household member today —" and "Until then a
+  departed member's share is invisible to the household". `joinGroupHousehold` adds a
+  member of a household-marked friend group to the owner's household. `onHouseholdGroupWritten`
+  removes every member the linked group no longer holds and deletes that member's
+  `household_allergen_shares/{householdId}_{uid}` in the same transaction; leaving the
+  group, removal, un-marking and deleting the group all reach it. The `households` rules
+  refuse a client write to `members`, `memberUserIds`, `memberPermissions` or the link
+  fields. Pinned by `functions/src/__tests__/group-household.integration.test.ts`.
+- **SUPERSEDES the "NOT BUILT" clause of the 2026-09-16 `getByHousehold` cap entry
+  (BUT-2267, 2026-10-06).** Retired: "**NOT BUILT.** The cap is unreachable until a
+  household can hold a second member". `getByHousehold` throws
+  `HouseholdTooLargeForSharesException` when the roster or the share rows exceed
+  `maxHouseholdMembers`; `HouseholdService` reads that as unknown shares.
+  `joinGroupHousehold` refuses a join into a household already at
+  `MAX_HOUSEHOLD_MEMBERS`. Both constants are 20.
+
+## BUT-2242 — one line classification for the text and URL paths (2026-10-06)
+
+- **SUPERSEDES the "every other allergen keeps colon-wins" half of BUT-1714 (Malin, 2026-10-06,
+  decision card "Ingrediens").** Retired: "Every other allergen — dairy, egg, soy, nuts — keeps
+  the colon-wins contract." `LineRoles.of` (`lib/services/import/parsers/line_role.dart`) now
+  returns an ingredient, colon stripped, for a colon-terminated ONE-word label that
+  `RecipeSectionDetector.looksLikeIngredient` accepts ("Mjölk:" → "Mjölk"), on the text path,
+  in `SwedishLineClassifier` (both its ingredient and sectionHeader branches), and in the
+  schema.org and site-config tiers. "Soja:" stays a heading because `looksLikeIngredient`
+  refuses "Soja". The gluten carve-out is unchanged.
+  Pinned in `line_classification_conformance_test.dart`.
+- **A capitalised bare word opening a paragraph above a quantity row is an ingredient
+  (Malin, 2026-10-06, decision card "Ingrediens").** `TextImportStrategy` keeps
+  "Parmesanost" above "2 dl grädde" as a row; a real component heading in that shape
+  ("Ostsås", "Köttfärssås") is kept as a row too. The import gate's text corpus counts those
+  two lasagne headings as heading leaks.
+- **D3: a colon-less vocabulary heading ("Till servering") groups the rows below it on the
+  URL path only.** The text path drops the line and does not group. Neither path keeps it as
+  an ingredient. Pinned in the conformance test.
+- **D4: `SwedishLineClassifier` on its own takes a bare first line as the recipe title.** The
+  conformance fixtures therefore never put the tested line first. Pinned in the same test.
+- **D5: a multi-word colon label that `looksLikeIngredient` accepts ("Till kyckling:") is a
+  heading on the URL path and an ingredient, colon kept, on the text path.** The text path's
+  `_ingredientSubHeading` vetoes such a label as a heading. Pinned in the conformance test.
+- **The text path's sub-heading length limit is now the shared one.** `_ingredientSubHeading`
+  defers to `componentSubHeadingLabel` (label ≤ 40 characters, no word cap) instead of its own
+  ≤ 30 characters and ≤ 4 words.
+
+## BUT-2162 — recipe writes go through the offline queue (2026-10-07)
+
+- **Recipes carry no server-side duplicate guard (Malin, 2026-10-05, F3-2 = A).**
+  produktregler.md:185 says the server rejects a duplicate `opId`. For recipes it does not:
+  the queue's sender writes through `FirebaseRecipeRepository`, a create is a whole-document
+  `set` on the recipe's own id and an update replaces the same top-level fields, so sending
+  one entry twice leaves the same document. No `opId` field on recipes, no rules change. The
+  guard is built when a collection where a repeat does harm (an append to a list, a chat
+  message) goes into the queue.
+- **Only recipes, their tagging and recipe images go through the queue (Malin, 2026-10-05,
+  F3-1 = A).** produktregler.md § 2.4 says "alla skrivningar". Shopping lists (BUT-2287),
+  pantry (BUT-2288), weekly menu (BUT-2289), profile (BUT-2290) and chat (BUT-2291) still
+  write through Firestore's offline cache; each has its own ticket.
+
+## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
+
+The first three entries are Malin's decisions. The rest are gaps the build ships with and
+await her confirmation on the PR.
+
+- **Both directions, and the blocked person can tell (Malin, 2026-10-07, F1 = a).**
+  `holdSharesOnBlock` takes each person off the `shared_content` rows the other shared with
+  them and keeps the history on the row (`blockHeldUserIds`, `blockHeld.<uid>`), and an
+  unblock puts it back. The blocked person sees a share disappear, so for shares the block is
+  visible to them. Chat display stays one-directional (BUT-1917). Do not harmonise the two.
+  produktregler.md § 18.5 is rewritten to match.
+- **Scope is one-off shares only (Malin, 2026-10-07, F2).** `shared_content` rows and the
+  `'direct'` grant the same share wrote on a recipe. Groups, live shared lists and realtime
+  menus are untouched by a block, so someone who reads a recipe through a `group:` grant keeps
+  reading it while blocked.
+- **A blocked person can still share to a group the blocker is in (F3).** The client drops
+  the blocker from the recipients without saying so (`BlockedUserFilter.shareRecipients`).
+- **The rules gate inherits the BUT-2017 mirror's decisions.** A share is refused through the
+  CALLER's block mirror on create, on a recipient list that grows, and on a new member row:
+  open when the mirror is missing, and in that direction only. The blocker's own direction is
+  the client filter alone, so a hand-rolled client of the blocker can still share to the
+  person they blocked, and that row is not held.
+- **A co-member can add someone the sharer blocked to the sharer's row.** The update rule
+  reads the co-member's mirror, not the sharer's, and no rule can read one `blocks` row per
+  added person.
+- **A hand-rolled client can write a person into `memberPermissions` on its own recipe across
+  a block.** No rule reads `blocks` on a recipe save; that would add a read to every recipe
+  write. The recipe then does not appear in the other person's inbox.
+- **A recipe share whose row write failed (`RecipeShareResult.partial`) is not held.** The
+  hold finds recipe access through the share row, so access granted without one survives a
+  block.
+- **Co-recipients can read `blockHeldUserIds` and `blockHeld` on the row**, which names the
+  two people a block stands between and keeps the held person's old member row and
+  permission. The update and member rules need the list on the parent document. The app never
+  shows it, and the Art. 15 received sections strip both fields (`sharedRowForExport`),
+  without naming the strip in `data_minimisation` (BUT-2018's shape).
+- **A held person's Art. 15 bundle does not contain the held rows while the block stands.**
+  They cannot read them, and a read limb on `blockHeldUserIds` would undo the block. The rows
+  return to the bundle on unblock. BUT-1718's left-list shape.
+- **The account cascade clears held state before AND after tier 1** (`shared_content_block_held`
+  and `shared_content_block_held_after_tier1`), on shares where the erased user is held and on
+  shares they made. Between those passes, tier 1's own `blocks` delete fires a release; each
+  row's release reads `erasures_in_progress/{uid}` for both people inside its transaction and
+  declines while one is younger than `ERASURE_MARKER_WINDOW_MS`. The cascade writes that marker
+  before its first step and never deletes it; a TTL on `expireAt` does, two windows after the
+  start, because a release that checked the account before the Auth delete can still be
+  working through its rows afterwards. A failed marker write leaves the release free to put
+  the erased uid back into another person's `sharedToUserIds` and recipe
+  `memberPermissions`/`grants`; it is logged and listed in `errors`, not in
+  `failedCollections`, and no probe leg looks there. A release declined by the marker is not
+  replayed.
+- **A recipe entry with no `grants` record is never held.** A block reads only a `'direct'`
+  grant as the share's own; a missing record is not read as direct (BUT-1797's rule).
+
+## BUT-2272 — a recipient's uid on other people's shared recipes (2026-10-07)
+
+- **A recipe whose `grants` holds the uid but whose `memberPermissions` does not is not found
+  (BUT-2272, 2026-10-07).** `scrubRecipeMemberPermissions` in
+  `functions/src/account/account-deletion-cascade.ts` finds recipes by
+  `collectionGroup("recipes")` on `socialData.memberPermissions.<uid> != null` and removes
+  both `socialData.memberPermissions.<uid>` and `socialData.grants.<uid>` from each one that
+  is not under `users/{uid}/recipes`. `request-account-deletion.ts` runs it as step
+  `recipe_member_permissions`, after `comment_likes`. Above `MAX_RECIPE_MEMBER_SWEEP_ROWS`
+  it declines and writes nothing, and `probeResidualData` counts the recipes still holding the key in its own
+  uncapped leg. `grants` is keyed by uid too, so only the same kind of query on `grants`
+  could find such a recipe; there is no such query, no index for one, and no probe leg.
+- **A client that read the recipe BEFORE the erasure can write the uid back (BUT-2272,
+  2026-10-07).** The owner's app saves `socialData` from the `Recipe` it holds, so a save
+  from a screen loaded before the erasure puts the key back. Accepted, the same shape as
+  BUT-1971's "A client that read the plan BEFORE an erasure can write the uid back." No test
+  pins it: the writer is the Dart client, not the cascade.
+
+## BUT-2246 — blocking reaches the chat-list preview (2026-10-07)
+
+- **The BUT-2017 two-armed gate now also covers a `conversations` update that changes
+  `lastMessage`, and a sender's `messages` update that changes `content` (BUT-2246,
+  2026-10-07).** The second is the route `syncConversationLastMessage` copies into the
+  preview. Every room reads the caller's mirror, with its fail-open and its ignored
+  `truncated` flag; a DM also reads `blocks/{other}_{me}` exactly. One-directional. Updates
+  that change neither key are not gated, so a blocked person can still rename a group or
+  write `participantDisplayNames`. Option 2 in the
+  ticket (a server-written preview) was not taken; `lastMessage` stays client-written, so
+  BUT-1903's `lastMessage.sentAt` gap is unchanged.
+
+## BUT-2090 — offline departure wording (2026-10-07)
+
+- **SUPERSEDES the wording half of the BUT-1718 *Offline* residual (BUT-2090, 2026-10-07).**
+  Retired: "the user sees \"du saknar behörighet att redigera denna delade inköpslista\" on a
+  button that says \"Lämna listan\"". `narrowUpdatePayload` now throws
+  `OfflineAccessControlChangeException`, a `PermissionDeniedException` subtype, and
+  `shoppingFailureMessage` maps it to `errorNetwork`. The refusal itself is unchanged. The
+  *empty roster* residual of the same entry is unchanged and stays accepted.
+
+## BUT-2115 — emoji reactions on recipe comments (2026-10-07)
+
+Two `allow update` limbs on `recipe_comments` admit the client's dotted
+`reactions.<key>` arrayUnion/arrayRemove: ADD and REMOVE, each limited to the caller's own
+uid, the six `reactionKeys()` and comments the caller can read (`canReadComment()`).
+
+- **Art. 15 keeps withholding reactions.** The requester's own comments are exported without
+  the `reactions` map (`ActivityExportManager.commentFieldsWithheld`). The requester's own
+  reactions on other people's comments are not in the bundle; they go with comment likes in
+  BUT-2114.
+- **A block stops adding, not removing.** Someone blocked by the recipe owner (gated only when
+  `recipeOwnerId` is present, BUT-2057's shape) or by the comment author cannot add a
+  reaction, and can always remove their own. The REMOVE limb also skips the age claim and the
+  soft-delete check.
+- **No `isAccountMatured()` and no rate-limit stamp on the ADD limb.** Both can add document
+  reads to a reaction, and a stamp needs a client change in `comment_reactions_system.dart`.
+- **Deploy order: functions before rules.** `scrubCommentReactions` (step `comment_reactions`)
+  and the six `comment reaction <key>` probe legs must be live before the rules let a
+  reaction be written.
+
+## BUT-1747 — lists the requester LEFT, and `shared_content` items, in the Art. 15 bundle (2026-10-07)
+
+- **SUPERSEDES the BUT-1732 "Known gap, deliberate" paragraph and the BUT-1718 "Named residual
+  — the export" paragraph (BUT-1747, 2026-10-07).** They read: "lists the requester has LEFT
+  are NOT in the export" and "A list a member has LEFT is not in their Art. 15 bundle." The
+  callable `exportSharedResidue` (`functions/src/exports/shared-residue.ts`) now finds those
+  lists with the Admin SDK by `contributorUserIds` array-contains and `lastActivityByUserId ==`,
+  drops lists the requester owns or is still a member of, and the client puts the result in the
+  `shared_lists_left` section. The client `contributorUserIds` probe and its notes are removed:
+  `firestore.rules` refused that query for every user, including one who had left nothing
+  (emulator, 2026-10-07).
+- **A left list exports only the requester's own traces (BUT-1747, 2026-10-07).** Only items
+  naming the requester in `addedByUserId`, `lastModifiedByUserId`, `purchasedByUserId` or
+  `assignedToUserId`; `lastActivityByUserId/At` only when it is the requester;
+  `contributorUserIds` becomes `recorded_as_contributor`. Other people's uid fields on those
+  rows are removed and display names are kept only beside the requester's own uid; `ownerId`
+  is kept. Every item goes through a fail-closed allowlist pinned to
+  `UnifiedShoppingItem.toFirestore`. BUT-1732's keep of other members' uids and the full
+  `contributorUserIds` rested on the requester being able to read the list, which a leaver
+  cannot. Removing other people's uids is a default awaiting Malin's answer.
+- **`shared_content/{id}/items` is in the same callable (BUT-1747, 2026-10-07).** Rows naming
+  the requester in one of the four uid fields under a top-level `shared_content` parent, plus
+  every row under a share the requester made, through the same projection. Personal-list
+  `items` rows are filtered out before the cap counts.
+- **SUPERSEDES the BUT-1716 "Art. 15." paragraph (BUT-1747, 2026-10-07).** It read: "this
+  change makes rows erasable that are not exportable." `exportSharedResidue` now exports
+  `shared_content/{id}/items` rows naming the requester and every row under a share the
+  requester made, the same rows the cascade erases.
+- **Declines, never truncates (BUT-1747, 2026-10-07).** Above 500 left lists, 500 owned shares,
+  2000 item rows, a raw query bound, or about 8 MB of response, the callable fails with
+  `shared-residue-too-large`. Any callable failure becomes the section's `error_code` and a
+  bundle warning; the rest of the bundle still ships.
+- **Another account can make the section decline (BUT-1747, 2026-10-07).** Whoever creates a
+  shared list may write `contributorUserIds` naming someone else, so enough such lists push that
+  person past the left-list cap or the response-size bound, and their `shared_lists_left`
+  section fails with `shared-residue-too-large`. The rest of the bundle still ships and the
+  section says it failed. Item rows under personal lists cannot cause this: the item queries
+  are scoped by document path to `shared_content`.
+- **Named gaps the callable reports in `known_gaps` (BUT-1747, 2026-10-07).** A left list whose
+  trail never recorded the requester (written before the trail, or by a client that skipped
+  it) and where someone else acted last is not found; the `listData` copy on a `shared_content`
+  document is not searched. Erasure does not reach either through these queries.
+- **RESOLVED 2026-10-08 — Malin: remove other people's uids (BUT-1747, 2026-10-08).** Retires
+  "Removing other people's uids is a default awaiting Malin's answer." `exportSharedResidue`
+  keeps the requester's uid and the list owner's uid on a left list's rows and removes every
+  other uid and display name.
+
+## BUT-2215 — the week plan's revision check (2026-10-08)
+
+Every save of a `weekly_menu_plans` document from a current app writes a new random string
+`revId` and, as `baseRevId`, the `revId` of the copy it was built on (the key is left out
+when that copy had none). `firestore.rules`' update limb (`weekSaveBuiltOnStored`) accepts an
+update that carries `revId` only when `revId` is a string, differs from the stored `revId`,
+and `baseRevId` equals the stored `revId`, an absent key on either side counting as null. The
+rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
+
+- **An app version from before the check bypasses it (BUT-2215, 2026-10-08).** An update
+  without `revId` is allowed, so an older app still overwrites a newer save silently. Its
+  whole-document `set()` also drops `revId` and `baseRevId`; a current app that read the week
+  before that save, from a copy that had a `revId`, then names a base the stored week no longer has and gets the conflict
+  notice.
+  An older app's recipe scrub is a batch of `update()` calls that write only `entries`. On a
+  week that has a `revId` the updated document still carries the stored `revId`, so that
+  update is denied by the `revId` inequality, the batch fails as a whole, and the older app
+  scrubs no week; the recipe itself is still deleted.
+- **A stored week without a `revId` is not protected against an older app (BUT-2215,
+  2026-10-08).** That covers a week that never had one and a week whose `revId` an older
+  app's `set()` removed. A current app that read such a week names no base. If an older app saves
+  the week in between, the stored week still has no `revId`, the two nulls compare equal, and
+  the current app's save is accepted over the older app's without a notice. Two current apps
+  are covered from the first save on: the first one that lands writes a `revId`, and the
+  other's save naming no base is refused.
+- **The recipe scrub can fail, and the deleted recipe then stays on the week (BUT-2215,
+  2026-10-08).** `removeRecipeFromAllPlans` updates each week that holds the recipe with a new
+  revision built on the copy it read. A refused update is read again from the server and
+  retried, three attempts in all, and the third refusal is thrown. The service logs it
+  (`executeServiceOperation`), and `personal_recipe_crud` deletes the recipe either way, so
+  the week keeps an entry whose recipe is gone. Each week is its own update, so a failure
+  leaves weeks already scrubbed as they are.
+- **A conflict with the user's own other device keeps no 30-day copy (BUT-2215, D1, Malin
+  2026-10-08).** The 30 s "Behåll min" is the only rescue. Nothing is written to the
+  overwritten-versions store, the same rule `RealtimeSyncService._keepOverwritten` applies
+  when the winning save is the user's own.
+
+## BUT-2213 — a queued recipe write compares the recipe's revision (2026-10-08)
+
+- **A repeat is recognised by its content, and recipes still carry no `opId` (BUT-2162 F3-2,
+  BUT-2213, 2026-10-08).** A queued update carries the revision (`rev`) its device copy was
+  built on. `RecipeRevisionOperations.writeAtRevision` reads the recipe in a transaction and
+  writes only on that revision. When the revision differs but the fields the update would
+  write equal the server's (`_sameContent`, both sides through `Recipe.toFirestore`), the
+  send counts as done and nothing is written, so an entry whose answer was lost and is sent
+  again is not a conflict. F3-2 stands: no `opId` field on recipes, no rules change.
+- **SUPERSEDES the last two sentences of the BUT-2151 recipe-resource entry (BUT-2213,
+  2026-10-08).** They read: "Opening the recipe type belongs to BUT-2213, together with its
+  writer and an id of the form `{ownerId}_{recipeId}`. Do not open the type 'for
+  completeness'." BUT-2213 did not open it. A queue conflict is built in memory as a
+  `RealtimeRecipe` for the banner and the comparison view, "Behåll min version" writes the
+  user's recipe through `UnifiedRecipeService.personal.updateUnifiedRecipe`, and Återställ on
+  a kept recipe version reads and writes the recipe document. `realtimeResourceShapeOk`
+  still admits `type == 'menu'` only. Do not open the type "for completeness".
+- **Writes that do not raise `rev` are missed conflicts, never false ones (BUT-2213,
+  2026-10-08).** Only `FirebaseRecipeRepository.update` and `updateAtRevision`
+  set `rev`. An app version from before this change, and every field-level writer that
+  updates a recipe document directly, leave it as it was, so a queued edit built on the
+  revision before such a write is written over it, as every queued edit was before. A
+  document without `rev` is revision 0, and a device copy queued before the update has no
+  revision and is written without comparing.
+- **A base is raised only over revisions this device produced, and an update with no known
+  base meets a conflict unless the server already holds the same content (BUT-2213,
+  2026-10-08).** The device copy records `{from, to}`: the device's own sends that started
+  at revision `from` (null: its own create) brought the server to `to`
+  (`RecipeRevisionRecord`, written by `RecipeDao.advanceRev`, dropped when the device takes
+  the server's recipe after a conflict). A save from a copy read inside that range is sent
+  on `to`; any other base is sent as it is. A save that carries no revision, on a recipe the
+  server has seen and the device did not create, is sent with base -1, which equals no
+  revision: the server takes it only when it already holds the same content, and otherwise
+  the user gets the conflict banner and chooses. The cost is a conflict notice for an edit
+  made from a copy cached before revisions existed; the alternative, writing it without
+  comparing, could replace another device's version without anyone seeing it.
+- **A create the queue sends again does not replace what the server holds by then
+  (BUT-2213, 2026-10-08).** `createOnce` writes only when the document does not exist.
+  When it does, the create counts as done if the server holds the same content at revision
+  0, and is otherwise a conflict carrying the server's recipe; it never resets `rev`.
+- **A queue conflict keeps the device's version even when the newer one is the user's own
+  (Malin, 2026-10-08, A1).** `QueuedRecipeConflicts._keep` stores the device's version as an
+  `OverwrittenVersion` (`recipeOwn`, type `recipe`) for 30 days whoever saved the server's
+  version. The realtime path, `RealtimeSyncService._keepOverwritten`, keeps nothing when
+  `winner.lastEditedBy == userId`. On the queue path the winner is, by the assumption that
+  only the owner edits their recipe, always the user's own other device. The asymmetry is the
+  decision; do not harmonise it.
+- **SUPERSEDES "a device copy queued before the update has no revision and is written without
+  comparing" (BUT-2213, 2026-10-08).** `RecipeRevisionRecord.baseFor` returns no base, and
+  the update is written without comparing, for any edit without a `rev` whose device copy
+  has no `rev`. That covers a copy cached before the update whether or not it was queued.
+  A send that succeeds gives the copy a `rev`.

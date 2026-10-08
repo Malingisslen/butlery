@@ -96,6 +96,18 @@ pre-commit:
       fail_text: "map-freshness gate and map_stamp.py REPO_ROOTS disagree — update BOTH (see above)."
       priority: 3
 
+    # The edit hook stamps the workflow map stale only for edits made with Claude's
+    # Edit/Write; a file a script or codemod changed never reached it. Every changed
+    # file is staged at commit time, however it was changed. Never blocks a commit.
+    map-stamp-staged:
+      glob:
+        - "lib/**"
+        - "functions/**"
+        - "test/**"
+        - "tools/**"
+      run: bash .claude/hooks/map-freshness-stamp.sh --staged
+      priority: 3
+
     # BUT-813 INFRA6 (lefthook<->CI parity): the flaky-test real-time guard ran
     # only in CI (test.yml). Mirror it pre-commit so DateTime.now()/long
     # Future.delayed regressions fail at commit time, not after a CI round-trip.
@@ -176,7 +188,9 @@ pre-commit:
         - "tools/check_secret_scan.sh"
         - "tools/check_null_filter.sh"
         - "tools/check_swedish_boundary.sh"
-      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test && bash tools/check_swedish_boundary.sh --self-test
+        - ".claude/hooks/map_stamp.py"
+        - ".claude/hooks/map-freshness-stamp.sh"
+      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test && bash tools/check_swedish_boundary.sh --self-test && bash .claude/hooks/map-freshness-stamp.sh --self-test
       fail_text: "A CI-wiring guard's own tests failed (see above). The guards decide what CI runs — fix the guard or the fixture before committing, never the assertion."
       priority: 7
 

@@ -10,6 +10,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
@@ -29,7 +30,6 @@ import 'package:butlery/services/import/heuristics/ingredient_line_detector.dart
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
-import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 /// Imports recipes from web URLs using multi-tier extraction (structured data, scraping, LLM fallback).
 class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
@@ -37,7 +37,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   final HttpContentFetcher _fetcher;
   final LlmExtractionFallback _llmFallback;
-  final ParseEventLogger _eventLogger = ParseEventLogger();
   RecipeParserService? _parserService;
 
   UrlImportStrategy({
@@ -105,11 +104,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }) async {
     try {
       final url = input.trim();
-      final stopwatch = Stopwatch()..start();
       final domain = _extractDomain(url);
 
       // Fetch HTML — try simple HTTP first
-      final httpHtml = await _fetcher.fetchHtmlWithTimeout(url);
+      final httpFetch = await _fetcher.fetchHtml(url);
+      final httpHtml = httpFetch.html;
       AppLogger.debug(
         'UrlImportStrategy: HTTP fetch for $domain → ${httpHtml == null ? "null" : "${httpHtml.length} chars"}',
       );
@@ -134,8 +133,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (httpHtml != null) {
         final structuredResult = _tryStructuredExtraction(httpHtml, url);
         if (structuredResult != null) {
-          _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
-          return structuredResult;
+          return _atTier(structuredResult, 'StructuredExtraction');
         }
       }
 
@@ -166,73 +164,67 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
           url,
         );
         if (scraperStructuredResult != null) {
-          _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
-          return scraperStructuredResult;
+          return _atTier(scraperStructuredResult, 'StructuredExtraction');
         }
       }
 
       // Tier 4: Web scraper text extraction fallback
       final scraperResult = await _tryWebScraperFallback(url);
       if (scraperResult != null) {
-        _logImportEvent(url, domain, 'WebScraper', true, stopwatch);
-        return scraperResult;
+        return _atTier(scraperResult, 'WebScraper');
       }
 
       // Use best available HTML for remaining tiers
       final bestHtml = scraperHtml ?? httpHtml;
+      // Tiers 5 and 6 read the same text: the page with its markup stripped.
+      final pageText = bestHtml != null && bestHtml.length > 100
+          ? HtmlSanitizer.stripToPlainText(bestHtml)
+          : null;
 
       // Tier 5: HTML text parse
-      if (bestHtml != null && bestHtml.length > 100) {
-        final textResult = await _tryHtmlTextParse(bestHtml, url);
+      if (bestHtml != null && pageText != null) {
+        final textResult = await _tryHtmlTextParse(bestHtml, pageText, url);
         if (textResult != null) {
-          _logImportEvent(url, domain, 'HtmlTextParse', true, stopwatch);
-          return textResult;
+          return _atTier(textResult, 'HtmlTextParse');
         }
       }
 
-      // Tier 6: LLM extraction
-      if (bestHtml != null && bestHtml.length > 100) {
-        final llmResult = await _llmFallback.tryExtraction(
-          bestHtml,
-          url,
-          strategyName,
-        );
+      // Tier 6: LLM extraction, unless the user chose to go on without AI.
+      var llm = LlmFallbackOutcome.none;
+      if (pageText != null && options?['skipLlm'] != true) {
+        llm = await _llmFallback.tryExtraction(pageText, url, strategyName);
+        final llmResult = llm.result;
         if (llmResult != null) {
-          _logImportEvent(url, domain, 'LLM', true, stopwatch, usedLlm: true);
-          return llmResult;
+          return _atTier(llmResult, 'LLM');
         }
       }
+      // A call that found nothing was still paid for: whatever answers the
+      // import from here carries its cost.
+      ImportResult paid(ImportResult r) =>
+          llm.llmUse.isEmpty ? r : r.withMetadata(llm.llmUse);
 
       // BUT-1650: no tier beat the held below-threshold enhanced parse (the
       // Tier 6 LLM included) — return it as the floor rather than dropping to
       // user-assist/failure. It carries real parsed structure, so it is a
       // better outcome than Tier 7 for the user.
       if (belowThresholdEnhanced != null) {
-        _logImportEvent(
-          url,
-          domain,
-          'EnhancedParserBelowThreshold',
-          true,
-          stopwatch,
-        );
-        return belowThresholdEnhanced;
+        return paid(belowThresholdEnhanced);
       }
 
       // Tier 7: User-assisted import
       if (bestHtml != null && bestHtml.length > 100) {
         final assistedResult = _createUserAssistedResult(bestHtml, url);
         if (assistedResult != null) {
-          _logImportEvent(url, domain, 'UserAssisted', true, stopwatch);
-          return assistedResult;
+          return paid(_atTier(assistedResult, 'UserAssisted'));
         }
       }
 
-      _logImportEvent(url, domain, null, false, stopwatch);
-      return _createFailureResult(url, bestHtml);
+      return paid(_createFailureResult(url, bestHtml, httpFetch));
     } catch (e) {
       AppLogger.error('URL import failed', e);
       return ImportResult.failure(
         'Could not import recipe from URL. Please try again.',
+        errorCode: ImportErrorCode.parsingFailed,
         metadata: {
           'strategy': strategyName,
         },
@@ -347,8 +339,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  Future<ImportResult?> _tryHtmlTextParse(String html, String url) async {
-    final plainText = HtmlSanitizer.stripToPlainText(html);
+  Future<ImportResult?> _tryHtmlTextParse(
+    String html,
+    String plainText,
+    String url,
+  ) async {
     if (plainText.length <= 100) return null;
 
     // BUT-1070: if the page has JSON-LD structured data but no Recipe @type,
@@ -467,11 +462,15 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final plainText = HtmlSanitizer.stripToPlainText(html);
     if (plainText.length <= 50) return null;
 
-    AppLogger.info('UrlImportStrategy: Returning for user-assisted import');
     final suggestedTitle = HtmlUtilities.extractTitleFromHtml(html);
     final lines = plainText.split('\n');
     final likelyIngredients = IngredientLineDetector.findIngredientLines(lines);
+    // BUT-2237: help is offered for a page that holds something to finish by
+    // hand. A login form, or a page with no ingredient line at all, is a
+    // failure with its own cause rather than a dead-end help screen.
+    if (likelyIngredients.isEmpty || _loginForm.hasMatch(html)) return null;
 
+    AppLogger.info('UrlImportStrategy: Returning for user-assisted import');
     return ImportResult.assistance(
       extractedText: plainText,
       suggestedTitle: suggestedTitle,
@@ -481,17 +480,48 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  ImportResult _createFailureResult(String url, String? htmlResult) {
+  ImportResult _createFailureResult(
+    String url,
+    String? htmlResult,
+    HtmlFetch httpFetch,
+  ) {
+    final code = failureCodeFor(htmlResult, httpFetch);
     return ImportResult.failure(
-      'Could not extract recipe from URL. The page may not contain a valid recipe.',
+      switch (code) {
+        ImportErrorCode.urlNotAccessible => 'Could not reach the page.',
+        ImportErrorCode.platformBlocked => 'The page requires login.',
+        _ => 'No recipe found on the page.',
+      },
+      errorCode: code,
       metadata: {
         'strategy': strategyName,
         'url': url,
         'html_fetched': htmlResult != null,
         'html_length': htmlResult?.length ?? 0,
+        if (httpFetch.statusCode != null) 'http_status': httpFetch.statusCode,
       },
     );
   }
+
+  /// Why every tier gave up. Only reached after tiers 1–7 all declined, so a
+  /// page that WAS read held no structured recipe and no ingredient lines.
+  @visibleForTesting
+  static ImportErrorCode failureCodeFor(String? html, HtmlFetch httpFetch) {
+    if (html == null) {
+      final status = httpFetch.statusCode;
+      return status == 401 || status == 403
+          ? ImportErrorCode.platformBlocked
+          : ImportErrorCode.urlNotAccessible;
+    }
+    return _loginForm.hasMatch(html)
+        ? ImportErrorCode.platformBlocked
+        : ImportErrorCode.noRecipeContent;
+  }
+
+  static final _loginForm = RegExp(
+    r'''<input[^>]+type\s*=\s*["']?password''',
+    caseSensitive: false,
+  );
 
   String? _extractDomain(String url) {
     try {
@@ -502,24 +532,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
   }
 
-  void _logImportEvent(
-    String url,
-    String? domain,
-    String? successfulTier,
-    bool success,
-    Stopwatch stopwatch, {
-    bool? usedLlm,
-  }) {
-    _eventLogger.logEvent(
-      url: url,
-      source: 'url',
-      success: success,
-      parseTimeMs: stopwatch.elapsedMilliseconds,
-      domain: domain,
-      successfulTier: successfulTier,
-      usedLlm: usedLlm,
-    );
-  }
+  /// Names the tier that answered, for the import's one parse event.
+  static ImportResult _atTier(ImportResult result, String tier) =>
+      result.withMetadata({'successfulTier': tier});
 
   ImportResult _convertParsedRecipeToImportResult(
     ParseResult parseResult,
@@ -583,6 +598,21 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'fromCache': parseResult.fromCache,
         'parseTime': parseResult.totalTime.inMilliseconds,
         'overallQuality': parsed.overallQuality,
+        'parserVersion': parserVersion,
+        'successfulTier': ?parseResult.tierResults
+            .where((t) => t.success)
+            .lastOrNull
+            ?.tierName,
+        'tierAttempts': [
+          for (final t in parseResult.tierResults)
+            {
+              'tier': t.tierName,
+              'success': t.success,
+              'quality': t.quality,
+              'durationMs': t.duration.inMilliseconds,
+            },
+        ],
+        if (parseResult.unknownDomain) 'unknownDomain': true,
       },
     );
   }

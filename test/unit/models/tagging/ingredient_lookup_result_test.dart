@@ -291,6 +291,31 @@ void main() {
         expect(result.getPropertyStatus('contains-gluten'), TriState.unknown);
       });
 
+      test('BUT-2247: a matched trigger is CONTAINS at coverage < 100%, on '
+          'all three status methods', () {
+        final result = IngredientLookupResult.fromLists(
+          matched: [
+            TaggingTestHelper.ingredient('pasta', 'grain', {'contains-gluten'}),
+          ],
+          unmatched: ['unknown'],
+        );
+
+        expect(result.coverage, lessThan(1.0));
+        expect(result.getPropertyStatus('contains-gluten'), TriState.contains);
+        expect(
+          result.getCombinedPropertyStatus(['peanut', 'contains-gluten']),
+          TriState.contains,
+        );
+        expect(result.getDietaryStatus(['contains-gluten']), TriState.contains);
+        // The unmatched row still withholds FREE for everything else.
+        expect(result.getPropertyStatus('dairy'), TriState.unknown);
+        expect(
+          result.getCombinedPropertyStatus(['tree-nut', 'peanut']),
+          TriState.unknown,
+        );
+        expect(result.getDietaryStatus(['meat']), TriState.unknown);
+      });
+
       test('getCombinedPropertyStatus uses OR logic', () {
         final result = IngredientLookupResult.fromLists(
           matched: [

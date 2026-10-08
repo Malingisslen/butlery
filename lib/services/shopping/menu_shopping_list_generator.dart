@@ -1,5 +1,7 @@
 // lib/services/shopping/menu_shopping_list_generator.dart
 
+import 'dart:async';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -8,14 +10,20 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart'
+    show PersonalMergeRequest;
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
+import 'package:butlery/services/shopping/menu_shopping_merge.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
+
+export 'package:butlery/services/shopping/menu_shopping_merge.dart';
 
 /// Outcome of a week→shopping-list generation, for the snackbar/UI.
 ///
@@ -33,9 +41,10 @@ class MenuShoppingGenerationResult {
   /// not yet cached). Logged; carried for observability.
   final int unresolvedRecipes;
 
-  /// BUT-1279: how many aggregated lines were dropped because they matched a
-  /// pantry staple. Surfaced so the UI can reassure the user ("3 skafferivaror
-  /// utelämnade") rather than silently shrinking the list.
+  /// How many rows the pantry touched: left off because enough is at home,
+  /// shortened to the difference, or marked "Kanske hemma" / "Kolla datum"
+  /// (produktregler.md:224-234, § 4.2; produktbeslut PQ-11 = A). It replaced
+  /// the BUT-1279 count of whole staple rows.
   final int excludedStaples;
 
   /// BUT-1613: how many planned meals had their quantities scaled to who's
@@ -62,207 +71,349 @@ class MenuShoppingGenerationResult {
     unresolvedRecipes: 0,
   );
 
-  /// Re-entrancy sentinel: a generation is already in flight. Distinct from
-  /// `null` (= FAILED) so a double-tap is rendered as silence, not an error
-  /// snackbar. Compare with [identical] — field-wise it looks like
-  /// [nothingToGenerate].
-  static const alreadyRunning = MenuShoppingGenerationResult(
-    listId: '',
-    listName: '',
-    itemCount: 0,
-    recipeCount: 0,
-    unresolvedRecipes: 0,
-  );
-
   bool get isEmptyPlan => listId.isEmpty;
 }
 
-/// BUT-956: generates ("Generera inköpslista") a shopping list from the
-/// weekly menu plan. Deterministic, zero LLM.
+/// BUT-956: generates a shopping list from the weekly menu. Deterministic,
+/// zero LLM.
 ///
 /// Contract (BUT-956 + BUT-1234):
 /// - One generated list per ISO week, identified by the `generatedForWeek`
-///   marker (e.g. "2026-W24") — NOT by name. Regenerating the same week
-///   UPDATES the marked list in place (idempotent), even if the user renamed
-///   it. A user list that merely shares the generated name but lacks the
-///   marker is never touched — a new marked list is created alongside it
-///   (the name collision is acceptable).
-/// - On regeneration the list's content is replaced by the fresh aggregation,
-///   but bought-status survives for lines whose name+unit key still matches.
-///   The generated list is OWNED by the generator: manual additions to it do
-///   not survive regeneration (use any other list for manual items).
+///   marker (e.g. "2026-W24") — NOT by name. A renamed generated list still
+///   receives the week's rows, and a user list that merely shares the
+///   generated name but lacks the marker is never touched.
+///
+/// P6-U02 changed what happens inside that list. Flow 02
+/// (flows-roles-budget.md:44-51) and the merge sheet (Skarmar v12 del 2
+/// #inkopmerge) are the only way from the week menu to a list, and "Dina
+/// egna, manuellt tillagda varor behålls alltid". produktbeslut PQ-10 = A
+/// (2026-09-23) settled it: your own rows are always kept, and the rows land
+/// in the week's generated list, created when missing. That SUPERSEDES
+/// produktregler.md:704 (§ 8.7, "manuella tillägg gör det inte"). Recipe
+/// rows are known by their ids ([UnifiedShoppingList.menuItemIds]), never by
+/// name. Bought status still survives a replace by name and unit (§ 8.7).
+///
+/// produktbeslut PQ-11 = A: the pantry subtracts amounts (produktregler.md
+/// § 4.2, :224-234), which SUPERSEDES § 8.7's exclusion of whole staple rows
+/// (:695).
 class MenuShoppingListGenerator extends BaseService {
   @override
   String get serviceName => 'MenuShoppingListGenerator';
 
+  /// How long a pantry read may take before the merge goes on without it.
+  static const Duration pantryReadTimeout = Duration(seconds: 10);
+
+  /// Kept for the onboarding sample week: the week's rows replace the week's
+  /// recipe rows, with every other switch at its drawn default.
   Future<MenuShoppingGenerationResult?> generateForWeek(DateTime date) async {
-    return executeServiceOperation<MenuShoppingGenerationResult?>(
-      () async {
-        final menuService = ServiceLocator.get<WeeklyMenuPlanService>();
-        final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-        final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-
-        // BUT-1962: `getWeek` answers a failed read with an empty plan, which
-        // the branch below reported as `nothingToGenerate` — "your week has no
-        // meals" for a week we simply never read.
-        final read = await menuService.readWeek(date);
-        if (read.readFailed) {
-          throw StateError(
-            'Refusing to generate a shopping list: the week could not be read',
-          );
-        }
-        final plan = read.plan;
-        if (plan.entries.isEmpty) {
-          return MenuShoppingGenerationResult.nothingToGenerate;
-        }
-
-        // BUT-1613: resolve each DISTINCT recipe once (no repeat lookups), but
-        // scale + aggregate PER PLACEMENT. The same recipe planned at two
-        // (day, slot) cells contributes its ingredients twice — each scaled to
-        // that meal's present count — instead of the old week-level dedup that
-        // collapsed repeats into one line and under-bought.
-        final distinctIds = plan.entries.map((e) => e.recipeId).toSet();
-        final recipeById = <String, Recipe>{};
-        for (final id in distinctIds) {
-          final resolved = recipeService.getRecipeById(id);
-          if (resolved != null) recipeById[id] = resolved;
-        }
-        final unresolved = distinctIds.length - recipeById.length;
-        if (unresolved > 0) {
-          AppLogger.warning(
-            '$serviceName: $unresolved of ${distinctIds.length} menu recipes '
-            'could not be resolved — list generated from the rest',
-          );
-        }
-        if (recipeById.isEmpty) {
-          return MenuShoppingGenerationResult.nothingToGenerate;
-        }
-
-        // One scaled placement per plan entry, in plan order.
-        var scaledMeals = 0;
-        final placements = <ScaledRecipe>[];
-        for (final entry in plan.entries) {
-          final recipe = recipeById[entry.recipeId];
-          if (recipe == null) continue; // unresolved — already counted above
-          final factor = _presenceFactor(plan, entry, recipe);
-          if (factor != 1.0) scaledMeals++;
-          placements.add((recipe: recipe, factor: factor));
-        }
-
-        // BUT-1279: keep pantry staples (salt, olja, …) off the generated
-        // list. Now that aggregation scales per placement, run it ONCE (no
-        // exclusion) and split the result into kept vs staple-matched lines —
-        // the excludedStaples count comes from the same pass rather than a
-        // second full aggregation.
-        final stapleNames = await _stapleNames();
-        final fullAggregation = MenuShoppingAggregator.aggregate(placements);
-        bool isStaple(AggregatedShoppingItem line) => stapleNames.contains(
-          SwedishCharacterNormalizer.normalize(line.name),
-        );
-        final excludedStaples = stapleNames.isEmpty
-            ? 0
-            : fullAggregation.where(isStaple).length;
-        final aggregated = stapleNames.isEmpty
-            ? fullAggregation
-            : fullAggregation.where((line) => !isStaple(line)).toList();
-        final weekKey = IsoWeekUtils.weekKeyOf(date);
-        final listName = AppLocale.current.menuGeneratedShoppingListName(
-          IsoWeekUtils.isoWeekNumber(date),
-        );
-
-        // Idempotency: reuse this week's generated list when it exists.
-        // Lookup is by the generatedForWeek marker, never by name — a
-        // renamed generated list still regenerates in place, and a user
-        // list that happens to carry the generated name is left alone.
-        final existing = shoppingService.personalLists
-            .where((l) => l.generatedForWeek == weekKey)
-            .toList();
-        String listId;
-        var wasCreated = false;
-        if (existing.isNotEmpty) {
-          listId = existing.first.id;
-        } else {
-          final created = await shoppingService.createPersonalList(listName);
-          if (created == null) {
-            throw StateError('Could not create shopping list "$listName"');
-          }
-          listId = created;
-          wasCreated = true;
-        }
-
-        // Preserve bought-status across regeneration. The key uses the SAME
-        // normalization as the aggregation key — display casing can flip
-        // between runs (first-seen wins), so a plain toLowerCase key would
-        // silently reset bought-status exactly in the regeneration scenario
-        // it exists for.
-        String boughtKey(String name, String unit) =>
-            '${SwedishCharacterNormalizer.normalize(name)}|'
-            '${unit.toLowerCase().trim()}';
-        final previous = existing.isNotEmpty
-            ? {
-                for (final item in existing.first.items)
-                  boughtKey(item.name, item.unit): item.bought,
-              }
-            : const <String, bool>{};
-
-        final items = aggregated
-            .map(
-              (a) => UnifiedShoppingItem(
-                name: a.name,
-                // Amount-less lines (raw-only/ranges) follow the manual-add
-                // default of 1 rather than rendering a misleading "0".
-                amount: a.amount ?? 1,
-                unit: a.unit,
-                category: a.category,
-                bought: previous[boughtKey(a.name, a.unit)] ?? false,
-              ),
-            )
-            .toList();
-
-        final list = shoppingService.lists.firstWhere((l) => l.id == listId);
-        // Stamp the marker on every write: it tags freshly created lists and
-        // is a no-op re-stamp on reused ones (already carrying this weekKey).
-        final updated = await shoppingService.updateList(
-          list.copyWith(items: items, generatedForWeek: weekKey),
-        );
-        // `list` was fetched by id above, so its name is the one the user
-        // actually sees (a reused list may have been renamed) — error and
-        // snackbar must echo it.
-        if (!updated) {
-          throw StateError('Could not write items to "${list.name}"');
-        }
-
-        // BUT-1681: EXACTLY ONE analytics event per generation, and only for a
-        // genuine creation.
-        //
-        // The reverted first attempt fired `shopping_list_item_added` per
-        // generated line and re-fired the whole set on every regeneration —
-        // ~250 events for one 50-item week, inflating the very funnel the
-        // event exists to build. `initial_item_count` carries the volume, so
-        // the per-line events bought nothing the summary doesn't. Weekly
-        // regeneration of the same list is not a new list and stays silent.
-        if (wasCreated) {
-          ServiceLocator.tryGet<AnalyticsService>()?.shopping
-              .logShoppingListCreated(
-                listId: listId,
-                listType: 'personal',
-                initialItemCount: items.length,
-                source: 'menu_generated',
-              );
-        }
-
-        return MenuShoppingGenerationResult(
-          listId: listId,
-          listName: list.name,
-          itemCount: items.length,
-          recipeCount: recipeById.length,
-          unresolvedRecipes: unresolved,
-          excludedStaples: excludedStaples,
-          scaledMeals: scaledMeals,
-        );
-      },
-      operationName: 'generateForWeek',
+    final source = await sourceForWeek(date);
+    if (source == null) return null;
+    if (source.isEmpty) return MenuShoppingGenerationResult.nothingToGenerate;
+    final pantry = await readPantry();
+    final merge = preview(
+      source,
+      pantry,
+      const MenuShoppingMergeOptions(replaceList: true),
     );
+    final receipt = await apply(merge);
+    if (receipt == null) return null;
+    return MenuShoppingGenerationResult(
+      listId: receipt.listId,
+      listName: receipt.listName,
+      itemCount: receipt.itemCount,
+      recipeCount: source.recipeCount,
+      unresolvedRecipes: source.unresolvedRecipes,
+      excludedStaples: merge.atHomeCount,
+      scaledMeals: source.scaledMeals,
+    );
+  }
+
+  /// The week's placements, or null when the week could not be read. An
+  /// empty source means there is nothing to generate; the two outcomes stay
+  /// apart (produktregler.md:705).
+  Future<MenuShoppingSource?> sourceForWeek(DateTime date) async {
+    return executeServiceOperation<MenuShoppingSource?>(() async {
+      final menuService = ServiceLocator.get<WeeklyMenuPlanService>();
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+
+      // BUT-1962: `getWeek` answers a failed read with an empty plan, which
+      // would read as "your week has no meals" for a week we never read.
+      final read = await menuService.readWeek(date);
+      if (read.readFailed) {
+        throw StateError(
+          'Refusing to generate a shopping list: the week could not be read',
+        );
+      }
+      final plan = read.plan;
+      if (plan.entries.isEmpty) {
+        return MenuShoppingSource(
+          week: date,
+          placements: const [],
+          recipeCount: 0,
+        );
+      }
+
+      // BUT-1613: resolve each DISTINCT recipe once (no repeat lookups), but
+      // scale + aggregate PER PLACEMENT. The same recipe planned at two
+      // (day, slot) cells contributes its ingredients twice — each scaled to
+      // that meal's present count.
+      final distinctIds = plan.entries.map((e) => e.recipeId).toSet();
+      final recipeById = <String, Recipe>{};
+      for (final id in distinctIds) {
+        final resolved = recipeService.getRecipeById(id);
+        if (resolved != null) recipeById[id] = resolved;
+      }
+      final unresolved = distinctIds.length - recipeById.length;
+      if (unresolved > 0) {
+        AppLogger.warning(
+          '$serviceName: $unresolved of ${distinctIds.length} menu recipes '
+          'could not be resolved — list generated from the rest',
+        );
+      }
+
+      var scaledMeals = 0;
+      final placements = <ScaledRecipe>[];
+      for (final entry in plan.entries) {
+        final recipe = recipeById[entry.recipeId];
+        if (recipe == null) continue; // unresolved — already counted above
+        final factor = _presenceFactor(plan, entry, recipe);
+        if (factor != 1.0) scaledMeals++;
+        placements.add((recipe: recipe, factor: factor));
+      }
+      return MenuShoppingSource(
+        week: date,
+        placements: List.unmodifiable(placements),
+        recipeCount: recipeById.length,
+        unresolvedRecipes: unresolved,
+        scaledMeals: scaledMeals,
+      );
+    }, operationName: 'sourceForWeek');
+  }
+
+  /// The generated menu in list mode (not yet placed in a week): each dish
+  /// once, at its authored amounts. Its rows land in the list of the week
+  /// [week] falls in.
+  static MenuShoppingSource sourceForMenu(
+    Map<String, List<Recipe>> menu,
+    DateTime week,
+  ) {
+    final placements = <ScaledRecipe>[
+      for (final recipes in menu.values)
+        for (final recipe in recipes) (recipe: recipe, factor: 1.0),
+    ];
+    return MenuShoppingSource(
+      week: week,
+      placements: List.unmodifiable(placements),
+      recipeCount: placements.map((p) => p.recipe.id).toSet().length,
+    );
+  }
+
+  /// Reads the signed-in user's pantry. A failed or slow read gives
+  /// [MenuShoppingPantry.unavailable]: the list is then made without pantry
+  /// deduction, and the sheet says so with a way to try again
+  /// (produktregler.md:697). [PantryService.getAll] turns a failure into an
+  /// empty pantry, which would hide exactly that, so this reads the stream.
+  Future<MenuShoppingPantry> readPantry() async {
+    try {
+      final userId = ServiceLocator.get<AuthRepository>().currentUserId;
+      if (userId == null) return const MenuShoppingPantry.read([]);
+      final items = await ServiceLocator.get<PantryService>()
+          .watchAll(userId)
+          .first
+          .timeout(pantryReadTimeout);
+      return MenuShoppingPantry.read(List.unmodifiable(items));
+    } catch (e) {
+      AppLogger.warning(
+        '$serviceName: the pantry could not be read — the list is made '
+        'without pantry deduction ($e)',
+      );
+      return const MenuShoppingPantry.unavailable();
+    }
+  }
+
+  /// What the sheet will write, computed before anything is written. See
+  /// [MenuShoppingMergePlanner.preview].
+  static MenuShoppingMergePreview preview(
+    MenuShoppingSource source,
+    MenuShoppingPantry pantry,
+    MenuShoppingMergeOptions options,
+  ) => MenuShoppingMergePlanner.preview(source, pantry, options);
+
+  /// Whether "Ersätt listan" can take anything off the week's list. False for
+  /// a list written before [UnifiedShoppingList.menuItemIds] existed: its
+  /// recipe rows cannot be told from the user's own, so a replace there would
+  /// only add. The sheet then switches "Ersätt listan" off and says why.
+  bool canReplaceWeekList(DateTime week) {
+    final weekKey = IsoWeekUtils.weekKeyOf(week);
+    final list = ServiceLocator.get<UnifiedShoppingService>().personalLists
+        .where((l) => l.generatedForWeek == weekKey)
+        .firstOrNull;
+    return list == null || list.menuItemIds != null;
+  }
+
+  /// Writes [merge] into the week's generated list, creating it when it is
+  /// missing (produktbeslut PQ-10 = A), and makes that list the active one
+  /// so the shopping view opens on it. Returns what was written, or null
+  /// when nothing could be written.
+  ///
+  /// Adding never touches a row already on the list. "Ersätt listan" takes
+  /// off only the rows an earlier merge put there
+  /// ([UnifiedShoppingList.menuItemIds]) and keeps every other row.
+  ///
+  /// The generated list is personal (firestore.rules,
+  /// `unified_shopping_lists` is owner-only), so no other person can change
+  /// it, but the same account on a second device can. The write therefore
+  /// goes per operation against the server's copy
+  /// ([UnifiedShoppingService.applyPersonalMerge], BUT-2140), and the receipt
+  /// says when that copy had changed.
+  Future<MenuShoppingMergeReceipt?> apply(
+    MenuShoppingMergePreview merge,
+  ) async {
+    return executeServiceOperation<MenuShoppingMergeReceipt?>(() async {
+      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final date = merge.source.week;
+      final weekKey = IsoWeekUtils.weekKeyOf(date);
+      final listName = AppLocale.current.menuGeneratedShoppingListName(
+        IsoWeekUtils.isoWeekNumber(date),
+      );
+
+      // Lookup is by the generatedForWeek marker, never by name.
+      final existing = shoppingService.personalLists
+          .where((l) => l.generatedForWeek == weekKey)
+          .toList();
+      String listId;
+      var createdList = false;
+      if (existing.isNotEmpty) {
+        listId = existing.first.id;
+      } else {
+        final created = await shoppingService.createPersonalList(listName);
+        if (created == null) {
+          throw StateError('Could not create shopping list "$listName"');
+        }
+        listId = created;
+        createdList = true;
+      }
+
+      final list = shoppingService.lists.firstWhere((l) => l.id == listId);
+      final previousMenuIds = list.menuItemIds;
+      // A list written before menuItemIds existed has no known recipe rows,
+      // so a replace there adds, and the receipt says it added
+      // ([canReplaceWeekList]).
+      final replace =
+          merge.options.replaceList && (createdList || previousMenuIds != null);
+
+      final fresh = [
+        for (final line in merge.lines)
+          UnifiedShoppingItem(
+            name: line.name,
+            // Amount-less lines follow the manual-add default of 1 rather
+            // than rendering a misleading "0".
+            amount: line.amount ?? 1,
+            unit: line.unit,
+            category: line.category,
+            note: _noteFor(line),
+          ),
+      ];
+      final result = await shoppingService.applyPersonalMerge(
+        listId,
+        PersonalMergeRequest(
+          rows: (removed) => _carryBought(fresh, removed),
+          replace: replace,
+          generatedForWeek: weekKey,
+        ),
+      );
+      await shoppingService.setActiveList(listId);
+      final addedIds = [for (final item in result.added) item.id];
+
+      // BUT-1681: EXACTLY ONE analytics event per merge, and only for a
+      // genuine creation. `initial_item_count` carries the volume.
+      if (createdList) {
+        ServiceLocator.tryGet<AnalyticsService>()?.shopping
+            .logShoppingListCreated(
+              listId: listId,
+              listType: 'personal',
+              initialItemCount: addedIds.length,
+              source: 'menu_generated',
+            );
+      }
+
+      return MenuShoppingMergeReceipt(
+        listId: listId,
+        // The server's name: a reused list may have been renamed, here or on
+        // another device.
+        listName: result.list.name,
+        addedItemIds: List.unmodifiable(addedIds),
+        removedItems: List.unmodifiable(result.removed),
+        previousMenuItemIds: previousMenuIds,
+        replaced: replace,
+        createdList: createdList,
+        concurrentChange: result.concurrentChange,
+      );
+    }, operationName: 'applyMerge');
+  }
+
+  /// Ångra for a merge: takes off exactly the rows it added and puts back the
+  /// recipe rows a replace took off. Rows changed or added since, here or on
+  /// another device, are left alone. A list the merge created that is empty
+  /// again is deleted. Returns whether the list is back.
+  Future<bool> undo(MenuShoppingMergeReceipt receipt) async {
+    final result = await executeServiceOperation<bool>(() async {
+      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final list = shoppingService.lists
+          .where((l) => l.id == receipt.listId)
+          .firstOrNull;
+      if (list == null) return false;
+      final added = receipt.addedItemIds.toSet();
+      final left =
+          list.items.where((item) => !added.contains(item.id)).length +
+          receipt.removedItems.length;
+      if (receipt.createdList && left == 0) {
+        return shoppingService.deleteList(receipt.listId);
+      }
+      await shoppingService.undoPersonalMerge(
+        receipt.listId,
+        receipt.addedItemIds,
+        receipt.removedItems,
+      );
+      return true;
+    }, operationName: 'undoMerge');
+    return result ?? false;
+  }
+
+  /// § 8.7: bought status survives a replace by name and unit, keyed by the
+  /// same normalization as the aggregation. [removed] is what the write takes
+  /// off, read from the server where it could be.
+  static List<UnifiedShoppingItem> _carryBought(
+    List<UnifiedShoppingItem> fresh,
+    List<UnifiedShoppingItem> removed,
+  ) {
+    String boughtKey(String name, String unit) =>
+        '${SwedishCharacterNormalizer.normalize(name)}|'
+        '${unit.toLowerCase().trim()}';
+    final wasBought = {
+      for (final item in removed)
+        if (item.bought) boughtKey(item.name, item.unit),
+    };
+    return [
+      for (final item in fresh)
+        wasBought.contains(boughtKey(item.name, item.unit))
+            ? item.copyWith(bought: true)
+            : item,
+    ];
+  }
+
+  /// The row's note: how many recipes it came from ("Raden visar '3
+  /// recept'", #inkopmergeoppen) and the pantry's mark (§ 4.2).
+  static String? _noteFor(MenuShoppingMergeLine line) {
+    final l = AppLocale.current;
+    final parts = [
+      if (line.sourceCount > 1) l.shoppingMergeRowRecipes(line.sourceCount),
+      if (line.mark == MenuShoppingPantryMark.maybeAtHome)
+        l.shoppingMergeMarkMaybeHome,
+      if (line.mark == MenuShoppingPantryMark.checkDate)
+        l.shoppingMergeMarkCheckDate,
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
   }
 
   /// BUT-1613: the presence-derived scale factor for one plan entry. Returns
@@ -289,31 +440,5 @@ class MenuShoppingListGenerator extends BaseService {
       fallback: portions,
     );
     return servings / portions;
-  }
-
-  /// BUT-1279: normalized names of the current user's pantry staples, for
-  /// shopping-list exclusion. Returns an empty set (exclude nothing) when the
-  /// user is unauthenticated, has no staples, or the pantry read fails — the
-  /// list generation must never break just because staples can't be read.
-  Future<Set<String>> _stapleNames() async {
-    try {
-      final userId = ServiceLocator.get<AuthRepository>().currentUserId;
-      if (userId == null) return const {};
-      final items = await ServiceLocator.get<PantryService>().getAll(userId);
-      return {
-        for (final item in items)
-          if (item.isStaple)
-            SwedishCharacterNormalizer.normalize(item.ingredientName),
-      };
-    } catch (e) {
-      // Staple exclusion is a best-effort enhancement — a missing/failing
-      // pantry must never block the user's shopping list. Degrade to "exclude
-      // nothing" and log for observability.
-      AppLogger.warning(
-        '$serviceName: could not resolve pantry staples — generating without '
-        'staple exclusion ($e)',
-      );
-      return const {};
-    }
   }
 }

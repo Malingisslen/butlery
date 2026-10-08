@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog for previewing and editing menu items before adding to shopping list.
 /// Allows users to remove individual items or clear all items.
@@ -51,8 +53,8 @@ class _EditableMenuItemsPreviewDialogState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.shopping_cart_outlined,
+                    ButleryIcon(
+                      ButleryIcons.shoppingCart,
                       size: AppDimensions.iconSizeXxl,
                       color: Theme.of(context).colorScheme.outline,
                     ),
@@ -62,7 +64,7 @@ class _EditableMenuItemsPreviewDialogState
                       style: AppTextStyles.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       context.l10n.shoppingAllItemsRemovedFromMenu,
                       style: AppTextStyles.bodyMedium,
@@ -81,10 +83,10 @@ class _EditableMenuItemsPreviewDialogState
                     ),
                     child: ListTile(
                       dense: true,
-                      leading: Icon(
-                        Icons.shopping_cart,
+                      leading: ButleryIcon(
+                        ButleryIcons.shoppingCart,
                         size: AppDimensions.iconSizeM,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       title: Text(
                         item.name,
@@ -97,8 +99,8 @@ class _EditableMenuItemsPreviewDialogState
                             )
                           : null,
                       trailing: IconButton(
-                        icon: Icon(
-                          Icons.delete,
+                        icon: ButleryIcon(
+                          ButleryIcons.trash2,
                           color: Theme.of(context).colorScheme.error,
                           size: AppDimensions.iconSizeAction,
                         ),
@@ -118,8 +120,8 @@ class _EditableMenuItemsPreviewDialogState
                 _editableItems.clear();
               });
             },
-            icon: Icon(
-              Icons.clear_all,
+            icon: ButleryIcon(
+              ButleryIcons.listX,
               color: Theme.of(context).colorScheme.error,
             ),
             label: Text(

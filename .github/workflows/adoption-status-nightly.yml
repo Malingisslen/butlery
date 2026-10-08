@@ -34,7 +34,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # main requires green CI (ruleset "main: CI must be green"). A
+          # personal repo cannot exempt the GitHub Actions app, so the push
+          # below goes over this write deploy key, which the ruleset lets past.
+          ssh-key: ${{ secrets.ADOPTION_DEPLOY_KEY }}
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
         with:

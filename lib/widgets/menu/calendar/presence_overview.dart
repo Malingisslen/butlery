@@ -14,6 +14,9 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class PresenceOverview extends StatelessWidget {
   final List<HouseholdRosterMember> roster;
@@ -57,7 +60,7 @@ class PresenceOverview extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: Border(left: BorderSide(color: cs.primary, width: 3)),
+        border: Border(left: BorderSide(color: cs.onSurface, width: 3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -66,34 +69,46 @@ class PresenceOverview extends StatelessWidget {
             button: true,
             expanded: expanded,
             label: l10n.menuPresenceSummaryTitle,
-            child: InkWell(
-              onTap: onToggleExpanded,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.home_outlined, size: 15, color: cs.secondary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        summary,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: cs.onSurface,
-                          fontWeight: FontWeight.w600,
+            child: Material(
+              type: MaterialType.transparency,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  onTap: onToggleExpanded,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.house,
+                          size: 15,
+                          color: cs.secondary,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            summary,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ButleryIcon(
+                          expanded
+                              ? ButleryIcons.chevronUp
+                              : ButleryIcons.chevronDown,
+                          size: 18,
+                          color: cs.outline,
+                        ),
+                      ],
                     ),
-                    Icon(
-                      expanded ? Icons.expand_less : Icons.expand_more,
-                      size: 18,
-                      color: cs.outline,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -122,10 +137,8 @@ class PresenceOverview extends StatelessWidget {
                     child: Text(
                       day.displayLabel,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        fontSize: 9,
+                      style: AppTextStyles.overline.copyWith(
                         color: cs.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -143,7 +156,7 @@ class PresenceOverview extends StatelessWidget {
                       children: [
                         FamilyAvatar(
                           name: member.displayName,
-                          color: parseAvatarColor(member.avatarColor),
+                          color: parseAvatarColor(context, member.avatarColor),
                           size: 18,
                         ),
                         const SizedBox(width: 5),
@@ -153,7 +166,6 @@ class PresenceOverview extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.labelSmall.copyWith(
-                              fontSize: 10,
                               color: cs.onSurface,
                             ),
                           ),
@@ -201,7 +213,7 @@ class _GridCell extends StatelessWidget {
             ),
           ),
           child: present
-              ? Icon(Icons.check, size: 11, color: cs.onPrimary)
+              ? ButleryIcon(ButleryIcons.check, size: 11, color: cs.onPrimary)
               : null,
         ),
       ),

@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Widget for displaying system messages in chat.
 ///
@@ -47,8 +50,8 @@ class SystemMessageWidget extends StatelessWidget {
         vertical: AppDimensions.paddingS,
       ),
       decoration: BoxDecoration(
-        color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -57,7 +60,9 @@ class SystemMessageWidget extends StatelessWidget {
             child: Text(
               content,
               style: AppTextStyles.labelSmall.copyWith(
-                color: cs.onSurfaceVariant,
+                color: AppModeColors.textSecondaryOnRaised(
+                  Theme.of(context).brightness,
+                ),
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
@@ -65,8 +70,8 @@ class SystemMessageWidget extends StatelessWidget {
           ),
           if (onDismiss != null) ...[
             const SizedBox(width: AppDimensions.paddingS),
-            Icon(
-              Icons.close,
+            ButleryIcon(
+              ButleryIcons.x,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
@@ -145,9 +150,10 @@ class ReplyPreviewWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: (isFromCurrentUser ? cs.surfaceContainerHighest : cs.secondary)
-            .withValues(alpha: AppDimensions.opacityLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        color: isFromCurrentUser
+            ? AppModeColors.surfaceRaisedOnInk()
+            : cs.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border(
           left: BorderSide(color: cs.secondary, width: 3),
         ),
@@ -159,20 +165,16 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? cs.surfaceContainerHighest.withValues(
-                      alpha: AppDimensions.opacityVeryDark,
-                    )
-                  : cs.primary,
+                  ? AppModeColors.textSecondaryOnInk()
+                  : cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXxs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? cs.surfaceContainerHighest.withValues(
-                      alpha: AppDimensions.opacityDark,
-                    )
+                  ? AppModeColors.textSecondaryOnInk()
                   : cs.onSurfaceVariant,
             ),
             maxLines: 2,
@@ -205,7 +207,7 @@ class MessageAvatarWidget extends StatelessWidget {
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: cs.secondary.withValues(alpha: AppDimensions.opacityLight),
+        color: cs.surfaceContainerHighest,
       ),
       child: avatarImage ?? _buildFallback(cs),
     );
@@ -215,7 +217,7 @@ class MessageAvatarWidget extends StatelessWidget {
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-        style: AppTextStyles.labelMedium.copyWith(color: cs.primary),
+        style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
       ),
     );
   }

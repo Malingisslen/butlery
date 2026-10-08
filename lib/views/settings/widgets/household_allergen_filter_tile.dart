@@ -12,11 +12,14 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: opt out of household-wide allergen filtering in menus.
 ///
@@ -66,13 +69,38 @@ class _HouseholdAllergenFilterTileState
     // Fetch the household's tracked allergens so the warning can name the ones
     // opting out actually exposes, then require an explicit confirm.
     final aggregate = await _householdService?.aggregateAllergenPreferences();
+    final withDiners = await _withDinerProfiles(aggregate);
     if (!mounted) return;
-    final confirmed = await _confirmTurnOff(aggregate);
+    final confirmed = await _confirmTurnOff(withDiners);
     if (confirmed == true) {
       await _persist(false);
     }
     // If not confirmed, nothing persists — the controlled switch never moved
     // (still bound to the unchanged `on` value), so it stays ON.
+  }
+
+  /// The menu drops the family's diner profiles (children) together with the
+  /// member accounts when this toggle goes off, so the warning names their
+  /// allergens too; the account union alone never saw a child.
+  Future<HouseholdAllergenAggregate?> _withDinerProfiles(
+    HouseholdAllergenAggregate? aggregate,
+  ) async {
+    if (aggregate == null) return null;
+    final widened = await const PresentDinerPrefsResolver().addHouseholdDiners(
+      aggregate.preferences,
+    );
+    if (widened == null || !widened.changed) return aggregate;
+    if (widened.prefs.isComplete && aggregate.isRosterComplete) {
+      return HouseholdAllergenAggregate.completeWithMissing(
+        preferences: widened.prefs.preferences,
+        missingMemberIds: aggregate.missingMemberIds,
+      );
+    }
+    return HouseholdAllergenAggregate.degraded(
+      preferences: widened.prefs.preferences,
+      unresolvedMemberIds: aggregate.unresolvedMemberIds,
+      missingMemberIds: aggregate.missingMemberIds,
+    );
   }
 
   /// Persists the flag, surfacing an error if the write fails so the user is
@@ -82,7 +110,10 @@ class _HouseholdAllergenFilterTileState
       await _userService.setUseHouseholdAllergens(value);
     } catch (_) {
       if (mounted) {
-        SnackBarUtils.showError(context, context.l10n.settingsSaveFailed);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.settingsSaveFailed,
+        );
       }
     }
   }
@@ -106,28 +137,30 @@ class _HouseholdAllergenFilterTileState
       message: rosterComplete
           ? body
           : '$body\n\n${l10n.householdAllergenRosterIncomplete}',
-      titleIcon: Icons.warning_amber,
+      titleIcon: ButleryIcons.triangleAlert,
       // Weighted red confirm (isDangerous) — this is the one settings toggle
       // whose wrong tap has a child-safety consequence, so it should carry
       // gravity. But it is NOT a delete, so override the default trash icon
       // with a warning icon (base_dialog defaults primaryActionIcon to
-      // Icons.delete when isDangerous).
+      // ButleryIcons.trash2 when isDangerous).
       isDangerous: true,
-      primaryActionIcon: Icons.warning_amber,
+      primaryActionIcon: ButleryIcons.triangleAlert,
       primaryActionText: l10n.commonTurnOff,
       secondaryActionText: l10n.commonCancel,
     );
   }
 
   /// Natural-language list of the allergens that opting OUT actually stops
-  /// filtering — the household union MINUS the owner's OWN tracked allergens,
-  /// which single-user (owner-only) filtering still protects after the opt-out.
+  /// filtering — the household union MINUS what the menu filters by for the
+  /// owner alone after the opt-out ([HouseholdService.ownMenuPreferences]).
   /// Naming an owner-own allergen would be a false statement in the safety
   /// dialog (it stays filtered either way). Empty when opting out exposes
   /// nothing new (then the generic body is used).
   String _newlyUnprotectedNames(UserAllergenPreferences? prefs) {
     if (prefs == null) return '';
-    final owner = _userService.allergenPreferences;
+    final owner = HouseholdService.ownMenuPreferences(
+      _userService.currentUserProfile,
+    );
     final allergens = prefs.trackedAllergens.difference(owner.trackedAllergens);
     final dietary = prefs.trackedDietary.difference(owner.trackedDietary);
     final labels = <String>[
@@ -148,11 +181,11 @@ class _HouseholdAllergenFilterTileState
     }
     final cs = Theme.of(context).colorScheme;
     final on = _userService.currentUserProfile?.useHouseholdAllergens ?? true;
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
 
     return SwitchListTile(
-      secondary: Icon(
-        Icons.groups_outlined,
+      secondary: ButleryIcon(
+        ButleryIcons.users,
         color: on ? cs.onSurfaceVariant : colors.warning,
       ),
       title: Text(
@@ -169,12 +202,12 @@ class _HouseholdAllergenFilterTileState
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.warning_amber,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   size: AppDimensions.iconSizeS,
                   color: colors.warning,
                 ),
-                const SizedBox(width: AppDimensions.spacingXxs),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.householdAllergenFilterSubtitleOff,

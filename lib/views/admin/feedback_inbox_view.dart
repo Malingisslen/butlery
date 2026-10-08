@@ -1,16 +1,22 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Admin-only inbox listing beta feedback newest-first, with the screenshot,
 /// interaction trail and device info captured at submission, plus a triage
@@ -53,17 +59,17 @@ class _FeedbackInboxContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<FeedbackInboxViewModel>();
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.adminFeedbackInboxTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const ButleryIcon(ButleryIcons.logOut),
             tooltip: context.l10n.adminSignOut,
             onPressed: () => ServiceLocator.get<AuthService>().signOut(),
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: Size.fromHeight(_StatusFilterBar.ceilingHeight),
           child: _StatusFilterBar(vm: vm),
         ),
       ),
@@ -73,7 +79,7 @@ class _FeedbackInboxContent extends StatelessWidget {
 
   Widget _body(BuildContext context, FeedbackInboxViewModel vm) {
     if (vm.isLoading && vm.entries.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingFeedbackEntries);
     }
     if (vm.error != null && vm.entries.isEmpty) {
       return StateWidget.error(
@@ -84,7 +90,7 @@ class _FeedbackInboxContent extends StatelessWidget {
     if (vm.entries.isEmpty) {
       return StateWidget.empty(
         title: context.l10n.adminFeedbackEmpty,
-        icon: Icons.inbox_outlined,
+        icon: ButleryIcons.inbox,
       );
     }
     return ListView.separated(
@@ -120,6 +126,19 @@ class _StatusFilterBar extends StatelessWidget {
   final FeedbackInboxViewModel vm;
   const _StatusFilterBar({required this.vm});
 
+  /// The row's height at 200 % text, the ceiling ButleryTopBar sizes itself
+  /// for.
+  static double get ceilingHeight {
+    final label = AppTextStyles.labelMedium;
+    final line = ((label.fontSize ?? 14) * (label.height ?? 1.0) * 2.0)
+        .ceilToDouble();
+    final chip = math.max(
+      AppDimensions.minTouchTarget,
+      line + 2 * AppDimensions.paddingS,
+    );
+    return chip + 2 * AppDimensions.paddingS;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -142,11 +161,16 @@ class _StatusFilterBar extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.spacingSm,
               ),
-              child: ChoiceChip(
-                label: Text(label),
-                selected: vm.statusFilter == status,
-                shape: const RoundedRectangleBorder(),
-                onSelected: (_) => vm.setStatusFilter(status),
+              child: PressFill(
+                surface: vm.statusFilter == status
+                    ? PressSurface.ink
+                    : PressSurface.base,
+                child: ChoiceChip(
+                  label: Text(label),
+                  selected: vm.statusFilter == status,
+                  shape: const RoundedRectangleBorder(),
+                  onSelected: (_) => vm.setStatusFilter(status),
+                ),
               ),
             ),
         ],
@@ -214,7 +238,9 @@ class _FeedbackCard extends StatelessWidget {
               Text(
                 '${context.l10n.adminFeedbackInteractions}: '
                 '${_formatInteractions(entry.recentInteractions)}',
-                style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ],
             const SizedBox(height: AppDimensions.spacingSm),
@@ -222,7 +248,7 @@ class _FeedbackCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: () => _copyForClaude(context),
-                icon: const Icon(Icons.copy_all_outlined, size: 18),
+                icon: const ButleryIcon(ButleryIcons.copy, size: 18),
                 label: Text(context.l10n.adminCopyForClaude),
                 style: TextButton.styleFrom(
                   shape: const RoundedRectangleBorder(),
@@ -330,19 +356,21 @@ class _Screenshot extends StatelessWidget {
         if (progress == null) return child;
         return SizedBox(
           height: AppDimensions.heightXLarge,
-          child: StateWidget.loading(),
+          child: StateWidget.loading(message: context.l10n.loadingImage),
         );
       },
       errorBuilder: (context, _, __) => Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Row(
           children: [
-            Icon(Icons.broken_image_outlined, color: cs.outline),
+            ButleryIcon(ButleryIcons.imageOff, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
                 url,
-                style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -380,7 +408,7 @@ class _Screenshot extends StatelessWidget {
                 top: AppDimensions.spacingSm,
                 right: AppDimensions.spacingSm,
                 child: IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const ButleryIcon(ButleryIcons.x),
                   color: Colors.white,
                   tooltip: dialogCtx.l10n.adminScreenshotClose,
                   style: IconButton.styleFrom(
@@ -414,15 +442,33 @@ class _StatusControl extends StatelessWidget {
       spacing: AppDimensions.spacingSm,
       children: [
         for (final (label, status) in options)
-          ChoiceChip(
-            label: Text(label),
-            selected: entry.status == status,
-            shape: const RoundedRectangleBorder(),
-            onSelected: entry.status == status
-                ? null
-                : (_) => vm.updateStatus(entry.id, status),
+          PressFill(
+            surface: entry.status == status
+                ? PressSurface.ink
+                : PressSurface.base,
+            child: ChoiceChip(
+              label: Text(label),
+              selected: entry.status == status,
+              shape: const RoundedRectangleBorder(),
+              onSelected: entry.status == status
+                  ? null
+                  : (_) => _setStatus(context, status),
+            ),
           ),
       ],
+    );
+  }
+
+  // A refused change is a failure snackbar with Försök igen, never the
+  // inbox's load-error state and never the method name
+  // (content-style-guide.md:87-97).
+  Future<void> _setStatus(BuildContext context, FeedbackStatus status) async {
+    if (await vm.updateStatus(entry.id, status) || !context.mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.adminFeedbackStatusFailed,
+      preserved: context.l10n.adminFeedbackStatusPreserved,
+      action: FailureAction.retry(() => _setStatus(context, status)),
     );
   }
 }
@@ -435,14 +481,16 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
+      padding: AppDimensions.statusPillPadding,
+      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
+      // v1:297 draws the pill text at 0.5 px tracking.
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      color: cs.secondaryContainer,
       child: Text(
         _statusLabel(context, status),
-        style: AppTextStyles.metadataEmphasized,
+        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
       ),
     );
   }

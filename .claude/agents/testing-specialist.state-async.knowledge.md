@@ -93,6 +93,13 @@
   assert it's dead after (`addListener`→`throwsFlutterError`).
 - A suite whose every stubbed stream is already COMPLETING pins no cancellation — use a
   `StreamController`, assert `hasListener` true-before/false-after.
+- **A stubbed `stateStream` must REPLAY like the service's real one.** A service exposing a
+  seeded `BehaviorSubject` delivers its current value to every new listener one microtask
+  after `listen()` — i.e. while a constructor's own `executeNamedOperation('init')` is still
+  in `_activeOperations`. A handler that re-runs that op then hits the duplicate-op
+  `StateError`, which the caller's `catch` turns into a user error. A plain `StreamController`
+  or `Stream.empty()` stub never replays, so the collision is invisible; read the service's
+  `stateStream` getter and stub `BehaviorSubject.seeded(<its seed>)` (BUT-2189).
 - A throw-on-disposed guard inside a shared builder is safe only at callers that catch —
   `notifyListeners()` post-dispose is DEBUG-ONLY, so never conclude "unreachable" from a debug-mode
   trace. **The MIRROR is the commoner comment defect: only the WRITE side asserts.**

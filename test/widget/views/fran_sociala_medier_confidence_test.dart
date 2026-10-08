@@ -17,6 +17,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/fran_sociala_medier_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -105,5 +106,38 @@ void main() {
           'Confidence describes an OCR pass — pasted text has none, '
           'so showing a badge would be fabricated signal.',
     );
+  });
+
+  // P4-T6: the tips heading is text.primary (onSurface), paper on the dark
+  // page; cs.primary is ink in both schemes (tokens.json:54-57, :112-115).
+  testWidgets('dark mode: the tips heading and its glyph are paper', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
+        home: const FranSocialaMedierView(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final paper = AppTheme.darkTheme.colorScheme.onSurface;
+    final heading = tester.widget<Text>(find.text('Tips för bästa resultat'));
+    expect(heading.style?.color, paper);
+    final glyph = tester.widget<Icon>(
+      find
+          .descendant(
+            of: find.ancestor(
+              of: find.text('Tips för bästa resultat'),
+              matching: find.byType(Row),
+            ),
+            matching: find.byIcon(ButleryIcons.info),
+          )
+          .first,
+    );
+    expect(glyph.color, paper);
   });
 }

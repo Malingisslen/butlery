@@ -6,10 +6,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Focused module for shopping list card components
 /// This module handles ONLY shopping list card display responsibilities:
@@ -47,10 +49,10 @@ class ShoppingListCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     // Reproduce the previous Material(elevation: 4) appearance as a decoration
     // so the card looks identical at rest, then let HoverableCard deepen the
-    // shadow on hover (web/desktop only). Square corners are preserved.
+    // shadow on hover (web/desktop only).
     final restDecoration = BoxDecoration(
       color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       boxShadow: AppShadows.elevated,
     );
 
@@ -60,7 +62,10 @@ class ShoppingListCard extends StatelessWidget {
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
         restDecoration: restDecoration,
+        // Hover fills to surface.raised (B83-1 = A, BUT-2183,
+        // produktbeslut-2026-09-30.json).
         hoverDecoration: restDecoration.copyWith(
+          color: cs.surfaceContainerHighest,
           boxShadow: AppShadows.floating,
         ),
         child: Material(
@@ -71,7 +76,8 @@ class ShoppingListCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              overlayColor: HoverableCard.inkOverlay(cs),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Padding(
                 padding: padding ?? _getDefaultPadding(),
                 child: _buildContent(context),
@@ -100,7 +106,7 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         _buildListHeader(context),
         if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildListMetadata(context),
         ],
         if (showPreview) ...[
@@ -145,12 +151,12 @@ class ShoppingListCard extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           _buildListMetadata(context),
         ],
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             if (showSharingStatus) ...[
               _buildSharingIndicator(context),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
             ],
             _buildCompletionIndicator(context),
           ],
@@ -164,12 +170,12 @@ class ShoppingListCard extends StatelessWidget {
     final title = _getListTitle();
     return Row(
       children: [
-        Icon(
-          Icons.shopping_cart,
+        ButleryIcon(
+          ButleryIcons.shoppingCart,
           size: AppDimensions.iconSizeM,
           color: cs.onSurfaceVariant,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             title,
@@ -219,16 +225,16 @@ class ShoppingListCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.info_outline,
+            ButleryIcon(
+              ButleryIcons.info,
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.shoppingCardNoItems,
               style: AppTextStyles.metadataEmphasized,
@@ -245,7 +251,7 @@ class ShoppingListCard extends StatelessWidget {
           context.l10n.shoppingCardItemsOnList,
           style: AppTextStyles.labelMediumMuted,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...items
             .take(4)
             .map(
@@ -253,16 +259,16 @@ class ShoppingListCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
                 child: Row(
                   children: [
-                    Icon(
+                    ButleryIcon(
                       _isItemCompleted(item)
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
+                          ? ButleryIcons.circleCheck
+                          : ButleryIcons.circle,
                       size: AppDimensions.iconSizeS,
                       color: _isItemCompleted(item)
-                          ? context.butleryColors.success
+                          ? context.modeColors.success
                           : cs.onSurfaceVariant,
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
                         _getItemTitle(item),
@@ -306,29 +312,28 @@ class ShoppingListCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
+      // A neutral info chip: the raised surface with no border (B83-2).
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
-          width: AppDimensions.borderWidthThin,
-        ),
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.people,
+          ButleryIcon(
+            ButleryIcons.users,
             size: AppDimensions.iconSizeS,
-            color: cs.primary,
+            color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             memberCount > 0
                 ? context.l10n.shoppingCardSharedWithCount(memberCount)
                 : context.l10n.shoppingCardSharedList,
-            style: AppTextStyles.linkSmall,
+            style: AppTextStyles.linkSmall.copyWith(
+              color: context.modeColors.textLink,
+            ),
           ),
         ],
       ),
@@ -349,10 +354,10 @@ class ShoppingListCard extends StatelessWidget {
         color: cs.primary,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.people,
+      child: ButleryIcon(
+        ButleryIcons.users,
         size: AppDimensions.iconSizeS,
-        color: cs.surfaceContainerHighest,
+        color: cs.onPrimary,
       ),
     );
   }
@@ -367,26 +372,29 @@ class ShoppingListCard extends StatelessWidget {
 
     final completionPercentage = (completedItems / totalItems);
     final isComplete = completionPercentage == 1.0;
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
+    // A status chip (B83-2): the mode's tint with no border, and the glyph
+    // and text in the one on-colour that reads on that tint.
+    final onColor = isComplete
+        ? bc.onSuccessContainer
+        : AppModeColors.textWarning(Theme.of(context).brightness);
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: isComplete
-            ? bc.success.withValues(alpha: AppDimensions.opacityLightSubtle)
-            : bc.warning.withValues(alpha: AppDimensions.opacityLightSubtle),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        color: isComplete ? bc.surfaceTintSuccess : bc.surfaceTintWarning,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isComplete ? Icons.check_circle : Icons.hourglass_empty,
+          ButleryIcon(
+            isComplete ? ButleryIcons.circleCheck : ButleryIcons.hourglass,
             size: AppDimensions.iconSizeS,
-            color: isComplete ? bc.success : bc.warning,
+            color: onColor,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
@@ -394,7 +402,7 @@ class ShoppingListCard extends StatelessWidget {
                 ? context.l10n.shoppingCardComplete
                 : '${(completionPercentage * 100).round()}%',
             style: AppTextStyles.labelSmall.copyWith(
-              color: isComplete ? bc.success : bc.warning,
+              color: onColor,
             ),
           ),
         ],
@@ -462,7 +470,7 @@ class ShoppingListCard extends StatelessWidget {
       case ShoppingListCardStyle.compact:
         return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
       case ShoppingListCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case ShoppingListCardStyle.detailed:
         return EdgeInsets.zero;
     }
@@ -472,13 +480,13 @@ class ShoppingListCard extends StatelessWidget {
     switch (style) {
       case ShoppingListCardStyle.compact:
         return const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
         );
       case ShoppingListCardStyle.grid:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
       case ShoppingListCardStyle.detailed:
-        return const EdgeInsets.all(AppDimensions.spacingS);
+        return const EdgeInsets.all(AppDimensions.space4);
     }
   }
 }

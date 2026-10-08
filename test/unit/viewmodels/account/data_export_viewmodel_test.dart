@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:io' show SocketException;
+
+import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
@@ -929,6 +933,83 @@ void main() {
         );
         expect(viewModel.errorMessage, contains('Försök igen'));
       });
+    });
+  });
+
+  // P6-U06 (produktregler.md:733-735; Skarmar v12 etapp 6 #dataexportfel):
+  // three causes, three messages, and the file lives only in memory.
+  group('P6-U06 export causes and memory', () {
+    test('each cause is told apart', () {
+      expect(
+        DataExportViewModel.classifyExportError(
+          Exception('No authenticated user found'),
+        ),
+        ExportFailure.signedOut,
+      );
+      expect(
+        DataExportViewModel.classifyExportError(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        ),
+        ExportFailure.permissionDenied,
+      );
+      expect(
+        DataExportViewModel.classifyExportError(
+          FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+        ),
+        ExportFailure.network,
+      );
+      expect(
+        DataExportViewModel.classifyExportError(
+          FirebaseException(
+            plugin: 'firebase_auth',
+            code: 'user-token-expired',
+          ),
+        ),
+        ExportFailure.signedOut,
+      );
+      expect(
+        DataExportViewModel.classifyExportError(
+          const SocketException('reset'),
+        ),
+        ExportFailure.network,
+      );
+      expect(
+        DataExportViewModel.classifyExportError(TimeoutException('slow')),
+        ExportFailure.network,
+      );
+      expect(
+        DataExportViewModel.classifyExportError(StateError('x')),
+        ExportFailure.other,
+      );
+    });
+
+    test('a failed export keeps no partial file and names its cause', () async {
+      final service = MockDataExportService();
+      when(() => service.exportUserData()).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+      );
+      final vm = DataExportViewModel(exportService: service);
+
+      expect(await vm.exportData(), isFalse);
+      expect(vm.failure, ExportFailure.network);
+      expect(vm.exportedData, isNull);
+      expect(vm.hasExportedData, isFalse);
+      vm.dispose();
+    });
+
+    test('the file is cleared when the view model is disposed', () async {
+      final service = MockDataExportService();
+      when(() => service.exportUserData()).thenAnswer((_) async => '{"a":1}');
+      final vm = DataExportViewModel(exportService: service);
+      expect(await vm.exportData(), isTrue);
+      expect(vm.exportedData, isNotNull);
+
+      vm.dispose();
+      expect(vm.exportedData, isNull);
+      expect(vm.exportTimestamp, isNull);
     });
   });
 }

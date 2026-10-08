@@ -3,14 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class InvitationTargetStates {
   /// Build target list loading state
   static Widget targetListLoading() {
-    return const Center(
-      child: LoadingIndicator(),
+    // The plate line with what is fetched (produktregler.md:163, B-18).
+    return Builder(
+      builder: (context) => Center(
+        child: PlateLineMessage(
+          message: context.l10n.invitationLoadingTargets,
+        ),
+      ),
     );
   }
 
@@ -18,8 +25,11 @@ class InvitationTargetStates {
   static Widget targetCardLoading(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const LoadingIndicator(),
-        title: Text(context.l10n.commonLoading),
+        leading: SizedBox(
+          width: AppDimensions.iconSizeXl,
+          child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
+        ),
+        title: ExcludeSemantics(child: Text(context.l10n.loadingGeneric)),
       ),
     );
   }
@@ -34,8 +44,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
             size: 48,
             color: Theme.of(context).colorScheme.error,
           ),
@@ -69,8 +79,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.people_outline,
+          ButleryIcon(
+            ButleryIcons.users,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -103,8 +113,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off,
+          ButleryIcon(
+            ButleryIcons.searchOff,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -139,16 +149,16 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.check_circle,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             size: 48,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             context.l10n.invitationTargetsSelectedCount(count),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: context.butleryColors.success,
+              color: context.modeColors.success,
             ),
           ),
           if (onContinue != null) ...[
@@ -177,7 +187,7 @@ class InvitationTargetStates {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius20,
+                  AppDimensions.radiusPill,
                 ),
               ),
             ),
@@ -187,7 +197,7 @@ class InvitationTargetStates {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius8,
+                  AppDimensions.radiusControl,
                 ),
               ),
             ),
@@ -197,7 +207,7 @@ class InvitationTargetStates {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadius7,
+                  AppDimensions.radiusControl,
                 ),
               ),
             ),
@@ -218,8 +228,8 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.checklist,
+          ButleryIcon(
+            ButleryIcons.listCheck,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

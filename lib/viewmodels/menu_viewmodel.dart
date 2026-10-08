@@ -28,6 +28,63 @@ import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 
+/// P5-U25: one meal type the generation could not fill.
+@immutable
+class MenuMissingMeal {
+  const MenuMissingMeal({
+    required this.mealType,
+    required this.found,
+    required this.requested,
+  });
+
+  /// The meal type as the menu keys it ("middag").
+  final String mealType;
+  final int found;
+  final int requested;
+
+  int get missing => requested - found;
+}
+
+/// P5-U25: a generation that found fewer dishes than were asked for.
+///
+/// produktregler.md:206: "Delresultat mäts i recept, inte i dagar ... Ett
+/// delresultat är alltså 1 ≤ n < begärt antal recept." produktregler.md:893:
+/// what is missing is named, "ett antal utan namn är ingen upplysning".
+@immutable
+class MenuPartialOutcome {
+  const MenuPartialOutcome({
+    required this.found,
+    required this.requested,
+    required this.missing,
+  });
+
+  final int found;
+  final int requested;
+
+  /// Each meal type that got fewer than asked, in the order it was asked.
+  final List<MenuMissingMeal> missing;
+}
+
+/// P6-U01: a generation where nothing matched ("0 recept placerade ->
+/// inga matchningar", flows-roles-budget.md:32).
+///
+/// Skarmar v12 del 1 #veckoingamatch: "Nollresultat säger vad som stoppade
+/// det och erbjuder minsta möjliga eftergift — inte en generisk feltext."
+/// It is its own outcome and never an error; an empty library stays the
+/// error errorNoRecipesAvailable.
+@immutable
+class MenuNoMatchOutcome {
+  const MenuNoMatchOutcome({required this.poolSize, required this.constraints});
+
+  /// How many recipes the generation could choose from.
+  final int poolSize;
+
+  /// The requirements the prompt was read as ("Under 30 min",
+  /// "Vegetariskt"), in the parser's order. Counts, meal types and days are
+  /// left out: they say how many, not what stopped it.
+  final List<String> constraints;
+}
+
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
@@ -42,6 +99,14 @@ class MenuViewModel extends BaseViewModel {
   // becomes true inside super.dispose() at the end, which would be too late for
   // this VM's own guarded callbacks.
   bool _isDisposed = false;
+
+  /// P5-U25: how many dishes the last generated prompt asked for, per meal
+  /// type (lower-cased). Empty for a menu that was not generated here (a
+  /// loaded or shared menu), which then never reads as partial.
+  Map<String, int> _requestedByMealType = const {};
+
+  /// P6-U01: set when the last generation matched nothing.
+  MenuNoMatchOutcome? _noMatch;
 
   // Modules
   late final MenuStateManager _stateManager;
@@ -70,9 +135,8 @@ class MenuViewModel extends BaseViewModel {
       weeklyMenuPlanService: ServiceLocator.tryGet<WeeklyMenuPlanService>(),
       // BUT-1317 (safety): personal weekly-menu generation must respect the
       // user's tracked allergens/dietary prefs by default, mirroring the group
-      // flow. Filtering reads userService.allergenPreferences and honors
-      // includeUnknownInMenu; the household toggle and prompt-inline
-      // constraints still layer on top.
+      // flow. Filtering honors includeUnknownInMenu; the household toggle and
+      // prompt-inline constraints still layer on top.
       filterByAllergens: true,
       filterByDietary: true,
     );
@@ -115,8 +179,96 @@ class MenuViewModel extends BaseViewModel {
   String get lastPrompt => _stateManager.lastPrompt;
   List<SavedMenuInfo> get savedMenus => _stateManager.savedMenus;
   int get totalRecipeCount => _stateManager.totalRecipeCount;
+
+  /// P5-U25: the generated menu has fewer dishes than the prompt asked for
+  /// (1 ≤ n < requested, produktregler.md:206), or null. Read from the menu
+  /// as it is now, so a re-rolled section that filled the gap clears it.
+  MenuPartialOutcome? get partialOutcome {
+    if (_requestedByMealType.isEmpty || !hasMenu) return null;
+    final foundByType = <String, int>{};
+    for (final entry in menu.entries) {
+      final key = entry.key.toLowerCase();
+      foundByType[key] = (foundByType[key] ?? 0) + entry.value.length;
+    }
+    var requested = 0;
+    var found = 0;
+    final missing = <MenuMissingMeal>[];
+    for (final entry in _requestedByMealType.entries) {
+      final got = foundByType[entry.key] ?? 0;
+      requested += entry.value;
+      found += got < entry.value ? got : entry.value;
+      if (got < entry.value) {
+        missing.add(
+          MenuMissingMeal(
+            mealType: entry.key,
+            found: got,
+            requested: entry.value,
+          ),
+        );
+      }
+    }
+    if (found < 1 || found >= requested) return null;
+    return MenuPartialOutcome(
+      found: found,
+      requested: requested,
+      missing: List.unmodifiable(missing),
+    );
+  }
+
+  /// P5-U25: dishes asked for per meal type, read the same way generation
+  /// read the prompt (MenuService.generateMenuFromParsedRequest: each day
+  /// pin asks for one, each slot request for its count). Empty when the
+  /// prompt cannot be parsed, so a failed parse never invents a gap.
+  Future<Map<String, int>> _requestedCountsFor(String prompt) async {
+    try {
+      final parsed = await _menuService.parsePrompt(prompt);
+      if (parsed == null) return const {};
+      final counts = <String, int>{};
+      for (final pin in parsed.dayPins) {
+        final key = pin.mealType.toLowerCase();
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+      for (final slot in parsed.slotRequests) {
+        final key = slot.mealType.toLowerCase();
+        counts[key] = (counts[key] ?? 0) + slot.totalCount;
+      }
+      counts.removeWhere((_, count) => count <= 0);
+      return counts;
+    } catch (e) {
+      AppLogger.error('Could not read the requested dish count', e);
+      return const {};
+    }
+  }
+
+  /// P6-U01: the last generation matched nothing, or null.
+  MenuNoMatchOutcome? get noMatchOutcome => hasMenu ? null : _noMatch;
+
+  /// The requirements the prompt was read as, for the no-match state.
+  Future<List<String>> _constraintLabelsFor(String prompt) async {
+    try {
+      final parsed = await _menuService.parsePrompt(prompt);
+      if (parsed == null) return const [];
+      return [
+        for (final entry in parsed.trace.understood)
+          if (entry.category != TraceCategory.count &&
+              entry.category != TraceCategory.mealType &&
+              entry.category != TraceCategory.day)
+            entry.label,
+      ];
+    } catch (e) {
+      AppLogger.error('Could not read the requirements of the prompt', e);
+      return const [];
+    }
+  }
+
   List<Recipe> get availableRecipes => _generator.availableRecipes;
   bool get hasAvailableRecipes => _generator.hasAvailableRecipes;
+
+  /// The pool a user may pick a recipe FROM (vote alternatives): filtered for
+  /// the whole household including diner profiles, like generation and swap.
+  /// [availableRecipes] filters on the signed-in user alone.
+  Future<List<Recipe>> getAvailableRecipesAsync() =>
+      _generator.getAvailableRecipesAsync();
 
   /// Whether the user has a household group configured.
   bool get hasHousehold {
@@ -165,6 +317,8 @@ class MenuViewModel extends BaseViewModel {
 
     _stateManager.setGenerating(true);
     _stateManager.setLastPrompt(prompt.trim());
+    _requestedByMealType = const {};
+    _noMatch = null;
 
     // Track menu generation started
     await _analyticsService.logMenuGenerationStarted(
@@ -177,6 +331,24 @@ class MenuViewModel extends BaseViewModel {
       final generatedMenu = await _generator.generateMenuFromPrompt(
         prompt.trim(),
       );
+      if (generatedMenu.isEmpty) {
+        // P6-U01: nothing matched. Its own outcome, never an error, and the
+        // earlier suggestion gives way to it like any new generation.
+        _noMatch = MenuNoMatchOutcome(
+          poolSize: _generator.lastPoolSize,
+          constraints: List.unmodifiable(
+            await _constraintLabelsFor(prompt.trim()),
+          ),
+        );
+        _stateManager.setMenu(const {});
+        _stateManager.clearErrorAfterSuccess();
+        await _analyticsService.logMenuGenerationFailed(
+          errorCode: 'menu_generation_no_match',
+          errorMessage: 'menu_generation_no_match',
+        );
+        return;
+      }
+      _requestedByMealType = await _requestedCountsFor(prompt.trim());
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
 
@@ -196,6 +368,14 @@ class MenuViewModel extends BaseViewModel {
           thresholdMs: 10000,
         );
       }
+    } on MenuNoRecipesException {
+      // P6-U01: an empty library keeps its own message. The sanitizer below
+      // would turn it into "Ett fel uppstod".
+      _stateManager.setError(AppLocale.current.errorNoRecipesAvailable);
+      await _analyticsService.logMenuGenerationFailed(
+        errorCode: 'menu_generation_no_recipes',
+        errorMessage: 'menu_generation_no_recipes',
+      );
     } catch (e) {
       _stateManager.handleOperationError(
         AppLocale.current.errorImportFailed,
@@ -294,7 +474,11 @@ class MenuViewModel extends BaseViewModel {
   /// Clears current menu state for new generation or menu reset operations.
   /// Delegates to MenuStateManager for complete menu state cleanup
   /// enabling fresh menu generation and state reset functionality.
-  void clearMenu() => _stateManager.clearMenu();
+  void clearMenu() {
+    _requestedByMealType = const {};
+    _noMatch = null;
+    _stateManager.clearMenu();
+  }
 
   /// Clears current error state for error recovery and clean state management.
   /// Delegates to MenuStateManager for error state cleanup enabling
@@ -311,6 +495,7 @@ class MenuViewModel extends BaseViewModel {
   /// Loads menu content from a SharedMenu for viewing/editing.
   /// Used when navigating to VeckomenyView with a shared menu from social features.
   void loadFromSharedMenu(SharedMenu sharedMenu) {
+    _requestedByMealType = const {};
     _stateManager.setMenu(sharedMenu.menuSnapshot);
     AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
   }
@@ -445,6 +630,7 @@ class MenuViewModel extends BaseViewModel {
       // Try loading from local storage first
       final localMenuData = await _storage.loadMenuByKey(menuKey);
       if (localMenuData != null) {
+        _requestedByMealType = const {};
         _stateManager.loadMenuFromData(
           menu: localMenuData.menu,
           lastPrompt: localMenuData.lastPrompt,
@@ -457,6 +643,7 @@ class MenuViewModel extends BaseViewModel {
         menuKey,
       );
       if (importedMenuData != null) {
+        _requestedByMealType = const {};
         _stateManager.loadMenuFromData(
           menu: importedMenuData.menu,
           lastPrompt: importedMenuData.lastPrompt,

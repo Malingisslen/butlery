@@ -24,6 +24,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
 /// through [buildTextFormField]; the dropdown, checkbox and switch builders
@@ -47,46 +52,49 @@ class DialogFormFields {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: const OutlineInputBorder(),
-          counterText: maxLength != null ? null : '',
+      child: Builder(
+        builder: (context) => TextFormField(
+          style: fieldTextStyle(context, enabled: enabled),
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: labelText,
+            hintText: hintText,
+            prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
+            border: const OutlineInputBorder(),
+            counterText: maxLength != null ? null : '',
+          ),
+          maxLength: maxLength,
+          maxLines: maxLines,
+          enabled: enabled,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          // BUT-517 follow-up: contentFilter must NEVER be bypassable. The old
+          // shape `customValidator ?? combine([...defaults, contentFilter])`
+          // silently dropped the profanity gate whenever a caller passed a
+          // customValidator (foot-gun for any future UGC-bearing dialog field).
+          // Always compose; customValidator runs first so its error wins on its
+          // own concern, and contentFilter is the unconditional final step.
+          validator: FormValidators.combine([
+            ?customValidator,
+            if (required)
+              (value) =>
+                  ValidationUtils.validateRequired(value, fieldName: labelText),
+            // Length only applies when there IS content — otherwise an optional
+            // field with the default minLength=1 would always reject empty
+            // input (regression caught when buildPhoneField etc. compose this
+            // chain without explicitly opting out of length-checking).
+            (value) {
+              if (value == null || value.isEmpty) return null;
+              return ValidationUtils.validateLength(
+                value,
+                minLength: minLength,
+                maxLength: maxLengthLimit,
+                fieldName: labelText,
+              );
+            },
+            FormValidators.contentFilter(labelText),
+          ]),
         ),
-        maxLength: maxLength,
-        maxLines: maxLines,
-        enabled: enabled,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        // BUT-517 follow-up: contentFilter must NEVER be bypassable. The old
-        // shape `customValidator ?? combine([...defaults, contentFilter])`
-        // silently dropped the profanity gate whenever a caller passed a
-        // customValidator (foot-gun for any future UGC-bearing dialog field).
-        // Always compose; customValidator runs first so its error wins on its
-        // own concern, and contentFilter is the unconditional final step.
-        validator: FormValidators.combine([
-          ?customValidator,
-          if (required)
-            (value) =>
-                ValidationUtils.validateRequired(value, fieldName: labelText),
-          // Length only applies when there IS content — otherwise an optional
-          // field with the default minLength=1 would always reject empty
-          // input (regression caught when buildPhoneField etc. compose this
-          // chain without explicitly opting out of length-checking).
-          (value) {
-            if (value == null || value.isEmpty) return null;
-            return ValidationUtils.validateLength(
-              value,
-              minLength: minLength,
-              maxLength: maxLengthLimit,
-              fieldName: labelText,
-            );
-          },
-          FormValidators.contentFilter(labelText),
-        ]),
       ),
     );
   }
@@ -97,7 +105,7 @@ class DialogFormFields {
     required TextEditingController controller,
     String? labelText,
     String? hintText,
-    IconData prefixIcon = Icons.label_outline,
+    IconData prefixIcon = ButleryIcons.tag,
     bool enabled = true,
     int maxLength = 50,
     int minLength = 2,
@@ -120,7 +128,7 @@ class DialogFormFields {
     required TextEditingController controller,
     String? labelText,
     String? hintText,
-    IconData prefixIcon = Icons.description_outlined,
+    IconData prefixIcon = ButleryIcons.file,
     bool enabled = true,
     int maxLength = 200,
     int maxLines = 3,
@@ -152,7 +160,7 @@ class DialogFormFields {
     required TextEditingController controller,
     String? labelText,
     String? hintText,
-    IconData prefixIcon = Icons.numbers,
+    IconData prefixIcon = ButleryIcons.hash,
     bool enabled = true,
     double minValue = 0.1,
     double maxValue = 9999.0,
@@ -201,7 +209,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.dialogEmailLabel,
       hintText: hintText ?? context.l10n.dialogEmailHint,
-      prefixIcon: Icons.email_outlined,
+      prefixIcon: ButleryIcons.mail,
       enabled: enabled,
       keyboardType: TextInputType.emailAddress,
       customValidator: FormValidators.authEmail(),
@@ -223,7 +231,7 @@ class DialogFormFields {
       controller: controller,
       labelText: effectiveLabelText,
       hintText: hintText ?? context.l10n.dialogUrlHint,
-      prefixIcon: Icons.link,
+      prefixIcon: ButleryIcons.link,
       enabled: enabled,
       keyboardType: TextInputType.url,
       required: required,
@@ -269,7 +277,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.authPassword,
       hintText: hintText,
-      prefixIcon: Icons.lock_outline,
+      prefixIcon: ButleryIcons.lock,
       enabled: enabled,
       customValidator: FormValidators.authPassword(),
       maxLengthLimit: 128,
@@ -289,7 +297,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.commonSearch,
       hintText: hintText ?? context.l10n.dialogSearchHint,
-      prefixIcon: Icons.search,
+      prefixIcon: ButleryIcons.search,
       enabled: enabled,
       required: false,
       customValidator: (value) => null, // No validation for search
@@ -310,7 +318,7 @@ class DialogFormFields {
       controller: controller,
       labelText: labelText ?? context.l10n.dialogPhoneLabel,
       hintText: hintText ?? '+46 70 123 45 67',
-      prefixIcon: Icons.phone_outlined,
+      prefixIcon: ButleryIcons.smartphone,
       enabled: enabled,
       keyboardType: TextInputType.phone,
       required: required,
@@ -358,23 +366,30 @@ class DialogFormFields {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: DropdownButtonFormField<T>(
-        initialValue: value,
-        items: items,
-        onChanged: enabled ? onChanged : null,
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: const OutlineInputBorder(),
+      child: PressFill(
+        surface: PressSurface.base,
+        child: DropdownButtonFormField<T>(
+          iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          iconDisabledColor: AppModeColors.textDisabled(
+            Theme.of(context).brightness,
+          ),
+          initialValue: value,
+          items: items,
+          onChanged: enabled ? onChanged : null,
+          decoration: InputDecoration(
+            labelText: labelText,
+            hintText: hintText,
+            prefixIcon: prefixIcon != null ? ButleryIcon(prefixIcon) : null,
+            border: const OutlineInputBorder(),
+          ),
+          validator:
+              validator ??
+              (required
+                  ? (value) => value == null
+                        ? context.l10n.dialogFieldRequired(labelText)
+                        : null
+                  : null),
         ),
-        validator:
-            validator ??
-            (required
-                ? (value) => value == null
-                      ? context.l10n.dialogFieldRequired(labelText)
-                      : null
-                : null),
       ),
     );
   }
@@ -388,7 +403,7 @@ class DialogFormFields {
     bool enabled = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: CheckboxListTile(
         value: value,
         onChanged: enabled ? onChanged : null,
@@ -409,7 +424,7 @@ class DialogFormFields {
     bool enabled = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: SwitchListTile(
         value: value,
         onChanged: enabled ? onChanged : null,

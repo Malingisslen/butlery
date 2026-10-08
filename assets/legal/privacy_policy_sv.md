@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 4 juli 2026
-**Version:** 1.3.0
+**Senast uppdaterad:** 6 oktober 2026
+**Version:** 1.4.0
 
 ---
 
@@ -109,6 +109,10 @@ Vi använder dina personuppgifter för följande ändamål:
 
 Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom EU – se avsnitt 6). Innehåll som tas fram med AI-stöd – som ett recept avläst från ett foto eller en föreslagen meny – skapas för att hjälpa dig och visas alltid för din granskning och redigering innan det sparas; du avgör vad du behåller. I linje med EU:s AI-förordning (förordning (EU) 2024/1689, artikel 50) informerar vi dig här när du tar emot AI-stött innehåll. Butlery använder inte AI-chattbottar, känsloigenkänning eller AI-genererat material som utges för att vara verkligt.
 
+**Delade allergier i hushållet (om du har samtyckt):**
+
+Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar — även de som går med senare — se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
+
 ### 5.3 Gemensamma betyg ("Butlery-betyget") – berättigat intresse, inte samtycke
 
 När du betygsätter ett recept (betyget "alla", 1–5 stjärnor) sammanförs det med
@@ -154,7 +158,7 @@ Vi delar dina personuppgifter med följande tredje parter:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Irland)**
 - **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys) via Gemini-modeller
 - **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
-- **Överföring:** Inom EU/EES — all bearbetning sker i regionen `europe-west1` (Belgien). Ingen överföring till USA.
+- **Överföring:** Inom EU/EES — bearbetningen sker i Google Clouds EU-multiregion (`eu`). Ingen överföring till USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Obs:** Bilder som skickas för OCR-bearbetning kan innehålla personuppgifter som syns i fotografiet. Text rensas från kända PII-mönster före bearbetning; bilder kan inte rensas.
 
@@ -190,9 +194,9 @@ Nedan finns en fullständig förteckning över de personuppgiftsbiträden som ta
 
 | Biträde | Mottagna data | Hostingregion | Rättslig grund för överföring |
 |---------|---------------|---------------|-------------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata | `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | `europe-west1` (Belgien) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | EU-multiregion (`eu`) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) — ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Sökindex med recepttitlar, beskrivningar, taggar och publikt visningsnamn | EU-kluster (Frankrike) | Standardavtalsklausuler (SCC). [Policy](https://www.algolia.com/policies/privacy/) |
 
@@ -338,7 +342,7 @@ Vid väsentliga ändringar:
 - 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 24 april 2026
+**Senaste ändring:** 6 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

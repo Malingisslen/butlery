@@ -3,14 +3,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -27,13 +30,15 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/recipe/recipe_image_permission_notice.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -165,16 +170,16 @@ class _SkrivSjalvReceptViewContentState
     switch (event.priority) {
       case NotificationPriority.critical:
       case NotificationPriority.high:
-        UtilityComponents.showErrorSnackbar(context, event.message);
+        SnackBarUtils.showFailure(context, what: event.message);
         break;
       case NotificationPriority.medium:
-        UtilityComponents.showSuccessSnackbar(context, event.message);
+        SnackBarUtils.showSuccess(context, event.message);
         break;
       case NotificationPriority.low:
         // For low priority, only show if it's a completion or success event
         if (event.trigger == UploadNotificationTrigger.allCompleted ||
             event.trigger == UploadNotificationTrigger.retrySuccess) {
-          UtilityComponents.showSuccessSnackbar(context, event.message);
+          SnackBarUtils.showSuccess(context, event.message);
         }
         break;
     }
@@ -211,13 +216,13 @@ class _SkrivSjalvReceptViewContentState
             final tagResult = savedRecipe.tagResult;
 
             if (tagResult != null && tagResult.hasFailed) {
-              UtilityComponents.showWarningSnackbar(
+              SnackBarUtils.showWarning(
                 context,
                 context.l10n.recipeSavedTaggingFailed,
               );
             } else if (tagResult != null && tagResult.tags.isNotEmpty) {
               final coverage = (tagResult.coverage * 100).toInt();
-              UtilityComponents.showSuccessSnackbar(
+              SnackBarUtils.showSuccess(
                 context,
                 context.l10n.recipeSavedWithTags(
                   tagResult.tags.length,
@@ -225,10 +230,7 @@ class _SkrivSjalvReceptViewContentState
                 ),
               );
             } else {
-              UtilityComponents.showSuccessSnackbar(
-                context,
-                context.l10n.recipeSaved,
-              );
+              SnackBarUtils.showSuccess(context, context.l10n.recipeSaved);
             }
           }
           if (mounted) {
@@ -241,11 +243,13 @@ class _SkrivSjalvReceptViewContentState
         } else {
           // After in-helper retries are exhausted (`withRetry` in the
           // recipe-save path), surface "Försök igen" so the user can try again
-          // without re-typing the form.
-          UtilityComponents.showErrorSnackbarWithRetry(
+          // without re-typing the form. The form stays on screen with what
+          // the user wrote, so the failure says so (content-style-guide.md:92).
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.recipeCouldNotSave,
-            onRetry: _saveRecipe,
+            what: viewModel.error ?? context.l10n.recipeCouldNotSave,
+            preserved: context.l10n.errorPreservedForm,
+            action: FailureAction.retry(_saveRecipe),
           );
         }
       }
@@ -318,6 +322,14 @@ class _SkrivSjalvReceptViewContentState
 
     // CRITICAL FIX: Initialize controllers once on first build
     _initializeControllersIfNeeded(viewModel);
+    // P6-U03: Spara waits for low- and failed-confidence import rows to be
+    // confirmed (flows-roles-budget.md:61).
+    final pendingConfirmations = viewModel.pendingParseConfirmations;
+    final saveBlocked =
+        _isSaving ||
+        viewModel.isSaving ||
+        !viewModel.isValid ||
+        pendingConfirmations > 0;
 
     return PopScope(
       canPop:
@@ -329,7 +341,7 @@ class _SkrivSjalvReceptViewContentState
           // CRITICAL FIX: Block navigation if save is in progress (check both states)
           if (_isSaving || viewModel.isSaving) {
             if (context.mounted) {
-              UtilityComponents.showWarningSnackbar(
+              SnackBarUtils.showWarning(
                 context,
                 context.l10n.recipeWaitWhileSaving,
               );
@@ -349,7 +361,7 @@ class _SkrivSjalvReceptViewContentState
             } else if (shouldPop && (_isSaving || viewModel.isSaving)) {
               // Show warning if save started during dialog
               if (context.mounted) {
-                UtilityComponents.showWarningSnackbar(
+                SnackBarUtils.showWarning(
                   context,
                   context.l10n.recipeSaveStartedDuringDialog,
                 );
@@ -361,42 +373,21 @@ class _SkrivSjalvReceptViewContentState
         }
       },
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        // "Skriv själv" is a subpage under Lägg till recept: back arrow and
+        // title in 14/700 (Komponentark v1:71-78; Skarmar v12 del 2 'Skriv
+        // själv').
+        appBar: ButleryTopBar.undersida(
           title: viewModel.isEditMode
               ? context.l10n.recipeEdit
               : context.l10n.recipeWriteNew,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          iconTheme: IconThemeData(
-            color: Theme.of(context).colorScheme.primary,
-            size: AppDimensions.iconSizeL,
-          ),
-          actionsIconTheme: IconThemeData(
-            color: Theme.of(context).colorScheme.primary,
-            size: AppDimensions.iconSizeL,
-          ),
+          backTo: viewModel.isEditMode ? null : context.l10n.addRecipeTitle,
           actions: [
-            if (viewModel.isAutoSaving)
-              const Padding(
-                padding: EdgeInsetsDirectional.only(
-                  end: AppDimensions.paddingM,
-                ),
-                child: LoadingIndicator(
-                  size: AppDimensions.iconSizeS,
-                  strokeWidth: 2,
-                ),
-              )
-            else if (viewModel.hasRecentAutoSave)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.paddingM,
-                ),
-                child: Icon(
-                  Icons.cloud_done_outlined,
-                  size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+            DraftSaveIndicator(
+              isSaving: viewModel.isAutoSaving,
+              hasRecentSave: viewModel.hasRecentAutoSave,
+              hasFailed: viewModel.hasAutoSaveFailed,
+              failurePeriod: viewModel.autoSaveFailurePeriod,
+            ),
           ],
         ),
         body: Stack(
@@ -419,7 +410,8 @@ class _SkrivSjalvReceptViewContentState
                     onSubmit: () {
                       if (_isSaving ||
                           viewModel.isSaving ||
-                          !viewModel.isValid) {
+                          !viewModel.isValid ||
+                          viewModel.pendingParseConfirmations > 0) {
                         return;
                       }
                       _saveRecipe();
@@ -451,30 +443,43 @@ class _SkrivSjalvReceptViewContentState
                               // ONE read of the stored value — the dropdown's
                               // constructor assert re-checks the match on every
                               // build.
-                              DropdownButtonFormField<String>(
-                                initialValue: mealTypeOptions.selected,
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingL,
-                                    vertical: AppDimensions.paddingM,
+                              PressFill(
+                                surface: PressSurface.base,
+                                child: DropdownButtonFormField<String>(
+                                  iconEnabledColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                  iconDisabledColor: AppModeColors.textDisabled(
+                                    Theme.of(context).brightness,
                                   ),
-                                  border: OutlineInputBorder(),
+                                  initialValue: mealTypeOptions.selected,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: AppDimensions.paddingL,
+                                      vertical: AppDimensions.paddingM,
+                                    ),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                  items: mealTypeOptions.values
+                                      .map(
+                                        (mt) => DropdownMenuItem(
+                                          value: mt,
+                                          child: Text(mt),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      viewModel.setMealType(value);
+                                    }
+                                  },
                                 ),
-                                style: AppTextStyles.bodyMedium,
-                                items: mealTypeOptions.values
-                                    .map(
-                                      (mt) => DropdownMenuItem(
-                                        value: mt,
-                                        child: Text(mt),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    viewModel.setMealType(value);
-                                  }
-                                },
                               ),
                             ],
                           ),
@@ -518,12 +523,10 @@ class _SkrivSjalvReceptViewContentState
                               await viewModel.cancelImageUpload(pathOrUrl);
                               if (!context.mounted) return;
                               if (!viewModel.hasPendingImageDeletion) return;
-                              SnackBarUtils.showSuccessWithAction(
+                              SnackBarUtils.showUndo(
                                 context,
                                 context.l10n.imageRemovedUndoMessage,
-                                actionLabel: context.l10n.commonUndo,
-                                onAction: viewModel.restoreLastImageDeletion,
-                                duration: const Duration(seconds: 5),
+                                onUndo: viewModel.restoreLastImageDeletion,
                               );
                             },
                             uploadQueueStatus: viewModel.uploadQueueStatusText,
@@ -534,6 +537,7 @@ class _SkrivSjalvReceptViewContentState
                             onCancelAllActive: viewModel.cancelAllActiveUploads,
                             onClearAllFailed: viewModel.clearAllFailedUploads,
                           ),
+                          RecipeImagePermissionNotice(viewModel: viewModel),
                           const SizedBox(height: AppDimensions.spacingXl),
 
                           // Titel
@@ -643,6 +647,8 @@ class _SkrivSjalvReceptViewContentState
                             const SizedBox(height: AppDimensions.spacingM),
                             ParseConfidenceReview(
                               ingredients: viewModel.parsedIngredients!,
+                              isConfirmed: viewModel.isParseRowConfirmed,
+                              onConfirm: viewModel.confirmParseRow,
                             ),
                           ],
                           const SizedBox(height: AppDimensions.spacingXl),
@@ -703,8 +709,8 @@ class _SkrivSjalvReceptViewContentState
                                     context.l10n.recipeSharedFromApp
                                 ? context.l10n.recipeImportedFromShare
                                 : context.l10n.recipeSourceUrlHelper,
-                            prefixIcon: const Icon(
-                              Icons.link,
+                            prefixIcon: const ButleryIcon(
+                              ButleryIcons.link,
                               size: AppDimensions.iconSizeAction,
                             ),
                             keyboardType: TextInputType.url,
@@ -723,10 +729,9 @@ class _SkrivSjalvReceptViewContentState
             // CRITICAL FIX: Loading overlay for both local and ViewModel saving states
             // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
+              // An opaque surface, never a veil (tokens.json:40-53).
               ColoredBox(
-                color: Theme.of(context).colorScheme.surface.withValues(
-                  alpha: AppDimensions.opacityVeryDark,
-                ),
+                color: Theme.of(context).colorScheme.surface,
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -747,26 +752,56 @@ class _SkrivSjalvReceptViewContentState
         ),
         bottomNavigationBar: BottomActionContainer(
           // BUT-403: `btn-save-recipe` identifier for browser a11y tree.
-          child: Semantics(
-            identifier: 'btn-save-recipe',
-            button: true,
-            enabled: !(_isSaving || viewModel.isSaving || !viewModel.isValid),
-            label: context.l10n.recipeSave,
-            child: Container(
-              key: const ValueKey('test-skriv-sjalv-save'),
-              child: UtilityComponents.primaryButton(
-                context,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // P6-U03: low- and failed-confidence rows must be confirmed
+              // before Spara, and the line says how many are left
+              // (flows-roles-budget.md:61).
+              if (pendingConfirmations > 0)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppDimensions.spacingSm,
+                  ),
+                  child: Text(
+                    context.l10n.parseConfidencePendingSave(
+                      pendingConfirmations,
+                    ),
+                    key: const ValueKey('skriv-sjalv-pending-confirmations'),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              Semantics(
+                identifier: 'btn-save-recipe',
+                button: true,
+                enabled: !saveBlocked,
                 label: context.l10n.recipeSave,
-                icon: Icons.save,
-                onPressed:
-                    (_isSaving || viewModel.isSaving || !viewModel.isValid)
-                    ? null
-                    : _saveRecipe,
-                isLoading: _isSaving || viewModel.isSaving,
-                loadingText: context.l10n.statusSaving,
-                isExpanded: true,
+                child: SizedBox(
+                  key: const ValueKey('test-skriv-sjalv-save'),
+                  // The view's one saffron action.
+                  // Busy shows the plate line in its place.
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: ComponentThemes.heroButtonStyle(
+                      Theme.of(context).colorScheme,
+                    ),
+                    onPressed: saveBlocked ? null : _saveRecipe,
+                    child: (_isSaving || viewModel.isSaving)
+                        ? SizedBox(
+                            width: AppDimensions.iconSizeXl * 2,
+                            child: PlateLine(
+                              semanticLabel: context.l10n.statusSaving,
+                            ),
+                          )
+                        : Text(context.l10n.recipeSave),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -800,7 +835,7 @@ class _SkrivSjalvReceptViewContentState
                 builder: (context, child) => Material(
                   elevation: animation.value * 4,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                   child: child,
                 ),
@@ -810,17 +845,17 @@ class _SkrivSjalvReceptViewContentState
             itemBuilder: (context, index) {
               return Padding(
                 key: ValueKey('${label}_$index'),
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space4),
                 child: Row(
                   children: [
                     ReorderableDragStartListener(
                       index: index,
                       child: const Padding(
                         padding: EdgeInsetsDirectional.only(
-                          end: AppDimensions.spacingS,
+                          end: AppDimensions.space4,
                         ),
-                        child: Icon(
-                          Icons.drag_handle,
+                        child: ButleryIcon(
+                          ButleryIcons.drag,
                           size: AppDimensions.iconSizeM,
                         ),
                       ),
@@ -841,7 +876,7 @@ class _SkrivSjalvReceptViewContentState
                     ),
                     if (controllers.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         tooltip: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
@@ -874,7 +909,7 @@ class _SkrivSjalvReceptViewContentState
                     ),
                     if (controllers.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const ButleryIcon(ButleryIcons.trash2),
                         tooltip: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
@@ -882,13 +917,13 @@ class _SkrivSjalvReceptViewContentState
                       ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.space4),
               ],
             ),
         ],
         if (controllers.isEmpty)
           TextButton.icon(
-            icon: const Icon(Icons.add),
+            icon: const ButleryIcon(ButleryIcons.plus),
             label: Text(context.l10n.recipeAddItem(label)),
             onPressed: onAdd,
           ),
@@ -913,7 +948,7 @@ class _SkrivSjalvReceptViewContentState
     final quality = viewModel.parseQuality ?? 0.0;
     final qualityPercent = (quality * 100).toInt();
     final fields = viewModel.fieldsNeedingImprovement;
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingL),
@@ -922,7 +957,7 @@ class _SkrivSjalvReceptViewContentState
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           color: colors.warningContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           border: Border.all(
             color: colors.warning.withValues(alpha: 0.4),
           ),
@@ -932,12 +967,12 @@ class _SkrivSjalvReceptViewContentState
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.warning_amber_rounded,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   color: colors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.importParseQualityWarning(qualityPercent),
@@ -951,8 +986,8 @@ class _SkrivSjalvReceptViewContentState
                   button: true,
                   child: GestureDetector(
                     onTap: () => setState(() => _showQualityWarning = false),
-                    child: Icon(
-                      Icons.close,
+                    child: ButleryIcon(
+                      ButleryIcons.x,
                       size: AppDimensions.iconSizeS,
                       color: colors.onWarningContainer,
                     ),
@@ -961,7 +996,7 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
             if (fields.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 '${context.l10n.importFieldsNeedReviewPrefix}: ${fields.map((f) => _localizeFieldName(context, f)).join(', ')}',
                 style: AppTextStyles.bodySmall.copyWith(

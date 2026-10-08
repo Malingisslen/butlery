@@ -9,26 +9,24 @@
 // now go through `RecipeFormViewModel.mealTypeOptions`, which is what these
 // cases pin.
 //
-// This is the app's own default path, not a legacy-data edge case. The assisted
-// import writes ENGLISH values (`assisted_import_viewmodel.dart:77` defaults to
-// 'dinner', written at :352) and then pushes this very screen with that recipe
-// (`import_result_handler.dart:237` -> `app_router.dart:200`), whose form loads
-// the value verbatim (`recipe_form_state.dart`, `_mealType = recipe.mealType`
-// in `_loadRecipeData` — cited by name, not by line, precisely because this
-// change's own additions moved it). Text import contributes
-// 'Huvudrätt' (`text_import_strategy.dart:990`), which is in no list at all.
-//
-// Every case below is RED before the fix. They are the proof the bug is real,
-// and they double as the mutation probes for it.
+// The form loads the stored value verbatim (`recipe_form_state.dart`,
+// `_mealType = recipe.mealType` in `_loadRecipeData`).
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/recipe/recipe_image_permission_notice.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -59,6 +57,9 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
+      // The editor writes a draft from the first edit (P6-U08a, ux-beslut D-02),
+      // so the real auto-save manager reaches SharedPreferences in every test.
+      SharedPreferences.setMockInitialValues({});
       // Both views build a real RecipeFormViewModel; EditRecipeView also
       // resolves CollaborativeStatusViewModel in initState. Same seam the
       // BUT-1309 tab-order suite uses (focus_traversal_group_test.dart).
@@ -82,7 +83,6 @@ void main() {
       TestServiceLocator.registerMock<PersonalTagService>(mockTagService);
       TestServiceLocator.registerMock<OfflineService>(
         OfflineService(
-          firestoreRepository: TestServiceLocator.get<FirestoreRepository>(),
           authRepository: TestServiceLocator.get<AuthRepository>(),
         ),
       );
@@ -142,9 +142,7 @@ void main() {
         .map((item) => item.value)
         .toList();
 
-    // The assisted import's untouched default. Nothing about this recipe is
-    // unusual — this is what one ordinary import produces.
-    testWidgets('an English value from assisted import renders', (
+    testWidgets('an English value renders', (
       tester,
     ) async {
       await pumpSkrivSjalv(tester, 'dinner');
@@ -155,8 +153,7 @@ void main() {
       expect(mealTypeDropdown(tester).initialValue, 'dinner');
     });
 
-    // From `_guessMealType`, and in NO list anywhere in the app — not the six
-    // Swedish ones, not the five English ones.
+    // In NO list anywhere in the app.
     testWidgets('a Swedish value outside the offered list renders', (
       tester,
     ) async {
@@ -310,6 +307,154 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(mealTypeDropdown(tester).initialValue, 'Huvudrätt');
+    });
+
+    // BUT-2160: the camera and library answers are explained under the image
+    // strip on both editors; the notice's own behaviour is pinned in
+    // recipe_image_permission_notice_test.dart.
+    testWidgets('both editors carry the image permission notice', (
+      tester,
+    ) async {
+      await pumpSkrivSjalv(tester, 'dinner');
+      expect(find.byType(RecipeImagePermissionNotice), findsOneWidget);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          // Someone else's recipe opens as a suggestion, without images.
+          child: EditRecipeView(
+            recipe: RecipeFactory.build(
+              id: 'recipe-but-2160',
+              title: 'Testrecept',
+              createdBy: 'test-user-123',
+            ),
+          ),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(RecipeImagePermissionNotice), findsOneWidget);
+    });
+
+    // The selected value is read through the dropdown's own text style. A
+    // style handed to the dropdown REPLACES the themed one, so one that
+    // carries no colour leaves the value unpainted by the theme (it drew
+    // near-white on the light field). The colour is read off the painted
+    // paragraph of the visible selected row, and its contrast against the
+    // field fill the theme draws.
+    double contrastOf(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
+      final hi = la > lb ? la : lb;
+      final lo = la > lb ? lb : la;
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    Future<void> pumpThemed(
+      WidgetTester tester,
+      Widget child,
+      Brightness brightness,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: brightness == Brightness.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          home: child,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    void expectSelectedValueReadable(WidgetTester tester) {
+      final dropdown = find.byType(DropdownButton<String>);
+      final selected = find.descendant(
+        of: dropdown,
+        matching: find.text('Lunch'),
+      );
+      expect(selected, findsOneWidget);
+      final theme = Theme.of(tester.element(dropdown));
+      final painted = tester.renderObject<RenderParagraph>(selected);
+      final color = painted.text.style?.color;
+      expect(
+        color,
+        theme.colorScheme.onSurface,
+        reason: 'The selected value must be the themed body-text colour.',
+      );
+      final fill = theme.inputDecorationTheme.fillColor!;
+      expect(contrastOf(color!, fill), greaterThanOrEqualTo(4.5));
+    }
+
+    for (final brightness in Brightness.values) {
+      testWidgets('Skriv själv: the selected meal type is body text, '
+          '${brightness.name}', (tester) async {
+        await pumpThemed(
+          tester,
+          SkrivSjalvReceptView(initialRecipe: recipeWithMealType('Lunch')),
+          brightness,
+        );
+        expectSelectedValueReadable(tester);
+      });
+
+      testWidgets('the edit screen: the selected meal type is body text, '
+          '${brightness.name}', (tester) async {
+        await pumpThemed(
+          tester,
+          EditRecipeView(recipe: recipeWithMealType('Lunch')),
+          brightness,
+        );
+        expectSelectedValueReadable(tester);
+      });
+    }
+
+    // P4-U07: the editor is a modal with X; Skriv själv is a subpage; each
+    // has one saffron save (Komponentark v1:57, :71-78; Skarmar v12 etapp 4
+    // #editorutkast; Grafisk manual v6:219).
+    int heroCount(WidgetTester tester) => tester
+        .widgetList<FilledButton>(find.byType(FilledButton))
+        .where(
+          (b) =>
+              b.style?.backgroundColor?.resolve(const {}) ==
+              AppModeColors.actionPrimary(Brightness.light),
+        )
+        .length;
+
+    testWidgets('the edit screen is a modal with X and one saffron save', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: EditRecipeView(recipe: recipeWithMealType('dinner')),
+          wrapInScaffold: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('edit-recipe-close')), findsOneWidget);
+      expect(find.byTooltip('Stäng editorn'), findsOneWidget);
+      expect(find.byKey(const ValueKey('butleryTopBar.back')), findsNothing);
+      expect(find.byType(AppBar), findsNothing);
+      expect(heroCount(tester), 1);
+    });
+
+    testWidgets('Skriv själv is a subpage with one saffron save', (
+      tester,
+    ) async {
+      await pumpSkrivSjalv(tester, 'dinner');
+
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.pattern, ButleryTopBarPattern.undersida);
+      expect(find.byType(AppBar), findsNothing);
+      expect(heroCount(tester), 1);
     });
   });
 }

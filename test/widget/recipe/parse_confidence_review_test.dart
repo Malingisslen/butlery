@@ -5,7 +5,7 @@
 // non-whitespace differences exist, and screen-reader semantics include the
 // confidence word in the row label.
 //
-// BUT-1244: updated to assert via l10n keys and ButleryColors tokens.
+// BUT-1244: updated to assert via l10n keys and ModeColors tokens.
 // BUT-1244-redesign: updated for the new left-bar design (no pill labels,
 // whitespace-only suppression, subtitle counts non-high rows).
 
@@ -15,7 +15,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 
 // Test fixture helpers
@@ -37,7 +38,7 @@ ParsedIngredient _ingredient({
 }
 
 /// Wraps [child] with full theme + Swedish l10n so context.l10n and
-/// context.butleryColors both resolve to their light-mode values.
+/// context.modeColors both resolve to their light-mode values.
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -58,7 +59,7 @@ Color _barColor(WidgetTester tester, Finder finder) {
 }
 
 void main() {
-  const colors = ButleryColors.light;
+  const colors = ModeColors.light;
 
   group('Accent bar — colour-per-ParseConfidence', () {
     testWidgets('high confidence → success green bar', (tester) async {
@@ -319,8 +320,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // No expand chevron rendered
-        expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
-        expect(find.byIcon(Icons.keyboard_arrow_up), findsNothing);
+        // The row chevrons are the same glyphs as the expanded section's
+        // chevron-up (P7-U08), so only that one remains.
+        expect(find.byIcon(ButleryIcons.chevronDown), findsNothing);
+        expect(find.byIcon(ButleryIcons.chevronUp), findsOneWidget);
 
         // Tapping the row still does nothing
         await tester.tap(find.text('100 g smör'));
@@ -348,7 +351,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Chevron is visible before expand
-      expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.chevronDown), findsOneWidget);
     });
   });
 
@@ -472,8 +475,11 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ParseConfidenceReview)),
       );
+      // P6-U03: a failed line is never read out as guessed text; the label
+      // says it could not be read, and the confidence word stays
+      // (flows-roles-budget.md:63; produktregler.md:564).
       final expectedLabel = l10n.a11yIngredientWithConfidence(
-        'okänd sak',
+        l10n.a11yParseConfidenceUnreadLine,
         l10n.a11yConfidenceFailed,
       );
 
@@ -482,6 +488,126 @@ void main() {
         findsOneWidget,
       );
 
+      handle.dispose();
+    });
+  });
+
+  // P6-U03 (flow 03): low confidence gates Spara, and an OCR line that
+  // cannot be read is an empty, marked row (flows-roles-budget.md:61,63;
+  // produktregler.md:562-566).
+  group('P6-U03 · confirm before Spara, unread lines', () {
+    testWidgets('a low row carries Stämmer; confirming reports that row', (
+      tester,
+    ) async {
+      final low = _ingredient(name: 'mjöl', confidence: ParseConfidence.low);
+      final high = _ingredient(name: 'smör', confidence: ParseConfidence.high);
+      final confirmed = <ParsedIngredient>{};
+
+      await tester.pumpWidget(
+        _wrap(
+          StatefulBuilder(
+            builder: (context, setState) => ParseConfidenceReview(
+              ingredients: [high, low],
+              isConfirmed: (row) => confirmed.any((c) => identical(c, row)),
+              onConfirm: (row) => setState(() => confirmed.add(row)),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Only the low row asks for confirmation.
+      expect(find.byKey(const ValueKey('parse-row-confirm')), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('parse-row-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(confirmed.single, same(low));
+      expect(find.byKey(const ValueKey('parse-row-confirm')), findsNothing);
+      expect(find.text('Bekräftad'), findsOneWidget);
+    });
+
+    test('needsConfirmation: low and failed, never medium or high', () {
+      bool needs(ParseConfidence c) => ParseConfidenceReview.needsConfirmation(
+        _ingredient(name: 'x', confidence: c),
+      );
+      expect(needs(ParseConfidence.low), isTrue);
+      expect(needs(ParseConfidence.failed), isTrue);
+      expect(needs(ParseConfidence.medium), isFalse);
+      expect(needs(ParseConfidence.high), isFalse);
+    });
+
+    testWidgets(
+      'a failed line is shown empty and marked, and one tap shows the raw line',
+      (tester) async {
+        const raw = '2 msk ?? socker';
+        final failed = ParsedIngredient(
+          name: 'socker',
+          originalLine: raw,
+          quantity: '2',
+          unit: 'msk',
+          confidence: ParseConfidence.failed,
+        );
+
+        await tester.pumpWidget(
+          _wrap(ParseConfidenceReview(ingredients: [failed])),
+        );
+        await tester.pumpAndSettle();
+
+        // Never the guessed text.
+        expect(find.textContaining('socker'), findsNothing);
+        expect(
+          find.byKey(const ValueKey('parse-row-unread-mark')),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.byKey(const ValueKey('parse-row-unread-mark')));
+        await tester.pumpAndSettle();
+        expect(find.textContaining(raw), findsOneWidget);
+      },
+    );
+
+    testWidgets('a failed line without a name still appears as its row', (
+      tester,
+    ) async {
+      final failed = ParsedIngredient(
+        name: '',
+        originalLine: 'olasbar rad',
+        confidence: ParseConfidence.failed,
+      );
+
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(ingredients: [failed])),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('parse-row-unread-mark')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('the confidence word still reaches Semantics', (tester) async {
+      final handle = tester.ensureSemantics();
+      final failed = ParsedIngredient(
+        name: 'socker',
+        originalLine: '2 msk ?? socker',
+        confidence: ParseConfidence.failed,
+      );
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(ingredients: [failed])),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
+      expect(
+        find.bySemanticsLabel(
+          RegExp(RegExp.escape(l10n.a11yConfidenceFailed)),
+        ),
+        findsWidgets,
+      );
       handle.dispose();
     });
   });

@@ -6,24 +6,37 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class PantryView extends StatefulWidget {
-  const PantryView({super.key});
+  /// [viewModel] and [selection] come from the view that hosts the pantry
+  /// tab, which then owns and disposes them. "Välj" and the selection
+  /// counter sit in that view's own top bar, so it needs the row count and
+  /// the selection (produktregler.md:871-873). Without them the pantry makes
+  /// and owns its own.
+  const PantryView({super.key, this.viewModel, this.selection});
+
+  final PantryViewModel? viewModel;
+  final PantrySelectionManager? selection;
 
   @override
   State<PantryView> createState() => _PantryViewState();
@@ -32,12 +45,17 @@ class PantryView extends StatefulWidget {
 class _PantryViewState extends State<PantryView> {
   late final PantryViewModel _vm;
   // BUT-948: view-local selection state (mirrors the personal-tags pattern).
-  final PantrySelectionManager _selection = PantrySelectionManager();
+  late final PantrySelectionManager _selection;
+  late final bool _ownsViewModel;
+  late final bool _ownsSelection;
 
   @override
   void initState() {
     super.initState();
-    _vm = ServiceLocator.get<PantryViewModel>();
+    _ownsViewModel = widget.viewModel == null;
+    _ownsSelection = widget.selection == null;
+    _vm = widget.viewModel ?? ServiceLocator.get<PantryViewModel>();
+    _selection = widget.selection ?? PantrySelectionManager();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _vm.loadPantry();
     });
@@ -45,8 +63,8 @@ class _PantryViewState extends State<PantryView> {
 
   @override
   void dispose() {
-    _selection.dispose();
-    _vm.dispose();
+    if (_ownsSelection) _selection.dispose();
+    if (_ownsViewModel) _vm.dispose();
     super.dispose();
   }
 
@@ -72,18 +90,26 @@ class _PantryViewContent extends StatelessWidget {
 
     return Stack(
       children: [
-        LoadingStateBuilder<List<PantryItem>>(
-          isLoading: viewModel.isLoading,
-          error: viewModel.error,
-          data: viewModel.items,
-          onErrorRetry: () {
-            viewModel.clearError();
-            viewModel.loadPantry();
-          },
-          emptyBuilder: (context) => _PantryEmptyState(
-            onAdd: () => _showAddSheet(context, viewModel),
-          ),
-          builder: (context, items) => const _PantrySections(),
+        Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            Expanded(
+              child: LoadingStateBuilder<List<PantryItem>>(
+                isLoading: viewModel.isLoading,
+                loadingMessage: context.l10n.loadingPantry,
+                error: viewModel.error,
+                data: viewModel.items,
+                onErrorRetry: () {
+                  viewModel.clearError();
+                  viewModel.loadPantry();
+                },
+                emptyBuilder: (context) => _PantryEmptyState(
+                  onAdd: () => _showAddSheet(context, viewModel),
+                ),
+                builder: (context, items) => const _PantrySections(),
+              ),
+            ),
+          ],
         ),
         // BUT-948: in selection mode a contextual bulk bar replaces the add FAB.
         if (selection.isSelectionMode)
@@ -120,9 +146,8 @@ class _PantryViewContent extends StatelessWidget {
     final ids = selection.selectedIds;
     if (ids.isEmpty) return;
     final removed = viewModel.items.where((i) => ids.contains(i.id)).toList();
-    final messenger = ScaffoldMessenger.maybeOf(context);
+    final undo = UndoSnackBar.capture(context);
     final message = context.l10n.pantryItemsRemovedUndoMessage(removed.length);
-    final undoLabel = context.l10n.commonUndo;
 
     selection.clearSelection();
     await viewModel.bulkRemoveItems(ids);
@@ -130,17 +155,7 @@ class _PantryViewContent extends StatelessWidget {
     // "N removed" undo snackbar that would restore items still present.
     if (viewModel.hasError) return;
 
-    messenger?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: SnackBarAction(
-          label: undoLabel,
-          onPressed: () => viewModel.restoreItems(removed),
-        ),
-        duration: const Duration(seconds: 7),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    undo.show(message, onUndo: () => viewModel.restoreItems(removed));
   }
 
   Future<void> _showAddSheet(
@@ -179,28 +194,23 @@ class _PantrySections extends StatelessWidget {
         if (expiring.isNotEmpty)
           _PantrySection(
             title: l10n.pantrySectionExpiring,
-            icon: Icons.schedule,
             items: expiring,
             initiallyExpanded: true,
           ),
         _PantrySection(
           title: l10n.pantrySectionFridge,
-          icon: Icons.kitchen,
           items: vm.itemsByLocation(PantryLocation.fridge),
         ),
         _PantrySection(
           title: l10n.pantrySectionFreezer,
-          icon: Icons.ac_unit,
           items: vm.itemsByLocation(PantryLocation.freezer),
         ),
         _PantrySection(
           title: l10n.pantrySectionPantry,
-          icon: Icons.inventory_2_outlined,
           items: vm.itemsByLocation(PantryLocation.pantry),
         ),
         _PantrySection(
           title: l10n.pantrySectionSpiceRack,
-          icon: Icons.grass_outlined,
           items: vm.itemsByLocation(PantryLocation.spiceRack),
         ),
       ],
@@ -211,13 +221,11 @@ class _PantrySections extends StatelessWidget {
 class _PantrySection extends StatelessWidget {
   const _PantrySection({
     required this.title,
-    required this.icon,
     required this.items,
     this.initiallyExpanded = false,
   });
 
   final String title;
-  final IconData icon;
   final List<PantryItem> items;
   final bool initiallyExpanded;
 
@@ -237,9 +245,9 @@ class _PantrySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
+          left: BorderSide(color: cs.onSurface, width: 4),
           bottom: BorderSide(
-            color: context.butleryColors.recipeCardBottomBorder,
+            color: context.modeColors.recipeCardBottomBorder,
             width: 3,
           ),
         ),
@@ -253,7 +261,6 @@ class _PantrySection extends StatelessWidget {
             vertical: AppDimensions.spacingXs,
           ),
           childrenPadding: EdgeInsets.zero,
-          leading: Icon(icon, color: cs.primary, size: AppDimensions.iconSizeM),
           title: Row(
             children: [
               Text(
@@ -297,15 +304,18 @@ class _PantryFab extends StatelessWidget {
       child: Semantics(
         label: context.l10n.a11yPantryAddItem,
         button: true,
-        child: InkWell(
-          onTap: onPressed,
-          child: SizedBox(
-            width: 56,
-            height: 56,
-            child: Icon(
-              Icons.add,
-              color: cs.onPrimary,
-              size: AppDimensions.iconSizeL,
+        child: PressFill(
+          surface: PressSurface.ink,
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              width: 56,
+              height: 56,
+              child: ButleryIcon(
+                ButleryIcons.plus,
+                color: cs.onPrimary,
+                size: AppDimensions.iconSizeL,
+              ),
             ),
           ),
         ),
@@ -317,6 +327,9 @@ class _PantryFab extends StatelessWidget {
 /// BUT-948: contextual bulk-action bar shown at the bottom while items are
 /// selected. Pantry has no app-bar of its own (it's a sub-tab), so the bulk
 /// actions live here instead of in a selection app-bar.
+///
+/// P5-U31: the counter is "{n} valda" (produktregler.md:876). The delete
+/// action is off at zero with its name readable (P5-U32).
 class _PantryBulkBar extends StatelessWidget {
   const _PantryBulkBar({
     required this.count,
@@ -344,14 +357,14 @@ class _PantryBulkBar extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const ButleryIcon(ButleryIcons.x),
                 tooltip: context.l10n.commonCancel,
                 color: cs.onPrimaryContainer,
                 onPressed: onClose,
               ),
               Expanded(
                 child: Text(
-                  context.l10n.pantrySelectedCount(count),
+                  context.l10n.bulkSelectedCount(count),
                   style: AppTextStyles.titleSmall.copyWith(
                     color: cs.onPrimaryContainer,
                   ),
@@ -361,8 +374,14 @@ class _PantryBulkBar extends StatelessWidget {
                 onPressed: count == 0 ? null : onDelete,
                 style: TextButton.styleFrom(
                   foregroundColor: cs.onPrimaryContainer,
+                  // The disabled role on surface.raised, never the 38 % fade
+                  // styleFrom would give (tokens.json:71-74, :198):
+                  // text.disabled.onRaised, #788477 light, #93A48D dark.
+                  disabledForegroundColor: AppModeColors.textDisabled(
+                    cs.brightness,
+                  ),
                 ),
-                icon: const Icon(Icons.delete_outline),
+                icon: const ButleryIcon(ButleryIcons.trash2),
                 label: Text(context.l10n.commonDelete),
               ),
             ],
@@ -384,7 +403,10 @@ class _PantryEmptyState extends StatelessWidget {
     final l10n = context.l10n;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -395,7 +417,7 @@ class _PantryEmptyState extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingLg),
             Text(
               l10n.pantryEmptyTitle,
-              style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
+              style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingSm),

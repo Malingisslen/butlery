@@ -8,6 +8,9 @@ import 'package:butlery/widgets/common/buttons/overlay_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
@@ -37,7 +40,7 @@ class PhotoPageStrip extends StatelessWidget {
             context.l10n.importPhotoPagesCombined(viewModel.pageCount),
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
         ],
         SizedBox(
           height: _thumbSize + 28,
@@ -53,7 +56,7 @@ class PhotoPageStrip extends StatelessWidget {
                 ? Padding(
                     key: const ValueKey('photo-page-add'),
                     padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.spacingS,
+                      start: AppDimensions.space4,
                     ),
                     child: _AddPageTile(
                       size: _thumbSize,
@@ -67,7 +70,7 @@ class PhotoPageStrip extends StatelessWidget {
               return Padding(
                 key: ValueKey('photo-page-$index'),
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingS,
+                  end: AppDimensions.space4,
                 ),
                 child: _PageThumbnail(
                   bytes: pages[index],
@@ -90,7 +93,7 @@ class PhotoPageStrip extends StatelessWidget {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadiusL),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (sheetContext) {
@@ -99,9 +102,9 @@ class PhotoPageStrip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(
-                  Icons.camera_alt,
-                  color: Theme.of(sheetContext).colorScheme.primary,
+                leading: ButleryIcon(
+                  ButleryIcons.camera,
+                  color: Theme.of(sheetContext).colorScheme.onSurface,
                 ),
                 title: Text(sheetContext.l10n.importTakePhoto),
                 onTap: () {
@@ -110,9 +113,9 @@ class PhotoPageStrip extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(
-                  Icons.photo_library,
-                  color: Theme.of(sheetContext).colorScheme.primary,
+                leading: ButleryIcon(
+                  ButleryIcons.image,
+                  color: Theme.of(sheetContext).colorScheme.onSurface,
                 ),
                 title: Text(sheetContext.l10n.importChooseFromGallery),
                 onTap: () {
@@ -150,7 +153,7 @@ class _PageThumbnail extends StatelessWidget {
         Stack(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Image.memory(
                 bytes,
                 height: size,
@@ -159,8 +162,8 @@ class _PageThumbnail extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: AppDimensions.spacingXxs,
-              right: AppDimensions.spacingXxs,
+              top: AppDimensions.space4,
+              right: AppDimensions.space4,
               child: Semantics(
                 label: context.l10n.a11yRemovePhotoPage(pageNumber),
                 button: true,
@@ -172,7 +175,7 @@ class _PageThumbnail extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           context.l10n.importPhotoPageLabel(pageNumber),
           style: AppTextStyles.badgeLarge.copyWith(color: cs.onSurfaceVariant),
@@ -194,36 +197,39 @@ class _AddPageTile extends StatelessWidget {
     return Semantics(
       label: context.l10n.importPhotoAddPage,
       button: true,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: Container(
-          height: size,
-          width: size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(
-              color: onPressed == null ? cs.outlineVariant : cs.primary,
-              width: AppDimensions.borderWidthStandard,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: Container(
+            height: size,
+            width: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              border: Border.all(
+                color: onPressed == null ? cs.outlineVariant : cs.onSurface,
+                width: AppDimensions.borderWidthStandard,
+              ),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add_a_photo,
-                color: onPressed == null ? cs.outlineVariant : cs.primary,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(height: AppDimensions.spacingXxs),
-              Text(
-                context.l10n.importPhotoAddPage,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.badgeLarge.copyWith(
-                  color: onPressed == null ? cs.outlineVariant : cs.primary,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ButleryIcon(
+                  ButleryIcons.camera,
+                  color: onPressed == null ? cs.outlineVariant : cs.onSurface,
+                  size: AppDimensions.iconSizeM,
                 ),
-              ),
-            ],
+                const SizedBox(height: AppDimensions.space4),
+                Text(
+                  context.l10n.importPhotoAddPage,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.badgeLarge.copyWith(
+                    color: onPressed == null ? cs.outlineVariant : cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

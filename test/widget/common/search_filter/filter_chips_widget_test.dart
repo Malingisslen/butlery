@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('FilterChipsWidget Tests', () {
@@ -24,12 +26,12 @@ void main() {
       const FilterOption(
         id: 'option2',
         label: 'Option 2',
-        icon: Icons.star,
+        icon: ButleryIcons.star,
       ),
       const FilterOption(
         id: 'option3',
         label: 'Option 3',
-        icon: Icons.favorite,
+        icon: ButleryIcons.heart,
         value: 'value3',
       ),
     ];
@@ -67,6 +69,7 @@ void main() {
             theme: ThemeData(
               colorScheme: const ColorScheme.light(
                 primary: Colors.blue,
+                onSurface: Colors.teal,
               ),
             ),
             home: Scaffold(
@@ -81,7 +84,9 @@ void main() {
         );
 
         final titleText = tester.widget<Text>(find.text('Filters'));
-        expect(titleText.style?.color, equals(Colors.blue));
+        // text.primary (onSurface), not primary: primary is ink in both
+        // modes and vanished on the dark page (P4-T7).
+        expect(titleText.style?.color, equals(Colors.teal));
       });
 
       testWidgets('should render filter chips', (WidgetTester tester) async {
@@ -122,8 +127,8 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.star), findsOneWidget);
-        expect(find.byIcon(Icons.favorite), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.star), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.heart), findsOneWidget);
       });
 
       testWidgets('should not render icon when not provided', (
@@ -144,7 +149,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(Icon), findsNothing);
+        expect(find.byType(ButleryIcon), findsNothing);
       });
     });
 
@@ -594,7 +599,7 @@ void main() {
           FilterOption(
             id: 'timer',
             label: 'Quick',
-            icon: Icons.timer,
+            icon: ButleryIcons.clock,
           ),
         ];
 
@@ -652,7 +657,7 @@ void main() {
         expect(find.text('< 30 min'), findsOneWidget);
         expect(find.text('30-60 min'), findsOneWidget);
         expect(find.text('> 60 min'), findsOneWidget);
-        expect(find.byIcon(Icons.timer), findsNWidgets(3));
+        expect(find.byIcon(ButleryIcons.clock), findsNWidgets(3));
       });
 
       testWidgets('should work with RecipeFilters meal types', (
@@ -682,7 +687,8 @@ void main() {
         );
 
         expect(find.text('Frukost'), findsOneWidget);
-        expect(find.byIcon(Icons.breakfast_dining), findsOneWidget);
+        // Every meal type shows the utensils glyph (Meny / måltid, P7-U08).
+        expect(find.byIcon(ButleryIcons.utensils), findsNWidgets(3));
       });
     });
 

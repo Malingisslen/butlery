@@ -4,6 +4,7 @@ import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/services/admin/metrics_assembler.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Backs every registry-driven admin tab. Resolves a fixed set of [MetricKey]s
 /// via the [MetricsAssembler] and exposes the resolved values for rendering.
@@ -33,7 +34,7 @@ class MetricsTabViewModel extends BaseViewModel {
       () async {
         _values = await _assembler.resolve(keys.toSet(), l10n, force: force);
       },
-      errorPrefix: 'Kunde inte ladda mätvärden',
+      errorPrefix: AppLocale.current.adminMetricsLoadFailed,
     );
   }
 

@@ -31,7 +31,9 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart' as user_service;
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Abstract base coordinator for social content operations
 /// Provides common patterns for invitation creation, content sharing,
@@ -130,6 +132,9 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     }
 
     try {
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      inviteeUserIds = await BlockedUserFilter.shareRecipients(inviteeUserIds);
+      if (inviteeUserIds.isEmpty) return null;
       AppLogger.info(
         '📨 Creating $contentTypeName invitation for $contentId to ${inviteeUserIds.length} users',
       );
@@ -189,7 +194,9 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       final profileMap = {for (final p in inviteeBatch.profiles) p.uid: p};
 
       for (final inviteeId in inviteeUserIds) {
-        AppLogger.info('🔍 DEBUG: Adding member $inviteeId to $invitationId');
+        AppLogger.info(
+          '🔍 DEBUG: Adding member ${inviteeId.maskedUserId} to $invitationId',
+        );
         final profile = profileMap[inviteeId];
         await sharedRepository.addMember(
           invitationId,
@@ -198,7 +205,9 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
           displayName: profile?.displayName ?? '?',
           avatarUrl: profile?.avatarUrl,
         );
-        AppLogger.info('🔍 DEBUG: Member $inviteeId added successfully');
+        AppLogger.info(
+          '🔍 DEBUG: Member ${inviteeId.maskedUserId} added successfully',
+        );
       }
 
       AppLogger.success(
@@ -253,7 +262,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
 
     try {
       AppLogger.info(
-        '📥 Getting received $contentTypeName invitations for user $currentUserId (limit: $limit)',
+        '📥 Getting received $contentTypeName invitations for user ${currentUserId.maskedUserId} (limit: $limit)',
       );
       return await sharedRepository.getSharedContentForUser(
         currentUserId,

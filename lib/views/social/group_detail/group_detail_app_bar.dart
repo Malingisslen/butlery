@@ -1,15 +1,19 @@
 // lib/views/social/group_detail/group_detail_app_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// GroupDetailAppBar - App bar component
 /// Provides group-specific app bar with menu actions based on permissions.
@@ -21,17 +25,21 @@ class GroupDetailAppBar {
     required VoidCallback onRefresh,
     required Function(String action) onMenuAction,
   }) {
-    return AdaptiveAppBar(
+    // A subpage under Vänner & grupper (Skarmar v12 del 2 'Gruppdetalj';
+    // Komponentark v1 §01 pattern 2). The group's name is shown as written.
+    return ButleryTopBar.undersida(
       title: group.name,
       actions: [
+        // Refreshing: the plate line in the refresh button's place, with
+        // what is loading as its name (produktregler.md:163, B-18).
         if (isLoading)
-          const Padding(
-            padding: EdgeInsets.all(AppDimensions.paddingL),
-            child: LoadingIndicator(size: 20, strokeWidth: 2),
+          SizedBox(
+            width: AppDimensions.iconSizeL,
+            child: PlateLine(semanticLabel: context.l10n.groupLoadingInfo),
           )
         else
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
             onPressed: onRefresh,
             tooltip: context.l10n.commonRefresh,
           ),
@@ -56,101 +64,98 @@ class GroupDetailAppBar {
     final canReportGroup =
         currentUserId != null && currentUserId != group.ownerId;
 
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (value) {
-        if (value == 'report') {
-          ReportContentDialog.show(
-            context: context,
-            contentType: ContentType.group,
-            contentId: group.id,
-            contentOwnerId: group.ownerId,
-          );
-          return;
-        }
-        onMenuAction(value);
-      },
-      itemBuilder: (context) => [
-        // Add members - admin only
-        if (canAddMembers)
-          PopupMenuItem(
-            value: 'add_members',
-            child: Row(
-              children: [
-                const Icon(Icons.person_add),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.groupAddMembers),
-              ],
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        onSelected: (value) {
+          if (value == 'report') {
+            ReportContentDialog.show(
+              context: context,
+              contentType: ContentType.group,
+              contentId: group.id,
+              contentOwnerId: group.ownerId,
+            );
+            return;
+          }
+          onMenuAction(value);
+        },
+        itemBuilder: (context) => [
+          // Add members - admin only
+          if (canAddMembers)
+            ButleryMenuItem(
+              value: 'add_members',
+              child: Row(
+                children: [
+                  const ButleryIcon(ButleryIcons.userPlus),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.groupAddMembers),
+                ],
+              ),
             ),
-          ),
-        // Edit - admin only
-        if (isAdmin)
-          PopupMenuItem(
-            value: 'edit',
-            child: Row(
-              children: [
-                const Icon(Icons.edit),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.groupEditGroup),
-              ],
+          // Edit - admin only
+          if (isAdmin)
+            ButleryMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  const ButleryIcon(ButleryIcons.pencil),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.groupEditGroup),
+                ],
+              ),
             ),
-          ),
-        // Delete - admin only
-        if (isAdmin)
-          PopupMenuItem(
-            value: 'delete',
-            child: Row(
-              children: [
-                Icon(
-                  Icons.delete,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.groupDeleteGroup,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          // Delete - admin only
+          if (isAdmin)
+            ButleryMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.trash2,
                     color: Theme.of(context).colorScheme.error,
                   ),
-                ),
-              ],
-            ),
-          ),
-        // Leave group - for regular members
-        if (!isAdmin)
-          PopupMenuItem(
-            value: 'leave_group',
-            child: Row(
-              children: [
-                Icon(
-                  Icons.exit_to_app,
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.groupLeaveGroup,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.tertiary,
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(
+                    context.l10n.groupDeleteGroup,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
-        if (canReportGroup)
-          PopupMenuItem(
-            value: 'report',
-            child: Row(
-              children: [
-                Icon(
-                  Icons.flag_outlined,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.reportContent),
-              ],
+          // Leave group - for regular members
+          if (!isAdmin)
+            ButleryMenuItem(
+              value: 'leave_group',
+              child: Row(
+                children: [
+                  // The menu's own text colour: saffron belongs to a view's
+                  // hero action only.
+                  const ButleryIcon(ButleryIcons.logOut),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.groupLeaveGroup),
+                ],
+              ),
             ),
-          ),
-      ],
+          // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
+          if (canReportGroup)
+            ButleryMenuItem(
+              value: 'report',
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.flag,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(context.l10n.reportContent),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -1,23 +1,27 @@
 // lib/views/messaging/create_group_conversation_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// View for creating new group conversations with friend selection.
 /// Provides comprehensive interface for users to create group messaging conversations
@@ -121,22 +125,19 @@ class _CreateGroupConversationViewState
     BuildContext context,
     CreateGroupConversationViewModel viewModel,
   ) {
-    return AppBar(
-      title: Text(
-        context.l10n.messagingCreateGroup,
-        style: AppTextStyles.headlineSmall,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      elevation: AppDimensions.elevationLow,
+    // A subpage (Skarmar v12 del 3 'Ny gruppchatt'). The bar is
+    // surface.ink in both modes, so its text action is paper (onPrimary,
+    // #F5F4ED in both schemes; butlery_top_bar.dart).
+    return ButleryTopBar.undersida(
+      title: context.l10n.messagingCreateGroup,
       actions: [
         if (viewModel.hasSelectedMembers)
-          ActionButtons.textButton(
-            context,
-            label: context.l10n.commonClear,
-            onPressed: () {
-              viewModel.clearSelection();
-            },
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            onPressed: viewModel.clearSelection,
+            child: Text(context.l10n.commonClear),
           ),
       ],
     );
@@ -202,18 +203,18 @@ class _CreateGroupConversationViewState
           context.l10n.messagingGroupName,
           style: AppTextStyles.titleMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         StyledInput.text(
           controller: _groupNameController,
           hint: context.l10n.messagingGroupNameHint,
           onChanged: (value) => viewModel.updateGroupName(value),
           errorText: viewModel.validationError,
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           context.l10n.messagingSelectAtLeastTwoMembers,
           style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.outline,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -228,39 +229,42 @@ class _CreateGroupConversationViewState
       children: [
         Row(
           children: [
-            Icon(
-              Icons.people,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.messagingSelectedMembers(
                 viewModel.selectedMemberCount,
               ),
               style: AppTextStyles.titleMedium.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Wrap(
-          spacing: AppDimensions.spacingS,
-          runSpacing: AppDimensions.spacingS,
+          spacing: AppDimensions.space4,
+          runSpacing: AppDimensions.space4,
           children: viewModel.selectedMembers.map((member) {
-            return Chip(
-              avatar: UserDisplayWidgets.avatar(
-                imageUrl: member.avatarUrl,
-                displayName: member.displayName,
-                size: ImageSize.small,
+            return PressFill(
+              surface: PressSurface.base,
+              child: Chip(
+                avatar: UserDisplayWidgets.avatar(
+                  imageUrl: member.avatarUrl,
+                  displayName: member.displayName,
+                  size: ImageSize.small,
+                ),
+                label: Text(member.displayName),
+                deleteIcon: const ButleryIcon(
+                  ButleryIcons.x,
+                  size: AppDimensions.iconSizeS,
+                ),
+                onDeleted: () => viewModel.toggleMemberSelection(member.uid),
               ),
-              label: Text(member.displayName),
-              deleteIcon: const Icon(
-                Icons.close,
-                size: AppDimensions.iconSizeS,
-              ),
-              onDeleted: () => viewModel.toggleMemberSelection(member.uid),
             );
           }).toList(),
         ),
@@ -308,43 +312,41 @@ class _CreateGroupConversationViewState
   ) {
     final isSelected = viewModel.isMemberSelected(friend.uid);
 
+    // One node per friend: the card carries the name, the selected state and
+    // the tap.
     return SelectionCard(
       isSelected: isSelected,
+      semanticLabel: friend.displayName,
       onTap: () => viewModel.toggleMemberSelection(friend.uid),
-      child: Row(
-        children: [
-          UserDisplayWidgets.avatar(
-            imageUrl: friend.avatarUrl,
-            displayName: friend.displayName,
-            size: ImageSize.medium,
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  friend.displayName,
-                  style: isSelected
-                      ? AppTextStyles.bodyLargeBold
-                      : AppTextStyles.bodyLarge,
-                ),
-                if (friend.email.isNotEmpty)
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            UserDisplayWidgets.avatar(
+              imageUrl: friend.avatarUrl,
+              displayName: friend.displayName,
+              size: ImageSize.medium,
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    friend.email,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
+                    friend.displayName,
+                    style: isSelected
+                        ? AppTextStyles.bodyLargeBold
+                        : AppTextStyles.bodyLarge,
                   ),
-              ],
+                ],
+              ),
             ),
-          ),
-          if (isSelected)
-            Icon(
-              Icons.check_circle,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-        ],
+            if (isSelected)
+              ButleryIcon(
+                ButleryIcons.circleCheck,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -368,14 +370,16 @@ class _CreateGroupConversationViewState
                 textAlign: TextAlign.center,
               ),
             ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.messagingCreateGroup,
+          // The view's one saffron action, "Skapa konversation" as drawn
+          // (Skarmar v12 del 3 #nygruppchatt:602; Grafisk manual v6:219).
+          HeroButton(
+            key: const ValueKey('createGroupConversation.create'),
+            label: context.l10n.messagingCreateConversation,
             onPressed: viewModel.canCreateGroup
                 ? () => _handleCreateGroup(context, viewModel)
                 : null,
-            isExpanded: true,
-            isLoading: viewModel.isCreatingGroup,
+            busy: viewModel.isCreatingGroup,
+            expand: true,
           ),
         ],
       ),
@@ -387,11 +391,8 @@ class _CreateGroupConversationViewState
     CreateGroupConversationViewModel viewModel,
   ) async {
     // Capture context dependencies before async gap
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final successMsg = context.l10n.messagingGroupCreated;
-    final successColor = context.butleryColors.success;
-    final errorColor = Theme.of(context).colorScheme.error;
 
     final conversationId = await viewModel.createGroupConversation();
 
@@ -399,12 +400,7 @@ class _CreateGroupConversationViewState
     if (!mounted) return;
 
     if (conversationId != null) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(successMsg),
-          backgroundColor: successColor,
-        ),
-      );
+      SnackBarUtils.showSuccess(this.context, successMsg);
 
       // Navigate to chat view
       navigator.pushReplacement(
@@ -415,12 +411,7 @@ class _CreateGroupConversationViewState
         ),
       );
     } else if (viewModel.error != null) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(viewModel.error!),
-          backgroundColor: errorColor,
-        ),
-      );
+      SnackBarUtils.showFailure(this.context, what: viewModel.error!);
     }
   }
 }

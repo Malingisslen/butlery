@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// List scaffold consolidating patterns from 22+ files
 class ListScaffold<T> extends StatelessWidget {
@@ -74,10 +77,13 @@ class ListScaffold<T> extends StatelessWidget {
       floatingActionButton:
           floatingActionButton ??
           (onAdd != null
-              ? FloatingActionButton(
-                  onPressed: onAdd,
-                  tooltip: context.l10n.commonAdd,
-                  child: const Icon(Icons.add),
+              ? PressFill(
+                  surface: PressSurface.ink,
+                  child: FloatingActionButton(
+                    onPressed: onAdd,
+                    tooltip: context.l10n.commonAdd,
+                    child: const ButleryIcon(ButleryIcons.plus),
+                  ),
                 )
               : null),
     );

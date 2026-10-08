@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Wraps a child in MaterialApp with the project's l10n delegates so the
 /// dialogs can resolve `context.l10n.commonCancel` etc.
@@ -86,6 +87,7 @@ void main() {
           _triggerButton<bool>(
             openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
               ctx,
+              confirmText: 'Bekräfta',
               title: 't',
               message: 'm',
             ),
@@ -108,6 +110,7 @@ void main() {
           _triggerButton<bool>(
             openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
               ctx,
+              confirmText: 'Bekräfta',
               title: 't',
               message: 'm',
               cancelText: 'Nej tack',
@@ -154,6 +157,7 @@ void main() {
           _triggerButton<bool>(
             openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
               ctx,
+              confirmText: 'Bekräfta',
               title: 't',
               message: 'm',
               cancelText: 'Avbryt',
@@ -192,12 +196,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Radera receptet'), findsOneWidget);
-      // RichText composes "<message> \"<itemName>\"?" — itemName is empty in
-      // the public helper, so the visible content contains the message verbatim.
+      // The helper passes no item name, so nothing may follow the message
+      // (BUT-2164: it used to end in ' ""?').
       expect(
         find.byWidgetPredicate((w) {
           if (w is! RichText) return false;
-          return w.text.toPlainText().contains('Detta kan inte ångras');
+          return w.text.toPlainText() == 'Detta kan inte ångras';
         }),
         findsOneWidget,
       );
@@ -255,7 +259,7 @@ void main() {
   });
 
   group('showLoadingConfirmationDialog', () {
-    // CircularProgressIndicator runs an infinite animation, so
+    // The indeterminate plate line runs an infinite animation, so
     // pumpAndSettle would never return. Use bounded pumps + small delay
     // to drive the showDialog scale animation past its 150ms barrier.
     Future<void> openAndPump(WidgetTester tester) async {
@@ -264,7 +268,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300)); // past anim
     }
 
-    testWidgets('renders title, message, hint, and a spinner', (tester) async {
+    testWidgets('renders title, message, hint, and the plate line', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           _triggerButton<bool>(
@@ -282,9 +288,9 @@ void main() {
 
       expect(find.text('Vänta'), findsOneWidget);
       expect(find.text('Det kan dröja'), findsOneWidget);
-      // Swedish locale → dialogMayTakeAWhile = "Detta kan ta en stund..."
-      expect(find.text('Detta kan ta en stund...'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Swedish locale → dialogMayTakeAWhile = "Detta kan ta en stund …" (content-style-guide.md:63)
+      expect(find.text('Detta kan ta en stund …'), findsOneWidget);
+      expect(find.byType(PlateLine), findsOneWidget);
     });
 
     testWidgets('default action labels come from l10n', (tester) async {
@@ -569,6 +575,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 'Namnge',
               hintText: 'Skriv något',
             ),
@@ -590,6 +597,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               initialValue: 'förvalt',
             ),
@@ -636,6 +644,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               cancelText: 'Avbryt',
             ),
@@ -697,6 +706,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               maxLength: 12,
             ),

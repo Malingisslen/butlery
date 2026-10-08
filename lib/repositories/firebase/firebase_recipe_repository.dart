@@ -9,6 +9,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_query_operations.dart';
+import 'package:butlery/repositories/firebase/modules/recipe_revision_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_tag_operations.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -75,6 +76,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   late final RecipeTagOperations _tagOperations;
   late final RecipeGdprExportOperations _gdprExportOperations;
   late final RecipeQueryOperations _queryOperations;
+  late final RecipeRevisionOperations _revisions;
 
   FirebaseRecipeRepository({
     super.firestore,
@@ -101,6 +103,17 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       getCollectionForUser: getCollectionForUser,
       fromFirestore: fromFirestore,
     );
+    _revisions = RecipeRevisionOperations(
+      firestore: firestore,
+      toFirestore: toFirestore,
+      checkOwner: (existing) => validateOwnership(
+        currentUserId: currentUserId,
+        resourceOwnerId: (existing.socialData?.ownerId ?? existing.createdBy)
+            .orEmpty(),
+        resourceType: 'recipe',
+        resourceId: existing.id,
+      ),
+    );
   }
   @override
   String get collectionName => FirestoreCollections.recipes;
@@ -120,11 +133,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// `addRecipes`, has no production caller today, so that arm is defence in
   /// depth rather than an open hole.
   ///
-  /// It does NOT cover `OfflineSyncManager`, which writes to the same
-  /// collection without touching this repository; that path calls
-  /// `sanitizeRecipeText` itself. Those two are the complete set of writers of
-  /// the WHOLE document, in the Dart client AND in `functions/src` — no Cloud
-  /// Function writes a whole recipe. Everything else writes PARTIAL field
+  /// Everything else writes PARTIAL field
   /// updates that never carry `title`, `description` or `sourceUrl`, so they
   /// need no sanitizing: on the client `rating_statistics.dart`,
   /// `family_rating_service.dart`, `recipe_tag_operations.dart` (which does
@@ -229,26 +238,22 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// BUT-955: defense-in-depth cap on the share-set size of a Recipe document.
   /// All service-layer share entry points should fail-fast with a localized
   /// error before reaching this guard — but multiple writer paths
-  /// (addMemberToRecipe, addMember, addCollaborators, repo.addCollaborator,
+  /// (addMemberToRecipe, addMember, repo.addCollaborator,
   /// shareRecipe, shareRecipeWithUsers) feed update/create, and capping at
   /// every callsite is bypass-prone. This is the chokepoint for every write
   /// THROUGH THIS REPOSITORY.
-  ///
-  /// BUT-1819 correction: it is not every Firestore write. `OfflineSyncManager`
-  /// pushes the whole document — `socialData`, and therefore
-  /// `memberPermissions` — straight at the collection without touching this
-  /// class, so an over-cap recipe synced from offline storage is not capped
-  /// here, and `firestore.rules` declares no cap of its own. Recorded rather
-  /// than fixed: closing it belongs with the offline path, not with a comment.
   void _enforceShareCap(Recipe entity) {
     final members = entity.socialData?.memberPermissions;
     if (members == null) return;
     final ownerCount = entity.socialData?.ownerId != null ? 1 : 0;
     final total = members.length + ownerCount;
     if (total > Recipe.maxSharesPerRecipe) {
-      throw StateError(
+      // BUT-2295: a ValidationException, so the offline queue reads the cap
+      // as the permanent refusal it is instead of retrying it for 24 h.
+      throw ValidationException(
         'Recipe ${entity.id} would exceed share cap: '
         '$total > ${Recipe.maxSharesPerRecipe}',
+        field: 'memberPermissions',
       );
     }
   }
@@ -258,73 +263,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     return await FirebasePerformanceService.traceOperation(
       'recipe_create',
       (trace) async {
-        // Validate user owns the recipe they're creating
-        final currentUser = requireCurrentUserId();
-
-        // BUT-955: cap-guard before validation work.
-        _enforceShareCap(entity);
-
-        // For personal recipes, createdBy should match current user
-        final ownerId = (entity.socialData?.ownerId ?? entity.createdBy)
-            .orDefault(currentUser);
-        await validateSelfOperation(
-          currentUserId: currentUser,
-          targetUserId: ownerId,
-          operation: 'create recipe',
-        );
-
-        // BUT-1819: sanitize FIRST, so the map that is validated is the map
-        // that gets written. This does NOT reject anything it used to accept:
-        // `validateRequiredFields` tests key PRESENCE only, and
-        // `RecipeCore.toFirestore` always emits `title`, so a title of pure
-        // control characters passed before and still passes — it just stores as
-        // `''`. Rejecting that would be a behaviour change on every untitled
-        // draft and is Malin's call, not a quiet addition here. An earlier
-        // version of this comment claimed the rejection happened; a reviewer
-        // opened the mixin and disproved it.
-        Recipe recipeToSave = sanitizeRecipeText(entity);
-
-        final firestoreData = recipeToSave.toFirestore();
-        final coreData = (firestoreData['core'] as Map<String, dynamic>?)
-            .orEmpty();
-
-        validateRequiredFields(
-          data: coreData,
-          requiredFields: ['title', 'createdBy', 'createdAt', 'updatedAt'],
-          resourceType: 'recipe',
-        );
-
-        // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        // BUT-1819: build on the SANITIZED copy, not on `entity`.
-        //
-        // This branch used to rebuild from `entity`, which threw the
-        // sanitization away — and it is not an edge case: `needsNormalization`
-        // is true whenever `ingredientsNormalized` is null, which is its
-        // default and which nothing on a LIVE create path populates. (Two copy
-        // factories do carry it forward. `recipe_factory.dart:340` has no
-        // production caller at all. `realtime_recipe.dart:527` DOES have
-        // callers — `recipe_content_operations.dart:427` ←
-        // `realtime_recipe_service.dart:405` — but that chain is dead at the
-        // top, so it reaches no live create either. Wiring either would make
-        // this branch skippable; do not read the claim as stronger than "no
-        // live path".) So it ran on every create,
-        // and the sanitize line above it (added 2026-03-15, over a branch from
-        // 2025-11-14) never had an effect here.
-        //
-        // The write itself is now safe regardless, because `toFirestore`
-        // sanitizes. This keeps the object returned to the CALLER in step with
-        // what Firestore holds, and restores the symmetry with `update` below —
-        // the identical twin sixty lines down that always did it correctly.
-        if (IngredientProcessor.needsNormalization(recipeToSave)) {
-          final normalizedIngredients =
-              IngredientProcessor.normalizeIngredientsForRecipe(
-                recipeToSave.core.ingredients,
-              );
-
-          recipeToSave = recipeToSave.copyWith(
-            ingredientsNormalized: normalizedIngredients,
-          );
-        }
+        final recipeToSave = await _prepareCreate(entity);
 
         final result = await super.create(recipeToSave);
 
@@ -344,6 +283,86 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     );
   }
 
+  /// What [create] checks and builds before it writes (BUT-955, BUT-1819).
+  Future<Recipe> _prepareCreate(Recipe entity) async {
+    // Validate user owns the recipe they're creating
+    final currentUser = requireCurrentUserId();
+
+    // BUT-955: cap-guard before validation work.
+    _enforceShareCap(entity);
+
+    // For personal recipes, createdBy should match current user
+    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orDefault(
+      currentUser,
+    );
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: ownerId,
+      operation: 'create recipe',
+    );
+
+    // BUT-1819: sanitize FIRST, so the map that is validated is the map
+    // that gets written. This does NOT reject anything it used to accept:
+    // `validateRequiredFields` tests key PRESENCE only, and
+    // `RecipeCore.toFirestore` always emits `title`, so a title of pure
+    // control characters passed before and still passes — it just stores as
+    // `''`. Rejecting that would be a behaviour change on every untitled
+    // draft and is Malin's call, not a quiet addition here. An earlier
+    // version of this comment claimed the rejection happened; a reviewer
+    // opened the mixin and disproved it.
+    Recipe recipeToSave = sanitizeRecipeText(entity);
+
+    final firestoreData = recipeToSave.toFirestore();
+    final coreData = (firestoreData['core'] as Map<String, dynamic>?).orEmpty();
+
+    validateRequiredFields(
+      data: coreData,
+      requiredFields: ['title', 'createdBy', 'createdAt', 'updatedAt'],
+      resourceType: 'recipe',
+    );
+
+    // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
+    // BUT-1819: build on the SANITIZED copy, not on `entity`.
+    //
+    // This branch used to rebuild from `entity`, which threw the
+    // sanitization away — and it is not an edge case: `needsNormalization`
+    // is true whenever `ingredientsNormalized` is null, which is its
+    // default, and the sanitize line above it (added 2026-03-15, over a branch from
+    // 2025-11-14) never had an effect here.
+    //
+    // The write itself is now safe regardless, because `toFirestore`
+    // sanitizes. This keeps the object returned to the CALLER in step with
+    // what Firestore holds, and restores the symmetry with `update` below —
+    // the identical twin that always did it correctly.
+    if (IngredientProcessor.needsNormalization(recipeToSave)) {
+      final normalizedIngredients =
+          IngredientProcessor.normalizeIngredientsForRecipe(
+            recipeToSave.core.ingredients,
+          );
+
+      recipeToSave = recipeToSave.copyWith(
+        ingredientsNormalized: normalizedIngredients,
+      );
+    }
+    return recipeToSave;
+  }
+
+  /// BUT-2213: the offline queue's create. A create sent again after its
+  /// answer was lost does not replace what the server holds by then
+  /// ([RecipeRevisionOperations.createOnce]).
+  @override
+  Future<int> createOnce(Recipe entity) =>
+      FirebasePerformanceService.traceOperation('recipe_create_once', (
+        trace,
+      ) async {
+        final recipeToSave = await _prepareCreate(entity);
+        await _checkAllowed(requireCurrentUserId(), recipeToSave, 'create');
+        return _revisions.createOnce(
+          getCollectionRef().doc(entity.id),
+          recipeToSave,
+        );
+      });
+
   @override
   Future<void> update(Recipe entity) async {
     return await FirebasePerformanceService.traceOperation(
@@ -354,7 +373,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         // BUT-955: cap-guard before read+validation. Catches every writer
         // path that builds an over-cap Recipe and calls update, including
-        // addCollaborator, addMemberToRecipe, addCollaborators, etc.
+        // addCollaborator, addMemberToRecipe, etc.
         _enforceShareCap(entity);
 
         // First check if recipe exists and user owns it
@@ -375,20 +394,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
           resourceId: entity.id,
         );
 
-        // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        Recipe recipeToSave = sanitizeRecipeText(entity);
-        if (IngredientProcessor.needsNormalization(recipeToSave)) {
-          final normalizedIngredients =
-              IngredientProcessor.normalizeIngredientsForRecipe(
-                recipeToSave.core.ingredients,
-              );
-
-          recipeToSave = recipeToSave.copyWith(
-            ingredientsNormalized: normalizedIngredients,
-          );
-        }
-
-        await super.update(recipeToSave);
+        final recipeToSave = RecipeRevisionOperations.prepare(entity);
+        await _checkAllowed(currentUser, recipeToSave, 'update');
+        // BUT-2213: a whole save raises the revision without reading it.
+        await getCollectionRef()
+            .doc(entity.id)
+            .update(_revisions.bumped(recipeToSave));
 
         // Add performance metrics
         trace.setMetric('ingredient_count', entity.core.ingredients.length);
@@ -406,6 +417,47 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         );
       },
     );
+  }
+
+  @override
+  Future<int> updateAtRevision(Recipe entity, {int? expectedRev}) =>
+      FirebasePerformanceService.traceOperation('recipe_update_at_rev', (
+        trace,
+      ) async {
+        final currentUser = requireCurrentUserId();
+        _enforceShareCap(entity);
+        final recipeToSave = RecipeRevisionOperations.prepare(entity);
+        await _checkAllowed(currentUser, recipeToSave, 'update');
+        return _revisions.writeAtRevision(
+          getCollectionRef().doc(entity.id),
+          recipeToSave,
+          expectedRev: expectedRev,
+        );
+      });
+
+  /// What `BaseFirebaseRepository.create` and `update` check and audit
+  /// before they write.
+  Future<void> _checkAllowed(
+    String userId,
+    Recipe entity,
+    String operation,
+  ) async {
+    final allowed = operation == 'create'
+        ? await validateCreatePermission(userId, entity)
+        : await validateUpdatePermission(userId, entity.id, entity);
+    await logPermissionCheck(
+      userId: userId,
+      resource: 'Recipe/${entity.id}',
+      operation: operation,
+      granted: allowed,
+      auditRepository: auditRepository,
+    );
+    if (!allowed) {
+      throw PermissionDeniedException(
+        'User $userId does not have permission to $operation Recipe '
+        '${entity.id}',
+      );
+    }
   }
 
   @override
@@ -781,6 +833,35 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       if (e.code == 'permission-denied') return null;
       rethrow;
     }
+  }
+
+  @override
+  Stream<Recipe?> watchSharedRecipe({
+    required String ownerId,
+    required String recipeId,
+  }) {
+    return denialAsNull(
+      getCollectionForUser(ownerId)
+          .doc(recipeId)
+          .snapshots()
+          .map((doc) => doc.exists ? fromFirestore(doc) : null),
+    );
+  }
+
+  /// A denied read (removed from the share) arrives as null; any other
+  /// error passes on unchanged.
+  static Stream<Recipe?> denialAsNull(Stream<Recipe?> source) {
+    return source.transform(
+      StreamTransformer<Recipe?, Recipe?>.fromHandlers(
+        handleError: (error, stack, sink) {
+          if (error is FirebaseException && error.code == 'permission-denied') {
+            sink.add(null);
+          } else {
+            sink.addError(error, stack);
+          }
+        },
+      ),
+    );
   }
 
   @override

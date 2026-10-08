@@ -34,6 +34,7 @@ import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { batchUpdateRefs, commitInChunks } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
+import { hashUid } from "../shared/hash-uid";
 // Deliberate cross-domain import (BUT-1822). `tryClearRoster` lives in a
 // minor-safety TRIGGER module, but it is the one roster clearer: bounded,
 // never-throwing, and it answers the exact question this cascade must ask before
@@ -57,6 +58,14 @@ import {
   REPORTER_RETENTION_DAYS,
   REPORTS,
 } from "../moderation/report-status";
+// P6-U09: the two-step-verification collections. Imported rather than
+// retyped so the cascade and the writer cannot disagree about a name or about
+// the shape of the per-account counter key.
+import {
+  BACKUP_CODES_COLLECTION,
+  RECOVERY_ATTEMPTS_COLLECTION,
+  uidAttemptKey,
+} from "./mfa-backup-codes";
 
 /**
  * One thing kept, and why — the Art. 12(4) notice is rendered from this.
@@ -368,6 +377,30 @@ export async function probeResidualData(
       },
     );
   }
+  // P6-U09: the two documents `deleteMfaRecoveryData` removes. Both are keyed
+  // by the uid itself and carry no uid field, so neither the `probes` list
+  // nor the field-filter loop can see them; an existence read is the leg.
+  for (const [col, id] of [
+    [BACKUP_CODES_COLLECTION, uid],
+    [RECOVERY_ATTEMPTS_COLLECTION, uidAttemptKey(uid)],
+  ] as const) {
+    try {
+      const snap = await db.collection(col).doc(id).get();
+      if (snap.exists) {
+        residual += 1;
+        logger.warn(`[deletion-cascade] residual in ${col}`, {
+          uid_prefix: uid.slice(0, 6),
+        });
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error(`[deletion-cascade] residual probe failed: ${col}`, {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
   // BUT-2072: the erased uid as the recipe OWNER on other people's ratings. Its
   // own leg because the `probes` list above filters on `userId`, which is the
   // rater. Uncapped, so it stays loud when the capped scrub declined.
@@ -404,6 +437,63 @@ export async function probeResidualData(
       const snap = await db
         .collection("recipe_comments")
         .where(field, op, uid)
+        .count()
+        .get();
+      const count = snap.data().count ?? 0;
+      if (count > 0) {
+        residual += count;
+        logger.warn(`[deletion-cascade] residual ${label} stamps`, {
+          uid_prefix: uid.slice(0, 6),
+          count,
+        });
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error(`[deletion-cascade] residual probe failed: ${label}`, {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+  // BUT-2272: the erased uid as a member of other people's shared recipes.
+  // A plain count, with no skip for the user's own recipes: the probe runs
+  // after tier 1, where `deleteRecipes` removes those, so one still standing
+  // is residue too. Uncapped, so it stays loud when the capped scrub declined.
+  try {
+    const snap = await db
+      .collectionGroup("recipes")
+      .where(
+        new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+        "!=",
+        null,
+      )
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual recipe member keys", {
+        uidHash: hashUid(uid),
+        field: "socialData.memberPermissions.<uid>",
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: recipe members", {
+      uidHash: hashUid(uid),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  // BUT-2115: one leg per reaction key, the deleter's own query shape.
+  for (const key of COMMENT_REACTION_KEYS) {
+    const label = `comment reaction ${key}`;
+    try {
+      const snap = await db
+        .collection("recipe_comments")
+        .where(`reactions.${key}`, "array-contains", uid)
         .count()
         .get();
       const count = snap.data().count ?? 0;
@@ -518,9 +608,9 @@ export async function probeResidualData(
   // matching deleter now clears, keeping the deleter a strict superset of the
   // probe:
   //   messages.senderId          — anonymized (or deleted with a 1:1 thread)
-  //   realtime_menus/recipes.ownerId       — deleted, subcollections included
-  //   realtime_menus/recipes.lastEditedBy  — anonymized
-  //   realtime_menus/recipes.participantIds — membership dropped on docs the
+  //   realtime_menus.ownerId       — deleted, subcollections included
+  //   realtime_menus.lastEditedBy  — anonymized
+  //   realtime_menus.participantIds — membership dropped on docs the
   //                                           user does not own
   //   conversations.participantIds — 1:1 deleted, group departed
   // The conversation ROSTER rows (`conversations/{id}/participants/{uid}`) are on
@@ -540,9 +630,9 @@ export async function probeResidualData(
     [Collections.realtimeMenus, "ownerId", "=="],
     [Collections.realtimeMenus, "lastEditedBy", "=="],
     [Collections.realtimeMenus, "participantIds", "array-contains"],
-    [Collections.realtimeRecipes, "ownerId", "=="],
-    [Collections.realtimeRecipes, "lastEditedBy", "=="],
-    [Collections.realtimeRecipes, "participantIds", "array-contains"],
+    [Collections.realtimeResources, "ownerId", "=="],
+    [Collections.realtimeResources, "lastEditedBy", "=="],
+    [Collections.realtimeResources, "participantIds", "array-contains"],
     [Collections.conversations, "participantIds", "array-contains"],
     // BUT-1838: chat-group membership. A deleter without a probe is exactly how
     // an erasure becomes silently incomplete, so this line ships in the same
@@ -562,6 +652,9 @@ export async function probeResidualData(
     // again. Single-field array-contains is served by the automatic index; no
     // composite entry needed.
     ["shared_content", "sharedToUserIds", "array-contains"],
+    // BUT-2169: the same person, held off a share by a block. Ships with
+    // `scrubBlockHeldShares`.
+    ["shared_content", "blockHeldUserIds", "array-contains"],
     // BUT-1801: poll AUTHORSHIP. `deletePollVotes` rewrites this field to
     // "deleted" and REPORTS ON ITSELF — it decides its own `complete` flag. This
     // row is the independent check on that self-report, which is the whole point
@@ -578,6 +671,11 @@ export async function probeResidualData(
     // above `MAX_BLOCK_SWEEP_ROWS` and deleted nothing at all.
     [Collections.blocks, "blockerId", "=="],
     [Collections.blocks, "blockedId", "=="],
+    // P5-U27b: recipe suggestions name two people and go with either account,
+    // so both legs of `deleteRecipeSuggestions` are probed. Uncapped, so they
+    // still fire when the sweep DECLINED above its cap and deleted nothing.
+    ["recipe_suggestions", "suggesterId", "=="],
+    ["recipe_suggestions", "ownerId", "=="],
     // BUT-1971: the group weekly menu scrubs membership, per-dish provenance
     // and the edit trail in ONE `batch.update` under `strict: false`, which
     // returns `true` on a failed chunk. The provenance fields are arrays of
@@ -1568,6 +1666,97 @@ export async function deleteIngredientSuggestions(
 }
 
 /**
+ * Page size for [deleteRecipeSuggestions]: one Firestore batch.
+ *
+ * Exported so its scenario can import it rather than retype the number.
+ */
+export const RECIPE_SUGGESTION_SWEEP_PAGE = 500;
+
+/**
+ * P5-U27b: suggestions to someone else's shared recipe
+ * (`recipe_suggestions`, produktregler.md:103, :241).
+ *
+ * A row names TWO people, the suggester (`suggesterId`) and the recipe's owner
+ * (`ownerId`), and it is deleted with EITHER account: the suggester's change is
+ * their content, and a suggestion to a recipe whose owner is gone has nobody
+ * to decide it. So both legs run, and both ship with a probe leg in
+ * `probeResidualData`.
+ *
+ * Unlike [deleteIngredientSuggestions] this sweep has NO decline cap. The
+ * `ownerId` leg is filled by OTHER people's writes (any member the recipe is
+ * shared with may suggest), so a large count is no sign of a bug in this
+ * user's data, and declining would let someone else hold this user's erasure
+ * in a failed state. It pages through each leg in batches of
+ * [RECIPE_SUGGESTION_SWEEP_PAGE] until the leg is empty. It returns false only
+ * when a page makes no progress (its deletes did not land), which the probe
+ * then also reports.
+ */
+export async function deleteRecipeSuggestions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  for (const field of ["suggesterId", "ownerId"] as const) {
+    let previous: Set<string> | null = null;
+    for (;;) {
+      const snap = await db
+        .collection("recipe_suggestions")
+        .where(field, "==", uid)
+        .limit(RECIPE_SUGGESTION_SWEEP_PAGE)
+        .get();
+      if (snap.empty) break;
+      const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+      const prior: Set<string> | null = previous;
+      if (prior !== null && [...paths].every((path) => prior.has(path))) {
+        logger.error(
+          "[deletion-cascade] recipe-suggestion page did not shrink; stopping",
+          { uid_prefix: uid.slice(0, 6), leg: field, rows: snap.size },
+        );
+        return false;
+      }
+      previous = paths;
+      await batchDeleteAll(db, snap.docs);
+    }
+  }
+  return true;
+}
+
+/**
+ * P6-U09: the account's two-step-verification recovery data.
+ *
+ * - `mfa_backup_codes/{uid}` holds the salted scrypt hashes of the user's ten
+ *   backup codes and when the set was created. Keyed by the raw uid and kept
+ *   until two-step verification is switched off, so without this step it
+ *   outlives the account for good.
+ * - `mfa_recovery_attempts/uid_{uid}` is the per-account wrong-code counter.
+ *   It carries `expiresAt` for the TTL policy, but it is keyed by the raw uid,
+ *   so it is personal data for as long as it stands and goes with the account
+ *   rather than waiting for the sweep.
+ *
+ * The OTHER rows in `mfa_recovery_attempts` are deliberately not touched:
+ * `ip_<HMAC(pepper, ip)>` and the single `global` counter. Nothing in them
+ * names an account, the key cannot be reversed without the server-only
+ * pepper, and there is no field or key this step could select them by. Their
+ * retention bound is the TTL on `expiresAt` (one hour window, one hour
+ * lockout at most). Registered with that reason in
+ * `COLLECTIONS_DELIBERATELY_UNTOUCHED` (admin/reset-collection-lists.ts).
+ *
+ * Both are single documents at known ids, so this is two deletes; deleting a
+ * missing document is a no-op, which keeps the step idempotent. Both ship with
+ * an existence leg in `probeResidualData`.
+ */
+export async function deleteMfaRecoveryData(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  await db.collection(BACKUP_CODES_COLLECTION).doc(uid).delete();
+  await db
+    .collection(RECOVERY_ATTEMPTS_COLLECTION)
+    .doc(uidAttemptKey(uid))
+    .delete();
+  return true;
+}
+
+/**
  * Hard ceiling for [deleteHouseholdAllergenShares]. The document id is
  * `{householdId}_{userId}`, so a user holds at most one share per household;
  * above this the sweep declines.
@@ -2039,8 +2228,25 @@ export async function deleteFamilyData(
       ? (data.memberUserIds as unknown[]).filter((id) => typeof id === "string")
       : [];
     const remaining = (memberUserIds as string[]).filter((id) => id !== uid);
+    // BUT-2267: a household linked to the erased user's own group ends the way
+    // `onHouseholdGroupWritten` ends it when that group is deleted — the
+    // others removed, their shares deleted — and the erased owner was its
+    // last member, so it is torn down. Same end state whichever runs first;
+    // never re-pointed to a joined `view` member.
+    const ownsGroupLink = data.createdBy === uid &&
+      data.sourceGroupOwnerId === uid;
 
-    if (remaining.length === 0) {
+    if (remaining.length === 0 || ownsGroupLink) {
+      // Shares first, and awaited: once the household doc is gone a retry
+      // cannot find these rows again.
+      for (let i = 0; ownsGroupLink && i < remaining.length; i += 400) {
+        const batch = db.batch();
+        for (const id of remaining.slice(i, i + 400)) {
+          batch.delete(db.collection("household_allergen_shares")
+            .doc(`${hid}_${id}`));
+        }
+        await batch.commit();
+      }
       // Sole member → tear the whole household down. Delete children with
       // strict:true so a failed chunk THROWS (→ family_data marked failed →
       // household doc NOT deleted → uid stays in memberUserIds → the retry
@@ -2122,11 +2328,18 @@ export async function deleteFamilyData(
           .filter((m) => m.userId !== uid)
       : [];
     const newCreatedBy = data.createdBy === uid ? remaining[0] : data.createdBy;
+    // BUT-2267: a household linked to the erased user's group names them in
+    // `sourceGroupOwnerId`. The group goes with them, so the link does too.
+    const ownGroupLink = data.sourceGroupOwnerId === uid ? {
+      sourceGroupId: admin.firestore.FieldValue.delete(),
+      sourceGroupOwnerId: admin.firestore.FieldValue.delete(),
+    } : {};
     await hhDoc.ref.update({
       members,
       memberUserIds: admin.firestore.FieldValue.arrayRemove(uid),
       [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),
       createdBy: newCreatedBy,
+      ...ownGroupLink,
     });
   }
   return true;
@@ -2967,14 +3180,166 @@ const PER_USER_CONVERSATION_MAPS = [
   "perUserSettings",
 ] as const;
 
+/** Cap on one erasure's sweep of held shares (BUT-2169). Declines above it. */
+export const MAX_BLOCK_HELD_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2169: the held state a block left on `shared_content` that involves the
+ * erased uid, both ways round: the uid HELD on someone else's share
+ * (`blockHeldUserIds` plus the `blockHeld.<uid>` entry, which keeps their
+ * member row and recipe permission), and other people held on a share the
+ * erased user made.
+ *
+ * Runs BEFORE tier 1. Tier 1 deletes the user's `blocks` rows, and each delete
+ * fires `holdSharesOnBlock`'s release, which puts held people back on the
+ * shares; with nothing held left, that release has nothing to write. It runs
+ * again after tier 1 for a hold that committed while the cascade was running.
+ */
+export async function scrubBlockHeldShares(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  if (uid.includes(".")) {
+    // A dotted key would address a different path; Auth never issues one.
+    logger.error("[deletion-cascade] uid unusable as a map key; not sweeping held shares");
+    return false;
+  }
+  const snap = await db
+    .collection("shared_content")
+    .where("blockHeldUserIds", "array-contains", uid)
+    .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
+    .get();
+  if (snap.size > MAX_BLOCK_HELD_SWEEP_ROWS) {
+    logger.error("[deletion-cascade] implausible held-share count; not sweeping", {
+      uid_prefix: uid.slice(0, 6),
+      rows: snap.size,
+    });
+    return false;
+  }
+  try {
+    // First, so a decline on the owned half below cannot leave this user held
+    // for tier 1's release to put back.
+    await commitInChunks(
+      db,
+      snap.docs,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          blockHeldUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+          [`blockHeld.${uid}`]: admin.firestore.FieldValue.delete(),
+        });
+      },
+      { label: "scrubBlockHeldShares", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] scrubBlockHeldShares failed", {
+      uid_prefix: uid.slice(0, 6),
+      rows: snap.size,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+
+  const owned = await db
+    .collection("shared_content")
+    .where("sharedByUserId", "==", uid)
+    .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
+    .get();
+  if (owned.size > MAX_BLOCK_HELD_SWEEP_ROWS) {
+    logger.error("[deletion-cascade] implausible owned-share count; not sweeping", {
+      uid_prefix: uid.slice(0, 6),
+      rows: owned.size,
+    });
+    return false;
+  }
+  const ownedHeld = owned.docs.filter((doc) => {
+    const held = doc.get("blockHeldUserIds");
+    return Array.isArray(held) && held.length > 0;
+  });
+  try {
+    // Tier 1 deletes these rows; until then a release would rewrite member
+    // rows that name the erased user as the one who added them.
+    await commitInChunks(
+      db,
+      ownedHeld,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          blockHeldUserIds: admin.firestore.FieldValue.delete(),
+          blockHeld: admin.firestore.FieldValue.delete(),
+        });
+      },
+      { label: "scrubBlockHeldShares:owned", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] scrubBlockHeldShares owned half failed", {
+      uid_prefix: uid.slice(0, 6),
+      rows: ownedHeld.length,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+  logger.info("[deletion-cascade] scrubBlockHeldShares", {
+    uid_prefix: uid.slice(0, 6),
+    rows: snap.size,
+    owned_rows: ownedHeld.length,
+  });
+  return true;
+}
+
 export async function removeFromSharedContent(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const [members, engagements] = await Promise.all([
+  // BUT-1798 — the members-subcollection scrub below reaches ONLY content shared
+  // through BaseSharedContentRepository.addMember() (the group path). The three
+  // direct-share managers — recipe_sharing_manager, social_menu_operations and
+  // shopping_social_share_module — write the parent document only and have never
+  // written a members/{uid} row, so every recipient of an ad-hoc shared recipe,
+  // menu or list has been un-erasable since this collection existed. The Art. 15
+  // export now returns exactly those rows, so the gap has to close with it.
+  //
+  // Single `array-contains` on the one membership field. This was a union of
+  // two queries deduped by document id, because the collection carried the same
+  // list under two spellings; retired 2026-08-03.
+  //
+  // The admin SDK bypasses rules, so this predicate is the only access control  claim-lint:ok moved unchanged from below the members leg (BUT-1798)
+  // on the read — keep it scoped to shared_content and to this exact field.
+  //
+  // BUT-2214: read together with `members`, before either leg removes the uid
+  // from `sharedToUserIds`: `addMember` writes both handles, so a query run
+  // after the members leg no longer matches a document shared that way.
+  const [members, engagements, membershipSnap] = await Promise.all([
     db.collectionGroup("members").where("userId", "==", uid).get(),
     db.collectionGroup("engagements").where("userId", "==", uid).get(),
+    db
+      .collection("shared_content")
+      .where("sharedToUserIds", "array-contains", uid)
+      .get(),
   ]);
+
+  const membershipDocs = new Map<
+    string,
+    admin.firestore.QueryDocumentSnapshot
+  >();
+  for (const doc of membershipSnap.docs) {
+    // Documents this user OWNS are hard-deleted a few lines below. Updating them
+    // first is wasted writes, and a batch.update against an already-deleted doc
+    // throws NOT_FOUND and poison-pills the whole chunk on any retry — the same
+    // failure shape as BUT-1582/1583. The owner is always in their own
+    // membership array, so without this skip the overlap would be total.
+    if (doc.get("sharedByUserId") === uid) continue;
+    membershipDocs.set(doc.id, doc);
+  }
+
+  // BUT-2214: a menu shared with the user can hold a dish of theirs. Scrubbed
+  // while the user is still in `sharedToUserIds`.
+  await scrubDishCreator(
+    db,
+    [...membershipDocs.values()],
+    uid,
+    "shared_content",
+  );
 
   // Scrub membership on each parent shared_content doc. One field: this
   // collection briefly carried the same recipient list under two spellings so
@@ -3008,39 +3373,6 @@ export async function removeFromSharedContent(
   // parent document, while a `members` row naming this user should go wherever
   // it sits.
   await batchDeleteAll(db, members.docs);
-
-  // BUT-1798 — the members-subcollection scrub above reaches ONLY content shared
-  // through BaseSharedContentRepository.addMember() (the group path). The three
-  // direct-share managers — recipe_sharing_manager, social_menu_operations and
-  // shopping_social_share_module — write the parent document only and have never
-  // written a members/{uid} row, so every recipient of an ad-hoc shared recipe,
-  // menu or list has been un-erasable since this collection existed. The Art. 15
-  // export now returns exactly those rows, so the gap has to close with it.
-  //
-  // Single `array-contains` on the one membership field. This was a union of
-  // two queries deduped by document id, because the collection carried the same
-  // list under two spellings; retired 2026-08-03.
-  //
-  // The admin SDK bypasses rules, so this predicate is the only access control
-  // on the read — keep it scoped to shared_content and to this exact field.
-  const membershipSnap = await db
-    .collection("shared_content")
-    .where("sharedToUserIds", "array-contains", uid)
-    .get();
-
-  const membershipDocs = new Map<
-    string,
-    admin.firestore.QueryDocumentSnapshot
-  >();
-  for (const doc of membershipSnap.docs) {
-    // Documents this user OWNS are hard-deleted a few lines below. Updating them
-    // first is wasted writes, and a batch.update against an already-deleted doc
-    // throws NOT_FOUND and poison-pills the whole chunk on any retry — the same
-    // failure shape as BUT-1582/1583. The owner is always in their own
-    // membership array, so without this skip the overlap would be total.
-    if (doc.get("sharedByUserId") === uid) continue;
-    membershipDocs.set(doc.id, doc);
-  }
 
   if (membershipDocs.size > 0) {
     await commitInChunks(
@@ -3116,7 +3448,7 @@ export async function removeFromSharedContent(
 }
 
 /** The four fields on an item row that name a person by uid. */
-const ITEM_UID_FIELDS = [
+export const ITEM_UID_FIELDS = [
   "addedByUserId",
   "lastModifiedByUserId",
   "assignedToUserId",
@@ -3131,7 +3463,7 @@ const ITEM_UID_FIELDS = [
 const MAX_SHARED_ITEM_ROWS = 2000;
 
 /** True for `shared_content/{id}`, and for nothing nested deeper. */
-function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean {
+export function isSharedContentParent(ref: admin.firestore.DocumentReference): boolean {
   return ref.parent.id === "shared_content" && ref.parent.parent === null;
 }
 
@@ -3565,6 +3897,139 @@ export async function deleteCommentLikes(
     decremented,
   });
   return true;
+}
+
+/**
+ * Cap on one erasure's sweep of OTHER people's recipes that list this user in
+ * `socialData.memberPermissions`. Declines rather than truncates, like the
+ * sibling caps: the recipe create and update rules let an owner write any
+ * uid into that map on their own recipes, so the row count is not this
+ * user's own doing.
+ */
+export const MAX_RECIPE_MEMBER_SWEEP_ROWS = 2000;
+
+/** True for a document in the erased user's own `users/{uid}/recipes`. */
+function isOwnRecipe(
+  ref: admin.firestore.DocumentReference,
+  uid: string,
+): boolean {
+  const owner = ref.parent.parent;
+  return (
+    owner !== null &&
+    owner.id === uid &&
+    owner.parent.id === "users" &&
+    owner.parent.parent === null
+  );
+}
+
+/**
+ * BUT-2272: take the erased uid out of other people's shared recipes — the
+ * `socialData.memberPermissions` key that found the recipe, and the
+ * `socialData.grants` key beside it. The recipe stays; it belongs to its owner.
+ *
+ * Both keys are addressed with `FieldPath`, never a dotted string built from
+ * the uid. The user's own recipes are skipped: `deleteRecipes` removes them in
+ * tier 1, and an update on a document deleted underneath it rejects the whole
+ * chunk.
+ */
+export async function scrubRecipeMemberPermissions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collectionGroup("recipes")
+    .where(
+      new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+      "!=",
+      null,
+    )
+    .limit(MAX_RECIPE_MEMBER_SWEEP_ROWS + 1)
+    .get();
+
+  if (snap.size > MAX_RECIPE_MEMBER_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible recipe member count; not sweeping",
+      { uidHash: hashUid(uid), rows: snap.size },
+    );
+    return false;
+  }
+  const rows = snap.docs.filter((doc) => !isOwnRecipe(doc.ref, uid));
+  if (rows.length === 0) return true;
+
+  try {
+    await commitInChunks(
+      db,
+      rows,
+      (batch, doc) => {
+        batch.update(
+          doc.ref,
+          new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+          admin.firestore.FieldValue.delete(),
+          new admin.firestore.FieldPath("socialData", "grants", uid),
+          admin.firestore.FieldValue.delete(),
+        );
+      },
+      { label: "scrubRecipeMemberPermissions", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] recipe member scrub failed", {
+      uidHash: hashUid(uid),
+      rows: rows.length,
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
+
+  logger.info("[deletion-cascade] recipe member scrub", {
+    uidHash: hashUid(uid),
+    rows: rows.length,
+  });
+  return true;
+}
+
+/**
+ * BUT-2115: the reaction keys `recipe_comments.reactions` may hold. One list
+ * with `reactionKeys()` in firestore.rules and `kReactionEmojis` in
+ * emoji_reaction_picker.dart; a functions test parses all three.
+ */
+export const COMMENT_REACTION_KEYS = [
+  "thumbs_up",
+  "heart",
+  "fire",
+  "laughing",
+  "yum",
+  "thinking",
+] as const;
+
+/** Per-key cap for `scrubCommentReactions`, declining like the BUT-2112 caps. */
+export const MAX_COMMENT_REACTION_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2115: take the erased uid out of every reaction list on other people's
+ * comments. `arrayRemove` leaves the other reactors in place. A key that
+ * declines or fails does not stop the others, and fails the step.
+ */
+export async function scrubCommentReactions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  let ok = true;
+  for (const key of COMMENT_REACTION_KEYS) {
+    const swept = await scrubCommentField(
+      db,
+      uid,
+      {
+        field: `reactions.${key}`,
+        op: "array-contains",
+        cap: MAX_COMMENT_REACTION_SWEEP_ROWS,
+      },
+      { [`reactions.${key}`]: admin.firestore.FieldValue.arrayRemove(uid) },
+      `scrubCommentReactions:${key}`,
+    );
+    if (!swept) ok = false;
+  }
+  return ok;
 }
 
 export async function deletePingsByUser(
@@ -4199,29 +4664,6 @@ export async function deleteNotificationAnalytics(
   return true;
 }
 
-export async function deleteRealtimeRecipes(
-  db: admin.firestore.Firestore,
-  uid: string,
-): Promise<boolean> {
-  // BUT-1396 follow-up: the owner field on `realtime_recipes` is `ownerId`
-  // (the model writes it, the Firestore rule gates read/delete on it). The
-  // prior `userId` filter matched zero docs, so a deleted user's collaborative
-  // recipes were exported (Art. 15) but never erased (Art. 17). Filter on
-  // `ownerId` so deletion mirrors the export.
-  const snap = await db
-    .collection(Collections.realtimeRecipes)
-    .where("ownerId", "==", uid)
-    .get();
-  await deleteRealtimeDocsWithChildren(db, snap.docs);
-
-  // BUT-1768: the same last-editor pair the menus step scrubs. Deleting only
-  // the recipes the user OWNS leaves their name on every collaborative recipe
-  // they last touched but do not own.
-  await scrubLastEditor(db, Collections.realtimeRecipes, uid);
-  await removeRealtimeParticipation(db, Collections.realtimeRecipes, uid);
-  return true;
-}
-
 /**
  * BUT-1768: `realtime_menus` was in no tier at all — a collaborative menu the
  * user owns survived an Article 17 erasure intact, readable by every
@@ -4253,6 +4695,28 @@ export async function deleteRealtimeMenus(
     uid,
   );
   await removeVoteEntries(db, stillJoined, uid);
+  return true;
+}
+
+/**
+ * BUT-2151: live menus (`realtime_resources`). Owned documents go, the
+ * last-editor pair is anonymized on
+ * the rest, and the user leaves every roster they were in. The roster leg
+ * removes the uid from `participantIds` and `participants` together, which is
+ * the pair the rules require to stay in step.
+ */
+export async function deleteRealtimeResources(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const owned = await db
+    .collection(Collections.realtimeResources)
+    .where("ownerId", "==", uid)
+    .get();
+  await deleteRealtimeDocsWithChildren(db, owned.docs);
+
+  await scrubLastEditor(db, Collections.realtimeResources, uid);
+  await removeRealtimeParticipation(db, Collections.realtimeResources, uid);
   return true;
 }
 
@@ -4304,7 +4768,7 @@ async function removeVoteEntries(
  * The rule-blessed child collections of a realtime document.
  *
  * `firestore.rules` declares `realtime_menus/{id}/presence/{userId}` and
- * `/votes/{voteId}`, and `realtime_recipes/{id}/presence/{uid}`. Both are
+ * `/votes/{voteId}`. Both are
  * uid-keyed and both carry personal data: a presence doc holds
  * `{displayName, isActive, lastSeen}`, and a vote document's `votes` map is
  * keyed `userId -> optionId`.
@@ -4378,6 +4842,9 @@ async function removeRealtimeParticipation(
     .get();
   const notOwned = joined.docs.filter((doc) => doc.data().ownerId !== uid);
   if (notOwned.length === 0) return notOwned;
+
+  // BUT-2214: before the roster write below.
+  await scrubDishCreator(db, notOwned, uid, collection);
 
   for (const doc of notOwned) {
     const presence = doc.ref.collection("presence").doc(uid);
@@ -4466,6 +4933,124 @@ async function scrubLastEditor(
           logger.warn(`scrubLastEditor:${collection}: doc write failed`, {
             uid_prefix: uid.slice(0, 6),
             docId: doc.id,
+            errName: err instanceof Error ? err.name : typeof err,
+          });
+        }
+      }),
+    );
+  }
+}
+
+/**
+ * Keys a menu dish does not keep: the blocks that name people and the owner's
+ * personal tags. Mirrors `RecipeSerialization.toMenuDish` in the app.
+ */
+const NON_DISH_KEYS = new Set([
+  "socialData",
+  "realtimeData",
+  "offlineData",
+  "type",
+  "personalTagIds",
+  "personalTags",
+]);
+
+/** A map as Firestore hands it over, not a Timestamp or other SDK value. */
+function isPlainMap(node: unknown): node is Record<string, unknown> {
+  return (
+    !!node &&
+    typeof node === "object" &&
+    Object.getPrototypeOf(node) === Object.prototype
+  );
+}
+
+/** True when [uid] is a string value or a map key anywhere under [node]. */
+function mentionsUid(node: unknown, uid: string): boolean {
+  if (node === uid) return true;
+  if (Array.isArray(node)) return node.some((v) => mentionsUid(v, uid));
+  if (isPlainMap(node)) {
+    return Object.entries(node).some(
+      ([k, v]) => k === uid || mentionsUid(v, uid),
+    );
+  }
+  return false;
+}
+
+/**
+ * [node] with every string equal to [uid] as "deleted" and every map key equal
+ * to it removed.
+ */
+function withoutUid(node: unknown, uid: string): unknown {
+  if (node === uid) return "deleted";
+  if (Array.isArray(node)) return node.map((v) => withoutUid(v, uid));
+  if (isPlainMap(node)) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node)) {
+      if (k !== uid) out[k] = withoutUid(v, uid);
+    }
+    return out;
+  }
+  return node;
+}
+
+/**
+ * BUT-2214: a dish that mentions the deleted user is rewritten as a menu dish
+ * — the recipe's core, flat, without the keys in [NON_DISH_KEYS] — with the uid
+ * replaced by "deleted" wherever it is a value and removed wherever it is a
+ * key. Menus written by a client before BUT-2214 store whole recipes, whose
+ * `socialData` / `realtimeData` blocks carry display names beside the ids, so
+ * the projection is what removes the names. A dish that does not mention the
+ * user is left as it is.
+ *
+ * Only the menus a caller already found can be scrubbed: a uid inside an
+ * array element cannot be queried, so a dish of theirs on a menu they never
+ * joined is out of reach, and no probe leg can see what is left.
+ *
+ * Per-doc transaction, as in [scrubLastEditor]: the menu is live, and the
+ * whole `menuSnapshot` is rewritten, so it must be rewritten from a fresh read.
+ */
+async function scrubDishCreator(
+  db: admin.firestore.Firestore,
+  docs: admin.firestore.QueryDocumentSnapshot[],
+  uid: string,
+  label: string,
+): Promise<void> {
+  // A document with no menu in the query snapshot (a shared recipe or list)
+  // costs no transaction read.
+  const menus = docs.filter((d) => d.data().menuSnapshot);
+  const chunkSize = 10;
+  for (let i = 0; i < menus.length; i += chunkSize) {
+    await Promise.all(
+      menus.slice(i, i + chunkSize).map(async (doc) => {
+        try {
+          await db.runTransaction(async (tx) => {
+            const fresh = await tx.get(doc.ref);
+            const snapshot = fresh.data()?.menuSnapshot;
+            if (!isPlainMap(snapshot)) return;
+            let changed = false;
+            const scrubbed: Record<string, unknown> = {};
+            for (const [category, dishes] of Object.entries(snapshot)) {
+              if (!Array.isArray(dishes)) {
+                scrubbed[category] = dishes;
+                continue;
+              }
+              scrubbed[category] = dishes.map((dish) => {
+                if (!isPlainMap(dish) || !mentionsUid(dish, uid)) return dish;
+                changed = true;
+                const base = isPlainMap(dish.core) ? dish.core : dish;
+                const projected: Record<string, unknown> = {};
+                for (const [k, v] of Object.entries(base)) {
+                  if (!NON_DISH_KEYS.has(k)) projected[k] = v;
+                }
+                return withoutUid(projected, uid);
+              });
+            }
+            if (changed) tx.update(doc.ref, { menuSnapshot: scrubbed });
+          });
+        } catch (err) {
+          logger.warn(`scrubDishCreator:${label}: doc write failed`, {
+            uid_prefix: uid.slice(0, 6),
+            // A live menu's id starts with its owner's uid.
+            docIdHash: hashUid(doc.id),
             errName: err instanceof Error ? err.name : typeof err,
           });
         }
@@ -4704,6 +5289,13 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // rather than `FirestoreCollections.users` inline. The guard now resolves
   // local consts too, so the next one of this shape reddens.
   "acquisition",
+  // P5-U26b: the user's own week menus and recipes that another person's save
+  // overwrote, kept 30 days behind "Återställ" (produktregler.md:109), written
+  // by firebase_overwritten_version_repository.dart. A TTL policy on
+  // `expiresAt` removes each row after 30 days; this entry erases them at
+  // once when the account goes. Exported in the account-subcollections
+  // section, so EXPORT ⊇ DELETION holds.
+  "overwritten_versions",
   // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
   // an account predating a writer's removal can still hold rows, and by the
   // superset rule above such a row would otherwise be permanently residual.

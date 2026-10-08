@@ -7,8 +7,7 @@
   `bySemanticsLabel` returning 0 therefore measures the MERGE, not an absent live region — do
   not conclude the branch is unobservable and fall back to `find.byType`. Prefer the RegExp
   form, which held on both hosts, and scope the finder to the control: an unscoped one also
-  matches unstubbed fixture text starting with the same word. See the 2026-09-07 archive
-  entries (BUT friend-requests spinner) for the per-host figures and the superseded wordings.
+  matches unstubbed fixture text starting with the same word.
 - **An UNSCOPED `find.byType(<SpinnerClass>)` count on a busy screen is the never-TWO pin, and
   reads as incidental** — `findsOneWidget` reddens when a second surface gains the same busy
   ternary. Grade such a count before writing a dedicated "no second spinner" test; it is usually
@@ -76,17 +75,12 @@
   + "the thing it replaced is gone" are entailed by the same branch; the third observable
   (`StateWidget.error(onAction:)`) is untouched. Pin first-read-fails/second-answers plus a CALL
   COUNT, which also kills a no-op callback (BUT-1962).
-- A COPY test stopping at the confirmation dialog pins the words, not the branch.
-  `MaterialApp(routes:{...})` never reads `settings.arguments` — push through `onGenerateRoute`.
 - Two l10n keys with the SAME string make `find.text` unfalsifiable — grep the ARB for EXACT value
   equality, since `find.text` is whole-`Text.data` equality, never substring (BUT-1831). **A NEW
   arm's string merely SHARING the discriminating SUBSTRING of a pinned sibling hollows every
   `contains`/`textContaining` pin on that sibling, with nothing red and in files the round never
   opened** — when a round adds an enum→l10n arm, run the NEW string through every existing matcher
   for its siblings, and expect the sibling's test NAME to carry a stale count too (BUT-1922).
-- **A dropdown widened to keep an off-vocabulary value needs FOUR fixtures**: off-list-untouched;
-  pick-something-then-pick-back (only killer of keying the list off current vs stored selection);
-  empty-stored; literal vocabulary pin (BUT-1858).
 - **A `StyledInput` with `keyboardType: TextInputType.number` silently gets
   `FilteringTextInputFormatter.digitsOnly`**, so any `replaceAll(',', '.')` decimal parse below it
   is DEAD and "1,5" reaches the model as 15. A suite that never types a DECIMAL cannot see it.
@@ -136,8 +130,6 @@
   `error isNull` (log-and-rethrow satisfies the count alone). The FAILED-write variant is NOT a
   second branch: the two catches share no state — unless one starts setting state the other reads
   (BUT-2124).
-- **A control that DISABLES ITSELF after one tap makes every later negative-tap assertion in the same
-  test unfailable** — order the negative tap FIRST and assert zero (BUT-1904).
 - **ONE parameter feeding TWO axes is pinned on the easy axis only** (a grid's `spacing` used between
   rows AND columns) — enumerate the axes the parameter's own doc claims, one assertion each
   (BUT-1911).
@@ -197,8 +189,6 @@ the wrong belief and has been corrected in place):**
   all hits inside the widget's own suite means the view that WIRES it is unpinned, and deleting the
   production lines that pass it leaves every suite green with the feature absent from the app. A
   callback seam owes one test at the CALL SITE'S layer (BUT-1904).
-- A `didChangeDependencies` retry on a widget that renders `SizedBox.shrink()` on failure is DEAD —
-  the early return happens before any `Theme.of`, so only a REMOUNT recovers.
 
 - **An overflow probe MUST mount `AppTheme.lightTheme`** — the bare `MaterialApp`'s smaller default
   typography can hide a real overflow. Pin with SYNTHETIC tall content, never real ARB copy.
@@ -208,14 +198,26 @@ the wrong belief and has been corrected in place):**
   COUNT). A ladder that SKIPS cases per fixture is honest only if the skipped ones are MEASURED;
   register them as NAMED `skip:` (the runner prints the name every run), never a `continue`. Two
   residuals survive: the co-assert closes only "the ADDED content vanished", and a named skip goes
-  stale GREEN the day the residual is fixed (BUT-1895/1911).
+  stale GREEN the day the residual is fixed (BUT-1895/1911). A state-matrix host pins only
+  the sections its fixture RENDERS: an `if (vm.x)` section's wrapper is revertible-green (BUT-2192).
+  **A Row→Wrap overflow fix also changes WIDTH**: a Wrap sizes to its content, so under a
+  start-aligned Column the caller's coloured band shrinks. Mount the caller's real parent chain
+  and assert the band's width, beside the no-overflow test (BUT-2192). **A whole-VIEW
+  `takeException` answers for every Flex on screen**: the test font overflowed the auth footer at
+  320/2.0, which the matrix never flagged. Collect `FlutterError.onError`; match `describeIdentity`
+  of the subject's own `RenderFlex` (BUT-2192).
 - **A SCROLLABLE ancestor makes the whole overflow class structurally unfailable** — inside a
   `SingleChildScrollView` the child gets unbounded height, so no content can overflow and
   `takeException(), isNull` is green at any size. It still kills a fixed-slice mutant, so keep the
   tests — but a group NAMED "the week fits" then asserts something nothing measures. Read
   `ScrollableState.position.maxScrollExtent` before writing "fits" (a `> 0` IS the finding), and
   strike the claim rather than re-scope it (BUT-1971).
-- A page-size guard is only testable on a TALL surface (`tester.view.physicalSize = Size(800,14000)`,
-  dpr 1.0) — a short surface auto-scrolls and hides item 0.
+- **`androidTapTargetGuideline` does not flag a control flush to the surface EDGE** — a compact
+  40x40 `IconButton` at the top-right corner PASSED, the same button inset 24 dp FAILED (measured,
+  BUT-2194). Place the control off every edge, and co-assert it rendered.
+- **`labeledTapTargetGuideline` only asks that each TAP node has a label** — a row split into a
+  labelled tap node and a tapless `selected` node passes it. Pin "one control": one TAP node whose
+  label contains the name, then `flagsCollection` and `tester.semantics.tap`; once picked, a
+  selected-members chip names it too, so count ALL nodes before the tap only (BUT-2195).
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.

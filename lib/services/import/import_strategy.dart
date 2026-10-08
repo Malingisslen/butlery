@@ -1,4 +1,5 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 
 /// Strategy pattern interface for recipe import (text, URL, photo, archive).
 abstract class ImportStrategy {
@@ -22,21 +23,30 @@ class ImportResult {
   final String? suggestedTitle;
   final List<int>? likelyIngredientLines;
 
+  /// Why a failure happened, as a code the screen can choose its text from.
+  /// Null on success and assistance, and on a failure no cause was found for.
+  final ImportErrorCode? errorCode;
+
   ImportResult.success(this.recipe, {this.warnings, this.metadata})
     : isSuccess = true,
       errorMessage = null,
+      errorCode = null,
       needsAssistance = false,
       extractedText = null,
       suggestedTitle = null,
       likelyIngredientLines = null;
 
-  ImportResult.failure(this.errorMessage, {this.warnings, this.metadata})
-    : isSuccess = false,
-      recipe = null,
-      needsAssistance = false,
-      extractedText = null,
-      suggestedTitle = null,
-      likelyIngredientLines = null;
+  ImportResult.failure(
+    this.errorMessage, {
+    this.warnings,
+    this.metadata,
+    this.errorCode,
+  }) : isSuccess = false,
+       recipe = null,
+       needsAssistance = false,
+       extractedText = null,
+       suggestedTitle = null,
+       likelyIngredientLines = null;
 
   ImportResult.assistance({
     required this.extractedText,
@@ -47,7 +57,23 @@ class ImportResult {
        needsAssistance = true,
        recipe = null,
        errorMessage = null,
+       errorCode = null,
        warnings = null;
+
+  ImportResult._copy(ImportResult r, this.metadata)
+    : isSuccess = r.isSuccess,
+      recipe = r.recipe,
+      errorMessage = r.errorMessage,
+      warnings = r.warnings,
+      needsAssistance = r.needsAssistance,
+      extractedText = r.extractedText,
+      suggestedTitle = r.suggestedTitle,
+      likelyIngredientLines = r.likelyIngredientLines,
+      errorCode = r.errorCode;
+
+  /// The same result with [extra] merged over its metadata.
+  ImportResult withMetadata(Map<String, dynamic> extra) =>
+      ImportResult._copy(this, {...?metadata, ...extra});
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;

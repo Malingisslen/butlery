@@ -5,6 +5,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 
 /// Consolidated recipe permission manager providing comprehensive access control and collaborative sharing.
 /// Simplified permission management system consolidated during architecture refactoring,
@@ -63,8 +65,66 @@ class RecipePermissionManager {
   /// ensuring proper access control and collaborative feature availability.
   void checkPermissions() {}
 
+  /// P6-U05: set once the live role on this recipe dropped to read-only.
+  /// From then on [canEdit] is false whatever any cache says, so the
+  /// persistence manager refuses every save and nothing reaches the shared
+  /// recipe (flows-roles-budget.md:83, :132).
+  bool _editAccessLost = false;
+
+  /// Records that the role dropped to read-only while the form was open.
+  void markEditAccessLost() => _editAccessLost = true;
+
+  /// P6-U05: whether the signed-in user may still edit [recipe], live.
+  ///
+  /// The role on someone else's shared recipe is the caller's entry in the
+  /// owner's recipe document (`socialData.memberPermissions`), so this
+  /// watches that document. Removal from the share reads as "may not edit".
+  /// Any other error is not a downgrade, so it emits nothing then. The owner
+  /// cannot be lowered, and a new recipe has no role, so both get an empty
+  /// stream, as does a build without the recipe repository.
+  Stream<bool> watchCanEdit(Recipe recipe) {
+    final uid = _permissionService.currentUserId;
+    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    if (uid == null || recipe.id.isEmpty || ownerId == null || ownerId == uid) {
+      return const Stream.empty();
+    }
+    final repository = ServiceLocator.tryGet<RecipeRepository>();
+    if (repository == null) return const Stream.empty();
+    return repository
+        .watchSharedRecipe(ownerId: ownerId, recipeId: recipe.id)
+        .map(
+          (live) => live?.socialData?.memberPermissions?[uid]?.canEdit ?? false,
+        )
+        .handleError((Object e) {
+          AppLogger.warning('Live role for recipe ${recipe.id} unreadable: $e');
+        })
+        .distinct();
+  }
+
+  /// Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): the
+  /// owner of [recipe] when it is someone else's, or null when it is the
+  /// signed-in user's own (or has no owner, as a local recipe).
+  ///
+  /// The owner is the recipe's owner id (socialData.ownerId, else
+  /// createdBy), the same id recipe detail and the permission module use,
+  /// never anything the screen shows. Without a signed-in user nothing is
+  /// someone else's here; the save then fails on its own checks.
+  String? someoneElsesOwner(Recipe recipe) {
+    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    if (ownerId == null || ownerId.isEmpty) return null;
+    final uid = currentUserId;
+    if (uid == null || uid.isEmpty || uid == ownerId) return null;
+    return ownerId;
+  }
+
+  /// The signed-in user's id, or null.
+  String? get currentUserId =>
+      _testPermissionService?.currentUserId ??
+      ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+
   /// Edit permission for recipe form modification and content management.
   bool get canEdit {
+    if (_editAccessLost) return false;
     if (_recipeId == null) return true; // New recipe creation
     return _permissionService.canEditRecipe(_recipeId!);
   }

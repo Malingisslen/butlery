@@ -5,7 +5,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -13,7 +12,13 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog that collects feedback details and submits via FeedbackService.
 class FeedbackFormDialog extends StatefulWidget {
@@ -50,15 +55,14 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
     final cs = Theme.of(context).colorScheme;
     return Dialog.fullscreen(
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
+        // Skarmar v12 etapp 9 #fbformular draws it on ink with paper text,
+        // which is the subpage bar's own surface.
+        appBar: ButleryTopBar.undersida(
           title: context.l10n.feedbackSendLabel,
-          titleStyle: AppTextStyles.headerTitle.copyWith(
-            color: cs.onPrimary,
-          ),
-          backgroundColor: cs.primary,
-          foregroundColor: cs.onPrimary,
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
+            tooltip: context.l10n.commonClose,
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -73,30 +77,39 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 style: AppTextStyles.labelLarge,
               ),
               const SizedBox(height: AppDimensions.spacingSm),
-              DropdownButtonFormField<FeedbackCategory>(
-                initialValue: _category,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.zero,
+              PressFill(
+                surface: PressSurface.base,
+                child: DropdownButtonFormField<FeedbackCategory>(
+                  iconEnabledColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
+                  iconDisabledColor: AppModeColors.textDisabled(
+                    Theme.of(context).brightness,
                   ),
+                  initialValue: _category,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: FeedbackCategory.bug,
+                      child: Text(context.l10n.feedbackCategoryBug),
+                    ),
+                    DropdownMenuItem(
+                      value: FeedbackCategory.featureRequest,
+                      child: Text(context.l10n.feedbackCategoryFeatureRequest),
+                    ),
+                    DropdownMenuItem(
+                      value: FeedbackCategory.general,
+                      child: Text(context.l10n.feedbackCategoryGeneral),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _category = value);
+                  },
                 ),
-                items: [
-                  DropdownMenuItem(
-                    value: FeedbackCategory.bug,
-                    child: Text(context.l10n.feedbackCategoryBug),
-                  ),
-                  DropdownMenuItem(
-                    value: FeedbackCategory.featureRequest,
-                    child: Text(context.l10n.feedbackCategoryFeatureRequest),
-                  ),
-                  DropdownMenuItem(
-                    value: FeedbackCategory.general,
-                    child: Text(context.l10n.feedbackCategoryGeneral),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _category = value);
-                },
               ),
 
               const SizedBox(height: AppDimensions.spacingMd),
@@ -152,7 +165,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                       style: AppTextStyles.labelLarge,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, size: 18),
+                      icon: const ButleryIcon(ButleryIcons.x, size: 18),
                       onPressed: () => setState(() => _screenshot = null),
                       tooltip: context.l10n.feedbackRemoveScreenshot,
                     ),
@@ -173,30 +186,15 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
 
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                height: AppDimensions.buttonHeight,
-                child: FilledButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: cs.primary,
-                    foregroundColor: cs.onPrimary,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                  ),
-                  child: _isSubmitting
-                      ? LoadingIndicator(
-                          size: AppDimensions.spinnerSizeSmall,
-                          strokeWidth: 2,
-                          color: cs.onPrimary,
-                        )
-                      : Text(
-                          context.l10n.feedbackSendButton,
-                          style: AppTextStyles.labelLarge,
-                        ),
-                ),
+              // The form's one saffron action (Skarmar v12 etapp 9
+              // #fbformular, "Skicka"). Sending keeps the name and draws the
+              // plate line under it, never a spinner in its place (K-06).
+              HeroButton(
+                key: const ValueKey('feedback.submit'),
+                label: context.l10n.feedbackSendButton,
+                onPressed: _submit,
+                busy: _isSubmitting,
+                expand: true,
               ),
             ],
           ),
@@ -208,8 +206,9 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
   Future<void> _submit() async {
     final description = _descriptionController.text.trim();
     if (description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.feedbackDescriptionRequired)),
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.feedbackDescriptionRequired,
       );
       return;
     }
@@ -231,19 +230,11 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
 
       if (success) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.feedbackThanks)),
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.feedbackThanks);
       } else {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: cs.error,
-            content: Text(
-              context.l10n.feedbackSendFailed,
-              style: TextStyle(color: cs.onError),
-            ),
-          ),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.feedbackSendFailed,
         );
       }
     } finally {

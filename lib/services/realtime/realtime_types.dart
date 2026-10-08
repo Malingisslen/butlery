@@ -34,9 +34,24 @@ class SyncError {
 }
 
 /// Which side won during a collaborative-edit conflict resolution.
+///
+/// Despite the name this is the OUTCOME of one resolution, not a strategy:
+/// the strategy belongs to the entity ([ConflictEntity],
+/// produktregler.md:97-107) and is declared by the model.
 enum ConflictResolutionStrategy {
   localWon,
   remoteWon,
+}
+
+/// Where a [ConflictEvent] was found (BUT-2213).
+enum ConflictOrigin {
+  /// The realtime resource path settled it (ConflictResolutionModule).
+  realtime,
+
+  /// A queued recipe edit met a newer server version and was not written;
+  /// the device's version is in the event, and its choice goes back through
+  /// the recipe's own queue, never through `realtime_resources` (BUT-2151).
+  queue,
 }
 
 /// BUT-1031: Broadcast when two users edit the same resource and
@@ -62,9 +77,28 @@ class ConflictEvent {
   /// Which side the resolver picked.
   final ConflictResolutionStrategy chosenStrategy;
 
+  /// Which conflict rule applies (produktregler.md:97-107), as declared by the
+  /// model through [RealtimeResource.conflictEntityFor]. Surfaces pick their
+  /// notice from this, never from [collectionPath].
+  final ConflictEntity entity;
+
   /// Wall-clock when resolution happened — used by listeners to dedup or
   /// auto-dismiss old banners.
   final DateTime occurredAt;
+
+  /// P5-U27b: the suggestion the losing edit was kept as, when [entity] is
+  /// [ConflictEntity.recipeShared] and the suggestion was stored
+  /// (produktregler.md:103). Null otherwise: then the package 5 choice in
+  /// ConflictDiffView still applies (PQ-02 = A), so nothing is lost.
+  final String? suggestionId;
+
+  /// Q6-12 = B: the suggestion [suggestionId] replaced this user's waiting
+  /// suggestion to the recipe, rather than being a new one.
+  final bool suggestionReplaced;
+
+  /// Which path found the conflict, and so which path a choice is written
+  /// through.
+  final ConflictOrigin origin;
 
   ConflictEvent({
     required this.collectionPath,
@@ -72,12 +106,16 @@ class ConflictEvent {
     required this.localValue,
     required this.remoteValue,
     required this.chosenStrategy,
+    required this.entity,
     required this.occurredAt,
+    this.suggestionId,
+    this.suggestionReplaced = false,
+    this.origin = ConflictOrigin.realtime,
   });
 
   @override
   String toString() =>
-      'ConflictEvent($chosenStrategy on $collectionPath/$docId)';
+      'ConflictEvent($chosenStrategy, $entity on $collectionPath/$docId)';
 }
 
 /// BUT-1163: a single field-level difference between the local and remote

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// Simple FAQ page with Swedish Q&A content in expandable tiles.
@@ -16,11 +16,8 @@ class FaqView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.profileFaq,
-        titleStyle: AppTextStyles.headerTitle.copyWith(color: cs.onPrimary),
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
       ),
       backgroundColor: cs.surfaceContainerHighest,
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),

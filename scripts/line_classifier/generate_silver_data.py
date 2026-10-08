@@ -29,7 +29,7 @@ SWEDISH_UNITS = {
     'msk', 'tsk', 'krm', 'matsked', 'tesked', 'kryddmått',
     # Packaging
     'st', 'bit', 'burk', 'pkt', 'paket', 'förp', 'påse',
-    'skiva', 'klyfta', 'knippe', 'nypa', 'skvätt',
+    'skiva', 'klyfta', 'knippe', 'kruka', 'bunt', 'nypa', 'skvätt',
     # American (often used in Swedish recipes)
     'cup', 'cups', 'tbsp', 'tsp', 'oz',
 }

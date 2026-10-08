@@ -2,7 +2,9 @@
 library;
 
 import 'package:butlery/core/storage/drift/app_database_stub_web.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 
 /// Stub implementation of OfflineUserStorage for web platform.
 class OfflineUserStorage {
@@ -15,13 +17,29 @@ class OfflineUserStorage {
 
   Future<int> getRecipeCountForUser(String userId) async => 0;
 
-  Future<void> saveRecipeForUser(
+  Future<String> saveRecipeForUser(
     Recipe recipe,
     String userId, {
-    bool isOnline = true,
-  }) async {}
+    SyncOperation operation = SyncOperation.update,
+    bool queueTagging = true,
+  }) async => '';
 
-  Future<void> deleteRecipeForUser(String recipeId, String userId) async {}
+  Future<bool> queueDeleteForUser(String recipeId, String userId) async =>
+      false;
+
+  Future<String> queueRecipeImageForUser(
+    String imagePath,
+    String recipeId,
+    String userId,
+  ) async => '';
+
+  Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
+
+  Future<bool> retagRecipeForUser(
+    String recipeId,
+    String userId,
+    Future<TagResult?> Function(Recipe recipe) tag,
+  ) async => false;
 
   Future<void> clearUserData(String userId) async {}
 

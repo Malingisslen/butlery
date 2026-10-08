@@ -4,6 +4,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -208,6 +209,23 @@ void main() {
   });
 
   group('performSearch', () {
+    test('a failed search says so in the app language, from l10n, and '
+        'keeps the chosen ingredients (P5-U13)', () async {
+      vm.addIngredient(_ingredient('chicken', 'kyckling'));
+      when(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenThrow(StateError('boom'));
+
+      await vm.performSearch();
+
+      expect(vm.error, AppLocale.current.ingredientSearchError);
+      expect(vm.error, isNot(contains('boom')));
+      expect(vm.selectedIngredients.map((i) => i.id), ['chicken']);
+    });
+
     test('calls matchService with selected ingredient IDs', () async {
       vm.addIngredient(_ingredient('chicken', 'kyckling'));
       vm.addIngredient(_ingredient('rice', 'ris'));

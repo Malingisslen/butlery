@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Displays an interactive poll within a chat message.
@@ -45,7 +48,7 @@ class PollMessageWidget extends StatelessWidget {
     final totalVotes = poll.totalVotes;
     final textColor = isFromCurrentUser ? cs.onPrimary : cs.onSurface;
     final subtleColor = isFromCurrentUser
-        ? cs.onPrimary.withValues(alpha: AppDimensions.opacityDark)
+        ? AppModeColors.textSecondaryOnInk()
         : cs.onSurfaceVariant;
     final votesUnread = voteHydration.isUnread;
 
@@ -57,7 +60,10 @@ class PollMessageWidget extends StatelessWidget {
           // Poll icon + question
           Row(
             children: [
-              const Text('📊', style: TextStyle(fontSize: 16)),
+              const Text(
+                '📊',
+                style: TextStyle(fontSize: AppDimensions.emojiGlyphBody),
+              ),
               const SizedBox(width: AppDimensions.spacingXs),
               Expanded(
                 child: Text(
@@ -150,7 +156,7 @@ class PollMessageWidget extends StatelessWidget {
                 child: Text(
                   context.l10n.pollCloseAction,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+                    color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -190,32 +196,16 @@ class PollMessageWidget extends StatelessWidget {
               vertical: AppDimensions.spacingXs + 2,
             ),
             decoration: BoxDecoration(
-              color: hasVoted
-                  ? (isFromCurrentUser
-                        ? cs.onPrimary.withValues(
-                            alpha: AppDimensions.opacityLight,
-                          )
-                        : cs.primary.withValues(
-                            alpha: AppDimensions.opacityVeryLight,
-                          ))
-                  : (isFromCurrentUser
-                        ? cs.onPrimary.withValues(
-                            alpha: AppDimensions.opacityVeryLight,
-                          )
-                        : cs.surface.withValues(
-                            alpha: AppDimensions.opacityHalf,
-                          )),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              color: isFromCurrentUser
+                  ? AppModeColors.surfaceRaisedOnInk()
+                  : cs.surface,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              // On the ink bubble the line is paper.
               border: Border.all(
                 color: hasVoted
-                    ? (isFromCurrentUser
-                          ? cs.onPrimary.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            )
-                          : cs.primary.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            ))
+                    ? (isFromCurrentUser ? cs.onPrimary : cs.onSurface)
                     : Colors.transparent,
+                width: 1.5,
               ),
             ),
             child: isRecipeOption
@@ -263,17 +253,9 @@ class PollMessageWidget extends StatelessWidget {
               widthFactor: percentage,
               child: Container(
                 decoration: BoxDecoration(
-                  color: hasVoted
-                      ? (isFromCurrentUser
-                            ? cs.onPrimary.withValues(
-                                alpha: AppDimensions.opacityVeryLight,
-                              )
-                            : cs.primary.withValues(
-                                alpha: AppDimensions.opacityExtraVeryLight,
-                              ))
-                      : Colors.transparent,
+                  color: hasVoted ? _barColor(cs) : Colors.transparent,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -287,10 +269,10 @@ class PollMessageWidget extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(
                   end: AppDimensions.spacingXs,
                 ),
-                child: Icon(
-                  Icons.check_circle,
+                child: ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: 16,
-                  color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+                  color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                 ),
               ),
             Expanded(
@@ -306,7 +288,7 @@ class PollMessageWidget extends StatelessWidget {
               Text(
                 '${(percentage * 100).round()}%',
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: subtleColor,
+                  color: _percentColor(cs, subtleColor),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -370,12 +352,12 @@ class PollMessageWidget extends StatelessWidget {
                           padding: const EdgeInsetsDirectional.only(
                             end: AppDimensions.spacingXs,
                           ),
-                          child: Icon(
-                            Icons.check_circle,
+                          child: ButleryIcon(
+                            ButleryIcons.circleCheck,
                             size: 16,
                             color: isFromCurrentUser
                                 ? cs.onPrimary
-                                : cs.primary,
+                                : cs.onSurface,
                           ),
                         ),
                       Expanded(
@@ -419,11 +401,9 @@ class PollMessageWidget extends StatelessWidget {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: cs.surface.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: _trackColor(cs),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                 ),
@@ -435,19 +415,9 @@ class PollMessageWidget extends StatelessWidget {
                     widthFactor: percentage,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: hasVoted
-                            ? (isFromCurrentUser
-                                  ? cs.onPrimary.withValues(
-                                      alpha: AppDimensions.opacityMediumLight,
-                                    )
-                                  : cs.primary.withValues(
-                                      alpha: AppDimensions.opacityVeryLight,
-                                    ))
-                            : cs.primary.withValues(
-                                alpha: AppDimensions.opacityExtraVeryLight,
-                              ),
+                        color: _barColor(cs),
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
                     ),
@@ -462,7 +432,7 @@ class PollMessageWidget extends StatelessWidget {
             child: Text(
               '${(percentage * 100).round()}%',
               style: AppTextStyles.labelSmall.copyWith(
-                color: subtleColor,
+                color: _percentColor(cs, subtleColor),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -470,10 +440,25 @@ class PollMessageWidget extends StatelessWidget {
       ],
     );
   }
+
+  // Progress bar (B101): raised on the row in an incoming bubble; the ink
+  // border line on the inkRaised row in an outgoing one.
+  Color _barColor(ColorScheme cs) => isFromCurrentUser
+      ? AppModeColors.borderOnInk()
+      : cs.surfaceContainerHighest;
+
+  Color _trackColor(ColorScheme cs) =>
+      isFromCurrentUser ? AppModeColors.surfaceRaisedOnInk() : cs.surface;
+
+  // The percentage sits over the bar. text.secondary on ink measures 3.86:1 on
+  // the ink border line, so an outgoing percentage is paper.
+  Color _percentColor(ColorScheme cs, Color subtleColor) =>
+      isFromCurrentUser ? cs.onPrimary : subtleColor;
 }
 
-/// Fallback thumbnail when a recipe option has no image URL. Theme-tinted
-/// square (no border radius — square design language).
+/// Fallback thumbnail when a recipe option has no image URL. A solid square
+/// (no border radius — square design language): raised on the incoming row,
+/// ink on the outgoing row so it stands out from the inkRaised row (B101).
 class _RecipeFallbackThumbnail extends StatelessWidget {
   final bool isFromCurrent;
   const _RecipeFallbackThumbnail({required this.isFromCurrent});
@@ -483,16 +468,12 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isFromCurrent
-            ? cs.onPrimary.withValues(alpha: AppDimensions.opacityVeryLight)
-            : cs.surfaceContainerHighest,
+        color: isFromCurrent ? cs.primary : cs.surfaceContainerHighest,
       ),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         size: 20,
-        color: isFromCurrent
-            ? cs.onPrimary.withValues(alpha: AppDimensions.opacityMedium)
-            : cs.onSurfaceVariant,
+        color: isFromCurrent ? cs.onPrimary : cs.onSurfaceVariant,
       ),
     );
   }

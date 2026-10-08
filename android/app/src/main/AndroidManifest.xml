@@ -86,7 +86,7 @@
 
             <!-- BUT-941: ta emot delade foton (ett eller flera) → fotoimport.
                  Hanteras av MethodChannel i MainActivity, INTE app_links
-                 (app_links äger VIEW-deeplinks + text-SEND). image/*-vakten i
+                 (app_links äger VIEW-deeplinks). image/*-vakten i
                  MainActivity ser till att text-/URL-delning inte fångas här. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

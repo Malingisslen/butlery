@@ -20713,3 +20713,114 @@ to do for the service count; and the `maintenance-dispatchers.ts` edit RE-COUNTE
 diff struck "nine" correctly). "six" was verified accurate on the day: cleanup-audit-logs,
 cleanup-expired-social-requests, cleanup-deleted-ingredients, cleanup-old-notifications,
 purge-expired, plus this job.
+
+### 2026-10-05 — BUT-2238 cache hits reach site_configs counters [review]
+First pass on `logParseEvent` (commit dded85e, later 7a69423): the CF counter lines were
+unchanged, but the app's new single event per import (`ImportManager._finishImport`) now
+sent cache hits with `channel: link`, `url = input`, `success: true`. Before, cache hits
+logged nothing and manager events carried `url: null`, so only `UrlImportStrategy` fed
+`site_configs`. A cached recipe would have inflated `successCount` → `SiteConfig.successRate`
+→ `isReliable` (`recipe_parser_service.dart` raises the threshold for reliable domains),
+masking a site whose selectors broke. Filed HIGH/blocking. Also noted: `UserAssisted` used to
+count as success and `assistance` now counts as failure (the coordinator decided failure is
+correct and recorded it in the plan); `parserVersion` was no longer sent (Dart fix);
+`success` was a separate client flag beside `outcome`.
+Re-review (uncommitted delta on 7a69423): `countsForSite` (domain && channel=link &&
+!fromCache && strategy not in youtube/tiktok/instagram/cache), `isLoggable`,
+`success: outcome === "recipe"`; 10/10 green, tsc clean, coordinator's mutation probes red
+on each term. Passed. Residual noted Low: the test asserts only `youtube` from
+`NOT_SITE_PARSERS`, so removing `tiktok`/`instagram` alone stays green.
+
+### 2026-10-05 — BUT-2243 server-side AI cost ledger, commit-gate review [middleware][llm]
+Reviewed staged `middleware/llm_cost_ledger.ts` (new), `__tests__/llm-cost-ledger.test.ts`
+(new), `llm/structure-recipe.ts` (wired `withCostLedger(withRateLimit("structureRecipe", ...))`).
+`npx ts-node src/__tests__/llm-cost-ledger.test.ts` 17/17 green; `npx tsc --noEmit -p .` clean.
+Verified: UTC keys via `toISOString().slice`, day+month rollover, `>=` boundary pinned both
+sides (0.5 denies, 0.4999 runs), fail-closed read (`unavailable`), auth before read (zero
+reads), transaction set without merge (sole writer), uid hashed on every log line, ledger
+outside the rate limiter, `rate_limits` TTL override present in `firestore.indexes.json`,
+rules stamp limb excludes `llm_cost`.
+Filed blocking: plan A2 says the wrapper's type REQUIRES `estimatedCost`, code has
+`estimatedCost?: number`; plan A4's "a thrown retry records ocrCost only" asserted nowhere
+(ocr-retry.test.ts BONUS 2 checks no cost). Info: the header's "overshoot is up to one minute
+burst of calls" does not match the bound (in-flight calls, limited per callable by token
+buckets maxTokens 10 / 5, both feeding one ledger) — strike the clause.
+Re-review (same day): bound now `TResponse extends { estimatedCost: number }`, record passes
+`result.estimatedCost`; header overshoot clause struck; ", as stated" struck from the test
+name; `ocr-retry.test.ts` BONUS 2 asserts `resp.estimatedCost === 0.011` (coordinator's probe:
+catch returning 0.005 reddens it). Ledger 17/17, ocr-retry 21/21, tsc clean, no unstaged
+drift under functions/. Passed.
+
+### 2026-10-07 — BUT-2272 recipient uid on other people's shared recipes [account][gdpr]
+Built `scrubRecipeMemberPermissions` (collectionGroup `recipes`, `FieldPath("socialData",
+"memberPermissions", uid) != null`, `limit(MAX_RECIPE_MEMBER_SWEEP_ROWS + 1)`, decline above
+2000, skip docs under `users/{uid}/`, varargs `batch.update` deleting the memberPermissions and
+grants keys, `strict: true`, `hashUid` on log lines), its uncapped probe leg, runStep
+`recipe_member_permissions` after `comment_likes`, and a `recipes`/`socialData.memberPermissions`
+fieldOverride (ASC+DESC COLLECTION, ASC COLLECTION_GROUP).
+Own recipes: the ticket said tier 2 deletes them; it is `deleteRecipes` in TIER 1
+(`users/{uid}/recipes` + top-level `recipes where userId`). The probe runs after tier 3, so a
+plain count is right — an own recipe still standing is residue the `recipes` leg also counts.
+Ordering vs `deleteRecipes` is not load-bearing: the skip filter excludes own docs whatever runs
+first, so no order pin was added to `request-account-deletion.test.ts`.
+MEASURED on the Firestore emulator (cloud-firestore-emulator v1.19.8, `firebase emulators:exec`,
+uid `u.with.dot`): the collectionGroup `!= null` query matched `users/o1/recipes/a` (value 0),
+`users/o2/recipes/b` and top-level `recipes/top`; a grants-only doc was not matched; after the
+varargs batch update `grants: null` stayed null, an absent `grants` was not created, the dotted
+uid was removed as one key, and the count went 3 -> 0. The emulator does not enforce indexes, so
+the override's sufficiency in production is NOT measured.
+Test fake (`account-deletion-cascade.test.ts`): collectionGroup gained `!=` (only `!= null`;
+any other value throws), `batch.update` gained the FieldPath varargs form (segments kept, never
+joined), and `applyFieldPath` no longer builds a missing/null intermediate map for a delete.
+Suite 592 -> 610, all green. Mutation probes (backup, count==1 anchors, byte-identical restore),
+all RED: skip-own-path, cap never declines, cap `>=`, memberPermissions delete removed, grants
+delete removed, `strict:false`, probe leg silenced, runStep removed (orchestration suite),
+override removed and COLLECTION_GROUP entry removed (BUT-1781 guard).
+
+### 2026-10-07 — BUT-2246 lastMessage block gate: index-hardcode mutant survives L1–L6 [rules-test, vacuity]
+Commit-gate review of `functions/src/__tests__/conversations-rules.test.ts` L1–L6 (staged blob
+d80af471). Probed via the suite's PROBE_RULES_PATH/PROBE_PROJECT_ID seam on scratch copies, repo
+rules untouched (blob 5bcb7c28 before and after). Mutant: preview arm's
+`isNotBlockedBy(otherParticipant(resource.data.participantIds))` -> `isNotBlockedBy(resource.data.participantIds[1])`
+-> 110/110 green. Every DM deny (L1) seats the blocked caller at index 0. Seam sanity: replacing the
+same call with `true` reddens exactly L1 (109/110). The create path already has B3 for this shape;
+the update path has no twin. Filed as Medium (coverage gap, production rule correct), non-blocking.
+Folded into the client-guards chapter's composite-id bullet as "one DENY per index for a positional
+counterparty".
+
+### 2026-10-07 — BUT-2246 re-review: edit gate E1–E5 repeats the index gap on its own call site [rules-test, vacuity]
+Re-review of test blob 1e8ad3d0 against rules blob a13af38f (adds L1b, stored `lastMessage` in L3,
+E1–E5 for the sender's `messages` edit gate). Scratch-copy probes via the PROBE_* seam: preview site
+`participantIds[0]` -> L1 red only; `[1]` -> L1b red only (gap closed). Edit site `[1]` -> E1 red only;
+edit site `[0]` -> 116/116 GREEN — E1, the only DM edit deny, seats the blocked caller at index 1, the
+mirror image of the original L1 gap. Edit scope disjunct -> `false` reddens only E5. The principle
+already said "per call site"; the second gap appeared on the call site added after it was written.
+Filed Medium, non-blocking, with an E1b remediation.
+
+### 2026-10-07 — BUT-2115 comment reaction scrub review [gdpr]
+Commit-gate review of `comment_reactions` (six `reactions.<key>` arrayRemove sweeps, cap 2000
+declining per key, continue past a declined key; six uncapped `count()` probe legs with their
+own catch). Step order after tier 1 (which anonymizes, never deletes, comments) is safe; decline
+and probe both reach `gdprCompliant:false`. No index: COLLECTION-scoped array-contains on a map
+subfield, no fieldOverrides exemption on `recipe_comments`. The fake's dotted-path arrayRemove
+change touches no earlier scenario — grep showed `reactions.${key}` is the only dotted arrayRemove
+in functions/src. Finding (Medium): `scenario_reactionKeysAgreeAcrossRulesAppAndCascade` parses
+`lib/widgets/common/emoji_reaction_picker.dart` and `firestore.rules`, neither in
+cloud-functions-unit.yml `paths:`, and does not call `assertGuardTriggersCoverItsDartInputs`
+(BUT-2002 precedent). Folded into the gdpr-erasure chapter's index bullet and a new CI-trigger
+bullet. Verdict pass (0 blocking).
+
+### 2026-10-08 — exportSharedResidue projects BUT-2140's `previous` snapshot [review]
+Commit-gate review of `functions/src/exports/shared-residue.ts` + its suite. BUT-2140 added
+`previous` (ShoppingRowSnapshot.toFirestore: id,name,amount,unit,category,note,at) to
+UnifiedShoppingItem.toFirestore; the change allowlists `previous` and projects it through a
+nested `SNAPSHOT_EXPORT_KEYS` list (scalars/Timestamps only). Verified: key set equals the Dart
+serializer at review time, no uid in the snapshot (no cascade leg owed), suite 27/27, tsc clean.
+Findings (non-blocking): Medium — `SNAPSHOT_EXPORT_KEYS` is not source-pinned to
+`lib/models/unified/shopping_row_snapshot.dart` and that file is not in cloud-functions-unit.yml
+`paths:`, so a new snapshot key is silently under-exported (the parent pin sees only `previous`).
+Low — the new test asserts only `name` and `at`; dropping e.g. `amount` from the list stays green.
+Folded into the gdpr-erasure chapter as a per-LEVEL allowlist-pin bullet. Verdict pass (0 blocking).
+Re-review same day: both findings applied (SNAPSHOT_EXPORT_KEYS exported and source-pinned to
+shopping_row_snapshot.dart, file in both cloud-functions-unit.yml `paths:` blocks, full key-list
+assertion). Re-read staged blobs b27fc1e0 / 4514dadc; 27/27, tsc clean. Verdict pass (0 blocking).

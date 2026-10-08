@@ -15,9 +15,14 @@
 library;
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart'
+    show MultiFactor, MultiFactorInfo, PhoneMultiFactorInfo;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
+
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 class _FakeHttpsCallableResult<T> implements HttpsCallableResult<T> {
   _FakeHttpsCallableResult(this.data);
@@ -72,6 +77,51 @@ class _FakeFunctions extends Fake implements FirebaseFunctions {
     HttpsCallableOptions? options,
   }) => callable;
 }
+
+/// Records which callable the manager asked for, so a test can prove the
+/// two-step section reads `exportMfaRecoveryData` and nothing else.
+class _NamedFunctions extends Fake implements FirebaseFunctions {
+  _NamedFunctions(this.callable);
+  final _ScriptedHttpsCallable callable;
+  final List<String> requested = [];
+
+  @override
+  HttpsCallable httpsCallable(String name, {HttpsCallableOptions? options}) {
+    requested.add(name);
+    return callable;
+  }
+}
+
+class _ScriptedMultiFactor extends Fake implements MultiFactor {
+  _ScriptedMultiFactor(this.factors);
+  final List<MultiFactorInfo> factors;
+
+  @override
+  Future<List<MultiFactorInfo>> getEnrolledFactors() async => factors;
+}
+
+FakeAuthRepository _signedIn(String uid, List<MultiFactorInfo> factors) {
+  final user = MockUser()..setUserState(uid: uid);
+  when(() => user.multiFactor).thenReturn(_ScriptedMultiFactor(factors));
+  return FakeAuthRepository()
+    ..setAuthState(user: user, userId: uid, isAuthenticated: true);
+}
+
+const _phone = PhoneMultiFactorInfo(
+  displayName: 'Min telefon',
+  enrollmentTimestamp: 1759320000,
+  factorId: 'phone',
+  uid: 'factor-1',
+  phoneNumber: '+46701234567',
+);
+
+Map<String, dynamic> _codes() => {
+  'hasBackupCodes': true,
+  'createdAt': '2026-10-01T12:00:00.000Z',
+  'total': 10,
+  'unused': 7,
+  'algorithm': 'scrypt-n16384-r8-p1',
+};
 
 Map<String, dynamic> _page({
   required int rowCount,
@@ -294,5 +344,179 @@ void main() {
         );
       },
     );
+  });
+
+  group('ComplianceExportManager.exportTwoStepVerification (BUT-2142)', () {
+    test('exports the enrolled phone number and the code counts', () async {
+      final callable = _ScriptedHttpsCallable([_codes()]);
+      final functions = _NamedFunctions(callable);
+      final manager = ComplianceExportManager(
+        functions: functions,
+        authRepository: _signedIn('me', const [_phone]),
+      );
+
+      final result = await manager.exportTwoStepVerification('me');
+
+      expect(functions.requested, ['exportMfaRecoveryData']);
+      final factors = result['enrolled_second_factors'] as List;
+      expect(factors, hasLength(1));
+      expect(factors.single['phone_number'], '+46701234567');
+      expect(factors.single['display_name'], 'Min telefon');
+      expect(factors.single['factor_id'], 'phone');
+      // The plugin reports seconds; 1759320000 s is 2025-10-01T12:00Z.
+      expect(factors.single['enrolled_at'], '2025-10-01T12:00:00.000Z');
+      final codes = result['backup_codes'] as Map;
+      expect(codes['has_backup_codes'], isTrue);
+      expect(codes['created_at'], '2026-10-01T12:00:00.000Z');
+      expect(codes['total'], 10);
+      expect(codes['unused'], 7);
+      expect(result['gdpr_article'], 'Article 15 - Right of Access');
+      expect(result['data_minimisation'], contains('mfa_recovery_attempts'));
+      expect(result.containsKey('error_code'), isFalse);
+    });
+
+    test(
+      'passes through no salt or hash even if the server sent one',
+      () async {
+        final callable = _ScriptedHttpsCallable([
+          {
+            ..._codes(),
+            'codes': [
+              {'salt': 'leaked-salt', 'hash': 'leaked-hash'},
+            ],
+          },
+        ]);
+        final manager = ComplianceExportManager(
+          functions: _NamedFunctions(callable),
+          authRepository: _signedIn('me', const [_phone]),
+        );
+
+        final result = await manager.exportTwoStepVerification('me');
+
+        final text = result.toString();
+        expect(text, isNot(contains('leaked-salt')));
+        expect(text, isNot(contains('leaked-hash')));
+      },
+    );
+
+    test('an account without two-step verification exports an empty list '
+        'and no codes', () async {
+      final callable = _ScriptedHttpsCallable([
+        {
+          'hasBackupCodes': false,
+          'createdAt': null,
+          'total': 0,
+          'unused': 0,
+          'algorithm': null,
+        },
+      ]);
+      final manager = ComplianceExportManager(
+        functions: _NamedFunctions(callable),
+        authRepository: _signedIn('me', const []),
+      );
+
+      final result = await manager.exportTwoStepVerification('me');
+
+      expect(result['enrolled_second_factors'], isEmpty);
+      expect((result['backup_codes'] as Map)['has_backup_codes'], isFalse);
+    });
+
+    test('a transient callable error leaves a recoverable section', () async {
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: FirebaseFunctionsException(
+          code: 'unavailable',
+          message: 'Backend temporarily unavailable',
+        ),
+      );
+      final manager = ComplianceExportManager(
+        functions: _NamedFunctions(callable),
+        authRepository: _signedIn('me', const [_phone]),
+      );
+
+      final result = await manager.exportTwoStepVerification('me');
+
+      expect(result['error_code'], 'unavailable');
+      expect(result['backup_codes_error'], 'Backend temporarily unavailable');
+      expect(result.containsKey('backup_codes'), isFalse);
+      // The phone number was read before the callable failed and is kept.
+      final factors = result['enrolled_second_factors'] as List;
+      expect(factors.single['phone_number'], '+46701234567');
+    });
+
+    test('a fatal callable error aborts the bundle', () async {
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: FirebaseFunctionsException(
+          code: 'permission-denied',
+          message: 'App Check token missing',
+        ),
+      );
+      final manager = ComplianceExportManager(
+        functions: _NamedFunctions(callable),
+        authRepository: _signedIn('me', const [_phone]),
+      );
+
+      await expectLater(
+        manager.exportTwoStepVerification('me'),
+        throwsA(
+          isA<ComplianceExportException>().having(
+            (e) => e.code,
+            'code',
+            'permission-denied',
+          ),
+        ),
+      );
+    });
+
+    test(
+      'a reply without hasBackupCodes aborts rather than guessing',
+      () async {
+        final callable = _ScriptedHttpsCallable([
+          {'rows': const [], 'nextCursor': null},
+        ]);
+        final manager = ComplianceExportManager(
+          functions: _NamedFunctions(callable),
+          authRepository: _signedIn('me', const [_phone]),
+        );
+
+        await expectLater(
+          manager.exportTwoStepVerification('me'),
+          throwsA(isA<ComplianceExportException>()),
+        );
+      },
+    );
+
+    test(
+      'a reply without counts aborts rather than reporting zero codes',
+      () async {
+        final callable = _ScriptedHttpsCallable([
+          {'hasBackupCodes': true, 'createdAt': null, 'algorithm': null},
+        ]);
+        final manager = ComplianceExportManager(
+          functions: _NamedFunctions(callable),
+          authRepository: _signedIn('me', const [_phone]),
+        );
+
+        await expectLater(
+          manager.exportTwoStepVerification('me'),
+          throwsA(isA<ComplianceExportException>()),
+        );
+      },
+    );
+
+    test('refuses to export another account than the signed-in one', () async {
+      final callable = _ScriptedHttpsCallable([_codes()]);
+      final manager = ComplianceExportManager(
+        functions: _NamedFunctions(callable),
+        authRepository: _signedIn('me', const [_phone]),
+      );
+
+      await expectLater(
+        manager.exportTwoStepVerification('someone-else'),
+        throwsA(isA<ComplianceExportException>()),
+      );
+      expect(callable.callCount, 0);
+    });
   });
 }

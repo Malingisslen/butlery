@@ -172,6 +172,17 @@ void main() {
       ),
     ).thenAnswer((_) async => true);
     when(
+      () => mockShoppingService.addItemToActiveListWithId(
+        name: any(named: 'name'),
+        amount: any(named: 'amount'),
+        unit: any(named: 'unit'),
+        category: any(named: 'category'),
+        note: any(named: 'note'),
+        estimatedPrice: any(named: 'estimatedPrice'),
+        priority: any(named: 'priority'),
+      ),
+    ).thenAnswer((_) async => 'new-row-1');
+    when(
       () => mockShoppingService.toggleItemBought(any()),
     ).thenAnswer((_) async => true);
     when(
@@ -367,6 +378,18 @@ void main() {
     test('addItem rejects empty name', () async {
       final result = await viewModel.addItem(name: '', amount: 1);
       expect(result, isFalse);
+    });
+
+    // P4-U11: the new row's id reaches the view, so its "Ångra" can remove
+    // exactly that row (produktregler.md:131).
+    test('addItemWithId returns the id the service gave the row', () async {
+      final id = await viewModel.addItemWithId(name: 'Mjölk', amount: 1);
+      expect(id, 'new-row-1');
+    });
+
+    test('addItemWithId adds nothing for an empty name', () async {
+      final id = await viewModel.addItemWithId(name: '  ', amount: 1);
+      expect(id, isNull);
     });
 
     test('addItemToActiveList is alias for addItem', () async {

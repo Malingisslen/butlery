@@ -9,6 +9,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_gallery_widget.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/image_picker_widget.dart';
@@ -18,6 +22,43 @@ import 'package:butlery/widgets/image/components/empty_image_state.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+
+// No Scaffold: its page Material is paper, the same colour as the paper
+// buttons, so a button that lost its own fill would still read as paper.
+Widget _themed(ThemeData theme, Widget child) => createLocalizedTestApp(
+  wrapInScaffold: false,
+  child: Theme(
+    data: theme,
+    child: Material(type: MaterialType.transparency, child: child),
+  ),
+);
+
+/// The nearest fill under [of]: a decorated Container, or a Material whose
+/// colour an InkWell's pressed overlay paints on.
+BoxDecoration _fillAround(WidgetTester tester, Finder of) {
+  final nearest = tester.widget(
+    find
+        .ancestor(
+          of: of,
+          matching: find.byWidgetPredicate(
+            (w) =>
+                (w is Container &&
+                    w.decoration is BoxDecoration &&
+                    (w.decoration! as BoxDecoration).color != null) ||
+                (w is Material &&
+                    w.type != MaterialType.transparency &&
+                    w.color != null),
+          ),
+        )
+        .first,
+  );
+  return nearest is Material
+      ? BoxDecoration(color: nearest.color)
+      : (nearest as Container).decoration! as BoxDecoration;
+}
+
+Color? _textColor(WidgetTester tester, Finder of) =>
+    tester.widget<Text>(of).style?.color;
 
 void main() {
   setUpAll(() async {
@@ -143,7 +184,7 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UploadProgressWidgets.buildBulkActionButton(
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               label: 'Försök igen alla',
               onTap: () {},
               color: Colors.blue,
@@ -166,10 +207,9 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UploadProgressWidgets.buildUploadActionButton(
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               label: 'Försök igen',
               onTap: () {},
-              color: Colors.blue,
             ),
           ),
         );
@@ -258,4 +298,137 @@ void main() {
       },
     );
   });
+
+  // BUT-2183 5c: badges and controls on a photo are overlay.paperCard with
+  // ink; what is not on a photo takes the step table's tokens.
+  for (final (name, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    final cs = theme.colorScheme;
+    final modes = ModeColors.of(theme.brightness);
+
+    group('BUT-2183 5c image tokens ($name)', () {
+      testWidgets('upload overlay: status pill and retry button are opaque '
+          'paper (B102) with ink', (tester) async {
+        const failedStatus = ImageUploadStatus(
+          state: ImageUploadState.failed,
+          error: 'network failure',
+        );
+        await tester.pumpWidget(
+          _themed(
+            theme,
+            SizedBox(
+              width: 600,
+              height: 400,
+              child: Stack(
+                children: [
+                  UploadProgressWidgets.buildUploadProgressOverlay(
+                    status: failedStatus,
+                    imageUrl: 'https://example.com/x.jpg',
+                    borderRadius: BorderRadius.zero,
+                    onRetryUpload: (_) {},
+                    onCancelUpload: (_) {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final pillText = find.text(failedStatus.statusDescription);
+        expect(
+          _fillAround(tester, pillText).color,
+          AppModeColors.surfacePaperOnPhoto(),
+        );
+        expect(_textColor(tester, pillText), cs.primary);
+
+        final retryText = find.text('Försök igen');
+        expect(
+          _fillAround(tester, retryText).color,
+          AppModeColors.surfacePaperOnPhoto(),
+        );
+        expect(_textColor(tester, retryText), cs.primary);
+      });
+
+      testWidgets('upload queue banner: tint without a border, secondary '
+          'detail text', (tester) async {
+        await tester.pumpWidget(
+          _themed(
+            theme,
+            UploadProgressWidgets.buildUploadQueueStatusBanner(
+              uploadQueueStatus: 'Laddar upp 1 av 2',
+              uploadManagementSummary: const {
+                'progressText': '50 % klart',
+                'overallProgress': 0.5,
+                'active': 1,
+              },
+            ),
+          ),
+        );
+
+        final box = _fillAround(tester, find.text('Laddar upp 1 av 2'));
+        expect(box.color, modes.surfaceTintWarning);
+        expect(box.border, isNull);
+        expect(
+          _textColor(tester, find.text('50 % klart')),
+          cs.onSurfaceVariant,
+        );
+      });
+
+      testWidgets('empty state: border.subtle, a plain disc and secondary '
+          'text', (tester) async {
+        await tester.pumpWidget(
+          _themed(theme, const SizedBox(height: 300, child: EmptyImageState())),
+        );
+
+        final frame = tester
+            .widgetList<DecoratedBox>(
+              find.descendant(
+                of: find.byType(EmptyImageState),
+                matching: find.byType(DecoratedBox),
+              ),
+            )
+            .map((d) => d.decoration)
+            .whereType<BoxDecoration>()
+            .firstWhere(
+              (d) => d.border != null && d.shape == BoxShape.rectangle,
+            );
+        expect((frame.border! as Border).top.color, cs.outlineVariant);
+
+        final disc = _fillAround(
+          tester,
+          find.byWidgetPredicate(
+            (w) => w is ButleryIcon && w.icon == ButleryIcons.camera,
+          ),
+        );
+        expect(disc.shape, BoxShape.circle);
+        expect(disc.color, cs.surface);
+        expect(
+          _textColor(tester, find.textContaining('upp till 5 bilder')),
+          cs.onSurfaceVariant,
+        );
+      });
+
+      testWidgets('picker: index badge on the photo is overlay.paperCard '
+          'with ink', (tester) async {
+        await tester.pumpWidget(
+          _themed(
+            theme,
+            ImagePickerWidget.picker(
+              selectedImages: const ['https://example.com/a.jpg'],
+              onImagesSelected: (_) {},
+            ),
+          ),
+        );
+
+        final badgeText = find.text('1');
+        expect(
+          _fillAround(tester, badgeText).color,
+          modes.overlayPaperCard,
+        );
+        expect(_textColor(tester, badgeText), cs.primary);
+      });
+    });
+  }
 }

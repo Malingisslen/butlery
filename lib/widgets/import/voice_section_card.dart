@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// One checklist card of the "Tala in recept" wizard (direction B with A's
 /// big microphone in the active card — Malin's pick 2026-07-13).
 ///
-/// States: waiting (quiet mic), recording (large central stop, error color),
-/// preparing/transcribing (LoadingIndicator), done (checkmark). The text
+/// States: waiting (quiet mic), recording (large central stop),
+/// preparing/transcribing (the plate line with text), done (checkmark). The text
 /// field is ALWAYS typable — typing is the permission-denial and
 /// transcription-failure fallback, so the card never dead-ends.
 class VoiceSectionCard extends StatelessWidget {
@@ -62,7 +65,7 @@ class VoiceSectionCard extends StatelessWidget {
             color: recording
                 ? cs.error
                 : isDone
-                ? cs.primary
+                ? cs.onSurface
                 : cs.outlineVariant,
             width: 4,
           ),
@@ -91,14 +94,14 @@ class VoiceSectionCard extends StatelessWidget {
               // single section is direction B's core promise ("gör om bara
               // ingredienserna" = one tap), so the mic never disappears
               // (review finding #5).
-              if (isDone) Icon(Icons.check, color: cs.primary),
+              if (isDone) ButleryIcon(ButleryIcons.check, color: cs.onSurface),
               if (!recording && !busy)
                 Semantics(
                   identifier: 'btn-voice-record-$index',
                   button: true,
                   label: prompt,
                   child: IconButton(
-                    icon: Icon(Icons.mic_none, color: cs.primary),
+                    icon: ButleryIcon(ButleryIcons.mic, color: cs.onSurface),
                     tooltip: prompt,
                     onPressed: enabled ? onMicTap : null,
                   ),
@@ -111,7 +114,7 @@ class VoiceSectionCard extends StatelessWidget {
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           if (recording)
             // Direction A's big central microphone, grafted into the active
             // card: one large stop control, impossible to miss mid-speech.
@@ -124,16 +127,23 @@ class VoiceSectionCard extends StatelessWidget {
                   identifier: 'btn-voice-stop-$index',
                   button: true,
                   label: context.l10n.voicePromptStop,
-                  child: InkWell(
-                    onTap: onMicTap,
-                    child: Container(
-                      width: 88,
-                      height: 88,
-                      color: cs.error,
-                      child: Icon(
-                        Icons.stop,
-                        size: 40,
-                        color: cs.onError,
+                  // The one red filled button here (R8-5 = B, BUT-2232):
+                  // action.danger, one opaque step darker while pressed.
+                  child: Material(
+                    color: context.modeColors.actionDanger,
+                    child: InkWell(
+                      onTap: onMicTap,
+                      overlayColor: WidgetStatePropertyAll(
+                        context.modeColors.actionDangerPressed,
+                      ),
+                      child: SizedBox(
+                        width: 88,
+                        height: 88,
+                        child: ButleryIcon(
+                          ButleryIcons.stop,
+                          size: 40,
+                          color: context.modeColors.onActionDanger,
+                        ),
                       ),
                     ),
                   ),
@@ -144,13 +154,12 @@ class VoiceSectionCard extends StatelessWidget {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingS),
-                child: Tooltip(
+                // The plate line with its text, never a spinner
+                // (produktregler.md:163; B-18).
+                child: PlateLineMessage(
                   message: state == VoiceSectionState.preparing
                       ? context.l10n.voicePromptPreparing
                       : context.l10n.voicePromptTranscribing,
-                  child: const LoadingIndicator(
-                    size: AppDimensions.iconSizeAction,
-                  ),
                 ),
               ),
             )

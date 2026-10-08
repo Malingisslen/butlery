@@ -3,7 +3,7 @@
 import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -58,9 +58,11 @@ class BackupService extends BaseService {
       } else {
         return BackupResult.error(AppLocale.current.backupPlatformNotSupported);
       }
-    } catch (e) {
-      AppLogger.error('Export misslyckades', e);
-      return BackupResult.error(AppLocale.current.backupExportFailed('$e'));
+    } catch (e, stackTrace) {
+      // The cause goes to the log, never to the user
+      // (content-style-guide.md:94).
+      AppLogger.error('Export misslyckades', e, 'BackupService', stackTrace);
+      return BackupResult.unexpected();
     }
   }
 
@@ -108,9 +110,14 @@ class BackupService extends BaseService {
         filePath: file.path,
         recipeCount: recipeCount,
       );
-    } catch (e) {
-      AppLogger.error('Kunde inte spara till Android', e);
-      return BackupResult.error(AppLocale.current.backupCouldNotSaveFile('$e'));
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Kunde inte spara till Android',
+        e,
+        'BackupService',
+        stackTrace,
+      );
+      return BackupResult.unexpected();
     }
   }
 
@@ -137,9 +144,14 @@ class BackupService extends BaseService {
         filePath: file.path,
         recipeCount: recipeCount,
       );
-    } catch (e) {
-      AppLogger.error('Kunde inte spara till iOS', e);
-      return BackupResult.error(AppLocale.current.backupCouldNotSaveFile('$e'));
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Kunde inte spara till iOS',
+        e,
+        'BackupService',
+        stackTrace,
+      );
+      return BackupResult.unexpected();
     }
   }
 
@@ -232,7 +244,7 @@ class BackupService extends BaseService {
             sourceUrl: newRecipe.sourceUrl,
           );
           successCount++;
-        } catch (e) {
+        } catch (e, stackTrace) {
           skipCount++;
           // BUT-1139: read nested `core.title` first (current Recipe.toJson()
           // shape), fall back to top-level `title` for any future flatter
@@ -243,7 +255,15 @@ class BackupService extends BaseService {
               coreTitle ??
               recipeJson['title'] ??
               AppLocale.current.backupUnknownRecipe;
-          errors.add('$label: $e');
+          // Neither the title nor the exception text goes to the log: both
+          // can carry the user's own recipe content.
+          AppLogger.error(
+            'Import av recept misslyckades: ${importFailureLabel(e)}',
+            null,
+            'BackupService',
+            stackTrace,
+          );
+          errors.add('$label');
         }
       }
 
@@ -259,11 +279,21 @@ class BackupService extends BaseService {
         errors: errors,
         skippedTitles: skippedTitles,
       );
-    } catch (e) {
-      AppLogger.error('Import misslyckades', e);
-      return ImportResult.error(AppLocale.current.backupImportFailed('$e'));
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Import misslyckades: ${importFailureLabel(e)}',
+        null,
+        'BackupService',
+        stackTrace,
+      );
+      return ImportResult.unexpected();
     }
   }
+
+  /// BUT-2230: a `FormatException` from `json.decode` prints an excerpt of
+  /// the backup file, so an import failure is logged by its type alone.
+  @visibleForTesting
+  static String importFailureLabel(Object error) => '${error.runtimeType}';
 
   String _formatDate(DateTime date) {
     final months = [
@@ -290,11 +320,16 @@ class BackupResult {
   final String? filePath;
   final int? recipeCount;
 
+  /// True when an exception stopped the export. [message] then carries no
+  /// exception text; the cause is only in the log.
+  final bool unexpected;
+
   const BackupResult({
     required this.success,
     required this.message,
     this.filePath,
     this.recipeCount,
+    this.unexpected = false,
   });
 
   factory BackupResult.success({
@@ -313,6 +348,15 @@ class BackupResult {
   factory BackupResult.error(String message) {
     return BackupResult(success: false, message: message);
   }
+
+  /// An exception stopped the export; the cause is logged, not shown.
+  factory BackupResult.unexpected() {
+    return BackupResult(
+      success: false,
+      message: AppLocale.current.profileBackupNotSaved,
+      unexpected: true,
+    );
+  }
 }
 
 class ImportResult {
@@ -327,6 +371,10 @@ class ImportResult {
   final List<String> skippedTitles;
   final String? errorMessage;
 
+  /// True when an exception stopped the import. [errorMessage] then carries
+  /// no exception text; the cause is only in the log.
+  final bool unexpected;
+
   const ImportResult({
     this.success = true,
     this.cancelled = false,
@@ -338,6 +386,7 @@ class ImportResult {
     this.errors = const [],
     this.skippedTitles = const [],
     this.errorMessage,
+    this.unexpected = false,
   });
 
   factory ImportResult.cancelled() {
@@ -346,5 +395,14 @@ class ImportResult {
 
   factory ImportResult.error(String message) {
     return ImportResult(success: false, errorMessage: message);
+  }
+
+  /// An exception stopped the import; the cause is logged, not shown.
+  factory ImportResult.unexpected() {
+    return ImportResult(
+      success: false,
+      errorMessage: AppLocale.current.profileRestoreNotRead,
+      unexpected: true,
+    );
   }
 }

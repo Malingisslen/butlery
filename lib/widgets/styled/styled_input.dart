@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app
@@ -123,7 +127,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.visiblePassword,
        textInputAction = TextInputAction.done,
        inputFormatters = null,
-       prefixIcon = const Icon(Icons.lock_outline),
+       prefixIcon = const ButleryIcon(ButleryIcons.lock),
        contentPadding = null,
        autofillHints = const [AutofillHints.password],
        showWarning = false;
@@ -151,7 +155,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.emailAddress,
        textInputAction = TextInputAction.next,
        inputFormatters = null,
-       prefixIcon = const Icon(Icons.email),
+       prefixIcon = const ButleryIcon(ButleryIcons.mail),
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.email],
@@ -180,7 +184,7 @@ class StyledInput extends StatelessWidget {
        keyboardType = TextInputType.phone,
        textInputAction = TextInputAction.done,
        inputFormatters = null,
-       prefixIcon = const Icon(Icons.phone),
+       prefixIcon = const ButleryIcon(ButleryIcons.smartphone),
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.telephoneNumber],
@@ -268,7 +272,7 @@ class StyledInput extends StatelessWidget {
        textInputAction = TextInputAction.search,
        inputFormatters = null,
        validator = null,
-       prefixIcon = const Icon(Icons.search),
+       prefixIcon = const ButleryIcon(ButleryIcons.search),
        contentPadding = null,
        autofillHints = null,
        showWarning = false;
@@ -281,7 +285,22 @@ class StyledInput extends StatelessWidget {
     final effectiveSemanticLabel =
         semanticLabel ?? (label == null ? hint : null);
 
-    final field = TextFormField(
+    final restingBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      borderSide: BorderSide(
+        color: showWarning ? context.modeColors.warning : cs.outline,
+        width: AppDimensions.borderWidthStandard,
+      ),
+    );
+    final restingErrorBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      borderSide: BorderSide(
+        color: cs.error,
+        width: AppDimensions.borderWidthStandard,
+      ),
+    );
+
+    final textField = TextFormField(
       controller: controller,
       onChanged: onChanged,
       onTap: onTap,
@@ -302,7 +321,11 @@ class StyledInput extends StatelessWidget {
       validator: validator,
       focusNode: focusNode,
       autofillHints: autofillHints,
-      style: AppTextStyles.bodyMedium,
+      style: fieldTextStyle(
+        context,
+        enabled: enabled,
+        base: AppTextStyles.bodyMedium,
+      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -317,54 +340,39 @@ class StyledInput extends StatelessWidget {
               vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
             ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           borderSide: const BorderSide(),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: showWarning ? context.butleryColors.warning : cs.outline,
-            width: AppDimensions.borderWidthStandard,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          // BUT-533: rust (secondary) focus ring at 3px — matches global
-          // InputDecoration theme so keyboard navigation is visibly
-          // trackable on cream.
-          borderSide: BorderSide(
-            color: cs.secondary,
-            width: AppDimensions.borderWidthThick + 1,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: cs.error,
-            width: AppDimensions.borderWidthStandard,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: cs.error,
-            width: AppDimensions.borderWidthThick,
-          ),
-        ),
+        enabledBorder: restingBorder,
+        // Focus is the ring outside the box (ButleryFocusRing below); the
+        // edge keeps its resting width and colour, focused or not, with or
+        // without an error: "fokus är ringen (2 px/3 px offset), kanten
+        // byter aldrig tjocklek" (Grafisk manual v6:423; Komponentark
+        // v1:657). This replaces BUT-533's 3 px saffron edge.
+        focusedBorder: restingBorder,
+        errorBorder: restingErrorBorder,
+        focusedErrorBorder: restingErrorBorder,
+        // Disabled: 1 px surface.disabled edge on the same surface.raised
+        // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
+        // light, :514 dark).
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           borderSide: BorderSide(
-            color: cs.outline.withValues(alpha: AppDimensions.opacityHalf),
+            color: AppModeColors.surfaceDisabled(cs.brightness),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
-        fillColor: enabled
-            ? cs.surfaceContainerHighest
-            : cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityDark,
-              ),
+        fillColor: cs.surfaceContainerHighest,
       ),
+    );
+
+    // The ring goes around the input box only, not the helper, error or
+    // counter line under it, and shows for keyboard focus (decision D3).
+    final field = ButleryFocusRing(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      bounds: FocusRingBounds.textFieldBox,
+      child: textField,
     );
 
     // BUT-539: When no visible label is provided, Material's TextField cannot

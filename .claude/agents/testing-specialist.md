@@ -2,7 +2,8 @@
 name: testing-specialist
 description: Flutter testing expert. MUST BE USED after modifying ANY file in lib/ to create or update corresponding tests in test/. Encodes the patterns established during the BUT-362 rescue and BUT-387 modernization.
 tools: Read,Write,Edit,Bash,Grep
-model: inherit
+model: sonnet
+effort: medium
 ---
 
 You are the Butlery testing specialist. Your job is to produce tests that

@@ -8,7 +8,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
-import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -252,24 +252,36 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   /// set as the current group for subsequent lines. A trailing heading (no
   /// ingredient follows) is dropped entirely — it groups nothing.
   (List<String>, List<String?>) _splitHeadings(List<String> rawLines) {
+    // The kill switch turns off GROUPING. A block title is not a group and
+    // is never an ingredient, so it leaves the list on both sides of it.
     if (!isSectionCaptureEnabled) {
-      return (rawLines, const <String?>[]);
+      final entries = [
+        for (final line in rawLines)
+          if (LineRoles.of(line) case final role
+              when role.kind != LineRoleKind.blockMarker)
+            role.kind == LineRoleKind.ingredient ? role.label! : line,
+      ];
+      return (entries, const <String?>[]);
     }
     final lines = <String>[];
     final sections = <String?>[];
     String? current;
     for (final line in rawLines) {
-      final label = RecipeSectionDetector.componentSubHeadingLabel(line);
-      if (label != null) {
-        current = label;
-      } else {
-        // BUT-1714: a refused bare gluten word re-enters WITHOUT its colon —
-        // lookup strips no punctuation, so "Mjöl:" would query `mjol:` and
-        // leave the row unmatched. Every other line rides through untouched.
-        lines.add(
-          RecipeSectionDetector.bareGlutenIngredientLabel(line) ?? line,
-        );
-        sections.add(current);
+      final role = LineRoles.of(line);
+      switch (role.kind) {
+        case LineRoleKind.blockMarker:
+          current = null;
+        case LineRoleKind.heading:
+          current = role.label;
+        case LineRoleKind.ingredient:
+          // BUT-1714/BUT-2242: the row re-enters WITHOUT its colon — lookup
+          // strips no punctuation, so "Mjöl:" would query `mjol:` and leave
+          // the row unmatched.
+          lines.add(role.label!);
+          sections.add(current);
+        case LineRoleKind.undecided:
+          lines.add(line);
+          sections.add(current);
       }
     }
     return (lines, sections);
@@ -320,30 +332,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
           .toList();
       instructions.addAll(lines);
     } else if (rawInstructions is List) {
-      for (final item in rawInstructions) {
-        if (item is String && item.trim().isNotEmpty) {
-          instructions.add(item.trim());
-        } else if (item is Map) {
-          // HowToStep or HowToSection
-          final text = item['text'] ?? item['name'] ?? '';
-          if (text is String && text.trim().isNotEmpty) {
-            instructions.add(text.trim());
-          }
-
-          // Handle HowToSection with itemListElement
-          final itemList = item['itemListElement'];
-          if (itemList is List) {
-            for (final subItem in itemList) {
-              if (subItem is Map) {
-                final subText = subItem['text'] ?? subItem['name'] ?? '';
-                if (subText is String && subText.trim().isNotEmpty) {
-                  instructions.add(subText.trim());
-                }
-              }
-            }
-          }
-        }
-      }
+      instructions.addAll(recipeInstructionTexts(rawInstructions));
     }
 
     if (instructions.isEmpty) {

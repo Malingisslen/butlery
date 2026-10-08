@@ -7,6 +7,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -109,7 +110,7 @@ void main() {
 
         expect(find.byType(ShoppingListCard), findsOneWidget);
         expect(find.text('Veckans ink\u00f6p'), findsOneWidget);
-        expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.shoppingCart), findsOneWidget);
       });
 
       testWidgets('displays item count in metadata', (
@@ -150,7 +151,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.info_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.info), findsOneWidget);
       });
     });
 
@@ -246,8 +247,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1 bought (Br\u00f6d) = check_circle, 2 not bought = radio_button_unchecked
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
-        expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2));
+        expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.circle), findsNWidgets(2));
       });
 
       testWidgets('hides preview when showPreview is false', (
@@ -302,7 +303,7 @@ void main() {
 
         // 1/3 = 33%
         expect(find.textContaining('33%'), findsOneWidget);
-        expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.hourglass), findsOneWidget);
       });
 
       testWidgets('shows complete state when all items bought', (
@@ -344,8 +345,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.hourglass_empty), findsNothing);
-        expect(find.byIcon(Icons.check_circle), findsNothing);
+        expect(find.byIcon(ButleryIcons.hourglass), findsNothing);
+        expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
       });
     });
 
@@ -374,7 +375,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.people), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
 
       testWidgets('hides sharing indicator for personal list', (
@@ -388,7 +389,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.people), findsNothing);
+        expect(find.byIcon(ButleryIcons.users), findsNothing);
       });
     });
 

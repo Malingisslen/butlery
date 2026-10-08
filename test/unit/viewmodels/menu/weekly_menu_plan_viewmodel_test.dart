@@ -8,8 +8,6 @@
 ///  * assignFromOverflow prunes the tray
 ///  * previousWeek / nextWeek arithmetic survives ISO year boundaries
 ///  * Service errors surface via BaseViewModel.error + hasError
-///  * generateShoppingList (BUT-1234) delegates to MenuShoppingListGenerator
-///    via executeAsync: loading toggles, three-way result passes through
 ///
 /// Mocks the `WeeklyMenuPlanService` and `UnifiedRecipeService` layers so
 /// the VM's orchestration logic (and only that) is exercised.
@@ -21,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -66,6 +65,19 @@ WeeklyMenuPlan _plan({
   );
 }
 
+/// BUT-2215: the viewmodel publishes and saves `nextRevision()` of what the
+/// service computed — a new instance carrying the SAME entries and presence
+/// instances, as a new revision. This matcher keeps the identity checks those
+/// tests were written with.
+Matcher _shows(WeeklyMenuPlan expected) => isA<WeeklyMenuPlan>()
+    .having((p) => p.id, 'id', expected.id)
+    .having((p) => p.entries, 'entries', same(expected.entries))
+    .having(
+      (p) => p.presenceBySlot,
+      'presenceBySlot',
+      same(expected.presenceBySlot),
+    );
+
 WeeklyMenuPlanEntry _entry({
   required DayOfWeek day,
   required MealSlot slot,
@@ -106,6 +118,7 @@ void main() {
     late _MockWeeklyMenuPlanService mockService;
     late _MockUnifiedRecipeService mockRecipeService;
     late _MockMenuShoppingListGenerator mockGenerator;
+    late StreamController<String?> weekWrites;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -115,10 +128,12 @@ void main() {
       mockService = _MockWeeklyMenuPlanService();
       mockRecipeService = _MockUnifiedRecipeService();
       mockGenerator = _MockMenuShoppingListGenerator();
+      weekWrites = StreamController<String?>.broadcast();
+      when(() => mockService.weekWrites).thenAnswer((_) => weekWrites.stream);
 
       // Most tests don't exercise save; stub a permissive default that
       // individual tests can override with `when(...).thenAnswer(...)`.
-      when(() => mockService.save(any())).thenAnswer((_) async {});
+      when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
       viewModel = WeeklyMenuPlanViewModel(
         service: mockService,
@@ -127,8 +142,9 @@ void main() {
       );
     });
 
-    tearDown(() {
+    tearDown(() async {
       viewModel.dispose();
+      await weekWrites.close();
     });
 
     // BUT-1962 — a refused save must (a) say so and (b) put back the state it
@@ -153,7 +169,9 @@ void main() {
       }
 
       void failTheSave() {
-        when(() => mockService.save(any())).thenThrow(Exception('denied'));
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenThrow(Exception('denied'));
       }
 
       /// Seeds a resident week AND a non-empty overflow tray.
@@ -200,7 +218,7 @@ void main() {
 
         expect(await viewModel.clearWeek(), isFalse);
 
-        expect(viewModel.plan, same(seeded.week));
+        expect(viewModel.plan, _shows(seeded.week));
         expect(
           viewModel.overflow,
           [seeded.tray],
@@ -226,7 +244,7 @@ void main() {
 
           await viewModel.undoClearWeek();
 
-          expect(viewModel.plan, same(cleared));
+          expect(viewModel.plan, _shows(cleared));
           expect(
             viewModel.overflow,
             isEmpty,
@@ -234,9 +252,9 @@ void main() {
           );
 
           // The snapshot must survive, or the retry below restores nothing.
-          when(() => mockService.save(any())).thenAnswer((_) async {});
+          when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
           await viewModel.undoClearWeek();
-          expect(viewModel.plan, same(seeded.week));
+          expect(viewModel.plan, _shows(seeded.week));
           expect(
             viewModel.overflow,
             [seeded.tray],
@@ -283,7 +301,9 @@ void main() {
         addTearDown(() {
           if (!pending.isCompleted) pending.complete();
         });
-        when(() => mockService.save(any())).thenAnswer((_) => pending.future);
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenAnswer((_) => pending.future);
 
         unawaited(
           viewModel.assignRecipe(
@@ -303,7 +323,7 @@ void main() {
         );
         expect(
           viewModel.plan,
-          same(edited),
+          _shows(edited),
           reason:
               'the whole point: the edit is on screen while the write is '
               'still out for delivery',
@@ -408,7 +428,7 @@ void main() {
         await viewModel.clearWeek();
         expect(
           viewModel.plan,
-          same(cleared),
+          _shows(cleared),
           reason: 'the clear must land first',
         );
         viewModel.clearError();
@@ -419,7 +439,7 @@ void main() {
         await viewModel.undoClearWeek();
 
         expect(viewModel.error, contains('Kunde inte ångra rensningen'));
-        expect(viewModel.plan, same(cleared));
+        expect(viewModel.plan, _shows(cleared));
         // Consuming the snapshot before the write landed left the user with a
         // failed undo they could not repeat. A second attempt must still reach
         // the service, which is what proves the snapshot survived.
@@ -435,7 +455,7 @@ void main() {
         'the surfaced text leaks no exception name, code, uid or path',
         () async {
           await seed();
-          when(() => mockService.save(any())).thenThrow(
+          when(() => mockService.saveRevision(any())).thenThrow(
             PermissionDeniedException(
               'Weekly menu plan save denied',
               resource: 'weekly_menu_plans',
@@ -534,7 +554,7 @@ void main() {
           ).thenReturn(
             WeeklyMenuDistributionResult(plan: week, overflow: [tray]),
           );
-          when(() => mockService.save(any())).thenAnswer((_) async {});
+          when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
           await viewModel.loadWeek(week.weekStartDate);
           await viewModel.applyGeneratedMenu({
             'middag': [tray],
@@ -553,7 +573,9 @@ void main() {
           addTearDown(() {
             if (!unacked.isCompleted) unacked.complete();
           });
-          when(() => mockService.save(any())).thenAnswer((_) => unacked.future);
+          when(
+            () => mockService.saveRevision(any()),
+          ).thenAnswer((_) => unacked.future);
 
           unawaited(
             viewModel.assignFromOverflow(
@@ -602,7 +624,7 @@ void main() {
         expect(placed, isNull);
         expect(
           viewModel.error,
-          'Veckan kunde inte sparas',
+          'Veckan kunde inte sparas.',
         );
         expect(viewModel.plan, same(week));
       });
@@ -655,7 +677,9 @@ void main() {
           addTearDown(() {
             if (!pending.isCompleted) pending.complete();
           });
-          when(() => mockService.save(any())).thenAnswer((_) => pending.future);
+          when(
+            () => mockService.saveRevision(any()),
+          ).thenAnswer((_) => pending.future);
 
           final seenBusy = <bool>[];
           void record() => seenBusy.add(viewModel.isPlacingGeneratedMenu);
@@ -669,7 +693,7 @@ void main() {
           );
           await Future<void>.delayed(Duration.zero);
 
-          expect(viewModel.plan, same(distributed));
+          expect(viewModel.plan, _shows(distributed));
           expect(viewModel.isLoading, isFalse);
           // BUT-1987: the flag the placement button reads is the same guard
           // that refuses the second tap, so it must still be true here — the
@@ -756,7 +780,9 @@ void main() {
         addTearDown(() {
           if (!pending.isCompleted) pending.complete();
         });
-        when(() => mockService.save(any())).thenAnswer((_) => pending.future);
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenAnswer((_) => pending.future);
 
         unawaited(
           viewModel.assignRecipe(
@@ -782,11 +808,299 @@ void main() {
         );
         expect(
           bases[1],
-          same(first),
+          _shows(first),
           reason: 'it computes from the FIRST edit, not the pre-edit week',
         );
-        expect(viewModel.plan, same(second));
+        expect(viewModel.plan, _shows(second));
         pending.complete();
+      });
+    });
+
+    // BUT-2215: the week carries a revision the rules check, and a save that
+    // lost to another device's save is a conflict notice, not an error.
+    group('week revisions and conflicts (BUT-2215)', () {
+      final stored = WeeklyMenuPlan(
+        id: IsoWeekUtils.weekIdFor('u-1', DateTime(2026, 4, 13)),
+        userId: 'u-1',
+        weekStartDate: DateTime(2026, 4, 13),
+        entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+        createdAt: DateTime(2026, 4, 1),
+        updatedAt: DateTime(2026, 4, 1),
+        revId: 'rev-stored',
+      );
+      // What the other device saved: another dish, a later revision.
+      final remote = WeeklyMenuPlan(
+        id: stored.id,
+        userId: 'u-1',
+        weekStartDate: stored.weekStartDate,
+        entries: [
+          _entry(day: DayOfWeek.fri, slot: MealSlot.middag, id: 'e-other'),
+        ],
+        createdAt: stored.createdAt,
+        updatedAt: DateTime(2026, 4, 14),
+        revId: 'rev-remote',
+        baseRevId: 'rev-stored',
+      );
+
+      late List<WeekConflict> conflicts;
+      late List<WeeklyMenuPlan> saved;
+
+      setUp(() async {
+        conflicts = [];
+        viewModel.weekConflicts.listen(conflicts.add);
+        saved = [];
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(stored));
+        // A real-shaped addEntry: appends to the plan it is given, so the
+        // revision it was built on travels with it.
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenAnswer((inv) {
+          final plan = inv.namedArguments[#plan] as WeeklyMenuPlan;
+          final recipe = inv.namedArguments[#recipe] as Recipe;
+          return plan.copyWith(
+            entries: [
+              ...plan.entries,
+              _entry(
+                day: inv.namedArguments[#day] as DayOfWeek,
+                slot: inv.namedArguments[#slot] as MealSlot,
+                id: 'e-${recipe.id}',
+                recipeId: recipe.id,
+              ),
+            ],
+          );
+        });
+        await viewModel.loadWeek(stored.weekStartDate);
+      });
+
+      Future<bool> add(String id) => viewModel.assignRecipe(
+        day: DayOfWeek.tue,
+        slot: MealSlot.ovrigt,
+        recipe: _recipe(id: id),
+      );
+
+      test(
+        'two quick edits are saved as a chain built on the read week, with no '
+        'conflict',
+        () async {
+          final pending = Completer<void>();
+          addTearDown(() {
+            if (!pending.isCompleted) pending.complete();
+          });
+          when(() => mockService.saveRevision(any())).thenAnswer((inv) {
+            saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
+            return pending.future;
+          });
+
+          unawaited(add('r-a'));
+          await Future<void>.delayed(Duration.zero);
+          unawaited(add('r-b'));
+          await Future<void>.delayed(Duration.zero);
+          pending.complete();
+          await Future<void>.delayed(Duration.zero);
+
+          expect(saved, hasLength(2));
+          expect(saved[0].baseRevId, 'rev-stored');
+          expect(saved[1].baseRevId, saved[0].revId);
+          expect(saved[1].revId, isNot(saved[0].revId));
+          expect(viewModel.plan, same(saved[1]));
+          expect(conflicts, isEmpty);
+        },
+      );
+
+      test('a conflict puts the server week on screen, sets no error and '
+          'says so once', () async {
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenThrow(WeekPlanConflictException(remote));
+
+        expect(await add('r-mine'), isFalse);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(viewModel.plan, same(remote));
+        expect(viewModel.error, isNull);
+        expect(conflicts, hasLength(1));
+        expect(conflicts.single.remote, same(remote));
+        expect(
+          conflicts.single.local.entries.map((e) => e.recipeId),
+          contains('r-mine'),
+        );
+      });
+
+      test(
+        'of two refused saves in one run, only the last says anything',
+        () async {
+          final first = Completer<void>();
+          final second = Completer<void>();
+          var calls = 0;
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+            calls++;
+            return calls == 1 ? first.future : second.future;
+          });
+
+          final a = add('r-a');
+          await Future<void>.delayed(Duration.zero);
+          final b = add('r-b');
+          await Future<void>.delayed(Duration.zero);
+          first.completeError(WeekPlanConflictException(remote));
+          second.completeError(WeekPlanConflictException(remote));
+          await Future.wait([a, b]);
+          await Future<void>.delayed(Duration.zero);
+
+          expect(conflicts, hasLength(1));
+          expect(
+            conflicts.single.local.entries.map((e) => e.recipeId),
+            containsAll(['r-a', 'r-b']),
+          );
+          expect(viewModel.plan, same(remote));
+        },
+      );
+
+      test('keepMine writes my dishes with the server createdAt, built on the '
+          "server's revId", () async {
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenThrow(WeekPlanConflictException(remote));
+        await add('r-mine');
+        await Future<void>.delayed(Duration.zero);
+        final conflict = conflicts.single;
+
+        when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
+        });
+        expect(await viewModel.keepMine(conflict), isTrue);
+
+        final written = saved.single;
+        expect(written.baseRevId, remote.revId);
+        expect(written.revId, isNot(remote.revId));
+        expect(written.createdAt, remote.createdAt);
+        expect(written.entries, same(conflict.local.entries));
+        expect(viewModel.plan, same(written));
+        expect(viewModel.error, isNull);
+      });
+    });
+
+    // BUT-2215: another caller of the service wrote a week on this device (the
+    // recipe scrub, the placement flow). The shown week is re-read, so the
+    // next edit here is built on what was written rather than refused as a
+    // save from another device.
+    group('a week written elsewhere on this device is re-read (BUT-2215)', () {
+      final shown = _plan(
+        entries: [_entry(day: DayOfWeek.mon, slot: MealSlot.middag)],
+      ).nextRevision();
+      final written = shown.copyWith(entries: const []).nextRevision();
+
+      setUp(() async {
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(shown));
+        await viewModel.loadWeek(shown.weekStartDate);
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(written));
+      });
+
+      test(
+        'a write of the shown week puts what was written on screen',
+        () async {
+          weekWrites.add(shown.id);
+          await pumpEventQueue();
+
+          expect(viewModel.plan, same(written));
+          expect(viewModel.error, isNull);
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
+
+      test('a write of any week (the recipe scrub) does too', () async {
+        weekWrites.add(null);
+        await pumpEventQueue();
+
+        expect(viewModel.plan, same(written));
+      });
+
+      test('the next edit is built on what was written', () async {
+        final saved = <WeeklyMenuPlan>[];
+        when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
+        });
+        when(
+          () => mockService.addEntry(
+            plan: any(named: 'plan'),
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenAnswer(
+          (inv) => (inv.namedArguments[#plan] as WeeklyMenuPlan).copyWith(
+            entries: [_entry(day: DayOfWeek.tue, slot: MealSlot.middag)],
+          ),
+        );
+        weekWrites.add(null);
+        await pumpEventQueue();
+
+        await viewModel.assignRecipe(
+          day: DayOfWeek.tue,
+          slot: MealSlot.middag,
+          recipe: _recipe(),
+        );
+
+        expect(saved.single.baseRevId, written.revId);
+      });
+
+      test('a write of another week reads nothing', () async {
+        weekWrites.add('some-other-week');
+        await pumpEventQueue();
+
+        expect(viewModel.plan, same(shown));
+        verify(() => mockService.readWeek(any())).called(1);
+      });
+
+      test(
+        'a failed re-read leaves the shown week and sets no error',
+        () async {
+          when(() => mockService.readWeek(any())).thenAnswer(
+            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
+          );
+          weekWrites.add(shown.id);
+          await pumpEventQueue();
+
+          expect(viewModel.plan, same(shown));
+          expect(viewModel.error, isNull);
+        },
+      );
+
+      test('an edit published while the re-read is in flight is not '
+          'overwritten', () async {
+        final read = Completer<WeeklyMenuPlanRead>();
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) => read.future);
+        when(
+          () => mockService.removeEntry(
+            plan: any(named: 'plan'),
+            entryId: any(named: 'entryId'),
+          ),
+        ).thenAnswer(
+          (inv) => (inv.namedArguments[#plan] as WeeklyMenuPlan).copyWith(
+            entries: const [],
+          ),
+        );
+        weekWrites.add(shown.id);
+        await Future<void>.delayed(Duration.zero);
+        await viewModel.removeEntry('entry-1');
+        final edited = viewModel.plan;
+        read.complete(_read(written));
+        await pumpEventQueue();
+
+        expect(viewModel.plan, same(edited));
+        expect(edited, isNot(same(written)));
       });
     });
 
@@ -816,7 +1130,7 @@ void main() {
 
         expect(viewModel.plan, isNull);
         expect(viewModel.error, equals(weeklyPlanReadFailedMessage));
-        verifyNever(() => mockService.save(any()));
+        verifyNever(() => mockService.saveRevision(any()));
       });
 
       test(
@@ -848,7 +1162,7 @@ void main() {
           );
 
           expect(placed, isNull);
-          verifyNever(() => mockService.save(any()));
+          verifyNever(() => mockService.saveRevision(any()));
         },
       );
 
@@ -869,7 +1183,7 @@ void main() {
           expect(copied, isNull);
           // BUT-1988: presence publishes from `_plan` and saves, so a refused
           // week shows as no save at all rather than as an unused service call.
-          verifyNever(() => mockService.save(any()));
+          verifyNever(() => mockService.saveRevision(any()));
           verifyNever(
             () => mockService.copyWeek(
               fromWeekStart: any(named: 'fromWeekStart'),
@@ -913,21 +1227,6 @@ void main() {
               toSlot: any(named: 'toSlot'),
             ),
           );
-        },
-      );
-
-      test(
-        'generateShoppingList refuses rather than listing the wrong week',
-        () async {
-          when(() => mockService.readWeek(any())).thenAnswer(
-            (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: true),
-          );
-          await viewModel.loadWeek(DateTime(2026, 4, 15));
-
-          final result = await viewModel.generateShoppingList();
-
-          expect(result, isNull);
-          verifyNever(() => mockGenerator.generateForWeek(any()));
         },
       );
 
@@ -1012,7 +1311,7 @@ void main() {
 
         await viewModel.removeEntry('e-live');
 
-        verifyNever(() => mockService.save(any()));
+        verifyNever(() => mockService.saveRevision(any()));
       });
     });
 
@@ -1175,10 +1474,12 @@ void main() {
           'middag': [_recipe(id: 'r-m')],
         });
 
-        expect(viewModel.plan, same(distributedPlan));
+        expect(viewModel.plan, _shows(distributedPlan));
         expect(viewModel.overflow, [overflowRecipe]);
         expect(viewModel.hasOverflow, isTrue);
-        verify(() => mockService.save(distributedPlan)).called(1);
+        verify(
+          () => mockService.saveRevision(any(that: _shows(distributedPlan))),
+        ).called(1);
       });
 
       test('uses replaceExisting=true to clear prior entries before '
@@ -1302,7 +1603,7 @@ void main() {
           1,
           reason: 'the second call must early-return on the in-flight guard',
         );
-        verify(() => mockService.save(any())).called(1);
+        verify(() => mockService.saveRevision(any())).called(1);
         // The refusal is deliberately SILENT (BUT-1987). A message here would
         // land on a surface where `LoadingStateBuilder` ranks error above
         // data, replacing the whole calendar — including the week the first
@@ -1329,7 +1630,7 @@ void main() {
             recipe: any(named: 'recipe'),
           ),
         );
-        verifyNever(() => mockService.save(any()));
+        verifyNever(() => mockService.saveRevision(any()));
       });
 
       test(
@@ -1362,8 +1663,10 @@ void main() {
             recipe: recipe,
           );
 
-          expect(viewModel.plan, same(updated));
-          verify(() => mockService.save(updated)).called(1);
+          expect(viewModel.plan, _shows(updated));
+          verify(
+            () => mockService.saveRevision(any(that: _shows(updated))),
+          ).called(1);
         },
       );
     });
@@ -1405,7 +1708,7 @@ void main() {
             toSlot: MealSlot.middag,
           );
 
-          verifyNever(() => mockService.save(any()));
+          verifyNever(() => mockService.saveRevision(any()));
           // Plan reference unchanged: _plan never reassigned.
           expect(
             identical(viewModel.plan, planBefore),
@@ -1447,8 +1750,10 @@ void main() {
           toSlot: MealSlot.middag,
         );
 
-        expect(viewModel.plan, same(moved));
-        verify(() => mockService.save(moved)).called(1);
+        expect(viewModel.plan, _shows(moved));
+        verify(
+          () => mockService.saveRevision(any(that: _shows(moved))),
+        ).called(1);
       });
 
       test('is a no-op when no plan is loaded', () async {
@@ -1488,7 +1793,7 @@ void main() {
 
           await viewModel.removeEntry('unknown');
 
-          verifyNever(() => mockService.save(any()));
+          verifyNever(() => mockService.saveRevision(any()));
         },
       );
 
@@ -1519,8 +1824,10 @@ void main() {
 
           await viewModel.removeEntry('to-delete');
 
-          expect(viewModel.plan, same(stripped));
-          verify(() => mockService.save(stripped)).called(1);
+          expect(viewModel.plan, _shows(stripped));
+          verify(
+            () => mockService.saveRevision(any(that: _shows(stripped))),
+          ).called(1);
         },
       );
 
@@ -1547,7 +1854,7 @@ void main() {
         expect(await viewModel.clearWeek(), isFalse);
 
         verifyNever(() => mockService.clearWeek(any()));
-        verifyNever(() => mockService.save(any()));
+        verifyNever(() => mockService.saveRevision(any()));
       });
 
       test(
@@ -1580,7 +1887,11 @@ void main() {
           await viewModel.applyGeneratedMenu(const {'middag': []});
           expect(viewModel.overflow, [recipe]);
 
-          when(() => mockService.clearWeek(emptyPlan)).thenReturn(emptyPlan);
+          // BUT-2215: the resident plan is `emptyPlan.nextRevision()`, so the
+          // stub answers with its own argument — "already empty".
+          when(() => mockService.clearWeek(any())).thenAnswer(
+            (inv) => inv.positionalArguments.first as WeeklyMenuPlan,
+          );
 
           // Reset interactions BEFORE the action under test — the preceding
           // applyGeneratedMenu already called save() once, and we only care
@@ -1592,7 +1903,7 @@ void main() {
           expect(viewModel.overflow, isEmpty);
           // Plan was already empty → service.clearWeek returns the same plan →
           // `identical(cleared, current)` → save must NOT be fired by clearWeek.
-          verifyNever(() => mockService.save(any()));
+          verifyNever(() => mockService.saveRevision(any()));
         },
       );
 
@@ -1612,8 +1923,10 @@ void main() {
 
         expect(await viewModel.clearWeek(), isTrue);
 
-        expect(viewModel.plan, same(cleared));
-        verify(() => mockService.save(cleared)).called(1);
+        expect(viewModel.plan, _shows(cleared));
+        verify(
+          () => mockService.saveRevision(any(that: _shows(cleared))),
+        ).called(1);
       });
 
       test('is a no-op when no plan is loaded', () async {
@@ -1636,23 +1949,25 @@ void main() {
           final cleared = populated.copyWith(entries: const []);
           when(() => mockService.clearWeek(populated)).thenReturn(cleared);
           await viewModel.clearWeek();
-          expect(viewModel.plan, same(cleared));
+          expect(viewModel.plan, _shows(cleared));
 
           // Undo: service.restoreWeek should put the snapshot entries back.
           final restored = cleared.copyWith(entries: [entry]);
           when(
-            () => mockService.restoreWeek(cleared, any()),
+            () => mockService.restoreWeek(any(that: _shows(cleared)), any()),
           ).thenReturn(restored);
 
           await viewModel.undoClearWeek();
 
-          expect(viewModel.plan, same(restored));
-          verify(() => mockService.save(restored)).called(1);
+          expect(viewModel.plan, _shows(restored));
+          verify(
+            () => mockService.saveRevision(any(that: _shows(restored))),
+          ).called(1);
           // Snapshot must be consumed so a second undo is a no-op.
           clearInteractions(mockService);
           await viewModel.undoClearWeek();
           verifyNever(() => mockService.restoreWeek(any(), any()));
-          verifyNever(() => mockService.save(any()));
+          verifyNever(() => mockService.saveRevision(any()));
         },
       );
 
@@ -1671,7 +1986,7 @@ void main() {
         await viewModel.undoClearWeek();
 
         verifyNever(() => mockService.restoreWeek(any(), any()));
-        verifyNever(() => mockService.save(any()));
+        verifyNever(() => mockService.saveRevision(any()));
       });
 
       test('restores the overflow tray on undo (overflow-only clear is not '
@@ -1704,7 +2019,11 @@ void main() {
         await viewModel.applyGeneratedMenu(const {'middag': []});
         expect(viewModel.overflow, [overflowRecipe]);
 
-        when(() => mockService.clearWeek(emptyPlan)).thenReturn(emptyPlan);
+        // BUT-2215: the resident plan is `emptyPlan.nextRevision()`, so the
+        // stub answers with its own argument — "already empty".
+        when(() => mockService.clearWeek(any())).thenAnswer(
+          (inv) => inv.positionalArguments.first as WeeklyMenuPlan,
+        );
         await viewModel.clearWeek();
         expect(
           viewModel.overflow,
@@ -1714,7 +2033,7 @@ void main() {
 
         // Undo. Plan is unchanged (still empty) but the tray must reappear.
         when(
-          () => mockService.restoreWeek(emptyPlan, any()),
+          () => mockService.restoreWeek(any(), any()),
         ).thenReturn(emptyPlan);
         await viewModel.undoClearWeek();
 
@@ -1728,135 +2047,87 @@ void main() {
       });
     });
 
-    group('generateShoppingList (BUT-1234)', () {
-      const successResult = MenuShoppingGenerationResult(
+    // P6-U02: the merge sheet's write. Three outcomes stay apart
+    // (produktregler.md:705): a receipt, null for failure, and the
+    // already-running sentinel, which the view renders as silence.
+    group('applyShoppingMerge (P6-U02)', () {
+      final merge = MenuShoppingListGenerator.preview(
+        MenuShoppingListGenerator.sourceForMenu(
+          const {},
+          DateTime(2026, 4, 13),
+        ),
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(),
+      );
+      const receipt = MenuShoppingMergeReceipt(
         listId: 'list-1',
         listName: 'Inköpslista v.16',
-        itemCount: 7,
-        recipeCount: 3,
-        unresolvedRecipes: 0,
+        addedItemIds: ['a'],
+        removedItems: [],
+        previousMenuItemIds: null,
+        replaced: false,
+        createdList: false,
       );
 
-      test('delegates to the generator with the current week anchor, toggles '
-          'isLoading, and passes the success result through', () async {
-        final week = _plan(weekStart: DateTime(2026, 4, 13));
-        when(() => mockService.readWeek(any())).thenAnswer(
-          (_) async => WeeklyMenuPlanRead(plan: week, readFailed: false),
-        );
-        await viewModel.loadWeek(DateTime(2026, 4, 13));
-
-        var sawLoading = false;
-        viewModel.addListener(() {
-          if (viewModel.isLoading) sawLoading = true;
-        });
-        when(
-          () => mockGenerator.generateForWeek(any()),
-        ).thenAnswer((_) async => successResult);
-
-        final result = await viewModel.generateShoppingList();
-
-        expect(
-          result,
-          same(successResult),
-          reason:
-              'the view renders the snackbar from this result — it '
-              'must pass through untouched',
-        );
-        expect(
-          sawLoading,
-          isTrue,
-          reason: 'executeAsync must raise isLoading so the FAB disables',
-        );
-        expect(viewModel.isLoading, isFalse);
-        expect(viewModel.hasError, isFalse);
-        verify(
-          () => mockGenerator.generateForWeek(week.weekStartDate),
-        ).called(1);
-      });
-
       test(
-        'passes the nothingToGenerate sentinel through (empty plan)',
+        'a second tap while writing is silent, and only one write runs',
         () async {
-          when(() => mockGenerator.generateForWeek(any())).thenAnswer(
-            (_) async => MenuShoppingGenerationResult.nothingToGenerate,
-          );
+          final gate = Completer<MenuShoppingMergeReceipt?>();
+          when(() => mockGenerator.apply(merge)).thenAnswer((_) => gate.future);
 
-          final result = await viewModel.generateShoppingList();
+          final first = viewModel.applyShoppingMerge(merge);
+          expect(viewModel.isMergingShoppingList, isTrue);
+          final second = await viewModel.applyShoppingMerge(merge);
+          gate.complete(receipt);
 
-          expect(result, isNotNull);
-          expect(
-            result!.isEmptyPlan,
-            isTrue,
-            reason:
-                'the empty-plan sentinel must reach the view distinct '
-                'from the null failure signal',
-          );
-          expect(viewModel.hasError, isFalse);
+          expect(identical(second, shoppingMergeAlreadyRunning), isTrue);
+          expect(await first, same(receipt));
+          expect(viewModel.isMergingShoppingList, isFalse);
+          verify(() => mockGenerator.apply(merge)).called(1);
         },
       );
 
-      test('passes the null failure signal through without raising the VM '
-          'error state (the generator already swallowed and logged)', () async {
+      test('a second tap while the pantry is still being read opens no '
+          'second sheet', () async {
+        final pantry = Completer<MenuShoppingPantry>();
         when(
-          () => mockGenerator.generateForWeek(any()),
-        ).thenAnswer((_) async => null);
+          () => mockGenerator.readPantry(),
+        ).thenAnswer((_) => pantry.future);
+        var sheets = 0;
+        Future<void> flow() async {
+          await viewModel.readPantryForShopping();
+          sheets++; // the sheet would open here
+        }
 
-        final result = await viewModel.generateShoppingList();
+        final first = viewModel.runShoppingFlow(flow);
+        expect(viewModel.isShoppingFlowRunning, isTrue);
+        await viewModel.runShoppingFlow(flow);
+        pantry.complete(const MenuShoppingPantry.read([]));
+        await first;
 
-        expect(
-          result,
-          isNull,
-          reason: 'null = failure is the view\'s error-snackbar trigger',
-        );
-        expect(
-          viewModel.hasError,
-          isFalse,
-          reason:
-              'a null return is a normal completion of executeAsync — '
-              'no exception, no error state',
-        );
-        expect(viewModel.isLoading, isFalse);
+        expect(sheets, 1);
+        verify(() => mockGenerator.readPantry()).called(1);
+        expect(viewModel.isShoppingFlowRunning, isFalse);
+        // Once the flow has ended, the next tap starts a new one.
+        await viewModel.runShoppingFlow(() async => sheets++);
+        expect(sheets, 2);
       });
 
-      test('a throwing generator surfaces the localized error and returns '
-          'null instead of rethrowing to the view', () async {
-        when(
-          () => mockGenerator.generateForWeek(any()),
-        ).thenThrow(StateError('write failed'));
+      test('a flow that throws still ends, so the FAB comes back', () async {
+        await expectLater(
+          viewModel.runShoppingFlow(() async => throw StateError('x')),
+          throwsStateError,
+        );
+        expect(viewModel.isShoppingFlowRunning, isFalse);
+      });
 
-        final result = await viewModel.generateShoppingList();
+      test('a failed write is null, never the sentinel', () async {
+        when(() => mockGenerator.apply(merge)).thenThrow(StateError('x'));
+
+        final result = await viewModel.applyShoppingMerge(merge);
 
         expect(result, isNull);
-        expect(viewModel.hasError, isTrue);
-        expect(viewModel.error, 'Kunde inte skapa inköpslistan');
-        expect(viewModel.isLoading, isFalse);
-      });
-
-      test('isLoading re-entrancy backstop: a second call while the first is '
-          'in flight no-ops (one generator invocation)', () async {
-        when(() => mockGenerator.generateForWeek(any())).thenAnswer(
-          (_) async {
-            // Hold the first call across an event-loop turn so the second
-            // call observes isLoading == true.
-            await Future<void>.delayed(Duration.zero);
-            return successResult;
-          },
-        );
-
-        final first = viewModel.generateShoppingList();
-        final second = viewModel.generateShoppingList();
-        final results = await Future.wait([first, second]);
-
-        expect(results[0], same(successResult));
-        expect(
-          results[1],
-          same(MenuShoppingGenerationResult.alreadyRunning),
-          reason:
-              'the guarded second call must not run the generator, and '
-              'must NOT alias the null failure sentinel — the view renders '
-              'alreadyRunning as silence, null as an error snackbar',
-        );
-        verify(() => mockGenerator.generateForWeek(any())).called(1);
+        expect(viewModel.isMergingShoppingList, isFalse);
       });
     });
 
@@ -1904,7 +2175,7 @@ void main() {
           );
           when(
             () => mockService.addEntry(
-              plan: initial,
+              plan: any(named: 'plan', that: _shows(initial)),
               day: DayOfWeek.wed,
               slot: MealSlot.middag,
               recipe: r1,
@@ -2023,7 +2294,7 @@ void main() {
             if (!refusalA.isCompleted) refusalA.complete();
           });
           var saves = 0;
-          when(() => mockService.save(any())).thenAnswer((_) {
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusalA.future : Future<void>.value();
           });
@@ -2077,7 +2348,7 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.save(any())).thenAnswer((_) {
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2134,7 +2405,7 @@ void main() {
           if (!refusal.isCompleted) refusal.complete();
         });
         var saves = 0;
-        when(() => mockService.save(any())).thenAnswer((_) {
+        when(() => mockService.saveRevision(any())).thenAnswer((_) {
           saves++;
           return saves == 1 ? refusal.future : Future<void>.value();
         });
@@ -2187,7 +2458,7 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.save(any())).thenAnswer((_) {
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2248,7 +2519,9 @@ void main() {
               recipe: stranger,
             ),
           ).thenReturn(planWith('o-stranger'));
-          when(() => mockService.save(any())).thenThrow(Exception('denied'));
+          when(
+            () => mockService.saveRevision(any()),
+          ).thenThrow(Exception('denied'));
 
           await viewModel.assignFromOverflow(
             recipe: stranger,
@@ -2308,7 +2581,7 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.save(any())).thenAnswer((_) {
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2324,14 +2597,14 @@ void main() {
             slot: MealSlot.middag,
             recipe: second,
           );
-          expect(viewModel.plan, same(laterPlan));
+          expect(viewModel.plan, _shows(laterPlan));
 
           refusal.completeError(Exception('denied'));
           await refused;
 
           expect(
             viewModel.plan,
-            same(laterPlan),
+            _shows(laterPlan),
             reason: 'rolling back here would undo an edit that SUCCEEDED',
           );
         },
@@ -2375,8 +2648,10 @@ void main() {
           );
 
           expect(placed, isNull);
-          expect(viewModel.error, 'Veckan kunde inte sparas');
-          verifyNever(() => mockService.save(any()));
+          expect(viewModel.error, 'Veckan kunde inte sparas.');
+          verifyNever(() => mockService.saveRevision(any()));
+          // P5-U15: nothing reached the week, so it may be called unchanged.
+          expect(viewModel.lastApplyLeftWeekUnchanged, isTrue);
         },
       );
 
@@ -2403,15 +2678,19 @@ void main() {
               overflow: const [],
             ),
           );
-          when(() => mockService.save(any())).thenThrow(Exception('denied'));
+          when(
+            () => mockService.saveRevision(any()),
+          ).thenThrow(Exception('denied'));
 
           await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas',
+            'Veckan kunde inte sparas.',
           );
           expect(viewModel.plan, same(initial));
+          // P5-U15: the undo happened, so the week may be called unchanged.
+          expect(viewModel.lastApplyLeftWeekUnchanged, isTrue);
         },
       );
 
@@ -2449,7 +2728,7 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.save(any())).thenAnswer((_) {
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2458,7 +2737,7 @@ void main() {
             const {'middag': <Recipe>[]},
           );
           await Future<void>.delayed(Duration.zero);
-          expect(viewModel.plan, same(distributed));
+          expect(viewModel.plan, _shows(distributed));
 
           final later = _recipe(id: 'o-later');
           final laterPlan = planWith('o-later');
@@ -2475,17 +2754,20 @@ void main() {
             slot: MealSlot.middag,
             recipe: later,
           );
-          expect(viewModel.plan, same(laterPlan));
+          expect(viewModel.plan, _shows(laterPlan));
 
           refusal.completeError(Exception('denied'));
           await pending;
 
           expect(
             viewModel.error,
-            'Veckan kunde inte sparas',
+            'Veckan kunde inte sparas.',
             reason: 'the same string as every other path',
           );
-          expect(viewModel.plan, same(laterPlan));
+          expect(viewModel.plan, _shows(laterPlan));
+          // P5-U15: the rollback was skipped, so the view must not say the
+          // week is unchanged (BUT-2132: claim only an undo that happened).
+          expect(viewModel.lastApplyLeftWeekUnchanged, isFalse);
         },
       );
 
@@ -2509,7 +2791,7 @@ void main() {
             overflow: const [],
           ),
         );
-        when(() => mockService.save(any())).thenAnswer((_) async {});
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
         // The real callback reaches `PersistenceService` and `context.l10n`,
         // so a throw here is not hypothetical. Unwrapped it escapes the write
@@ -2519,7 +2801,7 @@ void main() {
           onPublished: (_) => throw StateError('ui'),
         );
 
-        verify(() => mockService.save(any())).called(1);
+        verify(() => mockService.saveRevision(any())).called(1);
         expect(viewModel.error, isNull);
       });
 
@@ -2549,7 +2831,9 @@ void main() {
           addTearDown(() {
             if (!unacked.isCompleted) unacked.complete();
           });
-          when(() => mockService.save(any())).thenAnswer((_) => unacked.future);
+          when(
+            () => mockService.saveRevision(any()),
+          ).thenAnswer((_) => unacked.future);
 
           int? announced;
           unawaited(
@@ -2670,7 +2954,9 @@ void main() {
             ],
           ),
         );
-        when(() => mockService.save(any())).thenThrow(Exception('boom'));
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenThrow(Exception('boom'));
 
         final placed = await viewModel.applyGeneratedMenu({
           'middag': [_recipe()],
@@ -2913,7 +3199,7 @@ void main() {
 
       test('setSlotPresence publishes the selection and saves it', () async {
         await loadPlanWith(const {});
-        when(() => mockService.save(any())).thenAnswer((_) async {});
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
 
@@ -2922,7 +3208,7 @@ void main() {
           ['m1'],
         );
         final saved =
-            verify(() => mockService.save(captureAny())).captured.single
+            verify(() => mockService.saveRevision(captureAny())).captured.single
                 as WeeklyMenuPlan;
         expect(saved.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
           'm1',
@@ -2939,7 +3225,7 @@ void main() {
           if (!firstSave.isCompleted) firstSave.complete();
         });
         var saves = 0;
-        when(() => mockService.save(any())).thenAnswer((_) async {
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {
           saves++;
           if (saves == 1) return firstSave.future;
           return;
@@ -2964,7 +3250,7 @@ void main() {
 
       test('setSlotPresence leaves the day other meal untouched', () async {
         await loadPlanWith(const {});
-        when(() => mockService.save(any())).thenAnswer((_) async {});
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
 
@@ -2992,7 +3278,7 @@ void main() {
             MealSlot.middag: ['m0'],
           },
         });
-        when(() => mockService.save(any())).thenAnswer((_) async {});
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, null);
 
@@ -3004,7 +3290,7 @@ void main() {
           'm0',
         ]);
         final saved =
-            verify(() => mockService.save(captureAny())).captured.single
+            verify(() => mockService.saveRevision(captureAny())).captured.single
                 as WeeklyMenuPlan;
         expect(
           saved.presenceBySlot[DayOfWeek.mon]?.keys.toSet(),
@@ -3019,19 +3305,19 @@ void main() {
             MealSlot.middag: ['m0'],
           },
         });
-        when(() => mockService.save(any())).thenAnswer((_) async {});
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
         await viewModel.setDayPresence(DayOfWeek.mon, null);
 
         final saved =
-            verify(() => mockService.save(captureAny())).captured.single
+            verify(() => mockService.saveRevision(captureAny())).captured.single
                 as WeeklyMenuPlan;
         expect(saved.presenceBySlot.containsKey(DayOfWeek.mon), isFalse);
       });
 
       test('setDayPresence writes both meals of the day', () async {
         await loadPlanWith(const {});
-        when(() => mockService.save(any())).thenAnswer((_) async {});
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
 
         await viewModel.setDayPresence(DayOfWeek.mon, ['m1']);
 
@@ -3042,7 +3328,7 @@ void main() {
           'm1',
         ]);
         final saved =
-            verify(() => mockService.save(captureAny())).captured.single
+            verify(() => mockService.saveRevision(captureAny())).captured.single
                 as WeeklyMenuPlan;
         expect(saved.presenceBySlot[DayOfWeek.mon]?.keys.toSet(), {
           MealSlot.lunch,
@@ -3058,7 +3344,9 @@ void main() {
             MealSlot.middag: ['m0'],
           },
         });
-        when(() => mockService.save(any())).thenThrow(Exception('offline'));
+        when(
+          () => mockService.saveRevision(any()),
+        ).thenThrow(Exception('offline'));
 
         final ok = await viewModel.setSlotPresence(
           DayOfWeek.mon,
@@ -3082,7 +3370,7 @@ void main() {
           isFalse,
         );
         expect(await viewModel.setDayPresence(DayOfWeek.mon, ['m1']), isFalse);
-        verifyNever(() => mockService.save(any()));
+        verifyNever(() => mockService.saveRevision(any()));
         // Without the guard the merge throws inside `_executeWrite`, which
         // also returns false — but it sets the error on the way out.
         expect(viewModel.error, isNull);

@@ -7,6 +7,16 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Repository interface for recipe data operations.
 abstract class RecipeRepository extends Repository<Recipe>
     with StreamManagementMixin {
+  /// BUT-2213: creates [entity] for the offline queue and returns its
+  /// revision; a create sent twice does not replace a later save.
+  Future<int> createOnce(Recipe entity);
+
+  /// BUT-2213: saves [entity] only while the server's recipe is at revision
+  /// [expectedRev] (null: not compared), and returns the revision after the
+  /// save. Throws `RecipeRevisionConflictException` carrying the server's
+  /// recipe when it has moved on to other content.
+  Future<int> updateAtRevision(Recipe entity, {int? expectedRev});
+
   /// Stream of recipes for the specified user.
   ///
   /// Returns the most recent [pageSize] recipes ordered by `core.updatedAt` desc
@@ -68,6 +78,13 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// member in the recipe's `socialData.memberPermissions`. Returns null on
   /// not-found or permission-denied so callers can fall back gracefully.
   Future<Recipe?> readSharedRecipe({
+    required String ownerId,
+    required String recipeId,
+  });
+
+  /// [readSharedRecipe], live: emits on every change to the recipe, and null
+  /// once it is gone or no longer shared with the current user.
+  Stream<Recipe?> watchSharedRecipe({
     required String ownerId,
     required String recipeId,
   });

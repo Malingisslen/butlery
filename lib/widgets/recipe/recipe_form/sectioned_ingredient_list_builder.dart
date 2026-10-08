@@ -6,6 +6,9 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// The sectioned ingredient editor (PR #211). Renders an ordered list of
 /// component headings ("Deg", "Fyllning") and ingredient lines as a single
@@ -78,11 +81,11 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           proxyDecorator: _proxyDecorator,
           itemBuilder: (context, index) => _buildRow(context, index, headings),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: TextButton.icon(
-            icon: const Icon(Icons.add),
+            icon: const ButleryIcon(ButleryIcons.plus),
             label: Text(context.l10n.recipeAddIngredientHeading),
             onPressed: canAddHeading ? onAddHeading : null,
           ),
@@ -115,7 +118,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     final labelText = controller.text.trim();
     return Padding(
       key: ValueKey('hdr_$id'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       // header:true flags the row as a heading. It carries NO label — a label
       // here would absorb the delete button's own Semantics; the field name is
       // set on the TextField below instead.
@@ -125,7 +128,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           decoration: BoxDecoration(
             color: cs.primaryContainer,
             border: BorderDirectional(
-              start: BorderSide(color: cs.primary, width: 4),
+              start: BorderSide(color: cs.onSurface, width: 4),
             ),
           ),
           child: Row(
@@ -134,10 +137,13 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 index: rowIndex,
                 child: const Padding(
                   padding: EdgeInsetsDirectional.only(
-                    start: AppDimensions.spacingS,
-                    end: AppDimensions.spacingS,
+                    start: AppDimensions.space4,
+                    end: AppDimensions.space4,
                   ),
-                  child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
+                  child: ButleryIcon(
+                    ButleryIcons.drag,
+                    size: AppDimensions.iconSizeM,
+                  ),
                 ),
               ),
               Expanded(
@@ -171,7 +177,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 label: context.l10n.a11yRemoveIngredientHeading,
                 button: true,
                 child: IconButton(
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const ButleryIcon(ButleryIcons.trash2),
                   onPressed: () => onRemoveHeading(id),
                 ),
               ),
@@ -194,14 +200,17 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     }
     return Padding(
       key: ValueKey('ing_line_$lineIndex'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           ReorderableDragStartListener(
             index: rowIndex,
             child: const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
-              child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.space4),
+              child: ButleryIcon(
+                ButleryIcons.drag,
+                size: AppDimensions.iconSizeM,
+              ),
             ),
           ),
           Expanded(
@@ -230,7 +239,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
               ),
               button: true,
               child: IconButton(
-                icon: const Icon(Icons.delete),
+                icon: const ButleryIcon(ButleryIcons.trash2),
                 onPressed: () => onRemoveLine(lineIndex),
               ),
             ),
@@ -244,25 +253,28 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     int rowIndex,
     List<({String id, String label})> headings,
   ) {
-    return PopupMenuButton<String?>(
-      icon: const Icon(Icons.low_priority),
-      tooltip: context.l10n.recipeMoveToSection,
-      onSelected: (headingId) => onMoveLineToSection(rowIndex, headingId),
-      itemBuilder: (context) => [
-        PopupMenuItem<String?>(
-          value: null,
-          child: Text(context.l10n.recipeMoveToSectionNone),
-        ),
-        for (final h in headings)
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String?>(
+        icon: const ButleryIcon(ButleryIcons.move),
+        tooltip: context.l10n.recipeMoveToSection,
+        onSelected: (headingId) => onMoveLineToSection(rowIndex, headingId),
+        itemBuilder: (context) => [
           PopupMenuItem<String?>(
-            value: h.id,
-            child: Text(
-              h.label.isEmpty
-                  ? context.l10n.recipeIngredientHeadingHint
-                  : h.label,
-            ),
+            value: null,
+            child: Text(context.l10n.recipeMoveToSectionNone),
           ),
-      ],
+          for (final h in headings)
+            PopupMenuItem<String?>(
+              value: h.id,
+              child: Text(
+                h.label.isEmpty
+                    ? context.l10n.recipeIngredientHeadingHint
+                    : h.label,
+              ),
+            ),
+        ],
+      ),
     );
   }
 

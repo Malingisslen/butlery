@@ -4,7 +4,7 @@
 /// Intention: prove voice's END-TO-END identity — a dictated import must
 /// (a) parse via the text pipeline, (b) carry SourceArtefactType
 /// .voiceDictation (never textPaste), and (c) log its parse event under
-/// source 'voice' through the ImportManager choke point — so dictation
+/// channel voice through the ImportManager choke point — so dictation
 /// never pollutes the pasted-text telemetry bucket and its LLM-escalation
 /// rate is measurable.
 library;
@@ -19,13 +19,16 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/voice_import_strategy.dart';
+import 'package:butlery/services/import/voice_transcript_assembler.dart';
 import 'package:butlery/services/parsing/parse_event_logger.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -43,27 +46,10 @@ Gör så här:
 Blanda och stek.''';
 
 class _SpyParseEventLogger extends ParseEventLogger {
-  final List<({String source, bool success})> events = [];
+  final List<ImportEvent> events = [];
 
   @override
-  void logEvent({
-    required String? url,
-    required String source,
-    required bool success,
-    bool fromCache = false,
-    required int parseTimeMs,
-    String? parserVersion,
-    String? domain,
-    String? successfulTier,
-    double? finalQuality,
-    bool? usedLlm,
-    double? totalCostSek,
-    List<Map<String, dynamic>>? tierAttempts,
-    bool unknownDomain = false,
-    String? promptVersion,
-  }) {
-    events.add((source: source, success: success));
-  }
+  void log(ImportEvent event) => events.add(event);
 }
 
 /// Allows every checkLimit and captures recorded usage, so the test can
@@ -79,7 +65,7 @@ class _RecordingRateLimiter extends Fake implements ImportRateLimiter {
       );
 
   @override
-  Future<void> recordUsage(ImportOperation operation, {double? llmCost}) async {
+  Future<void> recordUsage(ImportOperation operation) async {
     recorded.add(operation);
   }
 }
@@ -164,6 +150,36 @@ void main() {
     });
   });
 
+  // Resa 11: a dictated "tre deciliter vetemjöl" was saved as amount 1 and
+  // "tre ägg" with no amount, and the saved recipe had lost its voice stamp.
+  // Real parse, real form: the path the voice view hands to the editor.
+  test(
+    'spoken amounts and the voice stamp survive to the saved recipe',
+    () async {
+      final transcript = assembleRecipeText(
+        title: 'Pannkakor',
+        ingredientsTranscript:
+            'tre deciliter vetemjöl, sex deciliter mjölk, tre ägg',
+        stepsTranscript: 'Vispa ihop. Stek.',
+      );
+      final imported = await VoiceImportStrategy().import(transcript);
+
+      final saved = RecipeFormState(
+        initialRecipe: imported.recipe,
+        isTemplate: true,
+      ).createRecipe();
+
+      expect(
+        saved.core.structuredIngredients!.map((i) => (i.amount, i.name)),
+        [(3, 'vetemjöl'), (6, 'mjölk'), (3, 'ägg')],
+      );
+      expect(
+        saved.core.sourceArtefact?.type,
+        SourceArtefactType.voiceDictation,
+      );
+    },
+  );
+
   group('ImportManager.importVoiceTranscript', () {
     test('routes through the telemetry choke point: one parse event with '
         'source=voice', () async {
@@ -182,12 +198,13 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(spyLogger.events, hasLength(1));
       expect(
-        spyLogger.events.single.source,
-        'voice',
+        spyLogger.events.single.channel,
+        ImportChannel.voice,
         reason:
-            "source must be 'voice', not 'text' — the distinct bucket is "
+            'the channel must be voice, not text — the distinct bucket is '
             'what makes the LLM-escalation rate of dictation measurable',
       );
+      expect(spyLogger.events.single.strategy, 'voice');
       expect(spyLogger.events.single.success, isTrue);
     });
 
@@ -205,12 +222,12 @@ void main() {
       final result = await manager.importVoiceTranscript('brus');
 
       expect(result.isSuccess, isFalse);
-      expect(spyLogger.events.single.source, 'voice');
+      expect(spyLogger.events.single.channel, ImportChannel.voice);
       expect(spyLogger.events.single.success, isFalse);
     });
 
-    test('a successful voice import records rate-limit usage under '
-        "'voice'; a failed one records nothing (review finding #6)", () async {
+    test('every voice import records rate-limit usage under '
+        "'voice', failed ones too (BUT-2238)", () async {
       // Without recordUsage the up-front checkLimit never sees any usage —
       // voice imports would be effectively unlimited.
       final limiter = _RecordingRateLimiter();
@@ -262,8 +279,8 @@ void main() {
       expect(failResult.isSuccess, isFalse);
       expect(
         limiter.recorded,
-        hasLength(1),
-        reason: 'a failed parse must not consume quota',
+        hasLength(2),
+        reason: 'every attempt counts against the quota, not only successes',
       );
     });
 

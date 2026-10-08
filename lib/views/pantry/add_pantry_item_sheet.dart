@@ -8,15 +8,20 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
+import 'package:butlery/views/pantry/pantry_previous_version_row.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class AddPantryItemSheet extends StatefulWidget {
   const AddPantryItemSheet({super.key, this.existingItem});
@@ -84,8 +89,13 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   String? _unit = 'st';
   PantryLocation _location = PantryLocation.pantry;
   DateTime? _expiryDate;
+  bool _expiryPressed = false;
+  bool _expiryHovered = false;
   IngredientData? _selectedIngredient;
   bool _showSuggestions = false;
+
+  /// The last save failed; the sheet shows the error line (P5-U14).
+  bool _saveFailed = false;
 
   bool get _isEditing => widget.existingItem != null;
 
@@ -170,6 +180,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   Future<void> _submit() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+    if (_saveFailed) setState(() => _saveFailed = false);
 
     // BUT-1910: the field had a hand-rolled `replaceAll(',', '.')` and no input
     // formatter, so "1,5,5" was typeable and parsed to nothing — falling back
@@ -229,8 +240,15 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     // The VM swallows save failures into `hasError` (offline / Firestore
     // write error). Don't dismiss on failure — that silently loses the item;
     // keep the sheet open with feedback so the user can retry.
+    //
+    // P5-U14: the three-part failure (content-style-guide.md:87-97): the
+    // item was not saved, what was typed is still in the sheet, and Försök
+    // igen saves again. Interpretation: it is a line in the sheet, not a
+    // snackbar. A snackbar belongs to the view under this modal sheet, so it
+    // would sit behind the sheet and its scrim, and Försök igen could not be
+    // pressed.
     if (viewModel.hasError) {
-      SnackBarUtils.showError(context, context.l10n.pantryCouldNotSaveItem);
+      setState(() => _saveFailed = true);
       return;
     }
     navigator.pop();
@@ -273,6 +291,8 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
+            if (widget.existingItem case final existing?)
+              PantryPreviousVersionRow(item: existing),
             TextField(
               controller: _nameController,
               onChanged: _onSearchChanged,
@@ -309,58 +329,76 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _unit,
-                    decoration: InputDecoration(
-                      labelText: l10n.pantryUnitLabel,
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
+                  child: PressFill(
+                    surface: PressSurface.base,
+                    child: DropdownButtonFormField<String>(
+                      iconEnabledColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      iconDisabledColor: AppModeColors.textDisabled(
+                        Theme.of(context).brightness,
                       ),
+                      initialValue: _unit,
+                      decoration: InputDecoration(
+                        labelText: l10n.pantryUnitLabel,
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                      ),
+                      // Derived from the STORED unit, not from `_unit`, so an
+                      // off-list row stays on offer after the user picks
+                      // something else and can be picked back.
+                      items: [
+                        for (final unit in unitValues)
+                          DropdownMenuItem(value: unit, child: Text(unit)),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) setState(() => _unit = value);
+                      },
                     ),
-                    // Derived from the STORED unit, not from `_unit`, so an
-                    // off-list row stays on offer after the user picks
-                    // something else and can be picked back.
-                    items: [
-                      for (final unit in unitValues)
-                        DropdownMenuItem(value: unit, child: Text(unit)),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) setState(() => _unit = value);
-                    },
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            DropdownButtonFormField<PantryLocation>(
-              initialValue: _location,
-              decoration: InputDecoration(
-                labelText: l10n.pantryLocationLabel,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
+            PressFill(
+              surface: PressSurface.base,
+              child: DropdownButtonFormField<PantryLocation>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
                 ),
+                initialValue: _location,
+                decoration: InputDecoration(
+                  labelText: l10n.pantryLocationLabel,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: PantryLocation.fridge,
+                    child: Text(l10n.pantryLocationFridge),
+                  ),
+                  DropdownMenuItem(
+                    value: PantryLocation.freezer,
+                    child: Text(l10n.pantryLocationFreezer),
+                  ),
+                  DropdownMenuItem(
+                    value: PantryLocation.pantry,
+                    child: Text(l10n.pantryLocationPantry),
+                  ),
+                  DropdownMenuItem(
+                    value: PantryLocation.spiceRack,
+                    child: Text(l10n.pantryLocationSpiceRack),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => _location = value);
+                },
               ),
-              items: [
-                DropdownMenuItem(
-                  value: PantryLocation.fridge,
-                  child: Text(l10n.pantryLocationFridge),
-                ),
-                DropdownMenuItem(
-                  value: PantryLocation.freezer,
-                  child: Text(l10n.pantryLocationFreezer),
-                ),
-                DropdownMenuItem(
-                  value: PantryLocation.pantry,
-                  child: Text(l10n.pantryLocationPantry),
-                ),
-                DropdownMenuItem(
-                  value: PantryLocation.spiceRack,
-                  child: Text(l10n.pantryLocationSpiceRack),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _location = value);
-              },
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             Semantics(
@@ -368,18 +406,32 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               button: true,
               child: InkWell(
                 onTap: _pickExpiryDate,
+                // The field paints its own fill above the ink layer, so the
+                // field itself takes the pressed fill and the InkWell none.
+                onHighlightChanged: (value) =>
+                    setState(() => _expiryPressed = value),
+                onHover: (value) => setState(() => _expiryHovered = value),
+                overlayColor: WidgetStateProperty.resolveWith(
+                  (states) => states.contains(WidgetState.focused)
+                      ? null
+                      : Colors.transparent,
+                ),
                 child: InputDecorator(
                   decoration: InputDecoration(
                     labelText: l10n.pantryExpiryLabel,
+                    fillColor: _expiryPressed || _expiryHovered
+                        ? PressFill.fillFor(context, PressSurface.raised)
+                        : null,
+                    hoverColor: PressFill.fillFor(context, PressSurface.raised),
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.zero,
                     ),
                     suffixIcon: _expiryDate != null
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const ButleryIcon(ButleryIcons.x),
                             onPressed: () => setState(() => _expiryDate = null),
                           )
-                        : const Icon(Icons.calendar_today_outlined),
+                        : const ButleryIcon(ButleryIcons.calendar),
                   ),
                   child: Text(
                     _expiryDate == null
@@ -400,6 +452,15 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
               ),
             ),
+            if (_saveFailed) ...[
+              const SizedBox(height: AppDimensions.spacingLg),
+              InlineError(
+                what: l10n.pantryCouldNotSaveItem,
+                preserved: l10n.errorPreservedForm,
+                actionLabel: l10n.commonRetry,
+                onAction: _submit,
+              ),
+            ],
             const SizedBox(height: AppDimensions.spacingXl),
             ActionButtons.primaryButton(
               context,

@@ -33,7 +33,10 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -60,6 +63,13 @@ void main() {
 
       notificationService = MockNotificationService();
       permissionService = MockNotificationPermissionService();
+      // P6-U07: notifications are on in the phone unless a test says not.
+      when(
+        () => permissionService.blockedInSystem(),
+      ).thenAnswer((_) async => false);
+      when(
+        () => permissionService.openSystemSettings(),
+      ).thenAnswer((_) async => true);
       offlineService = MockOfflineService();
 
       when(() => offlineService.isOnline).thenReturn(true);
@@ -96,6 +106,94 @@ void main() {
       );
       // Resolve the async getPreferences() future loaded in initState.
       await tester.pumpAndSettle();
+    }
+
+    // P4-T6: in dark mode the section glyphs are text.primary (onSurface),
+    // paper, and the switches take the theme's checked look, not an ink
+    // thumb on a half-ink track (tokens.json:54-57, :145-154).
+    testWidgets('dark mode: glyphs are paper and switches use the theme', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Theme(
+            data: AppTheme.darkTheme,
+            child: const NotificationPreferencesView(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final paper = AppTheme.darkTheme.colorScheme.onSurface;
+      final glyphs = tester.widgetList<Icon>(
+        find.byIcon(ButleryIcons.bellOff),
+      );
+      expect(glyphs, isNotEmpty);
+      for (final glyph in glyphs) {
+        expect(glyph.color, paper);
+      }
+      for (final tile in tester.widgetList<SwitchListTile>(
+        find.byType(SwitchListTile),
+      )) {
+        expect(tile.thumbColor, isNull);
+        expect(tile.activeTrackColor, isNull);
+      }
+    });
+
+    // P7-A4: with the master toggle off the category rows are disabled, drawn
+    // in text.disabled and never faded (tokens.json:41 "Opacitet är aldrig
+    // ett tillstånd", :198; Butlery tillganglighetshandoff).
+    for (final dark in [false, true]) {
+      testWidgets('${dark ? 'dark' : 'light'}: master off draws the categories '
+          'disabled, with no Opacity', (tester) async {
+        final off = NotificationPreferences.defaults();
+        when(() => notificationService.getPreferences()).thenAnswer(
+          (_) async => NotificationPreferences(
+            enabled: false,
+            categorySettings: off.categorySettings,
+            typeSettings: off.typeSettings,
+            allowBatching: off.allowBatching,
+            digestFrequency: off.digestFrequency,
+            quietHoursStart: off.quietHoursStart,
+            quietHoursEnd: off.quietHoursEnd,
+            lastUpdated: off.lastUpdated,
+          ),
+        );
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Theme(
+              data: theme,
+              child: const NotificationPreferencesView(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final title = find.text(sv.notificationCategoryRecipes);
+        expect(title, findsOneWidget);
+        expect(
+          find.ancestor(of: title, matching: find.byType(Opacity)),
+          findsNothing,
+        );
+        expect(
+          tester.widget<Text>(title).style?.color,
+          AppModeColors.textDisabled(theme.brightness),
+        );
+      });
     }
 
     testWidgets('renders the toggle sections once preferences load', (
@@ -363,6 +461,61 @@ void main() {
         findsOneWidget,
         reason: 'A failed load must offer a retry action.',
       );
+    });
+
+    // P6-U07: notifications off in the phone — a row at the top leads to the
+    // system settings and the switches stay visible but inactive
+    // (produktregler.md:686,739; Skarmar v12 etapp 3 #behnotiser).
+    testWidgets(
+      'notifications off in the phone: top row, switches visible but inactive',
+      (tester) async {
+        when(
+          () => notificationService.getPreferences(),
+        ).thenAnswer((_) async => NotificationPreferences.defaults());
+        when(
+          () => permissionService.blockedInSystem(),
+        ).thenAnswer((_) async => true);
+
+        await pumpView(tester);
+
+        expect(
+          find.byKey(const ValueKey('notification-system-off-row')),
+          findsOneWidget,
+        );
+        expect(find.text(sv.notifSystemOffRow), findsOneWidget);
+        final tiles = tester
+            .widgetList<SwitchListTile>(find.byType(SwitchListTile))
+            .toList();
+        expect(tiles, isNotEmpty, reason: 'the switches stay visible');
+        for (final tile in tiles) {
+          expect(tile.onChanged, isNull, reason: 'and inactive');
+        }
+
+        await tester.tap(
+          find.byKey(const ValueKey('notification-system-off-open')),
+        );
+        await tester.pump();
+        verify(() => permissionService.openSystemSettings()).called(1);
+      },
+    );
+
+    testWidgets('notifications on in the phone: no row, switches work', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+
+      await pumpView(tester);
+
+      expect(
+        find.byKey(const ValueKey('notification-system-off-row')),
+        findsNothing,
+      );
+      final master = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, sv.notificationEnableTitle),
+      );
+      expect(master.onChanged, isNotNull);
     });
   });
 }

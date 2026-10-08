@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 
 // Focused modules
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components/invitation_displays.dart';
 import 'package:butlery/widgets/common/social_components/invitation_selectors.dart';
 import 'package:butlery/widgets/common/social_components/invitation_lists.dart';
@@ -217,7 +218,7 @@ class SocialInvitationComponents {
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint,
-    IconData prefixIcon = Icons.search,
+    IconData prefixIcon = ButleryIcons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
@@ -393,7 +394,7 @@ class SocialInvitationComponents {
     String? message,
     VoidCallback? onRetry,
     String? retryText,
-    IconData errorIcon = Icons.error_outline,
+    IconData errorIcon = ButleryIcons.triangleAlert,
   }) {
     return InvitationStates.targetLoadingError(
       context,
@@ -410,7 +411,7 @@ class SocialInvitationComponents {
     BuildContext context, {
     String? title,
     String? message,
-    IconData icon = Icons.group_outlined,
+    IconData icon = ButleryIcons.users,
     VoidCallback? onAddTargets,
     String? addButtonText,
     bool showAddButton = true,
@@ -432,7 +433,7 @@ class SocialInvitationComponents {
     String? query,
     String? title,
     String? message,
-    IconData icon = Icons.search_off,
+    IconData icon = ButleryIcons.searchOff,
     VoidCallback? onClearSearch,
     String? clearButtonText,
     bool showClearButton = true,
@@ -455,7 +456,7 @@ class SocialInvitationComponents {
     required int selectedCount,
     String? title,
     String? message,
-    IconData icon = Icons.check_circle_outline,
+    IconData icon = ButleryIcons.circleCheck,
     VoidCallback? onContinue,
     String? continueButtonText,
     Color? successColor,

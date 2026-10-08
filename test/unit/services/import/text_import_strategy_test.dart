@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 
 // Production imports
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -225,8 +226,7 @@ void main() {
         // its only gluten row and could resolve FREE. Note "Mjöl:" was NOT a
         // regression: before the carve-out it was already dropped here, by
         // isValidIngredient's orphan-fragment rule (5 chars, single token, no
-        // digit). The 6-character "Mjölk:" is the row that rides through with
-        // its colon; that asymmetry is the decided BUT-1714 call.
+        // digit).
         group('a gluten-free collider cannot swallow the rescued row', () {
           const colliders = {
             'Mjöl': '1 msk potatismjöl',
@@ -272,8 +272,27 @@ void main() {
           });
         });
 
-        test('the rescue is gluten-scoped — a dairy word is not routed '
-            'through it', () async {
+        // BUT-2242: these markers reach the block-marker branch rather than
+        // the ingredient-header check, and must open the ingredient side. A
+        // bare row like "mjölk" is what is lost if they open the steps.
+        for (final marker in ['Detta behövs:', 'Det här behöver du:']) {
+          test('"$marker" opens the ingredient list', () async {
+            final flat = await flatIngredients(
+              'Kaka\n'
+              '$marker\n'
+              '2 dl socker\n'
+              '3 ägg\n'
+              'mjölk\n'
+              'Gör så här:\n'
+              'Blanda och grädda i ugnen.',
+            );
+
+            expect(flat, containsAll(['2 dl socker', '3 ägg', 'mjölk']));
+          });
+        }
+
+        test('a lone dairy word with a colon is kept colon-stripped too '
+            '(BUT-2242)', () async {
           final flat = await flatIngredients(
             'Kaka\n'
             'Ingredienser:\n'
@@ -284,15 +303,8 @@ void main() {
             'Blanda och grädda i ugnen.',
           );
 
-          // Measured, not assumed (2026-07-30): on THIS path "Mjölk:" never
-          // reached the heading heuristic at all — `looksLikeIngredient` lists
-          // "mjölk" as an ingredient word, so the line has always ridden
-          // through as a plain row, colon and all. That predates the carve-out
-          // and is untouched by it; the assertion that matters here is that the
-          // gluten rescue did not claim it, and colon-stripping — the rescue's
-          // signature — is exactly what distinguishes the two.
-          expect(flat, isNot(contains('mjölk')));
-          expect(flat, contains('mjölk:'));
+          expect(flat, contains('mjölk'));
+          expect(flat, isNot(contains('mjölk:')));
         });
 
         test('a real component heading is still a heading, not an '
@@ -564,6 +576,175 @@ void main() {
       );
     });
 
+    // Felkartan punkt 2 (2026-10-05): a pasted recipe's rows WITHOUT a
+    // quantity ("ägg", "parmesanost", "sojasås") were read as headings and
+    // dropped, and every allergen on such a row went with them. These cases
+    // pin the opposite direction.
+    group('Quantity-less ingredient rows are kept (felkartan punkt 2)', () {
+      List<String> ingredientsOf(ImportResult result) =>
+          (result.recipe?.ingredients ?? const <String>[])
+              .map((i) => i.toLowerCase())
+              .toList();
+
+      test(
+        'a parenthetical note is not cut into a second row '
+        '("olja (till stekning)")',
+        () async {
+          // The instruction-word split used to fire inside "stekning", which
+          // left "olja (till" and a "stekning)" row for the shopping list.
+          const text =
+              'Biff\n\n'
+              'Ingredienser\n'
+              '500 g nötfärs\n'
+              'olja (till stekning)\n'
+              '1 ägg\n\n'
+              'Gör så här\n'
+              'Stek biffarna.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings.where((i) => i.contains('stekning')), isEmpty);
+          expect(ings.where((i) => i.startsWith('olja')).length, 1);
+          expect(ings, contains('1 ägg'));
+        },
+      );
+
+      test(
+        'bare rows under an "Ingredienser" header stay in the list',
+        () async {
+          const text =
+              'Caesarsallad\n\n'
+              'Ingredienser\n'
+              '1 romansallad\n'
+              '2 kycklingfiléer\n'
+              'krutonger\n'
+              'parmesanost\n'
+              'ägg\n\n'
+              'Gör så här\n'
+              'Blanda allt och servera.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('krutonger'));
+          expect(ings, contains('parmesanost'));
+          expect(ings, contains('ägg'));
+        },
+      );
+
+      test(
+        'a headerless list keeps bare rows after its quantity rows',
+        () async {
+          const text =
+              'Sushibowl\n\n'
+              '2 dl sushiris\n'
+              '1 avokado\n'
+              'sojasås\n'
+              'sesamfrön\n\n'
+              'Gör så här\n'
+              'Lägg allt i skålar.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('sojasås'), reason: 'kept whole, not "soja"');
+          expect(ings, contains('sesamfrön'));
+        },
+      );
+
+      test(
+        'a vocabulary heading without a colon leaves the list, its rows stay',
+        () async {
+          const text =
+              'Broccolisoppa\n\n'
+              '500 g broccoli\n'
+              '1 potatis\n\n'
+              'Tillbehör\n'
+              'rostade solroskärnor\n'
+              'fetaost\n\n'
+              'Gör så här\n'
+              'Koka och mixa.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, isNot(contains('tillbehör')));
+          expect(ings, contains('rostade solroskärnor'));
+          expect(ings, contains('fetaost'));
+        },
+      );
+
+      test(
+        'a capitalised word opening a paragraph above quantity rows is a row '
+        '(BUT-2242)',
+        () async {
+          for (final marker in ['', 'Ingredienser\n']) {
+            final text =
+                'Lasagne\n\n'
+                '$marker'
+                '500 g nötfärs\n'
+                '1 gul lök\n\n'
+                'Ostsås\n'
+                '50 g smör\n'
+                '6 dl mjölk\n\n'
+                'Gör så här\n'
+                'Varva och grädda.';
+            final ings = ingredientsOf(await strategy.import(text));
+            expect(ings, contains('ostsås'), reason: 'marker: "$marker"');
+            expect(ings, contains('50 g smör'));
+            expect(ings, contains('6 dl mjölk'));
+          }
+        },
+      );
+
+      test('a numbered step after a bare row is a step, not a row', () async {
+        const text =
+            'Ärtsoppa\n\n'
+            '500 g gula ärtor\n\n'
+            'Till servering\n'
+            'senap\n\n'
+            '1. Blötlägg ärtorna över natten.\n'
+            '2. Koka ärtorna i 1,5 timme.\n'
+            '3. Servera med senap.';
+        final result = await strategy.import(text);
+        final ings = ingredientsOf(result);
+        expect(ings, contains('senap'));
+        expect(ings, isNot(contains('blötlägg ärtorna över natten.')));
+        expect(result.recipe!.instructions.length, 3);
+      });
+
+      test('a sentence that starts with a number is not a row', () async {
+        // One fixture per refusing conjunct: five words, and a full stop.
+        const text =
+            'Logga in\n\n'
+            'Logga in för att läsa vidare. Vi har många recept.\n'
+            '12 nya recept i veckan\n'
+            '3 recept varje vecka.';
+        final result = await strategy.import(text);
+        expect(ingredientsOf(result), isEmpty);
+      });
+
+      test('a numbered list under "Ingredienser" stays rows', () async {
+        const text =
+            'Pannkakor\n\n'
+            'Ingredienser:\n'
+            '1. Mjölk 5 dl\n'
+            '2. Ägg 3 st\n'
+            '3. Vetemjöl 3 dl\n\n'
+            'Gör så här:\n'
+            'Vispa ihop och stek.';
+        final result = await strategy.import(text);
+        final ings = ingredientsOf(result);
+        expect(ings.join(' | '), contains('mjölk'));
+        expect(ings.join(' | '), contains('ägg'));
+        expect(ings.join(' | '), contains('vetemjöl'));
+      });
+
+      test(
+        'a capitalised list word opening a paragraph above a quantity row is a row',
+        () async {
+          const text =
+              'Kaka\n\n'
+              'Smör\n'
+              '2 dl mjölk\n\n'
+              'Gör så här\n'
+              'Blanda och grädda.';
+          final ings = ingredientsOf(await strategy.import(text));
+          expect(ings, contains('smör'));
+          expect(ings, contains('2 dl mjölk'));
+        },
+      );
+    });
+
     group('Initialization', () {
       test('should create strategy with correct metadata', () {
         // Assert
@@ -743,34 +924,30 @@ Ingredienser:
       });
 
       test('should detect Swedish meal types', () async {
-        // Arrange
         final mealTypeTests = {
           'Frukost: Havregrynsgröt': 'Frukost',
           'Lunch - Sallad med kyckling': 'Lunch',
           'Middag: Laxfilé med potatis': 'Middag',
           'Fika - Kanelbullar': 'Fika',
+          // "Huvudrätt" is the dinner slot, in the label form and inline.
+          'Typ: Huvudrätt\nKöttbullar': 'Middag',
+          'Huvudrätt - Lasagne': 'Middag',
+          // Nothing in the text names a meal: the recipe must land where the
+          // menu generator looks for "7 middagar", as the URL import does.
+          'Pannkakor': 'Middag',
         };
 
-        // Act & Assert
         for (final entry in mealTypeTests.entries) {
           final text =
-              '${entry.key}\nIngredienser:\nTest\nInstruktioner:\nTest';
+              '${entry.key}\nIngredienser:\n2 dl mjölk\nInstruktioner:\nVispa.';
           final result = await strategy.import(text);
 
-          if (result.isSuccess && result.recipe != null) {
-            // Meal type detection is basic - looks for keywords in text
-            // With colon in title, it may not detect properly
-            if (entry.key.toLowerCase().contains('fika')) {
-              expect(result.recipe!.mealType, equals('Fika'));
-            } else {
-              // Other meal types default to 'Lunch' when not detected
-              expect(
-                result.recipe!.mealType,
-                anyOf([equals(entry.value), equals('Lunch')]),
-                reason: 'May default to Lunch for: ${entry.key}',
-              );
-            }
-          }
+          expect(result.isSuccess, isTrue, reason: entry.key);
+          expect(
+            result.recipe!.mealType,
+            equals(entry.value),
+            reason: entry.key,
+          );
         }
       });
 
@@ -1124,10 +1301,7 @@ Check out @cooking_tips for more
         // Act
         final result = await strategy.import(socialMediaPost);
 
-        // Assert — single-word ingredients like "Chicken" are rejected by
-        // isValidIngredient because isSectionHeader treats single lowercase
-        // words < 15 chars as ambiguous. The import succeeds but ingredients
-        // may be empty since all are single words after hashtag stripping.
+        // Assert — the title is what this case pins.
         expect(result.isSuccess, isTrue);
         final recipe = result.recipe!;
 
@@ -1264,9 +1438,7 @@ Koka potatisen i 20 minuter.
         // Act
         final result = await strategy.import(minimal);
 
-        // Assert — "Recipe", "Flour", "Mix" are all single words < 15 chars,
-        // treated as section headers by isSectionHeader. Title remains empty,
-        // ingredients/instructions are empty. Import still succeeds with defaults.
+        // Assert — import still succeeds with defaults.
         expect(result.isSuccess, isTrue);
         expect(result.recipe, isNotNull);
       });

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -191,10 +193,10 @@ class InvitationLists {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        ButleryIcon(
                           target.type == InvitationTargetType.group
-                              ? Icons.group
-                              : Icons.person,
+                              ? ButleryIcons.users
+                              : ButleryIcons.user,
                         ),
                         const SizedBox(height: AppDimensions.spacingXs),
                         Text(
@@ -252,10 +254,10 @@ class InvitationLists {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    ButleryIcon(
                       target.type == InvitationTargetType.group
-                          ? Icons.group
-                          : Icons.person,
+                          ? ButleryIcons.users
+                          : ButleryIcons.user,
                       size: 32,
                     ),
                     const SizedBox(height: AppDimensions.spacingSm),

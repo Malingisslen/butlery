@@ -4,13 +4,16 @@ import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 /// GDPR Article 7 - Consent Management View for user consent preferences
 class ConsentManagementView extends StatefulWidget {
@@ -32,9 +35,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.consentManageTitle,
-        centerTitle: true,
       ),
       body: SafeArea(
         // RESPONSIVE: Center and constrain content on large screens
@@ -55,7 +57,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                  padding: EdgeInsets.all(
+                    AppDimensions.layoutMarginOf(context),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -85,7 +89,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildLoadingState() {
-    return StateWidget.loading();
+    return StateWidget.loading(message: context.l10n.loadingConsents);
   }
 
   Widget _buildHeaderSection(ConsentViewModel viewModel) {
@@ -93,16 +97,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.privacy_tip_rounded,
+                ButleryIcon(
+                  ButleryIcons.shield,
                   size: 32,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
@@ -126,30 +130,25 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.info.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
-                  ),
-                  border: Border.all(
-                    color: context.butleryColors.info.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: context.butleryColors.info,
+                    ButleryIcon(
+                      ButleryIcons.info,
+                      color: context.modeColors.info,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
                         '${context.l10n.consentLastUpdated}: ${viewModel.getConsentTimestampText()}',
-                        style: AppTextStyles.infoText,
+                        style: AppTextStyles.infoText.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ],
@@ -175,8 +174,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.lock,
+                ButleryIcon(
+                  ButleryIcons.lock,
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -196,13 +195,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             _buildRequiredConsentItem(
               context.l10n.consentBasicServices,
               context.l10n.consentBasicServicesDescription,
-              Icons.security,
+              ButleryIcons.shield,
             ),
             const SizedBox(height: AppDimensions.spacingL),
             _buildRequiredConsentItem(
               context.l10n.consentDataProcessing,
               context.l10n.consentDataProcessingDescription,
-              Icons.storage,
+              ButleryIcons.server,
             ),
           ],
         ),
@@ -220,10 +219,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
+        ButleryIcon(
           icon,
           size: AppDimensions.iconSizeM,
-          color: context.butleryColors.success,
+          color: context.modeColors.success,
         ),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
@@ -242,9 +241,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ],
           ),
         ),
-        Icon(
-          Icons.check_circle,
-          color: context.butleryColors.success,
+        ButleryIcon(
+          ButleryIcons.circleCheck,
+          color: context.modeColors.success,
           size: AppDimensions.iconSizeM,
         ),
       ],
@@ -268,7 +267,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               onPressed: viewModel.isSaving
                   ? null
                   : () => _handleRevokeAll(viewModel),
-              icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
+              icon: const ButleryIcon(
+                ButleryIcons.block,
+                size: AppDimensions.iconSizeS,
+              ),
               label: Text(context.l10n.consentRejectAll),
               style: TextButton.styleFrom(
                 foregroundColor: cs.error,
@@ -286,7 +288,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel,
           context.l10n.consentAnalytics,
           context.l10n.consentAnalyticsDescription,
-          Icons.analytics_rounded,
+          ButleryIcons.barChart,
           viewModel.analytics,
           viewModel.setAnalytics,
         ),
@@ -304,9 +306,22 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel,
           context.l10n.consentPushNotifications,
           context.l10n.consentPushNotificationsDescription,
-          Icons.notifications_rounded,
+          ButleryIcons.bell,
           viewModel.pushNotifications,
           viewModel.setPushNotifications,
+        ),
+        // AI-tolkning, drawn among "Dina val" (Skarmar v12 etapp 6
+        // #kontosamtycke). The model has carried the purpose since consent
+        // version 1.1.0 and the import checks it (llm_service.dart), but no
+        // switch set it, so it could only ever be lost (produktregler.md:728).
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildConsentToggle(
+          viewModel,
+          context.l10n.consentAiProcessing,
+          context.l10n.consentAiProcessingDescription,
+          ButleryIcons.sparkles,
+          viewModel.aiProcessing,
+          viewModel.setAiProcessing,
         ),
       ],
     );
@@ -325,12 +340,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Card(
       elevation: value ? 2 : 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         side: BorderSide(
-          color: value
-              ? cs.primary.withValues(alpha: AppDimensions.opacityHalf)
-              : cs.outlineVariant,
-          width: value ? 2 : 1,
+          color: value ? cs.onSurface : cs.outlineVariant,
+          width: value ? 1.5 : 1,
         ),
       ),
       child: Padding(
@@ -340,19 +353,15 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             Container(
               padding: AppDimensions.paddingAll8,
               decoration: BoxDecoration(
-                color: value
-                    ? cs.primary.withValues(
-                        alpha: AppDimensions.opacityVeryLight,
-                      )
-                    : cs.surfaceContainerLow,
+                color: value ? cs.surface : cs.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
               ),
-              child: Icon(
+              child: ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeL,
-                color: value ? cs.primary : cs.onSurfaceVariant,
+                color: value ? cs.onSurface : cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: AppDimensions.spacingL),
@@ -364,7 +373,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     title,
                     style: AppTextStyles.titleMedium,
                   ),
-                  const SizedBox(height: AppDimensions.spacingTight),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -443,7 +452,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       // Strip the default ExpansionTile dividers so it sits flush under the card.
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -457,8 +466,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             AppDimensions.spacingMd,
             AppDimensions.spacingMd,
           ),
-          leading: Icon(
-            Icons.fact_check_outlined,
+          leading: ButleryIcon(
+            ButleryIcons.history,
             size: AppDimensions.iconSizeM,
             color: cs.onSurfaceVariant,
           ),
@@ -474,7 +483,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             ...categories.map((c) => _buildLoggedCategoryRow(c.$1, c.$2)),
           ],
         ),
@@ -491,7 +500,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: AppTextStyles.bodyBold),
-          const SizedBox(height: AppDimensions.spacingXxs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             eventNames.join(', '),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -510,17 +519,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
+        color: context.modeColors.surfaceTintDanger,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: cs.error,
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
+            color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -528,7 +534,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             child: Text(
               viewModel.errorMessage!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.error,
+                color: cs.onErrorContainer,
               ),
             ),
           ),
@@ -538,47 +544,22 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildActionButtons(ConsentViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-
-    return ElevatedButton(
-      onPressed: viewModel.isSaving
-          ? null
-          : () => _handleSaveConsent(viewModel),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
-        padding: AppDimensions.paddingVertical16,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
-      ),
-      child: viewModel.isSaving
-          ? LoadingIndicator(
-              size: 20,
-              strokeWidth: 2,
-              color: cs.onPrimary,
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.save_rounded, size: AppDimensions.iconSizeM),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.commonSaveChanges,
-                  style: AppTextStyles.titleBold.copyWith(
-                    color: cs.onPrimary,
-                  ),
-                ),
-              ],
-            ),
+    // The view's one saffron action, "Spara mina val" (Skarmar v12 etapp 6
+    // 'Samtycke — sju ändamål'; Grafisk manual v6:219). While saving it keeps
+    // its name and gets the plate line (Komponentark v1:372).
+    return HeroButton(
+      key: const ValueKey('consent.save'),
+      label: context.l10n.consentSaveMyChoices,
+      onPressed: () => _handleSaveConsent(viewModel),
+      busy: viewModel.isSaving,
+      busyLabel: context.l10n.statusSaving,
+      expand: true,
     );
   }
 
   Widget _buildInfoSection() {
     return Card(
-      color: context.butleryColors.info.withValues(
-        alpha: AppDimensions.opacityExtraVeryLight,
-      ),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
@@ -586,9 +567,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.info_outline,
-                  color: context.butleryColors.info,
+                ButleryIcon(
+                  ButleryIcons.info,
+                  color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -641,19 +622,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     final success = await viewModel.saveConsent();
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: context.butleryColors.onSuccess),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(context.l10n.consentSaved),
-            ],
-          ),
-          backgroundColor: context.butleryColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, context.l10n.consentSaved);
     }
   }
 
@@ -683,22 +652,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       final success = await viewModel.revokeAllOptional();
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(
-                  Icons.check_circle,
-                  color: context.butleryColors.onSuccess,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.consentAllRevoked),
-              ],
-            ),
-            backgroundColor: context.butleryColors.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.consentAllRevoked);
       }
     }
   }

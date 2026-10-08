@@ -22,17 +22,23 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -45,6 +51,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/recipe/recipe_image_permission_notice.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
 import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
@@ -54,6 +61,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -125,9 +134,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         .orEmpty();
   }
 
+  /// P6-U05: set once the drop to read-only has been handled, so a rebuild
+  /// never offers the copy twice.
+  bool _editAccessLossHandled = false;
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
+    if (viewModel.editAccessLost && !_editAccessLossHandled) {
+      _editAccessLossHandled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onEditAccessLost(viewModel);
+      });
+    }
 
     return PopScope(
       canPop: false,
@@ -196,10 +215,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ),
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
+              // An opaque surface, never a veil (tokens.json:40-53).
               ColoredBox(
-                color: Theme.of(context).colorScheme.surface.withValues(
-                  alpha: AppDimensions.opacityVeryDark,
-                ),
+                color: Theme.of(context).colorScheme.surface,
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -211,7 +229,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                       ),
                     ),
                     child: StateWidget.loading(
-                      message: context.l10n.recipeUpdating,
+                      message: viewModel.suggestsChange
+                          ? context.l10n.recipeSuggestionSending
+                          : context.l10n.recipeUpdating,
                     ),
                   ),
                 ),
@@ -222,71 +242,63 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
+  /// Mönster 4 · Modal (Komponentark v1:57, :91-97; Skarmar v12 etapp 4
+  /// #editorutkast): the editor is a modal with X, never a back arrow. The
+  /// bar is light, with the title in 14/700 and the draft state to the
+  /// right. Closing goes through the same unsaved-changes guard as the
+  /// system back gesture (PopScope above).
   PreferredSizeWidget _buildAppBar(BuildContext context, Recipe recipe) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: Selector<CollaborativeStatusViewModel, bool>(
-        selector: (_, vm) =>
-            vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
-        builder: (context, isCollaborative, child) {
-          return AppBar(
-            title: Text(context.l10n.recipeEdit),
-            backgroundColor: isCollaborative
-                ? Theme.of(context).colorScheme.primary.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  )
-                : null,
-            actions: [
-              Selector<RecipeFormViewModel, (bool, bool)>(
-                selector: (_, vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
-                builder: (context, state, _) {
-                  final (isAutoSaving, hasRecentAutoSave) = state;
-                  if (isAutoSaving) {
-                    return const Padding(
-                      padding: EdgeInsetsDirectional.only(
-                        end: AppDimensions.spacingL,
-                      ),
-                      child: Center(
-                        child: LoadingIndicator(
-                          size: AppDimensions.iconSizeS,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    );
-                  } else if (hasRecentAutoSave) {
-                    return Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        end: AppDimensions.spacingL,
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.cloud_done_outlined,
-                          size: AppDimensions.iconSizeM,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              if (isCollaborative)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingL,
-                  ),
-                  child: Center(
-                    child:
-                        SocialCollaborativeComponents.collaborativeStatusBadge(
-                          text: context.l10n.socialShared,
-                          icon: Icons.people,
-                        ),
-                  ),
-                ),
-            ],
-          );
-        },
+    final cs = Theme.of(context).colorScheme;
+    final isCollaborative = context.select<CollaborativeStatusViewModel, bool>(
+      (vm) =>
+          vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
+    );
+    final (
+      isAutoSaving,
+      hasRecentAutoSave,
+      hasAutoSaveFailed,
+      failurePeriod,
+    ) = context.select<RecipeFormViewModel, (bool, bool, bool, int)>(
+      (vm) => (
+        vm.isAutoSaving,
+        vm.hasRecentAutoSave,
+        vm.hasAutoSaveFailed,
+        vm.autoSaveFailurePeriod,
       ),
+    );
+    // Q6-08 = A: someone else's recipe is not edited, a change is suggested
+    // (produktregler.md:247, the menu item's own words).
+    final suggests = context.select<RecipeFormViewModel, bool>(
+      (vm) => vm.suggestsChange,
+    );
+    return ButleryTopBar.undersida(
+      title: suggests
+          ? context.l10n.recipeSuggestChange
+          : context.l10n.recipeEdit,
+      backgroundColor: cs.surface,
+      foregroundColor: cs.onSurface,
+      leading: IconButton(
+        key: const ValueKey('edit-recipe-close'),
+        icon: const ButleryIcon(ButleryIcons.x),
+        tooltip: context.l10n.recipeEditorClose,
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
+      actions: [
+        DraftSaveIndicator(
+          isSaving: isAutoSaving,
+          hasRecentSave: hasRecentAutoSave,
+          hasFailed: hasAutoSaveFailed,
+          failurePeriod: failurePeriod,
+          color: cs.onSurface,
+        ),
+        // Shared editing is carried by the badge and the banner below, not
+        // by a tinted bar (tokens.json:40-53).
+        if (isCollaborative)
+          SocialCollaborativeComponents.collaborativeStatusBadge(
+            text: context.l10n.socialShared,
+            icon: ButleryIcons.users,
+          ),
+      ],
     );
   }
 
@@ -327,18 +339,36 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   }
 
   Widget _buildBottomBar(BuildContext context, RecipeFormViewModel viewModel) {
-    if (viewModel.editMode == null) {
+    // Your own recipe (no edit mode, owner or plain edit) saves with the one
+    // saffron button. Shared modes keep the permission row, which pairs
+    // save with fork.
+    final mode = viewModel.editModeEnum;
+    if (viewModel.editMode == null ||
+        mode == EditMode.owner ||
+        mode == EditMode.edit) {
+      // The view's one saffron action (Grafisk manual v6:219; Skarmar v12
+      // etapp 4 #editorutkast). Busy shows the plate line in its place.
+      final cs = Theme.of(context).colorScheme;
       return BottomActionContainer(
-        child: UtilityComponents.primaryButton(
-          context,
-          label: context.l10n.commonSaveChanges,
-          icon: Icons.save,
-          onPressed: viewModel.isSaving || !viewModel.isValid
-              ? null
-              : () => _saveRecipe(context),
-          isLoading: viewModel.isSaving,
-          loadingText: context.l10n.statusSaving,
-          isExpanded: true,
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            key: const ValueKey('edit-recipe-save'),
+            style: ComponentThemes.heroButtonStyle(cs),
+            onPressed: viewModel.isSaving || !viewModel.isValid
+                ? null
+                : () => _saveRecipe(context),
+            child: viewModel.isSaving
+                ? SizedBox(
+                    width: AppDimensions.iconSizeXl * 2,
+                    child: PlateLine(semanticLabel: context.l10n.statusSaving),
+                  )
+                : Text(
+                    viewModel.suggestsChange
+                        ? context.l10n.recipeSuggestionSend
+                        : context.l10n.commonSaveChanges,
+                  ),
+          ),
         ),
       );
     }
@@ -369,8 +399,23 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     final mealTypeOptions = RecipeFormViewModel.mealTypeOptions(
       viewModel.mealType,
     );
+    // Q6-08 = A: a suggestion carries the recipe's text content only
+    // (RecipeSuggestionService.contentFields). Controls whose edits it would
+    // not carry, or that write the owner's recipe at once (related recipes),
+    // are not offered, so nothing the member does here is dropped silently
+    // and no picked photo is uploaded for nothing.
+    final suggests = viewModel.suggestsChange;
 
     return [
+      if (suggests) ...[
+        Text(
+          context.l10n.recipeSuggestionCoversText,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingXl),
+      ],
       // Meal type dropdown
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,47 +430,59 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           // BUT-1845: items and initialValue must come from ONE read of the
           // stored value — the dropdown's constructor assert re-checks the
           // match on every build.
-          DropdownButtonFormField<String>(
-            initialValue: mealTypeOptions.selected,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
-                vertical: AppDimensions.paddingM,
+          PressFill(
+            surface: PressSurface.base,
+            child: DropdownButtonFormField<String>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
               ),
-              border: OutlineInputBorder(),
+              initialValue: mealTypeOptions.selected,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                border: OutlineInputBorder(),
+              ),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              items: mealTypeOptions.values
+                  .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) viewModel.setMealType(value);
+              },
             ),
-            style: AppTextStyles.bodyMedium,
-            items: mealTypeOptions.values
-                .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
-                .toList(),
-            onChanged: (value) {
-              if (value != null) viewModel.setMealType(value);
-            },
           ),
         ],
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Image management
-      UniversalImageManager.recipeEdit(
-        imageUrls: viewModel.imageUrls,
-        onRemoveImage: viewModel.removeImageAt,
-        onSetPrimary: (index) {
-          if (index < viewModel.imageUrls.length) {
-            final imageUrl = viewModel.imageUrls[index];
-            viewModel.setPrimaryImage(imageUrl);
-          }
-        },
-        userId: _currentUserId,
-        onPickImage: () => RecipeImagePicker.showAndPick(
-          context: context,
-          viewModel: viewModel,
+      if (!suggests) ...[
+        UniversalImageManager.recipeEdit(
+          imageUrls: viewModel.imageUrls,
+          onRemoveImage: viewModel.removeImageAt,
+          onSetPrimary: (index) {
+            if (index < viewModel.imageUrls.length) {
+              final imageUrl = viewModel.imageUrls[index];
+              viewModel.setPrimaryImage(imageUrl);
+            }
+          },
+          userId: _currentUserId,
+          onPickImage: () => RecipeImagePicker.showAndPick(
+            context: context,
+            viewModel: viewModel,
+          ),
+          maxImages: 5,
+          isLoading: viewModel.isUploadingImage,
         ),
-        maxImages: 5,
-        isLoading: viewModel.isUploadingImage,
-      ),
-      const SizedBox(height: AppDimensions.spacingXl),
+        RecipeImagePermissionNotice(viewModel: viewModel),
+        const SizedBox(height: AppDimensions.spacingXl),
+      ],
 
       // Title field
       TextFormField(
@@ -533,66 +590,68 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Personal tags selector (select from predefined tags)
       // Users can create new tags via the "Hantera" button
-      PersonalTagSelector(
-        selectedTagIds: viewModel.tags.where((t) => t.isNotEmpty).toList(),
-        onChanged: viewModel.setPersonalTagNames,
-        title: context.l10n.recipePersonalTags,
-        showManageButton: true,
-      ),
-      const SizedBox(height: AppDimensions.spacingM),
+      if (!suggests) ...[
+        PersonalTagSelector(
+          selectedTagIds: viewModel.tags.where((t) => t.isNotEmpty).toList(),
+          onChanged: viewModel.setPersonalTagNames,
+          title: context.l10n.recipePersonalTags,
+          showManageButton: true,
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
 
-      // Auto-generated tags management (allergens, dietary, etc.)
-      _buildManageTagsButton(context, viewModel),
-      const SizedBox(height: AppDimensions.spacingXl),
+        // Auto-generated tags management (allergens, dietary, etc.)
+        _buildManageTagsButton(context, viewModel),
+        const SizedBox(height: AppDimensions.spacingXl),
 
-      // Rating field
-      TextFormField(
-        // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
-        // Fixing one without the other leaves the bug on the other screen, and
-        // this is the one reached by editing a saved recipe.
-        initialValue: viewModel.rating == null
-            ? ''
-            : formatSwedishDecimal(viewModel.rating!),
-        decoration: InputDecoration(labelText: context.l10n.recipeRating),
-        style: AppTextStyles.bodyMedium,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: const [SwedishDecimalInputFormatter()],
-        textInputAction: TextInputAction.next,
-        onChanged: (value) => viewModel.setRating(parseSwedishDecimal(value)),
-        validator: FormValidators.rating(),
-      ),
-      const SizedBox(height: AppDimensions.spacingXl),
+        // Rating field
+        TextFormField(
+          // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
+          // Fixing one without the other leaves the bug on the other screen, and
+          // this is the one reached by editing a saved recipe.
+          initialValue: viewModel.rating == null
+              ? ''
+              : formatSwedishDecimal(viewModel.rating!),
+          decoration: InputDecoration(labelText: context.l10n.recipeRating),
+          style: AppTextStyles.bodyMedium,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: const [SwedishDecimalInputFormatter()],
+          textInputAction: TextInputAction.next,
+          onChanged: (value) => viewModel.setRating(parseSwedishDecimal(value)),
+          validator: FormValidators.rating(),
+        ),
+        const SizedBox(height: AppDimensions.spacingXl),
 
-      // Source URL field
-      TextFormField(
-        initialValue: viewModel.sourceUrl.orEmpty(),
-        decoration: InputDecoration(
-          labelText: context.l10n.recipeSourceUrl,
-          hintText: context.l10n.recipeSourceUrlHint,
-          helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
-              ? context.l10n.recipeImportedFromShare
-              : context.l10n.recipeSourceUrlHelper,
-          prefixIcon: const Icon(
-            Icons.link,
-            size: AppDimensions.iconSizeAction,
+        // Source URL field
+        TextFormField(
+          initialValue: viewModel.sourceUrl.orEmpty(),
+          decoration: InputDecoration(
+            labelText: context.l10n.recipeSourceUrl,
+            hintText: context.l10n.recipeSourceUrlHint,
+            helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
+                ? context.l10n.recipeImportedFromShare
+                : context.l10n.recipeSourceUrlHelper,
+            prefixIcon: const ButleryIcon(
+              ButleryIcons.link,
+              size: AppDimensions.iconSizeAction,
+            ),
           ),
+          style: AppTextStyles.bodyMedium,
+          keyboardType: TextInputType.url,
+          onChanged: viewModel.setSourceUrl,
+          validator: FormValidators.recipeSourceUrl(),
         ),
-        style: AppTextStyles.bodyMedium,
-        keyboardType: TextInputType.url,
-        onChanged: viewModel.setSourceUrl,
-        validator: FormValidators.recipeSourceUrl(),
-      ),
-      const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.spacingXl),
 
-      // BUT-1057: Related recipes section — link/unlink other recipes.
-      // Only shown when editing an existing recipe (originalRecipe != null).
-      if (viewModel.originalRecipe != null)
-        RelatedRecipesEditor(
-          currentRecipeId: viewModel.originalRecipe!.id,
-          relatedRecipes: viewModel.relatedRecipes,
-          onLink: viewModel.linkRelatedRecipe,
-          onUnlink: viewModel.unlinkRelatedRecipe,
-        ),
+        // BUT-1057: Related recipes section — link/unlink other recipes.
+        // Only shown when editing an existing recipe (originalRecipe != null).
+        if (viewModel.originalRecipe != null)
+          RelatedRecipesEditor(
+            currentRecipeId: viewModel.originalRecipe!.id,
+            relatedRecipes: viewModel.relatedRecipes,
+            onLink: viewModel.linkRelatedRecipe,
+            onUnlink: viewModel.unlinkRelatedRecipe,
+          ),
+      ],
     ];
   }
 
@@ -604,7 +663,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     return OutlinedButton.icon(
       onPressed: () => _openTagEditor(context, viewModel),
-      icon: const Icon(Icons.local_offer_outlined),
+      icon: const ButleryIcon(ButleryIcons.tag),
       label: Text(
         hasAutoTags
             ? context.l10n.recipeManageAllTags
@@ -616,8 +675,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           horizontal: AppDimensions.paddingL,
           vertical: AppDimensions.paddingM,
         ),
-        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-        foregroundColor: Theme.of(context).colorScheme.primary,
+        side: BorderSide(color: Theme.of(context).colorScheme.onSurface),
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -633,10 +692,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     if (result != null) {
       viewModel.setTagOverrides(result);
       if (context.mounted) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.recipeTagsUpdated,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.recipeTagsUpdated);
       }
     }
   }
@@ -653,24 +709,54 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     final savedRecipe = await viewModel.saveRecipe();
 
     if (context.mounted) {
-      if (savedRecipe != null) {
+      if (savedRecipe != null && viewModel.suggestsChange) {
+        // Q6-08 = A: nothing was written to the recipe, so recipe detail has
+        // nothing to refresh; its suggestion line now shows the pending one.
+        // Q6-12 = B: when it replaced the waiting one, the member is told.
+        SnackBarUtils.showSuccess(
+          context,
+          viewModel.lastSuggestionReplaced
+              ? context.l10n.recipeSuggestionReplaced
+              : context.l10n.recipeSuggestionSent,
+        );
+        Navigator.pop(context);
+      } else if (savedRecipe != null) {
         final collaborativeViewModel = context
             .read<CollaborativeStatusViewModel>();
         collaborativeViewModel.invalidateRecipeStatus(widget.recipe.id);
 
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.recipeChangesSaved,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.recipeChangesSaved);
         Navigator.pop(context, true);
       } else {
-        UtilityComponents.showErrorSnackbar(
+        // A failure stays until tapped; a second one replaces it.
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // P5-U12: the view stays open with the edits, and says so
+        // (content-style-guide.md:90-93). A cause that trying again cannot
+        // fix is named and gets Stäng; otherwise Försök igen saves again.
+        // The kind comes from the view model, never from the error text.
+        final l10n = context.l10n;
+        final failure = viewModel.lastSaveFailure;
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.recipeCouldNotSaveChanges,
+          what: switch (failure) {
+            RecipeSaveFailure.incomplete => l10n.recipeSaveIncomplete,
+            RecipeSaveFailure.noPermission => l10n.recipeSaveNoPermission,
+            _ when viewModel.suggestsChange => l10n.recipeSuggestionSendFailed,
+            _ => l10n.recipeSaveFailed,
+          },
+          preserved: l10n.errorPreservedRecipeEdits,
+          action: _canRetry(failure)
+              ? FailureAction.retry(() => _saveRecipe(context))
+              : null,
         );
       }
     }
   }
+
+  /// Försök igen only where trying again can help: not for an incomplete
+  /// recipe, a missing permission or nothing to copy.
+  static bool _canRetry(RecipeSaveFailure? failure) =>
+      failure == null || failure == RecipeSaveFailure.failed;
 
   /// Fork recipe functionality for collaborative editing (inlined from edit_recipe_actions.dart)
   Future<void> _forkRecipe(BuildContext context) async {
@@ -682,22 +768,109 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     AppLogger.info('Form validation passed, proceeding with recipe fork');
     final viewModel = context.read<RecipeFormViewModel>();
-    final forkedRecipe = await viewModel.saveFork();
+    final forkedRecipe = await viewModel.forkRecipe();
 
     if (context.mounted) {
       if (forkedRecipe != null) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.recipeCopySaved,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.recipeCopySaved);
         Navigator.pop(context, true);
       } else {
-        UtilityComponents.showErrorSnackbar(
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // P5-U12: as for a save; Försök igen saves the copy again.
+        final failure = viewModel.lastSaveFailure;
+        SnackBarUtils.showFailure(
           context,
-          viewModel.error ?? context.l10n.recipeCouldNotSaveCopy,
+          what: context.l10n.recipeCopySaveFailed,
+          preserved: context.l10n.errorPreservedRecipeEdits,
+          action: _canRetry(failure)
+              ? FailureAction.retry(() => _forkRecipe(context))
+              : null,
         );
       }
     }
+  }
+
+  /// P6-U05 (flows-roles-budget.md:83: "öppna redigeringsvyer stängs med
+  /// förklaring, osparat erbjuds som kopia"; :132: the drop takes effect at
+  /// once in open views).
+  ///
+  /// Nothing unsaved: the editor closes and a snackbar says why, with Stäng
+  /// (content-style-guide.md:96-97). Unsaved edits: a dialog that cannot be
+  /// dismissed says why and offers them as the user's own copy, or to discard
+  /// them by name; either way the editor then closes. The copy goes to the
+  /// user's own library ([RecipeFormViewModel.forkRecipe]); nothing is written
+  /// to the shared recipe, whose saves the permission manager now refuses. A
+  /// failed copy says so, keeps the edits, and asks again.
+  Future<void> _onEditAccessLost(RecipeFormViewModel viewModel) async {
+    final l10n = context.l10n;
+    // A sheet, picker or dialog the user had opened from the editor edits
+    // something that can no longer be saved. Close it first, so the notice is
+    // over the editor and every pop below closes the editor, not that route.
+    final editorRoute = ModalRoute.of(context);
+    if (editorRoute != null && !editorRoute.isCurrent) {
+      Navigator.of(context).popUntil((route) => route == editorRoute);
+    }
+    if (!viewModel.hasUnsavedChanges) {
+      // Shown before the pop: the app's messenger carries the snackbar to the
+      // screen underneath.
+      SnackBarUtils.showFailure(context, what: l10n.roleLoweredRecipeClosed);
+      Navigator.of(context).pop();
+      return;
+    }
+    while (mounted) {
+      final keepCopy = await _showRoleLoweredDialog(context);
+      if (!mounted) return;
+      if (keepCopy != true) {
+        Navigator.of(context).pop();
+        return;
+      }
+      final copy = await viewModel.forkRecipe();
+      if (!mounted) return;
+      if (copy != null) {
+        SnackBarUtils.showSuccess(context, l10n.recipeCopySaved);
+        Navigator.of(context).pop(true);
+        return;
+      }
+      SnackBarUtils.showFailure(
+        context,
+        what: l10n.recipeCopySaveFailed,
+        preserved: l10n.errorPreservedRecipeEdits,
+      );
+    }
+  }
+
+  /// True keeps the edits as a copy, false discards them. It cannot be
+  /// dismissed any other way: the choice is what closes the editor.
+  Future<bool?> _showRoleLoweredDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(context.l10n.roleLoweredRecipeTitle),
+          content: Text(context.l10n.roleLoweredRecipeBody),
+          actions: [
+            KeyedSubtree(
+              key: const ValueKey('role-lowered-discard'),
+              child: ActionButtons.secondaryButton(
+                context,
+                label: context.l10n.roleLoweredDiscard,
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+            ),
+            KeyedSubtree(
+              key: const ValueKey('role-lowered-save-copy'),
+              child: ActionButtons.primaryButton(
+                context,
+                label: context.l10n.roleLoweredSaveCopy,
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Shows confirmation dialog for unsaved changes

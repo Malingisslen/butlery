@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+
+const _longLabel = 'This is a very long button label that wraps';
 
 void main() {
   group('ActionButtons', () {
@@ -90,7 +96,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
       });
 
       testWidgets('should show custom loading text when provided', (
@@ -121,34 +127,43 @@ void main() {
                 context,
                 label: 'Save',
                 onPressed: () {},
-                icon: Icons.save,
+                icon: ButleryIcons.save,
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.save), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.save), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
       });
 
-      testWidgets('should be disabled when loading', (tester) async {
+      testWidgets('ignores presses while busy but keeps its enabled look', (
+        tester,
+      ) async {
+        var pressed = 0;
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
               builder: (context) => ActionButtons.actionButton(
                 context,
                 label: 'Button',
-                onPressed: () {},
+                onPressed: () => pressed++,
                 isLoading: true,
               ),
             ),
           ),
         );
 
+        // Busy is not disabled: the button keeps its surface (Komponentark
+        // v1:365, loading and disabled are two states), so it is enabled
+        // for Flutter, and the press does nothing.
         final button = tester.widget<ElevatedButton>(
           find.byType(ElevatedButton),
         );
-        expect(button.onPressed, isNull);
+        expect(button.enabled, isTrue);
+        await tester.tap(find.byType(ElevatedButton), warnIfMissed: false);
+        await tester.pump();
+        expect(pressed, 0);
       });
 
       testWidgets('should expand to full width when isExpanded is true', (
@@ -219,7 +234,7 @@ void main() {
                 context,
                 label: 'Primary',
                 onPressed: () {},
-                icon: Icons.add,
+                icon: ButleryIcons.plus,
                 isLoading: false,
                 isExpanded: true,
               ),
@@ -227,89 +242,9 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
         final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
         expect(sizedBox.width, equals(double.infinity));
-      });
-    });
-
-    group('squareButton', () {
-      testWidgets('should render square aspect ratio button', (tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: SizedBox(
-              width: 100,
-              height: 100,
-              child: Builder(
-                builder: (context) => ActionButtons.squareButton(
-                  context,
-                  label: 'Upload',
-                  icon: Icons.upload,
-                  onPressed: () {},
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect(find.byType(AspectRatio), findsOneWidget);
-        final aspectRatio = tester.widget<AspectRatio>(
-          find.byType(AspectRatio),
-        );
-        expect(aspectRatio.aspectRatio, equals(1.0));
-      });
-
-      testWidgets('should display icon and label vertically', (tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: SizedBox(
-              width: 100,
-              height: 100,
-              child: Builder(
-                builder: (context) => ActionButtons.squareButton(
-                  context,
-                  label: 'Import',
-                  icon: Icons.file_upload,
-                  onPressed: () {},
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect(find.byIcon(Icons.file_upload), findsOneWidget);
-        expect(find.text('Import'), findsOneWidget);
-
-        // Check vertical arrangement
-        expect(find.byType(Column), findsOneWidget);
-      });
-
-      testWidgets('should show loading state in square button', (tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: SizedBox(
-              width: 100,
-              height: 100,
-              child: Builder(
-                builder: (context) => ActionButtons.squareButton(
-                  context,
-                  label: 'Upload',
-                  icon: Icons.upload,
-                  onPressed: () {},
-                  isLoading: true,
-                  loadingText: 'Laddar upp...',
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.text('Laddar upp...'), findsOneWidget);
-        expect(
-          find.byIcon(Icons.upload),
-          findsNothing,
-        ); // Icon hidden when loading
       });
     });
 
@@ -323,7 +258,7 @@ void main() {
               builder: (context) => ActionButtons.largeButton(
                 context,
                 label: 'Archive',
-                icon: Icons.archive,
+                icon: ButleryIcons.archive,
                 onPressed: () {},
               ),
             ),
@@ -339,7 +274,7 @@ void main() {
         expect(sizedBoxes, findsAtLeastNWidgets(1));
 
         // Verify the icon is present
-        expect(find.byIcon(Icons.archive), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.archive), findsOneWidget);
 
         // Verify the button structure has proper height constraint
         // The largeButton wraps the button in a SizedBox with height
@@ -356,14 +291,14 @@ void main() {
               builder: (context) => ActionButtons.largeButton(
                 context,
                 label: 'Archive',
-                icon: Icons.archive,
+                icon: ButleryIcons.archive,
                 onPressed: () {},
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.archive), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.archive), findsOneWidget);
       });
     });
 
@@ -374,13 +309,13 @@ void main() {
             child: const FloatingActionButtonWidget(
               onPressed: null,
               semanticLabel: 'Lagg till',
-              child: Icon(Icons.add),
+              child: ButleryIcon(ButleryIcons.plus),
             ),
           ),
         );
 
         expect(find.byType(FloatingActionButton), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('should render message FAB with default styling', (
@@ -396,14 +331,19 @@ void main() {
         );
 
         expect(find.byType(FloatingActionButton), findsOneWidget);
-        expect(find.byIcon(Icons.message), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.messageSquare), findsOneWidget);
 
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
-        // FAB uses cs.primary / cs.surfaceContainerHighest from the Butlery theme
-        expect(fab.backgroundColor, equals(AppColors.forestGreen));
-        expect(fab.foregroundColor, equals(AppColors.cardWhite));
+        // FAB is an ink fill with onPrimary (paper) on it: surfaceContainerHighest
+        // turned #2F4437 in dark mode and vanished on the ink fill (P4-T7).
+        // Paket 1: FAB:en tar sina färger ur det kanoniska schemat.
+        expect(fab.backgroundColor, equals(AppColors.lightColorScheme.primary));
+        expect(
+          fab.foregroundColor,
+          equals(AppColors.lightColorScheme.onPrimary),
+        );
       });
 
       testWidgets('should handle custom colors', (tester) async {
@@ -414,7 +354,7 @@ void main() {
               semanticLabel: 'Favorit',
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              child: const Icon(Icons.favorite),
+              child: const ButleryIcon(ButleryIcons.heart),
             ),
           ),
         );
@@ -442,8 +382,10 @@ void main() {
           ),
         );
 
-        // The exact loading text comes from l10n
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        // No busy label: the button keeps its own name, never "Laddar …".
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
+        expect(find.text('Spara'), findsOneWidget);
+        expect(find.text('Laddar …'), findsNothing);
       });
 
       testWidgets('should handle Swedish labels correctly', (tester) async {
@@ -483,33 +425,49 @@ void main() {
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('should handle very long labels with ellipsis', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: SizedBox(
-              width: 150,
-              child: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label:
-                      'This is a very long button label that should be truncated',
-                  onPressed: () {},
-                ),
-              ),
+      // BUT-2193: a button never cuts its label (plattformsmatris.md:
+      // ellipsis is forbidden in buttons); a long one wraps.
+      // actionButton and textButton each build their own label.
+      for (final (name, build) in <(String, Widget Function(BuildContext))>[
+        (
+          'actionButton',
+          (context) => ActionButtons.actionButton(
+            context,
+            label: _longLabel,
+            onPressed: () {},
+          ),
+        ),
+        (
+          'textButton',
+          (context) => ActionButtons.textButton(
+            context,
+            label: _longLabel,
+            onPressed: () {},
+          ),
+        ),
+      ]) {
+        testWidgets('$name: a very long label wraps instead of being cut', (
+          tester,
+        ) async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: SizedBox(width: 150, child: Builder(builder: build)),
             ),
-          ),
-        );
+          );
 
-        final text = tester.widget<Text>(
-          find.text(
-            'This is a very long button label that should be truncated',
-          ),
-        );
-        expect(text.overflow, equals(TextOverflow.ellipsis));
-        expect(text.maxLines, equals(1));
-      });
+          final label = find.text(_longLabel);
+          final text = tester.widget<Text>(label);
+          expect(text.overflow, isNull);
+          expect(text.maxLines, isNull);
+          expect(tester.takeException(), isNull);
+          // More than one line: the label really wrapped in 150 dp.
+          final paragraph = tester.renderObject<RenderParagraph>(label);
+          expect(
+            tester.getSize(label).height,
+            greaterThan(paragraph.preferredLineHeight * 1.5),
+          );
+        });
+      }
 
       testWidgets('should not show icon when loading', (tester) async {
         await tester.pumpWidget(
@@ -519,15 +477,15 @@ void main() {
                 context,
                 label: 'Save',
                 onPressed: () {},
-                icon: Icons.save,
+                icon: ButleryIcons.save,
                 isLoading: true,
               ),
             ),
           ),
         );
 
-        expect(find.byIcon(Icons.save), findsNothing);
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.save), findsNothing);
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
       });
     });
   });

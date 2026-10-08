@@ -14,6 +14,7 @@ class RecipeSerialization {
       'socialData': recipe.socialData?.toJson(),
       'realtimeData': recipe.realtimeData?.toJson(),
       'offlineData': recipe.offlineData?.toJson(),
+      'rev': ?recipe.rev,
     };
   }
 
@@ -41,6 +42,8 @@ class RecipeSerialization {
               json['offlineData'] as Map<String, dynamic>,
             )
           : null,
+      // A device copy without one is a write whose base is not known.
+      rev: SerializationUtils.safeNullableInt(json, 'rev'),
     );
   }
 
@@ -54,6 +57,14 @@ class RecipeSerialization {
       // Don't include offline data in Firestore
     };
   }
+
+  /// A dish as a menu stores it (BUT-2214): the recipe's core, flat, without
+  /// the owner's personal tags. A menu is read by other people, so the
+  /// social and realtime blocks, which carry display names, stay out.
+  static Map<String, dynamic> toMenuDish(Recipe recipe) =>
+      recipe.core.toFirestore()
+        ..remove('personalTagIds')
+        ..remove('personalTags');
 
   /// Deserialize recipe from repository data map (removes Firebase dependency)
   static Recipe fromMap(String id, Map<String, dynamic> data) {
@@ -77,6 +88,9 @@ class RecipeSerialization {
               data['realtimeData'] as Map<String, dynamic>,
             )
           : null,
+      // The server's own document: a recipe saved before revisions existed
+      // is revision 0.
+      rev: SerializationUtils.safeNullableInt(data, 'rev') ?? 0,
     );
   }
 

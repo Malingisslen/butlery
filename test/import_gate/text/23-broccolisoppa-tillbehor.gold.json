@@ -1,0 +1,34 @@
+{
+  "form": "rubrik \"Tillbehör\" utan kolon",
+  "title": "Broccolisoppa",
+  "steps": 3,
+  "ingredients": [
+    {
+      "key": "broccoli"
+    },
+    {
+      "key": "potatis"
+    },
+    {
+      "key": "lök"
+    },
+    {
+      "key": "grönsaksbuljong"
+    },
+    {
+      "key": "matlagningsgrädde",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "solroskärnor"
+    },
+    {
+      "key": "fetaost",
+      "allergen": "mjölk"
+    }
+  ],
+  "headings": [
+    "Tillbehör",
+    "Gör så här"
+  ]
+}

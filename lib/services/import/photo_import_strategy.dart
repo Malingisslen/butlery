@@ -18,7 +18,6 @@
 /// - Swedish measurement units preserved (dl, msk, tsk, krm)
 /// **Usage Examples:**
 /// ```dart
-/// // From PhotoImportViewModel
 /// final result = await importManager.autoImport('photo', options: {
 ///   'imageBytes': imageBytes,
 ///   'sourceType': 'camera', // or 'gallery'
@@ -41,6 +40,7 @@ import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/heic_converter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/photo_llm_vision.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
@@ -94,9 +94,9 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   @override
   bool canHandle(String input) {
-    // Accept 'photo' input or any non-empty string when used with options
-    final trimmed = input.trim().toLowerCase();
-    return trimmed == 'photo' || trimmed.isNotEmpty;
+    // Only the photo marker: the image itself travels in `options`, so any
+    // other text is a link or a paste and must not count as a photo attempt.
+    return input.trim().toLowerCase() == 'photo';
   }
 
   @override
@@ -201,6 +201,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         // LLM also unavailable or failed
         return ImportResult.failure(
           ocrResult.errorMessage ?? 'OCR extraction failed',
+          errorCode: ImportErrorCode.ocrFailed,
           metadata: _buildMetadata(
             ocrResult: ocrResult,
             imageBytes: imageBytes,
@@ -227,6 +228,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         // LLM also unavailable or failed
         return ImportResult.failure(
           'No text could be extracted from the image. Please ensure the image is clear and contains readable text.',
+          errorCode: ImportErrorCode.ocrFailed,
           metadata: _buildMetadata(
             ocrResult: ocrResult,
             imageBytes: imageBytes,
@@ -255,6 +257,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         // LLM also unavailable or failed
         return ImportResult.failure(
           'Could not parse recipe from extracted text. ${textResult.errorMessage ?? "The text may not contain a valid recipe structure."}',
+          errorCode: ImportErrorCode.noRecipeContent,
           warnings: _buildWarnings(
             ocrResult: ocrResult,
             textResult: textResult,
@@ -303,6 +306,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       AppLogger.error('Photo import failed', e);
       return ImportResult.failure(
         'Could not extract recipe from photo. Please try again.',
+        errorCode: ImportErrorCode.ocrFailed,
         metadata: {
           'strategy': strategyName,
         },

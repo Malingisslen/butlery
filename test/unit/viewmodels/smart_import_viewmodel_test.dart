@@ -27,9 +27,6 @@
 ///   ImportManagerResult.rateLimit(RateLimitDenied) — when the manager
 ///   surfaces structured details the VM MUST use them verbatim. The
 ///   string-match path remains as a back-compat fallback. Pinned both ways.
-/// - localizeImportError pattern order: "could not save" check comes *after*
-///   network check; a "network save failed" message gets the network label.
-///   Asserted explicitly.
 /// - triggerManualImport bypasses _setPhase's lastStepBeforeError sync — the
 ///   currentStep getter reads stale _lastStepBeforeError. Pinned.
 
@@ -44,6 +41,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/import_progress_tracker.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
@@ -362,6 +360,118 @@ void main() {
     });
   });
 
+  group('startImport — several pasted recipes', () {
+    const twoRecipes = '''
+Kycklinggryta
+Ingredienser:
+500 g kycklingfilé
+2 dl grädde
+Gör så här:
+Bryn kycklingen och låt puttra i grädden.
+
+Chokladbollar
+Ingredienser:
+100 g smör
+3 dl havregryn
+Gör så här:
+Blanda allt och rulla till bollar.''';
+
+    /// Resa 11: the link box used to send this through autoImport, which
+    /// merged both into one recipe. It must take the text import's
+    /// multi-recipe path and hand back both recipes.
+    test('two recipes become two, through autoParseMulti', () async {
+      final gryta = RecipeFactory.build(title: 'Kycklinggryta');
+      final bollar = RecipeFactory.build(title: 'Chokladbollar');
+      when(() => mockImportManager.autoParseMulti(any())).thenAnswer(
+        (_) async => BatchImportResult(
+          results: [
+            ImportManagerResult.success(gryta, strategy: 'text'),
+            ImportManagerResult.success(bollar, strategy: 'text'),
+          ],
+          successfulRecipes: [gryta, bollar],
+          errors: const [],
+          totalProcessed: 2,
+          successCount: 2,
+          failureCount: 0,
+        ),
+      );
+
+      viewModel.updateInput(twoRecipes);
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportSucceededMultiple>());
+      expect((r as ImportSucceededMultiple).recipes, [gryta, bollar]);
+      expect(viewModel.phase, ImportPhase.complete);
+      verifyNever(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      );
+    });
+
+    test('a refused limit on two recipes is ImportRateLimited', () async {
+      const denied = RateLimitDenied(
+        message: 'limit',
+        retryAfter: Duration(minutes: 5),
+        limitType: LimitType.perHour,
+        suggestedAction: FallbackAction.retryLater,
+      );
+      when(() => mockImportManager.autoParseMulti(any())).thenAnswer(
+        (_) async => BatchImportResult(
+          results: [ImportManagerResult.rateLimit(denied)],
+          successfulRecipes: const [],
+          errors: const ['limit'],
+          totalProcessed: 0,
+          successCount: 0,
+          failureCount: 1,
+        ),
+      );
+
+      viewModel.updateInput(twoRecipes);
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportRateLimited>());
+      expect((r as ImportRateLimited).rateLimitResult, same(denied));
+    });
+
+    test('one recipe still goes through autoImport', () async {
+      final recipe = RecipeFactory.build(title: 'Pannkakor');
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.success(recipe, strategy: 'text'),
+      );
+
+      viewModel.updateInput(
+        'Pannkakor\nIngredienser:\n3 dl vetemjöl\n2 ägg\n'
+        'Gör så här:\nVispa ihop och stek.',
+      );
+      final r = await viewModel.startImport();
+
+      expect(r, isA<ImportSucceeded>());
+      verifyNever(() => mockImportManager.autoParseMulti(any()));
+    });
+
+    test('saveSelectedRecipes saves each and stops on a refusal', () async {
+      final a = RecipeFactory.build(title: 'A');
+      final b = RecipeFactory.build(title: 'B');
+      when(() => mockImportManager.saveImportedRecipe(a)).thenAnswer(
+        (_) async => ImportManagerResult.success(a, strategy: 'text'),
+      );
+      when(
+        () => mockImportManager.saveImportedRecipe(b),
+      ).thenAnswer((_) async => ImportManagerResult.failure('nope'));
+
+      expect(await viewModel.saveSelectedRecipes([a]), isTrue);
+      expect(await viewModel.saveSelectedRecipes([a, b]), isFalse);
+      expect(viewModel.hasError, isTrue);
+    });
+  });
+
   group('startImport — happy path', () {
     /// Pins the dispatch contract: input is trimmed and passed to autoImport
     /// with a progress callback, and a Recipe success becomes ImportSucceeded
@@ -583,23 +693,48 @@ void main() {
   });
 
   group('startImport — error localization', () {
-    /// English failures from the manager must be localized for display.
-    /// Each `_localizeImportError` branch corresponds to a real production
-    /// error string; the VM must not leak raw English to users.
-    final cases = <String, String>{
-      'no import strategy found': 'Kunde inte tolka receptet',
-      'could not parse content': 'Kunde inte tolka receptet',
-      'no recipe found': 'Inget recept hittades',
-      'invalid url': 'Ogiltig URL',
-      'login required': 'Sidan kräver inloggning',
-      'authentication failure': 'Sidan kräver inloggning',
-      'could not read text': 'Kunde inte läsa texten i bilden',
-      'OCR failed': 'Kunde inte läsa texten i bilden',
-      'operation cancelled': 'Importen avbröts',
-      'something else entirely': 'Ett oväntat fel uppstod',
+    /// BUT-2237: the screen's text is chosen by the cause CODE the import
+    /// reported, never by words in the English message.
+    final cases = <ImportErrorCode, String>{
+      ImportErrorCode.urlNotAccessible: 'Länken kunde inte läsas',
+      ImportErrorCode.platformBlocked: 'Sidan kräver inloggning',
+      ImportErrorCode.noRecipeContent: 'Vi hittade inget recept på sidan',
+      ImportErrorCode.parsingFailed: 'Kunde inte tolka receptet',
+      ImportErrorCode.invalidUrl: 'Ogiltig URL',
+      ImportErrorCode.ocrFailed: 'Kunde inte läsa texten i bilden',
+      ImportErrorCode.saveFailed: 'Kunde inte spara receptet',
+      ImportErrorCode.cancelled: 'Importen avbröts',
+      ImportErrorCode.network: 'Ingen internetanslutning',
     };
-    cases.forEach((english, swedish) {
-      test('"$english" → "$swedish"', () async {
+    cases.forEach((code, swedish) {
+      test('${code.name} → "$swedish"', () async {
+        when(
+          () => mockImportManager.autoImport(
+            any(),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              ImportManagerResult.failure('any English text', errorCode: code),
+        );
+        viewModel.updateInput('https://example.com');
+
+        final r = (await viewModel.startImport()) as ImportFailed;
+
+        expect(r.message, swedish);
+        expect(r.errorCode, code);
+        expect(
+          viewModel.error,
+          swedish,
+          reason: 'setError should mirror the localized message',
+        );
+      });
+    });
+
+    /// The words that USED to pick the text pick nothing now: a failure with
+    /// no code says what did not happen (P5-U06), whatever its message says.
+    for (final english in ['login required', 'no recipe found', 'OCR failed']) {
+      test('uncoded "$english" → "Receptet kunde inte importeras."', () async {
         when(
           () => mockImportManager.autoImport(
             any(),
@@ -609,19 +744,14 @@ void main() {
         viewModel.updateInput('https://example.com');
 
         final r = (await viewModel.startImport()) as ImportFailed;
-
-        expect(r.message, swedish);
-        expect(
-          viewModel.error,
-          swedish,
-          reason: 'setError should mirror the localized message',
-        );
+        expect(r.message, 'Receptet kunde inte importeras.');
+        expect(r.errorCode, isNull);
       });
-    });
+    }
 
     /// Null errorMessage (manager returned isSuccess=false with no detail)
-    /// must still produce a localized "unknown" failure, not surface null.
-    test('null error message → "Okänt fel"', () async {
+    /// must still say what did not happen: never "Okänt fel" alone (P5-U06).
+    test('null error message → "Receptet kunde inte importeras."', () async {
       when(
         () => mockImportManager.autoImport(
           any(),
@@ -631,7 +761,151 @@ void main() {
       viewModel.updateInput('https://example.com');
 
       final r = (await viewModel.startImport()) as ImportFailed;
-      expect(r.message, 'Okänt fel');
+      expect(r.message, 'Receptet kunde inte importeras.');
+    });
+  });
+
+  // P5-U06 (import-av-recept ERROR): a failure is three-part
+  // (content-style-guide.md:87-97) and draws the other routes it carries
+  // (produktregler.md:557, 9.2 Fel: availableStrategies "ritas").
+  group('startImport — the three-part failure', () {
+    void failWith(List<String>? strategies) {
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.failure(
+          'no recipe found',
+          availableStrategies: strategies,
+        ),
+      );
+    }
+
+    test('a link that failed keeps the link and offers photo, paste and '
+        'manual', () async {
+      failWith(const ['URL Import', 'Text Import', 'Photo Import']);
+      viewModel.updateInput('https://example.com/recept');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+        ImportRoute.manual,
+      ]);
+      expect(viewModel.failureRoutes, r.routes);
+      expect(viewModel.failurePreserved, 'Länken står kvar i fältet.');
+    });
+
+    test('pasted text is not offered pasting again', () async {
+      failWith(const ['Text Import', 'Photo Import']);
+      viewModel.updateInput('Pannkakor, 3 dl mjöl och 6 dl mjölk');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [ImportRoute.photo, ImportRoute.manual]);
+      expect(viewModel.failurePreserved, 'Texten står kvar i fältet.');
+    });
+
+    test('only the strategies the manager reported are drawn', () async {
+      failWith(const ['URL Import']);
+      viewModel.updateInput('https://example.com/recept');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [ImportRoute.manual]);
+    });
+
+    test('changing the input clears the routes and the kept line', () async {
+      failWith(const ['Photo Import']);
+      viewModel.updateInput('https://example.com/recept');
+      await viewModel.startImport();
+
+      viewModel.updateInput('https://example.com/annat');
+
+      expect(viewModel.failureRoutes, isEmpty);
+      expect(viewModel.failurePreserved, isNull);
+    });
+  });
+
+  // BUT-2168: the most helpful route stands first, by cause
+  // (flows-roles-budget.md, flow 03 `hämtar`).
+  group('startImport — the first route follows the cause', () {
+    const allStrategies = ['URL Import', 'Text Import', 'Photo Import'];
+    final cases = <ImportErrorCode?, List<ImportRoute>>{
+      ImportErrorCode.urlNotAccessible: [
+        ImportRoute.pasteText,
+        ImportRoute.photo,
+        ImportRoute.manual,
+      ],
+      ImportErrorCode.platformBlocked: [
+        ImportRoute.pasteText,
+        ImportRoute.photo,
+        ImportRoute.manual,
+      ],
+      ImportErrorCode.noRecipeContent: [
+        ImportRoute.manual,
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+      ],
+      ImportErrorCode.parsingFailed: [
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+        ImportRoute.manual,
+      ],
+      ImportErrorCode.unknown: [
+        ImportRoute.photo,
+        ImportRoute.pasteText,
+        ImportRoute.manual,
+      ],
+      null: [ImportRoute.photo, ImportRoute.pasteText, ImportRoute.manual],
+    };
+    cases.forEach((code, routes) {
+      test(
+        '${code?.name ?? 'no cause'} → ${routes.map((r) => r.name)}',
+        () async {
+          when(
+            () => mockImportManager.autoImport(
+              any(),
+              onProgress: any(named: 'onProgress'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.failure(
+              'any English text',
+              errorCode: code,
+              availableStrategies: allStrategies,
+            ),
+          );
+          viewModel.updateInput('https://example.com/recept');
+
+          final r = (await viewModel.startImport()) as ImportFailed;
+
+          expect(r.routes, routes);
+        },
+      );
+    });
+
+    test('a cause whose first route is not offered keeps the rest in '
+        'order', () async {
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.failure(
+          'any English text',
+          errorCode: ImportErrorCode.platformBlocked,
+          availableStrategies: const ['Text Import', 'Photo Import'],
+        ),
+      );
+      viewModel.updateInput('Pannkakor, 3 dl mjöl och 6 dl mjölk');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.routes, [ImportRoute.photo, ImportRoute.manual]);
     });
   });
 
@@ -652,7 +926,10 @@ void main() {
 
       expect(r, isA<ImportFailed>());
       expect(viewModel.phase, ImportPhase.error);
-      expect(viewModel.error, 'Import misslyckades');
+      // P5-U06: what happened, never the exception or a causeless line.
+      expect(viewModel.error, 'Receptet kunde inte importeras.');
+      expect((r as ImportFailed).message, 'Receptet kunde inte importeras.');
+      expect(viewModel.failureRoutes, contains(ImportRoute.manual));
     });
 
     /// Network-shaped exceptions must save the URL for retry-on-reconnect.
@@ -715,6 +992,9 @@ void main() {
 
     /// If manager.saveImportedRecipe returns failure (without throwing) the
     /// VM must convert it to ImportFailed and not pretend the save worked.
+    /// P5-U06: the manager's English never reaches the user, and the view
+    /// shows the failure as one snackbar with Försök igen, so no error line
+    /// is set as well.
     test('returns ImportFailed when save returns isSuccess=false', () async {
       when(
         () => mockImportManager.saveImportedRecipe(any()),
@@ -723,9 +1003,9 @@ void main() {
       final r = await viewModel.handleAssistedRecipe(RecipeFactory.build());
 
       expect(r, isA<ImportFailed>());
-      expect((r as ImportFailed).message, 'disk full');
+      expect((r as ImportFailed).message, 'Receptet kunde inte sparas.');
       expect(viewModel.phase, ImportPhase.error);
-      expect(viewModel.error, 'disk full');
+      expect(viewModel.error, isNull);
     });
 
     /// Thrown exceptions during save must localize the error (not leak
@@ -738,7 +1018,8 @@ void main() {
       final r = await viewModel.handleAssistedRecipe(RecipeFactory.build());
 
       expect(r, isA<ImportFailed>());
-      expect(viewModel.error, 'Kunde inte spara recept');
+      expect((r as ImportFailed).message, 'Receptet kunde inte sparas.');
+      expect(r.message, isNot(contains('Firebase')));
     });
   });
 
@@ -1174,63 +1455,6 @@ void main() {
       tracker.start();
       expect(tracker.isRunning, isTrue);
       tracker.dispose();
-    });
-  });
-
-  group('_localizeImportError pattern ordering — BUT-1145', () {
-    /// BUT-1145: A message like "could not save: network unreachable" matches
-    /// BOTH the generic network heuristic (contains "network") AND the
-    /// specific "could not save" branch. The specific branch must win,
-    /// otherwise users see "could not reach the page" when the real problem
-    /// is a save failure that happens to mention the word "network".
-    test('failure containing "could not save" + network word maps to '
-        'importErrorCouldNotSaveRecipe (not the network error)', () async {
-      when(
-        () => mockImportManager.autoImport(
-          any(),
-          onProgress: any(named: 'onProgress'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            ImportManagerResult.failure('could not save: network unreachable'),
-      );
-      viewModel.updateInput('https://example.com/recipe');
-
-      final r = (await viewModel.startImport()) as ImportFailed;
-
-      // Swedish copy: "Kunde inte spara receptet" — NOT a network error.
-      expect(
-        r.message,
-        'Kunde inte spara receptet',
-        reason:
-            'specific "could not save" pattern must precede the generic network heuristic',
-      );
-    });
-
-    /// Same shape for "could not read" + network word — the OCR/read branch
-    /// must win over the network branch.
-    test('failure containing "could not read" + network word maps to '
-        'importErrorCouldNotReadImage', () async {
-      when(
-        () => mockImportManager.autoImport(
-          any(),
-          onProgress: any(named: 'onProgress'),
-        ),
-      ).thenAnswer(
-        (_) async => ImportManagerResult.failure(
-          'could not read image: network timeout fetching OCR backend',
-        ),
-      );
-      viewModel.updateInput('https://example.com/recipe');
-
-      final r = (await viewModel.startImport()) as ImportFailed;
-
-      expect(
-        r.message,
-        'Kunde inte läsa texten i bilden',
-        reason:
-            'specific "could not read" pattern must precede the generic network heuristic',
-      );
     });
   });
 

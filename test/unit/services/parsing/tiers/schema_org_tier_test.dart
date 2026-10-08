@@ -33,6 +33,8 @@ import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/schema_org_tier.dart';
 
+import '../../../../fixtures/schema_org/instruction_shapes.dart';
+
 class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 /// Stub IngredientParsingStrategy that bypasses CRF loading entirely.
@@ -631,12 +633,20 @@ void main() {
       final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
       final result = await tier.parse(ctx);
 
-      // 2 section names + 3 nested step texts = 5 entries (section
-      // headers stay so the user keeps the structural cue).
       final steps = result.recipe!.instructions.value!;
       expect(steps, contains('Mix flour.'));
       expect(steps, contains('Knead.'));
       expect(steps, contains('Spread sauce.'));
+    });
+
+    test('reads the instruction shapes the shared way', () async {
+      final jsonLd =
+          '{"@type":"Recipe","name":"x","recipeIngredient":["1 c"],'
+          '"recipeInstructions":$instructionShapesJson}';
+      final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
+      final result = await tier.parse(ctx);
+
+      expect(result.recipe!.instructions.value, equals(instructionShapesSteps));
     });
 
     /// Numbered prefixes like "1. " / "2) " are duplicate to the list
@@ -876,6 +886,71 @@ void main() {
       },
     );
 
+    // BUT-2242, Malin 2026-10-06.
+    test(
+      'a lone ingredient word with a colon stays a row, colon stripped',
+      () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kaka",
+  "recipeIngredient": ["Mjölk:", "2 dl socker"],
+  "recipeInstructions": ["Baka."]
+}
+''');
+        await tier.parse(urlContextFor(html));
+
+        expect(strategy.receivedLines, ['Mjölk', '2 dl socker']);
+      },
+    );
+
+    test('a colon-stripped row under a heading keeps its group', () async {
+      final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kaka",
+  "recipeIngredient": ["Deg:", "Mjölk:", "2 dl socker"],
+  "recipeInstructions": ["Baka."]
+}
+''');
+      final result = await tier.parse(urlContextFor(html));
+
+      expect(strategy.receivedLines, ['Mjölk', '2 dl socker']);
+      expect(result.recipe!.ingredients.value!.map((i) => i.section), [
+        'Deg',
+        'Deg',
+      ]);
+    });
+
+    test(
+      'a generic block marker entry ("Ingredienser") is dropped and clears '
+      'the group',
+      () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kanelbullar",
+  "recipeIngredient": [
+    "Ingredienser",
+    "Deg:",
+    "5 dl vetemjol",
+    "Ingredienser:",
+    "25 g jast"
+  ],
+  "recipeInstructions": ["Baka."]
+}
+''');
+        final result = await tier.parse(urlContextFor(html));
+
+        expect(result.success, isTrue);
+        expect(strategy.receivedLines, ['5 dl vetemjol', '25 g jast']);
+        expect(
+          result.recipe!.ingredients.value!.map((i) => i.section),
+          ['Deg', null],
+        );
+      },
+    );
+
     test(
       'a bare ingredient (no colon, not vocab) is NEVER dropped as heading',
       () async {
@@ -970,6 +1045,38 @@ void main() {
         }
         ServiceLocator.reset();
       });
+
+      test('capture off ⇒ a block title entry still leaves the list', () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Sas",
+  "recipeIngredient": ["Ingredienser", "Deg:", "2 dl gradde"],
+  "recipeInstructions": ["Koka."]
+}
+''');
+        await tier.parse(urlContextFor(html));
+
+        expect(strategy.receivedLines, ['Deg:', '2 dl gradde']);
+      });
+
+      // BUT-2242: off means "no grouping", never "lose an allergen".
+      test(
+        'capture off ⇒ "Mjölk:" is still forwarded colon-stripped',
+        () async {
+          final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Sas",
+  "recipeIngredient": ["Mjölk:", "2 dl gradde"],
+  "recipeInstructions": ["Koka."]
+}
+''');
+          await tier.parse(urlContextFor(html));
+
+          expect(strategy.receivedLines, ['Mjölk', '2 dl gradde']);
+        },
+      );
 
       test(
         'capture off ⇒ heading lines pass through as ingredients (today)',

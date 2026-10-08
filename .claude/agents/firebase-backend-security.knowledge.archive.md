@@ -11012,3 +11012,87 @@ writers (`shopping_item_operations_module.dart`, `shopping_repository_query_modu
 `firebase_data_export_repository.dart`) — none under `shared_content` — consistent with the
 BUT-1716 deviation that the shared-list item subcollection API is gone. No Firestore
 behaviour, rules or audit change. Verdict pass. No new principle.
+
+## 2026-10-02 — BUT-2151 second gate round (realtime_resources Art. 15/17)
+
+Files: `live_menu_export.dart` (new), `firebase_data_export_repository.dart`,
+`content_export_manager.dart`, `data_export_service.dart`, `account-deletion-cascade.ts`,
+both accepted-deviation files. Cascade leg `deleteRealtimeResources` (owned delete, last-editor
+scrub, roster leave on participantIds+participants together) and three probe legs mirror
+`realtime_menus`; export probes `ownerId ==` and `participantIds array-contains`, both proven
+by the read rule field-to-field. No subcollection blocks under `realtime_resources`, so the
+presence/votes child sweep reads empty.
+BLOCKING: `LiveMenuExport.dropOtherPeoplesNames` strips only top-level
+`ownerDisplayName`/`lastEditedByDisplayName`. `menuSnapshot` is
+`RealtimeMenuData.toFirestore` -> `recipe.toFirestore()` per dish -> `socialData.toJson()`
+(`ownerDisplayName`) and `realtimeData.toJson()` (`lastEditedByDisplayName`).
+`RecipeFactory.createCollaborative` stamps `socialData.ownerDisplayName` with the creator's
+name, so a live menu holding the owner's collaborative recipe ships the owner's name nested
+in every participant's export while the top-level copy is stripped (ADR-0023 decision 2).
+The drift test seeds `menuSnapshot: const {}`. The same nested copies are reached by no
+erasure handle and no rename propagation (Medium). Also noted: the third accepted-deviation
+entry (editor can forge cached names) is not in the plan's step-8 list.
+Re-review same day: `LiveMenuExport.minimise` now walks `menuSnapshot` with `dishNameKeys`
+(socialData.ownerDisplayName/ownerId, realtimeData.lastEditedByDisplayName/lastEditedByUserId),
+withholds a non-map snapshot, and the drift test walks every `*DisplayName` path of a menu with
+a populated dish. Nested erasure gap filed as BUT-2214; the unplanned deviation entry removed.
+Verdict pass.
+
+## 2026-10-05 — BUT-2240 file import through ImportManager.importFile (review, pass)
+
+Scope given: import_manager.dart, import_event.dart, file_import_strategy.dart, the three
+analytics repository files (logManualCopyFallback removal only), log-parse-event.ts
+(VALID_STRATEGIES gains "file"). Staged index held 62 files; only the seven named were graded.
+Order in importFile: pickFile -> cancel returns before any limiter read -> checkLimit(basic('auto'))
+-> denial returns before _record -> importPicked -> one _record (parse event + recordUsage +
+analytics). ImportRateLimiter's counters are source-agnostic: ImportOperation.sourceType reaches
+only a debug log line in recordUsage, so basic('file') bills the same ceilings as other channels.
+A picker throw propagates to FileImportViewModel's catch and writes nothing. The file event
+payload carries no file name, no url, no domain (channel != link, so countsForSite is false);
+daily-snapshots buckets it under domain "unknown" like text/photo/voice since BUT-2238.
+Analytics import_started/import_success go through ImportEventsTracker.hasAnalyticsConsent and
+carry only channel.name. parse_events residual on erasure is BUT-1570 (accepted). Dart
+strategyIds and TS VALID_STRATEGIES compared by hand: equal sets. No strategyName other than
+the file strategy contains "file". Tests not executed: no flutter binary, no functions/node_modules.
+
+## 2026-10-07 — BUT-2090 part 2, offline departure wording (review, pass)
+
+Staged: OfflineAccessControlChangeException (PermissionDeniedException subtype, no toString
+override) thrown by ShoppingOfflineWriteModule.narrowUpdatePayload's cached-base refusal in
+place of the plain parent; shoppingFailureMessage gains an arm ahead of PermissionDeniedException
+mapping it to errorNetwork. Audit row (granted:false, before the throw) and the refusal predicate
+(privileged key in payload && baseIsCached) unchanged. Exact-type decisions: grep of lib for
+runtimeType / `PermissionDeniedException()` patterns found no security decision on the exact
+type; `is`/`on PermissionDeniedException` sites (queue_retry_policy, repositories, VMs) all hold
+for a subtype. runtimeType-keyed strings that WOULD change: queueErrorCode (offline queue, which
+carries no shopping lists per BUT-2162 F3-1) and AppLogger's analytics callback (dormant, and a
+class name is not personal data). Sinks: the parent's toString hardcodes the
+'PermissionDeniedException: ' label rather than reading runtimeType, so the subtype's text is
+byte-identical in developer.log, Crashlytics and the web reporter; on this path the only sink is
+AppLogger.warning in UnifiedShoppingService (device-local). Side effect worth knowing: logs
+cannot tell the offline refusal from a real denial by label. Both membership service paths
+(updateSharedListMembership, leaveSharedList) word failures through shoppingFailureMessage.
+Tests: the service suite's offline case reddens if the arm is removed or moved below the parent.
+Not executed by this reviewer (caller reported analyze clean, shopping suites green).
+
+## 2026-10-08 — BUT-2140 PR 5 (pantry Återställ), commit c0156b91a vs 85b1f4d2e
+
+Reviewed FirebasePantryRepository.updateFields(before:), PantryPreviousVersion, PantryItem
+.storedValues/.withPreviousRestored, PantryService.updateItem/restorePrevious,
+PantryViewModel.restorePrevious, rules test P8. Ownership: unchanged structural path
+users/{userId}/pantry with userId from PermissionService.currentUserId; rules
+(pantryWriteValid, firestore.rules ~745-761) pin auth.uid == userId and updatedBy == userId;
+no hasOnly, so `previous` needs no rules change and P8 is an allow-only regression pin
+(a future hasOnly lacking 'previous' would redden it). Repo has no PermissionValidationMixin
+— pre-existing, not introduced; its class comment explains not extending
+BaseFirebaseRepository, not the mixin's absence. uid: restorableKeys filters on write
+(storedValues) and read (fromMap); changes keys come only from changesFrom/restoreChanges,
+so no uid path; the repo test "without a uid" passes vacuously for the write filter (its
+change map cannot carry updatedBy). Null markers: toFirestore always emits ingredientName/unit/
+location/quantity-key, so app-written markers only ever land on nullable fields
+(ingredientId, quantity, expiryDate, note, isStaple), where delete == absent on read.
+Art. 15: content_export_manager exportPantryItems -> sanitizeForJson recurses maps,
+Timestamp->string; holds. Art. 17: deletePantryItems (cascade) and client deleteAll delete
+whole docs; holds. Retention: comment + commit message cite "Malin 2026-10-08" for an older
+version staying in the document past 30 days with no nightly job; no entry in
+ACCEPTED_DEVIATIONS.md or accepted-deviations*.md at review time — flagged Medium.

@@ -10,13 +10,24 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/social/public_profile_friend_button.dart';
+import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 class PublicProfileView extends StatefulWidget {
   final String userId;
@@ -29,23 +40,38 @@ class PublicProfileView extends StatefulWidget {
 
 class _PublicProfileViewState extends State<PublicProfileView> {
   late final PublicProfileViewModel _vm;
+  late final FriendsViewModel _friends;
+  late final UnifiedFriendsService _friendsService;
 
   @override
   void initState() {
     super.initState();
     _vm = PublicProfileViewModel(userId: widget.userId);
+    _friends = ServiceLocator.get<FriendsViewModel>();
+    _friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    if (!_friendsService.isInitialized) {
+      // Until the lists load the friend button stays hidden.
+      _friendsService.initialize().catchError(
+        (Object e) => AppLogger.warning('Friends load for profile failed: $e'),
+      );
+    }
   }
 
   @override
   void dispose() {
     _vm.dispose();
+    _friends.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<PublicProfileViewModel>.value(
-      value: _vm,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PublicProfileViewModel>.value(value: _vm),
+        ChangeNotifierProvider<FriendsViewModel>.value(value: _friends),
+        Provider<UnifiedFriendsService>.value(value: _friendsService),
+      ],
       child: const _PublicProfileContent(),
     );
   }
@@ -57,13 +83,16 @@ class _PublicProfileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<PublicProfileViewModel>();
-    final cs = Theme.of(context).colorScheme;
+    final friends = context.watch<FriendsViewModel>();
+    final profile = vm.profile;
+    final isOwnProfile = friends.currentUserId == vm.userId;
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
-        title: vm.profile?.displayName ?? context.l10n.publicProfileTitle,
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
+      appBar: ButleryTopBar.undersida(
+        title: profile?.displayName ?? context.l10n.publicProfileTitle,
+        actions: [
+          if (profile != null && !isOwnProfile) _MoreActions(profile: profile),
+        ],
       ),
       body: SafeArea(
         child: Center(
@@ -79,7 +108,7 @@ class _PublicProfileContent extends StatelessWidget {
             child: Column(
               children: [
                 LayoutComponents.offlineIndicator(),
-                Expanded(child: _buildBody(context, vm)),
+                Expanded(child: _buildBody(context, vm, friends)),
               ],
             ),
           ),
@@ -88,9 +117,13 @@ class _PublicProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, PublicProfileViewModel vm) {
+  Widget _buildBody(
+    BuildContext context,
+    PublicProfileViewModel vm,
+    FriendsViewModel friends,
+  ) {
     if (vm.isLoading) {
-      return StateWidget.loading(message: context.l10n.commonLoading);
+      return StateWidget.loading(message: context.l10n.loadingProfile);
     }
 
     if (vm.hasError) {
@@ -117,6 +150,15 @@ class _PublicProfileContent extends StatelessWidget {
           children: [
             _ProfileHeader(profile: profile),
             const SizedBox(height: AppDimensions.spacingL),
+            PublicProfileFriendButton(
+              profile: profile,
+              isSearchable: vm.isSearchable,
+              friends: friends,
+              friendsLoaded: context
+                  .read<UnifiedFriendsService>()
+                  .isInitialized,
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
             _ProfileStats(profile: profile),
             const SizedBox(height: AppDimensions.spacingL),
             _PublicRecipesSection(
@@ -125,6 +167,36 @@ class _PublicProfileContent extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// "Fler åtgärder" in the top bar, as #publikprofil draws it: Rapportera.
+class _MoreActions extends StatelessWidget {
+  final UserProfile profile;
+
+  const _MoreActions({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        tooltip: context.l10n.bulkMoreActions,
+        onSelected: (_) => ReportContentDialog.show(
+          context: context,
+          contentType: ContentType.profile,
+          contentId: profile.uid,
+          contentOwnerId: profile.uid,
+        ),
+        itemBuilder: (context) => [
+          ButleryMenuItem(
+            value: 'report',
+            child: Text(context.l10n.reportContent),
+          ),
+        ],
       ),
     );
   }
@@ -196,12 +268,16 @@ class _CookingSkillBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.restaurant, size: 16, color: cs.onPrimaryContainer),
+          ButleryIcon(
+            ButleryIcons.utensils,
+            size: 16,
+            color: cs.onPrimaryContainer,
+          ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label,
@@ -239,15 +315,15 @@ class _ProfileStats extends StatelessWidget {
               StatItemWidget(
                 label: context.l10n.socialFriends,
                 value: '${profile.friendsCount}',
-                icon: Icons.people,
-                color: cs.primary,
+                icon: ButleryIcons.users,
+                color: cs.onSurface,
                 labelColor: cs.onSurfaceVariant,
               ),
               StatItemWidget(
                 label: context.l10n.publicProfilePublicRecipes,
                 value: '${profile.publicRecipeCount}',
-                icon: Icons.restaurant_menu,
-                color: cs.primary,
+                icon: ButleryIcons.utensils,
+                color: cs.onSurface,
                 labelColor: cs.onSurfaceVariant,
               ),
             ],
@@ -272,7 +348,7 @@ class _PublicRecipesSection extends StatelessWidget {
     if (!hasRecipes) {
       return StateWidget.empty(
         title: context.l10n.publicProfileEmpty,
-        icon: Icons.restaurant_menu,
+        icon: ButleryIcons.utensils,
       );
     }
 
@@ -318,7 +394,7 @@ class _PublicRecipeCard extends StatelessWidget {
                 arguments: recipe,
               );
             },
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingM),
               child: Row(
@@ -326,7 +402,7 @@ class _PublicRecipeCard extends StatelessWidget {
                   // Recipe image or placeholder
                   ClipRRect(
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                     child: SizedBox(
                       width: 64,
@@ -369,8 +445,8 @@ class _PublicRecipeCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
+                  ButleryIcon(
+                    ButleryIcons.chevronRight,
                     color: cs.onSurfaceVariant,
                   ),
                 ],
@@ -386,8 +462,8 @@ class _PublicRecipeCard extends StatelessWidget {
     return ColoredBox(
       color: cs.surfaceContainerHighest,
       child: Center(
-        child: Icon(
-          Icons.restaurant_menu,
+        child: ButleryIcon(
+          ButleryIcons.utensils,
           color: cs.onSurfaceVariant,
         ),
       ),

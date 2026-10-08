@@ -30,7 +30,9 @@ class RealtimeMenuFactory {
     String? originalPrompt,
     DateTime? createdForDate,
   }) {
-    final id = const Uuid().v4();
+    // The rules accept a realtime_resources id only when it starts with the
+    // owner's uid (BUT-2151), so no one can claim another person's id.
+    final id = '${ownerId}_${const Uuid().v4()}';
     final now = clock.now();
 
     // Build participants map

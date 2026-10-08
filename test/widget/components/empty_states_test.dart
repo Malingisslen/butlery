@@ -3,12 +3,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('EmptyStates.buildEmptyState', () {
@@ -40,16 +42,16 @@ void main() {
               ctx,
               variant: null,
               title: 'Test',
-              icon: Icons.favorite,
+              icon: ButleryIcons.heart,
             ),
           ),
         ),
       );
 
-      expect(find.byIcon(Icons.favorite), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.heart), findsOneWidget);
     });
 
-    testWidgets('hides icon when Icons.clear is passed', (tester) async {
+    testWidgets('hides icon when ButleryIcons.x is passed', (tester) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(
@@ -57,13 +59,13 @@ void main() {
               ctx,
               variant: null,
               title: 'No Icon',
-              icon: Icons.clear,
+              icon: ButleryIcons.x,
             ),
           ),
         ),
       );
 
-      expect(find.byType(Icon), findsNothing);
+      expect(find.byType(ButleryIcon), findsNothing);
       expect(find.text('No Icon'), findsOneWidget);
     });
 
@@ -191,7 +193,7 @@ void main() {
               ctx,
               variant: null,
               title: 'Test',
-              icon: Icons.error,
+              icon: ButleryIcons.triangleAlert,
               iconColor: Colors.red,
               iconSize: 100.0,
             ),
@@ -199,7 +201,7 @@ void main() {
         ),
       );
 
-      final icon = tester.widget<Icon>(find.byIcon(Icons.error));
+      final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.triangleAlert));
       expect(icon.color, equals(Colors.red));
       expect(icon.size, equals(100.0));
     });
@@ -301,7 +303,7 @@ void main() {
       );
 
       expect(find.byType(VegetableIllustration), findsNothing);
-      expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
     });
   });
 }

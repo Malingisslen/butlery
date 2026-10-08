@@ -1,12 +1,16 @@
 // lib/widgets/social/collaborative/components/collaborative_status_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
 
 /// Status badges, banners, and app bars for collaborative content
@@ -14,36 +18,36 @@ class CollaborativeStatusWidgets {
   /// Compact badge to show that content is shared/collaborative
   static Widget statusBadge({
     String? text,
-    IconData icon = Icons.people,
+    IconData icon = ButleryIcons.users,
     Color? color,
     EdgeInsets? padding,
+    bool onInk = false,
   }) {
     return Builder(
       builder: (context) {
-        final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
+        final cs = Theme.of(context).colorScheme;
+        final effectiveColor = color ?? (onInk ? cs.onPrimary : cs.onSurface);
 
         return Container(
           padding:
               padding ??
               const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingS,
+                horizontal: AppDimensions.space4,
                 vertical: AppDimensions.spacingXs,
               ),
           decoration: BoxDecoration(
-            color: effectiveColor.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
-            borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+            color: onInk
+                ? AppModeColors.surfaceRaisedOnInk()
+                : cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             border: Border.all(
-              color: effectiveColor.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: onInk ? AppModeColors.borderOnInk() : cs.outlineVariant,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeM,
                 color: effectiveColor,
@@ -76,9 +80,7 @@ class CollaborativeStatusWidgets {
     return Builder(
       builder: (builderContext) {
         final cs = Theme.of(builderContext).colorScheme;
-        final bgColor =
-            backgroundColor ??
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight);
+        final bgColor = backgroundColor ?? cs.surfaceContainerHighest;
 
         return Container(
           width: double.infinity,
@@ -86,11 +88,7 @@ class CollaborativeStatusWidgets {
           decoration: BoxDecoration(
             color: bgColor,
             border: Border(
-              bottom: BorderSide(
-                color: cs.primary.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
+              bottom: BorderSide(color: cs.outlineVariant),
             ),
           ),
           child: Semantics(
@@ -98,15 +96,15 @@ class CollaborativeStatusWidgets {
             button: onTap != null,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.people,
-                    color: cs.primary,
+                  ButleryIcon(
+                    ButleryIcons.users,
+                    color: cs.onSurface,
                     size: AppDimensions.iconSizeAction,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,13 +112,13 @@ class CollaborativeStatusWidgets {
                         Text(
                           title,
                           style: AppTextStyles.bodyLargeBold.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                         Text(
                           subtitle,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                       ],
@@ -140,10 +138,10 @@ class CollaborativeStatusWidgets {
                     trailing
                   // LAST FALLBACK - show just an icon
                   else
-                    Icon(
-                      Icons.people_outline,
+                    ButleryIcon(
+                      ButleryIcons.users,
                       size: AppDimensions.iconSizeL,
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                 ],
               ),
@@ -268,18 +266,17 @@ class _CollaborativeAppBar extends StatelessWidget
         final participants = status.participants;
 
         final cs = Theme.of(context).colorScheme;
-        return AppBar(
-          title: Text(title ?? context.l10n.collaborativeContent),
-          backgroundColor: isCollaborative
-              ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-              : null,
-          elevation: isCollaborative ? 2 : null,
+        // The subpage bar (Komponentark v1 §01 pattern 2; B-45). Shared
+        // content no longer tints the bar: the badge carries it, as in the
+        // recipe editor (P4-U07; tokens.json:40-53).
+        return ButleryTopBar.undersida(
+          title: title ?? context.l10n.collaborativeContent,
           actions: [
             // Show collaborative badge if content is collaborative
             if (isCollaborative) ...[
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingS,
+                  end: AppDimensions.space4,
                 ),
                 child: Center(
                   child: Tooltip(
@@ -292,8 +289,10 @@ class _CollaborativeAppBar extends StatelessWidget
                       text: participants.isNotEmpty
                           ? '${participants.length}'
                           : context.l10n.collaborativeShared,
-                      icon: Icons.people,
-                      color: cs.primary,
+                      icon: ButleryIcons.users,
+                      // Paper on the ink bar (onPrimary, both schemes).
+                      color: cs.onPrimary,
+                      onInk: true,
                     ),
                   ),
                 ),
@@ -309,5 +308,6 @@ class _CollaborativeAppBar extends StatelessWidget
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize =>
+      const ButleryTopBar.undersida(title: '').preferredSize;
 }

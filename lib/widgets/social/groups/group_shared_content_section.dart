@@ -1,8 +1,11 @@
 // lib/widgets/social/groups/group_shared_content_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
@@ -13,8 +16,8 @@ import 'package:butlery/widgets/social/groups/shared_content_card.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Section widget displaying shared content (recipes, menus, shopping lists) for a group
@@ -35,12 +38,31 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late GroupSharedContentService _contentService;
+  late Stream<List<SharedContentItem>> _recipes;
+  late Stream<List<SharedContentItem>> _menus;
+  late Stream<List<SharedContentItem>> _shoppingLists;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _contentService = ServiceLocator.get<GroupSharedContentService>();
+    _subscribe();
+  }
+
+  // Built once per group, not in build(): a stream made inside build() is a
+  // new subscription on every rebuild, and each emission from the outer
+  // stream re-subscribed the inner two (BUT-2271).
+  void _subscribe() {
+    _recipes = _contentService.streamSharedRecipes(widget.group);
+    _menus = _contentService.streamSharedMenus(widget.group);
+    _shoppingLists = _contentService.streamSharedShoppingLists(widget.group);
+  }
+
+  @override
+  void didUpdateWidget(GroupSharedContentSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.group.id != widget.group.id) _subscribe();
   }
 
   @override
@@ -98,11 +120,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         _showShoppingListDetailsDialog(item);
         break;
       default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupViewNotImplemented(item.title)),
-            backgroundColor: context.butleryColors.info,
-          ),
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.groupViewNotImplemented(item.title),
         );
     }
   }
@@ -120,11 +140,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         _importShoppingList(item);
         break;
       default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupImportNotImplemented(item.title)),
-            backgroundColor: context.butleryColors.warning,
-          ),
+        SnackBarUtils.showWarning(
+          context,
+          context.l10n.groupImportNotImplemented(item.title),
         );
     }
   }
@@ -138,11 +156,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedMenu == null) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupCouldNotFetchMenu),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupCouldNotFetchMenu,
         );
         return;
       }
@@ -155,12 +171,11 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ),
       );
     } catch (e) {
+      AppLogger.error('Could not open the shared menu', e);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupErrorOpeningMenu(e.toString())),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.groupMenuOpenFailed,
       );
     }
   }
@@ -174,7 +189,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedRecipe == null) {
         if (!mounted) return;
-        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchRecipe);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupCouldNotFetchRecipe,
+        );
         return;
       }
 
@@ -186,31 +204,28 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ),
       );
     } catch (e) {
+      AppLogger.error('Could not open the shared recipe', e);
       if (!mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupErrorOpeningRecipe(e.toString()),
+        what: context.l10n.groupRecipeOpenFailed,
       );
     }
   }
 
   void _showShoppingListDetailsDialog(SharedContentItem item) {
     // Placeholder for shopping list details
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.groupShoppingListViewComingSoon(item.title)),
-        backgroundColor: context.butleryColors.info,
-      ),
+    SnackBarUtils.showInfo(
+      context,
+      context.l10n.groupShoppingListViewComingSoon(item.title),
     );
   }
 
   Future<void> _importMenu(SharedContentItem item) async {
     // Placeholder for menu import functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.groupImportingMenuComingSoon(item.title)),
-        backgroundColor: context.butleryColors.success,
-      ),
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.groupImportingMenuComingSoon(item.title),
     );
   }
 
@@ -223,7 +238,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedRecipe == null) {
         if (!mounted) return;
-        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchRecipe);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupCouldNotFetchRecipe,
+        );
         return;
       }
 
@@ -235,36 +253,33 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         context.l10n.groupRecipeImportedSuccess(item.title),
       );
     } catch (e) {
+      AppLogger.error('Could not import the shared recipe', e);
       if (!mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.groupRecipeImportFailed(e.toString()),
+        what: context.l10n.errorCouldNotImportRecipes,
       );
     }
   }
 
   Future<void> _importShoppingList(SharedContentItem item) async {
     // Placeholder for shopping list import functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.l10n.groupImportingShoppingListComingSoon(item.title),
-        ),
-        backgroundColor: context.butleryColors.success,
-      ),
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.groupImportingShoppingListComingSoon(item.title),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<SharedContentItem>>(
-      stream: _contentService.streamSharedRecipes(widget.group),
+      stream: _recipes,
       builder: (context, recipesSnapshot) {
         return StreamBuilder<List<SharedContentItem>>(
-          stream: _contentService.streamSharedMenus(widget.group),
+          stream: _menus,
           builder: (context, menusSnapshot) {
             return StreamBuilder<List<SharedContentItem>>(
-              stream: _contentService.streamSharedShoppingLists(widget.group),
+              stream: _shoppingLists,
               builder: (context, shoppingListsSnapshot) {
                 // Get data from snapshots or empty lists
                 final recipes = recipesSnapshot.data ?? [];
@@ -276,6 +291,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                   shoppingLists,
                 );
 
+                if (recipesSnapshot.hasError ||
+                    menusSnapshot.hasError ||
+                    shoppingListsSnapshot.hasError) {
+                  return StateWidget.error(
+                    message: context.l10n.groupSharedContentLoadFailed,
+                    onAction: () => setState(_subscribe),
+                  );
+                }
+
                 // Show loading if any stream is still loading
                 final isLoading =
                     !recipesSnapshot.hasData ||
@@ -283,10 +307,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                     !shoppingListsSnapshot.hasData;
 
                 if (isLoading) {
-                  return const Center(
+                  // The plate line with what is fetched (B-18).
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(AppDimensions.paddingXl),
-                      child: LoadingIndicator(),
+                      padding: EdgeInsets.all(
+                        AppDimensions.layoutMarginOf(context),
+                      ),
+                      child: PlateLineMessage(
+                        message: context.l10n.sharedLoadingContent,
+                      ),
                     ),
                   );
                 }
@@ -302,7 +331,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                           style: AppTextStyles.titleBold,
                         ),
                         if (totalItems > 0) ...[
-                          const SizedBox(width: AppDimensions.spacingS),
+                          const SizedBox(width: AppDimensions.space4),
                           Builder(
                             builder: (context) {
                               final cs = Theme.of(context).colorScheme;
@@ -312,17 +341,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                                   vertical: AppDimensions.spacingXs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: cs.primary.withValues(
-                                    alpha: AppDimensions.opacityVeryLight,
-                                  ),
+                                  color: cs.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(
-                                    AppDimensions.borderRadiusS,
+                                    AppDimensions.radiusControl,
                                   ),
                                 ),
                                 child: Text(
                                   totalItems.toString(),
                                   style: AppTextStyles.labelLarge.copyWith(
-                                    color: cs.primary,
+                                    color: cs.onSurface,
                                   ),
                                 ),
                               );
@@ -341,34 +368,39 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                           decoration: BoxDecoration(
                             color: cs.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM,
+                              AppDimensions.radiusControl,
                             ),
                           ),
                           child: TabBar(
+                            // Tabs carry the canonical ring (ButleryTab), never a focus tint
+                            // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+                            overlayColor: ButleryControlFocus.withoutFocusTint(
+                              null,
+                            ),
                             controller: _tabController,
-                            indicatorColor: cs.primary,
-                            labelColor: cs.primary,
+                            indicatorColor: cs.onSurface,
+                            labelColor: cs.onSurface,
                             unselectedLabelColor: cs.onSurfaceVariant,
                             tabs: [
-                              Tab(
-                                icon: const Icon(
-                                  Icons.restaurant_menu,
+                              ButleryTab(
+                                icon: const ButleryIcon(
+                                  ButleryIcons.utensils,
                                   size: AppDimensions.iconSizeM,
                                 ),
                                 text:
                                     '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
                               ),
-                              Tab(
-                                icon: const Icon(
-                                  Icons.calendar_today,
+                              ButleryTab(
+                                icon: const ButleryIcon(
+                                  ButleryIcons.calendar,
                                   size: AppDimensions.iconSizeM,
                                 ),
                                 text:
                                     '${context.l10n.groupTabMenus} (${menus.length})',
                               ),
-                              Tab(
-                                icon: const Icon(
-                                  Icons.shopping_cart,
+                              ButleryTab(
+                                icon: const ButleryIcon(
+                                  ButleryIcons.shoppingCart,
                                   size: AppDimensions.iconSizeM,
                                 ),
                                 text:
@@ -391,19 +423,19 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                             recipes,
                             context.l10n.groupNoRecipesShared,
                             context.l10n.groupNoRecipesSharedSubtitle,
-                            Icons.restaurant_menu_outlined,
+                            ButleryIcons.utensils,
                           ),
                           _buildTabContent(
                             menus,
                             context.l10n.groupNoMenusShared,
                             context.l10n.groupNoMenusSharedSubtitle,
-                            Icons.calendar_today_outlined,
+                            ButleryIcons.calendar,
                           ),
                           _buildTabContent(
                             shoppingLists,
                             context.l10n.groupNoShoppingListsShared,
                             context.l10n.groupNoShoppingListsSharedSubtitle,
-                            Icons.shopping_cart_outlined,
+                            ButleryIcons.shoppingCart,
                           ),
                         ],
                       ),

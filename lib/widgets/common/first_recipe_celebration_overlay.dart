@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -44,7 +45,7 @@ class FirstRecipeCelebrationOverlay extends StatefulWidget {
       },
       transitionDuration: AnimationUtils.getDuration(
         context,
-        const Duration(milliseconds: 300),
+        AppMotion.standard,
       ),
     );
   }
@@ -91,7 +92,7 @@ class _FirstRecipeCelebrationOverlayState
                 Text(
                   l10n.celebrationFirstRecipeTitle,
                   style: AppTextStyles.headlineBold.copyWith(
-                    color: cs.surface,
+                    color: cs.onPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -99,7 +100,7 @@ class _FirstRecipeCelebrationOverlayState
                 Text(
                   l10n.celebrationFirstRecipeMessage(widget.recipeTitle),
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.surface,
+                    color: cs.onPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),

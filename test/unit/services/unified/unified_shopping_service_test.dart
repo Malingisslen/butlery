@@ -105,6 +105,10 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   final List<List<UnifiedShoppingItem>> updatedBatches = [];
   final List<List<UnifiedShoppingItem>> batchedItems = [];
   final List<String> removedItemIds = [];
+
+  /// BUT-2140: what each call handed over as the row's earlier copy.
+  final List<UnifiedShoppingItem?> updateBefores = [];
+  final List<UnifiedShoppingItem?> removedRows = [];
   final List<List<String>> removedBatches = [];
 
   void seed(UnifiedShoppingList list) => _lists[list.id] = list;
@@ -176,9 +180,14 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async {
     if (throwOnUpdateItem != null) throw throwOnUpdateItem!;
     updatedItems.add(item);
+    updateBefores.add(before);
   }
 
   @override
@@ -192,13 +201,22 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> removeItem(String listId, String itemId) async {
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async {
     if (throwOnRemoveItem != null) throw throwOnRemoveItem!;
     removedItemIds.add(itemId);
+    removedRows.add(removed);
   }
 
   @override
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async {
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async {
     if (throwOnRemoveItemsBatch != null) throw throwOnRemoveItemsBatch!;
     removedBatches.add(itemIds);
   }
@@ -1364,6 +1382,42 @@ void main() {
         expect(service.error, isNull);
       },
     );
+
+    /// BUT-2090: offline, a departure is refused until a server read, and the
+    /// reason must name the connection. Before this the user was told they
+    /// lacked permission to edit the list, on a button that says "Lämna listan".
+    /// The case above is the control: same path, a plain denial, a different
+    /// sentence.
+    test('an offline departure is worded as a connection problem', () async {
+      final list = await seedShared();
+      fakeRepo.throwOnMembership = OfflineAccessControlChangeException(
+        'offline',
+        resource: 'collaborative_list:${list.id}',
+        userId: 'u',
+      );
+
+      expect(await service.leaveSharedList(list, list), isFalse);
+      final reason = service.consumeMutationError();
+      expect(reason, AppLocale.current.errorNetwork);
+      expect(reason, isNot(AppLocale.current.shoppingNoEditPermissionShared));
+    });
+
+    /// The plain denial keeps the permission sentence, so the arm above cannot
+    /// be satisfied by mapping every denial to the network message.
+    test('a plain refused departure keeps the permission sentence', () async {
+      final list = await seedShared();
+      fakeRepo.throwOnMembership = PermissionDeniedException(
+        'nope',
+        resource: 'collaborative_list:${list.id}',
+        userId: 'u',
+      );
+
+      expect(await service.leaveSharedList(list, list), isFalse);
+      expect(
+        service.consumeMutationError(),
+        AppLocale.current.shoppingNoEditPermissionShared,
+      );
+    });
 
     /// Control for the case above: a successful departure records nothing, so
     /// the reason cannot be something the path always parks.

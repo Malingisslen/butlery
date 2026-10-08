@@ -215,7 +215,17 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   FriendsManagementOperations get management => _managementOps;
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
-  Future<void> initialize() async {
+  Future<void>? _initializing;
+
+  /// Share dialogs await this when they open, so it runs once and later
+  /// callers share the same load instead of repeating its reads and writes.
+  Future<void> initialize() =>
+      _initializing ??= _initializeOnce().catchError((Object e, StackTrace st) {
+        _initializing = null;
+        Error.throwWithStackTrace(e, st);
+      });
+
+  Future<void> _initializeOnce() async {
     AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
 
     // Set up auth state change listener (CRITICAL FIX for authentication bug)
@@ -225,7 +235,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
         if (user != null) {
           // User logged in - reload friends data
           AppLogger.info(
-            '🔄 User logged in - reloading friends data for: ${user.uid}',
+            '🔄 User logged in - reloading friends data for: ${user.uid.maskedUserId}',
           );
           await _stateManager.initialize();
 
@@ -496,7 +506,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   void addOutgoingRequestInternal(FriendRequest request) {
     _stateManager.addOutgoingRequest(request);
     AppLogger.debug(
-      '✅ Added outgoing request to ${request.toUserId} via state manager',
+      '✅ Added outgoing request to ${request.toUserId.maskedUserId} via state manager',
     );
   }
 
@@ -510,7 +520,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   void addIncomingRequestInternal(FriendRequest request) {
     _stateManager.addIncomingRequest(request);
     AppLogger.debug(
-      '✅ Added incoming request from ${request.fromUserId} via state manager',
+      '✅ Added incoming request from ${request.fromUserId.maskedUserId} via state manager',
     );
   }
 

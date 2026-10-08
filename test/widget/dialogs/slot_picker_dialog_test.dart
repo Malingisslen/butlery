@@ -5,6 +5,8 @@
 // payload — plus the single-select regression (one tap pops immediately,
 // exactly the BUT-1029 behavior the bulk-add flow depends on).
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -14,11 +16,15 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 
 class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
 
@@ -166,6 +172,48 @@ void main() {
     });
   });
 
+  testWidgets('while the week loads: the plate line and what is fetched, '
+      'never a spinner (P7-B4, B-18)', (tester) async {
+    final gate = Completer<WeeklyMenuPlanRead>();
+    when(() => planService.readWeek(any())).thenAnswer((_) => gate.future);
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => Center(
+            child: ElevatedButton(
+              onPressed: () => showSlotPickerDialog(context),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(PlateLine)));
+    expect(find.byType(PlateLine), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text(l10n.loadingWeeklyMenu), findsOneWidget);
+    expect(l10n.loadingWeeklyMenu, endsWith(' …'));
+
+    gate.complete(
+      WeeklyMenuPlanRead(
+        plan: WeeklyMenuPlan.empty(
+          userId: 'u',
+          date: IsoWeekUtils.weekStartOf(DateTime(2026, 9, 28)),
+        ),
+        readFailed: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(PlateLine), findsNothing);
+  });
+
   group('failed read (BUT-1962)', () {
     testWidgets('a week that could not be read shows the refusal and draws NO '
         'placeable cells', (tester) async {
@@ -258,5 +306,43 @@ void main() {
         reason: 'Single-select must pop on first tap, exactly as before',
       );
     });
+  });
+
+  // BUT-2205: the cell's own fill used to sit above the ink layer, so a
+  // pressed cell showed nothing.
+  testWidgets('a pressed empty cell shows surface.raised, a pressed '
+      'selected cell the step on raised', (tester) async {
+    await pumpHost(
+      tester,
+      open: (context) => showMultiSlotPickerDialog(context),
+      onResult: (_) {},
+    );
+    final empty = find.text('tis').at(0);
+    final theme = Theme.of(tester.element(empty));
+    expect(pressIsCovered(tester, empty), isFalse);
+    expect(borderIsAbovePress(tester, empty), isTrue);
+    final gesture = await holdPress(tester, empty);
+    expect(
+      paintsInkFill(tester, empty, theme.colorScheme.surfaceContainerHighest),
+      isTrue,
+    );
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+
+    final chosen = find.text('mån').at(0);
+    await tester.tap(chosen);
+    await tester.pumpAndSettle();
+    expect(pressIsCovered(tester, chosen), isFalse);
+    expect(borderIsAbovePress(tester, chosen), isTrue);
+    final chosenGesture = await holdPress(tester, chosen);
+    expect(
+      paintsInkFill(
+        tester,
+        chosen,
+        ModeColors.of(theme.brightness).pressedOnRaised,
+      ),
+      isTrue,
+    );
+    await chosenGesture.cancel();
   });
 }

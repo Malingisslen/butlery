@@ -13,6 +13,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
@@ -143,11 +144,14 @@ void main() {
     expect(repo.statusUpdates, [('f1', FeedbackStatus.triaged)]);
   });
 
-  test('stream error sets error state', () async {
+  test('stream error sets a localized message, never the raw exception '
+      '(P5-U01)', () async {
     vm.start();
-    repo.emitError('boom');
+    repo.emitError(StateError('permission-denied: boom'));
     await Future<void>.delayed(Duration.zero);
-    expect(vm.error, contains('boom'));
+    expect(vm.error, AppLocale.current.adminFeedbackLoadFailed);
+    expect(vm.error, isNot(contains('boom')));
+    expect(vm.error, isNot(contains('StateError')));
   });
 
   test('start() re-subscribes after an error (retry button works)', () async {

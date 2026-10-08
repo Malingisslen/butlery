@@ -6,9 +6,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 class SimpleImageWidget extends StatelessWidget {
   final String? imageUrl;
@@ -190,8 +193,8 @@ class SimpleImageWidget extends StatelessWidget {
                     child: GestureDetector(
                       onTap: onTap,
                       child: const Center(
-                        child: Icon(
-                          Icons.add_photo_alternate_outlined,
+                        child: ButleryIcon(
+                          ButleryIcons.camera,
                           size: AppDimensions.iconSizeXl,
                         ),
                       ),
@@ -244,13 +247,11 @@ class NetworkImageWidget extends StatelessWidget {
       memCacheHeight: height?.toInt(),
       placeholder: placeholder != null
           ? (_, __) => placeholder!
+          // A still plate while the image loads, never a spinner (P4-U07).
           : (_, __) => Container(
               width: width,
               height: height,
               color: cs.surfaceContainerHighest,
-              child: const Center(
-                child: LoadingIndicator(),
-              ),
             ),
       errorWidget: errorWidget != null
           ? (_, __, ___) => errorWidget!
@@ -258,8 +259,8 @@ class NetworkImageWidget extends StatelessWidget {
               width: width,
               height: height,
               color: cs.surfaceContainerHighest,
-              child: Icon(
-                Icons.error_outline,
+              child: ButleryIcon(
+                ButleryIcons.triangleAlert,
                 color: cs.error,
               ),
             ),
@@ -336,7 +337,7 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
     super.initState();
     _isExpanded = widget.initiallyExpanded;
     _animationController = AnimationController(
-      duration: AppDimensions.animationDurationCommon,
+      duration: AppMotion.standard,
       vsync: this,
     );
     _scaleAnimation =
@@ -399,7 +400,10 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
       });
     }
 
-    if (_isExpanded) {
+    final target = _isExpanded ? 1.0 : 0.0;
+    if (isReducedMotion(context)) {
+      _animationController.value = target;
+    } else if (_isExpanded) {
       _animationController.forward();
     } else {
       _animationController.reverse();
@@ -454,8 +458,8 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.image_outlined,
+                  const ButleryIcon(
+                    ButleryIcons.image,
                     size: AppDimensions.iconSizeXl,
                   ),
                   const SizedBox(height: AppDimensions.spacingSm),

@@ -2,11 +2,14 @@
 
 // lib/viewmodels/add_members_to_group_viewmodel.dart
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/auth/account_maturity_helper.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -35,6 +38,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   FriendCategory? _group;
 
   List<UserProfile> _availableFriends = [];
+  StreamSubscription<FriendsServiceState>? _friendsServiceSubscription;
 
   /// isLoading, error, hasError provided by StateNotifierMixin
   bool _isSendingInvitations =
@@ -60,6 +64,12 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
     _searchManager.addListener(_onManagerChanged);
     _selectionManager.addListener(_onManagerChanged);
+    // On a cold start the friends service is still loading and its list is
+    // empty; reload when it reports a new state instead of showing "no
+    // friends" (BUT-2189), as FriendsViewModel does.
+    _friendsServiceSubscription = _friendsService.stateStream.listen(
+      (_) => _onFriendsServiceChanged(),
+    );
 
     AppLogger.info(
       '🔄 Initialiserar AddMembersToGroupViewModel för grupp: $groupId',
@@ -70,6 +80,27 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   void _onManagerChanged() {
     notifyListeners();
   }
+
+  Future<void> _onFriendsServiceChanged() async {
+    if (isDisposed) return;
+    // A state that is still loading brings nothing new; the stream also
+    // replays its current state to this listener while the first
+    // _initializeData is running.
+    if (_friendsService.isLoading) {
+      notifyListeners();
+      return;
+    }
+    if (_group == null) {
+      await _initializeData();
+    } else {
+      await _loadAvailableFriends();
+    }
+    if (isDisposed) return;
+    notifyListeners();
+  }
+
+  @override
+  bool get isLoading => _friendsService.isLoading || super.isLoading;
 
   FriendCategory? get group => _group;
   String get groupName => _group?.name ?? AppLocale.current.labelGroup;
@@ -110,6 +141,9 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       await executeNamedOperation('initializeData', () async {
         // Fetch group information
         _group = _friendsService.categories.getCategoryById(groupId);
+        // The groups arrive with the rest of the service; a missing group is
+        // only "not found" once it has loaded.
+        if (_group == null && _friendsService.isLoading) return;
         if (_group == null) {
           throw Exception(AppLocale.current.errorGroupNotFound);
         }
@@ -126,7 +160,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         '❌ Fel vid initialisering av AddMembersToGroupViewModel',
         e,
       );
-      setError(AppLocale.current.errorGeneric);
+      // P5-U17: the cause, not "Ett fel uppstod" (content-style-guide.md:95).
+      // A missing group is its own cause; anything else is the list of
+      // friends that could not be loaded.
+      setError(
+        _group == null
+            ? AppLocale.current.errorGroupNotFound
+            : AppLocale.current.groupAddMembersLoadFailed,
+      );
     }
   }
 
@@ -217,17 +258,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         '📨 Skickar RIKTIGA gruppinbjudningar till ${selectedUserIds.length} vänner',
       );
 
-      // ✅ FIXED: Use proper group invitation method that saves to Firebase
-      final results = <String, bool>{};
-      for (final userId in selectedUserIds) {
-        final success = await _friendsService.invitations
-            .sendGroupInvitationToUser(
-              userId: userId,
-              groupId: groupId,
-              customMessage: personalMessage,
-            );
-        results[userId] = success;
-      }
+      final results = await _friendsService.invitations.sendGroupInvitations(
+        userIds: selectedUserIds,
+        groupId: groupId,
+        customMessage: personalMessage,
+      );
 
       // Update status based on results
       int successCount = 0;
@@ -256,9 +291,15 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         // Show specific error from UnifiedFriendsService if available
         if (_friendsService.hasError) {
           _setInvitationError(_friendsService.error!);
-        } else if (successCount == 0 && failureCount > 0) {
-          // All invitations failed
+        } else if (successCount == 0) {
           _setInvitationError(AppLocale.current.errorGeneric);
+        } else {
+          _setInvitationError(
+            AppLocale.current.groupInvitationsPartlyFailed(
+              failureCount,
+              selectedUserIds.length,
+            ),
+          );
         }
       }
 
@@ -280,6 +321,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       notifyListeners();
     }
   }
+
+  /// How many invitations the last send delivered; fewer than were selected
+  /// when some failed.
+  int get sentCount =>
+      _invitationStatus.values.where((status) => status == 'sent').length;
 
   /// Get status for a specific invitation
   String? getInvitationStatusForUser(String userId) {
@@ -345,6 +391,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
   @override
   void dispose() {
+    _friendsServiceSubscription?.cancel();
     _searchManager.removeListener(_onManagerChanged);
     _selectionManager.removeListener(_onManagerChanged);
     _searchManager.dispose();

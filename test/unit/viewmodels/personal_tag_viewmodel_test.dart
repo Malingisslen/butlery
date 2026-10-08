@@ -175,6 +175,19 @@ void main() {
         expect(viewModel.hasError, false);
       });
 
+      test('loads tags and groups at the same time', () async {
+        final tags = Completer<List<PersonalTag>>();
+        when(() => mockService.getAllTags()).thenAnswer((_) => tags.future);
+
+        final init = viewModel.initialize();
+        await Future<void>.delayed(Duration.zero);
+
+        verify(() => mockService.getAllGroups()).called(1);
+        tags.complete([testTag1]);
+        await init;
+        expect(viewModel.tags, hasLength(1));
+      });
+
       test('should subscribe to stream after initialize', () async {
         await viewModel.initialize();
 

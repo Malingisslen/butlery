@@ -2,21 +2,33 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
 /// `-`/`*` bullets, paragraphs, plus inline `**bold**` and `[text](url)` links.
 ///
 /// We render this in-house rather than pull in `flutter_markdown` (discontinued
-/// upstream) for one screen. Parsing and link-recognizer creation happen once
-/// in [initState]; `build` only assembles styled spans, so there is no
-/// per-frame gesture-recognizer leak.
+/// upstream) for one screen.
 class MarkdownBody extends StatefulWidget {
   final String data;
 
-  const MarkdownBody({super.key, required this.data});
+  /// False while the device is offline. Web links (http/https) then render
+  /// as plain text without the link role, and one line above the document
+  /// says why (Grafisk manual v6:665: actions that need the network become
+  /// inactive with an explanatory text, not only dimmed). Mail links stay
+  /// active: opening the mail app needs no connection.
+  final bool webLinksEnabled;
+
+  const MarkdownBody({
+    super.key,
+    required this.data,
+    this.webLinksEnabled = true,
+  });
 
   @override
   State<MarkdownBody> createState() => _MarkdownBodyState();
@@ -24,6 +36,7 @@ class MarkdownBody extends StatefulWidget {
 
 class _MarkdownBodyState extends State<MarkdownBody> {
   late List<_Block> _blocks;
+  bool _hasWebLinks = false;
 
   @override
   void initState() {
@@ -61,10 +74,18 @@ class _MarkdownBodyState extends State<MarkdownBody> {
       }
     }
     _blocks = blocks;
+    _hasWebLinks = blocks.any(
+      (b) => b.tokens.any((t) => t.kind == _TokenKind.link && _isWebUrl(t.url)),
+    );
   }
 
-  /// Splits a line into inline tokens, creating (and tracking) a tap recognizer
-  /// for every link so it can be disposed with the widget.
+  static bool _isWebUrl(String? url) {
+    if (url == null) return false;
+    final scheme = Uri.tryParse(url)?.scheme.toLowerCase();
+    return scheme == 'http' || scheme == 'https';
+  }
+
+  /// Splits a line into inline tokens.
   List<_Token> _tokenize(String text) {
     final tokens = <_Token>[];
     final pattern = RegExp(r'\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)]+)\)');
@@ -110,6 +131,10 @@ class _MarkdownBodyState extends State<MarkdownBody> {
             text: t.text,
             style: base.copyWith(fontWeight: FontWeight.bold),
           ),
+          // Offline: an inactive web link is plain text, so it neither looks
+          // nor announces as something to tap (Grafisk manual v6:665).
+          _TokenKind.link when !widget.webLinksEnabled && _isWebUrl(t.url) =>
+            TextSpan(text: t.text, style: base),
           // BUT-1446: WidgetSpan + Semantics(link:) so screen readers
           // announce the legal-doc link with a role and name. Replaces the
           // inline TapGestureRecognizer (no link role, audit-invisible) and
@@ -117,17 +142,14 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           _TokenKind.link => WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
-            child: Semantics(
-              link: true,
-              label: t.text,
-              child: GestureDetector(
-                onTap: () => _launch(t.url!),
-                child: Text(
-                  t.text,
-                  style: base.copyWith(
-                    color: linkColor,
-                    decoration: TextDecoration.underline,
-                  ),
+            child: ButleryLink(
+              semanticLabel: t.text,
+              onTap: () => _launch(t.url!),
+              child: Text(
+                t.text,
+                style: base.copyWith(
+                  color: linkColor,
+                  decoration: TextDecoration.underline,
                 ),
               ),
             ),
@@ -140,14 +162,31 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tt = theme.textTheme;
-    final linkColor = theme.colorScheme.primary;
+    // text.link: #8A5212 light, #DCA968 dark.
+    final linkColor = ModeColors.of(theme.brightness).textLink;
     final bodyStyle = tt.bodyMedium?.copyWith(height: 1.6) ?? const TextStyle();
 
     final children = <Widget>[];
+    if (!widget.webLinksEnabled && _hasWebLinks) {
+      // text.secondary (colorScheme.onSurfaceVariant: #5B6959 light, #A9B2A0
+      // dark) on surface.base.
+      children.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+          child: Text(
+            context.l10n.legalLinksNeedConnection,
+            key: const ValueKey('markdownBody.webLinksOffline'),
+            style: tt.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
     for (final block in _blocks) {
       switch (block.type) {
         case _BlockType.gap:
-          children.add(const SizedBox(height: AppDimensions.spacingS));
+          children.add(const SizedBox(height: AppDimensions.space4));
         case _BlockType.rule:
           children.add(const Divider(height: AppDimensions.spacingXl));
         case _BlockType.h1:
@@ -174,7 +213,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
               block.tokens,
               tt.titleMedium,
               linkColor,
-              top: AppDimensions.spacingS,
+              top: AppDimensions.space4,
             ),
           );
         case _BlockType.bullet:

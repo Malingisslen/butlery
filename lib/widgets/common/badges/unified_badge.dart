@@ -11,7 +11,9 @@ import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/hoverable_tap.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Type of badge to display.
 enum BadgeType {
@@ -98,9 +100,9 @@ class UnifiedBadge extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     switch (type) {
       case BadgeType.tag:
-        return cs.primary;
+        return cs.onSurface;
       case BadgeType.allergen:
-        return context.butleryColors.warning;
+        return context.modeColors.warning;
       case BadgeType.category:
         return cs.secondary;
       case BadgeType.custom:
@@ -155,7 +157,7 @@ class UnifiedBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(
+            ButleryIcon(
               icon,
               size: dimensions.iconSize,
               color: textColor,
@@ -164,10 +166,7 @@ class UnifiedBadge extends StatelessWidget {
           ],
           Text(
             label,
-            style: AppTextStyles.badgeText.copyWith(
-              color: textColor,
-              fontSize: dimensions.fontSize,
-            ),
+            style: dimensions.textStyle.copyWith(color: textColor),
           ),
           if (onRemove != null) ...[
             SizedBox(width: dimensions.iconSpacing),
@@ -177,8 +176,8 @@ class UnifiedBadge extends StatelessWidget {
               child: HoverableTap(
                 child: GestureDetector(
                   onTap: onRemove,
-                  child: Icon(
-                    Icons.close,
+                  child: ButleryIcon(
+                    ButleryIcons.x,
                     size: dimensions.iconSize,
                     color: textColor.withValues(alpha: 0.7),
                   ),
@@ -215,29 +214,32 @@ class UnifiedBadge extends StatelessWidget {
     return result;
   }
 
+  /// Each size takes a type role (tokens.json typography.roles): small is
+  /// overline 10,5/700 (10,5 only in 700), medium meta 12,5/600, large
+  /// label 14/600.
   _BadgeDimensions _getBadgeDimensions() {
     switch (size) {
       case BadgeSize.small:
-        return const _BadgeDimensions(
+        return _BadgeDimensions(
           horizontalPadding: 8,
           verticalPadding: 2,
-          fontSize: 10,
+          textStyle: AppTextStyles.overline,
           iconSize: 12,
           iconSpacing: 4,
         );
       case BadgeSize.medium:
-        return const _BadgeDimensions(
+        return _BadgeDimensions(
           horizontalPadding: 12,
           verticalPadding: 4,
-          fontSize: 12,
+          textStyle: AppTextStyles.labelMedium,
           iconSize: 14,
           iconSpacing: 4,
         );
       case BadgeSize.large:
-        return const _BadgeDimensions(
+        return _BadgeDimensions(
           horizontalPadding: 16,
           verticalPadding: 6,
-          fontSize: 14,
+          textStyle: AppTextStyles.labelLarge,
           iconSize: 16,
           iconSpacing: 6,
         );
@@ -256,14 +258,14 @@ class _BadgeDimensions {
   const _BadgeDimensions({
     required this.horizontalPadding,
     required this.verticalPadding,
-    required this.fontSize,
+    required this.textStyle,
     required this.iconSize,
     required this.iconSpacing,
   });
 
   final double horizontalPadding;
   final double verticalPadding;
-  final double fontSize;
+  final TextStyle textStyle;
   final double iconSize;
   final double iconSpacing;
 }
@@ -323,7 +325,7 @@ class AllergenBadge extends StatelessWidget {
       label: allergen,
       type: BadgeType.allergen,
       variant: BadgeVariant.subtle,
-      icon: Icons.warning_amber_outlined,
+      icon: ButleryIcons.triangleAlert,
       onTap: onTap,
       size: BadgeSize.small,
     );
@@ -398,7 +400,7 @@ class CategoryBadge extends StatelessWidget {
   }
 
   Color _getCategoryColor(BuildContext context, String category) {
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
     final cs = Theme.of(context).colorScheme;
     final normalized = category.toLowerCase();
 
@@ -421,7 +423,7 @@ class CategoryBadge extends StatelessWidget {
     // Algorithm for custom categories: hash-based color from palette
     final hash = category.hashCode.abs();
     final colors = [
-      cs.primary,
+      cs.onSurface,
       cs.secondary,
       bc.warning,
       bc.categoryDairy,

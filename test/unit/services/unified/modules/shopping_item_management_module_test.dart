@@ -65,6 +65,8 @@
 ///     wraps each in a `UnifiedShoppingItem` before batching.
 library;
 
+import 'dart:async';
+
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart'
@@ -106,10 +108,19 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   final List<UnifiedShoppingItem> updatedItems = [];
   final List<List<UnifiedShoppingItem>> updatedBatches = [];
   final List<String> removedItemIds = [];
+
+  /// BUT-2140: what each call handed over as the row's earlier copy.
+  final List<UnifiedShoppingItem?> updateBefores = [];
+  final List<UnifiedShoppingItem?> removedRows = [];
   final List<List<String>> removedBatches = [];
+
+  /// Holds addItem open the way an offline Firestore write does: it settles
+  /// only when the test completes it.
+  Completer<void>? holdAddItem;
 
   @override
   Future<void> addItem(String listId, UnifiedShoppingItem item) async {
+    await holdAddItem?.future;
     if (throwOnAddItem != null) throw throwOnAddItem!;
     addedItems.add(item);
   }
@@ -124,9 +135,14 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async {
     if (throwOnUpdateItem != null) throw throwOnUpdateItem!;
     updatedItems.add(item);
+    updateBefores.add(before);
   }
 
   @override
@@ -140,13 +156,22 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> removeItem(String listId, String itemId) async {
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async {
     if (throwOnRemoveItem != null) throw throwOnRemoveItem!;
     removedItemIds.add(itemId);
+    removedRows.add(removed);
   }
 
   @override
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async {
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async {
     if (throwOnRemoveItemsBatch != null) throw throwOnRemoveItemsBatch!;
     removedBatches.add(itemIds);
   }
@@ -357,6 +382,36 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('addItemToActiveList', () {
+    /// P4-U11: the add returns the new row's id, and that id is the row the
+    /// repository wrote and the one in local state. "Ångra" after the add
+    /// removes the row by this id (produktregler.md:131).
+    test('WithId returns the id of the row it wrote', () async {
+      lists.add(_seedList(id: 'L'));
+      activeListId = 'L';
+      when(() => mockLookup.lookupFromRaw(any())).thenAnswer(
+        (_) async => IngredientLookupResult.fromLists(
+          matched: const [],
+          unmatched: const [],
+        ),
+      );
+
+      final id = await buildModule().addItemToActiveListWithId(name: 'Mjölk');
+
+      expect(id, isNotNull);
+      expect(fakeRepo.addedItems.single.id, id);
+      expect(lists.single.items.map((i) => i.id), contains(id));
+    });
+
+    test('WithId returns null when no active list is set', () async {
+      lists.add(_seedList(id: 'L'));
+      activeListId = null;
+
+      final id = await buildModule().addItemToActiveListWithId(name: 'Mjölk');
+
+      expect(id, isNull);
+      expect(fakeRepo.addedItems, isEmpty);
+    });
+
     /// Proves: no active list → false, no repo call. A regression that
     /// fell back to `lists.first` would corrupt data for users who haven't
     /// selected a list yet.
@@ -427,7 +482,7 @@ void main() {
     /// and surfaces as false. The bug-shape: a regression dropping the
     /// catch would crash the UI from a flaky network call.
     test(
-      'returns false on repo failure without mutating local state',
+      'returns false on repo failure and takes the row back out',
       () async {
         lists.add(_seedList(id: 'L'));
         activeListId = 'L';
@@ -437,9 +492,30 @@ void main() {
 
         expect(ok, isFalse);
         expect(lists.first.items, isEmpty);
-        expect(notifyCalls, 0);
       },
     );
+
+    test('shows the row while the write is still pending', () async {
+      lists.add(_seedList(id: 'L'));
+      activeListId = 'L';
+      when(() => mockLookup.lookupFromRaw(any())).thenAnswer(
+        (_) async => IngredientLookupResult.fromLists(
+          matched: const [],
+          unmatched: const [],
+        ),
+      );
+      fakeRepo.holdAddItem = Completer<void>();
+
+      final pending = buildModule().addItemToActiveList(name: 'Mjölk');
+      await pumpEventQueue();
+
+      expect(lists.first.items.map((i) => i.name), ['Mjölk']);
+      expect(notifyCalls, 1);
+
+      fakeRepo.holdAddItem!.complete();
+      expect(await pending, isTrue);
+      expect(lists.first.items, hasLength(1));
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -715,6 +791,35 @@ void main() {
   // -------------------------------------------------------------------------
   // removeItemFromActiveList
   // -------------------------------------------------------------------------
+
+  // BUT-2140: the repository can only keep a personal row's history from the
+  // copy the service hands it.
+  group('restore history inputs', () {
+    test('an edit hands the row as it was before the edit', () async {
+      final existing = UnifiedShoppingItem(name: 'Ägg', amount: 12);
+      lists.add(_seedList(id: 'L', items: [existing]));
+      activeListId = 'L';
+
+      await buildModule().updateItemInActiveList(
+        itemId: existing.id,
+        quantity: 6,
+      );
+
+      expect(fakeRepo.updateBefores.single, same(existing));
+      expect(lists.first.items.single.previous?.amount, 12);
+    });
+
+    test('a removal hands the removed row and records it locally', () async {
+      final item = UnifiedShoppingItem(name: 'Mjölk', amount: 1);
+      lists.add(_seedList(id: 'L', items: [item]));
+      activeListId = 'L';
+
+      await buildModule().removeItemFromActiveList(item.id);
+
+      expect(fakeRepo.removedRows.single, same(item));
+      expect(lists.first.recentlyRemoved.single.id, item.id);
+    });
+  });
 
   group('removeItemFromActiveList', () {
     /// Proves: stale active id (list gone) returns false, doesn't throw.

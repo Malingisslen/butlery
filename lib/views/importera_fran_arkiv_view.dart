@@ -1,10 +1,13 @@
 // lib/views/importera_fran_arkiv_view.dart
 
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -15,6 +18,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatefulWidget {
@@ -63,13 +67,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (context.mounted) {
       if (viewModel.error == null) {
-        UtilityComponents.showSuccessSnackbar(
-          context,
-          context.l10n.importRecipesImported,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.importRecipesImported);
         Navigator.pop(context);
       } else {
-        UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+        SnackBarUtils.showFailure(context, what: viewModel.error!);
         viewModel.clearError();
       }
     }
@@ -82,14 +83,16 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final allTags = viewModel.availableTags.toList()..sort();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.importFromArchive,
         actions: [
           if (viewModel.hasError)
             IconButton(
-              icon: Icon(Icons.error, color: cs.error),
+              icon: ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
               onPressed: () {
-                UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+                SnackBarUtils.showFailure(context, what: viewModel.error!);
                 viewModel.clearError();
               },
               tooltip: context.l10n.importShowError,
@@ -139,21 +142,40 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                               // Tagg-filter
                               if (allTags.isNotEmpty) ...[
                                 Wrap(
-                                  spacing: AppDimensions.spacingS,
+                                  spacing: AppDimensions.space4,
                                   children: allTags.map((tag) {
-                                    return FilterChip(
-                                      label: Text(tag),
-                                      selected: viewModel.selectedTags.contains(
-                                        tag,
+                                    final chosen = viewModel.selectedTags
+                                        .contains(tag);
+                                    // Chosen is surface.selected with a real
+                                    // text.primary border, never a tint
+                                    // (tokens.json:41, :116-119; Grafisk
+                                    // manual v6:209).
+                                    return PressFill(
+                                      surface: chosen
+                                          ? PressSurface.raised
+                                          : PressSurface.base,
+                                      child: FilterChip(
+                                        label: Text(tag),
+                                        selected: chosen,
+                                        side: BorderSide(
+                                          color: chosen
+                                              ? cs.onSurface
+                                              : cs.outlineVariant,
+                                          width: chosen ? 1.5 : 1,
+                                        ),
+                                        onSelected: (_) =>
+                                            viewModel.toggleTag(tag),
+                                        // Unchosen stays on paper; only the
+                                        // chosen chip wears the Vald plate.
+                                        backgroundColor: cs.surface,
+                                        selectedColor:
+                                            cs.surfaceContainerHighest,
+                                        checkmarkColor: cs.onSurface,
+                                        labelStyle: AppTextStyles.labelMedium
+                                            .copyWith(
+                                              color: cs.onSurface,
+                                            ),
                                       ),
-                                      onSelected: (_) =>
-                                          viewModel.toggleTag(tag),
-                                      backgroundColor:
-                                          cs.surfaceContainerHighest,
-                                      selectedColor: cs.primary.withValues(
-                                        alpha: AppDimensions.opacityLight,
-                                      ),
-                                      checkmarkColor: cs.primary,
                                     );
                                   }).toList(),
                                 ),
@@ -177,7 +199,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.spacingS,
+                          vertical: AppDimensions.space4,
                         ),
                         child: _buildAdvancedStats(context, viewModel),
                       ),
@@ -215,62 +237,82 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Wrap(
-      spacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
       children: [
-        ChoiceChip(
-          label: Text(context.l10n.importFilterAll),
-          selected: viewModel.timeFilter == TimeFilter.all,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
-          backgroundColor: viewModel.timeFilter == TimeFilter.all
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.all
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.all
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: Text(context.l10n.importFilterAll),
+            selected: viewModel.timeFilter == TimeFilter.all,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
+            backgroundColor: viewModel.timeFilter == TimeFilter.all
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.all
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
-        ChoiceChip(
-          label: const Text('<= 15 min'),
-          selected: viewModel.timeFilter == TimeFilter.under15,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under15
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under15
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.under15
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: const Text('<= 15 min'),
+            selected: viewModel.timeFilter == TimeFilter.under15,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
+            backgroundColor: viewModel.timeFilter == TimeFilter.under15
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.under15
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
-        ChoiceChip(
-          label: const Text('<= 30 min'),
-          selected: viewModel.timeFilter == TimeFilter.under30,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under30
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under30
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.under30
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: const Text('<= 30 min'),
+            selected: viewModel.timeFilter == TimeFilter.under30,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
+            backgroundColor: viewModel.timeFilter == TimeFilter.under30
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.under30
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
-        ChoiceChip(
-          label: const Text('<= 60 min'),
-          selected: viewModel.timeFilter == TimeFilter.under60,
-          onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under60
-              ? cs.primary
-              : cs.surfaceContainerHighest,
-          selectedColor: cs.primary,
-          labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under60
-                ? cs.onPrimary
-                : cs.onSurface,
+        PressFill(
+          surface: viewModel.timeFilter == TimeFilter.under60
+              ? PressSurface.ink
+              : PressSurface.raised,
+          child: ChoiceChip(
+            label: const Text('<= 60 min'),
+            selected: viewModel.timeFilter == TimeFilter.under60,
+            onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
+            backgroundColor: viewModel.timeFilter == TimeFilter.under60
+                ? cs.primary
+                : cs.surfaceContainerHighest,
+            selectedColor: cs.primary,
+            labelStyle: AppTextStyles.labelSmall.copyWith(
+              color: viewModel.timeFilter == TimeFilter.under60
+                  ? cs.onPrimary
+                  : cs.onSurface,
+            ),
           ),
         ),
       ],
@@ -325,7 +367,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       return StateWidget.empty(
         title: context.l10n.importNoRecipesMatchedFilters,
         subtitle: context.l10n.importTryAdjustFilters,
-        icon: Icons.search_off,
+        icon: ButleryIcons.searchOff,
       );
     }
 
@@ -365,13 +407,13 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             child: UtilityComponents.outlinedButton(
               context,
               label: context.l10n.commonSelectAll,
-              icon: Icons.select_all,
+              icon: ButleryIcons.checkSquare,
               onPressed: viewModel.isImporting
                   ? null
                   : viewModel.toggleSelectAll,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             flex: 2,
             child: UtilityComponents.primaryButton(
@@ -381,7 +423,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   : context.l10n.importAllCount(
                       viewModel.archivedRecipes.length,
                     ),
-              icon: Icons.upload,
+              icon: ButleryIcons.download,
               onPressed: viewModel.isImporting
                   ? null
                   : () => _handleImport(context, viewModel),

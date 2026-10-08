@@ -1,5 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -18,7 +20,6 @@ class ShoppingItemDialogs {
   static Future<void> showAddItemDialog(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
     final result = await showDialog<UnifiedShoppingItem>(
@@ -28,7 +29,7 @@ class ShoppingItemDialogs {
 
     if (result != null && context.mounted) {
       try {
-        final success = await viewModel.addItemToActiveList(
+        final id = await viewModel.addItemWithId(
           name: result.name,
           amount: result.amount,
           unit: result.unit,
@@ -39,8 +40,16 @@ class ShoppingItemDialogs {
         );
 
         if (context.mounted) {
-          if (success) {
-            onSuccess(context.l10n.shoppingItemAdded(result.name));
+          if (id != null) {
+            // Add is class 1: 'La till "mjölk"' with Ångra for 7 s
+            // (produktregler.md:131; content-style-guide.md:96). Ångra
+            // removes the row by the id the service returned, so it takes
+            // away exactly this row, on a personal list and a shared one.
+            SnackBarUtils.showUndo(
+              context,
+              context.l10n.shoppingItemAdded(result.name),
+              onUndo: () => unawaited(viewModel.removeItem(id)),
+            );
           } else {
             onError(context.l10n.shoppingCouldNotAddItem(result.name));
           }
@@ -57,11 +66,12 @@ class ShoppingItemDialogs {
     }
   }
 
+  /// Editing is class 3 (produktregler.md:133): no receipt on success, so
+  /// only a failure is reported, through [onError].
   static Future<void> showEditItemDialog(
     BuildContext context,
     UnifiedShoppingItem item,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
     final result = await showDialog<UnifiedShoppingItem>(
@@ -90,12 +100,11 @@ class ShoppingItemDialogs {
           priority: result.priority,
         );
 
-        if (context.mounted) {
-          if (success) {
-            onSuccess(context.l10n.shoppingItemUpdated(result.name));
-          } else {
-            onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
-          }
+        // update{namn, mängd, enhet, kategori} is class 3: no friction on
+        // success (produktregler.md:133). The row changes on screen, and that
+        // is the confirmation. Failures are still said.
+        if (!success && context.mounted) {
+          onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
         }
       } catch (e) {
         if (context.mounted) {

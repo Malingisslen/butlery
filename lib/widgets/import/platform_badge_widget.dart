@@ -10,6 +10,9 @@ import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -37,28 +40,31 @@ class PlatformBadgeWidget extends StatelessWidget {
     return AnimatedOpacity(
       duration: AnimationUtils.getDuration(
         context,
-        AppDimensions.animationDurationMedium,
+        AppMotion.micro,
       ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        padding: AppDimensions.paddingSymmetric12x6,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space12,
+          vertical: AppDimensions.space4,
+        ),
         decoration: BoxDecoration(
-          color: _getBackgroundColor(detection!.platform, colorScheme),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           border: Border.all(
-            color: _getBorderColor(detection!.platform, colorScheme),
+            color: colorScheme.outlineVariant,
             width: 1,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            ButleryIcon(
               _getIconForPlatform(detection!.platform),
               size: AppDimensions.iconSizeS,
               color: _getIconColor(detection!.platform, colorScheme),
             ),
-            const SizedBox(width: AppDimensions.spacing6),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               detection!.platformLabel,
               style: AppTextStyles.labelMedium.copyWith(
@@ -74,53 +80,15 @@ class PlatformBadgeWidget extends StatelessWidget {
   IconData _getIconForPlatform(Platform platform) {
     switch (platform) {
       case Platform.youtube:
-        return Icons.play_circle_outline;
+        return ButleryIcons.video;
       case Platform.tiktok:
-        return Icons.music_note;
+        return ButleryIcons.video;
       case Platform.instagram:
-        return Icons.camera_alt_outlined;
+        return ButleryIcons.camera;
       case Platform.website:
-        return Icons.language;
+        return ButleryIcons.globe;
       case Platform.unknown:
-        return Icons.text_snippet_outlined;
-    }
-  }
-
-  Color _getBackgroundColor(Platform platform, ColorScheme colorScheme) {
-    switch (platform) {
-      case Platform.youtube:
-        return BrandColors.youtubeBackground;
-      case Platform.tiktok:
-        return BrandColors.tiktokBackground;
-      case Platform.instagram:
-        return BrandColors.instagramBackground;
-      case Platform.website:
-        return colorScheme.primaryContainer.withValues(
-          alpha: AppDimensions.opacityHalf,
-        );
-      case Platform.unknown:
-        return colorScheme.surfaceContainerHighest;
-    }
-  }
-
-  Color _getBorderColor(Platform platform, ColorScheme colorScheme) {
-    switch (platform) {
-      case Platform.youtube:
-        return BrandColors.youtube.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        );
-      case Platform.tiktok:
-        return BrandColors.tiktok.withValues(alpha: AppDimensions.opacityHalf);
-      case Platform.instagram:
-        return BrandColors.instagram.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        );
-      case Platform.website:
-        return colorScheme.primary.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        );
-      case Platform.unknown:
-        return colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf);
+        return ButleryIcons.file;
     }
   }
 
@@ -129,11 +97,15 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.youtube:
         return BrandColors.youtube;
       case Platform.tiktok:
-        return BrandColors.tiktokText;
+        // TikTok's black vanishes on the dark raised fill and its cyan on the
+        // light one, so each mode takes the half of the brand that shows.
+        return colorScheme.brightness == Brightness.dark
+            ? BrandColors.tiktok
+            : BrandColors.tiktokText;
       case Platform.instagram:
         return BrandColors.instagram;
       case Platform.website:
-        return colorScheme.primary;
+        return colorScheme.onSurface;
       case Platform.unknown:
         return colorScheme.onSurfaceVariant;
     }
@@ -142,67 +114,10 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getTextColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return BrandColors.youtubeText;
       case Platform.tiktok:
-        return BrandColors.tiktokText;
       case Platform.instagram:
-        return BrandColors.instagramText;
       case Platform.website:
-        return colorScheme.onPrimaryContainer;
-      case Platform.unknown:
-        return colorScheme.onSurfaceVariant;
-    }
-  }
-}
-
-/// Compact platform icon for inline display.
-class PlatformIconWidget extends StatelessWidget {
-  /// The platform to display.
-  final Platform platform;
-
-  /// Icon size.
-  final double size;
-
-  const PlatformIconWidget({
-    super.key,
-    required this.platform,
-    this.size = 20,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Icon(
-      _getIconForPlatform(platform),
-      size: size,
-      color: _getIconColor(platform, Theme.of(context).colorScheme),
-    );
-  }
-
-  IconData _getIconForPlatform(Platform platform) {
-    switch (platform) {
-      case Platform.youtube:
-        return Icons.play_circle_outline;
-      case Platform.tiktok:
-        return Icons.music_note;
-      case Platform.instagram:
-        return Icons.camera_alt_outlined;
-      case Platform.website:
-        return Icons.language;
-      case Platform.unknown:
-        return Icons.text_snippet_outlined;
-    }
-  }
-
-  Color _getIconColor(Platform platform, ColorScheme colorScheme) {
-    switch (platform) {
-      case Platform.youtube:
-        return BrandColors.youtube;
-      case Platform.tiktok:
-        return BrandColors.tiktokText;
-      case Platform.instagram:
-        return BrandColors.instagram;
-      case Platform.website:
-        return colorScheme.primary;
+        return colorScheme.onSurface;
       case Platform.unknown:
         return colorScheme.onSurfaceVariant;
     }

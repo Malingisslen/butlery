@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -81,9 +83,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(basicItem.displayText), findsOneWidget);
-        expect(find.byIcon(Icons.check), findsNothing);
-        expect(find.byIcon(Icons.edit), findsOneWidget);
-        expect(find.byIcon(Icons.delete), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
+        expect(find.byIcon(ButleryIcons.pencil), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
       });
 
       testWidgets('renders completed item with strikethrough', (
@@ -102,7 +104,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsOneWidget);
 
         final textWidget = tester.widget<Text>(
           find.text(completedItem.displayText),
@@ -127,6 +129,46 @@ void main() {
         expect(find.text(itemWithNote.displayText), findsOneWidget);
         expect(find.text(itemWithNote.note!), findsOneWidget);
       });
+
+      // BUT-2193 (Malin, 2026-10-03): a row may cut a long note at the
+      // normal text size, and wraps it when the text is scaled up.
+      for (final (scale, wraps) in [(1.0, false), (2.0, true)]) {
+        testWidgets('a long note at ${scale}x ${wraps ? 'wraps' : 'is cut'}', (
+          WidgetTester tester,
+        ) async {
+          const note =
+              'Ekologiska om möjligt, annars de från gården vid vägen ut mot sjön';
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: MediaQuery(
+                data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+                child: SizedBox(
+                  width: 360,
+                  child: ShoppingItemTile(
+                    item: itemWithNote.copyWith(note: note),
+                    isCompleted: false,
+                    onItemTap: (_) {},
+                    onEditItem: (_) {},
+                    onDeleteItem: (_) {},
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final text = tester.widget<Text>(find.text(note));
+          expect(text.maxLines, wraps ? isNull : 1);
+          final lineHeight = tester
+              .renderObject<RenderParagraph>(find.text(note))
+              .preferredLineHeight;
+          final height = tester.getSize(find.text(note)).height;
+          expect(
+            height,
+            wraps ? greaterThan(lineHeight * 1.5) : lessThan(lineHeight * 1.5),
+          );
+        });
+      }
     });
 
     group('buildItemTile - Priority Indicators', () {
@@ -266,7 +308,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.edit));
+        await tester.tap(find.byIcon(ButleryIcons.pencil));
         await tester.pumpAndSettle();
 
         expect(editedItem, equals(basicItem));
@@ -288,7 +330,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.delete));
+        await tester.tap(find.byIcon(ButleryIcons.trash2));
         await tester.pumpAndSettle();
 
         expect(deletedItem, equals(basicItem));
@@ -310,16 +352,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final editButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, Icons.edit),
-        );
-        // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
-        expect(editButton.tooltip, 'Redigera Mjölk');
+        String tooltipOf(IconData icon) => tester
+            .widget<Tooltip>(
+              find
+                  .ancestor(
+                    of: find.widgetWithIcon(IconButton, icon),
+                    matching: find.byType(Tooltip),
+                  )
+                  .first,
+            )
+            .message!;
 
-        final deleteButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, Icons.delete),
-        );
-        expect(deleteButton.tooltip, 'Ta bort Mjölk');
+        // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
+        expect(tooltipOf(ButleryIcons.pencil), 'Redigera Mjölk');
+        expect(tooltipOf(ButleryIcons.trash2), 'Ta bort Mjölk');
       });
     });
 
@@ -371,7 +417,10 @@ void main() {
           find.text(completedItem.displayText),
         );
         // Production uses cs.onSurfaceVariant which maps to AppColors.textMedium
-        expect(textWidget.style?.color, AppColors.textMedium);
+        expect(
+          textWidget.style?.color,
+          AppColors.lightColorScheme.onSurfaceVariant,
+        );
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
@@ -445,7 +494,7 @@ void main() {
                   context: context,
                   title: 'Inga varor',
                   message: 'Din inköpslista är tom',
-                  icon: Icons.shopping_cart_outlined,
+                  icon: ButleryIcons.shoppingCart,
                 );
               },
             ),
@@ -454,10 +503,10 @@ void main() {
 
         expect(find.text('Inga varor'), findsOneWidget);
         expect(find.text('Din inköpslista är tom'), findsOneWidget);
-        expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.shoppingCart), findsOneWidget);
 
         final icon = tester.widget<Icon>(
-          find.byIcon(Icons.shopping_cart_outlined),
+          find.byIcon(ButleryIcons.shoppingCart),
         );
         expect(icon.size, 64);
       });
@@ -471,7 +520,7 @@ void main() {
                   context: context,
                   title: 'Test Title',
                   message: 'Test Message',
-                  icon: Icons.info,
+                  icon: ButleryIcons.info,
                 );
               },
             ),
@@ -499,7 +548,7 @@ void main() {
                   context: context,
                   title: 'Empty',
                   message: 'No items',
-                  icon: Icons.inbox,
+                  icon: ButleryIcons.inbox,
                 );
               },
             ),
@@ -512,7 +561,7 @@ void main() {
         final messageWidget = tester.widget<Text>(find.text('No items'));
         expect(messageWidget.style?.color, isNotNull);
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.inbox));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.inbox));
         expect(icon.color, isNotNull);
       });
     });
@@ -534,18 +583,18 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final editButton = find.widgetWithIcon(IconButton, Icons.edit);
-        final deleteButton = find.widgetWithIcon(IconButton, Icons.delete);
+        final editButton = find.widgetWithIcon(IconButton, ButleryIcons.pencil);
+        final deleteButton = find.widgetWithIcon(
+          IconButton,
+          ButleryIcons.trash2,
+        );
 
         expect(editButton, findsOneWidget);
         expect(deleteButton, findsOneWidget);
 
-        final editButtonWidget = tester.widget<IconButton>(editButton);
-        final deleteButtonWidget = tester.widget<IconButton>(deleteButton);
-
-        // Tooltips mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
-        expect(editButtonWidget.tooltip, 'Redigera Mjölk');
-        expect(deleteButtonWidget.tooltip, 'Ta bort Mjölk');
+        // Labels mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
+        expect(find.bySemanticsLabel('Redigera Mjölk'), findsOneWidget);
+        expect(find.bySemanticsLabel('Ta bort Mjölk'), findsOneWidget);
       });
 
       testWidgets('maintains minimum touch target size', (
@@ -569,7 +618,7 @@ void main() {
         // minimum. Assert the rendered hit-area instead, which is what
         // actually matters for WCAG 2.5.5.
         final editButtonSize = tester.getSize(
-          find.widgetWithIcon(IconButton, Icons.edit),
+          find.widgetWithIcon(IconButton, ButleryIcons.pencil),
         );
         expect(
           editButtonSize.width,
@@ -814,21 +863,21 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify unchecked state: no check icon
-        expect(find.byIcon(Icons.check), findsNothing);
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
 
         // Toggle to completed
         setOuterState(() => isCompleted = true);
         await tester.pumpAndSettle();
 
         // Verify checked state: check icon present
-        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsOneWidget);
 
         // Toggle back to unchecked
         setOuterState(() => isCompleted = false);
         await tester.pumpAndSettle();
 
         // Verify unchecked again
-        expect(find.byIcon(Icons.check), findsNothing);
+        expect(find.byIcon(ButleryIcons.check), findsNothing);
       });
 
       testWidgets('AnimatedContainer uses theme duration and curve constants', (
@@ -850,8 +899,8 @@ void main() {
         final animatedContainer = tester.widget<AnimatedContainer>(
           find.byType(AnimatedContainer),
         );
-        expect(animatedContainer.duration, ThemeConstants.durationStandard);
-        expect(animatedContainer.curve, ThemeConstants.standardCurve);
+        expect(animatedContainer.duration, AppMotion.micro);
+        expect(animatedContainer.curve, AppMotion.curve);
       });
 
       testWidgets('AnimatedSwitcher uses theme duration constant', (
@@ -873,7 +922,7 @@ void main() {
         final animatedSwitcher = tester.widget<AnimatedSwitcher>(
           find.byType(AnimatedSwitcher),
         );
-        expect(animatedSwitcher.duration, ThemeConstants.durationFast);
+        expect(animatedSwitcher.duration, AppMotion.micro);
       });
     });
 
@@ -956,7 +1005,7 @@ void main() {
             findsOneWidget,
             reason: 'reorder moved onto a per-row drag handle',
           );
-          expect(find.byIcon(Icons.drag_handle), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.drag), findsOneWidget);
         },
       );
 

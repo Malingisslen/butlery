@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -11,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Simple dialog for selecting a menu to share with a group
 class MenuSelectionDialog extends StatefulWidget {
@@ -47,7 +50,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
 
       AppLogger.debug('🔍 [MenuDialog] Starting initialization');
       AppLogger.debug('   Service initialized: ${_menuService.isInitialized}');
-      AppLogger.debug('   Current user: $currentUserId');
+      AppLogger.debug('   Current user: ${currentUserId.maskedUserId}');
       AppLogger.debug(
         '   Is authenticated: ${permissionService.isAuthenticated}',
       );
@@ -127,18 +130,9 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
   Widget _buildContent() {
     // Loading state
     if (_isLoading) {
+      // The plate line with its text (produktregler.md:163).
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingM),
-            Text(
-              context.l10n.dialogLoadingMenus,
-              style: AppTextStyles.bodyMedium,
-            ),
-          ],
-        ),
+        child: PlateLineMessage(message: context.l10n.menuLoadingSaved),
       );
     }
 
@@ -165,7 +159,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       return StateWidget.empty(
         title: context.l10n.dialogNoMenus,
         subtitle: context.l10n.dialogNoMenusToShare,
-        icon: Icons.calendar_today,
+        icon: ButleryIcons.calendar,
       );
     }
 
@@ -207,14 +201,13 @@ class _MenuListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color: cs.primary.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              // surface.raised, never a tint (tokens.json:40-53).
+              color: cs.primaryContainer,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
-              Icons.calendar_today,
-              color: cs.primary,
+            child: ButleryIcon(
+              ButleryIcons.calendar,
+              color: cs.onPrimaryContainer,
               size: AppDimensions.iconSizeAction,
             ),
           );
@@ -240,13 +233,13 @@ class _MenuListItem extends StatelessWidget {
           Text(
             context.l10n.recipeCountBadge(menu.totalRecipeCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
       ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
+      trailing: const ButleryIcon(
+        ButleryIcons.chevronRight,
         size: AppDimensions.iconSizeS,
       ),
       onTap: onTap,

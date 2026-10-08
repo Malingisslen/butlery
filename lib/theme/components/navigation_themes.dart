@@ -3,10 +3,12 @@
 /// **UI Redesign:**
 /// - AppBar: Primary background with onPrimary text
 /// - Bottom Nav: Primary background
-/// - Tab Bar: Primary indicator
+/// - Tab Bar: the saffron plate line under the selected word
 /// - Dialogs/Sheets: Surface with proper elevation
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -54,37 +56,70 @@ class NavigationThemes {
     );
   }
 
+  /// The selected tab's plate line: 3 px tall, radius 2 (Komponentark
+  /// v1:112, `height:3px;border-radius:2px`).
+  static const double tabPlateLineHeight = 3.0;
+
+  /// The plate line runs 5 px past the word on each side (Komponentark
+  /// v1:106, "tallrikslinje = ordets bredd + 5 px per sida").
+  static const double tabPlateLineOverhang = 5.0;
+
   /// Tab bar theme
+  ///
+  /// The selected tab carries the plate line under its word, saffron in both
+  /// modes: token progressIndicator #CE7C1E (tokens.json:165-168; drawn as
+  /// `background:#ce7c1e` in Komponentark v1:112). It used to be cs.primary,
+  /// which is surface.ink in both schemes and vanished on the dark page
+  /// (#17251D).
+  ///
+  /// Labels: the selected word is text.primary (cs.onSurface: #24382C light,
+  /// #F5F4ED dark) at weight 700, the resting word text.secondary
+  /// (cs.onSurfaceVariant) at weight 600, as
+  /// drawn in Komponentark v1:106, :112-113. A view that
+  /// sets its own labelColor (friends_list_view.dart,
+  /// group_shared_content_section.dart) still overrides this.
   static TabBarThemeData tabBarTheme(ColorScheme cs) {
+    final plateLine = cs.brightness == Brightness.dark
+        ? AppColorsDark.progressIndicator
+        : AppColors.progressIndicator;
     return TabBarThemeData(
-      labelColor: cs.primary,
+      labelColor: cs.onSurface,
       unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: AppTextStyles.tabText.copyWith(
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
       ),
       unselectedLabelStyle: AppTextStyles.tabText,
       indicator: UnderlineTabIndicator(
-        borderSide: BorderSide(
-          color: cs.primary,
-          width: AppDimensions.borderWidthThick,
+        borderSide: BorderSide(color: plateLine, width: tabPlateLineHeight),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(AppDimensions.radiusKnob),
+        ),
+        insets: const EdgeInsets.symmetric(
+          horizontal: -tabPlateLineOverhang,
         ),
       ),
-      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorSize: TabBarIndicatorSize.label,
     );
   }
 
   /// Dialog theme
   ///
-  /// BUT-1237: square (no border radius) per the SQUARE-everywhere design
-  /// rule, cream background per mockup spec §4.17 (`cs.surface` = cream in
-  /// light mode, stays scheme-correct in dark mode). Dialogs must NOT
-  /// hand-override shape/background — the theme is the single source.
+  /// Corners take the control radius, 8: the drawn dialog box has
+  /// border-radius 8px (Komponentark v1:336; tokens.json space.radius.control).
+  /// Background is `cs.surface` (paper in light mode, the dark surface in dark
+  /// mode). Dialogs must NOT hand-override shape/background (BUT-1237): the
+  /// theme is the single source.
   static DialogThemeData dialogTheme(ColorScheme cs) {
     return DialogThemeData(
       backgroundColor: cs.surface,
+      barrierColor: cs.scrim,
       elevation: 8,
       shadowColor: cs.shadow,
-      shape: const RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppDimensions.radiusControl),
+        ),
+      ),
       titleTextStyle: AppTextStyles.dialogTitle.copyWith(
         color: cs.onSurface,
       ),
@@ -100,13 +135,16 @@ class NavigationThemes {
       backgroundColor: cs.surface,
       elevation: 16,
       shadowColor: cs.shadow,
+      // Sheets round only their top edge, 12 (Komponentark: "Ark: 12 px
+      // överkant"). The bottom edge meets the screen edge and stays sharp.
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       modalBackgroundColor: cs.surface,
       modalElevation: 16,
+      modalBarrierColor: cs.scrim,
     );
   }
 }

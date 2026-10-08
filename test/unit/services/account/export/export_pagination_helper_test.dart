@@ -186,6 +186,17 @@ void main() {
         50,
       );
     });
+
+    test('the recipe-suggestion caps are declared per direction', () {
+      expect(
+        ExportPaginationHelper.exportLimits['recipe_suggestions_made'],
+        200,
+      );
+      expect(
+        ExportPaginationHelper.exportLimits['recipe_suggestions_received'],
+        200,
+      );
+    });
   });
 
   // BUT-1662: fetchCapped is the single primitive every GDPR export section

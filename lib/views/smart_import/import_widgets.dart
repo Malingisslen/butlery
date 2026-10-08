@@ -3,10 +3,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Banner shown when a previous import is pending retry.
 class PendingImportBanner extends StatelessWidget {
@@ -47,6 +52,12 @@ class PendingImportBanner extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               FilledButton(
+                // The theme's full-width minimum is infinite inside a Row.
+                style: const ButtonStyle(
+                  minimumSize: WidgetStatePropertyAll(
+                    Size(0, AppDimensions.minTouchTarget),
+                  ),
+                ),
                 onPressed: onRetry,
                 child: Text(context.l10n.importPendingRetry),
               ),
@@ -78,6 +89,7 @@ class ImportInputSection extends StatelessWidget {
     final theme = Theme.of(context);
 
     return TextField(
+      style: fieldTextStyle(context, enabled: !viewModel.isImporting),
       controller: controller,
       focusNode: focusNode,
       onChanged: onChanged,
@@ -86,31 +98,21 @@ class ImportInputSection extends StatelessWidget {
       minLines: 3,
       decoration: InputDecoration(
         hintText: context.l10n.importPasteLinkOrText,
+        // The hint is text.secondary itself, never faded, and the field's
+        // borders come from the input theme: focus is never a thicker ink
+        // border, which vanished on dark (enhet-4 import_widgets.dart:101;
+        // tokens.json:40-53, :155-160).
         hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant.withValues(
-            alpha: AppDimensions.opacityMediumDark,
-          ),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          borderSide: BorderSide(color: theme.colorScheme.outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          borderSide: BorderSide(
-            color: theme.colorScheme.primary,
-            width: 2,
-          ),
+          color: theme.colorScheme.onSurfaceVariant,
         ),
         filled: true,
         fillColor: theme.colorScheme.surfaceContainerLowest,
+        // A field on surface.base: hover takes surface.raised (BUT-2205).
+        hoverColor: theme.colorScheme.surfaceContainerHighest,
         contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear),
+                icon: const ButleryIcon(ButleryIcons.x),
                 onPressed: () {
                   controller.clear();
                   viewModel.clearInput();
@@ -125,78 +127,144 @@ class ImportInputSection extends StatelessWidget {
   }
 }
 
-/// Error container with optional fallback action buttons.
+/// P5-U06: a failed import, in three parts (content-style-guide.md:87-97).
+///
+/// The error line says what happened and what was kept ([InlineError], the
+/// drawn error boundary, Komponentark v1:755-758). Under it, "Andra vägar
+/// till samma recept" draws the [routes] the failure carries: a failure is a
+/// fork, not a dead end (produktregler.md:557; Skarmar v12 etapp 4 import
+/// #impinget). The first route is the filled button and the rest are
+/// outlined, full width and 48 dp high, as drawn.
+///
+/// Colours, both modes, from the theme: the heading is
+/// colorScheme.onSurfaceVariant = text.secondary, #5B6959 light and #A9B2A0
+/// dark (tokens.json:62-65). The drawing's dark heading is #C9D3C4
+/// (text.bodyMuted). The first route takes the app's
+/// filled button theme. The outlined routes are drawn with --text-kontroll-a
+/// and a 1.5 px --ram-kontroll-a outline (Skarmar v12 etapp 4 import:27-28):
+/// #24382C text and outline in light (colorScheme.onSurface, equal to ink there); in dark a paper
+/// outline at 40 % (overlay.paperWash, tokens.json:263) and text in
+/// colorScheme.onSurface (#F5F4ED, text.primary). The drawn dark text is
+/// #C9D3C4 (text.bodyMuted); the app theme's own
+/// outlined foreground (primary) would sit at 1.3:1 on the dark surface.
 class ImportErrorMessage extends StatelessWidget {
   final String message;
-  final ColorScheme colorScheme;
-  final VoidCallback? onPasteText;
-  final VoidCallback? onManualAdd;
+  final String? preserved;
+  final List<ImportRoute> routes;
+  final void Function(ImportRoute route) onRoute;
 
   const ImportErrorMessage({
     super.key,
     required this.message,
-    required this.colorScheme,
-    this.onPasteText,
-    this.onManualAdd,
+    required this.routes,
+    required this.onRoute,
+    this.preserved,
   });
+
+  /// A route's button. The key is for tests, not identity.
+  static Key routeKey(ImportRoute route) =>
+      ValueKey<String>('importError.route.${route.name}');
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: colorScheme.onErrorContainer,
-                size: AppDimensions.iconSizeM,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InlineError(what: message, preserved: preserved),
+        if (routes.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingMd),
+          Semantics(
+            header: true,
+            child: Text(
+              l10n.importFailureOtherRoutes.toUpperCase(),
+              style: AppTextStyles.overline.copyWith(
+                color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Expanded(
-                child: Text(
-                  message,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onErrorContainer,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          if (onPasteText != null || onManualAdd != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
-            Wrap(
-              spacing: AppDimensions.spacingSm,
-              children: [
-                if (onPasteText != null)
-                  TextButton.icon(
-                    onPressed: onPasteText,
-                    icon: const Icon(
-                      Icons.content_paste,
-                      size: AppDimensions.iconSizeS,
-                    ),
-                    label: Text(context.l10n.importPasteText),
-                  ),
-                if (onManualAdd != null)
-                  TextButton.icon(
-                    onPressed: onManualAdd,
-                    icon: const Icon(Icons.edit, size: AppDimensions.iconSizeS),
-                    label: Text(context.l10n.importAddManually),
-                  ),
-              ],
+          const SizedBox(height: AppDimensions.spacingSm),
+          for (final (i, route) in routes.indexed) ...[
+            if (i > 0) const SizedBox(height: AppDimensions.spacingSm),
+            _RouteButton(
+              key: routeKey(route),
+              filled: i == 0,
+              icon: switch (route) {
+                ImportRoute.photo => ButleryIcons.camera,
+                ImportRoute.pasteText => ButleryIcons.clipboard,
+                ImportRoute.manual => ButleryIcons.pencil,
+              },
+              label: switch (route) {
+                ImportRoute.photo => l10n.importRoutePhoto,
+                ImportRoute.pasteText => l10n.importRoutePasteText,
+                ImportRoute.manual => l10n.importAddManually,
+              },
+              onPressed: () => onRoute(route),
             ),
           ],
         ],
+      ],
+    );
+  }
+}
+
+class _RouteButton extends StatelessWidget {
+  const _RouteButton({
+    required this.filled,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    super.key,
+  });
+
+  final bool filled;
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    // Skarmar v12 etapp 4 #impinget: min-height 48, radius 8 (radius.control).
+    final style = ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(
+        Size.fromHeight(AppDimensions.minTouchTarget),
+      ),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        ),
       ),
     );
+    final iconWidget = ButleryIcon(icon, size: AppDimensions.iconSize18);
+    final cs = Theme.of(context).colorScheme;
+    final dark = cs.brightness == Brightness.dark;
+    final outlinedStyle = style.copyWith(
+      foregroundColor: WidgetStatePropertyAll(
+        cs.onSurface,
+      ),
+      iconColor: WidgetStatePropertyAll(cs.onSurface),
+      side: WidgetStatePropertyAll(
+        BorderSide(
+          color: dark ? AppModeColors.paperWash(cs.brightness) : cs.onSurface,
+          width: 1.5,
+        ),
+      ),
+    );
+    return filled
+        ? FilledButton.icon(
+            onPressed: onPressed,
+            style: style,
+            icon: iconWidget,
+            label: Text(label),
+          )
+        : OutlinedButton.icon(
+            onPressed: onPressed,
+            style: outlinedStyle,
+            icon: iconWidget,
+            label: Text(label),
+          );
   }
 }
 
@@ -226,11 +294,11 @@ class ImportActionSection extends StatelessWidget {
         if (viewModel.input.isEmpty) ...[
           OutlinedButton.icon(
             onPressed: onPaste,
-            icon: const Icon(Icons.content_paste),
+            icon: const ButleryIcon(ButleryIcons.clipboard),
             label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingModerate,
+                vertical: AppDimensions.space12,
               ),
             ),
           ),
@@ -244,25 +312,36 @@ class ImportActionSection extends StatelessWidget {
           button: true,
           enabled: viewModel.canImport && !viewModel.isImporting,
           label: context.l10n.importImport,
-          child: FilledButton.icon(
-            key: const ValueKey('test-smart-import-url'),
-            onPressed: viewModel.canImport && !viewModel.isImporting
-                ? onImport
-                : null,
-            icon: viewModel.isImporting
-                ? LoadingIndicator(
-                    size: 18,
-                    strokeWidth: 2,
-                    color: theme.colorScheme.onPrimary,
-                  )
-                : const Icon(Icons.download),
-            label: Text(
-              viewModel.isImporting
-                  ? context.l10n.importImporting
-                  : context.l10n.importImport,
-            ),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+          // Busy keeps the button's shape and name, with the plate line
+          // along its bottom edge and "Hämtar receptet …" (Komponentark
+          // v1:365, :372; content-style-guide.md:63). Never a spinner.
+          child: BusyButtonSemantics(
+            busy: viewModel.isImporting,
+            name: context.l10n.importImport,
+            busyLabel: context.l10n.importFetchingRecipe,
+            child: FilledButton.icon(
+              key: const ValueKey('test-smart-import-url'),
+              onPressed: viewModel.isImporting
+                  ? PlateLineButton.ignore
+                  : (viewModel.canImport ? onImport : null),
+              icon: viewModel.isImporting
+                  ? const SizedBox.shrink()
+                  : const ButleryIcon(ButleryIcons.download),
+              label: Text(
+                viewModel.isImporting
+                    ? context.l10n.importFetchingRecipe
+                    : context.l10n.importImport,
+              ),
+              style: viewModel.isImporting
+                  ? PlateLineButton.busyStyle(
+                      FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      theme.filledButtonTheme.style,
+                    )
+                  : FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
             ),
           ),
         ),

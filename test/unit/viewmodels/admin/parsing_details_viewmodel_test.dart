@@ -16,6 +16,7 @@ import 'package:butlery/repositories/parsing_correction_repository.dart';
 import 'package:butlery/viewmodels/admin/parsing_details_viewmodel.dart';
 
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class _FakeParsingRepo extends ParsingCorrectionRepository {
   _FakeParsingRepo({
@@ -151,7 +152,7 @@ void main() {
     final repo = _FakeParsingRepo()..throwOnLoad = true;
     final vm = ParsingDetailsViewModel(repository: repo);
     await vm.load();
-    expect(vm.error, isNotNull);
+    expect(vm.error, AppLocale.current.adminParsingStatsLoadFailed);
     expect(vm.stats, isEmpty);
     vm.dispose();
   });

@@ -7,6 +7,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class OnboardingAgeGatePage extends StatelessWidget {
   const OnboardingAgeGatePage({super.key});
@@ -33,14 +35,16 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final selected = viewModel.selectedBirthYear;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             context.l10n.onboardingAgeGateTitle,
-            style: AppTextStyles.headlineMedium.copyWith(color: cs.primary),
+            style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
@@ -52,28 +56,35 @@ class OnboardingAgeGatePage extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXl),
           // Dropdown keeps the interaction quick and avoids a scrolling wheel
           // that fails the accessibility contract on wide layouts.
-          DropdownButtonFormField<int>(
-            key: const Key('onboarding_age_gate_birth_year_dropdown'),
-            initialValue: years.contains(selected) ? selected : null,
-            isExpanded: true,
-            hint: Text(context.l10n.onboardingAgeGateBirthYearHint),
-            decoration: InputDecoration(
-              labelText: context.l10n.onboardingAgeGateBirthYearLabel,
-              border: const OutlineInputBorder(),
+          PressFill(
+            surface: PressSurface.base,
+            child: DropdownButtonFormField<int>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
+              ),
+              key: const Key('onboarding_age_gate_birth_year_dropdown'),
+              initialValue: years.contains(selected) ? selected : null,
+              isExpanded: true,
+              hint: Text(context.l10n.onboardingAgeGateBirthYearHint),
+              decoration: InputDecoration(
+                labelText: context.l10n.onboardingAgeGateBirthYearLabel,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                for (final y in years)
+                  DropdownMenuItem<int>(
+                    value: y,
+                    child: Text(y.toString()),
+                  ),
+              ],
+              onChanged: (value) => viewModel.setBirthYear(value),
             ),
-            items: [
-              for (final y in years)
-                DropdownMenuItem<int>(
-                  value: y,
-                  child: Text(y.toString()),
-                ),
-            ],
-            onChanged: (value) => viewModel.setBirthYear(value),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             context.l10n.onboardingAgeGatePrivacyNote,
-            style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
+            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
         ],

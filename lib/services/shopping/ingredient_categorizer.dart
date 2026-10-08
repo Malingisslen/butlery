@@ -93,6 +93,17 @@ class IngredientCategorizer {
     '${SwedishWordBoundary.before}svin',
   );
 
+  /// BUT-2135: `gris` leading its compound (`grisfilé`, `grislever`), but not
+  /// `grissini`, which is a breadstick.
+  static final RegExp _pigPattern = RegExp(
+    '${SwedishWordBoundary.before}gris(?!sini)',
+  );
+
+  /// BUT-2135: rice trails its compound (`basmatiris`), so it cannot take a
+  /// left boundary. `lakris` is the one grocery left that carries the same
+  /// three letters once `sparris` and `gris` are answered above.
+  static final RegExp _ricePattern = RegExp('(?<!lak)ris');
+
   /// BUT-1890: `mango` is the fruit; `mangold` is chard, and it reaches the
   /// veg rule below on its own name.
   static final RegExp _mangoPattern = RegExp('mango(?!ld)');
@@ -220,6 +231,7 @@ class IngredientCategorizer {
         name.contains('bacon') ||
         name.contains('skinka') ||
         _porkPattern.hasMatch(name) ||
+        _pigPattern.hasMatch(name) ||
         name.contains('vildsvin') ||
         // BUT-1890: cuts and birds from the shopping dialog's old map.
         name.contains('lamm') ||
@@ -292,6 +304,7 @@ class IngredientCategorizer {
         name.contains('selleri') ||
         name.contains('rödbet') ||
         name.contains('mangold') ||
+        name.contains('sparris') ||
         _cabbagePattern.hasMatch(name)) {
       return ShoppingCategory.veg;
     }
@@ -323,7 +336,7 @@ class IngredientCategorizer {
         name.contains('socker') ||
         name.contains('salt') ||
         name.contains('pasta') ||
-        name.contains('ris') ||
+        _ricePattern.hasMatch(name) ||
         name.contains('havr') ||
         name.contains('müsli') ||
         // BUT-1890: dry staples from the shopping dialog's old map. `kikärt`
@@ -386,6 +399,7 @@ class IngredientCategorizer {
     if (name.contains('nötter') ||
         name.contains('popcorn') ||
         name.contains('godis') ||
+        name.contains('lakri') ||
         name.contains('choklad') ||
         name.contains('kex') ||
         name.contains('kakor')) {

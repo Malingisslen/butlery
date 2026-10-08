@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/services/performance/optimized_image_loader.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 // Mock classes
 class MockBuildContext extends Mock implements BuildContext {}
@@ -725,7 +727,7 @@ void main() {
       // Arrange
       final mockCallback = MockVoidCallback();
       const placeholder = CircularProgressIndicator();
-      const errorWidget = Icon(Icons.error);
+      const errorWidget = ButleryIcon(ButleryIcons.triangleAlert);
 
       // Act
       await tester.pumpWidget(
@@ -795,7 +797,10 @@ void main() {
       WidgetTester tester,
     ) async {
       // Arrange
-      const customError = Icon(Icons.error_outline, key: Key('custom_error'));
+      const customError = ButleryIcon(
+        ButleryIcons.triangleAlert,
+        key: Key('custom_error'),
+      );
       await tester.pumpWidget(
         TestApp(
           child: OptimizedImageLoader(
@@ -852,7 +857,7 @@ void main() {
         await tester.pumpWidget(TestApp(child: builtOnError));
 
         // Assert - the default broken-image fallback is shown
-        expect(find.byIcon(Icons.broken_image), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.imageOff), findsOneWidget);
       },
     );
   });

@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -18,6 +18,8 @@ class MockAppDatabase extends Mock implements AppDatabase {}
 class MockRecipeDao extends Mock implements RecipeDao {}
 
 class MockSyncQueueDao extends Mock implements SyncQueueDao {}
+
+class MockUploadQueueDao extends Mock implements UploadQueueDao {}
 
 // Fake SyncQueueEntry for stubbing
 class FakeSyncQueueEntry {
@@ -53,9 +55,7 @@ void main() {
     late MockAppDatabase mockDatabase;
     late MockRecipeDao mockRecipeDao;
     late MockSyncQueueDao mockSyncQueueDao;
-    late FakeFirestoreRepository mockFirestoreRepo;
     late FakeAuthRepository mockAuthRepo;
-    late FakeFirebaseFirestore fakeFirestore;
 
     bool syncStateChanged = false;
 
@@ -67,18 +67,21 @@ void main() {
       mockDatabase = MockAppDatabase();
       mockRecipeDao = MockRecipeDao();
       mockSyncQueueDao = MockSyncQueueDao();
-      fakeFirestore = FakeFirebaseFirestore();
-      // Pass our per-test fake instance so userRecipesCollection +
-      // setDocument route through it (FakeFirestoreRepository's concrete
-      // overrides bypass mocktail when() — Fake doesn't support that
-      // dispatch).
-      mockFirestoreRepo = FakeFirestoreRepository(firestore: fakeFirestore);
       mockAuthRepo =
           TestServiceLocator.get<AuthRepository>() as FakeAuthRepository;
 
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
       when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
+      final mockUploadQueueDao = MockUploadQueueDao();
+      when(() => mockDatabase.uploadQueueDao).thenReturn(mockUploadQueueDao);
+      when(
+        () => mockUploadQueueDao.countPendingUploads(any()),
+      ).thenAnswer((_) async => 0);
+      // P6-U08b: the pass reads which opIds are still queued (dependsOn).
+      when(
+        () => mockDatabase.queuedOpIds(any()),
+      ).thenAnswer((_) async => (waiting: <String>{}, failed: <String>{}));
 
       // Setup auth state
       mockAuthRepo.setAuthState(userId: 'test_user_123');
@@ -86,7 +89,6 @@ void main() {
       // Create sync manager with mock database
       syncManager = OfflineSyncManager(
         database: mockDatabase,
-        firestoreRepository: mockFirestoreRepo,
         authRepository: mockAuthRepo,
         onSyncStateChanged: () {
           syncStateChanged = true;
@@ -95,6 +97,7 @@ void main() {
     });
 
     tearDown(() async {
+      syncManager.dispose();
       syncStateChanged = false;
       await TestServiceLocator.reset();
       await BaseUnitTest.teardownUnit();
@@ -143,7 +146,7 @@ void main() {
 
     group('Sync Operations', () {
       test('should skip sync when offline', () async {
-        // Arrange — prod checks hasPending before checking isOnline
+        // Arrange
         when(
           () => mockSyncQueueDao.hasPending(any()),
         ).thenAnswer((_) async => true);
@@ -151,8 +154,8 @@ void main() {
         // Act
         await syncManager.syncPendingChanges(isOnline: false);
 
-        // Assert — hasPending is called, but actual sync is skipped
-        verify(() => mockSyncQueueDao.hasPending(any())).called(1);
+        // Assert
+        verifyNever(() => mockSyncQueueDao.getPendingForUser(any()));
       });
 
       test('should skip sync when no pending changes', () async {
@@ -261,12 +264,11 @@ void main() {
         // Create sync manager with tag callback
         syncManagerWithTagCallback = OfflineSyncManager(
           database: mockDatabase,
-          firestoreRepository: mockFirestoreRepo,
           authRepository: mockAuthRepo,
           onSyncStateChanged: () {
             syncStateChanged = true;
           },
-          onTagRecipe: (recipeId) async {
+          onTagRecipe: (recipeId, _) async {
             tagCallbackInvoked = true;
             taggedRecipeId = recipeId;
           },
@@ -284,6 +286,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-1',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         when(
@@ -316,6 +321,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-2',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         when(
@@ -349,6 +357,9 @@ void main() {
             queuedAt: DateTime.now(),
             retryCount: 0,
             lastError: null,
+            opId: 'op-3',
+            entityType: 'recipe',
+            permanentlyFailed: false,
           );
 
           when(
@@ -382,6 +393,9 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-4',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         final tagEntry2 = SyncQueueEntry(
@@ -392,14 +406,16 @@ void main() {
           queuedAt: DateTime.now(),
           retryCount: 0,
           lastError: null,
+          opId: 'op-5',
+          entityType: 'recipe',
+          permanentlyFailed: false,
         );
 
         final taggedRecipes = <String>[];
         final multiTagSyncManager = OfflineSyncManager(
           database: mockDatabase,
-          firestoreRepository: mockFirestoreRepo,
           authRepository: mockAuthRepo,
-          onTagRecipe: (recipeId) async {
+          onTagRecipe: (recipeId, _) async {
             taggedRecipes.add(recipeId);
           },
         );
@@ -422,35 +438,6 @@ void main() {
         verify(() => mockSyncQueueDao.dequeue(1)).called(1);
         verify(() => mockSyncQueueDao.dequeue(2)).called(1);
         expect(taggedRecipes, containsAll(['recipe_1', 'recipe_2']));
-      });
-
-      test('should queue tagging operation via queueTagging method', () async {
-        // Arrange
-        const userId = 'test_user';
-        const recipeId = 'recipe_to_queue';
-
-        when(
-          () => mockSyncQueueDao.enqueue(
-            userId: any(named: 'userId'),
-            recipeId: any(named: 'recipeId'),
-            operation: any(named: 'operation'),
-          ),
-        ).thenAnswer((_) async => 1);
-
-        // Act
-        await syncManagerWithTagCallback.queueTagging(
-          userId: userId,
-          recipeId: recipeId,
-        );
-
-        // Assert
-        verify(
-          () => mockSyncQueueDao.enqueue(
-            userId: userId,
-            recipeId: recipeId,
-            operation: SyncOperation.tag,
-          ),
-        ).called(1);
       });
     });
   });

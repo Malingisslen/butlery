@@ -18,6 +18,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 import 'package:butlery/widgets/import/components/import_dialog_header.dart';
 import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
@@ -27,6 +28,8 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Show the assisted import dialog.
 ///
@@ -313,44 +316,51 @@ class _ReviewEditStep extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingMd),
 
           // Meal type dropdown
-          DropdownButtonFormField<String>(
-            initialValue: viewModel.mealType,
-            decoration: InputDecoration(
-              labelText: context.l10n.importMealType,
-              border: const OutlineInputBorder(),
+          PressFill(
+            surface: PressSurface.base,
+            child: DropdownButtonFormField<String>(
+              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+              iconDisabledColor: AppModeColors.textDisabled(
+                Theme.of(context).brightness,
+              ),
+              initialValue: viewModel.mealType,
+              decoration: InputDecoration(
+                labelText: context.l10n.importMealType,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: 'Frukost',
+                  child: Text(context.l10n.importMealBreakfast),
+                ),
+                DropdownMenuItem(
+                  value: 'Lunch',
+                  child: Text(context.l10n.importMealLunch),
+                ),
+                DropdownMenuItem(
+                  value: 'Middag',
+                  child: Text(context.l10n.importMealDinner),
+                ),
+                DropdownMenuItem(
+                  value: 'Mellanmål',
+                  child: Text(context.l10n.importMealSnack),
+                ),
+                DropdownMenuItem(
+                  value: 'Dessert',
+                  child: Text(context.l10n.importMealDessert),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) viewModel.setMealType(value);
+              },
             ),
-            items: [
-              DropdownMenuItem(
-                value: 'breakfast',
-                child: Text(context.l10n.importMealBreakfast),
-              ),
-              DropdownMenuItem(
-                value: 'lunch',
-                child: Text(context.l10n.importMealLunch),
-              ),
-              DropdownMenuItem(
-                value: 'dinner',
-                child: Text(context.l10n.importMealDinner),
-              ),
-              DropdownMenuItem(
-                value: 'snack',
-                child: Text(context.l10n.importMealSnack),
-              ),
-              DropdownMenuItem(
-                value: 'dessert',
-                child: Text(context.l10n.importMealDessert),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) viewModel.setMealType(value);
-            },
           ),
           const SizedBox(height: AppDimensions.spacingLg),
 
           // Ingredients section
           EditableListHeader(
             title: context.l10n.recipeIngredients,
-            icon: Icons.restaurant,
+            icon: ButleryIcons.utensils,
             count: viewModel.editedIngredients.length,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -366,7 +376,7 @@ class _ReviewEditStep extends StatelessWidget {
           // Instructions section
           EditableListHeader(
             title: context.l10n.recipeInstructions,
-            icon: Icons.format_list_numbered,
+            icon: ButleryIcons.list,
             count: viewModel.editedInstructions.length,
           ),
           const SizedBox(height: AppDimensions.spacingSm),

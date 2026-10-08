@@ -266,41 +266,6 @@ class ShareService extends BaseService {
   static String _codeSpanSafe(String tag) =>
       tag.replaceAll(RegExp('[`\r\n]'), '');
 
-  /// Translate language-neutral category constant to localized display name for sharing.
-  static String _categoryDisplayName(String category) {
-    final l = AppLocale.current;
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return l.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return l.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return l.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return l.categoryBread;
-      case ShoppingCategory.pantry:
-        return l.categoryPantry;
-      case ShoppingCategory.frozen:
-        return l.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return l.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return l.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return l.categoryHygiene;
-      case ShoppingCategory.spices:
-        return l.categorySpices;
-      case ShoppingCategory.canned:
-        return l.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return l.categoryDryGoods;
-      case ShoppingCategory.other:
-        return l.categoryOther;
-      default:
-        return category;
-    }
-  }
-
   String formatShoppingList(List<UnifiedShoppingItem> items) {
     final buffer = StringBuffer();
 
@@ -326,7 +291,9 @@ class ShareService extends BaseService {
     } else {
       // Show grouped
       for (final entry in groupedItems.entries) {
-        buffer.writeln('【${_categoryDisplayName(entry.key).toUpperCase()}】');
+        buffer.writeln(
+          '【${ShoppingCategory.displayName(entry.key).toUpperCase()}】',
+        );
         for (final item in entry.value) {
           final checkbox = item.bought ? '☑' : '☐';
           buffer.writeln('$checkbox ${item.toString()}');
@@ -350,7 +317,7 @@ class ShareService extends BaseService {
     buffer.writeln();
 
     groupedItems.forEach((category, items) {
-      buffer.writeln(_categoryDisplayName(category).toUpperCase());
+      buffer.writeln(ShoppingCategory.displayName(category).toUpperCase());
       for (final item in items) {
         final checkbox = item.bought ? '☑' : '☐';
         buffer.writeln('  $checkbox ${item.toString()}');

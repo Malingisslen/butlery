@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// A reusable wrapper that adds a subtle hover affordance to custom interactive
 /// cards on pointer-capable platforms (web / desktop). Flutter's built-in
@@ -30,7 +30,7 @@ class HoverableCard extends StatefulWidget {
     required this.hoverDecoration,
     this.margin,
     this.enabled = true,
-    this.duration = AppDimensions.animationDurationFast,
+    this.duration = AppMotion.micro,
     this.curve = Curves.easeOut,
   });
 
@@ -56,6 +56,21 @@ class HoverableCard extends StatefulWidget {
 
   /// Hover cross-fade curve.
   final Curve curve;
+
+  /// Ink overlay for the InkWell inside a card: pressed fills to surface.raised
+  /// (B83-1 = A, BUT-2183, produktbeslut-2026-09-30.json), so press and hover
+  /// share one colour. Hover is transparent because [hoverDecoration] already
+  /// carries it; any other state (focus) resolves to null and keeps what the
+  /// InkWell does today.
+  static WidgetStateProperty<Color?> inkOverlay(ColorScheme cs) {
+    return WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.pressed)) {
+        return cs.surfaceContainerHighest;
+      }
+      if (states.contains(WidgetState.hovered)) return Colors.transparent;
+      return null;
+    });
+  }
 
   @override
   State<HoverableCard> createState() => _HoverableCardState();

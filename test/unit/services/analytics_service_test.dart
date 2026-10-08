@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/winback_attribution_service.dart';
-import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
@@ -47,14 +46,10 @@ void main() {
         ),
       ).thenAnswer((_) async {});
       when(
-        () => mockRepo.logLogin(
-          loginMethod: any(named: 'loginMethod'),
-        ),
+        () => mockRepo.logLogin(loginMethod: any(named: 'loginMethod')),
       ).thenAnswer((_) async {});
       when(
-        () => mockRepo.logSignUp(
-          signUpMethod: any(named: 'signUpMethod'),
-        ),
+        () => mockRepo.logSignUp(signUpMethod: any(named: 'signUpMethod')),
       ).thenAnswer((_) async {});
       when(() => mockRepo.logLogout()).thenAnswer((_) async {});
       when(() => mockRepo.logAccountDeleted(any())).thenAnswer((_) async {});
@@ -94,30 +89,13 @@ void main() {
         ),
       ).thenAnswer((_) async {});
       when(
-        () => mockRepo.logExtractionError(
-          url: any(named: 'url'),
-          platform: any(named: 'platform'),
-          error: any(named: 'error'),
-          errorType: any(named: 'errorType'),
-          imageFormat: any(named: 'imageFormat'),
-        ),
-      ).thenAnswer((_) async {});
-      when(
-        () => mockRepo.logManualCopyFallback(
-          platform: any(named: 'platform'),
-          reason: any(named: 'reason'),
-        ),
-      ).thenAnswer((_) async {});
-      when(
         () => mockRepo.logRecipeCreated(
           source: any(named: 'source'),
           hasImage: any(named: 'hasImage'),
         ),
       ).thenAnswer((_) async {});
       when(
-        () => mockRepo.logRecipeShared(
-          method: any(named: 'method'),
-        ),
+        () => mockRepo.logRecipeShared(method: any(named: 'method')),
       ).thenAnswer((_) async {});
       when(
         () => mockRepo.logRecipeCooked(
@@ -244,64 +222,11 @@ void main() {
       });
     });
 
-    group('Extraction Events', () {
-      test('should log extraction error', () async {
-        await service.logExtractionError(
-          url: 'https://example.com',
-          platform: SourcePlatform.website,
-          error: 'timeout',
-        );
-        verify(
-          () => mockRepo.logExtractionError(
-            url: 'https://example.com',
-            platform: 'website',
-            error: 'timeout',
-            errorType: null,
-            imageFormat: 'unknown',
-          ),
-        ).called(1);
-      });
-
-      test('should log extraction error with explicit type', () async {
-        await service.logExtractionError(
-          url: 'https://example.com',
-          platform: SourcePlatform.instagram,
-          error: 'blocked',
-          errorType: 'custom_error',
-        );
-        verify(
-          () => mockRepo.logExtractionError(
-            url: 'https://example.com',
-            platform: 'instagram',
-            error: 'blocked',
-            errorType: 'custom_error',
-            imageFormat: 'unknown',
-          ),
-        ).called(1);
-      });
-
-      test('should log manual copy fallback', () async {
-        await service.logManualCopyFallback(
-          platform: SourcePlatform.tiktok,
-          reason: 'User chose manual',
-        );
-        verify(
-          () => mockRepo.logManualCopyFallback(
-            platform: 'tiktok',
-            reason: 'User chose manual',
-          ),
-        ).called(1);
-      });
-    });
-
     group('Recipe Events', () {
       test('should log recipe created', () async {
         await service.logRecipeCreated(source: 'import', hasImage: true);
         verify(
-          () => mockRepo.logRecipeCreated(
-            source: 'import',
-            hasImage: true,
-          ),
+          () => mockRepo.logRecipeCreated(source: 'import', hasImage: true),
         ).called(1);
       });
 
@@ -369,10 +294,7 @@ void main() {
       test('should log menu generated', () async {
         await service.logMenuGenerated(recipeCount: 7, method: 'auto');
         verify(
-          () => mockRepo.logMenuGenerated(
-            recipeCount: 7,
-            method: 'auto',
-          ),
+          () => mockRepo.logMenuGenerated(recipeCount: 7, method: 'auto'),
         ).called(1);
       });
     });

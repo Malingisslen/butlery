@@ -2,14 +2,17 @@
 
 // lib/views/fran_sociala_medier_view.dart
 
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
@@ -217,8 +220,7 @@ class _FranSocialaMedierViewContentState
         },
       );
     } else if (context.mounted && viewModel.hasError) {
-      // Use UtilityComponents.showErrorSnackbar
-      UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 
@@ -232,7 +234,10 @@ class _FranSocialaMedierViewContentState
     final selected = await Navigator.push<List<Recipe>>(
       context,
       MaterialPageRoute(
-        builder: (_) => BatchImportPreview(recipes: viewModel.parsedRecipes),
+        builder: (_) => BatchImportPreview(
+          recipes: viewModel.parsedRecipes,
+          backTo: context.l10n.importFromSocialMedia,
+        ),
       ),
     );
     if (!context.mounted || selected == null || selected.isEmpty) return;
@@ -248,7 +253,7 @@ class _FranSocialaMedierViewContentState
       if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
         AllergenSetupBanner.show(context);
       }
-      UtilityComponents.showSuccessSnackbar(
+      SnackBarUtils.showSuccess(
         context,
         context.l10n.importComplete(selected.length, 0),
       );
@@ -261,7 +266,7 @@ class _FranSocialaMedierViewContentState
         );
       }
     } else if (viewModel.hasError) {
-      UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+      SnackBarUtils.showFailure(context, what: viewModel.error!);
     }
   }
 
@@ -294,7 +299,11 @@ class _FranSocialaMedierViewContentState
     final viewModel = context.watch<TextImportViewModel>();
 
     return Scaffold(
-      appBar: AdaptiveAppBar(title: context.l10n.importFromSocialMedia),
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.importFromSocialMedia,
+      ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
@@ -343,7 +352,7 @@ class _FranSocialaMedierViewContentState
                   UtilityComponents.primaryButton(
                     context,
                     label: context.l10n.importPreviewAndEdit,
-                    icon: Icons.preview,
+                    icon: ButleryIcons.eye,
                     onPressed: viewModel.isParsing || !viewModel.canParse
                         ? null
                         : () => _parseAndNavigate(context),
@@ -357,6 +366,7 @@ class _FranSocialaMedierViewContentState
                     const SizedBox(height: AppDimensions.spacingM),
                     StateWidget.error(
                       message: viewModel.error!,
+                      preserved: context.l10n.errorPreservedLink,
                     ),
                   ],
                 ],
@@ -374,7 +384,7 @@ class _FranSocialaMedierViewContentState
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
@@ -382,16 +392,16 @@ class _FranSocialaMedierViewContentState
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
+              ButleryIcon(
+                ButleryIcons.info,
                 size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.importTipsTitle,
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -428,10 +438,12 @@ class _FranSocialaMedierViewContentState
           hintText: context.l10n.importPasteRecipeHint,
           hintMaxLines: 10,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           filled: true,
           fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
+          // A field on surface.base: hover takes surface.raised (BUT-2205).
+          hoverColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         ),
         keyboardType: TextInputType.multiline,
         maxLines: null,

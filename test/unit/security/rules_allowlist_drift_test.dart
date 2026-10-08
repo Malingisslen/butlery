@@ -85,6 +85,10 @@ library;
 import 'dart:io';
 
 import 'package:butlery/models/messaging/conversation_participant.dart';
+import 'package:butlery/models/realtime/overwritten_version.dart';
+import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/realtime/realtime_menu.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -92,6 +96,7 @@ import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'rules_source.dart';
@@ -131,6 +136,22 @@ const _allowlists = <_Allowlist>[
     mustContain: 'generatorVersion',
     anchor: 'function isValidTagResult',
     writer: 'lib/models/tagging/tag_result.dart TagResult.toFirestore',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/overwritten_versions',
+    mustContain: 'overwrittenByName',
+    anchor: 'match /users/{userId}/overwritten_versions/{versionId}',
+    writer:
+        'lib/models/realtime/overwritten_version.dart OverwrittenVersion.toFirestore, '
+        'stored by FirebaseOverwrittenVersionRepository (P5-U26b)',
+  ),
+  _Allowlist(
+    label: 'recipe_suggestions',
+    mustContain: 'suggesterId',
+    anchor: 'match /recipe_suggestions/{suggestionId}',
+    writer:
+        'lib/models/recipe_suggestion.dart RecipeSuggestion.toFirestore, '
+        'stored by FirebaseRecipeSuggestionRepository.suggest (P5-U27b)',
   ),
   _Allowlist(
     label: 'users/{uid}/counters',
@@ -215,11 +236,32 @@ const _allowlists = <_Allowlist>[
     anchor: 'function allergenShareValid',
     writer: 'lib/models/household_allergen_share.dart toFirestore',
   ),
+  // Anchored on the helper, which holds the block's only `keys().hasOnly`; the
+  // create and update limbs both call it.
+  _Allowlist(
+    label: 'realtime_resources (menu)',
+    mustContain: 'menuSnapshot',
+    anchor: 'function realtimeResourceShapeOk',
+    writer:
+        'lib/models/realtime/realtime_menu.dart RealtimeMenu.toFirestore, '
+        'written whole by ConflictResolutionModule.performUpdate (BUT-2151)',
+  ),
+  // BUT-2243: the block now holds two lists, the `imports` one first. The
+  // stamp limb is the only one that excludes `llm_cost`, so its entry anchors
+  // there and the `imports` entry anchors on the block.
   _Allowlist(
     label: 'users/{uid}/rate_limits stamp',
     mustContain: 'lastDocId',
-    anchor: 'match /rate_limits/{type}',
+    anchor: "type != 'llm_cost'",
     writer: 'lib/repositories/firebase/rate_limit_stamp.dart stampRateLimit',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/rate_limits/imports',
+    mustContain: 'importsThisMinute',
+    anchor: 'match /rate_limits/{type}',
+    writer:
+        'lib/services/import/models/rate_limit_models.dart '
+        'UsageLimits.toFirestore, written whole by ImportRateLimiter.recordUsage',
   ),
 ];
 
@@ -302,6 +344,30 @@ Map<String, Set<String>> _writtenKeys() => {
   // best-effort try/catch — so a typo throws before any write and sends no
   // field at all. Different failure (the badge silently stops moving, nothing
   // is denied), and not one this guard is the instrument for.
+  // Derived from the model, so a new field in toFirestore reddens here.
+  'users/{uid}/overwritten_versions': OverwrittenVersion(
+    id: 'v',
+    ownerId: 'u',
+    entity: ConflictEntity.values.first,
+    resourceType: RealtimeResourceType.values.first,
+    resourceId: 'r',
+    version: const <String, dynamic>{},
+    overwrittenBy: 'o',
+    overwrittenByName: 'O',
+    overwrittenAt: DateTime.utc(2026),
+    expiresAt: DateTime.utc(2026, 1, 31),
+  ).toFirestore().keys.toSet(),
+  // P5-U27b. Derived from the model, so a new field in toFirestore reddens
+  // here. The owner's decision is an `affectedKeys().hasOnly` diff
+  // (status, decidedAt), not a payload, so it is counted in the census below
+  // and not compared here.
+  'recipe_suggestions': RecipeSuggestion.create(
+    recipeId: 'r',
+    ownerId: 'o',
+    suggesterId: 's',
+    suggestion: const <String, dynamic>{},
+    at: DateTime.utc(2026),
+  ).toFirestore().keys.toSet(),
   'users/{uid}/counters': {
     for (final type in const [
       'shared_recipes',
@@ -379,6 +445,25 @@ Map<String, Set<String>> _writtenKeys() => {
   ).toFirestore().keys.toSet(),
   // Hand-built map; `stampRateLimit` is its only writer.
   'users/{uid}/rate_limits stamp': {'lastWrite', 'expireAt', 'lastDocId'},
+  // Every key is emitted unconditionally, so the default instance is already
+  // the widest set.
+  'users/{uid}/rate_limits/imports': const UsageLimits()
+      .toFirestore()
+      .keys
+      .toSet(),
+  // Every optional argument set, so the set is the widest the writer sends.
+  'realtime_resources (menu)': RealtimeMenu.fromMenuCategories(
+    menuTitle: 'm',
+    menuSnapshot: const {},
+    ownerId: 'o',
+    ownerDisplayName: 'O',
+    editorUserIds: const ['e'],
+    viewerUserIds: const ['v'],
+    menuNotes: 'n',
+    favoriteRecipeIds: const ['f'],
+    originalPrompt: 'p',
+    createdForDate: DateTime(2026),
+  ).toFirestore().keys.toSet(),
 };
 
 /// Pulls the first `hasOnly([...])` list appearing after [anchor].
@@ -488,6 +573,13 @@ const _knowinglyUncovered = <_Uncovered>[
     'ingredient_suggestions — no Dart writer; compared against the Art. 15 '
         'projection',
     'match /ingredient_suggestions/{suggestionId}',
+  ),
+  // BUT-2115: the allowlist is over the keys of the `reactions` map, not the
+  // document's, and the writer is the emoji picker's key list. Those two and
+  // COMMENT_REACTION_KEYS are held equal by a functions test instead.
+  _Uncovered(
+    'recipe_comments reactions — kReactionEmojis keys',
+    'function reactionShapeOk(',
   ),
 ];
 
@@ -651,6 +743,39 @@ void main() {
     );
   });
 
+  // Q6-12 = B: the suggester's replacement of a pending suggestion is a diff
+  // restriction, `affectedKeys().hasOnly([...])`, not a payload allowlist, so
+  // the payload comparison above does not see it. A field the writer adds
+  // (RecipeSuggestion.toReplacementFirestore) that the rule does not name
+  // would be refused on every replacement, and a field the rule names that
+  // the writer never sends widens what a suggester may change.
+  test('the recipe_suggestions replacement writes exactly what the rule '
+      'admits', () {
+    final block = rulesBlock(rules, 'match /recipe_suggestions/{suggestionId}');
+    expect(block, isNotNull, reason: 'the recipe_suggestions block is gone');
+    final lists = [
+      for (final m in RegExp(
+        r'hasOnly\(\s*\[([^\]]*)\]',
+      ).allMatches(block!))
+        RegExp(
+          "'([^']+)'",
+        ).allMatches(m.group(1)!).map((k) => k.group(1)!).toSet(),
+    ].where((keys) => keys.contains('replacedAt')).toList();
+    expect(
+      lists,
+      hasLength(1),
+      reason: 'exactly one list in the block names replacedAt',
+    );
+    final written = RecipeSuggestion.create(
+      recipeId: 'r',
+      ownerId: 'o',
+      suggesterId: 's',
+      suggestion: const <String, dynamic>{},
+      at: DateTime.utc(2026),
+    ).withId('x').replacedWith(const {}, at: DateTime.utc(2026, 1, 2));
+    expect(lists.single, written.toReplacementFirestore().keys.toSet());
+  });
+
   // BUT-2079 (R8): a key the create limb admits but the Art. 15 section
   // neither exports nor deliberately withholds would be dropped from the
   // person's own bundle with nothing reddening, because the projection fails
@@ -715,6 +840,34 @@ void main() {
     );
   });
 
+  // BUT-2243: the reverse direction, kept out of the per-entry loop for the
+  // reason the header gives. This list is the only thing standing between a
+  // client and the keys the server's cost ledger used to share the document
+  // with, so a key the writer does not send is not a harmless widening here.
+  test('the rate_limits/imports allowlist admits exactly what UsageLimits '
+      'writes', () {
+    final allowed = _allowlistAfter(
+      rules,
+      'match /rate_limits/{type}',
+      'importsThisMinute',
+    );
+    final sent = const UsageLimits().toFirestore().keys.toSet();
+
+    expect(
+      allowed,
+      sent,
+      reason:
+          'rate_limits/imports allowlist and UsageLimits.toFirestore() differ.\n'
+          '  allowed only: ${(allowed.difference(sent).toList()..sort())}\n'
+          '  sent only:    ${(sent.difference(allowed).toList()..sort())}',
+    );
+    expect(
+      allowed.where((k) => k.toLowerCase().contains('cost')),
+      isEmpty,
+      reason: 'the AI cost lives in the server-written llm_cost doc only',
+    );
+  });
+
   test('every keys().hasOnly allowlist is guarded here or knowingly excluded', () {
     // The census. Without it, a new allowlist lands unguarded and
     // nothing says so — which is precisely how the five drifts of 2026-08-12
@@ -748,9 +901,27 @@ void main() {
     // Assert the FULL classification, not just this guard's slice. A rule
     // written as `let k = data.keys(); … k.hasOnly([...])` would slip past
     // `_allowlistCall` without moving its count; it cannot slip past the total.
+    // P5-U26b added users/{uid}/overwritten_versions (keys().hasOnly on create),
+    // guarded above in _allowlists.
+    // P5-U27b added recipe_suggestions: one keys().hasOnly on create (guarded
+    // above in _allowlists, writer RecipeSuggestion.toFirestore) and one
+    // affectedKeys().hasOnly(['status', 'decidedAt']) on the owner's decision,
+    // a diff restriction and so outside this guard's payload comparison.
+    // Q6-12 = B added one more diff restriction there:
+    // affectedKeys().hasOnly(['suggestion', 'replacedAt', 'expiresAt']) on
+    // the suggester's replacement (writer
+    // RecipeSuggestion.toReplacementFirestore), outside the payload
+    // comparison for the same reason.
+    // BUT-2151 added realtime_resources: one keys().hasOnly, guarded above in
+    // _allowlists.
+    // BUT-2243 added rate_limits/imports: one keys().hasOnly, guarded above in
+    // _allowlists.
+    // BUT-2115 added the recipe_comments reaction update: one keys().hasOnly
+    // over the `reactions` MAP (in _knowinglyUncovered), one
+    // affectedKeys().hasOnly(['reactions']) and one set difference.
     expect(
       'hasOnly('.allMatches(rules).length,
-      40,
+      48,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

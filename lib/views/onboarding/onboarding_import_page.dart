@@ -13,8 +13,10 @@ import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   const OnboardingImportPage({super.key});
@@ -69,7 +71,9 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
     final viewModel = context.watch<SmartImportViewModel>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -77,7 +81,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           Text(
             context.l10n.onboardingImportTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -95,9 +99,9 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             onChanged: viewModel.updateInput,
             decoration: InputDecoration(
               hintText: context.l10n.onboardingImportUrlTitle,
-              prefixIcon: const Icon(Icons.link),
+              prefixIcon: const ButleryIcon(ButleryIcons.link),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.content_paste),
+                icon: const ButleryIcon(ButleryIcons.clipboard),
                 tooltip: context.l10n.commonPaste,
                 onPressed: () => _pasteFromClipboard(viewModel),
               ),
@@ -111,24 +115,32 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           const SizedBox(height: AppDimensions.spacingMd),
 
           // Import button
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: viewModel.canImport && !viewModel.isImporting
-                  ? () => _handleImport(viewModel)
-                  : null,
-              icon: viewModel.isImporting
-                  ? LoadingIndicator(
-                      size: AppDimensions.iconSizeS,
-                      strokeWidth: 2,
-                      color: cs.onPrimary,
+          // Importing says what it does and draws the plate line along the
+          // button's bottom edge, never a spinner (Komponentark v1:365,
+          // :372). The page's saffron action is "Klar" in the guide's own
+          // row (Skarmar v12 del 3 'Onboarding — import'), so this stays ink.
+          BusyButtonSemantics(
+            busy: viewModel.isImporting,
+            name: context.l10n.importRecipeTitle,
+            busyLabel: viewModel.progressMessage,
+            child: SizedBox(
+              width: double.infinity,
+              child: viewModel.isImporting
+                  ? FilledButton(
+                      onPressed: PlateLineButton.ignore,
+                      style: PlateLineButton.busyStyle(
+                        null,
+                        Theme.of(context).filledButtonTheme.style,
+                      ),
+                      child: Text(viewModel.progressMessage),
                     )
-                  : const Icon(Icons.download),
-              label: Text(
-                viewModel.isImporting
-                    ? viewModel.progressMessage
-                    : context.l10n.importRecipeTitle,
-              ),
+                  : FilledButton.icon(
+                      onPressed: viewModel.canImport
+                          ? () => _handleImport(viewModel)
+                          : null,
+                      icon: const ButleryIcon(ButleryIcons.download),
+                      label: Text(context.l10n.importRecipeTitle),
+                    ),
             ),
           ),
 
@@ -139,15 +151,13 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingM),
               decoration: BoxDecoration(
-                color: context.butleryColors.success.withValues(
-                  alpha: AppDimensions.opacityVeryLight,
-                ),
+                color: context.modeColors.surfaceTintSuccess,
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: context.butleryColors.success,
+                  ButleryIcon(
+                    ButleryIcons.circleCheck,
+                    color: context.modeColors.onSuccessContainer,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(
@@ -170,12 +180,12 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               viewModel.error!,
               style: AppTextStyles.bodySmall.copyWith(color: cs.error),
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: TextButton.icon(
                 onPressed: () => _handleImport(viewModel),
-                icon: const Icon(Icons.refresh),
+                icon: const ButleryIcon(ButleryIcons.refreshCw),
                 label: Text(context.l10n.commonRetry),
               ),
             ),
@@ -185,7 +195,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
 
           // Alternative: photo import card (still navigates)
           _ImportOptionCard(
-            icon: Icons.camera_alt_outlined,
+            icon: ButleryIcons.camera,
             title: context.l10n.onboardingImportPhotoTitle,
             description: context.l10n.onboardingImportPhotoDescription,
             onTap: () {
@@ -198,7 +208,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             child: Text(
               context.l10n.onboardingImportSkipNote,
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.outline,
+                color: cs.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -285,15 +295,11 @@ class _ImportOptionCard extends StatelessWidget {
               Container(
                 width: 48,
                 height: 48,
-                decoration: BoxDecoration(
-                  color: cs.primary.withValues(
-                    alpha: AppDimensions.opacityLight,
-                  ),
-                ),
-                child: Icon(
+                decoration: BoxDecoration(color: cs.surface),
+                child: ButleryIcon(
                   icon,
                   size: AppDimensions.iconSizeL,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -312,8 +318,8 @@ class _ImportOptionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
+              ButleryIcon(
+                ButleryIcons.chevronRight,
                 color: cs.outline,
               ),
             ],

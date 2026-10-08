@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -12,6 +13,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// BUT-1503: outcome of a recipe share, distinguishing "the recipient can open
 /// the recipe" from "the share is also discoverable in inbox/group queries".
@@ -87,6 +89,11 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     /// BUT-1797: which group(s) reached each member, when this share came from
     /// picking groups. Absent means a plain user share, recorded as 'direct'.
     Map<String, List<String>>? grantsByUserId,
+    String? message,
+
+    /// BUT-2271: the groups picked, recorded on the discovery row so a group
+    /// page can find it.
+    List<String>? groupIds,
   }) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -95,6 +102,12 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     }
 
     try {
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      userIds = await BlockedUserFilter.shareRecipients(userIds);
+      if (userIds.isEmpty) {
+        _setError(AppLocale.current.errorNoRecipientsFound);
+        return RecipeShareResult.failed;
+      }
       AppLogger.info('Sharing recipe $recipeId with ${userIds.length} users');
 
       // 1. Loading the recipe
@@ -216,6 +229,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         sharedByUserId: currentUserId,
         sharedByDisplayName: _getCurrentUserDisplayName() ?? 'Unknown',
         sharedToUserIds: userIds,
+        shareMessage: message,
         recipeSnapshot: updatedRecipe,
         allowCollaboration:
             permission == ResourcePermission.admin ||
@@ -251,6 +265,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
           await _sharedRecipeRepository.createSharedRecipe(
             sharedRecipe,
             recipientIds: userIds,
+            groupIds: groupIds,
           );
           secondaryError = null;
           AppLogger.debug('✅ Recipe also written to shared_recipes collection');
@@ -346,6 +361,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         allMemberIds.toList(),
         permission,
         grantsByUserId: grantsByUserId,
+        groupIds: groupIds,
       )).fullyShared;
 
       if (success) {
@@ -489,7 +505,9 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         } else {
           // If friend not found, use fallback display name
           memberMap[memberId] = AppLocale.current.displayUnknownUser;
-          AppLogger.warning('Friend $memberId not found in friends list');
+          AppLogger.warning(
+            'Friend ${memberId.maskedUserId} not found in friends list',
+          );
         }
       }
 

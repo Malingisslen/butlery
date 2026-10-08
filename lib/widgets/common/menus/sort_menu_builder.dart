@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Helper for building sort menu items used across recipe views.
 class SortMenuBuilder {
@@ -16,7 +18,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.title,
         context.l10n.sortTitle,
-        Icons.title,
+        ButleryIcons.type,
         currentSort,
         sortAscending,
       ),
@@ -24,7 +26,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.time,
         context.l10n.sortTime,
-        Icons.access_time,
+        ButleryIcons.clock,
         currentSort,
         sortAscending,
       ),
@@ -32,7 +34,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.rating,
         context.l10n.sortRating,
-        Icons.star,
+        ButleryIcons.star,
         currentSort,
         sortAscending,
       ),
@@ -40,7 +42,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.mealType,
         context.l10n.sortMealType,
-        Icons.restaurant,
+        ButleryIcons.utensils,
         currentSort,
         sortAscending,
       ),
@@ -48,7 +50,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.lastCooked,
         context.l10n.sortLastCooked,
-        Icons.history,
+        ButleryIcons.history,
         currentSort,
         sortAscending,
       ),
@@ -56,7 +58,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.cookCount,
         context.l10n.sortCookCount,
-        Icons.repeat,
+        ButleryIcons.barChart,
         currentSort,
         sortAscending,
       ),
@@ -64,7 +66,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.newest,
         context.l10n.sortNewest,
-        Icons.schedule,
+        ButleryIcons.clock,
         currentSort,
         sortAscending,
       ),
@@ -72,7 +74,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.random,
         context.l10n.shuffleRecipes,
-        Icons.shuffle,
+        ButleryIcons.shuffle,
         currentSort,
         sortAscending,
       ),
@@ -94,18 +96,18 @@ class SortMenuBuilder {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
-            color: isSelected ? Theme.of(context).colorScheme.primary : null,
+            color: isSelected ? Theme.of(context).colorScheme.onSurface : null,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Flexible(child: Text(label)),
           const SizedBox(width: AppDimensions.spacingM),
           if (isSelected)
-            Icon(
-              sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+            ButleryIcon(
+              sortAscending ? ButleryIcons.arrowUp : ButleryIcons.arrowDown,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
         ],
       ),

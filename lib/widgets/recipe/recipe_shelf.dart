@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 class RecipeShelf extends StatelessWidget {
   final String title;
@@ -33,7 +34,12 @@ class RecipeShelf extends StatelessWidget {
             horizontal: AppDimensions.spacingMd,
             vertical: AppDimensions.spacingSm,
           ),
-          child: Text(title, style: AppTextStyles.sectionLabel),
+          child: Text(
+            title,
+            style: AppTextStyles.sectionLabel.copyWith(
+              color: context.modeColors.onWarningContainer,
+            ),
+          ),
         ),
         SizedBox(
           height: AppDimensions.thumbnailLargeSize + AppDimensions.spacingSm,
@@ -55,9 +61,7 @@ class RecipeShelf extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingSm),
         Divider(
           height: 1,
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
         ),
       ],
     );
@@ -105,7 +109,8 @@ class _ShelfCard extends StatelessWidget {
                             recipe.id,
                           ),
                           size: AppDimensions.imageSizeThumbnail / 2,
-                          opacity: AppDimensions.opacityDark,
+                          opacity:
+                              VegetableIllustration.recipePlaceholderOpacity,
                         ),
                       ),
               ),

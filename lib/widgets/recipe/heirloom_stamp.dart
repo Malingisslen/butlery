@@ -44,9 +44,9 @@ class HeirloomStamp extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: Container(
-        margin: const EdgeInsets.all(AppDimensions.spacingS),
+        margin: const EdgeInsets.all(AppDimensions.space4),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
+          horizontal: AppDimensions.space4,
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(

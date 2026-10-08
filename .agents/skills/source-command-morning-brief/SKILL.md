@@ -18,7 +18,7 @@ For EACH of C:/Butlery/butlery, C:/binge, C:/webbkollen:
 
 1. **Git activity** (24h): `git log --since="24 hours ago" --oneline --no-merges` — count +
    areas touched. Also `git status --porcelain | wc -l` (uncommitted work left behind?).
-2. **Health**: the repo's `stopCheck.command` from `.Codex/shared-plugin.json`
+2. **Health**: the repo's `stopCheck.command` from `.claude/shared-plugin.json`
    (dart analyze / npm run typecheck) — clean or N issues.
 3. **CI**: `gh run list --limit 3` in the repo — latest run green/red (skip if no gh).
 

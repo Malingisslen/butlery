@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Comprehensive image display information for immediate UI feedback
 class ImageDisplayInfo {
@@ -30,39 +30,21 @@ class ImageDisplayInfo {
     required this.canRetry,
   });
 
-  /// Get color indicator for upload state
-  Color getStateColor(ColorScheme cs, ButleryColors butleryColors) {
-    switch (state) {
-      case ImageUploadState.pending:
-        return butleryColors.info;
-      case ImageUploadState.uploading:
-        return butleryColors.warning;
-      case ImageUploadState.retrying:
-        return butleryColors.starGold;
-      case ImageUploadState.completed:
-        return butleryColors.success;
-      case ImageUploadState.failed:
-        return cs.error;
-      case ImageUploadState.cancelled:
-        return cs.onSurfaceVariant;
-    }
-  }
-
   /// Get icon for upload state
   IconData getStateIcon() {
     switch (state) {
       case ImageUploadState.pending:
-        return Icons.schedule;
+        return ButleryIcons.clock;
       case ImageUploadState.uploading:
-        return Icons.cloud_upload;
+        return ButleryIcons.upload;
       case ImageUploadState.retrying:
-        return Icons.refresh;
+        return ButleryIcons.refreshCw;
       case ImageUploadState.completed:
-        return Icons.cloud_done;
+        return ButleryIcons.circleCheck;
       case ImageUploadState.failed:
-        return Icons.error;
+        return ButleryIcons.triangleAlert;
       case ImageUploadState.cancelled:
-        return Icons.cancel;
+        return ButleryIcons.x;
     }
   }
 }

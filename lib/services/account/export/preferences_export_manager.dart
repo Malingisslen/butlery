@@ -222,6 +222,11 @@ class PreferencesExportManager {
       'user_acquisition',
       (max) => _exports.exportAcquisition(userId, maxDocuments: max),
     );
+    await readLeg(
+      'overwritten_versions',
+      'user_overwritten_versions',
+      (max) => _exports.exportOverwrittenVersions(userId, maxDocuments: max),
+    );
 
     return {
       ...section,
@@ -254,7 +259,8 @@ class PreferencesExportManager {
           'are internal plumbing rather than a record of you: rate_limits '
           '(short-lived stamps recording when you last did a rate-limited '
           'action and which item it concerned, used to stop spam, plus your '
-          'import usage counters and a one-time migration flag), counters '
+          'import and AI usage counters, including what your AI use has cost '
+          'today and this month, and a one-time migration flag), counters '
           '(unread badge totals derived from content that already appears '
           'elsewhere in this export), and report_throttle (when you last '
           'reported a piece of content — the reports themselves are in the '

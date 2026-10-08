@@ -5,37 +5,48 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog for recovering auto-saved recipe drafts with Swedish localization
 class DraftRecoveryDialog extends StatelessWidget {
   final List<DraftMetadata> availableDrafts;
 
+  /// Shows "Släng" (one draft) or "Släng alla", the only choice that deletes
+  /// (produktregler.md:171-172). The dialog then pops with null, as
+  /// "Börja om" does, which keeps the drafts.
+  final VoidCallback? onDiscardAll;
+
   const DraftRecoveryDialog({
     super.key,
     required this.availableDrafts,
+    this.onDiscardAll,
   });
 
   /// Show draft recovery dialog
   static Future<String?> show(
     BuildContext context,
-    List<DraftMetadata> availableDrafts,
-  ) async {
+    List<DraftMetadata> availableDrafts, {
+    VoidCallback? onDiscardAll,
+  }) async {
     if (availableDrafts.isEmpty) return null;
 
     return showDialog<String?>(
       context: context,
       barrierDismissible: false, // Force user to make choice
-      builder: (context) =>
-          DraftRecoveryDialog(availableDrafts: availableDrafts),
+      builder: (context) => DraftRecoveryDialog(
+        availableDrafts: availableDrafts,
+        onDiscardAll: onDiscardAll,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: Icon(
-        Icons.restore,
-        color: Theme.of(context).colorScheme.primary,
+      icon: ButleryIcon(
+        ButleryIcons.history,
+        color: Theme.of(context).colorScheme.onSurface,
         size: AppDimensions.iconSizeL,
       ),
       title: Text(
@@ -71,6 +82,22 @@ class DraftRecoveryDialog extends StatelessWidget {
         ],
       ),
       actions: [
+        if (onDiscardAll != null)
+          TextButton(
+            onPressed: () {
+              onDiscardAll!();
+              Navigator.of(context).pop(null);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(
+              availableDrafts.length == 1
+                  ? context.l10n.draftDiscard
+                  : context.l10n.draftDiscardAll,
+            ),
+          ),
+
         // Secondary action - Start fresh
         TextButton(
           onPressed: () => Navigator.of(context).pop(null),
@@ -85,7 +112,10 @@ class DraftRecoveryDialog extends StatelessWidget {
           onPressed: availableDrafts.isNotEmpty
               ? () => Navigator.of(context).pop(availableDrafts.first.draftId)
               : null,
-          icon: const Icon(Icons.restore, size: AppDimensions.iconSizeS),
+          icon: const ButleryIcon(
+            ButleryIcons.history,
+            size: AppDimensions.iconSizeS,
+          ),
           label: Text(context.l10n.draftRestore),
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
@@ -101,12 +131,12 @@ class DraftRecoveryDialog extends StatelessWidget {
         ? context.l10n.draftUnnamedRecipe
         : draft.title;
     return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Semantics(
         label: context.l10n.a11yDraftRecoverTile(draftTitle),
         button: true,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           onTap: () => Navigator.of(context).pop(draft.draftId),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
@@ -115,16 +145,16 @@ class DraftRecoveryDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingS),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
-                  child: Icon(
-                    Icons.article_outlined,
-                    color: Theme.of(context).colorScheme.primary,
+                  child: ButleryIcon(
+                    ButleryIcons.file,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: AppDimensions.iconSizeM,
                   ),
                 ),
@@ -139,9 +169,12 @@ class DraftRecoveryDialog extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXxs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
-                        '${draft.timeAgo} • ${context.l10n.draftFieldsFilledCount(draft.fieldCount)}',
+                        // How long the draft is kept, not only when it
+                        // was written (Skarmar v12 etapp 4 #editorutkastval;
+                        // 30 days, ux-beslut.json D-01).
+                        '${draft.timeAgo} · ${context.l10n.draftFieldsFilledCount(draft.fieldCount)} · ${draftTimeLeftLabel(context, draft.timeLeft)}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -149,8 +182,8 @@ class DraftRecoveryDialog extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
                   size: AppDimensions.iconSizeS,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -166,7 +199,22 @@ class DraftRecoveryDialog extends StatelessWidget {
 /// Extension for easy dialog access
 extension DraftRecoveryDialogExtension on BuildContext {
   /// Show draft recovery dialog
-  Future<String?> showDraftRecovery(List<DraftMetadata> availableDrafts) {
-    return DraftRecoveryDialog.show(this, availableDrafts);
+  Future<String?> showDraftRecovery(
+    List<DraftMetadata> availableDrafts, {
+    VoidCallback? onDiscardAll,
+  }) {
+    return DraftRecoveryDialog.show(
+      this,
+      availableDrafts,
+      onDiscardAll: onDiscardAll,
+    );
   }
+}
+
+/// "finns kvar i 23 dagar", or hours on the last day: the row says how long
+/// the draft is still kept (Skarmar v12 etapp 4 #editorutkastval).
+String draftTimeLeftLabel(BuildContext context, Duration left) {
+  if (left.inDays >= 1) return context.l10n.draftTimeLeftDays(left.inDays);
+  final hours = left.inHours < 1 ? 1 : left.inHours;
+  return context.l10n.draftTimeLeftHours(hours);
 }

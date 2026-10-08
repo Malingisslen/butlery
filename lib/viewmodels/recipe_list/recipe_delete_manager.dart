@@ -1,7 +1,6 @@
 // lib/viewmodels/recipe_list/recipe_delete_manager.dart
 
 import 'package:clock/clock.dart';
-import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -10,19 +9,23 @@ class PendingDelete {
   final String recipeId;
   final Recipe recipe;
   final int originalIndex;
-  final Timer timer;
   final DateTime createdAt;
 
   PendingDelete({
     required this.recipeId,
     required this.recipe,
     required this.originalIndex,
-    required this.timer,
     required this.createdAt,
   });
 }
 
 /// Manages optimistic recipe deletion with multi-pending undo support.
+///
+/// A delete stays pending until the view commits it with [commitDeletes],
+/// which it does when the Ångra snackbar closes (`UndoSnackBar.showDeferred`).
+/// There is no timer here: a timer of its own would commit while Ångra is
+/// still on screen, because the snackbar's window starts later than the
+/// delete (after its entrance animation, and only at the head of the queue).
 class RecipeDeleteManager {
   final UnifiedRecipeService _recipeService;
   final void Function() _invalidateCache;
@@ -46,7 +49,8 @@ class RecipeDeleteManager {
 
   bool get hasPendingDeletes => _pendingDeletes.isNotEmpty;
 
-  /// Delete a single recipe with 5-second undo window.
+  /// Optimistically delete a single recipe. It stays pending until
+  /// [commitDeletes] or an undo.
   void deleteRecipe(String recipeId) {
     if (_pendingDeletes.containsKey(recipeId)) return;
 
@@ -57,15 +61,10 @@ class RecipeDeleteManager {
     _invalidateCache();
     _notifyParent();
 
-    final timer = Timer(const Duration(seconds: 5), () {
-      _commitDelete(recipeId);
-    });
-
     _pendingDeletes[recipeId] = PendingDelete(
       recipeId: recipeId,
       recipe: recipe,
       originalIndex: index,
-      timer: timer,
       createdAt: clock.now(),
     );
   }
@@ -75,7 +74,6 @@ class RecipeDeleteManager {
     final pending = _pendingDeletes.remove(recipeId);
     if (pending == null) return;
 
-    pending.timer.cancel();
     _recipeService.optimisticRestoreAt(pending.recipe, pending.originalIndex);
     _invalidateCache();
     _notifyParent();
@@ -91,9 +89,11 @@ class RecipeDeleteManager {
     undoDeleteById(lastEntry.key);
   }
 
-  /// Bulk delete selected recipes with 7-second undo window.
-  void deleteSelected(Set<String> ids) {
+  /// Optimistically delete the selected recipes as one batch. Returns the ids
+  /// that became pending, for [commitDeletes].
+  Set<String> deleteSelected(Set<String> ids) {
     _lastBulkBatchIds = Set.from(ids);
+    final batch = <String>{};
 
     for (final id in ids) {
       if (_pendingDeletes.containsKey(id)) continue;
@@ -103,21 +103,24 @@ class RecipeDeleteManager {
 
       final index = _recipeService.optimisticRemoveWithIndex(id);
 
-      final timer = Timer(const Duration(seconds: 7), () {
-        _commitDelete(id);
-      });
-
       _pendingDeletes[id] = PendingDelete(
         recipeId: id,
         recipe: recipe,
         originalIndex: index,
-        timer: timer,
         createdAt: clock.now(),
       );
+      batch.add(id);
     }
 
     _invalidateCache();
     _notifyParent();
+    return batch;
+  }
+
+  /// Commit the pending deletes among [ids]. Ids that were undone, restored
+  /// or already committed are skipped.
+  Future<void> commitDeletes(Iterable<String> ids) async {
+    await Future.wait(ids.toList().map(_commitDelete));
   }
 
   /// Undo the last bulk delete batch.
@@ -129,7 +132,6 @@ class RecipeDeleteManager {
     for (final id in idsToRestore.reversed) {
       final pending = _pendingDeletes.remove(id);
       if (pending != null) {
-        pending.timer.cancel();
         _recipeService.optimisticRestoreAt(
           pending.recipe,
           pending.originalIndex,
@@ -145,7 +147,6 @@ class RecipeDeleteManager {
   /// Cancel all pending deletes and restore recipes. Used in dispose.
   void cancelAll() {
     for (final pending in _pendingDeletes.values) {
-      pending.timer.cancel();
       _recipeService.optimisticRestoreAt(pending.recipe, pending.originalIndex);
     }
     _pendingDeletes.clear();
@@ -155,7 +156,6 @@ class RecipeDeleteManager {
     final pending = _pendingDeletes.remove(recipeId);
     if (pending == null) return;
 
-    pending.timer.cancel();
     try {
       await _recipeService.deleteRecipe(recipeId);
     } catch (e) {

@@ -3,7 +3,7 @@ import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/services/parsing/parsers/viterbi_context_processor.dart';
-import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/parsers/line_role.dart';
 
 /// Classification result for a single line of text.
 enum LineType {
@@ -63,10 +63,7 @@ class RecipeSection {
   /// Lines in this section.
   final List<ClassifiedLine> lines;
 
-  const RecipeSection({
-    required this.type,
-    required this.lines,
-  });
+  const RecipeSection({required this.type, required this.lines});
 
   @override
   String toString() => 'RecipeSection(${type.name}, ${lines.length} lines)';
@@ -161,11 +158,7 @@ class SwedishLineClassifier {
 
     // Empty line
     if (trimmed.isEmpty) {
-      return ClassifiedLine(
-        text: line,
-        type: LineType.empty,
-        confidence: 1.0,
-      );
+      return ClassifiedLine(text: line, type: LineType.empty, confidence: 1.0);
     }
 
     // Check for section headers first
@@ -221,19 +214,11 @@ class SwedishLineClassifier {
 
     // Check if it could be a title (short, no numbers, capitalized)
     if (_couldBeTitle(trimmed)) {
-      return ClassifiedLine(
-        text: line,
-        type: LineType.title,
-        confidence: 0.6,
-      );
+      return ClassifiedLine(text: line, type: LineType.title, confidence: 0.6);
     }
 
     // Default to noise if no clear classification
-    return ClassifiedLine(
-      text: line,
-      type: LineType.noise,
-      confidence: 0.4,
-    );
+    return ClassifiedLine(text: line, type: LineType.noise, confidence: 0.4);
   }
 
   /// Classify multiple lines and group into sections.
@@ -319,8 +304,16 @@ class SwedishLineClassifier {
             // only removes a phantom "deg" row. The detector must err toward
             // "it's an ingredient" so a real allergen-bearing line is never
             // dropped from tagging input.
-            final subHeading = captureSubHeadings
-                ? _componentSubHeading(text)
+            final role = LineRoles.of(text);
+            if (role.kind == LineRoleKind.ingredient) {
+              // BUT-1714: the colon-stripped label, so lookup can resolve it.
+              ingredients.add(role.label!);
+              ingredientSections.add(currentSection);
+              break;
+            }
+            final subHeading =
+                captureSubHeadings && role.kind == LineRoleKind.heading
+                ? role.label
                 : null;
             if (subHeading != null) {
               currentSection = subHeading;
@@ -356,13 +349,8 @@ class SwedishLineClassifier {
             // component header ("Deg:") sets it. With capture off, no group
             // is tracked (sections aren't stamped anyway).
             final headerText = line.text.trim();
-            final headerLabel = captureSubHeadings
-                ? _componentSubHeading(headerText)
-                : null;
-            final glutenLabel = headerLabel == null
-                ? RecipeSectionDetector.bareGlutenIngredientLabel(headerText)
-                : null;
-            if (glutenLabel != null) {
+            final role = LineRoles.of(headerText);
+            if (role.kind == LineRoleKind.ingredient) {
               // BUT-1714: the detector refused this line as a heading exactly
               // so the gluten row survives in the flat list tagging reads.
               // Unlike the ingredient branch above, a null here would DELETE
@@ -374,15 +362,17 @@ class SwedishLineClassifier {
               // `mjol:`, match nothing, and take every allergen verdict on the
               // recipe to UNKNOWN. See [bareGlutenIngredientLabel].
               //
-              // Deliberately NOT gated on [captureSubHeadings]: with capture
-              // off `headerLabel` is already null, and gating here would make
-              // the kill switch drop the gluten line — the one outcome the
-              // switch must never produce. Off means "no grouping", never
-              // "lose an allergen".
-              ingredients.add(glutenLabel);
+              // Deliberately NOT gated on [captureSubHeadings]: gating here
+              // would make the kill switch drop the gluten line — the one
+              // outcome the switch must never produce. Off means "no
+              // grouping", never "lose an allergen".
+              ingredients.add(role.label!);
               ingredientSections.add(currentSection);
             } else {
-              currentSection = headerLabel;
+              currentSection =
+                  captureSubHeadings && role.kind == LineRoleKind.heading
+                  ? role.label
+                  : null;
             }
             break;
           case LineType.empty:
@@ -401,12 +391,6 @@ class SwedishLineClassifier {
       totalTime: totalTime,
     );
   }
-
-  /// Component sub-heading detection is the one audited heuristic in
-  /// [RecipeSectionDetector.componentSubHeadingLabel] — shared with the
-  /// schema.org import tier so the allergen-safety rule lives in one place.
-  static String? _componentSubHeading(String text) =>
-      RecipeSectionDetector.componentSubHeadingLabel(text);
 
   bool _isSectionHeader(String text) {
     for (final pattern in _ingredientHeaders) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/accessibility_utils.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 export 'loading_scaffold.dart';
 export 'error_scaffold.dart';
@@ -11,6 +10,13 @@ export 'tabbed_scaffold.dart';
 export 'responsive_scaffold_builder.dart';
 
 /// Scaffold templates eliminating duplicate patterns across 30+ view files.
+///
+/// A view built on this scaffold is a subpage: the top bar is the canonical
+/// [ButleryTopBar.undersida] (Komponentark v1 §01 pattern 2, rows 71-78;
+/// beslutslogg B-45), with the back arrow named "Tillbaka till [backTo]", or
+/// "Tillbaka" when no destination is given (tillgänglighetshandoff:132). The
+/// Skärmar v12 views built on the shared scaffolds are drawn with a back
+/// arrow, so this is the pattern they get.
 class BaseScaffold extends StatelessWidget {
   final String? title;
   final Widget body;
@@ -24,11 +30,18 @@ class BaseScaffold extends StatelessWidget {
   final Color? backgroundColor;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
+
+  /// Centres the title. The drawn subpage title is left-aligned
+  /// (Komponentark v1:73), so false is the default.
   final bool centerTitle;
   final Widget? leading;
   final PreferredSizeWidget? bottom;
   final bool extendBodyBehindAppBar;
   final bool resizeToAvoidBottomInset;
+
+  /// The name of the view the back arrow leads to, for its accessible name
+  /// "Tillbaka till [backTo]". Null gives "Tillbaka".
+  final String? backTo;
 
   const BaseScaffold({
     super.key,
@@ -44,17 +57,29 @@ class BaseScaffold extends StatelessWidget {
     this.backgroundColor,
     this.showBackButton = true,
     this.onBackPressed,
-    this.centerTitle = true,
+    this.centerTitle = false,
     this.leading,
     this.bottom,
     this.extendBodyBehindAppBar = false,
     this.resizeToAvoidBottomInset = true,
+    this.backTo,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: title != null ? _clampedAppBar(context) : null,
+      appBar: title != null
+          ? ButleryTopBar.undersida(
+              title: title!,
+              backTo: backTo,
+              onBack: showBackButton ? onBackPressed : null,
+              implyBack: showBackButton,
+              actions: actions ?? const [],
+              leading: leading,
+              bottom: bottom,
+              centerTitle: centerTitle,
+            )
+          : null,
       body: body,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
@@ -66,56 +91,5 @@ class BaseScaffold extends StatelessWidget {
       extendBodyBehindAppBar: extendBodyBehindAppBar,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
     );
-  }
-
-  // BUT-763: Material AppBar's fixed `kToolbarHeight = 56.0` clips titles
-  // at >2x system text scaling. Clamp text scale at 1.3x for AppBar chrome
-  // only; body content keeps the user's full scaler.
-  PreferredSizeWidget _clampedAppBar(BuildContext context) {
-    final appBar = _buildAppBar(context);
-    return PreferredSize(
-      preferredSize: appBar.preferredSize,
-      child: AccessibilityUtils.clampTextScaling(
-        context: context,
-        child: appBar,
-      ),
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      // BUT-557: explicit `header + container` flags so WCAG 1.3.1 audit
-      // tooling sees the landmark; Material's implicit header semantics
-      // already announce correctly to screen readers either way.
-      title: Semantics(
-        header: true,
-        container: true,
-        label: context.l10n.a11yAppBarHeaderHint(title!),
-        child: Text(title!),
-      ),
-      centerTitle: centerTitle,
-      actions: actions,
-      leading: _buildLeading(context),
-      bottom: bottom,
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-      foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-      elevation: Theme.of(context).appBarTheme.elevation,
-    );
-  }
-
-  Widget? _buildLeading(BuildContext context) {
-    if (leading != null) return leading;
-    if (showBackButton && Navigator.canPop(context)) {
-      return Semantics(
-        label: context.l10n.accessibilityBackButton,
-        button: true,
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: onBackPressed ?? () => Navigator.pop(context),
-          tooltip: context.l10n.accessibilityBackButton,
-        ),
-      );
-    }
-    return null;
   }
 }

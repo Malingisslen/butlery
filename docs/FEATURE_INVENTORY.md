@@ -25,14 +25,14 @@
 
 > _Partial refresh 2026-07-14:_ the AUTH and IMP rows above were re-verified against the current test suite (AUTH-11, AUTH-14 now Verified; IMP-06 now Partial — see the Tier-1 list below). The other rows still reflect the 2026-06-21 audit and have not been re-run wholesale.
 
-**Reading the pattern:** the back-end engines and the menu/shopping flows are well-tested. The thinnest coverage is at the *screen* layer of recipe management — the create/edit forms have solid logic tests but almost no tests that drive the actual UI. The security/compliance-sensitive gaps flagged at build time have since been largely closed (MFA, client-side account deletion, receive-share, social extraction all now have tests — see the refreshed Tier-1 list); allergen/dietary filtering (REC-03) remains the one safety-sensitive item still lacking dedicated assertions.
+**Reading the pattern:** the back-end engines and the menu/shopping flows are well-tested. The thinnest coverage is at the *screen* layer of recipe management — the create/edit forms have solid logic tests but almost no tests that drive the actual UI. The security/compliance-sensitive gaps flagged at build time have since been largely closed (MFA, client-side account deletion, receive-share, social extraction all now have tests — see the refreshed Tier-1 list).
 
 ## Gaps worth ticketing
 
 Prioritized by risk, not by count. These are the candidates to turn into Linear tickets; the existing sprint loop can then fix them through its normal sign-off tiers.
 
 **Tier 1 — safety / security / compliance, currently untested:**
-- **REC-03 — Allergen/dietary recipe filtering (Partial).** The high-risk "only show allergen-free at 100% coverage" safety logic lives here; it has VM-level coverage but still lacks dedicated filter-path assertions given the safety stakes. **Still open — the one remaining Tier-1 gap.**
+- **REC-03 — Allergen/dietary recipe filtering.** The high-risk "only show allergen-free at 100% coverage" safety logic lives here. Dedicated filter-path assertions: the `REC-03 allergen/dietary filter path` group in `recipe_list_viewmodel_test.dart` (verdict, AND, override, coverage boundary, anomaly, seed bypass), beside the BUT-1335 gate tests.
 
 _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **AUTH-11 / SET-05 — MFA (SMS).** Service logic now covered by `auth_mfa_service_test.dart` + `mfa_types_test.dart` (BUT-1333: enroll, code delivery, sign-in resolution, error mapping). Residual: the `MfaSettingsView` enrollment screen (SET-05) is still untested at the view layer — a Tier-2 UI gap, not a Tier-1 safety one.
@@ -102,7 +102,6 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | ID | Feature | Tests |
 |---|---|---|
 | IMP-01 | URL import (single + batch) | Verified |
-| IMP-02 | Recipe-index (listing-page) expansion | Partial |
 | IMP-03 | Smart (unified) import | Verified |
 | IMP-04 | Photo / OCR import (multi-page) | Verified |
 | IMP-05 | Text / paste import | Verified |
@@ -375,7 +374,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Independent dimensions: time (OR), meal type (OR), rating (highest threshold wins), allergen-free (AND, requires 100% coverage + valid tagging), dietary (AND, same safety gate), personal tags (AND include / OR exclude), favorites-only, pantry-only (async match). Sort + all filters persisted and restored. "Rensa alla" clears.
 - **Edge cases:** Allergen/dietary filters exclude recipes with no tag analysis UNLESS system-seeded (keeps starters visible). Coverage <1.0 or `needsRetagging` → excluded for safety. Pantry filter empty until async resolves.
 - **Validation:** **Safety-critical** — "free" only trusted at 100% coverage with valid tagging.
-- **Test coverage:** Partial — `recipe_list_viewmodel_test.dart`, `personal_tag_filter_chips_test.dart`. The allergen-safety filtering is high-risk and warrants dedicated assertions.
+- **Test coverage:** Partial — `recipe_list_viewmodel_test.dart` (allergen/dietary safety: the BUT-1335 and REC-03 groups), `personal_tag_filter_chips_test.dart`.
 
 #### REC-04: Favorite toggle
 - **Entry:** Heart icon on cards + recipe-detail hero bar.
@@ -513,19 +512,12 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 ### Recipe Import
 
 #### IMP-01: URL import (single + multi-URL batch)
-- **Entry:** `/importViaUrl`; also from ReceiveShare for detected recipe URLs.
+- **Entry:** `/smartImport` (via `ImportManager.autoImport`).
 - **User story:** As a home cook, I want to paste one or several recipe links and have them fetched and parsed so that I don't retype recipes from sites I browse.
 - **Expected behavior:** Single URL → platform detect + mobile→web conversion → headless extraction → parse → editor. Multiple URLs (various separators, de-duplicated) → sequential batch fetch (never concurrent — cost/rate-limit safety) with per-URL progress + retry, partial-success tolerance, combined handoff to the multi-recipe picker. Pre-fetch suggestions flag known sites, keywords, social links.
 - **Edge cases:** Empty/malformed URL; non-http(s); private/reserved host blocked (SSRF guard); whole-batch failure surfaces batch error while good rows stay importable.
 - **Validation:** Localized URL validation; only well-formed fetchable URLs kept.
-- **Test coverage:** Verified — `url_import_viewmodel_test.dart`, `url_import_strategy_test.dart`, `import_via_url_view_multi_test.dart`.
-
-#### IMP-02: Recipe-index (listing-page) expansion
-- **Entry:** Opt-in banner within `/importViaUrl` after an index page is detected.
-- **User story:** As a user pasting a category/index page, I want the app to offer to import every recipe it links to so that I can bulk-add a collection in one step.
-- **Expected behavior:** Probe-fetches (SSRF-guarded), harvests recipe links, shows "import all N" only when link count ≥ threshold. On opt-in runs the sequential batch fetch. Never auto-runs.
-- **Edge cases:** Single page / fetch fail / too few links → no banner (silent). URL edited mid-probe clears stale links.
-- **Test coverage:** Partial — via `url_import_viewmodel_test.dart` (no dedicated expander test).
+- **Test coverage:** Verified — `url_import_strategy_test.dart`.
 
 #### IMP-03: Smart (unified) import
 - **Entry:** `/smartImport` — primary "Importera länk" tile, deep-link target, empty-state CTA.
@@ -546,20 +538,18 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### IMP-05: Text / paste import ("Från sociala medier")
 - **Entry:** `/franSocialaMedier` — also landing for share-intent text, social extraction, single-photo OCR handoff.
 - **User story:** As a user, I want to paste recipe text copied from anywhere and have it structured so that content without a scrapable URL still imports.
-- **Expected behavior:** Paste/type (max 10000 chars), auto-saved draft. A cheap recipe-likeness heuristic warns before spending a paid LLM parse on non-recipe text (override allowed). Multi-recipe paste → picker; single → editor. 60s timeout message. Source URL attribution carried.
+- **Expected behavior:** Paste/type (max 10000 chars), auto-saved draft. A cheap recipe-likeness heuristic warns on non-recipe text (override allowed). Multi-recipe paste → picker; single → editor. 60s timeout message. Source URL attribution carried.
 - **Edge cases:** Empty; <10 chars rejected; non-recipe → confirm dialog; server hang → timeout message.
 - **Validation:** Non-empty + ≥10 chars.
 - **Test coverage:** Verified — `text_import_viewmodel_test.dart`, `text_import_strategy_test.dart`, `text_import_normalizer_test.dart`.
 
 #### IMP-06: Receive-share (share intent from other apps)
-- **Entry:** `/receiveShare` — OS share sheet hands content to the app.
+- **Entry:** OS share sheet → `IncomingShareHandler`: photos → `/photoImport`; text with a link → `/smartImport`, started without a tap; other text → `/franSocialaMedier` (BUT-2241). Web Share Target → `DeepLinkHandler`.
 - **User story:** As a user, I want to share a link or text from another app into Butlery and have it routed to the right importer so that importing is one tap from where I found the recipe.
-- **Expected behavior:** Classifies the shared content (social URL / recipe URL / recipe text / plain) + platform, renders an adaptive screen routing each to the right importer with a manual-copy fallback. Threads import-funnel analytics.
-- **Edge cases:** Extraction failure → inline error + retry + manual copy. No URL → text import.
 - **Test coverage:** Partial — `incoming_share_handler_test.dart` (BUT-941) proves the routing decision logic (auth-gate, hold-until-routable, never break startup); `social_media_extractor_test.dart` + `content_detector_service_test.dart` cover the underlying extraction/classification. No device-level share-intent E2E (OS share sheet → app) yet.
 
 #### IMP-07: Social-media URL extraction (Instagram/TikTok/YouTube)
-- **Entry:** ReceiveShare auto-extract + URL-import suggestion.
+- **Entry:** `/smartImport` via `ImportManager.autoImport`.
 - **User story:** As a user, I want to pull recipe text out of an Instagram/TikTok/YouTube post so that I can import recipes that live inside social posts.
 - **Expected behavior:** Detects platform, selects a strategy, returns extracted text + metadata. YouTube has a tiered strategy (video-ID → metadata → transcript → LLM), falling back to user-assisted import with the transcript, then a manual-screenshot state.
 - **Edge cases:** Failure carries a `reason` for analytics; YouTube with no transcript → manual fallback; paywalled posts → extraction error.
@@ -585,7 +575,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** 3-step wizard — select ingredient lines (pre-highlighted), select instruction lines (scored), review/edit all fields. Cleans step-number prefixes. Builds a personal recipe with source URL + thumbnail.
 - **Edge cases:** Can't proceed without a selection; portions clamped 1–100, time 0–1440.
 - **Validation:** Per-step validation; save needs title + ≥1 ingredient + ≥1 instruction.
-- **Test coverage:** Partial — base-VM + `import_recipe_journey_test.dart` exercise surrounding flow; no dedicated assisted-import VM test. *(Pure free fallback — no LLM/network.)*
+- **Test coverage:** Partial. *(Pure free fallback — no LLM/network.)*
 
 #### IMP-11: Ingredient-line parsing (CRF / NER / ONNX)
 - **Entry:** Not a screen — runs downstream of every import during parse. *(See ENG-09 for the engine-level view.)*

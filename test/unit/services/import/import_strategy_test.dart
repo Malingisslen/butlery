@@ -12,10 +12,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Production imports
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
+import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 
 // Test implementation of ImportValidationMixin
@@ -360,6 +362,41 @@ void main() {
         expect(validator.extractRating('4.25/5'), equals(4.25));
         expect(validator.extractRating('2.5⭐'), equals(2.5));
       });
+    });
+  });
+
+  group('ImportResult.withMetadata (BUT-2238)', () {
+    test('keeps every field and merges the metadata', () {
+      final assisted = ImportResult.assistance(
+        extractedText: 'text',
+        suggestedTitle: 'Titel',
+        likelyIngredientLines: const [0],
+        metadata: const {'a': 1, 'b': 1},
+      ).withMetadata({'b': 2});
+      expect(assisted.needsAssistance, isTrue);
+      expect(assisted.isSuccess, isFalse);
+      expect(assisted.extractedText, 'text');
+      expect(assisted.suggestedTitle, 'Titel');
+      expect(assisted.likelyIngredientLines, [0]);
+      expect(assisted.metadata, {'a': 1, 'b': 2});
+
+      final failed = ImportResult.failure(
+        'nej',
+        warnings: const ['w'],
+        errorCode: ImportErrorCode.noRecipeContent,
+      ).withMetadata({'c': 3});
+      expect(failed.errorMessage, 'nej');
+      expect(failed.warnings, ['w']);
+      expect(failed.errorCode, ImportErrorCode.noRecipeContent);
+      expect(failed.recipe, isNull);
+      expect(failed.metadata, {'c': 3});
+    });
+
+    test('a recipe survives the copy', () {
+      final recipe = RecipeFactory.build(id: 'r1');
+      final r = ImportResult.success(recipe).withMetadata({'x': 1});
+      expect(r.isSuccess, isTrue);
+      expect(r.recipe, same(recipe));
     });
   });
 }

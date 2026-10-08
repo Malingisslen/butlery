@@ -15,8 +15,13 @@
 // lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
@@ -24,8 +29,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -108,40 +112,30 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     BuildContext context,
     AddMembersToGroupViewModel viewModel,
   ) {
-    return AppBar(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.l10n.groupAddMembers,
-            style: AppTextStyles.headlineSmall,
-          ),
-          if (viewModel.group != null)
-            Text(
-              viewModel.group!.name,
-              style: AppTextStyles.titleMedium,
-            ),
-        ],
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      elevation: AppDimensions.elevationLow,
+    // A subpage of the group (Skarmar v12 del 3 'Lägg till medlemmar';
+    // Komponentark v1 §01 pattern 2), with the group's name as the line
+    // under the title. The bar is ink in both modes, so its text actions are
+    // paper (onPrimary, #F5F4ED in both schemes).
+    final onBar = TextButton.styleFrom(
+      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+    );
+    return ButleryTopBar.undersida(
+      title: context.l10n.groupAddMembers,
+      secondaryLine: viewModel.group?.name,
+      secondaryLineIsLive: false,
+      backTo: viewModel.group?.name,
       actions: [
         if (viewModel.hasSelectedFriends)
-          ActionButtons.textButton(
-            context,
-            label: context.l10n.commonSelectAll,
-            onPressed: () {
-              viewModel.selectAllVisible();
-            },
+          TextButton(
+            style: onBar,
+            onPressed: viewModel.selectAllVisible,
+            child: Text(context.l10n.commonSelectAll),
           ),
         if (viewModel.hasSelectedFriends)
-          ActionButtons.textButton(
-            context,
-            label: context.l10n.commonClear,
-            onPressed: () {
-              viewModel.clearAllSelections();
-            },
+          TextButton(
+            style: onBar,
+            onPressed: viewModel.clearAllSelections,
+            child: Text(context.l10n.commonClear),
           ),
       ],
     );
@@ -163,7 +157,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       return StateWidget.empty(
         title: context.l10n.groupNoFriendsAvailable,
         subtitle: context.l10n.groupAllFriendsAlreadyMembers,
-        icon: Icons.people_outline,
+        icon: ButleryIcons.users,
         actionLabel: context.l10n.commonRefresh,
         onAction: () {
           viewModel.refresh();
@@ -197,17 +191,17 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         },
         decoration: InputDecoration(
           hintText: context.l10n.messagingSearchFriends,
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const ButleryIcon(ButleryIcons.search),
           suffixIcon: viewModel.hasSearchQuery
               ? IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: const ButleryIcon(ButleryIcons.x),
                   onPressed: () {
                     viewModel.clearSearch();
                   },
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
       ),
@@ -219,8 +213,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
+          ButleryIcon(
+            ButleryIcons.info,
             size: AppDimensions.iconSizeS,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -265,30 +259,45 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     final hasInvitation = viewModel.hasInvitationStatus(friend.uid);
     final invitationStatus = viewModel.getInvitationStatusForUser(friend.uid);
 
+    // One node per friend: the card carries the name, the invitation
+    // status when there is one, the selected state and the tap.
     return SelectionCard(
+      isSelected: isSelected,
+      semanticLabel: hasInvitation
+          ? '${friend.displayName}, ${_invitationStatusText(invitationStatus)}'
+          : friend.displayName,
       onTap: () {
         viewModel.toggleFriendSelection(friend.uid);
       },
-      child: ListTile(
-        leading: SocialAvatarComponents.avatar(
-          user: friend,
-          size: ImageSize.medium,
-        ),
-        title: Text(
-          friend.displayName,
-          style: AppTextStyles.titleMedium,
-        ),
-        subtitle: null,
-        trailing: _buildFriendTileTrailing(
-          friend,
-          viewModel,
-          isSelected,
-          hasInvitation,
-          invitationStatus,
+      child: ExcludeSemantics(
+        child: ListTile(
+          leading: SocialAvatarComponents.avatar(
+            user: friend,
+            size: ImageSize.medium,
+          ),
+          title: Text(
+            friend.displayName,
+            style: AppTextStyles.titleMedium,
+          ),
+          subtitle: null,
+          trailing: _buildFriendTileTrailing(
+            friend,
+            viewModel,
+            isSelected,
+            hasInvitation,
+            invitationStatus,
+          ),
         ),
       ),
     );
   }
+
+  String _invitationStatusText(String? invitationStatus) =>
+      switch (invitationStatus) {
+        'sent' => context.l10n.groupInvitationSent,
+        'failed' => context.l10n.commonFailed,
+        _ => context.l10n.commonPending,
+      };
 
   Widget _buildFriendTileTrailing(
     UserProfile friend,
@@ -301,29 +310,30 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       // Visa inbjudningsstatus
       Color statusColor;
       IconData statusIcon;
-      String statusText;
+      final statusText = _invitationStatusText(invitationStatus);
 
       switch (invitationStatus) {
         case 'sent':
-          statusColor = context.butleryColors.success;
-          statusIcon = Icons.check_circle;
-          statusText = context.l10n.groupInvitationSent;
+          statusColor = context.modeColors.success;
+          statusIcon = ButleryIcons.circleCheck;
           break;
         case 'failed':
           statusColor = Theme.of(context).colorScheme.error;
-          statusIcon = Icons.error;
-          statusText = context.l10n.commonFailed;
+          statusIcon = ButleryIcons.triangleAlert;
           break;
         default:
-          statusColor = context.butleryColors.warning;
-          statusIcon = Icons.schedule;
-          statusText = context.l10n.commonPending;
+          statusColor = context.modeColors.warning;
+          statusIcon = ButleryIcons.clock;
       }
 
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(statusIcon, color: statusColor, size: AppDimensions.iconSizeM),
+          ButleryIcon(
+            statusIcon,
+            color: statusColor,
+            size: AppDimensions.iconSizeM,
+          ),
           Text(
             statusText,
             style: AppTextStyles.bodySmall.copyWith(color: statusColor),
@@ -359,19 +369,16 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: cs.error.withValues(
-                      alpha: AppDimensions.opacityVeryLight,
-                    ),
+                    color: context.modeColors.surfaceTintDanger,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
-                    border: Border.all(color: cs.error),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: cs.error,
+                      ButleryIcon(
+                        ButleryIcons.triangleAlert,
+                        color: cs.onErrorContainer,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
@@ -379,7 +386,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                         child: Text(
                           viewModel.invitationError!,
                           style: AppTextStyles.bodyLarge.copyWith(
-                            color: cs.error,
+                            color: cs.onErrorContainer,
                           ),
                         ),
                       ),
@@ -390,36 +397,25 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             ),
             const SizedBox(height: AppDimensions.spacingM),
           ],
-          ActionButtons.primaryButton(
-            context,
+          // The view's one saffron action, "Bjud in 1 vald" as drawn
+          // (Skarmar v12 del 3 #laggtillmedlemmar:562; Grafisk manual
+          // v6:219). The count is a plural: "Bjud in 3 valda".
+          HeroButton(
+            key: const ValueKey('addMembers.invite'),
             label: context.l10n.groupSendInvitations(viewModel.selectedCount),
-            onPressed: viewModel.isSendingInvitations
-                ? null
-                : () async {
-                    // ✅ FIXED: Capture count BEFORE sending (sendInvitations clears selection)
-                    final invitationCount = viewModel.selectedCount;
-                    final success = await viewModel.sendInvitations();
+            onPressed: () async {
+              final success = await viewModel.sendInvitations();
 
-                    if (mounted && success) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            context.l10n.groupInvitationsSent(invitationCount),
-                          ),
-                          backgroundColor: context.butleryColors.success,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                  },
-            isLoading: viewModel.isSendingInvitations,
-            loadingText: context.l10n.commonSending,
-            isExpanded: true,
+              if (mounted && success) {
+                SnackBarUtils.showSuccess(
+                  context,
+                  context.l10n.groupInvitationsSent(viewModel.sentCount),
+                );
+              }
+            },
+            busy: viewModel.isSendingInvitations,
+            busyLabel: context.l10n.commonSending,
+            expand: true,
           ),
         ],
       ),
@@ -428,7 +424,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildErrorState(AddMembersToGroupViewModel viewModel) {
     return StateWidget.error(
-      message: viewModel.error ?? context.l10n.errorUnknown,
+      message: viewModel.error ?? context.l10n.groupAddMembersLoadFailed,
       onAction: () {
         viewModel.clearError();
         viewModel.refresh();

@@ -1,9 +1,12 @@
 // lib/services/account/export/compliance_export_manager.dart
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson, sanitizeTimestamp;
 
@@ -61,6 +64,7 @@ const _transientFunctionsErrorCodes = <String>{
 /// recent-1000 snapshot.
 class ComplianceExportManager {
   final FirebaseDataExportRepository? _exportRepo;
+  final auth_repo.AuthRepository? _authRepo;
   final FirebaseFunctions _functions;
   static const String _logTag = 'ComplianceExportManager';
   // BUT-770: cap total entries we'll page through to avoid runaway exports
@@ -72,12 +76,17 @@ class ComplianceExportManager {
   ComplianceExportManager({
     FirebaseDataExportRepository? dataExportRepository,
     FirebaseFunctions? functions,
+    auth_repo.AuthRepository? authRepository,
   }) : _exportRepo = dataExportRepository,
+       _authRepo = authRepository,
        _functions =
            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+
+  auth_repo.AuthRepository get _auth =>
+      _authRepo ?? ServiceLocator.get<auth_repo.AuthRepository>();
 
   /// Export audit logs for GDPR Article 15 (Right of Access).
   ///
@@ -185,6 +194,117 @@ class ComplianceExportManager {
       );
     }
   }
+
+  /// Export two-step verification for GDPR Article 15 (BUT-2142, E1): the
+  /// enrolled phone numbers, and the backup-code set's creation time and
+  /// counts.
+  ///
+  /// `mfa_backup_codes` is server-only at the rules layer, so the counts come
+  /// from the `exportMfaRecoveryData` callable. Salts and hashes are never
+  /// exported.
+  Future<Map<String, dynamic>> exportTwoStepVerification(String userId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.uid != userId) {
+        throw const ComplianceExportException(
+          'Two-step verification export needs the signed-in user',
+        );
+      }
+      final factors = await user.multiFactor.getEnrolledFactors();
+      final section = <String, dynamic>{
+        'enrolled_second_factors': [
+          for (final f in factors)
+            {
+              'factor_id': f.factorId,
+              'display_name': f.displayName,
+              'phone_number': f is PhoneMultiFactorInfo ? f.phoneNumber : null,
+              'enrolled_at': _enrolledAtUtc(f.enrollmentTimestamp),
+            },
+        ],
+        'gdpr_article': 'Article 15 - Right of Access',
+        // Art. 12(1): a withheld item the data subject cannot see is an
+        // undisclosed gap, so the section names what E1 leaves out.
+        'data_minimisation':
+            'Not reproduced here: the backup codes themselves, which are '
+            'stored only as salted hashes; when each code was used, which is '
+            'in the audit_logs section; and mfa_recovery_attempts, a counter '
+            'of wrong backup-code attempts on your account that is removed '
+            'automatically after its attempt window or lockout ends.',
+      };
+      try {
+        section['backup_codes'] = await _fetchBackupCodes();
+      } on FirebaseFunctionsException catch (e, st) {
+        app_logger.AppLogger.error(
+          '[$_logTag] Failed to export backup codes (code=${e.code})',
+          e,
+          _logTag,
+          st,
+        );
+        if (!_transientFunctionsErrorCodes.contains(e.code)) {
+          throw ComplianceExportException(
+            'Two-step verification export failed: ${e.message ?? e.code}',
+            cause: e,
+            code: e.code,
+          );
+        }
+        // The phone numbers above are already read, so only the backup-code
+        // half is marked failed; the root error_code makes the bundle say the
+        // section may be incomplete.
+        section['backup_codes_error'] = e.message ?? e.code;
+        section['error_code'] = e.code;
+        section['note'] =
+            'Transient backend error — retry the export; other collections are unaffected';
+      }
+      return section;
+    } on ComplianceExportException {
+      rethrow;
+    } catch (e, st) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Unexpected error exporting two-step verification',
+        e,
+        _logTag,
+        st,
+      );
+      throw ComplianceExportException(
+        'Two-step verification export failed: $e',
+        cause: e,
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchBackupCodes() async {
+    final callable = _functions.httpsCallable(
+      'exportMfaRecoveryData',
+      options: HttpsCallableOptions(timeout: const Duration(seconds: 60)),
+    );
+    final result = await callable.call<Map<dynamic, dynamic>>();
+    final data = Map<String, dynamic>.from(result.data);
+    final hasBackupCodes = data['hasBackupCodes'];
+    final total = data['total'];
+    final unused = data['unused'];
+    if (hasBackupCodes is! bool || total is! int || unused is! int) {
+      throw const ComplianceExportException(
+        'exportMfaRecoveryData returned an incomplete reply',
+      );
+    }
+    return {
+      'has_backup_codes': hasBackupCodes,
+      'created_at': data['createdAt'],
+      'total': total,
+      'unused': unused,
+      'algorithm': data['algorithm'],
+    };
+  }
+
+  /// The plugin reports enrolment in SECONDS since the epoch on every
+  /// platform (web divides milliseconds by 1000, iOS uses
+  /// `timeIntervalSince1970`).
+  static String? _enrolledAtUtc(double? seconds) => seconds == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch(
+          (seconds * 1000).round(),
+          isUtc: true,
+        ).toIso8601String();
 
   /// Summarize operations from audit logs
   Map<String, int> _summarizeOperations(List<Map<String, dynamic>> auditLogs) {

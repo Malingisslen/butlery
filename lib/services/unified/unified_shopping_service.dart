@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -35,6 +36,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/modules/shopping_initialization_module.dart';
 import 'package:butlery/services/unified/modules/shopping_list_management_module.dart';
 import 'package:butlery/services/unified/modules/shopping_item_management_module.dart';
+import 'package:butlery/services/unified/modules/shopping_restore_module.dart';
 import 'package:butlery/services/unified/shopping_failure_message.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
@@ -98,6 +100,7 @@ class UnifiedShoppingService
   late final ShoppingInitializationModule _initialization;
   late final ShoppingListManagementModule _listManagement;
   late final ShoppingItemManagementModule _itemManagement;
+  late final ShoppingRestoreModule _restore;
   late final ShoppingCategoryPreferencesModule _categoryPreferences;
   late final ShoppingFirebaseSync _firebaseSync;
 
@@ -204,6 +207,13 @@ class UnifiedShoppingService
       // BUT-1696: the checkbox on a shared list reaches Firestore through this
       // module, not through mutateSharedList, so it needs the same seam to
       // report WHY an optimistic tick was rolled back.
+      reportFailure: _failMutation,
+    );
+
+    _restore = ShoppingRestoreModule(
+      repository: _shoppingRepository,
+      lists: _lists,
+      notifyListeners: notifyListeners,
       reportFailure: _failMutation,
     );
 
@@ -442,6 +452,19 @@ class UnifiedShoppingService
     return await _listManagement.updateList(list);
   }
 
+  /// BUT-2140: the week menu's merge into a personal list. Throws on failure.
+  Future<PersonalMergeResult> applyPersonalMerge(
+    String listId,
+    PersonalMergeRequest request,
+  ) => _listManagement.applyPersonalMerge(listId, request);
+
+  /// BUT-2140: Ångra for [applyPersonalMerge]. Throws on failure.
+  Future<void> undoPersonalMerge(
+    String listId,
+    List<String> addedIds,
+    List<UnifiedShoppingItem> restore,
+  ) => _listManagement.undoPersonalMerge(listId, addedIds, restore);
+
   /// BUT-1726: persist a membership change on a shared list — add, remove,
   /// change permission, leave.
   ///
@@ -642,6 +665,33 @@ class UnifiedShoppingService
     );
   }
 
+  /// [addItemToActiveList] that returns the new row's id, or null when
+  /// nothing was added. The id is what an undo after the add removes
+  /// (produktregler.md:131).
+  Future<String?> addItemToActiveListWithId({
+    required String name,
+    double? amount,
+    String? unit,
+    String? category,
+    String? note,
+    double? estimatedPrice,
+    int? priority,
+    String? recipeId,
+    String? recipeName,
+  }) async {
+    return await _itemManagement.addItemToActiveListWithId(
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      recipeId: recipeId,
+      recipeName: recipeName,
+    );
+  }
+
   Future<bool> toggleItemBought(String itemId) async {
     _beginMutation();
     return await _itemManagement.toggleItemBought(itemId);
@@ -678,6 +728,18 @@ class UnifiedShoppingService
 
   Future<bool> removeItemFromActiveList(String itemId) async {
     return await _itemManagement.removeItemFromActiveList(itemId);
+  }
+
+  /// BUT-2140: puts a row removed in the last 30 days back on [listId].
+  Future<bool> restoreRemovedRow(String listId, ShoppingRowSnapshot entry) {
+    _beginMutation();
+    return _restore.restoreRemovedRow(listId, entry);
+  }
+
+  /// BUT-2140: swaps row [itemId] back to the version before its last edit.
+  Future<bool> restoreChangedRow(String listId, String itemId) {
+    _beginMutation();
+    return _restore.restoreChangedRow(listId, itemId);
   }
 
   Future<bool> updateItemInActiveList({

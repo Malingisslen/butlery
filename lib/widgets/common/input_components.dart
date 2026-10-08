@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
-import 'package:butlery/models/recipe_unified.dart';
 
-// The four modules this facade imports directly. Five more in `common/input/`
-// are pulled in BY these four, so BUT-1859's reachability audit has to follow
+// The three modules this facade imports directly. More in `common/input/`
+// are pulled in BY these three, so BUT-1859's reachability audit has to follow
 // the imports rather than the directory listing.
 import 'package:butlery/widgets/common/input/instruction_editor.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
-import 'package:butlery/widgets/common/input/shopping_list_selector.dart';
 
 /// Facade for input components. Delegates to specialized input modules.
 class InputComponents {
@@ -55,30 +52,13 @@ class InputComponents {
     required bool value,
     required ValueChanged<bool?>? onChanged,
     Color? activeColor,
-    Duration debounceDuration = AppDimensions.animationDurationCommon,
+    Duration debounceDuration = DebouncedCheckbox.defaultDebounce,
   }) {
     return DebouncedCheckbox(
       value: value,
       onChanged: onChanged,
       activeColor: activeColor,
       debounceDuration: debounceDuration,
-    );
-  }
-
-  /// Displays a bottom sheet for shopping list selection with menu integration.
-  static Future<void> showListSelector(
-    BuildContext context, {
-    VoidCallback? onListSelected,
-    Map<String, List<Recipe>>? menu,
-  }) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ShoppingListSelector(
-        onListSelected: onListSelected,
-        menu: menu,
-      ),
     );
   }
 }

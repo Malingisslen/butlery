@@ -304,6 +304,36 @@ void main() {
       },
     );
 
+    test(
+      'BUT-2296: a failed offline clear does not stop the server erasure',
+      () async {
+        final offline = _MockOfflineService();
+        when(
+          () => offline.clearUserData(any()),
+        ).thenThrow(StateError('disk full'));
+        when(() => callable.call<Map<dynamic, dynamic>>(any())).thenAnswer(
+          (_) async => _FakeCallableResult({
+            'success': true,
+            'deletedCollections': <String>[],
+            'failedCollections': <String>[],
+            'errors': <String>[],
+            'auditLogId': null,
+          }),
+        );
+
+        final service = AccountDeletionService(
+          authService: auth,
+          functions: functions,
+          offlineService: offline,
+        );
+
+        final result = await service.deleteUserAccount(reason: 'r');
+
+        verify(() => callable.call<Map<dynamic, dynamic>>(any())).called(1);
+        expect(result['success'], isTrue);
+      },
+    );
+
     /// Test 5: no authenticated user → bails before calling CF. The CF would
     /// reject anonymous calls anyway, but the wrapper short-circuits to give
     /// a cleaner error than `unauthenticated`.

@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/widgets/messaging/image_picker_dialog.dart';
 import 'package:butlery/widgets/messaging/reply_banner.dart';
@@ -20,8 +22,9 @@ import 'package:butlery/core/errors/message_send_error_mapper.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
 class ChatInputState {
@@ -212,12 +215,16 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       // The strings carry no "försök igen" of their own any more — the action
       // label is `commonRetry`, and saying it twice read as an instruction to
       // do by hand what the button now does.
-      SnackBarUtils.showErrorWithRetry(
+      //
+      // P5-U03: the typed text is at stake, so the snackbar also says it is
+      // still in the field (content-style-guide.md:92).
+      SnackBarUtils.showFailure(
         context,
-        failure == MessageSendFailure.clockAhead
+        what: failure == MessageSendFailure.clockAhead
             ? context.l10n.chatSendFailedDeviceClockAhead
             : context.l10n.chatCouldNotSendMessage,
-        onRetry: _handleSendMessage,
+        preserved: context.l10n.errorPreservedText,
+        action: FailureAction.retry(_handleSendMessage),
       );
     }
   }
@@ -283,14 +290,14 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
   Widget _buildAttachmentsPanel(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space4),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.restaurant_menu,
+              ButleryIcons.utensils,
               context.l10n.chatAttachmentRecipe,
               'recipe',
             ),
@@ -298,7 +305,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.calendar_month,
+              ButleryIcons.calendar,
               context.l10n.chatAttachmentMenu,
               'menu',
             ),
@@ -306,7 +313,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.shopping_cart,
+              ButleryIcons.shoppingCart,
               context.l10n.chatAttachmentShoppingList,
               'shopping_list',
             ),
@@ -314,7 +321,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
           Expanded(
             child: _buildAttachmentOption(
               context,
-              Icons.photo_outlined,
+              ButleryIcons.image,
               context.l10n.chatAttachmentPhoto,
               'photo',
             ),
@@ -336,8 +343,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       children: [
         IconButton(
           onPressed: () => _handleAttachmentTap(type),
-          icon: Icon(icon),
-          color: cs.primary,
+          icon: ButleryIcon(icon),
+          color: cs.onSurface,
           tooltip: label,
         ),
         Text(
@@ -359,9 +366,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
+            color: cs.outlineVariant,
             width: 1,
           ),
         ),
@@ -392,8 +397,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     // Image button
                     IconButton(
                       onPressed: _handleImagePick,
-                      icon: const Icon(Icons.image_outlined),
-                      color: context.butleryColors.success,
+                      icon: const ButleryIcon(ButleryIcons.image),
+                      color: context.modeColors.success,
                       tooltip: context.l10n.tooltipAttachImage,
                     ),
 
@@ -401,7 +406,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     if (widget.onPollCreate != null)
                       IconButton(
                         onPressed: _handlePollCreate,
-                        icon: const Icon(Icons.poll_outlined),
+                        icon: const ButleryIcon(ButleryIcons.vote),
                         color: cs.onSurfaceVariant,
                         tooltip: context.l10n.tooltipCreatePoll,
                       ),
@@ -409,12 +414,12 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     // Attachment button
                     IconButton(
                       onPressed: _toggleAttachments,
-                      icon: Icon(
+                      icon: ButleryIcon(
                         _state.showAttachments
-                            ? Icons.close
-                            : Icons.attach_file,
+                            ? ButleryIcons.x
+                            : ButleryIcons.paperclip,
                         color: _state.showAttachments
-                            ? cs.primary
+                            ? cs.onSurface
                             : cs.onSurfaceVariant,
                       ),
                       tooltip: _state.showAttachments
@@ -436,16 +441,16 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     AnimatedContainer(
                       duration: AnimationUtils.getDuration(
                         context,
-                        AppDimensions.animationDurationMedium,
+                        AppMotion.micro,
                       ),
                       child: IconButton(
                         onPressed: _state.isComposing
                             ? _handleSendMessage
                             : null,
-                        icon: Icon(
-                          Icons.send,
+                        icon: ButleryIcon(
+                          ButleryIcons.send,
                           color: _state.isComposing
-                              ? cs.primary
+                              ? cs.onSurface
                               : cs.onSurfaceVariant,
                         ),
                         tooltip: context.l10n.tooltipSendMessage,

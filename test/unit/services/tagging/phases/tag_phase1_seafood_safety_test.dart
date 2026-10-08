@@ -1,17 +1,21 @@
-/// Register-audit fix (2026-07-02): generic 'seafood' ingredient property
-/// must never prove a marine-related FREE verdict.
+/// Marine allergens and the generic 'seafood' property.
 ///
-/// Before this fix, an ingredient carrying only 'seafood' (no fish/
-/// crustacean/mollusc detail — e.g. the validated skaldjursfond row) fired
-/// NO allergen rule, so a shellfish-stock recipe was marked skaldjursfri
-/// and vegetarisk. Direction of error is deliberate: false CONTAINS is
-/// acceptable, false FREE is not.
+/// BUT-2234: `skaldjur` triggers on crustacean OR mollusc only. Fish rows
+/// carry the generic 'seafood' property too, so including it made every fish
+/// dish innehåller-skaldjur.
 ///
-/// Both config branches are pinned (Data/ML panel condition): the static
-/// fallback (firebaseConfig = null) AND the Firebase branch, constructed
-/// from the exact JSON artifacts seeded to production tag_configs
-/// (scripts/output/tagConfigs/*.json — regenerate via
-/// `dart scripts/migrate_tag_configs.dart`, upload via seed-tag-configs).
+/// Register-audit fix (2026-07-02), kept in a new shape: an ingredient
+/// carrying only 'seafood' (no fish/crustacean/mollusc detail — e.g. the
+/// validated skaldjursfond row) must never prove a marine FREE. It now
+/// withholds FREE on every marine key (UNKNOWN) instead of forcing skaldjur
+/// CONTAINS. Direction of error is deliberate: UNKNOWN is acceptable, false
+/// FREE is not.
+///
+/// Both config branches are pinned: the static fallback (firebaseConfig =
+/// null) AND the Firebase branch, constructed from the exact JSON artifacts
+/// seeded to production tag_configs (scripts/output/tagConfigs/*.json —
+/// regenerate via `dart scripts/migrate_tag_configs.dart`, upload via
+/// seed-tag-configs).
 library;
 
 import 'dart:convert';
@@ -19,6 +23,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
+import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
@@ -27,33 +32,36 @@ import 'package:butlery/services/tagging/phases/tag_phase1_dietary.dart';
 
 import '../../../../infrastructure/helpers/tagging_test_helper.dart';
 
-/// A full-coverage lookup with one generic-marine ingredient — the exact
-/// shape of the audit's dangerous rows (skaldjursfond pre-fix, jellyfish).
-IngredientLookupResult _seafoodOnlyLookup() {
-  return IngredientLookupResult(
-    matched: [
-      TaggingTestHelper.ingredient('skaldjursfond', 'protein/seafood', {
-        'animal-product',
-        'seafood',
-      }),
-    ],
-    unmatched: const [],
-    coverage: 1.0,
-  );
-}
+IngredientData _lax() => TaggingTestHelper.ingredient(
+  'lax',
+  'protein/seafood/fish',
+  {'animal-product', 'fish', 'seafood'},
+);
 
-IngredientLookupResult _dairyLookup() {
-  return IngredientLookupResult(
-    matched: [
-      TaggingTestHelper.ingredient('grädde', 'dairy', {
-        'animal-product',
-        'dairy',
-      }),
-    ],
-    unmatched: const [],
-    coverage: 1.0,
-  );
-}
+IngredientData _rakor() => TaggingTestHelper.ingredient(
+  'räkor',
+  'protein/seafood/shellfish',
+  {'animal-product', 'crustacean', 'shellfish', 'seafood'},
+);
+
+/// The audit's dangerous row shape: marine, but of no stated kind.
+IngredientData _skaldjursfond() => TaggingTestHelper.ingredient(
+  'skaldjursfond',
+  'protein/seafood',
+  {'animal-product', 'seafood'},
+);
+
+IngredientData _gradde() => TaggingTestHelper.ingredient('grädde', 'dairy', {
+  'animal-product',
+  'dairy',
+});
+
+IngredientLookupResult _lookup(List<IngredientData> rows) =>
+    IngredientLookupResult(matched: rows, unmatched: const [], coverage: 1.0);
+
+IngredientLookupResult _seafoodOnlyLookup() => _lookup([_skaldjursfond()]);
+
+IngredientLookupResult _dairyLookup() => _lookup([_gradde()]);
 
 /// Builds the Firebase config from the seeded production artifacts, so the
 /// test fails if the generated JSON ever loses the fix.
@@ -72,31 +80,111 @@ FirebaseTagConfig _seededConfig() {
   );
 }
 
+const _branches = [('static fallback', false), ('firebase config', true)];
+
 void main() {
-  group('seafood-only ingredient — allergen verdicts', () {
-    for (final (branch, config) in [
-      ('static fallback', null),
-      ('firebase config (seeded artifact)', _seededConfig()),
-    ]) {
-      test('[$branch] skaldjur = CONTAINS, never FREE', () {
+  FirebaseTagConfig? configFor(bool seeded) => seeded ? _seededConfig() : null;
+
+  group('BUT-2234: skaldjur is shellfish, not fish', () {
+    for (final (branch, seeded) in _branches) {
+      final config = configFor(seeded);
+
+      test('[$branch] lax → fisk CONTAINS, skaldjur FREE', () {
+        final result = Phase1AllergenCalculator.calculate(
+          _lookup([_lax()]),
+          config,
+        );
+        expect(result.status['fisk'], TriState.contains);
+        expect(result.status['skaldjur'], TriState.free);
+        expect(result.status['kräftdjur'], TriState.free);
+        expect(result.status['blötdjur'], TriState.free);
+      });
+
+      test('[$branch] räkor → skaldjur CONTAINS, fisk FREE', () {
+        final result = Phase1AllergenCalculator.calculate(
+          _lookup([_rakor()]),
+          config,
+        );
+        expect(result.status['skaldjur'], TriState.contains);
+        expect(result.status['kräftdjur'], TriState.contains);
+        expect(result.status['fisk'], TriState.free);
+      });
+
+      test('[$branch] räksallad → skaldjur CONTAINS, ägg never FREE', () {
+        // The lookup's shape for an unmatched dish compound: the räka row it
+        // is named after, with the dish itself still unmatched.
+        final result = Phase1AllergenCalculator.calculate(
+          IngredientLookupResult(
+            matched: [_rakor()],
+            unmatched: const ['räksallad'],
+            coverage: 0.0,
+          ),
+          config,
+        );
+        expect(result.status['skaldjur'], TriState.contains);
+        expect(result.status['ägg'], isNot(TriState.free));
+        expect(result.status['fisk'], isNot(TriState.free));
+      });
+
+      test('[$branch] fiskgryta med räkor → both CONTAINS', () {
+        final result = Phase1AllergenCalculator.calculate(
+          _lookup([_lax(), _rakor()]),
+          config,
+        );
+        expect(result.status['fisk'], TriState.contains);
+        expect(result.status['skaldjur'], TriState.contains);
+      });
+
+      test('[$branch] vegetarisk still CONTAINS on fish and on shellfish', () {
+        for (final row in [_lax(), _rakor()]) {
+          final result = Phase1DietaryCalculator.calculate(
+            _lookup([row]),
+            config,
+          );
+          expect(result.status['vegetarisk'], TriState.contains);
+          expect(result.status['vegansk'], TriState.contains);
+        }
+      });
+    }
+  });
+
+  group('generic-seafood row (no marine detail) — allergen verdicts', () {
+    for (final (branch, seeded) in _branches) {
+      final config = configFor(seeded);
+
+      test('[$branch] every marine key is UNKNOWN, never FREE', () {
         final result = Phase1AllergenCalculator.calculate(
           _seafoodOnlyLookup(),
           config,
         );
-        expect(result.status['skaldjur'], TriState.contains);
+        for (final key in ['skaldjur', 'fisk', 'kräftdjur', 'blötdjur']) {
+          expect(result.status[key], TriState.unknown, reason: key);
+        }
+        final decision = result.decisions.firstWhere(
+          (d) => d.key == 'skaldjur',
+        );
+        expect(decision.triggeringIngredients, ['skaldjursfond']);
+        expect(decision.reason, contains('seafood'));
       });
 
-      test(
-        '[$branch] fisk stays FREE — generic marker must not override the '
-        'specific-property win (PM panel condition)',
-        () {
-          final result = Phase1AllergenCalculator.calculate(
-            _seafoodOnlyLookup(),
-            config,
-          );
-          expect(result.status['fisk'], TriState.free);
-        },
-      );
+      test('[$branch] non-marine keys are untouched: mjölk FREE', () {
+        final result = Phase1AllergenCalculator.calculate(
+          _seafoodOnlyLookup(),
+          config,
+        );
+        expect(result.status['mjölk'], TriState.free);
+        expect(result.status['gluten'], TriState.free);
+      });
+
+      test('[$branch] a CONTAINS beside it is kept: fond + räkor → skaldjur '
+          'CONTAINS, fisk UNKNOWN', () {
+        final result = Phase1AllergenCalculator.calculate(
+          _lookup([_skaldjursfond(), _rakor()]),
+          config,
+        );
+        expect(result.status['skaldjur'], TriState.contains);
+        expect(result.status['fisk'], TriState.unknown);
+      });
 
       test('[$branch] non-marine recipe still proves skaldjursfri', () {
         final result = Phase1AllergenCalculator.calculate(
@@ -104,15 +192,61 @@ void main() {
           config,
         );
         expect(result.status['skaldjur'], TriState.free);
+        expect(result.status['fisk'], TriState.free);
       });
     }
   });
 
-  group('seafood-only ingredient — dietary verdicts', () {
-    for (final (branch, config) in [
-      ('static fallback', null),
-      ('firebase config (seeded artifact)', _seededConfig()),
-    ]) {
+  test('an admin-added allergen that MIXES a marine trigger with another '
+      'is still withheld on a generic-seafood row', () {
+    // The post-pass selects keys by ANY marine trigger, not ALL: a mixed
+    // entry could be the fish, so FREE is not provable.
+    final config = FirebaseTagConfig.fromDocuments(
+      allergensData: {
+        'schemaVersion': 1,
+        'version': 1,
+        'updatedBy': 'test',
+        'displayOrder': ['blandad', 'mjölk'],
+        'entries': [
+          {
+            'key': 'blandad',
+            'triggerProperties': ['fish', 'dairy'],
+            'tags': {
+              'sv': {'contains': 'innehåller-blandad', 'free': 'blandadfri'},
+            },
+            'enabled': true,
+            'priority': 1,
+          },
+          {
+            'key': 'mjölk',
+            'triggerProperties': ['dairy'],
+            'tags': {
+              'sv': {'contains': 'innehåller-mjölk', 'free': 'mjölkfri'},
+            },
+            'enabled': true,
+            'priority': 2,
+          },
+        ],
+      },
+      dietaryData: const {},
+      cuisinesData: const {},
+      propertiesData: const {},
+      displayData: const {},
+    );
+
+    final result = Phase1AllergenCalculator.calculate(
+      _seafoodOnlyLookup(),
+      config,
+    );
+
+    expect(result.status['blandad'], TriState.unknown);
+    expect(result.status['mjölk'], TriState.free);
+  });
+
+  group('generic-seafood row — dietary verdicts', () {
+    for (final (branch, seeded) in _branches) {
+      final config = configFor(seeded);
+
       test('[$branch] vegetarisk = CONTAINS (was the gelatin-class hole)', () {
         final result = Phase1DietaryCalculator.calculate(
           _seafoodOnlyLookup(),

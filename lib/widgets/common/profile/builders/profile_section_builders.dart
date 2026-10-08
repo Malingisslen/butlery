@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/profile/builders/menu_item_builders.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -31,28 +33,26 @@ class ProfileSectionBuilders {
             context.l10n.profileDataBackup,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.displaySmall.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.download,
+            icon: ButleryIcons.download,
             title: context.l10n.profileDownloadBackup,
             subtitle: context.l10n.profileDownloadBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleBackup(rootContext ?? context),
-            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.upload,
+            icon: ButleryIcons.upload,
             title: context.l10n.profileRestoreFromBackup,
             subtitle: context.l10n.profileRestoreFromBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleRestore(rootContext ?? context),
-            color: Theme.of(context).colorScheme.primary,
           ),
         ],
       ),
@@ -75,25 +75,23 @@ class ProfileSectionBuilders {
             child: FilledButton.tonalIcon(
               onPressed: () => AuthActionHandler.handleLogout(context),
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityVeryLight,
-                ),
-                foregroundColor: Theme.of(context).colorScheme.error,
+                backgroundColor: context.modeColors.surfaceTintDanger,
+                foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
                 minimumSize: const Size(
                   double.infinity,
                   AppDimensions.buttonHeight,
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingXl,
+                  horizontal: AppDimensions.space16,
                   vertical: AppDimensions.paddingM,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusL,
+                    AppDimensions.radiusCard,
                   ),
                 ),
               ),
-              icon: const Icon(Icons.logout),
+              icon: const ButleryIcon(ButleryIcons.logOut),
               label: Text(
                 context.l10n.profileLogout,
                 style: AppTextStyles.labelLarge,
@@ -121,7 +119,7 @@ class ProfileSectionBuilders {
             context.l10n.profileAccountManagement,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.displaySmall.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -129,44 +127,42 @@ class ProfileSectionBuilders {
           // GDPR Article 13/14 - Privacy Policy & Transparency
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.policy_rounded,
+            icon: ButleryIcons.shield,
             title: context.l10n.profilePrivacyPolicy,
             subtitle: context.l10n.profilePrivacyPolicySubtitle,
             onTap: () => GdprConsentHandler.handlePrivacyPolicy(context),
-            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
           // GDPR Article 7 - Consent Management
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.privacy_tip_rounded,
+            icon: ButleryIcons.shield,
             title: context.l10n.profileManageConsent,
             subtitle: context.l10n.profileManageConsentSubtitle,
             onTap: () => GdprConsentHandler.handleManageConsent(context),
-            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
           // GDPR Article 20 - Right to Data Portability
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.download_rounded,
+            icon: ButleryIcons.download,
             title: context.l10n.profileExportData,
             subtitle: context.l10n.profileExportDataSubtitle,
             onTap: () => GdprConsentHandler.handleExportData(context),
-            color: context.butleryColors.info,
+            tone: DataButtonTone.info,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
           // GDPR Article 17 - Right to Erasure
           MenuItemBuilders.buildDataButton(
             context: context,
-            icon: Icons.delete_forever,
+            icon: ButleryIcons.trash2,
             title: context.l10n.profileDeleteAccount,
             subtitle: context.l10n.profileDeleteAccountSubtitle,
             onTap: () => AuthActionHandler.handleDeleteAccount(context),
-            color: Theme.of(context).colorScheme.error,
+            tone: DataButtonTone.danger,
           ),
         ],
       ),

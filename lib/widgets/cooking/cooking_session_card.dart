@@ -8,8 +8,11 @@ import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Compose the primary presence line from one or more [names] cooking a
 /// single [recipe].
@@ -86,7 +89,7 @@ class CookingSessionCard extends StatelessWidget {
     final eyebrow = l10n.cookingNowEyebrow;
 
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
+    final starGold = context.modeColors.starGold;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingMd,
@@ -95,59 +98,61 @@ class CookingSessionCard extends StatelessWidget {
         0,
       ),
       child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _onTap(context, primary),
-          child: Semantics(
-            button: true,
-            label: '$primaryLine. $eyebrow',
-            child: Container(
-              decoration: BoxDecoration(
-                color: cs.onPrimaryContainer,
-                border: Border(
-                  left: BorderSide(color: starGold, width: 3),
+        color: cs.primary,
+        child: PressFill(
+          surface: PressSurface.ink,
+          child: InkWell(
+            onTap: () => _onTap(context, primary),
+            child: Semantics(
+              button: true,
+              label: '$primaryLine. $eyebrow',
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: starGold, width: 3),
+                  ),
                 ),
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-              ),
-              child: Row(
-                children: [
-                  PulseDot(color: starGold, size: 10),
-                  const SizedBox(width: AppDimensions.spacingMd),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          eyebrow,
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: starGold,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.8,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                ),
+                child: Row(
+                  children: [
+                    PulseDot(color: starGold, size: 10),
+                    const SizedBox(width: AppDimensions.spacingMd),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            eyebrow,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: context.modeColors.accentOnInk,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.8,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          primaryLine,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: cs.onPrimary,
-                            fontWeight: FontWeight.w600,
+                          const SizedBox(height: 2),
+                          Text(
+                            primaryLine,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: cs.onPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: cs.onPrimary.withValues(alpha: 0.6),
-                    size: AppDimensions.iconSizeM,
-                  ),
-                ],
+                    ButleryIcon(
+                      ButleryIcons.chevronRight,
+                      color: cs.onPrimary.withValues(alpha: 0.6),
+                      size: AppDimensions.iconSizeM,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -5,6 +5,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class PwaInstallBanner extends StatefulWidget {
   const PwaInstallBanner({super.key});
@@ -42,11 +44,11 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border(top: BorderSide(color: cs.primary, width: 2)),
+        border: Border(top: BorderSide(color: cs.onSurface, width: 2)),
       ),
       child: Row(
         children: [
-          Icon(Icons.install_mobile, color: cs.primary),
+          ButleryIcon(ButleryIcons.download, color: cs.onSurface),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -64,7 +66,7 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
             child: Text(context.l10n.pwaInstallAction),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 18),
+            icon: const ButleryIcon(ButleryIcons.x, size: 18),
             onPressed: () {
               _service.dismissInstall();
               setState(() => _visible = false);

@@ -798,40 +798,6 @@ async function seedFixtures(): Promise<void> {
     stars: 5,
   });
 
-  // --- realtime_recipes (BUT-1396 follow-up) ---
-  // The owner field is `ownerId` (model writes it; the Firestore rule gates
-  // read/delete on `resource.data.ownerId`). The prior cascade filtered on
-  // `userId`, which matched ZERO docs → a deleted user's collaborative recipes
-  // were exported (Art. 15) but never erased (Art. 17). These fixtures prove
-  // the `ownerId` filter erases owned docs and that scope is correct:
-  //   - rt-own: ownerId == TARGET → must be deleted.
-  //   - rt-control: ownerId == OTHER → must survive (scope proof, and the doc
-  //     that the OLD broken `userId` filter would ALSO have skipped — so the
-  //     positive deletion below is what proves the fix, the OLD filter deleted
-  //     neither).
-  //   - rt-participant: ownerId == OTHER but TARGET is a participant → must
-  //     survive. Deletion keys on ownership (only the owner may delete per the
-  //     rule); a collaborator's account deletion must not erase someone else's
-  //     recipe. Proves we filter on ownerId, not participantIds.
-  await db.collection("realtime_recipes").doc(`rt-own-${RUN}`).set({
-    ownerId: TARGET,
-    participantIds: [TARGET, OTHER],
-    recipe: { title: "mitt samarbetsrecept" },
-    createdAt: new Date(),
-  });
-  await db.collection("realtime_recipes").doc(`rt-control-${RUN}`).set({
-    ownerId: OTHER,
-    participantIds: [OTHER, THIRD],
-    recipe: { title: "annans realtidsrecept" },
-    createdAt: new Date(),
-  });
-  await db.collection("realtime_recipes").doc(`rt-participant-${RUN}`).set({
-    ownerId: OTHER,
-    participantIds: [OTHER, TARGET],
-    recipe: { title: "recept jag bara redigerar" },
-    createdAt: new Date(),
-  });
-
   // --- canonical_rating_events (Increment 5, decision 12): the target's frozen
   //     pool events are erased by deleteUserSubcollections; OTHER's are a scope
   //     control that must survive. Also the residual probe must count zero for
@@ -1772,6 +1738,51 @@ test("family (shared): a verdict target entered for a diner is kept but attribut
   );
 });
 
+// BUT-2267: a household someone else created that names the erased user as
+// its group's owner (not a link `isOwnedLink` honours, so it is not torn down)
+// still carries their uid in `sourceGroupOwnerId`; that uid goes with the link.
+// The owned case is pinned in group-household.integration.test.ts.
+test("family: a household naming the erased user as group owner loses the link", async () => {
+  const u = `link-owner-${RUN}`;
+  const joiner = `link-joiner-${RUN}`;
+  const hh = `hh-link-${RUN}`;
+  await db.collection("households").doc(hh).set({
+    name: "Länkat",
+    members: [
+      { userId: u, permission: "admin" },
+      { userId: joiner, permission: "view" },
+    ],
+    memberUserIds: [u, joiner],
+    memberPermissions: { [u]: "admin", [joiner]: "view" },
+    createdBy: joiner,
+    sourceGroupOwnerId: u,
+    sourceGroupId: `g-${RUN}`,
+  });
+  const linkedElsewhere = `hh-link-other-${RUN}`;
+  await db.collection("households").doc(linkedElsewhere).set({
+    name: "Annans",
+    members: [
+      { userId: joiner, permission: "admin" },
+      { userId: u, permission: "view" },
+    ],
+    memberUserIds: [joiner, u],
+    memberPermissions: { [joiner]: "admin", [u]: "view" },
+    createdBy: joiner,
+    sourceGroupOwnerId: joiner,
+    sourceGroupId: `g2-${RUN}`,
+  });
+
+  await deleteFamilyData(db, u);
+
+  const data = await dataAt(`households/${hh}`);
+  assert(!("sourceGroupOwnerId" in data) && !("sourceGroupId" in data),
+    `the erased owner's link is gone, got ${JSON.stringify(data)}`);
+  assert(!JSON.stringify(data).includes(u), "no trace of the erased uid");
+  const other = await dataAt(`households/${linkedElsewhere}`);
+  assert(other.sourceGroupOwnerId === joiner && other.sourceGroupId === `g2-${RUN}`,
+    "a link to someone else's group is left alone");
+});
+
 // Retry-safety: running deleteFamilyData twice must converge on the same
 // correct end state (no orphans, re-home stable) — the household membership
 // scrub is the LAST mutation precisely so an interrupted run re-runs cleanly.
@@ -1837,38 +1848,6 @@ test("unified_shopping_lists: deleteShoppingLists is idempotent on re-run (retry
   assert(
     await exists(`users/${OTHER}/unified_shopping_lists/usl-control-${RUN}`),
     "re-run must not widen scope to another user",
-  );
-});
-
-// ===========================================================================
-// REALTIME_RECIPES (BUT-1396 follow-up) — owner-keyed delete by `ownerId`.
-// Regression guard: the prior `userId` filter matched nothing, leaking the
-// owner's collaborative recipes past account deletion (Art. 17).
-// ===========================================================================
-
-// target's owned realtime recipe is hard-deleted (this assertion fails on the
-// OLD broken `userId` filter — that filter matched zero docs).
-test("realtime_recipes: target's owned recipe (ownerId==target) is deleted", async () => {
-  assert(
-    !(await exists(`realtime_recipes/rt-own-${RUN}`)),
-    "owned realtime recipe (ownerId==target) must be erased — the prior userId filter leaked it",
-  );
-});
-
-// another owner's recipe is retained (scope proof).
-test("realtime_recipes: another user's recipe is retained", async () => {
-  assert(
-    await exists(`realtime_recipes/rt-control-${RUN}`),
-    "control realtime recipe owned by OTHER must survive",
-  );
-});
-
-// a recipe where target is only a participant (not owner) is retained — the
-// cascade keys on ownership, matching the rule's owner-only delete.
-test("realtime_recipes: a recipe target only participates in is retained", async () => {
-  assert(
-    await exists(`realtime_recipes/rt-participant-${RUN}`),
-    "recipe where target is a participant (not owner) must NOT be erased by their deletion",
   );
 });
 

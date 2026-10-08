@@ -126,6 +126,19 @@ mixin SocialExportRedaction {
     userId: userId,
   );
 
+  /// A `shared_content` row as the received sections export it: the sharer's
+  /// avatar rule above, and without the BUT-2169 block-hold fields.
+  ///
+  /// `blockHeldUserIds` and `blockHeld` name the person a block took off the
+  /// row and keep their old member row. The section's `data_minimisation` line
+  /// does not name the strip, as with the block mirror (BUT-2018).
+  Map<String, dynamic> sharedRowForExport(
+    Map<String, dynamic> entry,
+    String userId,
+  ) => dropSharerAvatar(entry, userId)
+    ..remove('blockHeldUserIds')
+    ..remove('blockHeld');
+
   /// Other members' display names, stripped from the nested `listData` copy a
   /// shopping-list share carries.
   ///

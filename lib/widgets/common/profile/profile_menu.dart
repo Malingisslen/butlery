@@ -2,11 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -142,8 +145,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppDimensions.borderRadiusL),
-          topRight: Radius.circular(AppDimensions.borderRadiusL),
+          topLeft: Radius.circular(AppDimensions.radiusCard),
+          topRight: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: Column(
@@ -154,13 +157,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
             width: 48,
             height: AppDimensions.spacingXs,
             margin: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingS,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
-                alpha: AppDimensions.opacityMedium,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+              color: AppModeColors.textDisabled(Theme.of(context).brightness),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
           ),
 
@@ -232,7 +233,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               Text(
                 widget.displayName,
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: cs.surface,
+                  color: cs.onPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -242,7 +243,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 Text(
                   widget.email!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.surface.withValues(alpha: 0.8),
+                    color: cs.onPrimary.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -261,9 +262,9 @@ class _ProfileMenuState extends State<ProfileMenu> {
             button: true,
             child: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: Icon(
-                Icons.close,
-                color: cs.surface.withValues(alpha: 0.8),
+              icon: ButleryIcon(
+                ButleryIcons.x,
+                color: cs.onPrimary.withValues(alpha: 0.8),
                 size: AppDimensions.iconSizeAction,
               ),
             ),
@@ -294,14 +295,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
         Text(
           value,
           style: AppTextStyles.headlineBold.copyWith(
-            color: cs.surface,
+            color: cs.onPrimary,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXxs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           label.toUpperCase(),
           style: AppTextStyles.labelSmall.copyWith(
-            color: cs.surface.withValues(alpha: 0.7),
+            color: cs.onPrimary.withValues(alpha: 0.7),
             letterSpacing: 1,
           ),
         ),
@@ -354,7 +355,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
         child: UserAvatarWidgets.initialsOrFallback(
           initials: initials,
           fontSize: size * 0.36,
-          color: cs.primary,
+          color: cs.onSurface,
           baseStyle: AppTextStyles.headerTitle.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -379,21 +380,21 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileEditProfile,
             subtitle: context.l10n.profileEditProfileSubtitle,
-            icon: Icons.edit,
+            icon: ButleryIcons.pencil,
             onTap: widget.onEditProfile,
           ),
           ProfileActions.buildMenuItem(
             context,
             title: context.l10n.statsMyStatistics,
             subtitle: context.l10n.statsRecipeCollection,
-            icon: Icons.bar_chart,
+            icon: ButleryIcons.barChart,
             onTap: () => Navigator.pushNamed(context, Routes.collectionStats),
           ),
           ProfileActions.buildNotificationMenuItem(
             context,
             title: context.l10n.profileFriendsAndGroups,
             subtitle: context.l10n.profileFriendsAndGroupsSubtitle,
-            icon: Icons.people,
+            icon: ButleryIcons.users,
             onTap: widget.onViewFriends,
             count: _pendingRequestsCount + _pendingGroupInvitationsCount,
           ),
@@ -401,7 +402,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileSharedWithMe,
             subtitle: context.l10n.profileSharedWithMeSubtitle,
-            icon: Icons.share,
+            icon: ButleryIcons.share2,
             onTap: widget.onViewShared,
             count: _sharedItemsCount,
           ),
@@ -409,7 +410,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileMessages,
             subtitle: context.l10n.profileMessagesSubtitle,
-            icon: Icons.message,
+            icon: ButleryIcons.messageSquare,
             onTap: widget.onViewMessages,
             count: _unreadMessagesCount,
           ),
@@ -417,21 +418,21 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.commonSettings,
             subtitle: context.l10n.settingsSubtitle,
-            icon: Icons.settings,
+            icon: ButleryIcons.settings,
             onTap: () => Navigator.pushNamed(context, Routes.settings),
           ),
           ProfileActions.buildMenuItem(
             context,
             title: context.l10n.profileAllergenSettings,
             subtitle: context.l10n.profileAllergenSettingsSubtitle,
-            icon: Icons.health_and_safety,
+            icon: ButleryIcons.shield,
             onTap: widget.onViewAllergens,
           ),
           ProfileActions.buildMenuItem(
             context,
             title: context.l10n.profileNotifications,
             subtitle: context.l10n.profileNotificationsSubtitle,
-            icon: Icons.notifications_outlined,
+            icon: ButleryIcons.bell,
             onTap: () =>
                 Navigator.pushNamed(context, Routes.settingsNotifications),
           ),
@@ -439,7 +440,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileAccountSecurity,
             subtitle: context.l10n.profileAccountSecuritySubtitle,
-            icon: Icons.security,
+            icon: ButleryIcons.shield,
             onTap: () =>
                 Navigator.pushNamed(context, Routes.settingsAccountSecurity),
           ),
@@ -447,14 +448,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileMyTags,
             subtitle: context.l10n.profileMyTagsSubtitle,
-            icon: Icons.local_offer_outlined,
+            icon: ButleryIcons.tag,
             onTap: widget.onViewPersonalTags,
           ),
           ProfileActions.buildMenuItem(
             context,
             title: context.l10n.profileFaq,
             subtitle: context.l10n.profileFaqSubtitle,
-            icon: Icons.help_outline,
+            icon: ButleryIcons.circleHelp,
             onTap: () => Navigator.pushNamed(context, Routes.faq),
           ),
         ],

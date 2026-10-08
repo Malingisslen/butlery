@@ -23,6 +23,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Minimal `PermissionService` stub. Overrides only the surface
 /// `_buildPopupMenu` and `GroupMemberCard.build` actually read. Treats the
@@ -126,22 +127,22 @@ void main() {
         await tester.pump();
 
         // Open overflow menu.
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pumpAndSettle();
 
         // The Report tile uses the localized 'reportContent' label.
-        // For Swedish: 'Rapportera'. The flag icon is the only Icons.flag_outlined
+        // For Swedish: 'Rapportera'. The flag icon is the only ButleryIcons.flag
         // in the menu, so we can match by either.
         expect(find.text('Rapportera'), findsOneWidget);
-        expect(find.byIcon(Icons.flag_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.flag), findsOneWidget);
 
         // Tap the Report tile — should open ReportContentDialog's reason dialog.
         await tester.tap(find.text('Rapportera'));
         await tester.pumpAndSettle();
 
         // Reason dialog title proves the dialog opened.
-        // (Swedish 'reportDialogTitle' = 'Rapportera innehåll')
-        expect(find.text('Rapportera innehåll'), findsOneWidget);
+        // (Swedish 'reportDialogTitle' = 'Anmäl innehåll')
+        expect(find.text('Anmäl innehåll'), findsOneWidget);
       },
     );
 
@@ -167,11 +168,11 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.tap(find.byIcon(ButleryIcons.moreVertical));
       await tester.pumpAndSettle();
 
       expect(find.text('Rapportera'), findsNothing);
-      expect(find.byIcon(Icons.flag_outlined), findsNothing);
+      expect(find.byIcon(ButleryIcons.flag), findsNothing);
     });
   });
 
@@ -194,7 +195,7 @@ void main() {
         await tester.pump();
 
         // Open the member action menu (the trailing PopupMenuButton).
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pumpAndSettle();
 
         // Report tile present.
@@ -204,7 +205,7 @@ void main() {
         await tester.tap(find.text('Rapportera'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Rapportera innehåll'), findsOneWidget);
+        expect(find.text('Anmäl innehåll'), findsOneWidget);
       },
     );
 
@@ -226,7 +227,7 @@ void main() {
       await tester.pump();
 
       // No menu at all — self isn't reportable AND can't be removed.
-      expect(find.byIcon(Icons.more_vert), findsNothing);
+      expect(find.byIcon(ButleryIcons.moreVertical), findsNothing);
     });
   });
 }

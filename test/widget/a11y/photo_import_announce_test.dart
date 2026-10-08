@@ -26,6 +26,7 @@ import 'package:butlery/views/photo_import_view.dart';
 
 import '../../infrastructure/helpers/announce_channel.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/helpers/offline_banner_support.dart';
 
 /// Thin fake of [PhotoImportViewModel] exposing only the surface the view reads
 /// in its OCR-complete (no-image) render path. `extends ChangeNotifier` so the
@@ -101,6 +102,20 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   // The view's dispose() calls removeListener + dispose() on the VM it resolved.
   // ChangeNotifier provides both; nothing else of the VM is invoked.
 
+  // P6-U07 / Q4-04: the view wires the permission resolver and reads the
+  // permission notice and the pages waiting for "Läs av".
+  @override
+  PhotoPermissionResolver? permissionResolver;
+
+  @override
+  PhotoPermissionNotice? get permissionNotice => null;
+
+  @override
+  int get unreadPageCount => 0;
+
+  @override
+  bool get canReadPages => false;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -121,6 +136,7 @@ void main() {
 
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
   });
 
   tearDown(() async {

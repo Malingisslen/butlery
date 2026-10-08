@@ -1,5 +1,6 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
@@ -13,6 +14,7 @@ import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 import 'package:butlery/services/unified/modules/shopping_bulk_item_module.dart';
 import 'package:butlery/services/unified/shopping_failure_message.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 
 /// Shopping item management module for all item operations.
 class ShoppingItemManagementModule {
@@ -115,9 +117,41 @@ class ShoppingItemManagementModule {
     String? recipeId,
     String? recipeName,
   }) async {
+    final id = await addItemToActiveListWithId(
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      recipeId: recipeId,
+      recipeName: recipeName,
+    );
+    return id != null;
+  }
+
+  /// Adds an item to the active list and returns the new row's id, or null
+  /// when nothing was added.
+  ///
+  /// The id is what makes "Ångra" after an add possible: add is class 1 with
+  /// a 7 s undo (produktregler.md:131), and the undo removes exactly this
+  /// row, on a personal list and a shared one alike. Identity is the id,
+  /// never the name or the position (a list can hold two "mjölk").
+  Future<String?> addItemToActiveListWithId({
+    required String name,
+    double? amount,
+    String? unit,
+    String? category,
+    String? note,
+    double? estimatedPrice,
+    int? priority,
+    String? recipeId,
+    String? recipeName,
+  }) async {
     final activeListId = getActiveListId();
     if (activeListId == null) {
-      return false;
+      return null;
     }
 
     try {
@@ -144,22 +178,39 @@ class ShoppingItemManagementModule {
         priority: priority ?? 3,
       );
 
-      await repository.addItem(activeListId, item);
+      // Shown before the write, as toggleItemBought does: offline, a personal
+      // list's write only settles once the network is back, so an add that
+      // waited for it left the row invisible for as long as the shop had no
+      // reception.
+      _replaceItems(activeListId, (items) => [...items, item]);
 
-      // Update local state
-      final listIndex = lists.indexWhere((list) => list.id == activeListId);
-      if (listIndex >= 0) {
-        lists[listIndex] = lists[listIndex].copyWith(
-          items: [...lists[listIndex].items, item],
+      try {
+        await repository.addItem(activeListId, item);
+      } catch (e) {
+        _replaceItems(
+          activeListId,
+          (items) => items.where((i) => i.id != item.id).toList(),
         );
-        notifyListeners();
+        rethrow;
       }
 
-      return true;
+      return item.id;
     } catch (e) {
       AppLogger.error('Failed to add item to active list: $e');
-      return false;
+      return null;
     }
+  }
+
+  // Looked up by id on every call: a snapshot can rebuild `lists` while the
+  // write is in flight, so an index taken before it may point elsewhere.
+  void _replaceItems(
+    String listId,
+    List<UnifiedShoppingItem> Function(List<UnifiedShoppingItem>) change,
+  ) {
+    final index = lists.indexWhere((list) => list.id == listId);
+    if (index < 0) return;
+    lists[index] = lists[index].copyWith(items: change(lists[index].items));
+    notifyListeners();
   }
 
   /// Add multiple items to active list using batch operations for better performance
@@ -231,7 +282,11 @@ class ShoppingItemManagementModule {
       final committedUpdates = <UnifiedShoppingItem>[];
       try {
         for (final updated in itemsToUpdate) {
-          await repository.updateItem(activeListId, updated);
+          await repository.updateItem(
+            activeListId,
+            updated,
+            before: preUpdateById[updated.id],
+          );
           committedUpdates.add(updated);
         }
 
@@ -247,7 +302,11 @@ class ShoppingItemManagementModule {
           final original = preUpdateById[committed.id];
           if (original == null) continue;
           try {
-            await repository.updateItem(activeListId, original);
+            await repository.updateItem(
+              activeListId,
+              original,
+              before: committed,
+            );
           } catch (_) {
             // Best-effort rollback; original value is logged below.
           }
@@ -271,7 +330,13 @@ class ShoppingItemManagementModule {
         );
         for (final updated in itemsToUpdate) {
           final idx = currentItems.indexWhere((i) => i.id == updated.id);
-          if (idx >= 0) currentItems[idx] = updated;
+          if (idx >= 0) {
+            currentItems[idx] = RestorableRows.withPrevious(
+              currentItems[idx],
+              updated,
+              clock.now(),
+            );
+          }
         }
         currentItems.addAll(itemsToAdd);
         lists[targetIndex] = lists[targetIndex].copyWith(items: currentItems);
@@ -333,7 +398,11 @@ class ShoppingItemManagementModule {
       );
 
       // Atomic update in Firebase
-      await repository.updateItem(activeListId, updatedItem);
+      await repository.updateItem(
+        activeListId,
+        updatedItem,
+        before: currentItem,
+      );
 
       // Update local state by ID, not by the indices captured before the await:
       // both the list index and the row index can have drifted, and a positional
@@ -345,7 +414,11 @@ class ShoppingItemManagementModule {
         );
         final rowIndex = updatedItems.indexWhere((i) => i.id == itemId);
         if (rowIndex >= 0) {
-          updatedItems[rowIndex] = updatedItem;
+          updatedItems[rowIndex] = RestorableRows.withPrevious(
+            currentItem,
+            updatedItem,
+            clock.now(),
+          );
           lists[targetIndex] = lists[targetIndex].copyWith(items: updatedItems);
         }
       }
@@ -366,13 +439,17 @@ class ShoppingItemManagementModule {
 
     try {
       // Verify the active list exists
-      lists.firstWhere(
-        (list) => list.id == activeListId,
-        orElse: () => throw StateError('Active list not found'),
-      );
+      final removed = lists
+          .firstWhere(
+            (list) => list.id == activeListId,
+            orElse: () => throw StateError('Active list not found'),
+          )
+          .items
+          .where((item) => item.id == itemId)
+          .firstOrNull;
 
       // Remove from Firebase first
-      await repository.removeItem(activeListId, itemId);
+      await repository.removeItem(activeListId, itemId, removed: removed);
 
       // Update local state
       final listIndex = lists.indexWhere((list) => list.id == activeListId);
@@ -381,7 +458,11 @@ class ShoppingItemManagementModule {
             .where((item) => item.id != itemId)
             .toList();
 
-        lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
+        lists[listIndex] = RestorableRows.withRemoved(
+          lists[listIndex].copyWith(items: updatedItems),
+          [?removed],
+          clock.now(),
+        );
 
         notifyListeners();
       }

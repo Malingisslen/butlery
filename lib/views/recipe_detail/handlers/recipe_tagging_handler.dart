@@ -8,7 +8,8 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -33,7 +34,7 @@ class RecipeTaggingHandler {
       title: context.l10n.taggingUpdateTagsTitle,
       message: context.l10n.taggingUpdateTagsMessage(viewModel.recipe.title),
       confirmText: context.l10n.commonUpdate,
-      icon: Icons.local_offer,
+      icon: ButleryIcons.tag,
       confirmColor: Theme.of(context).colorScheme.primary,
     );
 
@@ -50,7 +51,13 @@ class RecipeTaggingHandler {
         child: AlertDialog(
           content: Row(
             children: [
-              const LoadingIndicator.small(),
+              // The plate line, not a spinner (Grafisk manual v6:209).
+              SizedBox(
+                width: AppDimensions.iconSizeL,
+                child: PlateLine(
+                  semanticLabel: context.l10n.taggingAnalyzingIngredients,
+                ),
+              ),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(
@@ -85,7 +92,10 @@ class RecipeTaggingHandler {
       closeDialog();
 
       if (tagResult == null) {
-        SnackBarUtils.showError(context, context.l10n.taggingCouldNotAnalyze);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.taggingCouldNotAnalyze,
+        );
         return;
       }
 
@@ -96,6 +106,7 @@ class RecipeTaggingHandler {
         socialData: viewModel.recipe.socialData,
         realtimeData: viewModel.recipe.realtimeData,
         offlineData: viewModel.recipe.offlineData,
+        rev: viewModel.recipe.rev,
       );
 
       // Save to database
@@ -115,9 +126,9 @@ class RecipeTaggingHandler {
     } catch (e) {
       closeDialog();
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.taggingError(
+        what: context.l10n.taggingError(
           SnackBarUtils.userFriendlyMessage(context, e),
         ),
       );

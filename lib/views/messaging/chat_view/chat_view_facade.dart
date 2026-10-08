@@ -10,7 +10,7 @@ import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_message_stream.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
 import 'package:butlery/widgets/messaging/typing_indicator.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -25,10 +25,15 @@ class ChatViewFacade extends StatefulWidget {
   final String conversationId;
   final Conversation? conversation;
 
+  /// The view the back arrow returns to, for its accessible name. Null keeps
+  /// the plain "Tillbaka".
+  final String? backTo;
+
   const ChatViewFacade({
     super.key,
     required this.conversationId,
     this.conversation,
+    this.backTo,
   });
 
   @override
@@ -82,7 +87,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
   Widget build(BuildContext context) {
     if (!_messagingEnabled) {
       return Scaffold(
-        appBar: AdaptiveAppBar(title: context.l10n.chatTitle),
+        appBar: ButleryTopBar.undersida(title: context.l10n.chatTitle),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -103,6 +108,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
           return Scaffold(
             appBar: ChatAppBar(
               conversation: viewModel.conversation ?? widget.conversation,
+              backTo: widget.backTo,
               onMenuAction: _actionHandler.handleMenuAction,
             ),
             body: Column(

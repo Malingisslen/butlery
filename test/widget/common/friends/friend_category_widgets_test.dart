@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
 
@@ -63,7 +64,7 @@ void main() {
       );
     });
 
-    Widget createTestWidget(Widget child) {
+    Widget createTestWidget(Widget child, {ThemeData? theme}) {
       return MaterialApp(
         locale: const Locale('sv'),
         supportedLocales: AppLocalizations.supportedLocales,
@@ -73,7 +74,7 @@ void main() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        theme: AppTheme.lightTheme,
+        theme: theme ?? AppTheme.lightTheme,
         home: Scaffold(
           body: MultiProvider(
             providers: [
@@ -262,7 +263,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Familie'), findsOneWidget);
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget);
       });
 
       testWidgets('renders without count', (tester) async {
@@ -577,6 +578,51 @@ void main() {
           expect(cleared, isTrue);
         }
       });
+
+      // BUT-2183: surface.raised fill and a border.subtle edge, in both modes.
+      for (final (name, theme, raised, edge) in [
+        (
+          'light',
+          AppTheme.lightTheme,
+          const Color(0xFFE6EAD9),
+          const Color(0xFFCCD1C2),
+        ),
+        (
+          'dark',
+          AppTheme.darkTheme,
+          const Color(0xFF2F4437),
+          const Color(0x2EF5F4ED),
+        ),
+      ]) {
+        testWidgets('$name: selectionSummary is raised with border.subtle', (
+          tester,
+        ) async {
+          await tester.pumpWidget(
+            createTestWidget(
+              FriendCategoryWidgets.categorySelectionSummary(
+                selectedCategoryIds: testSelectedCategoryIds,
+                categories: testCategories,
+                onClear: () {},
+              ),
+              theme: theme,
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final box = tester
+              .widgetList<Container>(
+                find.ancestor(
+                  of: find.text('Rensa'),
+                  matching: find.byType(Container),
+                ),
+              )
+              .map((c) => c.decoration)
+              .whereType<BoxDecoration>()
+              .firstWhere((d) => d.color != null);
+          expect(box.color, raised);
+          expect((box.border! as Border).top.color, edge);
+        });
+      }
 
       testWidgets('multiSelectDropdown shows selected count', (tester) async {
         await tester.pumpWidget(

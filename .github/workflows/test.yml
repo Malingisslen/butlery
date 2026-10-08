@@ -18,8 +18,8 @@ name: Run Tests
 #    on push-to-main. The 55% floor is unchanged — only re-timed (BUT-1149).
 #
 # What still gates a PR: ubuntu unit (3 shards) + widget + views + golden +
-# integration here, plus firestore-rules / E2E / Architecture / Build Validation
-# in their own workflows. Coverage + cross-OS are nightly/main only.
+# evaluation + import_gate + integration here, plus firestore-rules / E2E /
+# Architecture / Build Validation in their own workflows. Coverage + cross-OS are nightly/main only.
 
 on:
   push:
@@ -63,7 +63,7 @@ jobs:
   # (see the timeout note below). So sharding hits a ~12 min floor and
   # more shards just multiply the redundant compile for ~no wall-clock gain —
   # the wall BUT-1182 hit (it mis-read it as coverage instrumentation; it's the
-  # compile). 3 shards is the cost/latency sweet spot (~12.5 min, 3× compile).
+  # compile). 3 shards is the cost/latency sweet spot.
   # Pushing below ~12 min needs a bigger runner or a cached test kernel, not
   # more shards. Coverage lives in the `coverage` job below, not here.
   unit-tests:
@@ -119,7 +119,7 @@ jobs:
           echo "Running test/unit shard ${{ matrix.shard }} of 3..."
           flutter test test/unit \
             --total-shards 3 --shard-index ${{ matrix.shard }} \
-            --reporter=expanded
+            --concurrency=4 --reporter=expanded
 
       - name: Upload test results
         if: failure()
@@ -132,7 +132,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 15
+          BUDGET_MIN: 24
           JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/3)"
         run: |
           JOB_END=$(date +%s)
@@ -161,9 +161,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [widget, views, golden, evaluation]
+        # import_gate (BUT-2236): the import corpora in test/import_gate/,
+        # scored against gold and held to its floors.json; prints its table
+        # into the job summary.
+        suite: [widget, views, golden, evaluation, import_gate]
+        # BUT-1676: small directories no lane ran, sharing one runner.
+        # tools/check_test_suite_coverage.sh fails on any test/ directory
+        # that is neither run here nor in tools/test_suite_allowlist.txt.
+        include:
+          - suite: small-dirs
+            paths: test/corpus test/infrastructure test/l10n test/scripts test/services test/smoke test/tools
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # BUT-2001: widget took 16m30s on main run 37685482331, so 20 left the
+    # same thin margin the unit shards ran out of.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
@@ -182,8 +193,9 @@ jobs:
 
       - name: Run ${{ matrix.suite }} tests
         run: |
-          echo "Running test/${{ matrix.suite }}..."
-          flutter test test/${{ matrix.suite }} --reporter=expanded
+          paths="${{ matrix.paths || format('test/{0}', matrix.suite) }}"
+          echo "Running $paths..."
+          flutter test $paths --concurrency=4 --reporter=expanded
 
       - name: Upload test results
         if: failure()
@@ -196,7 +208,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 15
+          BUDGET_MIN: 24
           JOB_LABEL: "${{ matrix.suite }} (ubuntu)"
         run: |
           JOB_END=$(date +%s)
@@ -224,8 +236,9 @@ jobs:
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     # Coverage instrumentation roughly doubles the unaffected ~28 min unit
-    # runtime; keep BUT-1182's 40-min cap here where it actually applies.
-    timeout-minutes: 40
+    # runtime. BUT-2001: main run 37604083716 cancelled it at 39m32s inside
+    # its test step, so BUT-1182's 40-min cap no longer fits.
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v6
@@ -383,7 +396,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 35
+          BUDGET_MIN: 50
           JOB_LABEL: "coverage (ubuntu)"
         run: |
           JOB_END=$(date +%s)
@@ -593,9 +606,18 @@ jobs:
       # Stop Firebase Emulator
       - name: Stop Firebase Emulator
         if: always()
+        # BUT-2204: wait for the emulators to EXIT, not just signal them. The
+        # flutter-action post step hashes `**/pubspec.lock` across the whole
+        # workspace, and it failed there with every test passed (run
+        # 37685482331); the emulators are what is still running at that point.
         run: |
-          # Kill all Firebase emulator processes
           pkill -f "firebase" || true
+          for _ in $(seq 1 30); do
+            pgrep -f "firebase" >/dev/null || break
+            sleep 1
+          done
+          pkill -9 -f "firebase" || true
+          rm -f ./*-debug.log
 
       # Upload test results if tests fail
       - name: Upload test results

@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Chip widget to display filter status with selected count
 class FilterStatusChip extends StatelessWidget {
@@ -23,21 +25,15 @@ class FilterStatusChip extends StatelessWidget {
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingXs,
       ),
+      // A neutral info chip: the raised surface with no border (B83-2).
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.secondary.withValues(alpha: AppDimensions.opacityLight),
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.tune,
+          ButleryIcon(
+            ButleryIcons.filter,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
@@ -53,7 +49,7 @@ class FilterStatusChip extends StatelessWidget {
           Text(
             '$selectedCount valda',
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -16,6 +17,8 @@ import 'package:butlery/widgets/image/components/empty_image_state.dart';
 import 'package:butlery/widgets/image/components/edit_actions_panel.dart';
 import 'package:butlery/widgets/image/components/primary_badge.dart';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// Editable image widget with individual progress tracking for recipe editing.
 class EditableImageWidget extends StatefulWidget {
@@ -327,12 +330,17 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     final cs = Theme.of(context).colorScheme;
     return Positioned.fill(
       child: DecoratedBox(
+        // An opaque raised plate with the plate line: no veil, no spinner
+        // (tokens.json:40-53; Grafisk manual v6:209).
         decoration: BoxDecoration(
           borderRadius: widget.config.effectiveBorderRadius,
-          color: cs.onSurface.withValues(alpha: AppDimensions.opacityHalf),
+          color: cs.surfaceContainerHighest,
         ),
         child: Center(
-          child: LoadingIndicator(color: cs.surfaceContainerHighest),
+          child: FractionallySizedBox(
+            widthFactor: 0.5,
+            child: PlateLine(semanticLabel: context.l10n.imageUploadingImages),
+          ),
         ),
       ),
     );
@@ -348,11 +356,15 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     if (widget.config.enableHapticFeedback) {
       HapticFeedback.lightImpact();
     }
-    _pageController.animateToPage(
-      index,
-      duration: AppDimensions.animationDurationCommon,
-      curve: Curves.easeInOut,
-    );
+    if (isReducedMotion(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppMotion.standard,
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> _addImage() async {
@@ -375,7 +387,18 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       }
 
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
-      final result = await imagePickerService.pickMultipleImages();
+      // Flow 07: explanation before the system prompt (produktregler.md:682).
+      final outcome = await imagePickerService.pickMultipleImagesWithOutcome(
+        rationale: mediaRationalePrompt(context),
+      );
+      if (outcome.blockedByPermission && mounted) {
+        explainMediaPermission(
+          context,
+          outcome.permission,
+          ImageSource.gallery,
+        );
+      }
+      final result = outcome.files;
 
       if (result.isNotEmpty) {
         final newUrls = List<String>.from(widget.imageUrls);
@@ -410,11 +433,15 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
     if (_currentIndex >= newUrls.length && newUrls.isNotEmpty) {
       _currentIndex = newUrls.length - 1;
-      _pageController.animateToPage(
-        _currentIndex,
-        duration: AppDimensions.animationDurationCommon,
-        curve: Curves.easeInOut,
-      );
+      if (isReducedMotion(context)) {
+        _pageController.jumpToPage(_currentIndex);
+      } else {
+        _pageController.animateToPage(
+          _currentIndex,
+          duration: AppMotion.standard,
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 

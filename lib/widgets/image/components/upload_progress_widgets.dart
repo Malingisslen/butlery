@@ -3,11 +3,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Provides upload progress UI components for image editing.
 class UploadProgressWidgets {
@@ -36,13 +39,8 @@ class UploadProgressWidgets {
         return Container(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
-            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(
-              color: cs.primary.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
-            ),
+            color: context.modeColors.surfaceTintWarning,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -58,7 +56,7 @@ class UploadProgressWidgets {
                         child: Text(
                           uploadQueueStatus,
                           style: AppTextStyles.metadataEmphasized.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                       ),
@@ -96,21 +94,23 @@ class UploadProgressWidgets {
     if (hasActiveUploads) {
       return Builder(
         builder: (context) {
-          final cs = Theme.of(context).colorScheme;
-          return LoadingIndicator(
-            size: 16,
-            strokeWidth: 2,
-            color: cs.primary,
-            value: managementSummary['overallProgress'] as double?,
+          // The plate line with the real progress when there is one
+          // (Grafisk manual v6:209; PlateLine).
+          return SizedBox(
+            width: AppDimensions.iconSizeL,
+            child: PlateLine(
+              value: managementSummary['overallProgress'] as double?,
+              semanticLabel: context.l10n.imageUploadingImages,
+            ),
           );
         },
       );
     } else {
       return Builder(
-        builder: (context) => Icon(
-          Icons.check_circle,
+        builder: (context) => ButleryIcon(
+          ButleryIcons.circleCheck,
           size: AppDimensions.iconSizeS,
-          color: context.butleryColors.success,
+          color: context.modeColors.success,
         ),
       );
     }
@@ -139,10 +139,10 @@ class UploadProgressWidgets {
         if (canBulkRetry && onRetryAllFailed != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.refresh,
+              icon: ButleryIcons.refreshCw,
               label: context.l10n.uploadRetryAllCount(failed),
               onTap: onRetryAllFailed,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           );
         }
@@ -150,7 +150,7 @@ class UploadProgressWidgets {
         if (canBulkCancel && onCancelAllActive != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.stop,
+              icon: ButleryIcons.x,
               label: context.l10n.uploadStopAllCount(active),
               onTap: onCancelAllActive,
               color: cs.onSurfaceVariant,
@@ -161,7 +161,7 @@ class UploadProgressWidgets {
         if (hasRetryableFailures && onClearAllFailed != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.clear_all,
+              icon: ButleryIcons.listX,
               label: context.l10n.uploadClearFailed,
               onTap: onClearAllFailed,
               color: cs.error,
@@ -191,14 +191,17 @@ class UploadProgressWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Material(
-          color: color.withValues(alpha: AppDimensions.opacityExtraDark),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          color: cs.surfaceContainerHighest,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            side: BorderSide(color: cs.outlineVariant),
+          ),
           child: Semantics(
             label: context.l10n.a11yBulkUploadAction(label),
             button: true,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingM,
@@ -207,16 +210,16 @@ class UploadProgressWidgets {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    ButleryIcon(
                       icon,
                       size: AppDimensions.iconSizeS,
-                      color: cs.surfaceContainerHighest,
+                      color: color,
                     ),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       label,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.surfaceContainerHighest,
+                        color: cs.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -260,13 +263,11 @@ class UploadProgressWidgets {
           children: details
               .map(
                 (detail) => Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+                  padding: const EdgeInsets.only(top: AppDimensions.space4),
                   child: Text(
                     detail,
                     style: AppTextStyles.textSm.copyWith(
-                      color: cs.primary.withValues(
-                        alpha: AppDimensions.opacityVeryDark,
-                      ),
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -292,9 +293,7 @@ class UploadProgressWidgets {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityMediumDark,
-              ),
+              color: AppColors.overlayBlack60,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -307,9 +306,7 @@ class UploadProgressWidgets {
                     vertical: AppDimensions.paddingS,
                   ),
                   decoration: BoxDecoration(
-                    color: cs.onSurface.withValues(
-                      alpha: AppDimensions.opacityVeryDark,
-                    ),
+                    color: AppModeColors.surfacePaperOnPhoto(),
                     borderRadius: BorderRadius.circular(AppDimensions.paddingS),
                   ),
                   child: Column(
@@ -318,32 +315,28 @@ class UploadProgressWidgets {
                       Text(
                         status.statusDescription,
                         style: AppTextStyles.metadataEmphasized.copyWith(
-                          color: cs.surfaceContainerHighest,
+                          color: cs.primary,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       if (status.isActive &&
                           status.formattedTimeRemaining != null) ...[
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           context.l10n.uploadTimeRemaining(
                             status.formattedTimeRemaining!,
                           ),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityVeryDark,
-                            ),
+                            color: cs.primary,
                           ),
                         ),
                       ],
                       if (status.fileSizeMB != null) ...[
-                        const SizedBox(height: AppDimensions.spacingXxs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           '${status.fileSizeMB!.toStringAsFixed(1)} MB',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityDark,
-                            ),
+                            color: cs.primary,
                           ),
                         ),
                       ],
@@ -358,10 +351,9 @@ class UploadProgressWidgets {
                     children: [
                       if (status.canRetry && onRetryUpload != null)
                         buildUploadActionButton(
-                          icon: Icons.refresh,
+                          icon: ButleryIcons.refreshCw,
                           label: context.l10n.commonRetry,
                           onTap: () => onRetryUpload(imageUrl),
-                          color: cs.primary,
                         ),
                       if (status.canRetry &&
                           onRetryUpload != null &&
@@ -369,10 +361,10 @@ class UploadProgressWidgets {
                         const SizedBox(width: AppDimensions.spacingSm),
                       if (onCancelUpload != null)
                         buildUploadActionButton(
-                          icon: Icons.close,
+                          icon: ButleryIcons.x,
                           label: context.l10n.commonDelete,
                           onTap: () => onCancelUpload(imageUrl),
-                          color: cs.error,
+                          isDestructive: true,
                         ),
                     ],
                   ),
@@ -389,91 +381,51 @@ class UploadProgressWidgets {
   static Widget buildProgressIndicator(ImageUploadStatus status) {
     return Builder(
       builder: (context) {
-        final cs = Theme.of(context).colorScheme;
         switch (status.state) {
           case ImageUploadState.pending:
-            return Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.surfaceContainerHighest.withValues(
-                  alpha: AppDimensions.opacityLight,
-                ),
-              ),
-              child: Icon(
-                Icons.schedule,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeL,
-              ),
-            );
+            return _stateCircle(context, ButleryIcons.clock);
 
           case ImageUploadState.uploading:
           case ImageUploadState.retrying:
-            return LoadingIndicator(
-              size: 60,
-              strokeWidth: 4,
-              value: status.progress > 0 ? status.progress : null,
-              backgroundColor: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityMediumLight,
+            // An upload shows a line with its progress, never a spinner
+            // (P4-U07; Grafisk manual v6:209).
+            return SizedBox(
+              width: 60,
+              child: PlateLine(
+                value: status.progress > 0 ? status.progress : null,
+                semanticLabel: context.l10n.imageUploadingImages,
               ),
-              color: status.state == ImageUploadState.retrying
-                  ? cs.onSurfaceVariant
-                  : cs.primary,
             );
 
           case ImageUploadState.completed:
-            return Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.primary.withValues(
-                  alpha: AppDimensions.opacityExtraDark,
-                ),
-              ),
-              child: Icon(
-                Icons.check,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeL,
-              ),
-            );
+            return _stateCircle(context, ButleryIcons.check);
 
           case ImageUploadState.failed:
-            return Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.error.withValues(
-                  alpha: AppDimensions.opacityExtraDark,
-                ),
-              ),
-              child: Icon(
-                Icons.error,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeL,
-              ),
-            );
+            return _stateCircle(context, ButleryIcons.triangleAlert);
 
           case ImageUploadState.cancelled:
-            return Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.onSurfaceVariant.withValues(
-                  alpha: AppDimensions.opacityExtraDark,
-                ),
-              ),
-              child: Icon(
-                Icons.cancel,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeL,
-              ),
-            );
+            return _stateCircle(context, ButleryIcons.x);
         }
       },
+    );
+  }
+
+  /// The state circle over the photo scrim: an opaque paper disc with an ink
+  /// glyph (B102), one look for every state so the glyph alone says which state
+  /// it is.
+  static Widget _stateCircle(BuildContext context, IconData icon) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppModeColors.surfacePaperOnPhoto(),
+      ),
+      child: ButleryIcon(
+        icon,
+        color: Theme.of(context).colorScheme.primary,
+        size: AppDimensions.iconSizeL,
+      ),
     );
   }
 
@@ -482,42 +434,55 @@ class UploadProgressWidgets {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    required Color color,
+    bool isDestructive = false,
   }) {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
+        // The destructive button keeps its red fill (R8-5 = B, BUT-2232):
+        // action.danger, one opaque step darker while pressed.
+        final fill = isDestructive
+            ? context.modeColors.actionDanger
+            : AppModeColors.surfacePaperOnPhoto();
+        final ink = isDestructive
+            ? context.modeColors.onActionDanger
+            : cs.primary;
         return Semantics(
           label: context.l10n.a11yBulkUploadAction(label),
           button: true,
-          child: InkWell(
-            onTap: onTap,
+          child: Material(
+            color: fill,
             borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+              // The paper button's press on a photo is not decided
+              // (BUT-2232), so it keeps the unchanged fill it showed before.
+              overlayColor: WidgetStatePropertyAll(
+                isDestructive ? context.modeColors.actionDangerPressed : fill,
               ),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: AppDimensions.opacityExtraDark),
-                borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    icon,
-                    color: cs.surfaceContainerHighest,
-                    size: AppDimensions.iconSizeS,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Text(
-                    label,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: cs.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingS,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(
+                      icon,
+                      color: ink,
+                      size: AppDimensions.iconSizeS,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.spacingXs),
+                    Text(
+                      label,
+                      style: AppTextStyles.metadataEmphasized.copyWith(
+                        color: ink,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

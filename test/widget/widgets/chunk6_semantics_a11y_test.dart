@@ -17,6 +17,8 @@ import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dar
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
 
 void main() {
   setUpAll(() async {
@@ -107,5 +109,33 @@ void main() {
         handle.dispose();
       },
     );
+  });
+
+  group('BUT-2183 image_picker_dialog tiles', () {
+    for (final brightness in Brightness.values) {
+      testWidgets('${brightness.name}: the two source tiles are surface.base, '
+          'not an alpha of their own colour', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: brightness == Brightness.dark
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(body: ImagePickerDialog()),
+          ),
+        );
+        final cs = Theme.of(
+          tester.element(find.byType(ImagePickerDialog)),
+        ).colorScheme;
+
+        final tiles = tester
+            .widgetList<Material>(find.byType(Material))
+            .where((m) => m.color == cs.surface && m.borderRadius != null);
+        expect(tiles, hasLength(2));
+      });
+    }
   });
 }

@@ -1,6 +1,8 @@
-// lib/widgets/universal_share_dialog.dart - FACADE PATTERN
+// lib/widgets/common/universal_share_dialog.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -8,8 +10,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -21,6 +21,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_states.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
 /// Type of content that can be shared
 enum ShareContentType {
@@ -39,7 +40,7 @@ enum ShareMode {
 /// Universell delningsdialog som hanterar alla content-typer
 class UniversalShareDialog extends StatefulWidget {
   // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList
-  // For bulk sharing: List<dynamic> with multiple items
+  // For bulk sharing: List<Recipe>
   final Object content;
   final ShareContentType contentType;
   final String? initialMessage;
@@ -48,6 +49,10 @@ class UniversalShareDialog extends StatefulWidget {
   final UniversalShareDialogViewModel viewModel;
   final bool isBulkSharing; // Indicates if this is bulk sharing
   final String? menuName; // Optional menu name for menu sharing
+
+  /// Groups ticked when the dialog opens, e.g. the group whose page it was
+  /// opened from (BUT-2271).
+  final List<String> initialGroupIds;
 
   const UniversalShareDialog({
     super.key,
@@ -59,6 +64,7 @@ class UniversalShareDialog extends StatefulWidget {
     this.availableGroups,
     this.isBulkSharing = false,
     this.menuName,
+    this.initialGroupIds = const [],
   });
 
   /// Factory constructors for type safety
@@ -86,6 +92,7 @@ class UniversalShareDialog extends StatefulWidget {
     String? initialMessage,
     List<UserProfile>? availableFriends,
     List<FriendCategory>? availableGroups,
+    List<String> initialGroupIds = const [],
   }) {
     return UniversalShareDialog(
       content: menu,
@@ -95,6 +102,7 @@ class UniversalShareDialog extends StatefulWidget {
       initialMessage: initialMessage,
       availableFriends: availableFriends,
       availableGroups: availableGroups,
+      initialGroupIds: initialGroupIds,
     );
   }
 
@@ -104,6 +112,7 @@ class UniversalShareDialog extends StatefulWidget {
     String? initialMessage,
     List<UserProfile>? availableFriends,
     List<FriendCategory>? availableGroups,
+    List<String> initialGroupIds = const [],
   }) {
     return UniversalShareDialog(
       content: shoppingList,
@@ -112,22 +121,21 @@ class UniversalShareDialog extends StatefulWidget {
       initialMessage: initialMessage,
       availableFriends: availableFriends,
       availableGroups: availableGroups,
+      initialGroupIds: initialGroupIds,
     );
   }
 
-  /// Factory constructor for bulk sharing of multiple items
-  factory UniversalShareDialog.bulkShare({
-    required List<dynamic> contentItems,
-    required ShareContentType
-    primaryContentType, // Type for the majority of items
+  /// Several recipes in one sheet; each is shared on its own (BUT-2152).
+  factory UniversalShareDialog.recipes({
+    required List<Recipe> recipes,
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
     List<FriendCategory>? availableGroups,
   }) {
     return UniversalShareDialog(
-      content: contentItems,
-      contentType: primaryContentType,
+      content: recipes,
+      contentType: ShareContentType.recipe,
       viewModel: viewModel,
       initialMessage: initialMessage,
       availableFriends: availableFriends,
@@ -171,7 +179,18 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   final Set<String> _selectedFriendIds = {};
   final Set<String> _selectedGroupIds = {};
   String _searchQuery = '';
-  bool allowCollaboration = false;
+
+  /// What went wrong with the last share, shown in the sheet itself: the
+  /// sheet stays open, so a snackbar would sit under its barrier.
+  String? _failure;
+
+  /// The bulk recipes still to share. After a partial failure only the
+  /// recipes that failed stay, so Dela retries just those (BUT-2152).
+  late List<Recipe> _unsharedRecipes;
+
+  /// The sheet does not listen to the view model, so it holds its own
+  /// in-flight flag to stop a second tap starting a second round.
+  bool _sending = false;
 
   @override
   void initState() {
@@ -198,6 +217,15 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     _hasFriends =
         (widget.availableFriends?.isNotEmpty ?? false) ||
         (widget.availableGroups?.isNotEmpty ?? false);
+
+    _unsharedRecipes = widget.isBulkSharing
+        ? List.of(widget.content as List<Recipe>)
+        : const [];
+
+    _selectedGroupIds.addAll(widget.initialGroupIds);
+    if (widget.initialGroupIds.isNotEmpty) {
+      _selectedTab = ShareTargetType.groups;
+    }
   }
 
   @override
@@ -208,36 +236,31 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-      ),
+    // A sheet body (showUniversalShareSheet): the sheet route draws the
+    // surface and the handle. The keyboard inset pads the whole column so the
+    // actions stay above the keyboard.
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
+    final maxHeight =
+        (MediaQuery.sizeOf(context).height - inset) *
+        AppDimensions.sheetMaxHeightFraction;
+    return Padding(
+      padding: EdgeInsets.only(bottom: inset),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppDimensions.buttonWidthXLarge + 170,
-          maxHeight: 650,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            boxShadow: AppShadows.floating,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(),
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: _buildScrollableContent(),
-                ),
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeader(),
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: _buildScrollableContent(),
               ),
-              // Action buttons outside scroll view to fix web hit-testing (BUG-019)
-              if (_hasFriends) _buildActionButtons(),
-            ],
-          ),
+            ),
+            // Action buttons outside scroll view to fix web hit-testing (BUG-019)
+            if (_hasFriends) _buildActionButtons(),
+          ],
         ),
       ),
     );
@@ -247,7 +270,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     return ShareDialogHeader.build(
       context,
       widget.contentType,
-      widget.content,
+      widget.isBulkSharing ? _unsharedRecipes : widget.content,
     );
   }
 
@@ -321,36 +344,39 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         }
       },
       (query) => setState(() => _searchQuery = query),
-      (friendId) {
-        if (mounted) {
-          setState(() {
-            if (_selectedFriendIds.contains(friendId)) {
-              _selectedFriendIds.remove(friendId);
-            } else {
-              _selectedFriendIds.add(friendId);
-            }
-          });
-        }
-      },
-      (groupId) {
-        if (mounted) {
-          setState(() {
-            if (_selectedGroupIds.contains(groupId)) {
-              _selectedGroupIds.remove(groupId);
-            } else {
-              _selectedGroupIds.add(groupId);
-            }
-          });
-        }
-      },
+      (friendId) => _toggle(_selectedFriendIds, friendId),
+      (groupId) => _toggle(_selectedGroupIds, groupId),
       existingCollaborators:
           existingCollaborators, // PHASE 2: Pass existing collaborators info
     );
   }
 
+  void _toggle(Set<String> ids, String id) {
+    if (!mounted) return;
+    setState(() {
+      if (!ids.remove(id)) ids.add(id);
+    });
+  }
+
   Widget _buildActionButtons() {
     return Column(
       children: [
+        // content-style-guide.md:87-97: what happened, and that the message
+        // and the chosen recipients are still here (:92). The share button
+        // below is how to try again, so the error carries no button of its
+        // own (Q-P7-09).
+        if (_failure != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+            ),
+            child: InlineError(
+              what: _failure!,
+              preserved: widget.isBulkSharing
+                  ? context.l10n.shareRecipesRetryOnlyFailed
+                  : context.l10n.errorPreservedForm,
+            ),
+          ),
         ShareDialogActions.buildSelectionSummary(
           context,
           _selectedFriendIds.length + _selectedGroupIds.length,
@@ -363,7 +389,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           _selectedMode,
           _supportsRealtimeSharing,
           _selectedFriendIds.isNotEmpty || _selectedGroupIds.isNotEmpty,
-          widget.viewModel.isSharing,
+          _sending || widget.viewModel.isSharing,
           () => Navigator.pop(context),
           _handleShare,
         ),
@@ -373,9 +399,13 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   // Share action
   Future<void> _handleShare() async {
-    if (_selectedFriendIds.isEmpty && _selectedGroupIds.isEmpty) {
+    if (_sending || (_selectedFriendIds.isEmpty && _selectedGroupIds.isEmpty)) {
       return;
     }
+    setState(() {
+      _failure = null;
+      _sending = true;
+    });
 
     try {
       bool shareResult = false;
@@ -385,6 +415,25 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       final allowCollaboration = _selectedMode == ShareMode.realtime;
 
       switch (widget.contentType) {
+        case ShareContentType.recipe when widget.isBulkSharing:
+          final notShared = await widget.viewModel.shareRecipes(
+            recipes: _unsharedRecipes,
+            friendUserIds: friendIds,
+            groupIds: groupIds,
+            message: message.isNotEmpty ? message : null,
+            allowCollaboration: allowCollaboration,
+          );
+          shareResult = notShared.isEmpty;
+          if (!shareResult && mounted) {
+            setState(() {
+              _unsharedRecipes = notShared;
+              _failure = context.l10n.shareRecipesNotShared(
+                notShared.length,
+                notShared.map((recipe) => recipe.title).join(', '),
+              );
+            });
+            return;
+          }
         case ShareContentType.recipe:
           shareResult = await widget.viewModel.shareRecipe(
             recipe: widget.content as Recipe,
@@ -393,7 +442,6 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             message: message.isNotEmpty ? message : null,
             allowCollaboration: allowCollaboration,
           );
-          break;
         case ShareContentType.menu:
           shareResult = await widget.viewModel.shareMenu(
             menu: widget.content as Map<String, List<Recipe>>,
@@ -403,7 +451,6 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             message: message.isNotEmpty ? message : null,
             allowCollaboration: allowCollaboration,
           );
-          break;
         case ShareContentType.shoppingList:
           shareResult = await widget.viewModel.shareShoppingList(
             shoppingList: widget.content as UnifiedShoppingList,
@@ -412,7 +459,6 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             message: message.isNotEmpty ? message : null,
             shareMode: _selectedMode,
           );
-          break;
         case ShareContentType.personalTag:
           final tagData = widget.content as Map<String, String>;
           shareResult = await widget.viewModel.sharePersonalTag(
@@ -422,7 +468,6 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             groupIds: groupIds,
             message: message.isNotEmpty ? message : null,
           );
-          break;
       }
 
       if (shareResult && mounted) {
@@ -433,36 +478,22 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           _selectedMode,
         );
 
-        // Show success and close dialog
+        // Show success and close the sheet
         Navigator.pop(context, true);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(successMessage),
-            backgroundColor: context.butleryColors.success,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, successMessage);
       } else if (widget.viewModel.hasError && mounted) {
-        // PHASE 2: Show specific validation error from ViewModel
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.viewModel.errorMessage!),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(
-              seconds: 4,
-            ), // Longer duration for validation messages
-          ),
-        );
+        // PHASE 2: the specific validation error from the ViewModel.
+        setState(() => _failure = widget.viewModel.errorMessage);
       }
     } catch (e) {
+      // Never the exception's own text (content-style-guide.md:95).
+      AppLogger.error('Share failed', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.shareFailed(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        setState(() => _failure = context.l10n.shareCouldNotComplete);
       }
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 }

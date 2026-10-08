@@ -9,11 +9,17 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
+import 'package:butlery/models/diner_profile.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -21,6 +27,7 @@ import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/helpers/own_preferences_stub.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/menu/menu_scoring.dart';
@@ -28,6 +35,13 @@ import 'package:butlery/services/menu/menu_scoring.dart';
 // Local pure-Mock MenuService — the centralized one has concrete @override
 // methods that prevent mocktail stubbing with when().
 class _MockMenuService extends Mock implements MenuService {}
+
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockDinerProfileRepository extends Mock
+    implements DinerProfileRepository {}
+
+class _MockPermissionService extends Mock implements PermissionService {}
 
 // Local pure-Mock AnalyticsService — the centralized one's delegate methods
 // return null instead of Future<void>, crashing await calls.
@@ -108,11 +122,11 @@ void main() {
       mockAnalyticsService = _MockAnalyticsService();
 
       // BUT-1317: the personal flow now filters by allergen/dietary prefs by
-      // default, so the VM resolves UserService.allergenPreferences during
-      // availableRecipes. Default to empty prefs (no filtering) for the
-      // baseline tests; the BUT-1317 group overrides this per-test.
+      // default. Default to empty prefs (no filtering) for the baseline
+      // tests; the BUT-1317 group overrides this per-test.
       mockUserService = MockUserService();
-      when(() => mockUserService.allergenPreferences).thenReturn(
+      stubOwnPreferences(
+        mockUserService,
         const UserAllergenPreferences(
           trackedAllergens: {},
           trackedDietary: {},
@@ -546,11 +560,234 @@ void main() {
       });
     });
 
+    // -- P5-U25: fewer dishes than asked is a partial outcome ------------------
+    //
+    // produktregler.md:206: "Ett delresultat är alltså 1 ≤ n < begärt antal
+    // recept." produktregler.md:893: what is missing is named.
+    group('P5-U25 partial generation', () {
+      ParsedMenuRequest request(Map<String, int> counts, {int pins = 0}) =>
+          ParsedMenuRequest(
+            slotRequests: [
+              for (final e in counts.entries)
+                SlotRequest(
+                  mealType: e.key,
+                  subRequests: [RecipeConstraint(count: e.value)],
+                ),
+            ],
+            globalAllergenAvoid: const {},
+            globalDietaryRequire: const {},
+            dayPins: [
+              for (var i = 0; i < pins; i++)
+                const DayPin(
+                  weekdayIndex: 5,
+                  mealType: 'middag',
+                  constraint: RecipeConstraint(count: 1),
+                ),
+            ],
+            trace: const ExtractionTrace(),
+            rawPrompt: 'p',
+          );
+
+      void answer(Map<String, List<Recipe>> menu, ParsedMenuRequest? parsed) {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => menu);
+        when(
+          () => mockMenuService.parsePrompt(any()),
+        ).thenAnswer((_) async => parsed);
+      }
+
+      test('2 of 5 asked is partial and names the short meal type', () async {
+        answer({
+          'Middag': [testRecipe, testRecipe2],
+        }, request({'middag': 5}));
+
+        await viewModel.generateMenu('5 middagar');
+
+        final partial = viewModel.partialOutcome;
+        expect(partial, isNotNull);
+        expect(partial!.found, 2);
+        expect(partial.requested, 5);
+        expect(partial.missing.single.mealType, 'middag');
+        expect(partial.missing.single.missing, 3);
+      });
+
+      test('a day pin asks for one dish more', () async {
+        answer({
+          'Middag': [testRecipe, testRecipe2],
+        }, request({'middag': 2}, pins: 1));
+
+        await viewModel.generateMenu('2 middagar och tacofredag');
+
+        expect(viewModel.partialOutcome!.requested, 3);
+        expect(viewModel.partialOutcome!.found, 2);
+      });
+
+      test('everything asked for is not partial', () async {
+        answer({
+          'Middag': [testRecipe],
+          'Frukost': [testRecipe2],
+        }, request({'middag': 1, 'frukost': 1}));
+
+        await viewModel.generateMenu('1 middag 1 frukost');
+
+        expect(viewModel.partialOutcome, isNull);
+      });
+
+      test('an unparsable prompt never invents a gap', () async {
+        answer({
+          'Middag': [testRecipe],
+        }, null);
+
+        await viewModel.generateMenu('något');
+
+        expect(viewModel.partialOutcome, isNull);
+      });
+
+      test(
+        'clearing or loading another menu ends the partial outcome',
+        () async {
+          answer({
+            'Middag': [testRecipe],
+          }, request({'middag': 4}));
+          await viewModel.generateMenu('4 middagar');
+          expect(viewModel.partialOutcome, isNotNull);
+
+          viewModel.clearMenu();
+          expect(viewModel.partialOutcome, isNull);
+
+          await viewModel.generateMenu('4 middagar');
+          expect(viewModel.partialOutcome, isNotNull);
+          viewModel.loadFromSharedMenu(
+            SharedMenu.create(
+              sharedByUserId: testUserId,
+              sharedByDisplayName: 'Test',
+              sharedToUserIds: [testFriendId],
+              menuTitle: 'Delad',
+              menuSnapshot: {
+                'Middag': [testRecipe],
+              },
+              shareMessage: '',
+            ),
+          );
+          expect(viewModel.partialOutcome, isNull);
+        },
+      );
+    });
+
+    // -- P6-U01: no matches is an outcome, an empty library an error --------
+    //
+    // flows-roles-budget.md:32 ("0 recept placerade -> inga matchningar");
+    // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
+    // REQUIRED. Before P6-U01 an empty result threw errorGeneric ("Ett fel
+    // uppstod").
+    group('TR::FLOW::01::genererar::0-recept-placerade', () {
+      test('an empty result is the no-match outcome, never an error', () async {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => <String, List<Recipe>>{});
+        when(() => mockMenuService.parsePrompt(any())).thenAnswer(
+          (_) async => const ParsedMenuRequest(
+            slotRequests: [],
+            globalAllergenAvoid: {},
+            globalDietaryRequire: {},
+            dayPins: [],
+            trace: ExtractionTrace(
+              understood: [
+                TraceEntry(label: '3 middagar', category: TraceCategory.count),
+                TraceEntry(
+                  label: 'Under 30 min',
+                  category: TraceCategory.time,
+                ),
+                TraceEntry(
+                  label: 'Vegetariskt',
+                  category: TraceCategory.dietary,
+                ),
+              ],
+            ),
+            rawPrompt: 'p',
+          ),
+        );
+
+        await viewModel.generateMenu('3 vegetariska middagar under 30 min');
+
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.error, isNull);
+        expect(viewModel.hasMenu, isFalse);
+        final outcome = viewModel.noMatchOutcome;
+        expect(outcome, isNotNull);
+        expect(outcome!.poolSize, 2, reason: 'the two recipes in the library');
+        expect(
+          outcome.constraints,
+          ['Under 30 min', 'Vegetariskt'],
+          reason: 'what stopped it, without the count',
+        );
+      });
+
+      test(
+        'an empty library keeps its own error, not the no-match state',
+        () async {
+          mockRecipeService.setRecipeState(
+            recipes: [],
+            currentUserId: testUserId,
+            isInitialized: true,
+            isLoading: false,
+            error: null,
+          );
+
+          await viewModel.generateMenu('Veckomeny');
+
+          expect(viewModel.noMatchOutcome, isNull);
+          expect(viewModel.hasError, isTrue);
+          expect(viewModel.error, contains('Inga recept tillgängliga'));
+        },
+      );
+
+      test('a later match or clearing ends the no-match outcome', () async {
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => <String, List<Recipe>>{});
+        await viewModel.generateMenu('omöjligt');
+        expect(viewModel.noMatchOutcome, isNotNull);
+
+        viewModel.clearMenu();
+        expect(viewModel.noMatchOutcome, isNull);
+
+        await viewModel.generateMenu('omöjligt');
+        when(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        ).thenAnswer((_) async => testMenuSnapshot);
+        await viewModel.generateMenu('Veckomeny');
+        expect(viewModel.noMatchOutcome, isNull);
+        expect(viewModel.hasMenu, isTrue);
+      });
+    });
+
     // -- BUT-1317: Personal flow allergen/dietary safety -----------------------
     //
     // The personal weekly-menu flow must filter out recipes containing the
-    // user's tracked allergens / failing dietary prefs BY DEFAULT (sourced
-    // from userService.allergenPreferences, honoring includeUnknownInMenu).
+    // user's tracked allergens / failing dietary prefs BY DEFAULT (honoring
+    // includeUnknownInMenu).
     // Before BUT-1317 the MenuViewModel constructed MenuGenerator with the
     // filter flags defaulting OFF, so a nut-allergic user could be served nut
     // recipes. These tests construct the real MenuViewModel (exercising the
@@ -590,7 +827,7 @@ void main() {
         required UserAllergenPreferences prefs,
         required List<Recipe> recipes,
       }) {
-        when(() => mockUserService.allergenPreferences).thenReturn(prefs);
+        stubOwnPreferences(mockUserService, prefs);
         mockRecipeService.setRecipeState(
           recipes: recipes,
           currentUserId: testUserId,
@@ -605,6 +842,71 @@ void main() {
           analyticsService: mockAnalyticsService,
         );
       }
+
+      test(
+        'the vote sheet\'s async pool drops a child\'s fish recipe that the '
+        'sync single-user pool keeps',
+        () async {
+          final householdRepo = _MockHouseholdRepository();
+          final dinerRepo = _MockDinerProfileRepository();
+          final permission = _MockPermissionService();
+          when(() => permission.currentUserId).thenReturn('u1');
+          when(() => householdRepo.getActiveForUser('u1')).thenAnswer(
+            (_) async => Household(
+              id: 'hh1',
+              name: Household.defaultName,
+              members: const [],
+              createdBy: 'u1',
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+            ),
+          );
+          when(() => dinerRepo.getByHousehold('hh1')).thenAnswer(
+            (_) async => [
+              DinerProfile(
+                id: 'kid',
+                householdId: 'hh1',
+                name: 'Testbarn',
+                ageBand: DinerAgeBand.child,
+                allergenPreferences: const UserAllergenPreferences(
+                  trackedAllergens: {'fisk'},
+                  trackedDietary: {},
+                ),
+                createdBy: 'u1',
+              ),
+            ],
+          );
+          TestServiceLocator.registerMock<HouseholdRepository>(householdRepo);
+          TestServiceLocator.registerMock<DinerProfileRepository>(dinerRepo);
+          TestServiceLocator.registerMock<PermissionService>(permission);
+          addTearDown(() {
+            TestServiceLocator.unregister<HouseholdRepository>();
+            TestServiceLocator.unregister<DinerProfileRepository>();
+            TestServiceLocator.unregister<PermissionService>();
+          });
+
+          final fish = recipeWith(
+            'fish',
+            tagWith(allergen: {'fisk': TriState.contains}),
+          );
+          final veg = recipeWith(
+            'veg',
+            tagWith(allergen: {'fisk': TriState.free}),
+          );
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {},
+              trackedDietary: {},
+            ),
+            recipes: [fish, veg],
+          );
+          addTearDown(vm.dispose);
+
+          expect(vm.availableRecipes.map((r) => r.id), contains('fish'));
+          final pool = await vm.getAvailableRecipesAsync();
+          expect(pool.map((r) => r.id), ['veg']);
+        },
+      );
 
       test(
         'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',

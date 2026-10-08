@@ -26,7 +26,6 @@ class MockUnifiedShoppingViewModel extends Mock
 void main() {
   late MockUnifiedShoppingViewModel viewModel;
   late List<Invocation> saves;
-  late List<String> successes;
   late List<String> errors;
 
   /// The named arguments of the single save the dialog performed. Reading the
@@ -41,11 +40,10 @@ void main() {
   setUp(() {
     viewModel = MockUnifiedShoppingViewModel();
     saves = [];
-    successes = [];
     errors = [];
 
     when(
-      () => viewModel.addItemToActiveList(
+      () => viewModel.addItemWithId(
         name: any(named: 'name'),
         amount: any(named: 'amount'),
         unit: any(named: 'unit'),
@@ -56,8 +54,9 @@ void main() {
       ),
     ).thenAnswer((invocation) async {
       saves.add(invocation);
-      return true;
+      return 'new-row-1';
     });
+    when(() => viewModel.removeItem(any())).thenAnswer((_) async => true);
 
     when(
       () => viewModel.updateItem(
@@ -93,7 +92,6 @@ void main() {
             onPressed: () => ShoppingItemDialogs.showAddItemDialog(
               ctx,
               viewModel,
-              successes.add,
               errors.add,
             ),
             child: const Text('öppna'),
@@ -117,7 +115,6 @@ void main() {
               ctx,
               item,
               viewModel,
-              successes.add,
               errors.add,
             ),
             child: const Text('öppna'),
@@ -151,8 +148,49 @@ void main() {
             'The note is layered on after basic(), which drops it — the copyWith '
             'that carries it is easy to lose in a refactor.',
       );
-      expect(successes, hasLength(1));
+      // P4-U11: add is class 1, so the receipt is the undo snackbar, not a
+      // plain confirmation (produktregler.md:131).
+      expect(find.text('La till "Mjölk"'), findsOneWidget);
+      expect(find.text('Ångra'), findsOneWidget);
       expect(errors, isEmpty);
+    });
+
+    // P4-U11: "Ångra" after an add removes exactly the row that was added,
+    // by the id the service returned (produktregler.md:131).
+    testWidgets('Ångra removes the added row by its id', (tester) async {
+      await openAddDialog(tester);
+
+      await tester.enterText(fieldLabelled('Varunamn'), 'Mjölk');
+      await tester.tap(find.text('Lägg till'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ångra'));
+      await tester.pump();
+
+      verify(() => viewModel.removeItem('new-row-1')).called(1);
+    });
+
+    testWidgets('a failed add offers no undo', (tester) async {
+      when(
+        () => viewModel.addItemWithId(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+          note: any(named: 'note'),
+          estimatedPrice: any(named: 'estimatedPrice'),
+          priority: any(named: 'priority'),
+        ),
+      ).thenAnswer((_) async => null);
+      await openAddDialog(tester);
+
+      await tester.enterText(fieldLabelled('Varunamn'), 'Mjölk');
+      await tester.tap(find.text('Lägg till'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ångra'), findsNothing);
+      expect(errors, hasLength(1));
+      verifyNever(() => viewModel.removeItem(any()));
     });
 
     testWidgets('an untouched note saves as no note', (tester) async {
@@ -310,7 +348,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(saves, isEmpty);
-      expect(successes, isEmpty);
       expect(errors, isEmpty);
     });
   });
@@ -352,7 +389,35 @@ void main() {
       expect(savedArgs()[#itemId], 'item-1');
       expect(savedArgs()[#name], 'Havredryck');
       expect(savedArgs()[#notes], 'Osötad');
-      expect(successes, hasLength(1));
+      expect(
+        find.byType(SnackBar),
+        findsNothing,
+        reason:
+            'update{namn, mängd, enhet, kategori} is class 3: no friction on '
+            'success (produktregler.md:133). The row changing is the receipt.',
+      );
+      expect(errors, isEmpty);
+    });
+
+    testWidgets('a failed edit is still said', (tester) async {
+      when(
+        () => viewModel.updateItem(
+          itemId: any(named: 'itemId'),
+          name: any(named: 'name'),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+          notes: any(named: 'notes'),
+          estimatedPrice: any(named: 'estimatedPrice'),
+          priority: any(named: 'priority'),
+        ),
+      ).thenAnswer((_) async => false);
+      await openEditDialog(tester, existing());
+
+      await tester.tap(find.text('Spara'));
+      await tester.pumpAndSettle();
+
+      expect(errors, hasLength(1), reason: 'class 3 silences success only');
     });
 
     // BUT-1874, the discriminating case. Emptying the field used to be

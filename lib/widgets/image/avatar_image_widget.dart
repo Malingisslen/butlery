@@ -6,7 +6,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -146,14 +148,14 @@ class AvatarImageWidget extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: cs.primary,
                 border: Border.all(
-                  color: cs.surfaceContainerHighest,
+                  color: cs.onPrimary,
                   width: 2,
                 ),
               ),
-              child: Icon(
-                Icons.edit,
+              child: ButleryIcon(
+                ButleryIcons.pencil,
                 size: AppDimensions.iconSizeS,
-                color: cs.surfaceContainerHighest,
+                color: cs.onPrimary,
               ),
             ),
           ),
@@ -205,20 +207,13 @@ class AvatarImageWidget extends StatelessWidget {
       height: dimensions.height,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryDark),
-            cs.primary,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: cs.surfaceContainerHighest,
       ),
       child: Center(
         child: UserAvatarWidgets.initialsOrFallback(
           initials: initials,
           fontSize: _getFontSize(dimensions.width),
-          color: cs.surfaceContainerHighest,
+          color: cs.onSurface,
           baseStyle: AppTextStyles.headlineMedium.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -312,17 +307,19 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
               final cs = Theme.of(context).colorScheme;
               return Positioned.fill(
                 child: DecoratedBox(
+                  // Uploading: an opaque raised plate with the plate line,
+                  // never a veil or a spinner (tokens.json:40-53; Grafisk
+                  // manual v6:209).
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: cs.surfaceContainerHighest.withValues(
-                      alpha: AppDimensions.opacityVeryDark,
-                    ),
+                    color: cs.surfaceContainerHighest,
                   ),
                   child: Center(
-                    child: LoadingIndicator(
-                      size: 24,
-                      strokeWidth: 2,
-                      color: cs.primary,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.6,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.imageUploadingImages,
+                      ),
                     ),
                   ),
                 ),
@@ -355,8 +352,8 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                           width: 2,
                         ),
                       ),
-                      child: Icon(
-                        Icons.close,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
                         size: AppDimensions.iconSizeS,
                         color: cs.surfaceContainerHighest,
                       ),

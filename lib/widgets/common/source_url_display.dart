@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Widget to display source URL information with consistent styling
 class SourceUrlDisplay extends StatelessWidget {
@@ -22,17 +24,17 @@ class SourceUrlDisplay extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.link,
+          ButleryIcon(
+            ButleryIcons.link,
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               context.l10n.recipeImportedFrom(sourceUrl),

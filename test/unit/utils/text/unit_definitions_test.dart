@@ -74,4 +74,17 @@ void main() {
     expect(UnitDefinitions.standaloneUnits, contains('cup'));
     expect(UnitDefinitions.standaloneUnits.length, greaterThan(40));
   });
+
+  test('potted and bunched herbs are units ("1 kruka koriander")', () {
+    for (final unit in [
+      'kruka',
+      'krukor',
+      'bunt',
+      'buntar',
+      'knippe',
+      'knippen',
+    ]) {
+      expect(UnitDefinitions.isKnownUnit(unit), isTrue, reason: unit);
+    }
+  });
 }

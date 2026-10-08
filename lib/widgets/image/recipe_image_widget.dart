@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/services/performance/optimized_image_loader.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 class RecipeImageWidget extends StatefulWidget {
   final List<String> imageUrls;
@@ -150,7 +154,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildRecipeCard() {
-    final cs = Theme.of(context).colorScheme;
     final primaryImage = widget.imageUrls.first;
 
     return Stack(
@@ -166,23 +169,6 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
             imageCount: widget.imageUrls.length,
             config: widget.config,
           ),
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: widget.config.effectiveBorderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  cs.surfaceContainerHighest.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -319,8 +305,8 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
         child: GestureDetector(
           onTap: widget.onTap,
           child: const Center(
-            child: Icon(
-              Icons.add_photo_alternate_outlined,
+            child: ButleryIcon(
+              ButleryIcons.camera,
               size: AppDimensions.iconSizeXxl,
             ),
           ),
@@ -334,11 +320,15 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       HapticFeedback.lightImpact();
     }
 
-    _pageController.animateToPage(
-      index,
-      duration: AppDimensions.animationDurationCommon,
-      curve: Curves.easeInOut,
-    );
+    if (isReducedMotion(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppMotion.standard,
+        curve: Curves.easeInOut,
+      );
+    }
   }
 }
 
@@ -454,10 +444,14 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
       HapticFeedback.lightImpact();
     }
 
-    _pageController.animateToPage(
-      index,
-      duration: AppDimensions.animationDurationCommon,
-      curve: Curves.easeInOut,
-    );
+    if (isReducedMotion(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppMotion.standard,
+        curve: Curves.easeInOut,
+      );
+    }
   }
 }

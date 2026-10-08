@@ -7,10 +7,11 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog factory for delete, action, and info dialogs with Swedish localization and BaseDialog foundation.
 class CommonDialogActions {
@@ -45,7 +46,7 @@ class CommonDialogActions {
       itemName: recipeName,
       itemType: context.l10n.itemTypeRecipe,
       warningMessage: context.l10n.recipeDeleteWarning,
-      icon: AdaptiveIcons.restaurant,
+      icon: ButleryIcons.utensils,
     );
   }
 
@@ -59,7 +60,7 @@ class CommonDialogActions {
       itemName: groupName,
       itemType: context.l10n.itemTypeGroup,
       warningMessage: context.l10n.groupDeleteWarning,
-      icon: AdaptiveIcons.group,
+      icon: ButleryIcons.users,
     );
   }
 
@@ -73,7 +74,7 @@ class CommonDialogActions {
       itemName: listName,
       itemType: context.l10n.itemTypeShoppingList,
       warningMessage: context.l10n.shoppingListDeleteWarning,
-      icon: AdaptiveIcons.cart,
+      icon: ButleryIcons.shoppingCart,
     );
   }
 
@@ -112,8 +113,8 @@ class CommonDialogActions {
       title: context.l10n.groupLeaveTitle,
       message: context.l10n.groupLeaveMessage(groupName),
       confirmText: context.l10n.groupLeaveAction,
-      icon: AdaptiveIcons.exitToApp,
-      confirmColor: context.butleryColors.warning,
+      icon: ButleryIcons.logOut,
+      confirmColor: context.modeColors.warning,
       isDangerous: true,
     );
   }
@@ -127,8 +128,8 @@ class CommonDialogActions {
       title: context.l10n.unsavedChangesTitle,
       message: context.l10n.unsavedChangesMessage,
       confirmText: context.l10n.cancelWithoutSaving,
-      icon: AdaptiveIcons.warning,
-      confirmColor: context.butleryColors.warning,
+      icon: ButleryIcons.triangleAlert,
+      confirmColor: context.modeColors.warning,
       isDangerous: true,
     );
   }
@@ -148,7 +149,7 @@ class CommonDialogActions {
       title: context.l10n.shareItemTitle(itemType),
       message: context.l10n.shareItemMessage(itemType, recipients),
       confirmText: context.l10n.commonShare,
-      icon: AdaptiveIcons.share,
+      icon: ButleryIcons.share2,
       confirmColor: Theme.of(context).colorScheme.primary,
     );
   }
@@ -165,9 +166,9 @@ class CommonDialogActions {
       builder: (dialogContext) => _InfoDialog(
         title: title,
         message: message,
-        icon: icon ?? AdaptiveIcons.checkCircle,
-        color: context.butleryColors.success,
-        buttonText: dialogContext.l10n.commonOk,
+        icon: icon ?? ButleryIcons.circleCheck,
+        color: context.modeColors.success,
+        buttonText: dialogContext.l10n.commonClose,
       ),
     );
   }
@@ -184,9 +185,9 @@ class CommonDialogActions {
       builder: (dialogContext) => _InfoDialog(
         title: title,
         message: message,
-        icon: icon ?? AdaptiveIcons.warning,
-        color: context.butleryColors.warning,
-        buttonText: dialogContext.l10n.commonOk,
+        icon: icon ?? ButleryIcons.triangleAlert,
+        color: context.modeColors.warning,
+        buttonText: dialogContext.l10n.commonClose,
       ),
     );
   }
@@ -203,9 +204,9 @@ class CommonDialogActions {
       builder: (dialogContext) => _InfoDialog(
         title: title,
         message: message,
-        icon: icon ?? AdaptiveIcons.error,
+        icon: icon ?? ButleryIcons.triangleAlert,
         color: Theme.of(context).colorScheme.error,
-        buttonText: dialogContext.l10n.commonOk,
+        buttonText: dialogContext.l10n.commonClose,
       ),
     );
   }
@@ -226,7 +227,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
     required String cancelText,
   }) : super(
          title: '$deleteText $itemType?',
-         titleIcon: Icons.delete,
+         titleIcon: ButleryIcons.trash2,
          primaryActionText: deleteText,
          secondaryActionText: cancelText,
          isDangerous: true,
@@ -238,19 +239,22 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: TextSpan(
-            style: AppTextStyles.bodyMedium,
-            children: [
-              TextSpan(text: '${context.l10n.deleteConfirmMessage} '),
-              TextSpan(
-                text: '"$itemName"',
-                style: AppTextStyles.bodyBold,
-              ),
-              const TextSpan(text: '?'),
-            ],
+        // Without a name the title ("Ta bort foto?") already asks; the
+        // question here would end in an empty '""?'.
+        if (itemName.isNotEmpty)
+          RichText(
+            text: TextSpan(
+              style: AppTextStyles.bodyMedium,
+              children: [
+                TextSpan(text: '${context.l10n.deleteConfirmMessage} '),
+                TextSpan(
+                  text: '"$itemName"',
+                  style: AppTextStyles.bodyBold,
+                ),
+                const TextSpan(text: '?'),
+              ],
+            ),
           ),
-        ),
         if (warningMessage != null) ...[
           const SizedBox(
             height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -258,7 +262,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: context.butleryColors.warning,
+              color: context.modeColors.warning,
             ),
           ),
         ],
@@ -308,7 +312,7 @@ class _ActionConfirmationDialog extends StatelessWidget {
 
     return AlertDialog(
       icon: icon != null
-          ? Icon(
+          ? ButleryIcon(
               icon,
               color: isDangerous ? cs.error : buttonColor,
               size: 48,
@@ -357,7 +361,7 @@ class _InfoDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
-      icon: Icon(
+      icon: ButleryIcon(
         icon,
         color: color,
         size: 48,

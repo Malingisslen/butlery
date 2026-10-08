@@ -23,6 +23,9 @@ import 'package:flutter/material.dart';
 ///
 /// Cards are stretched to their row's height, so a card that draws less than
 /// its neighbour keeps the same box rather than ending short of it.
+///
+/// Kept although only tests build it: [SliverContentSizedGrid] below is the
+/// app's form of it and its doc points here for the measurements above.
 class ContentSizedGrid extends StatelessWidget {
   const ContentSizedGrid({
     super.key,
@@ -51,39 +54,88 @@ class ContentSizedGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     assert(columns > 0, 'a grid needs at least one column');
-    final rowCount = (itemCount + columns - 1) ~/ columns;
-
     return ListView.builder(
       primary: primary,
       padding: padding,
-      itemCount: rowCount,
-      itemBuilder: (context, rowIndex) {
-        final firstIndex = rowIndex * columns;
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: rowIndex == rowCount - 1 ? 0 : spacing,
-          ),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var column = 0; column < columns; column++) ...[
-                  if (column > 0) SizedBox(width: spacing),
-                  Expanded(
-                    // The last row can be short. Its empty cells are still
-                    // laid out, so the cards in it keep the width they have in
-                    // every other row — without them a lone final card would
-                    // stretch across the screen.
-                    child: firstIndex + column < itemCount
-                        ? itemBuilder(context, firstIndex + column)
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
+      itemCount: _rowCount(itemCount, columns),
+      itemBuilder: (context, rowIndex) => _row(
+        context,
+        rowIndex: rowIndex,
+        itemCount: itemCount,
+        columns: columns,
+        spacing: spacing,
+        itemBuilder: itemBuilder,
+      ),
     );
   }
+}
+
+/// [ContentSizedGrid] as a sliver, for a scroll view that has other slivers
+/// above the cards. Rows are built lazily, the same way.
+class SliverContentSizedGrid extends StatelessWidget {
+  const SliverContentSizedGrid({
+    super.key,
+    required this.itemCount,
+    required this.columns,
+    required this.spacing,
+    required this.itemBuilder,
+  });
+
+  final int itemCount;
+  final int columns;
+  final double spacing;
+  final Widget Function(BuildContext context, int index) itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    assert(columns > 0, 'a grid needs at least one column');
+    return SliverList.builder(
+      itemCount: _rowCount(itemCount, columns),
+      itemBuilder: (context, rowIndex) => _row(
+        context,
+        rowIndex: rowIndex,
+        itemCount: itemCount,
+        columns: columns,
+        spacing: spacing,
+        itemBuilder: itemBuilder,
+      ),
+    );
+  }
+}
+
+int _rowCount(int itemCount, int columns) =>
+    (itemCount + columns - 1) ~/ columns;
+
+Widget _row(
+  BuildContext context, {
+  required int rowIndex,
+  required int itemCount,
+  required int columns,
+  required double spacing,
+  required Widget Function(BuildContext context, int index) itemBuilder,
+}) {
+  final rowCount = _rowCount(itemCount, columns);
+  final firstIndex = rowIndex * columns;
+  return Padding(
+    padding: EdgeInsets.only(bottom: rowIndex == rowCount - 1 ? 0 : spacing),
+    child: IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var column = 0; column < columns; column++) ...[
+            if (column > 0) SizedBox(width: spacing),
+            Expanded(
+              // The last row can be short. Its empty cells are still
+              // laid out, so the cards in it keep the width they have in
+              // every other row — without them a lone final card would
+              // stretch across the screen.
+              child: firstIndex + column < itemCount
+                  ? itemBuilder(context, firstIndex + column)
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 }

@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
@@ -108,12 +114,14 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       // can't walk the now-detached element tree.
       final messenger = ScaffoldMessenger.of(context);
       final sentLabel = context.l10n.pingComposeSent;
-      final successColor = context.butleryColors.success;
       Navigator.of(context).pop();
+      // The ink snackbar (Komponentark v1:745-750; PQ-09 = A), shown on the
+      // messenger captured above: the theme gives the surface, InkSnackBar
+      // the message. No status fill (Komponentark v1:300).
       messenger.showSnackBar(
         SnackBar(
-          content: Text(sentLabel),
-          backgroundColor: successColor,
+          content: InkSnackBar(message: sentLabel),
+          padding: InkSnackBar.padding,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -128,13 +136,7 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       setState(() {
         _isSending = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.errorGeneric),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SnackBarUtils.showFailure(context, what: context.l10n.errorGeneric);
     }
   }
 
@@ -163,7 +165,10 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
               _MessageField(controller: _messageController),
               if (_inlineError != null) ...[
                 const SizedBox(height: AppDimensions.spacingSm),
-                _InlineError(message: _inlineError!),
+                InlineError(
+                  key: const Key('ping-inline-error'),
+                  what: _inlineError!,
+                ),
               ],
               const SizedBox(height: AppDimensions.spacingLg),
               _SendButton(
@@ -215,7 +220,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-nudge'),
             label: l10n.pingNudge,
-            icon: Icons.back_hand_outlined,
+            icon: ButleryIcons.hand,
             selected: selected == PingType.nudge,
             onTap: () => onSelect(PingType.nudge),
           ),
@@ -225,7 +230,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-timer'),
             label: l10n.pingTimerAlert,
-            icon: Icons.timer_outlined,
+            icon: ButleryIcons.clock,
             selected: selected == PingType.timerAlert,
             onTap: () => onSelect(PingType.timerAlert),
           ),
@@ -235,7 +240,7 @@ class _TypeChipRow extends StatelessWidget {
           child: _TypeChip(
             key: const Key('ping-type-help'),
             label: l10n.pingHelpMe,
-            icon: Icons.help_outline,
+            icon: ButleryIcons.circleHelp,
             selected: selected == PingType.helpMe,
             onTap: () => onSelect(PingType.helpMe),
           ),
@@ -262,39 +267,53 @@ class _TypeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final fg = selected ? cs.surface : cs.onPrimaryContainer;
+    final fg = selected ? cs.onPrimary : cs.onPrimaryContainer;
     final bg = selected ? cs.primary : cs.surfaceContainer;
-    final border = selected ? cs.primary : cs.primary.withValues(alpha: 0.3);
+    // Komponentark v1:141-142 and the dark matrix v1:523: a chip at rest
+    // has a border.control edge (outline); a chosen chip is an ink fill
+    // with paper text, edged in text.primary (onSurface), which is the
+    // paper edge the dark drawing gives it and invisible ink-on-ink in light.
+    final border = selected ? cs.onSurface : cs.outline;
 
     return Semantics(
       selected: selected,
       button: true,
       label: label,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingSm,
-            vertical: AppDimensions.spacingMd,
-          ),
-          decoration: BoxDecoration(
-            color: bg,
-            border: Border.all(color: border, width: selected ? 2 : 1),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: AppDimensions.iconSizeM, color: fg),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                label,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: fg,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.ink : PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: bg,
               ),
-            ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingSm,
+                  vertical: AppDimensions.spacingMd,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: border, width: selected ? 2 : 1),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ButleryIcon(icon, size: AppDimensions.iconSizeM, color: fg),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      label,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: fg,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -310,74 +329,41 @@ class _MessageField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return TextField(
-      key: const Key('ping-message-field'),
-      controller: controller,
-      maxLength: kPingMaxMessageLength,
-      maxLines: 2,
-      style: AppTextStyles.bodyMedium,
-      decoration: InputDecoration(
-        hintText: context.l10n.pingComposeMessageHint,
-        hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: cs.onSurfaceVariant,
-        ),
-        filled: true,
-        fillColor: cs.surfaceContainerHighest,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: cs.outlineVariant),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: cs.primary, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(
-            color: cs.primary.withValues(alpha: 0.3),
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
-        ),
+    final restingBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(
+        color: cs.onSurface.withValues(alpha: 0.3),
       ),
     );
-  }
-}
-
-class _InlineError extends StatelessWidget {
-  const _InlineError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      key: const Key('ping-inline-error'),
-      padding: const EdgeInsets.all(AppDimensions.spacingSm),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        border: Border.all(color: cs.error.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: cs.error,
-            size: AppDimensions.iconSizeS,
+    // Focus is the ring outside the input box, shown for keyboard focus
+    // (decision D3); the edge keeps its resting width and colour (Grafisk
+    // manual v6:423; Komponentark v1:657).
+    return ButleryFocusRing(
+      bounds: FocusRingBounds.textFieldBox,
+      child: TextField(
+        key: const Key('ping-message-field'),
+        controller: controller,
+        maxLength: kPingMaxMessageLength,
+        maxLines: 2,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: context.l10n.pingComposeMessageHint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: cs.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onErrorContainer,
-              ),
-            ),
+          filled: true,
+          fillColor: cs.surfaceContainerHighest,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.zero,
+            borderSide: BorderSide(color: cs.outlineVariant),
           ),
-        ],
+          focusedBorder: restingBorder,
+          enabledBorder: restingBorder,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
+        ),
       ),
     );
   }
@@ -397,9 +383,7 @@ class _SendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final bg = enabled
-        ? cs.onPrimaryContainer
-        : context.butleryColors.iconMuted;
+    final bg = enabled ? cs.onPrimaryContainer : context.modeColors.iconMuted;
 
     return Semantics(
       label: context.l10n.a11yPingComposeSend,
@@ -408,25 +392,34 @@ class _SendButton extends StatelessWidget {
       child: InkWell(
         key: const Key('ping-send-button'),
         onTap: enabled ? onPressed : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingMd,
-          ),
-          decoration: BoxDecoration(color: bg),
-          alignment: Alignment.center,
-          child: isLoading
-              ? LoadingIndicator(
-                  size: 20,
-                  strokeWidth: 2,
+        // Sending keeps the name; the plate line runs along the button's
+        // bottom edge in its own text colour, never a spinner in its place
+        // (Komponentark v1:365, :372). The line is laid over the edge, so the
+        // button keeps its height.
+        child: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingMd,
+              ),
+              decoration: BoxDecoration(color: bg),
+              alignment: Alignment.center,
+              child: Text(
+                context.l10n.pingComposeSend,
+                style: AppTextStyles.bodyLarge.copyWith(
                   color: cs.surface,
-                )
-              : Text(
-                  context.l10n.pingComposeSend,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.surface,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+            if (isLoading)
+              PositionedDirectional(
+                start: 0,
+                end: 0,
+                bottom: 0,
+                child: ButtonPlateLine(color: cs.surface),
+              ),
+          ],
         ),
       ),
     );

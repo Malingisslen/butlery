@@ -65,8 +65,8 @@ repo — this table included — can prove a policy is ON. After any deploy, ver
 with `gcloud firestore fields ttls list --project=butlery-app-1`. That listing is
 the only ground truth; this table tracks *which groups need a policy*.
 
-> This registry is known to be **incomplete**: 10 of the 15 declared policies
-> (`audit_logs`, `dismissals`, `engagements`, `globalRecipeCache`, `ingredients`,
+> This registry is known to be **incomplete**: these declared policies
+> (`audit_logs`, `dismissals`, `engagements`, `ingredients`,
 > `notification_delivery`, `notification_engagement`, `notification_history`,
 > `rate_limits`, `views`) are not listed below. Read
 > `firestore.indexes.json` → `fieldOverrides` for the authoritative set.

@@ -1122,6 +1122,65 @@ void main() {
       });
     });
 
+    // P5-U33: bulk delete says per tag id what went (produktregler.md:
+    // 905-909). Each chunk of 100 is atomic; a failed chunk does not stop the
+    // next, and an earlier chunk that landed is never reported as nothing.
+    group('bulkDeleteTags - per-id result (P5-U33)', () {
+      late MockWriteBatch first;
+      late MockWriteBatch second;
+      final ids = [for (var i = 0; i < 150; i++) 'tag-$i'];
+
+      setUp(() {
+        first = MockWriteBatch();
+        second = MockWriteBatch();
+        final batches = [first, second];
+        when(
+          () => mockTagRepository.newWriteBatch(),
+        ).thenAnswer((_) => batches.removeAt(0));
+        registerFallbackValue(first);
+        when(
+          () => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
+            any(),
+            any(),
+          ),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), any()),
+        ).thenReturn(null);
+      });
+
+      test('a failed second chunk leaves the first one deleted', () async {
+        when(() => first.commit()).thenAnswer((_) async {});
+        when(() => second.commit()).thenThrow(Exception('unavailable'));
+
+        final result = await service.bulkDeleteTags(ids);
+
+        expect(result.deletedIds, ids.sublist(0, 100));
+        expect(result.failedIds, ids.sublist(100));
+        expect(result.isPartial, isTrue);
+      });
+
+      test('a failed first chunk does not stop the second', () async {
+        when(() => first.commit()).thenThrow(Exception('unavailable'));
+        when(() => second.commit()).thenAnswer((_) async {});
+
+        final result = await service.bulkDeleteTags(ids);
+
+        expect(result.deletedIds, ids.sublist(100));
+        expect(result.failedIds, ids.sublist(0, 100));
+      });
+
+      test('all chunks landing is complete', () async {
+        when(() => first.commit()).thenAnswer((_) async {});
+        when(() => second.commit()).thenAnswer((_) async {});
+
+        final result = await service.bulkDeleteTags(ids);
+
+        expect(result.isComplete, isTrue);
+        expect(result.deletedIds, hasLength(150));
+      });
+    });
+
     // BUT-1186: mergeTags is no longer one atomic batch. It self-chunks the
     // retag of every recipe carrying fromId via replaceTagInRecipes (committed
     // across N batches inside the repo) FIRST, then deletes the source tag in a

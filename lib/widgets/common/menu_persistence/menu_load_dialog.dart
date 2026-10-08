@@ -1,13 +1,19 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Bottom sheet for loading a saved menu.
 class LoadMenuBottomSheet extends StatefulWidget {
@@ -70,7 +76,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.bottomSheetBorderRadius,
+          AppDimensions.radiusCard,
         ),
       ),
       child: Column(
@@ -84,9 +90,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               vertical: AppDimensions.spacingL,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
-                alpha: AppDimensions.opacityMedium,
-              ),
+              color: AppModeColors.textDisabled(Theme.of(context).brightness),
               borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
             ),
           ),
@@ -98,12 +102,12 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.folder_open,
+                ButleryIcon(
+                  ButleryIcons.folder,
                   size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.menuSavedMenus,
                   style: AppTextStyles.headlineSmall,
@@ -120,7 +124,12 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           // Saved menus content
           Flexible(
             child: _isLoading
-                ? const Center(child: LoadingIndicator())
+                // The plate line says what it fetches (produktregler.md:163).
+                ? Center(
+                    child: PlateLineMessage(
+                      message: context.l10n.menuLoadingSaved,
+                    ),
+                  )
                 : _savedMenus.isEmpty
                 ? _buildEmptyState()
                 : _buildMenuList(),
@@ -136,7 +145,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       child: StateWidget.empty(
         title: context.l10n.menuNoSavedMenus,
         subtitle: context.l10n.menuNoSavedMenusDescription,
-        icon: Icons.folder_outlined,
+        icon: ButleryIcons.folder,
         onAction: () => Navigator.pop(context),
         actionLabel: context.l10n.commonClose,
       ),
@@ -166,11 +175,11 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           height: AppDimensions.iconSizeDisplay,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
-          child: Icon(
-            Icons.restaurant_menu,
-            color: Theme.of(context).colorScheme.primary,
+          child: ButleryIcon(
+            ButleryIcons.utensils,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         title: Text(
@@ -181,42 +190,46 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           context.l10n.menuSavedEarlier,
           style: AppTextStyles.bodySmall,
         ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) => _handleMenuAction(menu, value),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'load',
-              child: Builder(
-                builder: (context) => Row(
-                  children: [
-                    const Icon(Icons.download),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(context.l10n.menuLoad),
-                  ],
+        trailing: PressFill(
+          surface: PressSurface.base,
+          child: PopupMenuButton<String>(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            onSelected: (value) => _handleMenuAction(menu, value),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'load',
+                child: Builder(
+                  builder: (context) => Row(
+                    children: [
+                      const ButleryIcon(ButleryIcons.download),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(context.l10n.menuLoad),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Builder(
-                builder: (context) => Row(
-                  children: [
-                    Icon(
-                      Icons.delete,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      context.l10n.commonDelete,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              PopupMenuItem(
+                value: 'delete',
+                child: Builder(
+                  builder: (context) => Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.trash2,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        context.l10n.commonDelete,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         onTap: () => _loadMenu(menu),
       ),
@@ -241,29 +254,23 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       if (mounted) {
         Navigator.pop(context);
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.menuLoadedSuccess(menu.name ?? '')),
-              backgroundColor: context.butleryColors.success,
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.menuLoadedSuccess((menu.name as String?).orEmpty()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                widget.viewModel.error ?? context.l10n.menuLoadFailed,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showFailure(
+            context,
+            what: widget.viewModel.error ?? context.l10n.menuLoadFailed,
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorLoadingWithDetails(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.errorLoadingWithDetails(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }
@@ -283,8 +290,10 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+            // The shared danger style: error with onError, and the
+            // disabled surface instead of opacity.
+            style: ComponentThemes.dangerButtonStyle(
+              Theme.of(context).colorScheme,
             ),
             child: Text(context.l10n.commonDelete),
           ),
@@ -301,31 +310,23 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             setState(() {
               _savedMenus.remove(menu);
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.menuDeletedSuccess(menu.name ?? '')),
-                backgroundColor: context.butleryColors.success,
-              ),
+            SnackBarUtils.showSuccess(
+              context,
+              context.l10n.menuDeletedSuccess((menu.name as String?).orEmpty()),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  widget.viewModel.error ?? context.l10n.menuDeleteFailed,
-                ),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
+            SnackBarUtils.showFailure(
+              context,
+              what: widget.viewModel.error ?? context.l10n.menuDeleteFailed,
             );
           }
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.errorDeletingWithDetails(e.toString()),
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.errorDeletingWithDetails(
+              SnackBarUtils.userFriendlyMessage(context, e),
             ),
           );
         }

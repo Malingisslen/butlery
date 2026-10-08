@@ -42,6 +42,13 @@ on:
       - "lib/repositories/firebase/**"
       - "lib/core/constants/firestore_collections.dart"
       - "lib/services/account/**"
+      # BUT-2115: the reaction-key guard reads both of these.
+      - "lib/widgets/common/emoji_reaction_picker.dart"
+      - "firestore.rules"
+      # BUT-1747: `shared-residue.test.ts` pins the export allowlist against
+      # the keys this file's `toFirestore` writes.
+      - "lib/models/unified/unified_shopping_item.dart"
+      - "lib/models/unified/shopping_row_snapshot.dart"
   pull_request:
     paths:
       - "functions/src/**"
@@ -55,6 +62,10 @@ on:
       - "lib/repositories/firebase/**"
       - "lib/services/account/**"
       - "lib/core/constants/firestore_collections.dart"
+      - "lib/widgets/common/emoji_reaction_picker.dart"
+      - "firestore.rules"
+      - "lib/models/unified/unified_shopping_item.dart"
+      - "lib/models/unified/shopping_row_snapshot.dart"
   workflow_dispatch:
 
 concurrency:

@@ -13,6 +13,7 @@ import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/family/own_allergen_share_mirror.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -49,7 +50,7 @@ class UserService extends ChangeNotifier
   /// the per-user acceptance record — mirrors the `Version:` header in
   /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
   /// ToS text changes so the stored `termsVersion` stays meaningful.
-  static const String currentTermsVersion = '1.0';
+  static const String currentTermsVersion = '1.1';
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
@@ -232,6 +233,11 @@ class UserService extends ChangeNotifier
           joinedAt: now,
           lastActiveAt: now,
           isOnline: true,
+          // This service is writing the first settings doc right now, so the
+          // settings ARE known: empty. Left false, the menu would treat the
+          // whole first session as a failed read and filter by the
+          // common-allergen floor (HouseholdService.ownMenuPreferences).
+          settingsMerged: true,
           showOnlineStatus: showOnlineStatus ?? true,
           shareActivityToFeed: shareActivityToFeed ?? true,
           activityFeedEventTypes: activityFeedEventTypes ?? const {},
@@ -580,7 +586,10 @@ class UserService extends ChangeNotifier
       // NYTT: Skapa base user document i 'users' collection för friends system
       await _ensureBaseUserDocument(user.uid);
 
-      _currentUserProfile = await _repository.fetchProfile(user.uid);
+      // BUT-2264: the address is not on the public document; Auth holds it.
+      _currentUserProfile = (await _repository.fetchProfile(
+        user.uid,
+      ))?.copyWith(email: user.email.orEmpty());
 
       // NY: Om profil inte finns, skapa en automatiskt
       if (_currentUserProfile == null && user.email != null) {
@@ -590,6 +599,7 @@ class UserService extends ChangeNotifier
 
         final displayName =
             user.displayName ??
+            _authRepository.registrationDisplayNameFor(user.email) ??
             user.email!.split('@')[0]; // Use email prefix as default
 
         _currentUserProfile = await createOrUpdateProfile(
@@ -863,7 +873,15 @@ class UserService extends ChangeNotifier
         '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}',
       );
 
-      await _repository.updateAllergenPreferences(userId, preferences);
+      final sharedCopies = await const OwnAllergenShareMirror().sharesFor(
+        userId,
+        preferences,
+      );
+      await _repository.updateAllergenPreferences(
+        userId,
+        preferences,
+        sharedCopies: sharedCopies,
+      );
 
       _currentUserProfile = _currentUserProfile!.copyWith(
         allergenPreferences: preferences,

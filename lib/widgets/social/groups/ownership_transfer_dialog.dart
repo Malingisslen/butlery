@@ -65,7 +65,6 @@ class OwnershipTransferDialog extends StatelessWidget {
                     : null,
               ),
               title: Text(member.displayName),
-              subtitle: Text(member.email),
               onTap: () => Navigator.pop(context, member),
             ),
           ),

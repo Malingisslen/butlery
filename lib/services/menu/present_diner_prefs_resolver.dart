@@ -2,8 +2,10 @@
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/household_service.dart';
@@ -47,10 +49,10 @@ class PresentDinerPrefsResolver {
 
     final List<HouseholdRosterMember>? roster;
     try {
-      // Read-only: `getForUser`, never `ensureForUser`.
-      final households = await householdRepo.getForUser(uid);
-      if (households.isEmpty) return null;
-      roster = await rosterService.tryGetRoster(households.first.id);
+      // Read-only: `getActiveForUser`, never `ensureForUser`.
+      final household = await householdRepo.getActiveForUser(uid);
+      if (household == null) return null;
+      roster = await rosterService.tryGetRoster(household.id);
     } catch (e) {
       AppLogger.warning('Present-diner roster read failed: $e');
       return _unreadable(uid);
@@ -79,31 +81,109 @@ class PresentDinerPrefsResolver {
       final householdService = ServiceLocator.tryGet<HouseholdService>();
       accounts = householdService == null
           ? HouseholdAllergenAggregate.degraded(
-              preferences: HouseholdService.widenWithSafetyFloor(_noAllergens),
+              preferences: HouseholdService.widenWithSafetyFloor(
+                UserAllergenPreferences.none,
+              ),
             )
           : await householdService.aggregateAllergenPreferencesFor(
               presentAccounts,
             );
     }
 
-    final allergens = <String>{...?accounts?.preferences.trackedAllergens};
-    final dietary = <String>{...?accounts?.preferences.trackedDietary};
-    // One cautious diner makes the whole meal cautious.
-    var includeUnknown = accounts?.preferences.includeUnknownInMenu ?? true;
-    for (final diner in presentDiners) {
-      final prefs = diner.allergenPreferences;
+    final folded = _foldDiners(
+      accounts?.preferences ?? UserAllergenPreferences.none,
+      presentDiners.map((d) => d.allergenPreferences),
+    );
+    return PresentDinerPrefs(
+      folded.prefs,
+      isComplete: accounts?.isRosterComplete ?? true,
+    );
+  }
+
+  /// [base] with every diner's preferences folded in: allergens and diets
+  /// unioned, and one cautious diner makes the whole meal cautious. Null =
+  /// a diner who recorded none, so it contributes nothing.
+  static ({UserAllergenPreferences prefs, bool contributed}) _foldDiners(
+    UserAllergenPreferences base,
+    Iterable<UserAllergenPreferences?> diners,
+  ) {
+    final allergens = {...base.trackedAllergens};
+    final dietary = {...base.trackedDietary};
+    var includeUnknown = base.includeUnknownInMenu;
+    var contributed = false;
+    for (final prefs in diners) {
       if (prefs == null) continue;
+      contributed = true;
       allergens.addAll(prefs.trackedAllergens);
       dietary.addAll(prefs.trackedDietary);
       if (!prefs.includeUnknownInMenu) includeUnknown = false;
     }
-    return PresentDinerPrefs(
-      UserAllergenPreferences(
+    return (
+      prefs: UserAllergenPreferences(
         trackedAllergens: allergens,
         trackedDietary: dietary,
         includeUnknownInMenu: includeUnknown,
       ),
-      isComplete: accounts?.isRosterComplete ?? true,
+      contributed: contributed,
+    );
+  }
+
+  /// [base] plus every diner profile in the signed-in user's household — the
+  /// whole-household path's counterpart to [resolve]. A child exists only as a
+  /// diner profile, so a union of ACCOUNTS alone leaves their allergens out of
+  /// every menu.
+  ///
+  /// Only ever adds: diners widen the union, never narrow it, so this cannot
+  /// shrink filtering below [base]. Null when the path cannot run at all
+  /// (services not wired, signed out) — the caller then keeps [base]. A read
+  /// that FAILS returns [base] widened with the safety floor, never [base]
+  /// alone (BUT-1663).
+  Future<({PresentDinerPrefs prefs, bool changed})?> addHouseholdDiners(
+    UserAllergenPreferences base,
+  ) async {
+    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
+    final dinerRepo = ServiceLocator.tryGet<DinerProfileRepository>();
+    final permission = ServiceLocator.tryGet<PermissionService>();
+    if (householdRepo == null || dinerRepo == null || permission == null) {
+      return null;
+    }
+    final uid = permission.currentUserId;
+    if (uid == null) return null;
+
+    final diners = <DinerProfile>[];
+    try {
+      final household = await householdRepo.getActiveForUser(uid);
+      // A joined household is the active one, but the children of the
+      // household the user created still eat with them.
+      final ids = {
+        ?household?.id,
+        if (household != null && household.createdBy != uid)
+          for (final own in await householdRepo.getForUser(uid))
+            if (own.createdBy == uid) own.id,
+      };
+      for (final id in ids) {
+        diners.addAll(await dinerRepo.getByHousehold(id));
+      }
+    } catch (e) {
+      AppLogger.warning('Household diner profile read failed: $e');
+      return (
+        prefs: PresentDinerPrefs(
+          HouseholdService.widenWithSafetyFloor(base),
+          isComplete: false,
+        ),
+        changed: true,
+      );
+    }
+
+    // The read returned, so a diner with no preferences recorded none — a
+    // declaration, not an unreadable member.
+    final folded = _foldDiners(base, diners.map((d) => d.allergenPreferences));
+    if (!folded.contributed) {
+      return (prefs: PresentDinerPrefs(base, isComplete: true), changed: false);
+    }
+    return (
+      prefs: PresentDinerPrefs(folded.prefs, isComplete: true),
+      changed: true,
     );
   }
 
@@ -117,7 +197,7 @@ class PresentDinerPrefsResolver {
     final householdService = ServiceLocator.tryGet<HouseholdService>();
     final UserAllergenPreferences base;
     if (householdService == null) {
-      base = _noAllergens;
+      base = UserAllergenPreferences.none;
     } else if (householdService.hasHousehold) {
       base =
           (await householdService.aggregateAllergenPreferences()).preferences;
@@ -131,9 +211,4 @@ class PresentDinerPrefsResolver {
       isComplete: false,
     );
   }
-
-  static const _noAllergens = UserAllergenPreferences(
-    trackedAllergens: {},
-    trackedDietary: {},
-  );
 }

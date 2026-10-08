@@ -959,7 +959,7 @@ batch.update(getCollectionForUser(userId).doc(recipeId), {
       </ul>
 
       <h3>Import-tratten → samling</h3>
-      <p>Sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. <code>lagg_till_recept_view</code> erbjuder 4 (smartImport, manuell, foto, arkiv); <code>smart_import</code> absorberar själv URL + text + sociala medier; <code>receive_share_view</code> är en OS-nivå-ingång; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.</p>
+      <p>Sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. <code>lagg_till_recept_view</code> erbjuder 4 (smartImport, manuell, foto, arkiv); <code>smart_import</code> absorberar själv URL + text + sociala medier; delade foton från OS-delningsmenyn går till fotoimporten; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.</p>
 
       <h3>Recept → meny → inköp-pipelinen (kärnvärdesslingan)</h3>
       <p>Ett recept i samlingen kan läggas till veckomenyn. Menyns dialog (<code>showShoppingListSelector</code>) genererar en inköpslista från alla menyns ingredienser och navigerar till inköpsfliken. Alternativt genererar ett enskilt recepts detaljsida en inköpslista direkt. Båda trattas in i <code>UnifiedShoppingViewModel.addItemsToList</code>.</p>
@@ -1088,7 +1088,7 @@ for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
           <li><code>whereIn</code>/<code>in</code>/<code>arrayContainsAny</code> är cappade till 30 ids — fana ut, inte en jätte-query.</li>
           <li>User settings (allergener, FCM-token, notisprefs, locale) bor i <code>users/{uid}/settings/preferences</code>, INTE på <code>public_profiles</code>-doc:et — för vem som helst inloggad kan läsa publika profiler.</li>
           <li>Cache-first-läsningar är OK för visning men INTE för permission-checks eller pre-update-validering — de behöver färsk serverdata.</li>
-          <li>Inte varje repository extendar basklassen — <code>firestore_repository.dart</code>, <code>site_config_repository.dart</code>, <code>collaborative_recipe_repository.dart</code> är sanktionerade undantag, var och en med en daterad <code>BUT-###</code>-kommentar.</li>
+          <li>Inte varje repository extendar basklassen — <code>firestore_repository.dart</code>, <code>site_config_repository.dart</code> är sanktionerade undantag, var och en med en daterad <code>BUT-###</code>-kommentar.</li>
           <li><code>batchDeleteDocs</code> har ett partial-write-kontrakt: failar chunk N+1 är de N första redan committade. Kör om är säkert (idempotent).</li>
         </ul>
       </div>

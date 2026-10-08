@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// PermissionWidgets - Permission-based action buttons
 /// Provides action buttons that adapt based on user permissions.
@@ -37,7 +40,7 @@ class PermissionWidgets {
           context,
           label: effectiveSaveLabel,
           onPressed: isSaving ? null : onSave,
-          icon: Icons.save,
+          icon: ButleryIcons.save,
           isLoading: isSaving,
           loadingText: context.l10n.permissionSaving,
           isExpanded: isExpanded,
@@ -50,7 +53,7 @@ class PermissionWidgets {
               context,
               label: effectiveSaveLabel,
               onPressed: isSaving ? null : onSave,
-              icon: Icons.save,
+              icon: ButleryIcons.save,
               isLoading: isSaving,
               loadingText: context.l10n.permissionSaving,
               isExpanded: isExpanded,
@@ -60,7 +63,7 @@ class PermissionWidgets {
               context,
               label: effectiveForkLabel,
               onPressed: isForking ? null : onFork,
-              icon: Icons.content_copy,
+              icon: ButleryIcons.copy,
               isLoading: isForking,
               loadingText: context.l10n.permissionCreatingCopy,
               isExpanded: isExpanded,
@@ -74,7 +77,7 @@ class PermissionWidgets {
           context,
           label: effectiveForkLabel,
           onPressed: isForking ? null : onFork,
-          icon: Icons.content_copy,
+          icon: ButleryIcons.copy,
           isLoading: isForking,
           loadingText: context.l10n.permissionCreatingCopy,
           isExpanded: isExpanded,
@@ -85,17 +88,18 @@ class PermissionWidgets {
         return Container(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
-            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(color: cs.error),
+            color: context.modeColors.surfaceTintDanger,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             children: [
-              Icon(Icons.block, color: cs.error),
+              ButleryIcon(ButleryIcons.block, color: cs.onErrorContainer),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.permissionNoAccess,
-                style: AppTextStyles.bodyMediumError,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: cs.onErrorContainer,
+                ),
               ),
             ],
           ),
@@ -124,7 +128,7 @@ class PermissionWidgets {
           context,
           label: effectiveSaveLabel,
           onPressed: isSaving ? null : onSave,
-          icon: Icons.save,
+          icon: ButleryIcons.save,
           isLoading: isSaving,
           isExpanded: true,
         );
@@ -138,7 +142,7 @@ class PermissionWidgets {
                 context,
                 label: effectiveSaveLabel,
                 onPressed: isSaving ? null : onSave,
-                icon: Icons.save,
+                icon: ButleryIcons.save,
                 isLoading: isSaving,
               ),
             ),
@@ -148,7 +152,7 @@ class PermissionWidgets {
                 context,
                 label: context.l10n.permissionCopy,
                 onPressed: isForking ? null : onFork,
-                icon: Icons.content_copy,
+                icon: ButleryIcons.copy,
                 isLoading: isForking,
               ),
             ),
@@ -161,7 +165,7 @@ class PermissionWidgets {
           context,
           label: effectiveForkLabel,
           onPressed: isForking ? null : onFork,
-          icon: Icons.content_copy,
+          icon: ButleryIcons.copy,
           isLoading: isForking,
           isExpanded: true,
         );

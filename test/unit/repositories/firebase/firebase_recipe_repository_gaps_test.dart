@@ -16,9 +16,12 @@ library;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
+import 'package:butlery/services/offline/queue_retry_policy.dart';
+import 'package:butlery/services/offline/queued_change.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
@@ -293,5 +296,30 @@ void main() {
 
       expect(await repo.validateDeletePermission(_carol, recipe.id), isFalse);
     });
+  });
+
+  group('BUT-2295: the share cap is a permanent refusal', () {
+    test(
+      'a write over the cap fails in a way the queue does not retry',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final recipe = _collabRecipe(
+          memberPermissions: {
+            for (var i = 0; i < Recipe.maxSharesPerRecipe; i++)
+              'member-$i': ResourcePermission.editor,
+          },
+        );
+
+        Object? error;
+        try {
+          await _repo(firestore).create(recipe);
+        } catch (e) {
+          error = e;
+        }
+
+        expect(error, isA<ValidationException>());
+        expect(permanentFailureReason(error!), QueuedChangeReason.unknown);
+      },
+    );
   });
 }

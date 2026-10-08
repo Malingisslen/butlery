@@ -1,7 +1,10 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:flutter/material.dart';
 
 enum _CardAction { dismiss, unshare }
@@ -33,7 +36,7 @@ class SharedCardHeader extends StatelessWidget {
           size: ImageSize.small,
           displayName: displayName,
         ),
-        const SizedBox(width: AppDimensions.spacingS),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,8 +44,8 @@ class SharedCardHeader extends StatelessWidget {
               Text(
                 context.l10n.sharedByName(displayName),
                 style: isRead
-                    ? AppTextStyles.bodySmall.copyWith(color: cs.primary)
-                    : AppTextStyles.bodyBold.copyWith(color: cs.primary),
+                    ? AppTextStyles.bodySmall.copyWith(color: cs.onSurface)
+                    : AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -55,54 +58,57 @@ class SharedCardHeader extends StatelessWidget {
             ],
           ),
         ),
-        PopupMenuButton<_CardAction>(
-          icon: Icon(
-            Icons.more_vert,
-            size: AppDimensions.iconSizeM,
-            color: cs.onSurfaceVariant,
+        PressFill(
+          surface: PressSurface.base,
+          child: PopupMenuButton<_CardAction>(
+            icon: ButleryIcon(
+              ButleryIcons.moreVertical,
+              size: AppDimensions.iconSizeM,
+              color: cs.onSurfaceVariant,
+            ),
+            shape: const RoundedRectangleBorder(),
+            onSelected: (value) {
+              switch (value) {
+                case _CardAction.dismiss:
+                  onDismiss();
+                case _CardAction.unshare:
+                  onUnshare();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<_CardAction>(
+                value: _CardAction.dismiss,
+                child: Row(
+                  children: [
+                    ButleryIcon(
+                      ButleryIcons.x,
+                      size: AppDimensions.iconSizeM,
+                      color: cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: AppDimensions.space4),
+                    Text(context.l10n.commonHide),
+                  ],
+                ),
+              ),
+              PopupMenuItem<_CardAction>(
+                value: _CardAction.unshare,
+                child: Row(
+                  children: [
+                    ButleryIcon(
+                      ButleryIcons.x,
+                      size: AppDimensions.iconSizeM,
+                      color: cs.error,
+                    ),
+                    const SizedBox(width: AppDimensions.space4),
+                    Text(
+                      context.l10n.unshareButton,
+                      style: TextStyle(color: cs.error),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          shape: const RoundedRectangleBorder(),
-          onSelected: (value) {
-            switch (value) {
-              case _CardAction.dismiss:
-                onDismiss();
-              case _CardAction.unshare:
-                onUnshare();
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem<_CardAction>(
-              value: _CardAction.dismiss,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.close,
-                    size: AppDimensions.iconSizeM,
-                    color: cs.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Text(context.l10n.commonHide),
-                ],
-              ),
-            ),
-            PopupMenuItem<_CardAction>(
-              value: _CardAction.unshare,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.link_off,
-                    size: AppDimensions.iconSizeM,
-                    color: cs.error,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Text(
-                    context.l10n.unshareButton,
-                    style: TextStyle(color: cs.error),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
         if (!isRead)
           Container(
@@ -112,7 +118,7 @@ class SharedCardHeader extends StatelessWidget {
               start: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: cs.primary,
+              color: cs.onSurface,
               shape: BoxShape.circle,
             ),
           ),

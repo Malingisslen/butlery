@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_indicator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 // Comprehensive widget test for StatusIndicator following ultrathink methodology
 void main() {
@@ -19,7 +21,7 @@ void main() {
       testWidgets('renders with required icon and color', (
         WidgetTester tester,
       ) async {
-        const testIcon = Icons.check_circle;
+        const testIcon = ButleryIcons.circleCheck;
         const testColor = Colors.green;
 
         await tester.pumpWidget(
@@ -36,7 +38,7 @@ void main() {
         expect(find.byType(StatusIndicator), findsOneWidget);
         expect(find.byIcon(testIcon), findsOneWidget);
         expect(find.byType(Container), findsOneWidget);
-        expect(find.byType(Icon), findsOneWidget);
+        expect(find.byType(ButleryIcon), findsOneWidget);
       });
 
       testWidgets('applies correct icon color', (WidgetTester tester) async {
@@ -46,18 +48,18 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.info,
+                icon: ButleryIcons.info,
                 color: testColor,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.color, equals(testColor));
       });
 
-      testWidgets('applies correct background color with alpha', (
+      testWidgets('fills with the raised surface, whatever the glyph colour', (
         WidgetTester tester,
       ) async {
         const testColor = Colors.red;
@@ -66,7 +68,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.error,
+                icon: ButleryIcons.triangleAlert,
                 color: testColor,
               ),
             ),
@@ -75,7 +77,14 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(testColor.withValues(alpha: 0.1)));
+        expect(
+          decoration.color,
+          equals(
+            Theme.of(
+              tester.element(find.byType(StatusIndicator)),
+            ).colorScheme.surfaceContainerHighest,
+          ),
+        );
       });
 
       testWidgets('applies correct border radius', (WidgetTester tester) async {
@@ -83,7 +92,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.warning,
+                icon: ButleryIcons.triangleAlert,
                 color: Colors.orange,
               ),
             ),
@@ -94,7 +103,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusS)),
+          equals(BorderRadius.circular(AppDimensions.radiusControl)),
         );
       });
     });
@@ -109,7 +118,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 color: Colors.amber,
                 iconSize: customSize,
               ),
@@ -117,7 +126,7 @@ void main() {
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.size, equals(customSize));
       });
 
@@ -128,14 +137,14 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 color: Colors.amber,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byType(Icon));
+        final icon = tester.widget<Icon>(find.byType(ButleryIcon));
         expect(icon.size, equals(AppDimensions.iconSizeAction));
       });
 
@@ -148,7 +157,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.favorite,
+                icon: ButleryIcons.heart,
                 color: Colors.pink,
                 padding: customPadding,
               ),
@@ -167,7 +176,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.favorite,
+                icon: ButleryIcons.heart,
                 color: Colors.pink,
               ),
             ),
@@ -177,7 +186,7 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         expect(
           container.padding,
-          equals(EdgeInsets.all(AppDimensions.spacingS)),
+          equals(EdgeInsets.all(AppDimensions.space4)),
         );
       });
     });
@@ -192,19 +201,26 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.check_circle,
+                icon: ButleryIcons.circleCheck,
                 color: successColor,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.check_circle));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck));
         expect(icon.color, equals(successColor));
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(successColor.withValues(alpha: 0.1)));
+        expect(
+          decoration.color,
+          equals(
+            Theme.of(
+              tester.element(find.byType(StatusIndicator)),
+            ).colorScheme.surfaceContainerHighest,
+          ),
+        );
       });
 
       testWidgets('renders warning status correctly', (
@@ -216,14 +232,16 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.warning_amber,
+                icon: ButleryIcons.triangleAlert,
                 color: warningColor,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.warning_amber));
+        final icon = tester.widget<Icon>(
+          find.byIcon(ButleryIcons.triangleAlert),
+        );
         expect(icon.color, equals(warningColor));
       });
 
@@ -236,14 +254,16 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.error_outline,
+                icon: ButleryIcons.triangleAlert,
                 color: errorColor,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.error_outline));
+        final icon = tester.widget<Icon>(
+          find.byIcon(ButleryIcons.triangleAlert),
+        );
         expect(icon.color, equals(errorColor));
       });
 
@@ -254,14 +274,14 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.info_outline,
+                icon: ButleryIcons.info,
                 color: infoColor,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.info_outline));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.info));
         expect(icon.color, equals(infoColor));
       });
     });
@@ -276,15 +296,15 @@ void main() {
               body: Row(
                 children: [
                   StatusIndicator(
-                    icon: Icons.check,
+                    icon: ButleryIcons.check,
                     color: Colors.green,
                   ),
                   StatusIndicator(
-                    icon: Icons.close,
+                    icon: ButleryIcons.x,
                     color: Colors.red,
                   ),
                   StatusIndicator(
-                    icon: Icons.pending,
+                    icon: ButleryIcons.hourglass,
                     color: Colors.orange,
                   ),
                 ],
@@ -294,9 +314,9 @@ void main() {
         );
 
         expect(find.byType(StatusIndicator), findsNWidgets(3));
-        expect(find.byIcon(Icons.check), findsOneWidget);
-        expect(find.byIcon(Icons.close), findsOneWidget);
-        expect(find.byIcon(Icons.pending), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.check), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.hourglass), findsOneWidget);
       });
 
       testWidgets('renders correctly in Column layout', (
@@ -308,7 +328,7 @@ void main() {
               body: Column(
                 children: [
                   StatusIndicator(
-                    icon: Icons.restaurant,
+                    icon: ButleryIcons.utensils,
                     color: Colors.brown,
                   ),
                   StatusIndicator(
@@ -333,11 +353,11 @@ void main() {
               body: Row(
                 children: [
                   StatusIndicator(
-                    icon: Icons.home,
+                    icon: ButleryIcons.house,
                     color: Colors.blue,
                   ),
                   StatusIndicator(
-                    icon: Icons.check,
+                    icon: ButleryIcons.check,
                     color: Colors.green,
                   ),
                 ],
@@ -358,7 +378,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 color: Colors.yellow,
                 padding: 2.0,
               ),
@@ -375,7 +395,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 color: Colors.yellow,
                 padding: 24.0,
               ),
@@ -396,7 +416,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: StatusIndicator(
-                icon: Icons.check_circle,
+                icon: ButleryIcons.circleCheck,
                 color: Colors.green,
               ),
             ),
@@ -404,7 +424,7 @@ void main() {
         );
 
         // Icon widget supports semantics internally
-        expect(find.byType(Icon), findsOneWidget);
+        expect(find.byType(ButleryIcon), findsOneWidget);
       });
 
       testWidgets('renders correctly with different theme modes', (

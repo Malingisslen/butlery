@@ -6,6 +6,9 @@
  * The user document itself is at `/users/{userId}` and the privacy-sensitive
  * preferences live at `/users/{userId}/settings/preferences`.
  *
+ * It also pins that the removed `globalRecipeCache` path stays closed
+ * (BUT-2244).
+ *
  * Each test name states the behavior it proves. Failure => either the rules
  * regressed or the product contract changed; decide which before editing.
  *
@@ -23,6 +26,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { increment, serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-recipes-users";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -39,6 +43,9 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // Suites share one long-lived emulator; leftovers from an earlier run
+  // turn a create-only write into a denied update.
+  await env.clearFirestore();
 
   // Seed the admin record. The /admins/{uid} collection is rules-locked, so
   // we use the security-rules-disabled context to simulate a server-side
@@ -496,6 +503,138 @@ test(
 );
 
 // ============================================================================
+// PANTRY PER-FIELD WRITES (P5-U28) — produktregler.md:105, :142-148
+// The app writes only the changed fields plus updatedAt/updatedBy, sends a
+// partial tick-off as an increment, and allows a null quantity ("har hemma").
+// The pantry is owner-only, so the conflict is one user on two devices.
+// ============================================================================
+
+async function seedPantryItem(id: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`users/${OWNER_UID}/pantry/${id}`)
+      .set({ ingredientName: "Mjöl", quantity: 6, unit: "dl", location: "pantry" });
+  });
+}
+
+// P1: a per-field update with the server time and the owner as updatedBy.
+test("pantry: owner writes one changed field with updatedAt and updatedBy", async () => {
+  await seedPantryItem("p1");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p1`).update({
+      note: "öppnad",
+      updatedAt: serverTimestamp(),
+      updatedBy: OWNER_UID,
+    })
+  );
+});
+
+// P2: a partial tick-off is an increment, not a new total (§ 2.2).
+test("pantry: owner decrements quantity with an increment", async () => {
+  await seedPantryItem("p2");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p2`).update({
+      quantity: increment(-2),
+      updatedAt: serverTimestamp(),
+      updatedBy: OWNER_UID,
+    })
+  );
+});
+
+// P3: "har hemma" without an amount is a value of its own.
+test("pantry: quantity may be null, but not a string", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p3`).set({
+      ingredientName: "Salt",
+      quantity: null,
+      unit: "st",
+      location: "spiceRack",
+    })
+  );
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p3b`).set({
+      ingredientName: "Salt",
+      quantity: "mycket",
+      unit: "st",
+      location: "spiceRack",
+    })
+  );
+});
+
+// P4: updatedBy must name the writer.
+test("pantry: updatedBy naming someone else is denied", async () => {
+  await seedPantryItem("p4");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p4`).update({
+      note: "x",
+      updatedAt: serverTimestamp(),
+      updatedBy: OTHER_UID,
+    })
+  );
+});
+
+// P5: updatedAt is the server's time, never a device clock.
+test("pantry: a client-chosen updatedAt is denied", async () => {
+  await seedPantryItem("p5");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p5`).update({
+      note: "x",
+      updatedAt: new Date(2020, 0, 1),
+      updatedBy: OWNER_UID,
+    })
+  );
+});
+
+// P6: writes from app versions without the stamps still go through.
+test("pantry: an update without stamps is still allowed", async () => {
+  await seedPantryItem("p6");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p6`).update({ quantity: 4 })
+  );
+});
+
+// P7: still owner-only, stamps or not.
+test("pantry: a stranger cannot update the owner's item", async () => {
+  await seedPantryItem("p7");
+  const ctx = env.authenticatedContext(OTHER_UID);
+  await assertFails(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p7`).update({
+      note: "x",
+      updatedAt: serverTimestamp(),
+      updatedBy: OTHER_UID,
+    })
+  );
+});
+
+// P8 (BUT-2140): an edit-sheet save carries the replaced values in
+// `previous`, in the same update, with a server-stamped `at`. The pantry
+// rules hold no key allowlist, so this pins that the app's real payload,
+// with a null marker for a field that was missing, is not refused.
+test("pantry: an update carrying the previous version is allowed", async () => {
+  await seedPantryItem("p8");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p8`).update({
+      ingredientName: "Dinkelmjöl",
+      note: "öppnad",
+      updatedAt: serverTimestamp(),
+      updatedBy: OWNER_UID,
+      previous: {
+        fields: { ingredientName: "Mjöl", note: null },
+        at: serverTimestamp(),
+      },
+    })
+  );
+});
+
+// ============================================================================
 // ONBOARDING PROGRESS (BUT-675) — 5 assertions across 5 tests
 // Resume-onboarding state at /users/{uid}/onboarding/{progressDoc}.
 // Owner-only read/write. No schema validator on the rule, so tests
@@ -621,6 +760,74 @@ test(
     );
   }
 );
+
+// ============================================================================
+// GLOBAL RECIPE CACHE — REMOVED (BUT-2244)
+// The `match /globalRecipeCache/{docId}` block is deleted, so the path falls
+// through to the terminal `match /{document=**}`. One deny per verb the old
+// block granted (read, create, update), sent by a signed-in user, which is
+// the actor that block admitted.
+// ============================================================================
+
+function cacheEntryBody(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    url: "https://example.com/recept",
+    title: "Köttbullar",
+    createdBy: OWNER_UID,
+    createdAt: new Date(),
+    ...extra,
+  };
+}
+
+async function seedCacheEntry(id: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin.firestore().doc(`globalRecipeCache/${id}`).set(cacheEntryBody({ accessCount: 1 }));
+  });
+}
+
+// G0: control: the same signed-in actor can still read a sibling
+//     infrastructure collection, so the denies below are not an auth or
+//     ruleset-load failure.
+test("globalRecipeCache: control: signed-in user can read site_configs", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin.firestore().doc("site_configs/example.com").set({ domain: "example.com" });
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(ctx.firestore().doc("site_configs/example.com").get());
+});
+
+// G1: signed-in user cannot get a cache entry.
+test("globalRecipeCache: signed-in user cannot read a cache entry", async () => {
+  await seedCacheEntry(`g1-${RUN}`);
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(ctx.firestore().doc(`globalRecipeCache/g1-${RUN}`).get());
+});
+
+// G2: signed-in user cannot list the collection.
+test("globalRecipeCache: signed-in user cannot list the collection", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(ctx.firestore().collection("globalRecipeCache").get());
+});
+
+// G3: signed-in user cannot create an entry in their own name.
+test("globalRecipeCache: signed-in user cannot create a cache entry", async () => {
+  const id = `g3-${RUN}`;
+  await env.withSecurityRulesDisabled(async (admin) => {
+    const snap = await admin.firestore().doc(`globalRecipeCache/${id}`).get();
+    if (snap.exists) throw new Error(`G3 fixture ${id} already exists; this would test update`);
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(ctx.firestore().doc(`globalRecipeCache/${id}`).set(cacheEntryBody()));
+});
+
+// G4: signed-in user cannot bump the access statistics on an entry.
+test("globalRecipeCache: signed-in user cannot update access statistics", async () => {
+  await seedCacheEntry(`g4-${RUN}`);
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`globalRecipeCache/g4-${RUN}`).update({ accessCount: 2, lastAccessedAt: new Date() })
+  );
+});
 
 async function run(): Promise<void> {
   console.log("BUT-448: recipes + users rules tests\n");

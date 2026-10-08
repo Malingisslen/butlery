@@ -23,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
@@ -40,7 +41,11 @@ void main() {
   group('SettingsHubView account/legal tiles (BUT-1340 SET-01)', () {
     late _MockReportService reportService;
 
-    Future<void> pumpHub(WidgetTester tester, {required bool isAdmin}) async {
+    Future<void> pumpHub(
+      WidgetTester tester, {
+      required bool isAdmin,
+      Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
+    }) async {
       when(
         () => reportService.watchIsAdmin(),
       ).thenAnswer((_) => Stream<bool>.value(isAdmin));
@@ -56,6 +61,7 @@ void main() {
         createLocalizedTestApp(
           wrapInScaffold: false, // SettingsHubView supplies its own Scaffold.
           child: const SettingsHubView(),
+          onGenerateRoute: onGenerateRoute,
         ),
       );
       // Let the watchIsAdmin StreamBuilder resolve its first event.
@@ -124,6 +130,24 @@ void main() {
         );
       },
     );
+
+    testWidgets('About Butlery tile pushes the about route', (tester) async {
+      final sv = AppLocalizationsSv();
+      final pushed = <String?>[];
+      await pumpHub(
+        tester,
+        isAdmin: false,
+        onGenerateRoute: (settings) {
+          pushed.add(settings.name);
+          return MaterialPageRoute(builder: (_) => const SizedBox());
+        },
+      );
+
+      await tester.tap(find.text(sv.settingsAboutTitle));
+      await tester.pumpAndSettle();
+
+      expect(pushed, [Routes.settingsAbout]);
+    });
 
     testWidgets('moderator tile is hidden for a non-admin user', (
       tester,

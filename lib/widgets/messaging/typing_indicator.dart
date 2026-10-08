@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Animated typing indicator widget for showing when users are typing
 /// Displays a visual typing indicator with:
@@ -19,7 +22,7 @@ class TypingIndicator extends StatefulWidget {
   const TypingIndicator({
     super.key,
     required this.typingUserNames,
-    this.animationDuration = AppDimensions.animationDurationExtended,
+    this.animationDuration = AppMotion.standard,
   });
 
   @override
@@ -30,6 +33,13 @@ class _TypingIndicatorState extends State<TypingIndicator>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+
+  /// The dots' pulse: one loop is [AppMotion.pulse] (produktbeslut R7-4 = B,
+  /// R8-9 = A). It runs only while someone is typing.
+  late final AnimationController _dots = AnimationController(
+    duration: AppMotion.pulseHalf,
+    vsync: this,
+  );
   bool _reduceMotion = false;
 
   @override
@@ -47,12 +57,20 @@ class _TypingIndicatorState extends State<TypingIndicator>
         ).animate(
           CurvedAnimation(
             parent: _animationController,
-            curve: Curves.easeInOut,
+            curve: AppMotion.curve,
           ),
         );
 
     if (widget.typingUserNames.isNotEmpty) {
       _animationController.forward();
+    }
+  }
+
+  void _syncDots() {
+    if (widget.typingUserNames.isNotEmpty && !_reduceMotion) {
+      if (!_dots.isAnimating) _dots.repeat(reverse: true);
+    } else {
+      _dots.stop();
     }
   }
 
@@ -66,6 +84,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
     } else {
       _animationController.duration = widget.animationDuration;
     }
+    _syncDots();
   }
 
   @override
@@ -79,6 +98,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
         oldWidget.typingUserNames.isNotEmpty) {
       _animationController.reverse();
     }
+    _syncDots();
   }
 
   @override
@@ -103,15 +123,13 @@ class _TypingIndicatorState extends State<TypingIndicator>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: cs.secondary.withValues(
-                  alpha: AppDimensions.opacityLight,
-                ),
+                color: cs.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Icon(
-                  Icons.more_horiz,
-                  color: cs.primary,
+                child: ButleryIcon(
+                  ButleryIcons.ellipsis,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeS,
                 ),
               ),
@@ -128,7 +146,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+                  AppDimensions.radiusControl,
                 ),
                 boxShadow: AppShadows.subtle,
               ),
@@ -182,10 +200,10 @@ class _TypingIndicatorState extends State<TypingIndicator>
     }
 
     return AnimatedBuilder(
-      animation: _animationController,
+      animation: _dots,
       builder: (context, child) {
         // Create a staggered animation for each dot
-        final progress = (_animationController.value * 3 - index).clamp(
+        final progress = (_dots.value * 3 - index).clamp(
           0.0,
           1.0,
         );
@@ -218,6 +236,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
   @override
   void dispose() {
     _animationController.dispose();
+    _dots.dispose();
     super.dispose();
   }
 }

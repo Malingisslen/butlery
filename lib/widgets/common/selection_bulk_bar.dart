@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-948: contextual bulk-action bar for multi-select lists — a close button,
 /// a "{n} selected" label, and a delete action. Used at the bottom of a screen
@@ -41,7 +44,7 @@ class SelectionBulkBar extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const ButleryIcon(ButleryIcons.x),
                 tooltip: context.l10n.commonCancel,
                 color: cs.onPrimaryContainer,
                 onPressed: onClose,
@@ -58,8 +61,15 @@ class SelectionBulkBar extends StatelessWidget {
                 onPressed: count == 0 ? null : onDelete,
                 style: TextButton.styleFrom(
                   foregroundColor: cs.onPrimaryContainer,
+                  // Off at zero with the name readable (produktregler.md:876),
+                  // in the disabled role on surface.raised rather than the
+                  // 38 % fade styleFrom would give (tokens.json:71-74, :198):
+                  // text.disabled.onRaised, #788477 light, #93A48D dark.
+                  disabledForegroundColor: AppModeColors.textDisabled(
+                    cs.brightness,
+                  ),
                 ),
-                icon: const Icon(Icons.delete_outline),
+                icon: const ButleryIcon(ButleryIcons.trash2),
                 label: Text(context.l10n.commonDelete),
               ),
             ],

@@ -26,6 +26,7 @@ library;
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
@@ -231,12 +232,11 @@ void main() {
 
         final result = await service.exportToFile();
 
-        // We assert structurally — the message is localised and includes the
-        // wrapped exception, so we check the success flag is false and the
-        // failure path is engaged (no filePath populated).
+        // The exception is logged, never put in the message.
         expect(result.success, isFalse);
         expect(result.filePath, isNull);
-        expect(result.message, isNotEmpty);
+        expect(result.unexpected, isTrue);
+        expect(result.message, equals('Backupen kunde inte sparas.'));
       },
     );
   });
@@ -273,15 +273,18 @@ void main() {
     });
 
     /// File-picker itself throws (permission denied, etc.) — outer try/catch
-    /// must wrap it into the localised "Import failed" error, not propagate.
-    test('wraps unexpected file-picker exception in localised error', () async {
+    /// must turn it into an "unexpected" result, not propagate, and the
+    /// exception text must not reach the message the user sees
+    /// (content-style-guide.md:94).
+    test('wraps unexpected file-picker exception without its text', () async {
       fakeFilePicker.respondWithThrow(StateError('disk on fire'));
 
       final result = await service.importFromFile();
 
       expect(result.success, isFalse);
-      expect(result.errorMessage, contains('Import misslyckades'));
-      expect(result.errorMessage, contains('disk on fire'));
+      expect(result.unexpected, isTrue);
+      expect(result.errorMessage, equals('Backupen kunde inte läsas in.'));
+      expect(result.errorMessage, isNot(contains('disk on fire')));
     });
   });
 
@@ -498,9 +501,12 @@ void main() {
       expect(result.errors.length, equals(1));
       expect(
         result.errors.first,
-        contains('quota exceeded'),
-        reason: 'raw exception must surface for diagnostics',
+        isNot(contains('quota exceeded')),
+        reason:
+            'the raw exception goes to the log, not to the user-facing list',
       );
+      expect(result.errors.first, isNot(contains('StateError')));
+      expect(result.errors, equals(['Will Fail']));
       // BUT-1139: error message now contains the REAL recipe title
       // (sourced from core.title) so users know which entry failed.
       expect(
@@ -794,4 +800,41 @@ void main() {
       },
     );
   });
+
+  group(
+    'importFromFile — failures reach the log without content (BUT-2230)',
+    () {
+      test('a malformed backup is labelled by its type, not its text', () {
+        Object? caught;
+        try {
+          json.decode('{"butlery_backup": {"title": "Mormors köttbullar" x}}');
+        } catch (e) {
+          caught = e;
+        }
+        // The raw text quotes the file; the label must not.
+        expect(caught.toString(), contains('Mormors'));
+        final label = BackupService.importFailureLabel(caught!);
+        expect(label, 'FormatException');
+        expect(label, isNot(contains('Mormors')));
+      });
+
+      test('neither import catch hands the exception object to the logger', () {
+        final source = File(
+          'lib/services/backup_service.dart',
+        ).readAsStringSync();
+        final importBody = source.substring(
+          source.indexOf('Future<ImportResult> importFromFile()'),
+          source.indexOf('String _formatDate('),
+        );
+        final calls = RegExp(
+          r'AppLogger\.error\(([^;]*)\);',
+        ).allMatches(importBody);
+        expect(calls, hasLength(2));
+        for (final call in calls) {
+          expect(call.group(1), contains('importFailureLabel(e)'));
+          expect(call.group(1), isNot(matches(RegExp(r',\s*e\s*,'))));
+        }
+      });
+    },
+  );
 }

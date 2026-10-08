@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHeader {
@@ -21,20 +23,23 @@ class ShareDialogHeader {
       content,
     );
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppDimensions.borderRadiusL),
-          topRight: Radius.circular(AppDimensions.borderRadiusL),
-        ),
+    // The header stands on the sheet's own surface with the title in 14/700,
+    // as the share sheet draws it (Skarmar v12 del 3 'Dela-ark'); the
+    // subtitle is text.secondary, not the title colour at a lower opacity
+    // (tokens.json:40-53).
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppDimensions.paddingL,
+        AppDimensions.spacingSm,
+        AppDimensions.paddingL,
+        AppDimensions.spacingSm,
       ),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             icon,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: cs.onSurface,
             size: AppDimensions.iconSizeAction,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -42,29 +47,24 @@ class ShareDialogHeader {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: AppTextStyles.titleBold.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                Semantics(
+                  header: true,
+                  child: Text(
+                    title,
+                    style: AppTextStyles.subpageTitle.copyWith(
+                      color: cs.onSurface,
+                    ),
                   ),
                 ),
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer
-                        .withValues(alpha: AppDimensions.opacityVeryDark),
+                    color: cs.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(
-              Icons.close,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
           ),
         ],
@@ -79,11 +79,14 @@ class ShareDialogHeader {
   ) {
     switch (contentType) {
       case ShareContentType.recipe:
-        final recipe = content as Recipe;
+        // A bulk share hands over the recipes still to share (BUT-2152).
+        final subtitle = content is List<Recipe>
+            ? content.map((recipe) => recipe.title).join(', ')
+            : (content as Recipe).title;
         return (
           context.l10n.shareRecipeWithFriends,
-          recipe.title,
-          Icons.restaurant_menu,
+          subtitle,
+          ButleryIcons.utensils,
         );
       case ShareContentType.menu:
         final menu = content as Map<String, List<Recipe>>;
@@ -94,21 +97,21 @@ class ShareDialogHeader {
         return (
           context.l10n.shareMenuWithFriends,
           context.l10n.shareRecipesInCategories(totalRecipes, menu.length),
-          Icons.restaurant,
+          ButleryIcons.utensils,
         );
       case ShareContentType.shoppingList:
         final shoppingList = content as UnifiedShoppingList;
         return (
           context.l10n.shareShoppingListTitle,
           shoppingList.name,
-          Icons.shopping_cart_outlined,
+          ButleryIcons.shoppingCart,
         );
       case ShareContentType.personalTag:
         final tagData = content as Map<String, String>;
         return (
-          'Dela tagg med vanner',
+          context.l10n.shareTagWithFriends,
           tagData['tagName'].orEmpty(),
-          Icons.label_outline,
+          ButleryIcons.tag,
         );
     }
   }

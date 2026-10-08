@@ -1,11 +1,14 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -45,16 +48,17 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.moderatorReviewTitle,
-        centerTitle: true,
       ),
       body: StreamBuilder<bool>(
         stream: _reportService.watchIsAdmin(),
         builder: (context, snapshot) {
           final isAdmin = snapshot.data ?? false;
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return StateWidget.loading();
+            return StateWidget.loading(
+              message: context.l10n.loadingAdminAccess,
+            );
           }
           if (!isAdmin) {
             return _NotAuthorized();
@@ -75,11 +79,14 @@ class _NotAuthorized extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.layoutMarginOf(context),
+          vertical: AppDimensions.space16,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_outline, size: 64, color: cs.outline),
+            ButleryIcon(ButleryIcons.lock, size: 64, color: cs.outline),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               context.l10n.moderatorNotAuthorized,
@@ -100,15 +107,12 @@ class _ReportsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ModeratorReviewViewModel>();
     if (vm.isLoading && vm.reports.isEmpty) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingReports);
     }
     if (vm.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Text(vm.error!, textAlign: TextAlign.center),
-        ),
-      );
+      // The standard error state: what failed, then Försök igen
+      // (content-style-guide.md:89-94; state_widget.dart default action).
+      return StateWidget.error(message: vm.error!, onAction: vm.retry);
     }
     if (vm.reports.isEmpty) {
       return Center(
@@ -124,8 +128,7 @@ class _ReportsList extends StatelessWidget {
         horizontal: AppDimensions.paddingM,
       ),
       itemCount: vm.reports.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingS),
+      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space4),
       itemBuilder: (_, i) => _ReportCard(report: vm.reports[i]),
     );
   }
@@ -181,7 +184,7 @@ class _ReportCard extends StatelessWidget {
                   ? context.l10n.moderatorReporterErased
                   : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.outline,
+                color: cs.onSurfaceVariant,
               ),
             ),
             // BUT-1609: moderation on a minor's account carries extra care
@@ -190,7 +193,7 @@ class _ReportCard extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingXs),
               AdminBadge(
                 label: context.l10n.moderatorMinorAccountBadge,
-                icon: Icons.shield_outlined,
+                icon: ButleryIcons.shield,
               ),
             ],
             const SizedBox(height: AppDimensions.spacingSm),
@@ -200,7 +203,7 @@ class _ReportCard extends StatelessWidget {
               children: [
                 if (report.status != ReportStatus.closed)
                   OutlinedButton(
-                    onPressed: () => vm.advance(report),
+                    onPressed: () => _advance(context, vm),
                     child: Text(context.l10n.moderatorActionAdvance),
                   ),
                 OutlinedButton(
@@ -213,7 +216,7 @@ class _ReportCard extends StatelessWidget {
                 ),
                 if (report.status != ReportStatus.closed)
                   TextButton(
-                    onPressed: () => vm.close(report),
+                    onPressed: () => _close(context, vm),
                     child: Text(context.l10n.moderatorActionClose),
                   ),
               ],
@@ -259,9 +262,55 @@ class _ReportCard extends StatelessWidget {
             cancelText: cancel,
           );
     final ok = await dialogFuture;
-    if (ok == true) {
-      await vm.takeDown(report);
+    if (ok == true && context.mounted) {
+      await _takeDown(context, vm, reversible: reversible);
     }
+  }
+
+  // A refused action is a failure snackbar with Försök igen, never the
+  // queue's load-error state and never the method name
+  // (content-style-guide.md:87-97; Komponentark v1:750, never OK).
+  Future<void> _advance(
+    BuildContext context,
+    ModeratorReviewViewModel vm,
+  ) async {
+    if (await vm.advance(report) || !context.mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.moderatorAdvanceFailed,
+      preserved: context.l10n.moderatorReportUnchanged,
+      action: FailureAction.retry(() => _advance(context, vm)),
+    );
+  }
+
+  Future<void> _close(BuildContext context, ModeratorReviewViewModel vm) async {
+    if (await vm.close(report) || !context.mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.moderatorCloseFailed,
+      preserved: context.l10n.moderatorReportUnchanged,
+      action: FailureAction.retry(() => _close(context, vm)),
+    );
+  }
+
+  /// The retry repeats the action the moderator already confirmed.
+  Future<void> _takeDown(
+    BuildContext context,
+    ModeratorReviewViewModel vm, {
+    required bool reversible,
+  }) async {
+    if (await vm.takeDown(report) || !context.mounted) return;
+    final l10n = context.l10n;
+    SnackBarUtils.showFailure(
+      context,
+      what: reversible ? l10n.moderatorHideFailed : l10n.moderatorDeleteFailed,
+      preserved: reversible
+          ? l10n.moderatorHidePreserved
+          : l10n.moderatorDeletePreserved,
+      action: FailureAction.retry(
+        () => _takeDown(context, vm, reversible: reversible),
+      ),
+    );
   }
 }
 
@@ -273,14 +322,16 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXxs,
+      padding: AppDimensions.statusPillPadding,
+      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
+      // v1:297 draws the pill text at 0.5 px tracking.
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      color: cs.secondaryContainer,
       child: Text(
         status.wireName,
-        style: AppTextStyles.metadataEmphasized,
+        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
       ),
     );
   }

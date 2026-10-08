@@ -6,8 +6,10 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class AccountSecurityView extends StatefulWidget {
   const AccountSecurityView({super.key});
@@ -37,6 +39,12 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   bool _obscureEmailPassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _viewModel.loadMfaStatus();
+  }
+
+  @override
   void dispose() {
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
@@ -60,6 +68,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
     );
 
     if (!mounted) return;
+    // A failure stays until tapped; the new outcome replaces it rather
+    // than queueing behind it.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (success) {
       _currentPasswordController.clear();
@@ -70,8 +81,21 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         context.l10n.accountSecurityPasswordChanged,
       );
     } else if (_viewModel.error != null) {
-      SnackBarUtils.showError(context, _viewModel.error!);
+      _showFailure(onRetry: _handleChangePassword);
     }
+  }
+
+  /// P5-U10: a failed change is the failure snackbar
+  /// (content-style-guide.md:87-97), never OK. A failure without a known
+  /// cause offers Försök igen, which runs the change again with the fields
+  /// as they are; a named cause (wrong password, no network) or a form
+  /// error gets Stäng (AccountSecurityViewModel.canRetry).
+  void _showFailure({required Future<void> Function() onRetry}) {
+    SnackBarUtils.showFailure(
+      context,
+      what: _viewModel.error!,
+      action: _viewModel.canRetry ? FailureAction.retry(onRetry) : null,
+    );
   }
 
   Future<void> _handleChangeEmail() async {
@@ -81,6 +105,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
     );
 
     if (!mounted) return;
+    // A failure stays until tapped; the new outcome replaces it rather
+    // than queueing behind it.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (success) {
       _emailPasswordController.clear();
@@ -90,14 +117,16 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         context.l10n.accountSecurityEmailVerificationSent,
       );
     } else if (_viewModel.error != null) {
-      SnackBarUtils.showError(context, _viewModel.error!);
+      _showFailure(onRetry: _handleChangeEmail);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(title: context.l10n.accountSecurityTitle),
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.accountSecurityTitle,
+      ),
       body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
@@ -122,10 +151,16 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                       const SizedBox(height: AppDimensions.spacingXl),
                       const Divider(),
                       const SizedBox(height: AppDimensions.spacingXl),
-                      _buildMfaSection(),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      const Divider(),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      // PQ-16 = A (2026-09-23, Linear BUT-2142): turning
+                      // two-step verification on is hidden, so the row is
+                      // shown only to a user who has it on and can turn it
+                      // off; for anyone else it would lead nowhere.
+                      if (_viewModel.hasMfa) ...[
+                        _buildMfaSection(),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                        const Divider(),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
                       _buildLegalSection(),
                     ],
                   ),
@@ -146,11 +181,13 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.lock_outline, color: cs.primary),
+            ButleryIcon(ButleryIcons.lock, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.accountSecurityChangePassword,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.accountSecurityChangePassword,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
@@ -165,10 +202,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureCurrentPassword
-                    ? Icons.visibility_off
-                    : Icons.visibility,
+              icon: const ButleryIcon(
+                // One glyph for both states until design draws the second one
+                // (P7-U08 open question); the tooltip/label carries the state.
+                ButleryIcons.eye,
               ),
               tooltip: _obscureCurrentPassword
                   ? context.l10n.tooltipShowPassword
@@ -190,8 +227,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityNewPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+              icon: const ButleryIcon(
+                // One glyph for both states until design draws the second one
+                // (P7-U08 open question); the tooltip/label carries the state.
+                ButleryIcons.eye,
               ),
               tooltip: _obscureNewPassword
                   ? context.l10n.tooltipShowPassword
@@ -212,10 +251,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityConfirmPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureConfirmPassword
-                    ? Icons.visibility_off
-                    : Icons.visibility,
+              icon: const ButleryIcon(
+                // One glyph for both states until design draws the second one
+                // (P7-U08 open question); the tooltip/label carries the state.
+                ButleryIcons.eye,
               ),
               tooltip: _obscureConfirmPassword
                   ? context.l10n.tooltipShowPassword
@@ -227,14 +266,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingMd),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _viewModel.isLoading ? null : _handleChangePassword,
-            child: _viewModel.isLoading
-                ? const LoadingIndicator(size: 20, strokeWidth: 2)
-                : Text(context.l10n.accountSecurityChangePassword),
-          ),
+        _busyAwareButton(
+          label: context.l10n.accountSecurityChangePassword,
+          onPressed: _handleChangePassword,
         ),
       ],
     );
@@ -248,11 +282,13 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.email_outlined, color: cs.primary),
+            ButleryIcon(ButleryIcons.mail, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.accountSecurityChangeEmail,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.accountSecurityChangeEmail,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
@@ -267,6 +303,19 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
               ),
             ),
           ),
+        // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms only the
+        // new address; the old one is told afterwards and can undo. The user
+        // reads that before asking for the change, not in a two-line snackbar.
+        Padding(
+          key: const ValueKey('accountSecurity.emailChangeHow'),
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+          child: Text(
+            context.l10n.accountSecurityEmailChangeHow,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
         TextField(
           controller: _emailPasswordController,
           focusNode: _emailPasswordFocus,
@@ -277,8 +326,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(
-                _obscureEmailPassword ? Icons.visibility_off : Icons.visibility,
+              icon: const ButleryIcon(
+                // One glyph for both states until design draws the second one
+                // (P7-U08 open question); the tooltip/label carries the state.
+                ButleryIcons.eye,
               ),
               tooltip: _obscureEmailPassword
                   ? context.l10n.tooltipShowPassword
@@ -302,16 +353,39 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingMd),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _viewModel.isLoading ? null : _handleChangeEmail,
-            child: _viewModel.isLoading
-                ? const LoadingIndicator(size: 20, strokeWidth: 2)
-                : Text(context.l10n.accountSecurityChangeEmail),
-          ),
+        _busyAwareButton(
+          label: context.l10n.accountSecurityChangeEmail,
+          onPressed: _handleChangeEmail,
         ),
       ],
+    );
+  }
+
+  /// An ink primary that keeps its name while the view model works and gets
+  /// the plate line along its bottom edge, never a spinner (Komponentark
+  /// v1:365, :372; produktregler.md:902). Busy is not disabled: it ignores
+  /// presses instead (PlateLineButton.ignore).
+  Widget _busyAwareButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    final busy = _viewModel.isLoading;
+    return BusyButtonSemantics(
+      busy: busy,
+      name: label,
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          onPressed: busy ? PlateLineButton.ignore : onPressed,
+          style: busy
+              ? PlateLineButton.busyStyle(
+                  null,
+                  Theme.of(context).filledButtonTheme.style,
+                )
+              : null,
+          child: Text(label),
+        ),
+      ),
     );
   }
 
@@ -323,29 +397,38 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.security, color: cs.primary),
+            ButleryIcon(ButleryIcons.shield, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.accountSecurityMfaSettings,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.accountSecurityMfaSettings,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
-          leading: Icon(Icons.phone_android, color: cs.primary),
+          key: const ValueKey('accountSecurity.mfa'),
+          leading: ButleryIcon(ButleryIcons.smartphone, color: cs.onSurface),
           title: Text(
             context.l10n.accountSecurityMfaSettings,
             style: AppTextStyles.titleMedium,
           ),
-          trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          trailing: ButleryIcon(
+            ButleryIcons.chevronRight,
+            color: cs.onSurfaceVariant,
+          ),
           contentPadding: EdgeInsets.zero,
-          onTap: () {
-            Navigator.of(context).push(
+          onTap: () async {
+            await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => const MfaSettingsView(),
               ),
             );
+            // The user may have turned it off there; then the row goes.
+            if (!mounted) return;
+            await _viewModel.loadMfaStatus();
           },
         ),
       ],
@@ -360,37 +443,39 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       children: [
         Row(
           children: [
-            Icon(Icons.gavel_outlined, color: cs.primary),
+            ButleryIcon(ButleryIcons.file, color: cs.onSurface),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(
-              context.l10n.legalTermsOfService,
-              style: AppTextStyles.headlineSmall,
+            Expanded(
+              child: Text(
+                context.l10n.legalTermsOfService,
+                style: AppTextStyles.headlineSmall,
+              ),
             ),
           ],
         ),
         const SizedBox(height: AppDimensions.spacingMd),
         ListTile(
-          leading: const Icon(Icons.description_outlined),
+          leading: const ButleryIcon(ButleryIcons.file),
           title: Text(context.l10n.legalTermsOfService),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.termsOfService),
         ),
         ListTile(
-          leading: const Icon(Icons.people_outline),
+          leading: const ButleryIcon(ButleryIcons.users),
           title: Text(context.l10n.legalCommunityGuidelines),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.communityGuidelines),
         ),
         ListTile(
-          leading: const Icon(Icons.flag_outlined),
+          leading: const ButleryIcon(ButleryIcons.flag),
           title: Text(context.l10n.settingsMyReports),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => Navigator.pushNamed(context, Routes.myReports),
         ),
         ListTile(
-          leading: const Icon(Icons.code),
+          leading: const ButleryIcon(ButleryIcons.file),
           title: Text(context.l10n.legalOpenSourceLicenses),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const ButleryIcon(ButleryIcons.chevronRight),
           onTap: () => showLicensePage(
             context: context,
             applicationName: 'Butlery',

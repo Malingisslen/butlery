@@ -135,12 +135,10 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
     name: "recipePresence",
     subcollections: ["activeUsers"],
   },
-  { name: "realtime_recipes" },
   { name: "realtime_menus" },
   { name: "realtime_resources" },
   { name: "deep_links", subcollections: ["clicks"] },
   { name: "parsing_corrections" },
-  { name: "globalRecipeCache" },
   { name: "parse_events" },
   { name: "connectivity_test" },
   { name: "audit_logs", subcollections: ["deletions"] },
@@ -219,6 +217,17 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // A member's shared allergen list (BUT-1693). The cascade reaches it too
   // (`deleteHouseholdAllergenShares`, with a probe leg).
   { name: "household_allergen_shares" },
+  // Suggestions to someone else's shared recipe (P5-U27b), 7 days under TTL.
+  // The cascade reaches both people on a row (`deleteRecipeSuggestions`, with
+  // two probe legs).
+  { name: "recipe_suggestions" },
+  // Two-step-verification backup codes (P6-U09): salted scrypt hashes in one
+  // document per account, keyed by the raw uid (`mfa_backup_codes/{uid}`).
+  // A reset deletes every Auth user in Phase 1, so a row left here would
+  // belong to nobody and could never be spent or cleared. The cascade deletes
+  // the same document per account (`deleteMfaRecoveryData`, with a probe leg).
+  // Its sibling `mfa_recovery_attempts` is registered as untouched below.
+  { name: "mfa_backup_codes" },
   // Captured model input and output for QA. Both are PII-scrubbed at capture
   // and the uid is stored as `authUidHash`, never raw — so the ground for
   // deleting these is not that they are personal data but that they are a
@@ -267,6 +276,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // reset that erased everything it guarded. The register list has no runtime
   // teeth and would have left exactly that.
   { name: "erasure_holds" },
+
+  // BUT-2169: the marker an account erasure keeps while its cascade runs, keyed
+  // on the erased uid. A reset erases every account, so a marker names a person
+  // who no longer has data here.
+  { name: "erasures_in_progress" },
 
   // The admin console's own two collections (`admin/bulk-retag.ts`). Both key
   // on a raw admin uid — `admin_rate_limits` in BOTH the document id
@@ -424,6 +438,18 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
     "by the notification pipeline's design and never built.",
 
   // --- Anti-abuse state a reset must NOT clear ---------------------------
+
+  mfa_recovery_attempts:
+    "Attempt counters for backup-code recovery (account/mfa-backup-codes.ts). " +
+    "Mostly NOT linkable to an account: `ip_<HMAC(pepper, ip)>` rows and the " +
+    "single `global` row hold only a count and window times, under a key " +
+    "that cannot be reversed without the server-only pepper. The one " +
+    "uid-keyed shape, `uid_<uid>`, is deleted per account by the cascade " +
+    "(`deleteMfaRecoveryData`). Every row carries `expiresAt` (at most one " +
+    "window plus one lockout, about two hours) and the TTL policy in " +
+    "firestore.indexes.json is the retention bound, so what a reset leaves " +
+    "here is gone within hours; wiping it early only hands a fresh quota to " +
+    "whoever is being throttled, the same ground as `system_ip_audit_caps`.",
 
   system_ip_audit_caps:
     "Per-IP hourly signup caps (account/verify-signup-age.ts). Deliberately " +

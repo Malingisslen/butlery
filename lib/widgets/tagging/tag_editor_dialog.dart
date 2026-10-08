@@ -1,11 +1,15 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog for viewing and managing all recipe tags.
 ///
@@ -91,9 +95,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
     // Don't add duplicates
     if (_effectiveTags.contains(newTag)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.tagAlreadyExists)),
-      );
+      // The ink snackbar (PQ-09 = A).
+      SnackBarUtils.showInfo(context, context.l10n.tagAlreadyExists);
       return;
     }
 
@@ -127,9 +130,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
     return Dialog(
       backgroundColor: cs.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-      ),
+      // No hand-written shape: the dialog theme's radius 8 (Komponentark
+      // v1:336) applies (BUT-1237).
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: AppDimensions.dialogMaxHeightSmall,
@@ -144,9 +146,9 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
               // Header
               Row(
                 children: [
-                  Icon(
-                    Icons.local_offer_outlined,
-                    color: cs.primary,
+                  ButleryIcon(
+                    ButleryIcons.tag,
+                    color: cs.onPrimaryContainer,
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
@@ -159,7 +161,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const ButleryIcon(ButleryIcons.x),
                     onPressed: () => Navigator.of(context).pop(),
                     tooltip: context.l10n.commonClose,
                   ),
@@ -182,10 +184,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             style: AppTextStyles.titleSmall,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Wrap(
-                          spacing: AppDimensions.spacingS,
-                          runSpacing: AppDimensions.spacingS,
+                          spacing: AppDimensions.space4,
+                          runSpacing: AppDimensions.space4,
                           children: sortedTags
                               .map((tag) => _buildTagChip(tag))
                               .toList(),
@@ -204,10 +206,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.space4),
                         Wrap(
-                          spacing: AppDimensions.spacingS,
-                          runSpacing: AppDimensions.spacingS,
+                          spacing: AppDimensions.space4,
+                          runSpacing: AppDimensions.space4,
                           children: removedTagsList
                               .map((tag) => _buildRemovedTagChip(tag))
                               .toList(),
@@ -223,7 +225,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                           style: AppTextStyles.titleSmall,
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingS),
+                      const SizedBox(height: AppDimensions.space4),
                       Form(
                         key: _formKey,
                         child: Row(
@@ -236,7 +238,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                   hintText: context.l10n.tagWriteTagHint,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(
-                                      AppDimensions.borderRadiusM,
+                                      AppDimensions.radiusControl,
                                     ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
@@ -256,10 +258,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                 onFieldSubmitted: (_) => _addNewTag(),
                               ),
                             ),
-                            const SizedBox(width: AppDimensions.spacingS),
+                            const SizedBox(width: AppDimensions.space4),
                             IconButton.filled(
                               onPressed: _addNewTag,
-                              icon: const Icon(Icons.add),
+                              icon: const ButleryIcon(ButleryIcons.plus),
                               tooltip: context.l10n.tagAddTag,
                               style: IconButton.styleFrom(
                                 backgroundColor: cs.primary,
@@ -289,6 +291,11 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   const SizedBox(width: AppDimensions.spacingM),
                   FilledButton(
                     onPressed: _save,
+                    style: const ButtonStyle(
+                      minimumSize: WidgetStatePropertyAll(
+                        Size(0, AppDimensions.minTouchTarget),
+                      ),
+                    ),
                     child: Text(context.l10n.commonSave),
                   ),
                 ],
@@ -305,29 +312,35 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     final isUserAdded = _isUserAdded(tag);
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
-    return InputChip(
-      label: Text(displayName),
-      labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isUserAdded ? cs.primary : cs.onSurface,
-        fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
+    return PressFill(
+      surface: isUserAdded ? PressSurface.raised : PressSurface.base,
+      child: InputChip(
+        label: Text(displayName),
+        labelStyle: AppTextStyles.bodySmall.copyWith(
+          color: isUserAdded ? cs.onPrimaryContainer : cs.onSurface,
+          fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
+        ),
+        backgroundColor: isUserAdded ? cs.primaryContainer : cs.surface,
+        side: BorderSide(
+          color: isUserAdded ? cs.outline : cs.outlineVariant,
+        ),
+        deleteIcon: const ButleryIcon(
+          ButleryIcons.x,
+          size: AppDimensions.iconSize18,
+        ),
+        deleteIconColor: cs.onSurfaceVariant,
+        onDeleted: () => _removeTag(tag),
+        avatar: isUserAdded
+            ? ButleryIcon(
+                ButleryIcons.user,
+                size: AppDimensions.iconSizeS,
+                color: cs.onPrimaryContainer,
+              )
+            : null,
+        tooltip: isUserAdded
+            ? context.l10n.tagManuallyAdded
+            : context.l10n.tagAutoGenerated,
       ),
-      backgroundColor: isUserAdded
-          ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-          : cs.surface,
-      side: BorderSide(
-        color: isUserAdded
-            ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
-            : cs.outlineVariant,
-      ),
-      deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
-      deleteIconColor: cs.onSurfaceVariant,
-      onDeleted: () => _removeTag(tag),
-      avatar: isUserAdded
-          ? Icon(Icons.person, size: AppDimensions.iconSizeS, color: cs.primary)
-          : null,
-      tooltip: isUserAdded
-          ? context.l10n.tagManuallyAdded
-          : context.l10n.tagAutoGenerated,
     );
   }
 
@@ -335,23 +348,26 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     final cs = Theme.of(context).colorScheme;
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
-    return ActionChip(
-      label: Text(displayName),
-      labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: cs.onSurfaceVariant,
-        decoration: TextDecoration.lineThrough,
+    return PressFill(
+      surface: PressSurface.base,
+      child: ActionChip(
+        label: Text(displayName),
+        labelStyle: AppTextStyles.bodySmall.copyWith(
+          color: cs.onSurfaceVariant,
+          decoration: TextDecoration.lineThrough,
+        ),
+        // A removed tag: struck through in text.secondary on the base
+        // surface with border.subtle, never faded.
+        backgroundColor: cs.surface,
+        side: BorderSide(color: cs.outlineVariant),
+        avatar: ButleryIcon(
+          ButleryIcons.undo,
+          size: AppDimensions.iconSizeS,
+          color: cs.onSurfaceVariant,
+        ),
+        onPressed: () => _restoreTag(tag),
+        tooltip: context.l10n.tagClickToRestore,
       ),
-      backgroundColor: cs.surface.withValues(alpha: AppDimensions.opacityHalf),
-      side: BorderSide(
-        color: cs.outlineVariant.withValues(alpha: AppDimensions.opacityHalf),
-      ),
-      avatar: Icon(
-        Icons.undo,
-        size: AppDimensions.iconSizeS,
-        color: cs.onSurfaceVariant,
-      ),
-      onPressed: () => _restoreTag(tag),
-      tooltip: context.l10n.tagClickToRestore,
     );
   }
 }

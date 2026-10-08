@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
@@ -73,7 +75,7 @@ void main() {
       expect(find.text('Erik lagar Kycklinggryta'), findsOneWidget);
       expect(find.text('lagar just nu'), findsOneWidget);
       expect(find.byType(PulseDot), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.chevronRight), findsOneWidget);
     });
 
     testWidgets('two sessions on the same recipe merge with ampersand', (
@@ -193,6 +195,33 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       // Still visible after a long gap.
       expect(find.byType(PulseDot), findsOneWidget);
+    });
+    // BUT-2227: the card is surface.ink in both modes, so the paper headline
+    // and the on-ink accent eyebrow read in dark mode too (onPrimaryContainer
+    // is paper in the dark scheme).
+    testWidgets('the card is surface.ink in dark mode', (tester) async {
+      final theme = AppTheme.darkTheme;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          home: Scaffold(
+            body: CookingSessionCard(sessions: [session()]),
+          ),
+        ),
+      );
+      final card = tester.widget<Material>(
+        find
+            .descendant(
+              of: find.byType(CookingSessionCard),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(card.color, theme.colorScheme.primary);
+      expect(card.color, isNot(theme.colorScheme.onPrimaryContainer));
     });
   });
 }

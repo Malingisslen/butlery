@@ -263,5 +263,42 @@
       "instructionCountMin": 3,
       "totalTimeMinutes": 7
     }
+  },
+  {
+    "id": "rulebased-spoken-amounts",
+    "tier": "ruleBased",
+    "_note": "Amounts written as words, as voice dictation transcribes them (resa 11). 'halvfet ost' is a name, not a half.",
+    "text": "Pannkakor\n\nIngredienser:\ntre dl mjölk\ntvå ägg\nen halv citron\nen nypa salt\nhalvfet ost\n\nGör så här:\n1. Vispa ihop mjölk och ägg.\n2. Stek i smör.",
+    "expected": {
+      "titleContains": "pannkakor",
+      "ingredientCountMin": 5,
+      "ingredientSubstrings": [
+        "mjölk",
+        "ägg",
+        "citron",
+        "salt",
+        "halvfet ost"
+      ],
+      "ingredientQuantities": [
+        {
+          "contains": "mjölk",
+          "quantity": 3
+        },
+        {
+          "contains": "ägg",
+          "quantity": 2
+        },
+        {
+          "contains": "citron",
+          "quantity": 0.5
+        },
+        {
+          "contains": "salt",
+          "quantity": 1
+        }
+      ],
+      "instructionCountMin": 2,
+      "minQuality": 0.3
+    }
   }
 ]

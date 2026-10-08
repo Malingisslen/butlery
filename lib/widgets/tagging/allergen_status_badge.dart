@@ -3,15 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 
 /// Badge displaying allergen status with tri-state coloring.
-///
-/// **UI Redesign:** Uses left-border style instead of pill/chip style:
-/// - 3px left border (color based on status)
-/// - Light tinted background (10-12% opacity)
-/// - Icon + label in row
 ///
 /// Both color AND shape are used for accessibility (color-blind users):
 /// - FREE: Green with checkmark (safe)
@@ -67,13 +62,13 @@ class AllergenStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon) = _getStatusStyle(context);
+    final (tone, icon) = _getStatusStyle(context);
     final displayLabel = label ?? _getDisplayLabel(context);
     final semanticLabel = _getSemanticLabel(context);
 
     if (compact) {
       return TagStatusBadgeCompact(
-        color: color,
+        tone: tone,
         icon: icon,
         semanticLabel: semanticLabel,
         label: showLabel ? displayLabel : null,
@@ -81,7 +76,7 @@ class AllergenStatusBadge extends StatelessWidget {
     }
 
     return TagStatusBadge(
-      color: color,
+      tone: tone,
       icon: icon,
       semanticLabel: semanticLabel,
       label: showLabel ? displayLabel : null,
@@ -103,20 +98,19 @@ class AllergenStatusBadge extends StatelessWidget {
     }
   }
 
-  (Color, IconData) _getStatusStyle(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  (TagStatusTone, IconData) _getStatusStyle(BuildContext context) {
     // Shape distinction for color-blind accessibility:
     // - FREE: Circle (check_circle)
     // - CONTAINS: Triangle (warning)
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
-        return (context.butleryColors.success, Icons.check_circle_outline);
+        return (TagStatusTone.success, ButleryIcons.circleCheck);
       case TriState.contains:
         // Triangle shape distinguishes from other states
-        return (cs.error, Icons.warning_amber);
+        return (TagStatusTone.danger, ButleryIcons.triangleAlert);
       case TriState.unknown:
-        return (cs.onSurfaceVariant, Icons.help_outline);
+        return (TagStatusTone.neutral, ButleryIcons.info);
     }
   }
 

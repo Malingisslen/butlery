@@ -59,7 +59,6 @@ void main() {
               ctx,
               viewModel,
               (_) {},
-              (_) {},
             ),
             child: const Text('öppna'),
           ),

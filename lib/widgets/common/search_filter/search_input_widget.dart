@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Search input field with clear functionality.
 /// Uses TextFormField for better Flutter Web compatibility with text input handling.
@@ -85,8 +87,8 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: const Icon(
-              Icons.clear,
+            icon: const ButleryIcon(
+              ButleryIcons.x,
               size: AppDimensions.iconSizeAction,
             ),
             onPressed: widget.onClear,
@@ -98,8 +100,8 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
 
     if (hasClear) {
       return IconButton(
-        icon: const Icon(
-          Icons.clear,
+        icon: const ButleryIcon(
+          ButleryIcons.x,
           size: AppDimensions.iconSizeAction,
         ),
         onPressed: widget.onClear,
@@ -124,10 +126,10 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       decoration: InputDecoration(
         hintText: widget.hintText ?? context.l10n.searchHint,
         hintStyle: AppTextStyles.bodyMediumMuted,
-        prefixIcon: Icon(
-          Icons.search,
+        prefixIcon: ButleryIcon(
+          ButleryIcons.search,
           size: AppDimensions.iconSizeAction,
-          color: cs.primary,
+          color: cs.onSurface,
         ),
         suffixIcon: _buildSuffixIcon(),
         border: InputBorder.none,
@@ -146,8 +148,8 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       final classicField = DecoratedBox(
         decoration: BoxDecoration(
           color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          border: Border.all(color: cs.primary, width: 2),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          border: Border.all(color: cs.onSurface, width: 2),
         ),
         child: searchField,
       );
@@ -162,9 +164,9 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         border: Border(
-          top: BorderSide(color: cs.primary, width: 2),
-          left: BorderSide(color: cs.primary, width: 2),
-          right: BorderSide(color: cs.primary, width: 2),
+          top: BorderSide(color: cs.onSurface, width: 2),
+          left: BorderSide(color: cs.onSurface, width: 2),
+          right: BorderSide(color: cs.onSurface, width: 2),
           bottom: BorderSide(color: cs.secondary, width: 4),
         ),
       ),

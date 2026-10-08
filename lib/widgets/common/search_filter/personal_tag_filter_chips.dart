@@ -5,6 +5,11 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Filter chips for personal tags with include/exclude support.
 ///
@@ -67,14 +72,14 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
                   title ?? context.l10n.filterPersonalTags,
                   style: AppTextStyles.headlineSmall.copyWith(
                     fontSize: AppTextStyles.bodyLarge.fontSize,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(
-                    Icons.settings,
+                  icon: const ButleryIcon(
+                    ButleryIcons.settings,
                     size: AppDimensions.iconSize18,
                   ),
                   onPressed: onManageTags,
@@ -140,14 +145,18 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
             title ?? context.l10n.filterPersonalTags,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.bodyLarge.fontSize,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
-          TextButton.icon(
-            onPressed: onManageTags,
-            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
-            label: Text(context.l10n.filterCreatePersonalTags),
+          // The empty state is the shared one, not a hand-built button row
+          // (P4-U03 test plan): it says what is missing and offers the one
+          // way forward.
+          StateWidget.empty(
+            title: context.l10n.taggingNoPersonalTags,
+            icon: ButleryIcons.tag,
+            actionLabel: context.l10n.filterCreatePersonalTags,
+            onAction: onManageTags,
           ),
         ],
       ),
@@ -178,29 +187,40 @@ class _PersonalTagFilterChip extends StatelessWidget {
       ),
       selected: isSelected,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        avatar: isSelected
-            ? null
-            : CircleAvatar(
-                radius: 6,
-                backgroundColor: colorScheme.primary,
-              ),
-        selected: isSelected,
-        onSelected: (_) => onSelected(),
-        backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.primary.withValues(
-          alpha: AppDimensions.opacityLightMedium,
+      // The shared grip: ring around the chip's 48 dp target and no saffron
+      // focus tint (Grafisk manual v6:209, :381).
+      child: ButleryControlFocus(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+        child: PressFill(
+          surface: isSelected ? PressSurface.ink : PressSurface.base,
+          child: FilterChip(
+            label: Text(tag.name),
+            avatar: isSelected
+                ? null
+                : CircleAvatar(
+                    radius: 6,
+                    backgroundColor: colorScheme.onSurface,
+                  ),
+            selected: isSelected,
+            onSelected: (_) => onSelected(),
+            backgroundColor: colorScheme.surface,
+            // Chosen is the drawn chip: an ink fill with paper text and check,
+            // never an ink tint. The text.primary edge is the paper
+            // edge of the dark drawing (Komponentark v1:523).
+            selectedColor: colorScheme.primary,
+            checkmarkColor: colorScheme.onPrimary,
+            side: BorderSide(
+              color: isSelected ? colorScheme.onSurface : colorScheme.outline,
+              width: isSelected ? 2 : 1,
+            ),
+            labelStyle: isSelected
+                ? AppTextStyles.bodyBold.copyWith(color: colorScheme.onPrimary)
+                : AppTextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+            showCheckmark: isSelected,
+          ),
         ),
-        checkmarkColor: colorScheme.primary,
-        side: BorderSide(
-          color: isSelected ? colorScheme.primary : colorScheme.outline,
-          width: isSelected ? 2 : 1,
-        ),
-        labelStyle: isSelected
-            ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
-            : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-        showCheckmark: isSelected,
       ),
     );
   }
@@ -229,32 +249,41 @@ class _PersonalTagExcludeChip extends StatelessWidget {
       ),
       selected: isExcluded,
       button: true,
-      child: FilterChip(
-        label: Text(tag.name),
-        avatar: isExcluded
-            ? null
-            : Icon(
-                Icons.remove_circle_outline,
-                size: AppDimensions.iconSizeS,
-                color: colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityMediumDark,
-                ),
-              ),
-        selected: isExcluded,
-        onSelected: (_) => onSelected(),
-        backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.error.withValues(
-          alpha: AppDimensions.opacityLightSubtle,
+      // The shared grip: ring around the chip's 48 dp target and no saffron
+      // focus tint (Grafisk manual v6:209, :381).
+      child: ButleryControlFocus(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+        child: PressFill(
+          surface: PressSurface.base,
+          child: FilterChip(
+            label: Text(tag.name),
+            // The drawn "utan" chip: no glyph, the tag name struck through,
+            // a 1.5 px text.danger edge and w600 text.danger label on a paper
+            // plate; the "av" chip is a 1 px border.subtle outline, no glyph.
+            // State is never opacity.
+            selected: isExcluded,
+            onSelected: (_) => onSelected(),
+            backgroundColor: colorScheme.surface,
+            selectedColor: colorScheme.surface,
+            side: BorderSide(
+              color: isExcluded
+                  ? colorScheme.error
+                  : colorScheme.outlineVariant,
+              width: isExcluded ? 1.5 : 1,
+            ),
+            labelStyle: isExcluded
+                ? AppTextStyles.bodyMedium.copyWith(
+                    color: colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.lineThrough,
+                    decorationColor: colorScheme.error,
+                  )
+                : AppTextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+            showCheckmark: false,
+          ),
         ),
-        checkmarkColor: colorScheme.error,
-        side: BorderSide(
-          color: isExcluded ? colorScheme.error : colorScheme.outline,
-          width: isExcluded ? 2 : 1,
-        ),
-        labelStyle: isExcluded
-            ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
-            : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-        showCheckmark: isExcluded,
       ),
     );
   }

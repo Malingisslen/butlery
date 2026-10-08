@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -8,13 +10,11 @@ import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/profile/profile_menu.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 
 // Import responsive infrastructure
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/core/responsive/responsive_builder.dart';
 import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
-import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 
 /// Facade for layout components. Delegates to specialized layout modules.
 class LayoutComponents {
@@ -134,14 +134,18 @@ class LayoutComponents {
     );
   }
 
-  /// Offline indicator that shows when the app is offline.
-  static Widget offlineIndicator({
-    String? message,
-    Color? backgroundColor,
-  }) {
-    return StatusIndicators.offlineIndicator(
-      message: message,
-      backgroundColor: backgroundColor,
+  /// Offline banner; [pendingCount] and [onTap] as on OfflineIndicator.
+  ///
+  /// P4-U19: "Offline är en banner … och den är en kontroll: den leder till
+  /// kövyn" (produktregler.md:300). Without [onTap] the banner opens
+  /// "Väntar på synk", and without [pendingCount] it reads the queue's live
+  /// count (flows-roles-budget.md:111), the same number the queue view shows.
+  static Widget offlineIndicator({int? pendingCount, VoidCallback? onTap}) {
+    return QueueCountsBuilder(
+      builder: (context, counts) => StatusIndicators.offlineIndicator(
+        pendingCount: pendingCount ?? counts.waiting,
+        onTap: onTap ?? () => Navigator.of(context).pushNamed(Routes.syncQueue),
+      ),
     );
   }
 
@@ -176,83 +180,13 @@ class LayoutComponents {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       builder: (context) => LoadMenuBottomSheet(
         viewModel: viewModel,
         onTemplateSelected: onTemplateSelected,
       ),
-    );
-  }
-
-  /// Adaptive navigation scaffold that switches between BottomNav (mobile), NavigationRail (tablet/desktop).
-  /// Automatically adapts navigation based on screen width:
-  /// - Mobile (< 600px): BottomNavigationBar
-  /// - Tablet (600-1024px): NavigationRail (compact)
-  /// - Desktop (>= 1024px): NavigationRail (extended with labels)
-  /// **Usage Example:**
-  /// ```dart
-  /// LayoutComponents.adaptiveNavigation(
-  ///   currentIndex: 0,
-  ///   items: [
-  ///     AdaptiveNavigationItem(
-  ///       label: 'Home',
-  ///       icon: Icons.home_outlined,
-  ///       activeIcon: Icons.home,
-  ///       route: '/',
-  ///     ),
-  ///   ],
-  ///   body: HomeView(),
-  /// );
-  /// ```
-  static Widget adaptiveNavigation({
-    required int currentIndex,
-    required List<AdaptiveNavigationItem> items,
-    required Widget body,
-    String? title,
-    List<Widget>? actions,
-    Widget? floatingActionButton,
-    ValueChanged<int>? onNavigationChanged,
-    bool extendedRailOnDesktop = true,
-    PreferredSizeWidget? appBar,
-  }) {
-    return AdaptiveNavigationScaffold(
-      currentIndex: currentIndex,
-      items: items,
-      body: body,
-      title: title,
-      actions: actions,
-      floatingActionButton: floatingActionButton,
-      onNavigationChanged: onNavigationChanged,
-      extendedRailOnDesktop: extendedRailOnDesktop,
-      appBar: appBar,
-    );
-  }
-
-  /// Convenience wrapper for Butlery's standard adaptive navigation
-  /// Uses predefined navigation items (Mina recept, Lägg till, Veckomeny, Inköpslista, Upptäck)
-  /// **Usage Example:**
-  /// ```dart
-  /// LayoutComponents.butleryAdaptiveNavigation(
-  ///   currentIndex: 0,
-  ///   body: RecipeListView(),
-  ///   title: 'Mina Recept',
-  /// );
-  /// ```
-  static Widget butleryAdaptiveNavigation({
-    required int currentIndex,
-    required Widget body,
-    String? title,
-    List<Widget>? actions,
-    Widget? floatingActionButton,
-  }) {
-    return ButleryAdaptiveNavigation(
-      currentIndex: currentIndex,
-      body: body,
-      title: title,
-      actions: actions,
-      floatingActionButton: floatingActionButton,
     );
   }
 
@@ -320,55 +254,6 @@ class LayoutComponents {
     );
   }
 
-  /// Responsive list/grid that switches between ListView (mobile) and GridView (tablet/desktop)
-  /// **Usage Example:**
-  /// ```dart
-  /// LayoutComponents.responsiveListGrid<Recipe>(
-  ///   items: recipes,
-  ///   itemBuilder: (context, recipe) => RecipeCard(recipe: recipe),
-  ///   animate: true, // Staggered entrance animations
-  /// );
-  /// ```
-  /// NOT for cells that carry TEXT. `childAspectRatio` ties a tile's height to
-  /// its width, and a text block does the opposite — it grows with the OS text
-  /// scale and shrinks with width — so a ratio is wrong at one end whatever it
-  /// is set to, and being wrong means silent clipping in a release build. Use
-  /// `ContentSizedGrid` for those (BUT-1911).
-  ///
-  /// The one production caller does exactly what this warns against: Mina
-  /// recept's LIST toggle passes recipe cards here with
-  /// `AppDimensions.recipeGridAspectRatio`. That path renders a grid only on
-  /// tablet and desktop, where the tile is wide enough that nothing has been
-  /// measured to clip — unmeasured rather than proven, and scoped out of
-  /// BUT-1911 deliberately. Read this as a warning for the NEXT caller.
-  static Widget responsiveListGrid<T>({
-    required List<T> items,
-    required Widget Function(BuildContext context, T item) itemBuilder,
-    double? gridBreakpoint,
-    int? tabletColumns,
-    int? desktopColumns,
-    double? spacing,
-    EdgeInsetsGeometry? padding,
-    bool shrinkWrap = false,
-    ScrollPhysics? physics,
-    double? gridChildAspectRatio,
-    bool animate = false,
-  }) {
-    return ResponsiveListGrid<T>(
-      items: items,
-      itemBuilder: itemBuilder,
-      gridBreakpoint: gridBreakpoint,
-      tabletColumns: tabletColumns,
-      desktopColumns: desktopColumns,
-      spacing: spacing,
-      padding: padding,
-      shrinkWrap: shrinkWrap,
-      physics: physics,
-      gridChildAspectRatio: gridChildAspectRatio,
-      animate: animate,
-    );
-  }
-
   /// Check if current screen is mobile (< 600px)
   static bool isMobile(BuildContext context) => Breakpoints.isMobile(context);
 
@@ -399,144 +284,6 @@ class LayoutComponents {
       mobile: mobile,
       tablet: tablet,
       desktop: desktop,
-    );
-  }
-
-  /// Optimized button grid with ARKIV row (2-2-2-1 layout) for recipe upload view.
-  static Widget recipeUploadButtonGrid(
-    BuildContext context, {
-    required List<Map<String, dynamic>>
-    buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
-    required Map<String, dynamic> archiveButton, // Archive button config
-  }) {
-    if (buttons.length != 6) {
-      throw ArgumentError(
-        'recipeUploadButtonGrid requires exactly 6 main buttons',
-      );
-    }
-
-    return Expanded(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Calculate responsive button size that fits the available space
-          const minButtonSize = 80.0; // Minimum usable size
-          const maxButtonSize = AppDimensions.gridButtonSize; // Optimal size
-          const buttonSpacing = AppDimensions.gridButtonSpacing;
-          const rowSpacing = AppDimensions.gridRowSpacing;
-
-          // Leave some margin for the layout
-          final availableWidth = constraints.maxWidth * 0.9;
-          final availableHeight = constraints.maxHeight * 0.9;
-
-          // Calculate maximum button size that fits
-          final maxWidthForTwoButtons = (availableWidth - buttonSpacing) / 2;
-          final maxHeightForFourRows = (availableHeight - (rowSpacing * 3)) / 4;
-
-          // Use the smallest constraint to ensure everything fits
-          final buttonSize = [
-            maxWidthForTwoButtons,
-            maxHeightForFourRows,
-            maxButtonSize,
-          ].reduce((a, b) => a < b ? a : b).clamp(minButtonSize, maxButtonSize);
-
-          // Calculate actual layout dimensions
-          final layoutWidth = (buttonSize * 2) + buttonSpacing;
-          final layoutHeight = (buttonSize * 4) + (rowSpacing * 3);
-
-          // Center the layout
-          final horizontalPadding = ((constraints.maxWidth - layoutWidth) / 2)
-              .clamp(0.0, double.infinity);
-          final topPadding = ((constraints.maxHeight - layoutHeight) / 2).clamp(
-            0.0,
-            double.infinity,
-          );
-
-          return Padding(
-            padding: EdgeInsetsDirectional.only(
-              start: horizontalPadding,
-              end: horizontalPadding,
-              top: topPadding,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Row 1 - First two buttons
-                _buildButtonRow(
-                  context,
-                  [buttons[0], buttons[1]],
-                  buttonSize,
-                  layoutWidth,
-                  buttonSpacing,
-                ),
-                const SizedBox(height: rowSpacing),
-
-                // Row 2 - Second two buttons
-                _buildButtonRow(
-                  context,
-                  [buttons[2], buttons[3]],
-                  buttonSize,
-                  layoutWidth,
-                  buttonSpacing,
-                ),
-                const SizedBox(height: rowSpacing),
-
-                // Row 3 - Third two buttons
-                _buildButtonRow(
-                  context,
-                  [buttons[4], buttons[5]],
-                  buttonSize,
-                  layoutWidth,
-                  buttonSpacing,
-                ),
-                const SizedBox(height: rowSpacing),
-
-                // Row 4 - Archive button (full width)
-                SizedBox(
-                  height: buttonSize,
-                  width: layoutWidth,
-                  child: UtilityComponents.largeButton(
-                    context,
-                    label: archiveButton['label'],
-                    icon: archiveButton['icon'],
-                    onPressed: archiveButton['onPressed'],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  /// Helper to build a row with two buttons
-  static Widget _buildButtonRow(
-    BuildContext context,
-    List<Map<String, dynamic>> buttonConfigs,
-    double buttonSize,
-    double layoutWidth,
-    double buttonSpacing,
-  ) {
-    return SizedBox(
-      height: buttonSize,
-      width: layoutWidth,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: buttonConfigs
-            .map(
-              (config) => SizedBox(
-                width: buttonSize,
-                height: buttonSize,
-                child: UtilityComponents.squareButton(
-                  context,
-                  label: config['label'],
-                  icon: config['icon'],
-                  onPressed: config['onPressed'],
-                ),
-              ),
-            )
-            .toList(),
-      ),
     );
   }
 }

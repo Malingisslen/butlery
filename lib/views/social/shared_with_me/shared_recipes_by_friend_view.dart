@@ -14,8 +14,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -78,10 +78,9 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.sharedRecipesByFriendTitle(friendDisplayName),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        backTo: friendDisplayName,
       ),
       body: SafeArea(
         child: Center(
@@ -116,9 +115,7 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
     SharedContentCoordinatorViewModel viewModel,
   ) {
     if (viewModel.isGloballyLoading || viewModel.recipeViewModel.isLoading) {
-      return const Center(
-        child: LoadingIndicator(size: AppDimensions.iconSizeL),
-      );
+      return StateWidget.loading(message: context.l10n.loadingRecipes);
     }
 
     if (viewModel.recipeViewModel.hasError) {
@@ -134,7 +131,7 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
       return StateWidget.empty(
         title: context.l10n.sharedNoRecipesFromFriend(friendDisplayName),
         subtitle: context.l10n.sharedNoRecipesDescription,
-        icon: Icons.restaurant_outlined,
+        icon: ButleryIcons.utensils,
       );
     }
 
@@ -144,7 +141,7 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
         padding: AppDimensions.screenPadding,
         itemCount: recipes.length,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
           final sharedRecipe = recipes[index];
           return KeyedSubtree(

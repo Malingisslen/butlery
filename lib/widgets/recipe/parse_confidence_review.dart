@@ -6,7 +6,10 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Review widget that surfaces per-ingredient parse confidence (BUT-925).
 ///
@@ -15,14 +18,44 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 /// label) that encodes confidence: green = high, amber = medium, grey =
 /// low/failed. Screen readers announce the confidence word via Semantics so
 /// the widget meets WCAG 2.1 (colour is not the only signal).
+///
+/// P6-U03 (flow 03): a low or failed row must be confirmed before Spara
+/// (flows-roles-budget.md:61). Such a row carries "Stämmer" until it is
+/// confirmed. A line the reader could not interpret ([ParseConfidence.failed])
+/// is shown empty and marked, never as guessed text, and one tap shows the
+/// original line (flows-roles-budget.md:63; produktregler.md:566).
 class ParseConfidenceReview extends StatefulWidget {
   /// Parsed ingredients with confidence — from [RecipeFormViewModel.parsedIngredients].
   final List<ParsedIngredient> ingredients;
 
+  /// Rows the user has confirmed, by object identity (never by position or
+  /// text). Null hides the confirm affordance.
+  final bool Function(ParsedIngredient row)? isConfirmed;
+
+  /// Called when the user confirms a row.
+  final ValueChanged<ParsedIngredient>? onConfirm;
+
   const ParseConfidenceReview({
     super.key,
     required this.ingredients,
+    this.isConfirmed,
+    this.onConfirm,
   });
+
+  /// Whether [row] must be confirmed before the recipe can be saved: low
+  /// and failed rows (flows-roles-budget.md:61).
+  static bool needsConfirmation(ParsedIngredient row) =>
+      isShown(row) &&
+      (row.confidence == ParseConfidence.low ||
+          row.confidence == ParseConfidence.failed);
+
+  /// Whether [row] appears in the review. A failed row with no name still
+  /// appears when there is an original line to show: it is the empty,
+  /// marked row of flow 03.
+  static bool isShown(ParsedIngredient row) =>
+      row.name.isNotEmpty ||
+      (row.confidence == ParseConfidence.failed &&
+          row.originalLine.trim().isNotEmpty);
 
   @override
   State<ParseConfidenceReview> createState() => _ParseConfidenceReviewState();
@@ -54,7 +87,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
     final indexed = items
         .asMap()
         .entries
-        .where((e) => e.value.name.isNotEmpty)
+        .where((e) => ParseConfidenceReview.isShown(e.value))
         .map((e) => _IndexedIngredient(index: e.key, ingredient: e.value))
         .toList();
 
@@ -80,11 +113,17 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
       children: [
         _buildHeader(context, reviewCount),
         if (_expanded) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           ..._sorted.map(
             (item) => _IngredientConfidenceRow(
-              key: ValueKey(item.index),
+              key: ObjectKey(item.ingredient),
               ingredient: item.ingredient,
+              confirmed: widget.isConfirmed?.call(item.ingredient) ?? false,
+              onConfirm:
+                  widget.onConfirm != null &&
+                      ParseConfidenceReview.needsConfirmation(item.ingredient)
+                  ? () => widget.onConfirm!(item.ingredient)
+                  : null,
             ),
           ),
         ],
@@ -97,40 +136,43 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
       label: context.l10n.a11yToggleConfidenceSection,
       button: true,
       toggled: _expanded,
-      child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingXs,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.parseConfidenceTitle,
-                      style: AppTextStyles.labelLarge,
-                    ),
-                    if (reviewCount > 0)
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingXs,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        context.l10n.parseConfidenceReviewCountSubtitle(
-                          reviewCount,
-                        ),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: context.butleryColors.warning,
-                        ),
+                        context.l10n.parseConfidenceTitle,
+                        style: AppTextStyles.labelLarge,
                       ),
-                  ],
+                      if (reviewCount > 0)
+                        Text(
+                          context.l10n.parseConfidenceReviewCountSubtitle(
+                            reviewCount,
+                          ),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: context.modeColors.warning,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
-                size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
+                ButleryIcon(
+                  _expanded ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
+                  size: AppDimensions.iconSizeM,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -146,9 +188,17 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
 class _IngredientConfidenceRow extends StatefulWidget {
   final ParsedIngredient ingredient;
 
+  /// The user has confirmed this row.
+  final bool confirmed;
+
+  /// Confirms the row. Null when the row needs no confirmation.
+  final VoidCallback? onConfirm;
+
   const _IngredientConfidenceRow({
     super.key,
     required this.ingredient,
+    this.confirmed = false,
+    this.onConfirm,
   });
 
   @override
@@ -165,15 +215,21 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
   /// vs "100 g smör" should NOT trigger the reveal).
   bool get _hasOriginal {
     final original = widget.ingredient.originalLine;
-    if (original.isEmpty) return false;
+    if (original.trim().isEmpty) return false;
+    // An unread line shows no text, so its original always differs.
+    if (_unread) return true;
     return _stripped(original) != _stripped(widget.ingredient.displayString);
   }
+
+  /// A line the reader could not interpret: shown empty and marked, never
+  /// as guessed text (flows-roles-budget.md:63).
+  bool get _unread => widget.ingredient.confidence == ParseConfidence.failed;
 
   static String _stripped(String s) => s.replaceAll(RegExp(r'\s+'), '');
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     final barColor = confidenceColorFor(widget.ingredient.confidence, colors);
     final a11yLabel = _a11yLabel(context, widget.ingredient);
 
@@ -184,66 +240,129 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
           label: a11yLabel,
           button: _hasOriginal,
           toggled: _hasOriginal ? _showOriginal : null,
-          child: InkWell(
-            onTap: _hasOriginal
-                ? () => setState(() => _showOriginal = !_showOriginal)
-                : null,
-            onLongPress: _hasOriginal
-                ? () => setState(() => _showOriginal = !_showOriginal)
-                : null,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingXs,
-              ),
-              // IntrinsicHeight lets the bar stretch to match the text row
-              // height even though the parent is unconstrained (scrollview).
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Thin colour accent bar — 4 px wide, full row height, square.
-                    Container(
-                      key: ValueKey(
-                        'confidence-bar-${widget.ingredient.confidence.name}',
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: _hasOriginal
+                  ? () => setState(() => _showOriginal = !_showOriginal)
+                  : null,
+              onLongPress: _hasOriginal
+                  ? () => setState(() => _showOriginal = !_showOriginal)
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingXs,
+                ),
+                // IntrinsicHeight lets the bar stretch to match the text row
+                // height even though the parent is unconstrained (scrollview).
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Thin colour accent bar — 4 px wide, full row height, square.
+                      Container(
+                        key: ValueKey(
+                          'confidence-bar-${widget.ingredient.confidence.name}',
+                        ),
+                        width: _barWidth,
+                        color: barColor,
                       ),
-                      width: _barWidth,
-                      color: barColor,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingXs,
-                        ),
-                        child: Text(
-                          widget.ingredient.displayString,
-                          style: AppTextStyles.bodyMedium,
-                        ),
-                      ),
-                    ),
-                    if (_hasOriginal)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingXs,
-                        ),
-                        child: Icon(
-                          _showOriginal
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
-                          size: AppDimensions.iconSizeS,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      const SizedBox(width: AppDimensions.space4),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppDimensions.spacingXs,
+                          ),
+                          child: _unread
+                              // The text slot stays empty; the mark says why.
+                              ? Text(
+                                  context.l10n.parseConfidenceUnreadLine,
+                                  key: const ValueKey('parse-row-unread-mark'),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                )
+                              : Text(
+                                  widget.ingredient.displayString,
+                                  style: AppTextStyles.bodyMedium,
+                                ),
                         ),
                       ),
-                  ],
+                      if (_hasOriginal)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppDimensions.spacingXs,
+                          ),
+                          child: ButleryIcon(
+                            _showOriginal
+                                ? ButleryIcons.chevronUp
+                                : ButleryIcons.chevronDown,
+                            size: AppDimensions.iconSizeS,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
+        if (widget.onConfirm != null || widget.confirmed)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: _barWidth + AppDimensions.space4,
+            ),
+            child: widget.confirmed
+                ? Semantics(
+                    label: context.l10n.parseConfidenceConfirmed,
+                    excludeSemantics: true,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.check,
+                          size: AppDimensions.iconSizeS,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(
+                          context.l10n.parseConfidenceConfirmed,
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ],
+                    ),
+                  )
+                : Semantics(
+                    button: true,
+                    label: context.l10n.a11yParseConfidenceConfirm(
+                      _unread
+                          ? context.l10n.a11yParseConfidenceUnreadLine
+                          : widget.ingredient.name,
+                    ),
+                    excludeSemantics: true,
+                    child: TextButton(
+                      key: const ValueKey('parse-row-confirm'),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(
+                          AppDimensions.minTouchTarget,
+                          AppDimensions.minTouchTarget,
+                        ),
+                      ),
+                      onPressed: widget.onConfirm,
+                      child: Text(context.l10n.parseConfidenceConfirm),
+                    ),
+                  ),
+          ),
         if (_showOriginal && _hasOriginal)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: _barWidth + AppDimensions.spacingS,
+              start: _barWidth + AppDimensions.space4,
               bottom: AppDimensions.spacingXs,
             ),
             child: Text(
@@ -269,7 +388,12 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
       ParseConfidence.low => l10n.a11yConfidenceLow,
       ParseConfidence.failed => l10n.a11yConfidenceFailed,
     };
-    return l10n.a11yIngredientWithConfidence(ingredient.name, confidenceWord);
+    // A failed row has no text to read out; the label says it could not be
+    // read, and the confidence word stays (produktregler.md:564).
+    final name = ingredient.confidence == ParseConfidence.failed
+        ? l10n.a11yParseConfidenceUnreadLine
+        : ingredient.name;
+    return l10n.a11yIngredientWithConfidence(name, confidenceWord);
   }
 }
 
@@ -281,7 +405,7 @@ const double _barWidth = 4.0;
 /// Exported for widget tests via [confidenceColorFor] so tests can assert the
 /// correct color token without depending on hard-coded hex values.
 @visibleForTesting
-Color confidenceColorFor(ParseConfidence confidence, ButleryColors colors) =>
+Color confidenceColorFor(ParseConfidence confidence, ModeColors colors) =>
     switch (confidence) {
       ParseConfidence.high => colors.success,
       ParseConfidence.medium => colors.warning,

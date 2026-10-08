@@ -1,17 +1,20 @@
 // lib/views/social/create_shared_shopping_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -129,16 +132,14 @@ class _CreateSharedShoppingListViewState
     BuildContext context,
     CreateSharedListViewModel viewModel,
   ) {
-    return AppBar(
-      title: Text(
-        '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}',
-      ),
-      leading: IconButton(
-        icon: const Icon(Icons.close),
-        // Route through Navigator.maybePop so the same PopScope guard applies
-        // to the explicit close button as to the system-back gesture.
-        onPressed: () => Navigator.of(context).maybePop(),
-      ),
+    // A subpage with a back arrow, as drawn (Skarmar v12 del 3 'Ny delad
+    // inköpslista'; Komponentark v1 §01 pattern 2). The arrow goes through
+    // Navigator.maybePop, so the same PopScope guard applies to it as to the
+    // system-back gesture.
+    return ButleryTopBar.undersida(
+      title:
+          '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}',
+      onBack: () => Navigator.of(context).maybePop(),
     );
   }
 
@@ -171,21 +172,16 @@ class _CreateSharedShoppingListViewState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: context.modeColors.surfaceTintDanger,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
-                  ),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.error.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(
                   viewModel.error!,
-                  style: AppTextStyles.bodyMediumError,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
                 ),
               ),
             ],
@@ -201,7 +197,7 @@ class _CreateSharedShoppingListViewState
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
@@ -209,16 +205,16 @@ class _CreateSharedShoppingListViewState
         children: [
           Row(
             children: [
-              Icon(
-                Icons.group,
-                color: Theme.of(context).colorScheme.primary,
+              ButleryIcon(
+                ButleryIcons.users,
+                color: Theme.of(context).colorScheme.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingCreateSharedList,
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -252,7 +248,7 @@ class _CreateSharedShoppingListViewState
           decoration: InputDecoration(
             labelText: context.l10n.shoppingSharedListTitle,
             hintText: context.l10n.shoppingSharedListTitleHint,
-            prefixIcon: const Icon(Icons.title),
+            prefixIcon: const ButleryIcon(ButleryIcons.type),
             errorText: viewModel.titleError,
           ),
           onChanged: viewModel.updateTitle,
@@ -302,31 +298,24 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: context.butleryColors.success.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: context.butleryColors.success.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        color: context.modeColors.surfaceTintSuccess,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                color: context.butleryColors.success,
+              ButleryIcon(
+                ButleryIcons.info,
+                color: context.modeColors.onSuccessContainer,
                 size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingWhatHappensWhenSharing,
                 style: AppTextStyles.titleBold.copyWith(
-                  color: context.butleryColors.success,
+                  color: context.modeColors.onSuccessContainer,
                 ),
               ),
             ],
@@ -335,7 +324,7 @@ class _CreateSharedShoppingListViewState
           Text(
             context.l10n.shoppingShareInfoBullets,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: context.butleryColors.success,
+              color: context.modeColors.onSuccessContainer,
             ),
           ),
         ],
@@ -376,15 +365,16 @@ class _CreateSharedShoppingListViewState
 
           SizedBox(
             width: 120,
-            child: ActionButtons.primaryButton(
-              context,
+            // The view's one saffron action (Skarmar v12 del 3 'Ny delad
+            // inköpslista', "Skapa och dela"; Grafisk manual v6:219).
+            child: HeroButton(
+              key: const ValueKey('createSharedList.create'),
               label: viewModel.createButtonText,
-              icon: viewModel.isCreating ? null : Icons.group_add,
               onPressed: viewModel.canCreate
                   ? () => _createSharedList(context, viewModel)
                   : null,
-              isLoading: viewModel.isCreating,
-              isExpanded: true,
+              busy: viewModel.isCreating,
+              expand: true,
             ),
           ),
         ],

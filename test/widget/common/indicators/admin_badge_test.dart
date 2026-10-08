@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -21,7 +23,7 @@ void main() {
     await tester.pumpWidget(_wrap(const AdminBadge()));
     // Default label is AppLocale.current.adminYouAreAdmin — verify the
     // text is rendered (any non-empty Swedish string).
-    expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.crown), findsOneWidget);
     expect(find.byType(Text), findsOneWidget);
     final text = tester.widget<Text>(find.byType(Text));
     expect(text.data, isNotEmpty);
@@ -34,10 +36,10 @@ void main() {
 
   testWidgets('uses admin_panel_settings icon', (tester) async {
     await tester.pumpWidget(_wrap(const AdminBadge()));
-    expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.crown), findsOneWidget);
   });
 
-  testWidgets('container has rounded border decoration with primary tint', (
+  testWidgets('container has rounded border decoration', (
     tester,
   ) async {
     await tester.pumpWidget(_wrap(const AdminBadge()));
@@ -53,11 +55,11 @@ void main() {
     expect(row.mainAxisSize, MainAxisSize.min);
   });
 
-  testWidgets('icon + text are styled with the theme primary color', (
+  testWidgets('icon + text are styled with the text.primary colour', (
     tester,
   ) async {
     final theme = ThemeData(
-      colorScheme: const ColorScheme.light(primary: Colors.deepPurple),
+      colorScheme: const ColorScheme.light(onSurface: Colors.deepPurple),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -68,7 +70,7 @@ void main() {
         home: const Scaffold(body: AdminBadge(label: 'Admin')),
       ),
     );
-    final icon = tester.widget<Icon>(find.byType(Icon));
+    final icon = tester.widget<Icon>(find.byType(ButleryIcon));
     expect(icon.color, Colors.deepPurple);
     final text = tester.widget<Text>(find.text('Admin'));
     expect(text.style!.color, Colors.deepPurple);

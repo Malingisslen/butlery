@@ -1,0 +1,144 @@
+/// P3-U08: the week menu's conflict notice.
+///
+/// produktregler.md:104: for a week menu the last save wins and the user sees
+/// the snackbar "*Namn* sparade veckan" for 30 s. ux-beslut.json D-04 keeps
+/// that 30 s window apart from the 7 s undo window: it belongs to conflict
+/// handling and is never reused elsewhere, so it has its own constant here and
+/// is not read from `undo_window.dart`.
+///
+/// The action rescues the overwritten version (produktregler.md:109, :1121:
+/// the other version can be rescued with one tap). Its label is "Behåll min",
+/// the words drawn for this rescue on the week menu: Skarmar v12 etapp 11
+/// breda vyer.dc.html:221 (#vmbkonflikt, the button in the conflicted cell,
+/// accessible name "Behåll min version, …") and produktregler.md:1119
+/// ("*Behåll min* i rutan"). produktregler.md:99 is the table's column
+/// header "Ångra", a category, not a label, so `commonUndo` is not used here.
+/// The window stays its own 30 s, never the 7 s undo one (D-04).
+///
+/// Mounted by the week menu (veckomeny_view.dart, package 5 phase A, P5-U26a).
+library;
+
+import 'package:flutter/material.dart';
+
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+
+/// How long the week-menu conflict snackbar stays (produktregler.md:104,
+/// ux-beslut.json D-04). Conflict handling only; never an undo window.
+const Duration kConflictNoticeWindow = Duration(seconds: 30);
+
+/// The week-menu conflict snackbar.
+abstract final class ConflictSnackBar {
+  /// Shows "{name} sparade veckan" with "Behåll min" for
+  /// [kConflictNoticeWindow] when [event] is a week-menu conflict the user's
+  /// edit lost. Returns null, and shows nothing, for any other event: a
+  /// localWon changed nothing the user has to rescue, and other entities have
+  /// their own notice.
+  ///
+  /// Persistence follows the undo primitive (`UndoSnackBar._persist`): it
+  /// stays until acted on only under `MediaQuery.accessibleNavigation`, until
+  /// PQ-05 is answered. The look is the primitive's plain look, so every
+  /// snackbar keeps one look until PQ-09.
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
+  showWeekSaved(BuildContext context, ConflictEvent event) {
+    if (event.chosenStrategy != ConflictResolutionStrategy.remoteWon ||
+        event.entity != ConflictEntity.weekMenu) {
+      return null;
+    }
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return null;
+
+    final l = context.l10n;
+    final name = event.remoteValue.lastEditedByDisplayName.trim();
+    final message = name.isEmpty
+        ? l.conflictWeekSavedUnnamed
+        : l.conflictWeekSaved(name);
+    return _show(context, messenger, message, () => _keepMine(context, event));
+  }
+
+  /// BUT-2215: "Veckan sparades på en annan enhet" with "Behåll min", for a
+  /// save of the user's own week that lost to their other device. Same
+  /// window, persistence and look as [showWeekSaved].
+  ///
+  /// [onKeepMine] writes the user's version back. It returns false when that
+  /// save lost again (the caller then shows a new notice, so this one says
+  /// nothing more), and throws when it failed.
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
+  showWeekSavedElsewhere(
+    BuildContext context, {
+    required Future<bool> Function() onKeepMine,
+  }) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return null;
+    return _show(
+      context,
+      messenger,
+      context.l10n.conflictWeekSavedElsewhere,
+      () => _rescue(context, onKeepMine),
+    );
+  }
+
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> _show(
+    BuildContext context,
+    ScaffoldMessengerState messenger,
+    String message,
+    VoidCallback onKeepMine,
+  ) {
+    final persist = MediaQuery.maybeAccessibleNavigationOf(context) ?? false;
+
+    // Same queue rule as the undo primitive: this notice goes to the head of
+    // the queue so its window starts now and its `closed` always completes.
+    messenger
+      ..clearSnackBars()
+      ..removeCurrentSnackBar();
+    return messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: SnackBarAction(
+          label: context.l10n.conflictWeekKeepMine,
+          onPressed: onKeepMine,
+        ),
+        duration: kConflictNoticeWindow,
+        persist: persist,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Re-applies the overwritten local version, as "Behåll min version" does in
+  /// ConflictDiffView, and says whether it worked.
+  static Future<void> _keepMine(
+    BuildContext context,
+    ConflictEvent event,
+  ) => _rescue(context, () async {
+    final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+    if (svc == null) {
+      throw StateError('RealtimeSyncService is not registered');
+    }
+    await svc.recoverLocalVersion(event.localValue);
+    return true;
+  });
+
+  static Future<void> _rescue(
+    BuildContext context,
+    Future<bool> Function() keep,
+  ) async {
+    try {
+      final kept = await keep();
+      if (!kept || !context.mounted) return;
+      SnackBarUtils.showSuccess(context, context.l10n.conflictDiffKeptToast);
+    } catch (e) {
+      AppLogger.error('Failed to re-apply local week after conflict', e);
+      if (!context.mounted) return;
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.conflictDiffKeepFailed,
+      );
+    }
+  }
+}

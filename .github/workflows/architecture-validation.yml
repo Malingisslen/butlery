@@ -107,10 +107,11 @@ jobs:
 
     # BUT-1213 (enforce half of BUT-944): keep the favourite/saved icon
     # convention from eroding. Raw Icons.favorite*/Icons.bookmark* in
-    # lib/views|lib/widgets must route through AdaptiveIcons' semantic getters
-    # (heart=favourite, bookmark=saved-template). Star is intentionally not
-    # gated here — it's overloaded (rating/sort/dietary/permission).
-    - name: Forbid raw favourite/bookmark glyphs outside AdaptiveIcons
+    # lib/views|lib/widgets must route through the semantic aliases
+    # (ButleryIcons.favourite = heart; ButleryIcons.savedTemplate = bookmark,
+    # P7-U08). Star is intentionally not gated here —
+    # it's overloaded (rating/sort/dietary/permission).
+    - name: Forbid raw favourite/bookmark glyphs outside the semantic aliases
       run: bash tools/check_icon_convention.sh
 
     # BUT-1746: a literal null in a Firestore `.where()` builds NO condition —

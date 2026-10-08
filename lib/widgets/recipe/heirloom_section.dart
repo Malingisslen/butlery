@@ -11,12 +11,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Section rendering the original heirloom scan with a rust corner stamp.
 ///
@@ -47,37 +50,37 @@ class HeirloomSection extends StatelessWidget {
       ),
       child: AspectRatio(
         aspectRatio: 3 / 4,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ColoredBox(
-              color: cs.surface,
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
-                fit: BoxFit.contain,
-                placeholder: (_, __) => const Center(
-                  child: LoadingIndicator(strokeWidth: 2),
-                ),
-                errorWidget: (_, __, ___) => Center(
-                  child: Icon(Icons.broken_image_outlined, color: cs.onSurface),
-                ),
-              ),
-            ),
-            HeirloomStamp(heirloom: heirloom),
-            Positioned.fill(
-              child: Material(
-                color: Colors.transparent,
-                child: Semantics(
-                  label: context.l10n.a11yHeirloomScanOpenFullscreen,
-                  button: true,
-                  child: InkWell(
-                    onTap: () => _openFullscreen(context, imageUrl),
+        child: Material(
+          color: Colors.transparent,
+          child: Semantics(
+            label: context.l10n.a11yHeirloomScanOpenFullscreen,
+            button: true,
+            child: PressScale(
+              onTap: () => _openFullscreen(context, imageUrl),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(
+                    color: cs.surface,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
+                      fit: BoxFit.contain,
+                      // A still plate while the image loads, never a spinner (P4-U05).
+                      placeholder: (_, __) => const SizedBox.shrink(),
+                      errorWidget: (_, __, ___) => Center(
+                        child: ButleryIcon(
+                          ButleryIcons.imageOff,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  HeirloomStamp(heirloom: heirloom),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -89,17 +92,18 @@ class HeirloomSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         imageBlock,
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
           ),
           child: Text(
             note,
-            style: TextStyle(
+            // Provenance is one of italic's four uses (tokens.json
+            // typography.italic).
+            style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurface,
               fontStyle: FontStyle.italic,
-              fontSize: 14,
             ),
           ),
         ),

@@ -1,7 +1,9 @@
 // lib/widgets/common/friends/friend_category_manager.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -9,10 +11,12 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Friend Category Manager
 /// Handles ONLY interactive friend category management with state.
@@ -68,20 +72,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         final categoriesService = context.read<UnifiedFriendsService>();
         if (categoriesService.isLoading || friendsVM.isLoading) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LoadingIndicator(
-                  size: AppDimensions.iconSizeM,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                Text(
-                  context.l10n.friendLoadingFriendsAndCategories,
-                  style: AppTextStyles.contentTitle,
-                ),
-              ],
+            child: PlateLineMessage(
+              message: context.l10n.friendLoadingFriendsAndCategories,
             ),
           );
         }
@@ -90,21 +82,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
+              color: context.modeColors.surfaceTintDanger,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               categoriesService.error ??
                   context.l10n.errorCouldNotLoad(context.l10n.friendCategories),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
+                color: Theme.of(context).colorScheme.onErrorContainer,
               ),
             ),
           );
@@ -114,15 +99,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.error.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.error.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
-              ),
+              color: context.modeColors.surfaceTintDanger,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               friendsVM.error ??
@@ -130,7 +108,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     context.l10n.friendFriendsLabel,
                   ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
+                color: Theme.of(context).colorScheme.onErrorContainer,
               ),
             ),
           );
@@ -143,7 +121,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return StateWidget.empty(
             title: context.l10n.friendNoFriendsOrCategories,
             subtitle: context.l10n.friendAddFriendsAndCategoriesFirst,
-            icon: Icons.people_outline,
+            icon: ButleryIcons.users,
             actionLabel: context.l10n.friendManageFriends,
             onAction: () => Navigator.pushNamed(context, Routes.friends),
           );
@@ -205,16 +183,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.category_outlined,
+            ButleryIcon(
+              ButleryIcons.grid,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               context.l10n.friendCategories,
               style: AppTextStyles.titleBold.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -228,65 +206,76 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Wrap(
-          spacing: AppDimensions.spacingS,
+          spacing: AppDimensions.space4,
           runSpacing: AppDimensions.spacingXs,
           children: categories.map((category) {
             final isSelected = _selectedCategories.contains(category.id);
-            return FilterChip(
-              selected: isSelected,
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (category.emoji != null && category.emoji!.isNotEmpty) ...[
-                    Text(category.emoji!),
+            return PressFill(
+              surface: isSelected ? PressSurface.raised : PressSurface.base,
+              child: FilterChip(
+                selected: isSelected,
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (category.emoji != null &&
+                        category.emoji!.isNotEmpty) ...[
+                      Text(category.emoji!),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                    ],
+                    Flexible(
+                      child: Text(
+                        category.name,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
                     const SizedBox(width: AppDimensions.spacingXs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingXs,
+                        vertical: AppDimensions.borderWidthStandard,
+                      ),
+                      // The count stands on the page (unchosen) or on the
+                      // surface.selected plate (chosen), opaque both ways and
+                      // never a tint.
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.surface
+                            : Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusControl,
+                        ),
+                      ),
+                      child: Text(
+                        '${category.friendCount}',
+                        style: AppTextStyles.badge.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
                   ],
-                  Flexible(
-                    child: Text(
-                      category.name,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.borderWidthStandard,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest.withValues(
-                              alpha: AppDimensions.opacityVeryDark,
-                            )
-                          : Theme.of(context).colorScheme.primary.withValues(
-                              alpha: AppDimensions.opacityVeryLight,
-                            ),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadius8,
-                      ),
-                    ),
-                    child: Text(
-                      '${category.friendCount}',
-                      style: AppTextStyles.badge.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              onSelected: (selected) => _toggleCategory(category, service),
-              selectedColor: Theme.of(context).colorScheme.primary.withValues(
-                alpha: AppDimensions.opacityLight,
-              ),
-              checkmarkColor: Theme.of(context).colorScheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              side: BorderSide(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.outline,
+                ),
+                onSelected: (selected) => _toggleCategory(category, service),
+                // Chosen is surface.selected with a real border, never a tint.
+                // surfaceContainerHighest is surface.raised, which
+                // carries surface.selected's values in both modes; the border is
+                // text.primary (onSurface): ink on light, paper on dark.
+                selectedColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
+                checkmarkColor: Theme.of(context).colorScheme.onSurface,
+                labelStyle: AppTextStyles.labelMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                side: BorderSide(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.outline,
+                  width: isSelected ? 1.5 : 1,
+                ),
               ),
             );
           }).toList(),
@@ -301,16 +290,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.people_outline,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               context.l10n.friendIndividualSelection,
               style: AppTextStyles.titleBold.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -331,13 +320,13 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               border: Border.all(
                 color: Theme.of(context).colorScheme.outline,
               ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: friends.isEmpty
                 ? StateWidget.empty(
                     title: context.l10n.friendNoFriendsToShow,
                     subtitle: context.l10n.friendAddFriendsFirst,
-                    icon: Icons.people_outline,
+                    icon: ButleryIcons.users,
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(AppDimensions.spacingXs),
@@ -351,9 +340,25 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                         margin: const EdgeInsets.symmetric(
                           vertical: AppDimensions.spacingXs,
                         ),
+                        // A chosen friend is surface.selected, never an ink tint
+                        // (tokens.json:40-53, :116-119), with a real 1.5 px
+                        // text.primary border (Grafisk manual v6:207-209).
                         color: isSelected
-                            ? Theme.of(context).colorScheme.primary.withValues(
-                                alpha: AppDimensions.opacityVeryLight,
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest
+                            : null,
+                        shape: isSelected
+                            ? RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusCard,
+                                ),
+                                side: BorderSide(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                  width: 1.5,
+                                ),
                               )
                             : null,
                         child: CheckboxListTile(
@@ -369,13 +374,13 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                           dense: true,
                           controlAffinity: ListTileControlAffinity.trailing,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.spacingS,
+                            horizontal: AppDimensions.space4,
                             vertical: AppDimensions.spacingXs,
                           ),
                           activeColor: Theme.of(context).colorScheme.primary,
                           checkColor: Theme.of(
                             context,
-                          ).colorScheme.surfaceContainerHighest,
+                          ).colorScheme.onPrimary,
                         ),
                       );
                     },
@@ -390,14 +395,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -406,11 +407,11 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             padding: const EdgeInsets.all(AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
-              Icons.group,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: ButleryIcon(
+              ButleryIcons.users,
+              color: Theme.of(context).colorScheme.onPrimary,
               size: AppDimensions.iconSizeM,
             ),
           ),
@@ -422,13 +423,13 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 Text(
                   context.l10n.friendSelectedFriends,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   context.l10n.friendSelectedCount(_selectedFriends.length),
                   style: AppTextStyles.contentLabel.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -437,12 +438,15 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           if (_selectedFriends.isNotEmpty)
             TextButton.icon(
               onPressed: _clearAllSelections,
-              icon: const Icon(Icons.clear, size: AppDimensions.iconSizeS),
+              icon: const ButleryIcon(
+                ButleryIcons.x,
+                size: AppDimensions.iconSizeS,
+              ),
               label: Text(context.l10n.commonClear),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
               ),

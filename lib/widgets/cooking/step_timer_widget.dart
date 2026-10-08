@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-406: Square, cream-bg widget shown in the bottom sheet triggered by
 /// long-pressing a cooking-mode step. Drives a [StepTimerService] that the
@@ -17,9 +19,9 @@ import 'package:butlery/theme/theme_constants.dart';
 /// Visual spec:
 /// - `colorScheme.surface` background, `colorScheme.onPrimaryContainer` numerals.
 /// - Square container (plain `Container`, no `BorderRadius`).
-/// - On expiry: `butleryColors.starGold` pulse via `AnimationController` running
-///   `ThemeConstants.durationMedium` in reverse-repeat until the user
-///   dismisses the sheet.
+/// - On expiry: `modeColors.starGold` pulse via `AnimationController` running
+///   `AppMotion.pulseHalf` in reverse-repeat (one loop is `AppMotion.pulse`)
+///   until the user dismisses the sheet.
 ///
 /// The widget has three visible states:
 /// - **running** — shows remaining `mm:ss`, "Pausa" + "Återställ" buttons.
@@ -51,6 +53,13 @@ class StepTimerWidget extends StatefulWidget {
   /// pulse.
   final VoidCallback? onExpired;
 
+  /// Awaited before a new timer starts. Cooking mode passes the notice that
+  /// a timer without notification permission only shows in the app, which
+  /// must come before the timer starts, never after (produktregler.md:423;
+  /// flows-roles-budget.md:70). Not called when re-attaching to a running or
+  /// paused timer.
+  final Future<void> Function()? beforeStart;
+
   const StepTimerWidget({
     super.key,
     required this.service,
@@ -58,6 +67,7 @@ class StepTimerWidget extends StatefulWidget {
     this.timerId = StepTimerService.defaultTimerId,
     this.sourcePhrase,
     this.onExpired,
+    this.beforeStart,
   });
 
   @override
@@ -74,14 +84,19 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: ThemeConstants.durationMedium,
+      duration: AppMotion.pulseHalf,
     );
     // Auto-start once at mount — no need to re-check on every rebuild.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       if (widget.service.isRunningFor(widget.timerId) ||
           widget.service.isPausedFor(widget.timerId)) {
         return;
+      }
+      final beforeStart = widget.beforeStart;
+      if (beforeStart != null) {
+        await beforeStart();
+        if (!mounted) return;
       }
       widget.service.startTimer(
         id: widget.timerId,
@@ -215,7 +230,7 @@ class _TimerDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
+    final starGold = context.modeColors.starGold;
     return AnimatedBuilder(
       animation: pulseController,
       builder: (context, child) {
@@ -230,10 +245,8 @@ class _TimerDisplay extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             _formatRemaining(remaining),
-            style: AppTextStyles.titleLarge.copyWith(
+            style: AppTextStyles.statNumber.copyWith(
               color: cs.onPrimaryContainer,
-              fontSize: 56,
-              fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -275,27 +288,27 @@ class _TimerControls extends StatelessWidget {
         if (isRunning)
           _controlButton(
             context: context,
-            icon: Icons.pause,
+            icon: ButleryIcons.pause,
             label: context.l10n.pauseTimer,
             onPressed: onPause,
           )
         else if (isPaused)
           _controlButton(
             context: context,
-            icon: Icons.play_arrow,
+            icon: ButleryIcons.playOutline,
             label: context.l10n.resumeTimer,
             onPressed: onResume,
           )
         else
           _controlButton(
             context: context,
-            icon: Icons.play_arrow,
+            icon: ButleryIcons.playOutline,
             label: context.l10n.resumeTimer,
             onPressed: null,
           ),
         _controlButton(
           context: context,
-          icon: Icons.refresh,
+          icon: ButleryIcons.refreshCw,
           label: context.l10n.resetTimer,
           onPressed: onReset,
         ),
@@ -311,7 +324,11 @@ class _TimerControls extends StatelessWidget {
   }) {
     final enabled = onPressed != null;
     final base = Theme.of(context).colorScheme.onPrimaryContainer;
-    final color = enabled ? base : base.withValues(alpha: 0.4);
+    // Disabled is text.disabled.onRaised, never a faded colour
+    // (tokens.json:40-53, :198-201; enhet-3 step_timer_widget.dart:312-314).
+    final color = enabled
+        ? base
+        : AppModeColors.textDisabled(Theme.of(context).brightness);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -319,7 +336,7 @@ class _TimerControls extends StatelessWidget {
           iconSize: 32,
           color: color,
           onPressed: onPressed,
-          icon: Icon(icon),
+          icon: ButleryIcon(icon),
           tooltip: label,
         ),
         Text(

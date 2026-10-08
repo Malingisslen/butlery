@@ -7,7 +7,9 @@ import 'package:butlery/models/admin/parse_event.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Opens the drill-down for a tapped metric row. Dispatches by [kind]; the only
 /// kind today maps an import-domain row to its underlying parse events.
@@ -60,7 +62,11 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: LoadingIndicator());
+              return Center(
+                child: PlateLineMessage(
+                  message: context.l10n.loadingParseEvents,
+                ),
+              );
             }
             final page = snapshot.data ?? ParseEventsPage.empty;
             return ListView(
@@ -81,7 +87,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
                     child: Text(
                       l10n.adminDrillEmpty,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.outline,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   )
@@ -124,10 +130,10 @@ class _EventTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            ok ? Icons.check_circle_outline : Icons.error_outline,
+          ButleryIcon(
+            ok ? ButleryIcons.circleCheck : ButleryIcons.triangleAlert,
             size: 18,
-            color: ok ? cs.primary : cs.error,
+            color: ok ? cs.onSurface : cs.error,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(

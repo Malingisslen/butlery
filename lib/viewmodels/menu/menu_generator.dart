@@ -68,7 +68,7 @@ enum MenuPrefSource {
 /// like a bug (BUT-1464, PM conditions 1-3).
 class MenuPoolStats {
   /// Recipes removed by the allergen/dietary filter (household union when a
-  /// household exists, otherwise the single user's own preferences).
+  /// household exists).
   final int hiddenByAllergenFilter;
 
   /// Recipes that stayed in the pool despite an UNKNOWN effective status for
@@ -98,6 +98,16 @@ class MenuPoolStats {
   );
 }
 
+/// P6-U01: the library has no recipe the generation may use. Its own
+/// message (errorNoRecipesAvailable), kept apart from "Inga recept matchar",
+/// which is a library with recipes where none matched.
+class MenuNoRecipesException implements Exception {
+  const MenuNoRecipesException();
+
+  @override
+  String toString() => AppLocale.current.errorNoRecipesAvailable;
+}
+
 /// Focused module for menu generation
 /// This module handles ONLY menu generation:
 /// - AI-powered menu generation from prompts
@@ -124,12 +134,10 @@ class MenuGenerator {
   ///
   /// Defaults to TRUE (safety-by-default, BUT-1464): once a household exists,
   /// one member's allergy keeps those recipes out of everyone's menus without
-  /// any setup step. With no household this is a no-op (single-user filtering,
-  /// unchanged).
+  /// any setup step. With no household this is a no-op.
   ///
   /// BUT-1465: now driven by the persisted per-user opt-out — read live from the
-  /// profile (like [_userService.allergenPreferences]) so the settings toggle
-  /// takes effect immediately. A missing/unreadable value reads as `true`
+  /// profile so the settings toggle takes effect immediately. A missing/unreadable value reads as `true`
   /// (fail-safe: never silently stop filtering a household member's allergens).
   bool get useHouseholdAllergens =>
       _userService.currentUserProfile?.useHouseholdAllergens ?? true;
@@ -180,6 +188,11 @@ class MenuGenerator {
   /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
   MenuPoolStats? lastPoolStats;
 
+  /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
+  /// from (the allergen-safe pool), so a result with no matches can say
+  /// "bland dina 84 recept" (Skarmar v12 del 1 #veckoingamatch).
+  int lastPoolSize = 0;
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   Future<List<Recipe>> getAvailableRecipesAsync() async {
     if (!_recipeService.isInitialized) return [];
@@ -195,7 +208,7 @@ class MenuGenerator {
     final beforeCount = recipes.length;
     final unknownSoft = <String>{};
     if (filterByAllergens) {
-      recipes = _filterByPrefs(
+      recipes = filterByPrefs(
         recipes,
         prefs,
         allergens: true,
@@ -203,7 +216,7 @@ class MenuGenerator {
       );
     }
     if (filterByDietary) {
-      recipes = _filterByPrefs(recipes, prefs, allergens: false);
+      recipes = filterByPrefs(recipes, prefs, allergens: false);
     }
     lastPoolStats = MenuPoolStats(
       hiddenByAllergenFilter: beforeCount - recipes.length,
@@ -218,16 +231,13 @@ class MenuGenerator {
   ///
   /// Priority: present-diner union (opt-in, NON-EMPTY set required — an empty
   /// "no one selected" list must NOT disable filtering) → whole-household
-  /// union (when [useHouseholdAllergens] and a household exists) → the single
-  /// user's own preferences. Every fall-through lands on a FILTERED pool,
-  /// never an unfiltered one.
+  /// union → the single user's own preferences. Every fall-through lands on a
+  /// FILTERED pool, never an unfiltered one.
   Future<(UserAllergenPreferences, MenuPrefSource)>
   _resolveActivePrefs() async {
     final present = presentMemberIds;
     if (present != null && present.isNotEmpty) {
-      final resolved = await const PresentDinerPrefsResolver().resolve(
-        present,
-      );
+      final resolved = await const PresentDinerPrefsResolver().resolve(present);
       if (resolved != null) {
         return (
           resolved.preferences,
@@ -237,19 +247,36 @@ class MenuGenerator {
         );
       }
     }
-    if (useHouseholdAllergens) {
-      final householdService = ServiceLocator.tryGet<HouseholdService>();
-      if (householdService != null && householdService.hasHousehold) {
-        final aggregate = await householdService.aggregateAllergenPreferences();
+    final householdService = ServiceLocator.tryGet<HouseholdService>();
+    final hasFriendHousehold = householdService?.hasHousehold ?? false;
+    var (prefs, source) = (_ownPrefs, MenuPrefSource.singleUser);
+    if (useHouseholdAllergens && hasFriendHousehold) {
+      final aggregate = await householdService!.aggregateAllergenPreferences();
+      (prefs, source) = (
+        aggregate.preferences,
+        aggregate.isRosterComplete
+            ? MenuPrefSource.household
+            : MenuPrefSource.householdIncomplete,
+      );
+    }
+    // Family diner profiles (children) join the union. The household toggle
+    // is only shown with a friend-based household, so without one a stale
+    // `false` must not silently drop a child's allergens.
+    if (useHouseholdAllergens || !hasFriendHousehold) {
+      final withDiners = await const PresentDinerPrefsResolver()
+          .addHouseholdDiners(prefs);
+      if (withDiners != null && withDiners.changed) {
+        final complete =
+            withDiners.prefs.isComplete && !source.isRosterIncomplete;
         return (
-          aggregate.preferences,
-          aggregate.isRosterComplete
+          withDiners.prefs.preferences,
+          complete
               ? MenuPrefSource.household
               : MenuPrefSource.householdIncomplete,
         );
       }
     }
-    return (_userService.allergenPreferences, MenuPrefSource.singleUser);
+    return (prefs, source);
   }
 
   /// Filter recipes using explicit prefs — the ONE allergen/dietary filter
@@ -264,7 +291,10 @@ class MenuGenerator {
   /// [unknownSoftCollector], when supplied on the allergen pass, receives the
   /// ids of recipes that were INCLUDED despite an UNKNOWN effective status
   /// for a tracked allergen — the UI marks these (PM condition 2).
-  List<Recipe> _filterByPrefs(
+  ///
+  /// Static so the onboarding sample menu (BUT-2299) filters through the same
+  /// guards as a generated menu.
+  static List<Recipe> filterByPrefs(
     List<Recipe> recipes,
     UserAllergenPreferences prefs, {
     required bool allergens,
@@ -311,20 +341,17 @@ class MenuGenerator {
   /// Single-user allergen filtering (sync pool only) — same trust-guarded
   /// filter as the async paths, fed by the user's own preferences.
   List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(
-        recipes,
-        _userService.allergenPreferences,
-        allergens: true,
-      );
+      filterByPrefs(recipes, _ownPrefs, allergens: true);
 
   /// Single-user dietary filtering (sync pool only) — see
   /// [_filterByAllergenPreferences].
   List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(
-        recipes,
-        _userService.allergenPreferences,
-        allergens: false,
-      );
+      filterByPrefs(recipes, _ownPrefs, allergens: false);
+
+  /// The signed-in user's own preferences as the MENU filters by them —
+  /// see [HouseholdService.ownMenuPreferences] (BUT-2085, BUT-1694).
+  UserAllergenPreferences get _ownPrefs =>
+      HouseholdService.ownMenuPreferences(_userService.currentUserProfile);
 
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 
@@ -341,6 +368,9 @@ class MenuGenerator {
   /// - "favoriter" / "favourites" -> prefer favorites
   /// - "senaste" / "recent" -> prefer recently cooked (last 30 days)
   /// Falls back to full pool with boost if filtered pool is too small.
+  ///
+  /// Throws when the library is empty (errorNoRecipesAvailable). Returns an
+  /// empty map when the library has recipes but none matched (P6-U01).
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String prompt,
   ) async {
@@ -353,8 +383,9 @@ class MenuGenerator {
     // keyword filter must see the same filtered pool, never the sync
     // single-user one.
     final available = await getAvailableRecipesAsync();
+    lastPoolSize = available.length;
     if (available.isEmpty) {
-      throw Exception(AppLocale.current.errorNoRecipesAvailable);
+      throw const MenuNoRecipesException();
     }
 
     final pool = _applyPromptKeywordFilter(prompt, available);
@@ -369,12 +400,11 @@ class MenuGenerator {
       scoringContext: scoringContext,
     );
 
-    if (generatedMenu.isEmpty) {
-      throw Exception(
-        AppLocale.current.errorGeneric,
-      );
-    }
-
+    // P6-U01: nothing matched is an outcome, not an error. An empty menu
+    // goes back to the caller, which shows "Inga recept matchar"
+    // (flows-roles-budget.md:32, "0 recept placerade -> inga matchningar";
+    // fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
+    // REQUIRED). An empty LIBRARY is still the error above.
     _logHiddenByHouseholdEvent();
 
     return generatedMenu;

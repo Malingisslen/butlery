@@ -6,8 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Displays a menu slot vote with alternatives, progress bars, and actions.
 class MenuVoteCard extends StatelessWidget {
@@ -52,17 +56,19 @@ class MenuVoteCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.how_to_vote,
+                // text.primary, not cs.primary: primary is ink in both
+                // modes and would vanish on the dark card.
+                ButleryIcon(
+                  ButleryIcons.vote,
                   size: AppDimensions.iconSizeM,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.menuVoteTitle,
                     style: AppTextStyles.titleMedium.copyWith(
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                   ),
                 ),
@@ -84,7 +90,7 @@ class MenuVoteCard extends StatelessWidget {
                   hasVoted && vote.votes[currentUserId] == option.id;
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space4),
                 child: Semantics(
                   label: isSelected
                       ? context.l10n.a11yMenuVoteOptionSelected(
@@ -93,50 +99,68 @@ class MenuVoteCard extends StatelessWidget {
                       : context.l10n.a11yMenuVoteOption(option.recipeName),
                   button: true,
                   selected: isSelected,
-                  child: InkWell(
-                    onTap: hasVoted || onVote == null
-                        ? null
-                        : () => onVote!(option.id),
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingM),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? cs.primary.withValues(
-                                alpha: AppDimensions.opacityLight,
-                              )
-                            : cs.surfaceContainer,
-                        border: isSelected
-                            ? Border.all(color: cs.primary)
-                            : null,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            option.recipeName,
-                            style: AppTextStyles.titleSmall.copyWith(
-                              color: isSelected ? cs.primary : cs.onSurface,
-                            ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: PressFill(
+                      surface: isSelected
+                          ? PressSurface.raised
+                          : PressSurface.base,
+                      child: InkWell(
+                        onTap: hasVoted || onVote == null
+                            ? null
+                            : () => onVote!(option.id),
+                        // The chosen option is surface.selected with a real
+                        // 1.5 px text.primary border, never a tint.
+                        // primaryContainer is surface.selected
+                        // (#E6EAD9 / #2F4437) and onSurface text.primary (ink /
+                        // paper) in both schemes.
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? cs.primaryContainer
+                                : cs.surface,
                           ),
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          ClipRRect(
-                            child: LinearProgressIndicator(
-                              value: fraction,
-                              backgroundColor: cs.surfaceContainerHighest,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                cs.primary,
+                          child: Container(
+                            padding: const EdgeInsets.all(
+                              AppDimensions.paddingM,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isSelected
+                                    ? cs.onSurface
+                                    : cs.outlineVariant,
+                                width: isSelected ? 1.5 : 1,
                               ),
-                              minHeight: AppDimensions.spacingXs,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  option.recipeName,
+                                  style: AppTextStyles.titleSmall.copyWith(
+                                    color: isSelected
+                                        ? cs.onPrimaryContainer
+                                        : cs.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimensions.spacingXs),
+                                // The share of the votes as the determinate plate
+                                // line. The count below says the number, so the
+                                // line is not read out on its own.
+                                ExcludeSemantics(
+                                  child: PlateLine(value: fraction),
+                                ),
+                                const SizedBox(height: AppDimensions.space4),
+                                Text(
+                                  context.l10n.menuVoteCount(count),
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingXxs),
-                          Text(
-                            context.l10n.menuVoteCount(count),
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -147,7 +171,7 @@ class MenuVoteCard extends StatelessWidget {
             // Resolve button (for vote creator)
             if (onResolve != null && vote.totalVotes > 0)
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(top: AppDimensions.space4),
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -169,9 +193,9 @@ class MenuVoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              color: context.butleryColors.success,
+            ButleryIcon(
+              ButleryIcons.circleCheck,
+              color: context.modeColors.success,
               size: AppDimensions.iconSizeL,
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -205,8 +229,8 @@ class MenuVoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
-            Icon(
-              Icons.timer_off,
+            ButleryIcon(
+              ButleryIcons.clock,
               color: cs.onSurfaceVariant,
               size: AppDimensions.iconSizeL,
             ),

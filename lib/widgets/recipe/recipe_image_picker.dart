@@ -1,12 +1,15 @@
 // lib/widgets/recipe/recipe_image_picker.dart
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Handles image picker UI and logic for recipe forms.
 class RecipeImagePicker {
@@ -34,9 +37,9 @@ class RecipeImagePicker {
     } catch (e) {
       AppLogger.error('[$_logTag] Error during image selection: $e');
       if (context.mounted) {
-        UtilityComponents.showErrorSnackbar(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.errorCouldNotLoad(
+          what: context.l10n.errorCouldNotLoad(
             context.l10n.commonImage.toLowerCase(),
           ),
         );
@@ -64,18 +67,18 @@ class RecipeImagePicker {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: Icon(
-                Icons.photo_camera,
-                color: Theme.of(context).colorScheme.primary,
+              leading: ButleryIcon(
+                ButleryIcons.camera,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               title: Text(context.l10n.imageTakePhoto),
               subtitle: Text(context.l10n.imageUseCamera),
               onTap: () => Navigator.pop(context, 'camera'),
             ),
             ListTile(
-              leading: Icon(
-                Icons.photo_library,
-                color: Theme.of(context).colorScheme.primary,
+              leading: ButleryIcon(
+                ButleryIcons.image,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               title: Text(context.l10n.imageFromGallery),
               subtitle: Text(
@@ -90,7 +93,7 @@ class RecipeImagePicker {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.close),
+              leading: const ButleryIcon(ButleryIcons.x),
               title: Text(context.l10n.commonCancel),
               onTap: () => Navigator.pop(context),
             ),
@@ -108,24 +111,38 @@ class RecipeImagePicker {
   ) async {
     switch (choice) {
       case 'camera':
-        AppLogger.info('[$_logTag] Calling viewModel.pickImageFromCamera');
-        await viewModel.pickImageFromCamera(context);
-        break;
+        await pick(context, viewModel, ImageSource.camera);
       case 'gallery':
-        // Use canAddMoreImages and proper limit checking
-        if (viewModel.canAddMoreImages &&
-            (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
-          AppLogger.info(
-            '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery',
-          );
-          await viewModel.pickMultipleImagesFromGallery(context);
-        } else {
-          AppLogger.info(
-            '[$_logTag] Calling viewModel.pickImageFromGallery (single)',
-          );
-          await viewModel.pickImageFromGallery(context);
-        }
-        break;
+        await pick(context, viewModel, ImageSource.gallery);
+    }
+  }
+
+  /// Picks from [source]: several images from the library while more than
+  /// one slot is free, otherwise one. [askAgain] is "Fråga igen" on the
+  /// permission notice, which skips our explanation (produktregler.md:683).
+  static Future<void> pick(
+    BuildContext context,
+    RecipeFormViewModel viewModel,
+    ImageSource source, {
+    bool askAgain = false,
+  }) async {
+    if (source == ImageSource.camera) {
+      AppLogger.info('[$_logTag] Calling viewModel.pickImageFromCamera');
+      await viewModel.pickImageFromCamera(context, askAgain: askAgain);
+    } else if (viewModel.canAddMoreImages &&
+        (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
+      AppLogger.info(
+        '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery',
+      );
+      await viewModel.pickMultipleImagesFromGallery(
+        context,
+        askAgain: askAgain,
+      );
+    } else {
+      AppLogger.info(
+        '[$_logTag] Calling viewModel.pickImageFromGallery (single)',
+      );
+      await viewModel.pickImageFromGallery(context, askAgain: askAgain);
     }
   }
 }

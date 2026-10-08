@@ -73,7 +73,7 @@ abstract final class AnalyticsEvents {
   // BUT-545: dedicated outcome events for the onboarding import page so
   // the activation funnel can distinguish "tried-and-imported" from
   // "tried-and-failed" from "skipped". The generic import_started/success
-  // events still fire alongside (with `source: 'onboarding'`) for the
+  // events still fire alongside for the
   // unified import funnel; these add the onboarding-specific dimension.
   static const onboardingImportAttempted = 'onboarding_import_attempted';
   static const onboardingImportSucceeded = 'onboarding_import_succeeded';
@@ -216,11 +216,8 @@ abstract final class AnalyticsEvents {
   static const importStarted = 'import_started';
   static const importSuccess = 'import_success';
   static const importCancelled = 'import_cancelled';
-  // BUT-1037: user backed out of the "doesn't look like a recipe" warn dialog,
-  // so we avoided a wasted paid LLM parse. Measures cost saved.
+  // BUT-1037: user backed out of the "doesn't look like a recipe" warn dialog.
   static const importWarnDialogCancelled = 'import_warn_dialog_cancelled';
-  static const extractionError = 'extraction_error';
-  static const manualCopyFallback = 'manual_copy_fallback';
   static const importTierSucceeded = 'import_tier_succeeded';
   static const importTierFailed = 'import_tier_failed';
 
@@ -246,7 +243,7 @@ abstract final class AnalyticsEvents {
   static const taggingCacheDesync = 'tagging_cache_desync';
   static const taggingConfigValidationError = 'tagging_config_validation_error';
   static const dataIntegrityCheck = 'data_integrity_check';
-  // BUT-616: emitted when ParseEventLogger.logEvent's callable invocation
+  // BUT-616: emitted when ParseEventLogger.log's callable invocation
   // fails, so we can measure parse-event loss rate. Params: error_code
   // (Firebase Functions code or 'unknown'), cause (truncated message).
   static const parseEventLogFailed = 'parse_event_log_failed';

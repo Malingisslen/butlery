@@ -25,6 +25,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
@@ -69,7 +71,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     });
   }
 
-  /// Read-only roster resolution (mirrors the generator's `getForUser` path —
+  /// Read-only roster resolution (mirrors the generator's `getActiveForUser` path —
   /// opening the menu must never CREATE a household). Any failure keeps the
   /// presence UI hidden; presence is an optional layer, never a blocker.
   Future<void> _loadRoster() async {
@@ -79,9 +81,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
       final uid = permission?.currentUserId;
       if (uid == null || householdRepo == null || rosterService == null) return;
-      final households = await householdRepo.getForUser(uid);
-      if (households.isEmpty || !mounted) return;
-      final roster = await rosterService.getRoster(households.first.id);
+      final household = await householdRepo.getActiveForUser(uid);
+      if (household == null || !mounted) return;
+      final roster = await rosterService.getRoster(household.id);
       if (!mounted) return;
       setState(() => _roster = roster);
     } catch (_) {
@@ -96,7 +98,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       isLoading: vm.isLoading,
       error: vm.error,
       data: vm.plan,
-      loadingMessage: context.l10n.loadingGeneric,
+      loadingMessage: context.l10n.loadingWeeklyMenu,
       // The error state replaces the whole calendar, week navigation included,
       // so without this the message's "försök igen" names a control that is not
       // on screen (BUT-1939).
@@ -114,16 +116,16 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
-          child: Icon(
-            Icons.arrow_upward,
+          child: ButleryIcon(
+            ButleryIcons.arrowUp,
             size: 32,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         StateWidget.empty(
           title: context.l10n.weeklyMenuEmptyTitle,
           subtitle: context.l10n.weeklyMenuEmptyHint,
-          icon: Icons.event_note_outlined,
+          icon: ButleryIcons.calendar,
         ),
       ],
     );
@@ -175,7 +177,18 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             onSelectMode: vm.hasEntries ? () => _onEnterSelection(vm) : null,
           ),
         chipsWidget,
-        if (vm.hasOverflow) OverflowTray(overflow: vm.overflow),
+        // P5-U23: the tray counts, gives the reason and offers next week.
+        if (vm.hasOverflow)
+          OverflowTray(
+            overflow: vm.overflow,
+            placedCount: vm.overflowPlacedCount,
+            totalCount: vm.overflowTotal,
+            reason: vm.overflowReason,
+            onPlaceInNextWeek: vm.canPlaceOverflowInNextWeek
+                ? () => _onPlaceOverflowInNextWeek(context, vm)
+                : null,
+            onDiscard: () => _onDiscardOverflow(context, vm),
+          ),
         // BUT-1611: "vem är hemma?" overview — only for a household with family,
         // and never while multi-select is active (that owns the header row).
         if (_roster.length > 1 && !vm.selectionMode)
@@ -211,12 +224,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   ) async {
     final cleared = await vm.clearWeek();
     if (!context.mounted || !cleared) return;
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       context.l10n.weeklyMenuClearedUndo,
-      actionLabel: context.l10n.commonUndo,
-      onAction: () => vm.undoClearWeek(),
-      duration: const Duration(seconds: 7),
+      onUndo: () => vm.undoClearWeek(),
     );
   }
 
@@ -248,12 +259,50 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final copied = await vm.copyWeekToNext();
     if (!context.mounted) return;
     if (copied == null) {
-      SnackBarUtils.showError(context, context.l10n.weeklyMenuCopyToNextFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weeklyMenuCopyToNextFailed,
+      );
       return;
     }
     SnackBarUtils.showSuccess(
       context,
       context.l10n.weeklyMenuCopyToNextResult(copied),
+    );
+  }
+
+  /// Q5-01: "Släng resten" empties the tray at once, with the 7 s Ångra of
+  /// a class-1 delete (produktregler.md:131-132).
+  void _onDiscardOverflow(BuildContext context, WeeklyMenuPlanViewModel vm) {
+    final discarded = vm.discardOverflow();
+    if (discarded == null) return;
+    SnackBarUtils.showUndo(
+      context,
+      context.l10n.weeklyMenuOverflowDiscarded(discarded.count),
+      onUndo: () => vm.undoDiscardOverflow(discarded),
+    );
+  }
+
+  /// P5-U23: "Lägg i vecka N" in the tray. The receipt names the week; a
+  /// refusal is already on screen as the calendar's error state.
+  Future<void> _onPlaceOverflowInNextWeek(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+  ) async {
+    final week = vm.overflowReason?.nextWeekStart;
+    final moved = await vm.placeOverflowInNextWeek();
+    // Nothing fitted there either: no receipt ("0 rätter" is never a
+    // success, content-style-guide.md:56); the tray now says that week had
+    // no free places and offers no further week.
+    if (!context.mounted || moved == null || moved == 0 || week == null) {
+      return;
+    }
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.weeklyMenuOverflowMovedToNextWeek(
+        moved,
+        IsoWeekUtils.isoWeekNumber(week),
+      ),
     );
   }
 
@@ -277,7 +326,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     );
     if (!context.mounted) return;
     if (moved == null) {
-      SnackBarUtils.showError(context, context.l10n.weeklyMenuMoveFailed);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weeklyMenuMoveFailed,
+      );
       return;
     }
     SnackBarUtils.showSuccess(
@@ -320,10 +372,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                             label: '${day.displayLabel} ${slot.displayLabel}',
                             child: ListTile(
                               dense: true,
-                              leading: Icon(
+                              leading: ButleryIcon(
                                 slot.isMulti
-                                    ? Icons.cake_outlined
-                                    : Icons.restaurant_outlined,
+                                    ? ButleryIcons.utensils
+                                    : ButleryIcons.utensils,
                                 color: cs.secondary,
                               ),
                               title: Text(

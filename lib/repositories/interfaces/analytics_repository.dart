@@ -44,10 +44,7 @@ abstract class AnalyticsRepository {
   Future<void> logLogout();
 
   /// Set user property for segmentation
-  Future<void> setUserProperty({
-    required String name,
-    required String? value,
-  });
+  Future<void> setUserProperty({required String name, required String? value});
 
   /// BUT-803 (PA5): tie subsequent events to a user across devices.
   /// Pass `null` on sign-out to reset. Implementations should be a thin
@@ -80,21 +77,6 @@ abstract class AnalyticsRepository {
     String imageFormatSent,
   });
 
-  /// Log extraction error
-  Future<void> logExtractionError({
-    required String url,
-    required String platform,
-    required String error,
-    String? errorType,
-    String imageFormat,
-  });
-
-  /// Log manual copy fallback usage
-  Future<void> logManualCopyFallback({
-    required String platform,
-    String? reason,
-  });
-
   /// Log recipe creation
   Future<void> logRecipeCreated({
     required String source,
@@ -103,9 +85,7 @@ abstract class AnalyticsRepository {
   });
 
   /// Log recipe sharing
-  Future<void> logRecipeShared({
-    required String method,
-  });
+  Future<void> logRecipeShared({required String method});
 
   /// Log when recipe is marked as cooked
   Future<void> logRecipeCooked({

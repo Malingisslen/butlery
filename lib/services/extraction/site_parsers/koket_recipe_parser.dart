@@ -9,7 +9,6 @@
 /// - Cooking tips from community
 /// - Seasonal/holiday tags
 
-import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
@@ -25,10 +24,11 @@ class KoketRecipeParser extends RecipeSiteParser {
   String get siteName => 'Köket';
 
   @override
-  Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
+  Map<String, dynamic> enhanceRecipe(
+    Map<String, dynamic> recipe,
+    Document doc,
+  ) {
     try {
-      final doc = html_parser.parse(html);
-
       // Extract site-specific fields from HTML
       recipe = _extractKoketEnhancements(recipe, doc);
 
@@ -114,10 +114,8 @@ class KoketRecipeParser extends RecipeSiteParser {
   }
 
   @override
-  Map<String, dynamic>? extractWithCssSelectors(String html) {
+  Map<String, dynamic>? extractWithCssSelectors(Document doc) {
     try {
-      final doc = html_parser.parse(html);
-
       // Köket.se uses various CSS classes/selectors for recipe content
       final title = _extractTitle(doc);
       final description = _extractDescription(doc);
@@ -188,32 +186,10 @@ class KoketRecipeParser extends RecipeSiteParser {
           .toList();
     }
 
-    // Clean instruction formatting
     if (recipe['recipeInstructions'] is List) {
-      // Flatten HowToSection first — its steps sit in `itemListElement`, and
-      // the filter below keeps only maps carrying a top-level `text`, so
-      // without this every step on such a page is dropped (BUT-2020).
-      final instructions = flattenRecipeInstructions(
-        recipe['recipeInstructions'],
-      );
-      recipe['recipeInstructions'] = instructions
-          .map((inst) {
-            if (inst is String) {
-              return cleanSwedishText(inst);
-            } else if (inst is Map && inst['text'] != null) {
-              return {
-                ...inst,
-                'text': cleanSwedishText(inst['text'].toString()),
-              };
-            }
-            return inst;
-          })
-          .where(
-            (inst) => inst is String
-                ? inst.isNotEmpty
-                : inst is Map && inst['text'] != null,
-          )
-          .toList();
+      recipe['recipeInstructions'] = recipeInstructionTexts(
+        recipe['recipeInstructions'] as List,
+      ).map(cleanSwedishText).where((step) => step.isNotEmpty).toList();
     }
 
     return recipe;
@@ -294,8 +270,8 @@ class KoketRecipeParser extends RecipeSiteParser {
     return ingredients;
   }
 
-  List<Map<String, String>> _extractInstructions(Document doc) {
-    final instructions = <Map<String, String>>[];
+  List<String> _extractInstructions(Document doc) {
+    final instructions = <String>[];
 
     final selectors = [
       '.recipe-steps li',
@@ -308,17 +284,9 @@ class KoketRecipeParser extends RecipeSiteParser {
     for (final selector in selectors) {
       final elements = doc.querySelectorAll(selector);
       if (elements.isNotEmpty) {
-        int stepNumber = 1;
         for (final element in elements) {
           final text = element.text.trim();
-          if (text.isNotEmpty) {
-            instructions.add({
-              '@type': 'HowToStep',
-              'text': cleanSwedishText(text),
-              'position': stepNumber.toString(),
-            });
-            stepNumber++;
-          }
+          if (text.isNotEmpty) instructions.add(cleanSwedishText(text));
         }
 
         // If we found instructions with this selector, stop

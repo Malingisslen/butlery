@@ -60,7 +60,7 @@ create_policy_if_missing() {
 # ----------------------------------------------------------------------------
 # Policy 1: Cloud Functions error rate >5% over 5min
 # ----------------------------------------------------------------------------
-echo "[1/4] Cloud Functions error rate..."
+echo "[1/5] Cloud Functions error rate..."
 cat > "$WORKDIR/cf-error.json" <<EOF
 {
   "displayName": "Cloud Functions - High Error Rate",
@@ -92,7 +92,7 @@ create_policy_if_missing "Cloud Functions - High Error Rate" "$WORKDIR/cf-error.
 # ----------------------------------------------------------------------------
 # Policy 2: Cloud Functions p99 execution time >10s
 # ----------------------------------------------------------------------------
-echo "[2/4] Cloud Functions latency..."
+echo "[2/5] Cloud Functions latency..."
 cat > "$WORKDIR/cf-latency.json" <<EOF
 {
   "displayName": "Cloud Functions - High Latency",
@@ -125,7 +125,7 @@ create_policy_if_missing "Cloud Functions - High Latency" "$WORKDIR/cf-latency.j
 # ----------------------------------------------------------------------------
 # Policy 3: Moderation - report needs review
 # ----------------------------------------------------------------------------
-echo "[3/4] Moderation - report needs review..."
+echo "[3/5] Moderation - report needs review..."
 cat > "$WORKDIR/moderation_review_needed.json" <<EOF
 {
   "displayName": "Moderation - report needs review",
@@ -153,7 +153,7 @@ create_policy_if_missing "Moderation - report needs review" "$WORKDIR/moderation
 # ----------------------------------------------------------------------------
 # Policy 4: Moderation - ingredient suggestion needs review
 # ----------------------------------------------------------------------------
-echo "[4/4] Moderation - ingredient suggestion needs review..."
+echo "[4/5] Moderation - ingredient suggestion needs review..."
 cat > "$WORKDIR/ingredient_suggestion_review_needed.json" <<EOF
 {
   "displayName": "Moderation - ingredient suggestion needs review",
@@ -177,6 +177,34 @@ cat > "$WORKDIR/ingredient_suggestion_review_needed.json" <<EOF
 }
 EOF
 create_policy_if_missing "Moderation - ingredient suggestion needs review" "$WORKDIR/ingredient_suggestion_review_needed.json"
+
+# ----------------------------------------------------------------------------
+# Policy 5: Import - tier distribution shift (BUT-2243)
+# ----------------------------------------------------------------------------
+echo "[5/5] Import - tier distribution shift..."
+cat > "$WORKDIR/import_tier_distribution_shift.json" <<EOF
+{
+  "displayName": "Import - tier distribution shift",
+  "documentation": {
+    "content": "The weekly import job saw a channel's structured, AI or failure share move sharply, or its mean AI cost pass 5 öre. The numbers are in analytics/import_tiers/weekly/{week}. This says that something moved, not why.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [{
+    "displayName": "import_tier_distribution_shift logged",
+    "conditionMatchedLog": {
+      "filter": "jsonPayload.message=\"import_tier_distribution_shift\""
+    }
+  }],
+  "alertStrategy": {
+    "notificationRateLimit": {"period": "300s"},
+    "autoClose": "1800s"
+  },
+  "combiner": "OR",
+  "notificationChannels": ["$NOTIFICATION_CHANNEL"],
+  "enabled": true
+}
+EOF
+create_policy_if_missing "Import - tier distribution shift" "$WORKDIR/import_tier_distribution_shift.json"
 
 
 # Two Firebase-product alerts (Firestore read rate, Auth failure rate) are
@@ -203,6 +231,7 @@ EXPECTED=(
   "Cloud Functions - High Latency"
   "Moderation - report needs review"
   "Moderation - ingredient suggestion needs review"
+  "Import - tier distribution shift"
 )
 PRESENT="$(existing_policies)"
 MISSING=()

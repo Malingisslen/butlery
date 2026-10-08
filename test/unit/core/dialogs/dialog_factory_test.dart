@@ -5,15 +5,15 @@
 ///
 /// Behaviours covered:
 /// - `showConfirmation`: confirm tap resolves true, cancel tap resolves false,
-///   default confirm/cancel text fall back to the localized `commonOk` /
-///   `commonCancel`, `isDangerous` paints the confirm action in
+///   the confirm label is the caller's (required) and cancel falls back to
+///   the localized `commonCancel`, iOS shows the same Material dialog, `isDangerous` paints the confirm action in
 ///   `colorScheme.error`, and `isDangerous` trumps an explicit `confirmColor`.
 /// - `showFeedback`: confirm resolves with the trimmed/raw controller text,
 ///   cancel resolves null (no string returned), `initialValue` pre-fills the
 ///   text field, `hint` renders verbatim.
 /// - `showInteractive<T>`: passes typed `T` through Navigator.pop, omits the
 ///   title widget when `title: null`, forwards `actions` verbatim.
-/// - `showError`: renders default localized title + button when omitted,
+/// - `showError`: renders default localized title + "Stäng" when omitted,
 ///   tapping the button dismisses + resolves the future.
 /// - `showLoading`: defaults the message to the localized `dialogLoading`,
 ///   shows a CircularProgressIndicator, is NOT barrier-dismissible.
@@ -56,6 +56,7 @@
 library;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -63,9 +64,10 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// MaterialApp wrapper with l10n delegates so dialogs can resolve
-/// `context.l10n.commonOk` etc. Defaults to Swedish to match production.
+/// `context.l10n.commonCancel` etc. Defaults to Swedish to match production.
 Widget _wrap(Widget child, {Locale locale = const Locale('sv')}) => MaterialApp(
   theme: AppTheme.lightTheme,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -146,6 +148,7 @@ void main() {
               ctx,
               title: 't',
               message: 'm',
+              confirmText: 'Ja',
             ),
             onResult: (v) {
               result = v;
@@ -171,10 +174,12 @@ void main() {
       );
     });
 
-    /// Proves: default confirm/cancel labels come from the localized
-    /// commonOk / commonCancel. Regression catch for someone replacing
-    /// the l10n lookup with a hardcoded string.
-    testWidgets('default confirm/cancel labels come from l10n', (tester) async {
+    /// Proves: the confirm label is the caller's (it says what happens,
+    /// content-style-guide.md:77) and the cancel label defaults to the
+    /// localized commonCancel. There is no "OK" fallback any more.
+    testWidgets('confirm label comes from the caller, cancel from l10n', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           _triggerButton<bool?>(
@@ -182,6 +187,7 @@ void main() {
               ctx,
               title: 't',
               message: 'm',
+              confirmText: 'Radera kontot',
             ),
             onResult: (_) {},
           ),
@@ -190,8 +196,40 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextButton, 'OK'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Radera kontot'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
+    });
+
+    /// Proves: on iOS the confirmation is the same Material dialog as on
+    /// Android, never a CupertinoAlertDialog (plattformsmatris.md:73-75).
+    testWidgets('iOS shows the Material dialog, not the Cupertino alert', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      try {
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<bool?>(
+              openDialog: (ctx) => DialogFactory.showConfirmation(
+                ctx,
+                title: 't',
+                message: 'm',
+                confirmText: 'Ja',
+              ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.byType(CupertinoAlertDialog), findsNothing);
+        expect(find.widgetWithText(TextButton, 'Ja'), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
     });
 
     /// Proves: `isDangerous: true` paints the confirm button's foreground
@@ -280,6 +318,7 @@ void main() {
               ctx,
               title: 'Radera konto?',
               message: 'Detta går inte att ångra.',
+              confirmText: 'Ja',
             ),
             onResult: (_) {},
           ),
@@ -531,7 +570,8 @@ void main() {
 
   group('showError', () {
     /// Proves: default title falls back to localized `dialogErrorTitle`
-    /// and default button to `commonOk`. Catches the regression where
+    /// and default button to `commonClose` ("Stäng", never "OK";
+    /// content-style-guide.md:77). Catches the regression where
     /// someone hardcodes the title.
     testWidgets('default title + button labels come from l10n', (tester) async {
       await tester.pumpWidget(
@@ -550,15 +590,16 @@ void main() {
 
       expect(find.text('Ett fel uppstod'), findsOneWidget);
       expect(find.text('Något gick snett'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, 'OK'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Stäng'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
 
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Stäng'));
       await tester.pumpAndSettle();
     });
 
-    /// Proves: tapping OK dismisses the dialog AND completes the future
+    /// Proves: tapping Stäng dismisses the dialog AND completes the future
     /// — info dialogs need to unblock awaiting callers.
-    testWidgets('OK tap dismisses the dialog and resolves the await', (
+    testWidgets('Stäng tap dismisses the dialog and resolves the await', (
       tester,
     ) async {
       var resolved = false;
@@ -580,7 +621,7 @@ void main() {
         reason: 'await should still be pending while dialog is open',
       );
 
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Stäng'));
       await tester.pumpAndSettle();
 
       expect(resolved, isTrue);
@@ -602,7 +643,7 @@ void main() {
               ctx,
               title: 'Anpassat fel',
               message: 'msg',
-              buttonText: 'Stäng',
+              buttonText: 'Tillbaka',
             ),
             onResult: (_) {},
           ),
@@ -613,15 +654,42 @@ void main() {
 
       expect(find.text('Anpassat fel'), findsOneWidget);
       expect(find.text('Ett fel uppstod'), findsNothing);
-      expect(find.widgetWithText(TextButton, 'Stäng'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Tillbaka'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Stäng'), findsNothing);
 
-      await tester.tap(find.widgetWithText(TextButton, 'Stäng'));
+      await tester.tap(find.widgetWithText(TextButton, 'Tillbaka'));
       await tester.pumpAndSettle();
+    });
+
+    /// Proves: on iOS the error dialog is the Material dialog with "Stäng",
+    /// never the Cupertino alert (plattformsmatris.md:73-75).
+    testWidgets('iOS shows the Material error dialog with Stäng', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      try {
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<void>(
+              openDialog: (ctx) => DialogFactory.showError(ctx, message: 'm'),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.byType(CupertinoAlertDialog), findsNothing);
+        expect(find.widgetWithText(TextButton, 'Stäng'), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
     });
   });
 
   group('showLoading', () {
-    /// Proves: default message is the localized `dialogLoading` ("Laddar...").
+    /// Proves: default message is the localized `dialogLoading` ("Laddar …").
     /// Catches the regression where the loading text is hardcoded.
     /// Note: cannot use `pumpAndSettle` because the CircularProgressIndicator
     /// animation never settles — use a couple of `pump` cycles instead.
@@ -638,8 +706,10 @@ void main() {
       await tester.pump(); // start the showDialog future
       await tester.pump(const Duration(milliseconds: 300)); // run dialog open
 
-      expect(find.text('Laddar...'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Laddar …'), findsOneWidget);
+      // Plate line plus text, never a spinner (produktregler.md:163).
+      expect(find.byType(PlateLine), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
     /// Proves: custom message overrides the default.
@@ -658,7 +728,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Sparar recept...'), findsOneWidget);
-      expect(find.text('Laddar...'), findsNothing);
+      expect(find.text('Laddar …'), findsNothing);
     });
 
     /// Proves: the loading dialog is NOT barrier-dismissible — a user
@@ -882,6 +952,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => DialogFactory.showTextInput(
               ctx,
+              confirmText: 'Spara',
               title: 'Skriv namn',
             ),
             onResult: (v) => result = v,
@@ -893,7 +964,7 @@ void main() {
 
       // Leading/trailing whitespace should be trimmed.
       await tester.enterText(find.byType(StyledInput), '  Anna  ');
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Spara'));
       await tester.pumpAndSettle();
 
       expect(
@@ -917,7 +988,11 @@ void main() {
         await tester.pumpWidget(
           _wrap(
             _triggerButton<String?>(
-              openDialog: (ctx) => DialogFactory.showTextInput(ctx, title: 't'),
+              openDialog: (ctx) => DialogFactory.showTextInput(
+                ctx,
+                title: 't',
+                confirmText: 'Spara',
+              ),
               onResult: (v) {
                 sentinel = v;
                 resolved = true;
@@ -929,7 +1004,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(StyledInput), '   ');
-        await tester.tap(find.widgetWithText(TextButton, 'OK'));
+        await tester.tap(find.widgetWithText(TextButton, 'Spara'));
         await tester.pumpAndSettle();
 
         expect(resolved, isTrue);
@@ -957,6 +1032,7 @@ void main() {
             _triggerButton<String?>(
               openDialog: (ctx) => DialogFactory.showTextInput(
                 ctx,
+                confirmText: 'Spara',
                 title: 'Krävs',
                 required: true,
               ),
@@ -968,7 +1044,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Don't type anything. Tap confirm.
-        await tester.tap(find.widgetWithText(TextButton, 'OK'));
+        await tester.tap(find.widgetWithText(TextButton, 'Spara'));
         await tester.pumpAndSettle();
 
         expect(
@@ -998,6 +1074,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => DialogFactory.showTextInput(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               required: true,
             ),
@@ -1009,7 +1086,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(StyledInput), 'Hej');
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Spara'));
       await tester.pumpAndSettle();
 
       expect(result, 'Hej');
@@ -1026,7 +1103,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           _triggerButton<String?>(
-            openDialog: (ctx) => DialogFactory.showTextInput(ctx, title: 't'),
+            openDialog: (ctx) => DialogFactory.showTextInput(
+              ctx,
+              title: 't',
+              confirmText: 'Spara',
+            ),
             onResult: (v) {
               sentinel = v;
               resolved = true;
@@ -1061,6 +1142,7 @@ void main() {
           _triggerButton<String?>(
             openDialog: (ctx) => DialogFactory.showTextInput(
               ctx,
+              confirmText: 'Spara',
               title: 't',
               initialValue: 'Pasta',
             ),
@@ -1071,7 +1153,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Spara'));
       await tester.pumpAndSettle();
 
       expect(result, 'Pasta');

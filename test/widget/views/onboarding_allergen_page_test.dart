@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -41,7 +42,7 @@ void main() {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(ButleryIcons.check), findsNothing);
     });
 
     testWidgets('tapping a card shows check icon', (tester) async {
@@ -52,7 +53,7 @@ void main() {
       await tester.tap(find.byType(AnimatedContainer).first);
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.check), findsOneWidget);
       expect(viewModel.isAllergenSelected('gluten'), isTrue);
     });
 
@@ -63,12 +64,12 @@ void main() {
       // Select
       await tester.tap(find.byType(AnimatedContainer).first);
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.check), findsOneWidget);
 
       // Deselect
       await tester.tap(find.byType(AnimatedContainer).first);
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(ButleryIcons.check), findsNothing);
       expect(viewModel.isAllergenSelected('gluten'), isFalse);
     });
 

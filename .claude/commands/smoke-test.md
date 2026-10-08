@@ -111,7 +111,7 @@ el?.click();
 |---|---|---|
 | `nav-{route}` | `nav-/veckomeny` | Bottom nav / drawer items |
 | `btn-{action}` | `btn-mark-cooked`, `btn-save-recipe`, `btn-import-url`, `btn-add-shopping-item`, `btn-generate-menu`, `btn-share-recipe`, `btn-quick-save` | Primary CTAs |
-| `recipe-card-{index}` | `recipe-card-0` | Recipe list / grid cells |
+| `recipe-card-{recipeId}` | `recipe-card-abc123` | Recipe list / grid cells |
 | `item-toggle-{index}` | `item-toggle-3` | Shopping list rows (0-based, global order) |
 | `menu-slot-{weekday}-{mealtype}` | `menu-slot-monday-lunch` | Weekly menu calendar cells |
 

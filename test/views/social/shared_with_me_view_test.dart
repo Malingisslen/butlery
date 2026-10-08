@@ -23,7 +23,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/views/social/shared_with_me_view.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 
@@ -37,7 +37,7 @@ import '../helpers/view_test_helpers.dart';
 // Swedish labels the view renders (from app_sv.arb). Captured here so a
 // behaviour regression — not a copy tweak — is what fails the assertion.
 const _appBarTitle = 'Delat innehåll'; // l10n.sharedContent
-const _loadingText = 'Laddar delat innehåll...'; // l10n.sharedLoadingContent
+const _loadingText = 'Laddar delat innehåll …'; // l10n.sharedLoadingContent
 const _emptyTitle = 'Inga delade recept än'; // l10n.sharedNoContentYet
 const _emptyCta = 'Dela ett recept'; // l10n.sharedShareFirstRecipe
 const _retryLabel = 'Försök igen'; // l10n.commonRetry
@@ -178,7 +178,7 @@ void main() {
 
         // Loading branch: Swedish copy + the canonical loading indicator.
         expect(find.text(_loadingText), findsOneWidget);
-        expect(find.byType(LoadingIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
 
         // Not the empty/error branches.
         expect(find.text(_emptyTitle), findsNothing);
@@ -208,7 +208,7 @@ void main() {
         expect(find.text(_emptyCta), findsOneWidget);
 
         // The loading indicator is gone in the empty state.
-        expect(find.byType(LoadingIndicator), findsNothing);
+        expect(find.byType(PlateLine), findsNothing);
       },
     );
 
@@ -233,7 +233,7 @@ void main() {
 
       // Not the empty or loading branches.
       expect(find.text(_emptyTitle), findsNothing);
-      expect(find.byType(LoadingIndicator), findsNothing);
+      expect(find.byType(PlateLine), findsNothing);
     });
 
     testWidgets(

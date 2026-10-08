@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -25,13 +26,13 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
 
         expect(find.byType(CircularIconBadge), findsOneWidget);
-        expect(find.byIcon(Icons.star), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.star), findsOneWidget);
       });
 
       testWidgets('should use theme primary as default background', (
@@ -40,7 +41,7 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
@@ -57,13 +58,13 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
 
         final cs = getColorScheme(tester);
-        final icon = tester.widget<Icon>(find.byIcon(Icons.star));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.star));
         expect(icon.color, equals(cs.surfaceContainerHighest));
       });
 
@@ -71,7 +72,7 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
@@ -82,7 +83,7 @@ void main() {
         expect(renderBox.size.width, equals(AppDimensions.iconSizeS));
         expect(renderBox.size.height, equals(AppDimensions.iconSizeS));
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.star));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.star));
         expect(icon.size, equals(AppDimensions.iconSizeS));
       });
 
@@ -93,7 +94,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 backgroundColor: Colors.red,
               ),
             ),
@@ -112,14 +113,14 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 iconColor: Colors.yellow,
               ),
             ),
           ),
         );
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.star));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.star));
         expect(icon.color, equals(Colors.yellow));
       });
 
@@ -130,7 +131,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 size: customSize,
               ),
             ),
@@ -143,7 +144,7 @@ void main() {
         expect(renderBox.size.width, equals(customSize));
         expect(renderBox.size.height, equals(customSize));
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.star));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.star));
         expect(icon.size, equals(customSize));
       });
 
@@ -151,7 +152,7 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
@@ -173,7 +174,7 @@ void main() {
         );
 
         expect(find.byType(CircularIconBadge), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('should use theme primary background', (
@@ -205,7 +206,7 @@ void main() {
         );
 
         final cs = getColorScheme(tester);
-        final icon = tester.widget<Icon>(find.byIcon(Icons.add));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.plus));
         expect(icon.color, equals(cs.surfaceContainerHighest));
       });
 
@@ -226,7 +227,7 @@ void main() {
         expect(renderBox.size.width, equals(customSize));
         expect(renderBox.size.height, equals(customSize));
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.add));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.plus));
         expect(icon.size, equals(customSize));
       });
     });
@@ -237,7 +238,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 size: 40,
               ),
             ),
@@ -254,7 +255,7 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
@@ -268,10 +269,10 @@ void main() {
         WidgetTester tester,
       ) async {
         const icons = [
-          Icons.favorite,
-          Icons.settings,
+          ButleryIcons.heart,
+          ButleryIcons.settings,
           Icons.notifications,
-          Icons.person,
+          ButleryIcons.user,
         ];
 
         for (final iconData in icons) {
@@ -294,7 +295,7 @@ void main() {
           MaterialApp(
             theme: ThemeData.light(),
             home: const Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
@@ -307,7 +308,7 @@ void main() {
           MaterialApp(
             theme: ThemeData.dark(),
             home: const Scaffold(
-              body: CircularIconBadge(icon: Icons.star),
+              body: CircularIconBadge(icon: ButleryIcons.star),
             ),
           ),
         );
@@ -323,8 +324,8 @@ void main() {
             home: Scaffold(
               body: Row(
                 children: [
-                  CircularIconBadge(icon: Icons.star),
-                  CircularIconBadge(icon: Icons.favorite),
+                  CircularIconBadge(icon: ButleryIcons.star),
+                  CircularIconBadge(icon: ButleryIcons.heart),
                   CircularIconBadge.add(),
                 ],
               ),
@@ -333,9 +334,9 @@ void main() {
         );
 
         expect(find.byType(CircularIconBadge), findsNWidgets(3));
-        expect(find.byIcon(Icons.star), findsOneWidget);
-        expect(find.byIcon(Icons.favorite), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.star), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.heart), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('should work in Stack layout', (WidgetTester tester) async {
@@ -347,7 +348,7 @@ void main() {
                   Positioned(
                     top: 10,
                     left: 10,
-                    child: CircularIconBadge(icon: Icons.star),
+                    child: CircularIconBadge(icon: ButleryIcons.star),
                   ),
                   Positioned(
                     bottom: 10,
@@ -372,7 +373,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 size: smallSize,
               ),
             ),
@@ -393,7 +394,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 size: largeSize,
               ),
             ),
@@ -414,7 +415,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: CircularIconBadge(
-                icon: Icons.star,
+                icon: ButleryIcons.star,
                 backgroundColor: Colors.transparent,
                 iconColor: Colors.black,
               ),
@@ -426,7 +427,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(Colors.transparent));
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.star));
+        final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.star));
         expect(icon.color, equals(Colors.black));
       });
     });

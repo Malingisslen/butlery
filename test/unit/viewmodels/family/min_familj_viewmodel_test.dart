@@ -27,6 +27,7 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 const _malin = 'user-malin';
 
@@ -112,6 +113,7 @@ void main() {
 
         expect(ok, isFalse);
         expect(vm.hasError, isTrue);
+        expect(vm.error, AppLocale.current.familyMemberSaveFailed);
         expect(vm.familyMembers, isEmpty);
       },
     );

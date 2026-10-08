@@ -30,6 +30,8 @@ enum ExportResourceType {
   userIngredients('users/{uid}/ingredients'),
   userOnboarding('users/{uid}/onboarding'),
   userAcquisition('users/{uid}/acquisition'),
+  // P5-U26b: overwritten versions kept 30 days behind "Återställ".
+  userOverwrittenVersions('users/{uid}/overwritten_versions'),
   userNotifications('user_notifications'),
   // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
   // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
@@ -47,7 +49,8 @@ enum ExportResourceType {
   // previously omitted — a right-of-access gap (Art. 15).
   reports('reports'),
   pings('pings'),
-  realtimeRecipes('realtime_recipes'),
+  // BUT-2151: live menus.
+  realtimeResources('realtime_resources'),
   // BUT-1450: notification analytics the deletion cascade erases but the
   // export previously omitted (Art. 15 ⊇ Art. 17).
   notificationHistory('notification_history'),
@@ -63,7 +66,10 @@ enum ExportResourceType {
   // BUT-2028: ingredient suggestions (Art. 15 ⊇ Art. 17).
   ingredientSuggestions('ingredient_suggestions'),
   // BUT-1693: a member's own shared allergen list (Art. 15 ⊇ Art. 17).
-  householdAllergenShares('household_allergen_shares')
+  householdAllergenShares('household_allergen_shares'),
+  // P5-U27b: suggestions to shared recipes, made by or to the user
+  // (Art. 15 ⊇ Art. 17: the cascade erases them with either account).
+  recipeSuggestions('recipe_suggestions')
   ;
 
   const ExportResourceType(this.tag);
@@ -802,6 +808,26 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
+  /// `users/{uid}/overwritten_versions` — the user's own week menus and
+  /// recipes that another person's save overwrote, kept 30 days behind
+  /// "Återställ" (P5-U26b, produktregler.md:109).
+  ///
+  /// The user's own content, so it is exported (Art. 15 ⊇ Art. 17: the
+  /// deletion cascade erases it). Each row also names who saved over it,
+  /// which the user already saw in the conflict notice.
+  Future<List<Map<String, dynamic>>> exportOverwrittenVersions(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.overwrittenVersions),
+    userId,
+    ExportResourceType.userOverwrittenVersions,
+    limit: maxDocuments,
+  );
+
   /// `user_notifications` where `userId == userId`.
   Future<List<Map<String, dynamic>>> exportUserNotifications(
     String userId, {
@@ -1000,6 +1026,38 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
+  /// Top-level `recipe_suggestions` the user MADE (`suggesterId == userId`):
+  /// their changes to someone else's shared recipe, kept 7 days (P5-U27b).
+  ///
+  /// Filtered on equality against the caller's uid on one of the two fields
+  /// the read rule tests, which is what makes the list query permitted.
+  Future<List<Map<String, dynamic>>> exportRecipeSuggestionsMade(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.recipeSuggestions)
+        .where('suggesterId', isEqualTo: userId),
+    userId,
+    ExportResourceType.recipeSuggestions,
+    limit: maxDocuments,
+  );
+
+  /// Top-level `recipe_suggestions` made TO the user's recipes
+  /// (`ownerId == userId`), which the user accepts or dismisses (P5-U27b).
+  /// The other arm of the same read rule.
+  Future<List<Map<String, dynamic>>> exportRecipeSuggestionsReceived(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.recipeSuggestions)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.recipeSuggestions,
+    limit: maxDocuments,
+  );
+
   /// Top-level `household_allergen_shares` where `userId == userId` — the
   /// user's own shared allergen lists, under every household id. The flat
   /// field is the filter the rules' owner arm can prove for a list query.
@@ -1015,29 +1073,35 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
-  /// Top-level `realtime_recipes` where `ownerId == userId` — collaborative
-  /// recipes the user owns. `ownerId` is the model's authoritative field
-  /// (`RealtimeRecipe.fromFirestore` reads `ownerId`; the cascade CF's
-  /// `userId` filter is a known no-op), so the export queries `ownerId`.
-  Future<List<Map<String, dynamic>>> exportRealtimeRecipesByOwner(
+  /// BUT-2151: live menus the user owns (`realtime_resources.ownerId`).
+  Future<List<Map<String, dynamic>>> exportRealtimeResourcesOwned(
     String userId, {
     int maxDocuments = 500,
   }) => _queryList(
     firestore
-        .collection(FirestoreCollections.realtimeRecipes)
+        .collection(FirestoreCollections.realtimeResources)
         .where('ownerId', isEqualTo: userId),
     userId,
-    ExportResourceType.realtimeRecipes,
+    ExportResourceType.realtimeResources,
+    limit: maxDocuments,
+  );
+
+  /// BUT-2151: live menus the user takes part in (`participantIds`).
+  Future<List<Map<String, dynamic>>> exportRealtimeResourcesAsParticipant(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.realtimeResources)
+        .where('participantIds', arrayContains: userId),
+    userId,
+    ExportResourceType.realtimeResources,
     limit: maxDocuments,
   );
 
   // ── BUT-1732: shared shopping lists (Art. 15 ⊇ erased) ──
 
   /// Top-level `unified_shared_shopping_lists` where `ownerId == userId`.
-  ///
-  /// The three probes below mirror the ones
-  /// `functions/src/account/account-deletion-cascade.ts` runs to FIND a user's
-  /// shared lists, because Art. 15 has to cover at least what Art. 17 erases.
   Future<List<Map<String, dynamic>>> exportSharedShoppingListsOwned(
     String userId, {
     int maxDocuments = 500,
@@ -1067,37 +1131,6 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     firestore
         .collection(FirestoreCollections.unifiedSharedShoppingLists)
         .where('memberPermissions.$userId', isNull: false),
-    userId,
-    ExportResourceType.sharedShoppingLists,
-    limit: maxDocuments,
-  );
-
-  /// Shared lists whose `contributorUserIds` names the user (BUT-1725).
-  ///
-  /// Best-effort by construction, and the caller must treat a failure as a
-  /// documented gap rather than an error: the read rule for this collection is
-  /// `ownerId == uid || uid in memberPermissions`, so the moment this query
-  /// matches a list the user has LEFT — the case the trail exists for — the
-  /// server refuses the whole query. Only an Admin-SDK context can enumerate
-  /// those, which is exactly why the cascade runs there.
-  ///
-  /// COST, known and deliberately not optimised here (BUT-1753): under that
-  /// same read rule every list this probe can legally return is already
-  /// returned by the owner or member probe, so on the happy path its rows are
-  /// pure duplicates — each carrying a whole embedded `items` array — while
-  /// billing a read apiece, up to `cap + 1`. Its only unique product is the
-  /// all-or-nothing refusal signal, which `.limit(1)` would prove just as well.
-  /// Not changed at ship because the caller derives `truncated` from the row
-  /// count it gets back, so narrowing the limit silently disables this probe's
-  /// half of the bundle's own incompleteness flag — a correctness change that
-  /// needs its own review pass, not a drive-by.
-  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsContributor(
-    String userId, {
-    int maxDocuments = 500,
-  }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.unifiedSharedShoppingLists)
-        .where('contributorUserIds', arrayContains: userId),
     userId,
     ExportResourceType.sharedShoppingLists,
     limit: maxDocuments,

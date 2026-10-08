@@ -3,16 +3,21 @@
 // lib/views/social/friends_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -29,6 +34,7 @@ import 'package:butlery/views/social/friends_list/groups_tab.dart';
 import 'package:butlery/views/social/friends_list/group_search_tab.dart';
 import 'package:butlery/views/social/friends_list/feed_tab.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Friends and groups management view with tabs for friends, groups, and discovery.
 class FriendsListView extends StatefulWidget {
@@ -160,7 +166,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         title: context.l10n.socialFriendsAndGroups,
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: Text(
               'Sociala funktioner är tillfälligt inaktiverade.',
               style: AppTextStyles.bodyLarge,
@@ -206,25 +215,30 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ColoredBox(
                       color: Theme.of(context).colorScheme.surface,
                       child: TabBar(
+                        // Tabs carry the canonical ring (ButleryTab), never a focus tint
+                        // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+                        overlayColor: ButleryControlFocus.withoutFocusTint(
+                          null,
+                        ),
                         controller: _tabController,
                         isScrollable: false,
                         tabAlignment: TabAlignment.fill,
-                        labelColor: Theme.of(context).colorScheme.primary,
+                        labelColor: Theme.of(context).colorScheme.onSurface,
                         unselectedLabelColor: Theme.of(
                           context,
                         ).colorScheme.onSurfaceVariant,
-                        indicatorColor: Theme.of(context).colorScheme.primary,
+                        indicatorColor: Theme.of(context).colorScheme.onSurface,
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
-                          Tab(
-                            icon: const Icon(Icons.dynamic_feed),
+                          ButleryTab(
+                            icon: const ButleryIcon(ButleryIcons.activity),
                             text: context.l10n.socialFeed,
                           ),
-                          Tab(
-                            icon: const Icon(Icons.people),
+                          ButleryTab(
+                            icon: const ButleryIcon(ButleryIcons.users),
                             text: context.l10n.socialFriends,
                           ),
-                          Tab(
+                          ButleryTab(
                             icon: Badge(
                               isLabelVisible: friendsService
                                   .invitations
@@ -233,18 +247,18 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                               label: Text(
                                 '${friendsService.invitations.pendingReceivedInvitations.length}',
                               ),
-                              child: const Icon(Icons.groups),
+                              child: const ButleryIcon(ButleryIcons.users),
                             ),
                             text: context.l10n.socialGroups,
                           ),
-                          Tab(
+                          ButleryTab(
                             icon: Badge(
                               isLabelVisible:
                                   viewModel.incomingRequests.isNotEmpty,
                               label: Text(
                                 '${viewModel.incomingRequests.length}',
                               ),
-                              child: const Icon(Icons.search),
+                              child: const ButleryIcon(ButleryIcons.search),
                             ),
                             text: context.l10n.socialFindFriends,
                           ),
@@ -262,31 +276,28 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.error
-                                .withValues(
-                                  alpha: AppDimensions.opacityVeryLight,
-                                ),
+                            color: context.modeColors.surfaceTintDanger,
                             borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM,
-                            ),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.error
-                                  .withValues(
-                                    alpha: AppDimensions.opacityMediumLight,
-                                  ),
+                              AppDimensions.radiusControl,
                             ),
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: Theme.of(context).colorScheme.error,
+                              ButleryIcon(
+                                ButleryIcons.triangleAlert,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onErrorContainer,
                               ),
-                              const SizedBox(width: AppDimensions.spacingS),
+                              const SizedBox(width: AppDimensions.space4),
                               Expanded(
                                 child: Text(
                                   viewModel.error!,
-                                  style: AppTextStyles.bodyMediumError,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onErrorContainer,
+                                  ),
                                 ),
                               ),
                               ActionButtons.secondaryButton(
@@ -364,12 +375,15 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         return Semantics(
           label: context.l10n.a11yAddFriend,
           button: true,
-          child: FloatingActionButton(
-            onPressed: () => _tabController.animateTo(3),
-            tooltip: context.l10n.socialAddFriend,
-            child: const Icon(
-              Icons.person_add_alt_1,
-              size: AppDimensions.iconSizeL,
+          child: PressFill(
+            surface: PressSurface.ink,
+            child: FloatingActionButton(
+              onPressed: () => _tabController.animateTo(3),
+              tooltip: context.l10n.socialAddFriend,
+              child: const ButleryIcon(
+                ButleryIcons.userPlus,
+                size: AppDimensions.iconSizeL,
+              ),
             ),
           ),
         );
@@ -377,23 +391,26 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         return Semantics(
           label: context.l10n.groupCreateGroup,
           button: true,
-          child: FloatingActionButton(
-            onPressed: () => _showCreateGroupDialog(viewModel),
-            tooltip: context.l10n.groupCreateGroup,
-            child: const Stack(
-              children: [
-                Center(
-                  child: Icon(
-                    Icons.groups,
-                    size: AppDimensions.iconSizeL,
+          child: PressFill(
+            surface: PressSurface.ink,
+            child: FloatingActionButton(
+              onPressed: () => _showCreateGroupDialog(viewModel),
+              tooltip: context.l10n.groupCreateGroup,
+              child: const Stack(
+                children: [
+                  Center(
+                    child: ButleryIcon(
+                      ButleryIcons.users,
+                      size: AppDimensions.iconSizeL,
+                    ),
                   ),
-                ),
-                Positioned(
-                  top: AppDimensions.spacingXs,
-                  right: AppDimensions.spacingXs,
-                  child: CircularIconBadge.add(),
-                ),
-              ],
+                  Positioned(
+                    top: AppDimensions.spacingXs,
+                    right: AppDimensions.spacingXs,
+                    child: CircularIconBadge.add(),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -457,9 +474,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(
+        AppLogger.error('Failed to create group', e);
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.groupCouldNotCreate('$e'),
+          what: context.l10n.groupCreateFailed,
         );
       }
     }

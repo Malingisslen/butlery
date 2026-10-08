@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Inline warning row with icon and text.
 ///
@@ -25,7 +26,7 @@ class InlineWarning extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: AppDimensions.iconSizeS, color: color),
+        ButleryIcon(icon, size: AppDimensions.iconSizeS, color: color),
         const SizedBox(width: AppDimensions.spacingXs),
         Expanded(
           child: Text(

@@ -18,6 +18,7 @@
 
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
+import { assertGuardTriggersCoverItsDartInputs } from "./_dart-guard-triggers";
 import {
   USER_MODERATION,
   type DeletionResult,
@@ -34,6 +35,8 @@ const {
   MAX_BLOCK_SWEEP_ROWS,
   MAX_MIRROR_SWEEP_ROWS,
   deleteRealtimeMenus,
+  deleteFamilyData,
+  deleteRealtimeResources,
 } = require("../account/account-deletion-cascade");
 
 /** Marker standing in for `FieldValue.arrayRemove` (real SDK unavailable). */
@@ -106,9 +109,22 @@ function applyFieldPath(
   if (rest.length === 0) {
     if (isDeleteOp(value)) {
       delete target[head];
+    } else if (isArrayRemoveOp(value)) {
+      // BUT-2115: `reactions.<key>` is an arrayRemove at a dotted path; storing
+      // the marker would read as the other reactors' uids being wiped.
+      const cur = Array.isArray(target[head]) ? (target[head] as unknown[]) : [];
+      target[head] = cur.filter((item) => !value.values.includes(item));
     } else {
       target[head] = value;
     }
+    return;
+  }
+  // BUT-2272: deleting a key under a map that is not there changes nothing in
+  // Firestore. Building the missing map here would leave an empty one behind.
+  if (
+    isDeleteOp(value) &&
+    (typeof target[head] !== "object" || target[head] === null)
+  ) {
     return;
   }
   const child =
@@ -426,6 +442,17 @@ class FakeFirestore {
     };
   }
 
+  /** `applyUpdate` for the `FieldPath` form: a missing doc is not written. */
+  private applyFieldPairs(path: string, pairs: [string[], unknown][]): void {
+    const existing = this.docs.get(path);
+    if (!existing) return;
+    const next = { ...existing };
+    for (const [segments, value] of pairs) {
+      applyFieldPath(next, segments, value);
+    }
+    this.docs.set(path, next);
+  }
+
   private applyUpdate(path: string, data: DocData): void {
     const existing = this.docs.get(path);
     if (!existing) return;
@@ -735,6 +762,16 @@ class FakeFirestore {
           fieldVal.includes(value)
         ) {
           matches.push({ path, data });
+        } else if (op === "!=") {
+          // BUT-2272: `!= null` is how a map KEY is tested for presence. Only
+          // that form is modelled; any other `!=` throws rather than matching
+          // nothing in silence.
+          if (value !== null) {
+            throw new Error("fake collectionGroup: only `!= null` is modelled");
+          }
+          if (fieldVal !== undefined && fieldVal !== null) {
+            matches.push({ path, data });
+          }
         }
       }
       return matches;
@@ -775,20 +812,49 @@ class FakeFirestore {
 
   batch(): {
     delete: (ref: FakeRef) => void;
-    update: (ref: FakeRef, data: DocData) => void;
+    update: (
+      ref: FakeRef,
+      dataOrField: DocData | admin.firestore.FieldPath,
+      ...moreFieldsAndValues: unknown[]
+    ) => void;
     set: (ref: FakeRef, data: DocData) => void;
     commit: () => Promise<void>;
   } {
     const deletes: string[] = [];
-    const updates: { path: string; data: DocData }[] = [];
+    const updates: {
+      path: string;
+      data?: DocData;
+      fieldPairs?: [string[], unknown][];
+    }[] = [];
     const sets: { path: string; data: DocData }[] = [];
     return {
       delete: (ref) => {
         deletes.push(ref.path);
       },
-      update: (ref, data) => {
+      // BUT-2272: the Admin SDK's other `update` form, alternating
+      // `FieldPath`, value, `FieldPath`, value. Kept as segment lists, never
+      // joined into a dotted string, so a key holding a dot stays one key.
+      update: (ref, dataOrField, ...moreFieldsAndValues) => {
         this.updatedPaths.push(ref.path);
-        updates.push({ path: ref.path, data });
+        if (!(dataOrField instanceof admin.firestore.FieldPath)) {
+          updates.push({ path: ref.path, data: dataOrField });
+          return;
+        }
+        const args = [dataOrField, ...moreFieldsAndValues];
+        if (args.length % 2 !== 0) {
+          throw new Error("fake batch.update: unpaired FieldPath argument");
+        }
+        const fieldPairs: [string[], unknown][] = [];
+        for (let i = 0; i < args.length; i += 2) {
+          if (!(args[i] instanceof admin.firestore.FieldPath)) {
+            throw new Error("fake batch.update: expected a FieldPath");
+          }
+          fieldPairs.push([
+            (args[i] as unknown as { segments: string[] }).segments,
+            args[i + 1],
+          ]);
+        }
+        updates.push({ path: ref.path, fieldPairs });
       },
       // BUT-2032: `set` CREATES, where `update` requires the document to exist.
       // Routing both through `applyUpdate` made a `batch.set` on a new path a
@@ -820,7 +886,10 @@ class FakeFirestore {
           }
         }
         for (const s of sets) this.docs.set(s.path, { ...s.data });
-        for (const u of updates) this.applyUpdate(u.path, u.data);
+        for (const u of updates) {
+          if (u.fieldPairs) this.applyFieldPairs(u.path, u.fieldPairs);
+          else this.applyUpdate(u.path, u.data as DocData);
+        }
         for (const path of deletes) {
           this.deletedPaths.push(path);
           this.docs.delete(path);
@@ -1027,9 +1096,61 @@ async function scenario_messagesInLeftConversationsAreReached(): Promise<void> {
 }
 
 /**
- * BUT-1768. `ownerId`, never `userId` — the BUT-1396 trap that made
- * `deleteRealtimeRecipes` match zero documents for months.
+ * BUT-2267: a household linked to the erased user's OWN group ends the way the
+ * group-deleted trigger ends it — every joined member out, their shares gone —
+ * and, with its owner gone too, it is torn down. Never re-pointed to a `view`
+ * member. The trigger-first order is the solo path; both orders are pinned
+ * end to end in group-household.integration.test.ts.
  */
+async function scenario_ownedGroupHouseholdIsTornDown(): Promise<void> {
+  const db = new FakeFirestore();
+  const linked = {
+    name: "x",
+    members: [
+      { userId: UID, permission: "admin" },
+      { userId: OTHER, permission: "view" },
+      { userId: THIRD, permission: "view" },
+    ],
+    memberUserIds: [UID, OTHER, THIRD],
+    memberPermissions: { [UID]: "admin", [OTHER]: "view", [THIRD]: "view" },
+    createdBy: UID,
+    sourceGroupOwnerId: UID,
+    sourceGroupId: "g1",
+  };
+  db.set("households/owned", linked);
+  db.set("household_allergen_shares/owned_" + OTHER, { householdId: "owned" });
+  db.set("household_allergen_shares/owned_" + THIRD, { householdId: "owned" });
+  db.set("diner_profiles/ella", { householdId: "owned", createdBy: UID });
+  // The same shape created by someone else is not a link the trigger honours,
+  // so it keeps its members; only the erased uid leaves it.
+  db.set("households/notOwned", { ...linked, createdBy: OTHER });
+  db.set("household_allergen_shares/notOwned_" + OTHER, {
+    householdId: "notOwned",
+  });
+
+  // An ordinary shared household the erased user created stays for the
+  // others, as before BUT-2267.
+  const { sourceGroupOwnerId: _o, sourceGroupId: _g, ...plain } = linked;
+  db.set("households/plain", plain);
+
+  await deleteFamilyData(asDb(db), UID);
+
+  check("an unlinked shared household survives for the others",
+    db.has("households/plain"));
+  check("an owned group household is deleted", !db.has("households/owned"));
+  check("its joined members' shares are deleted",
+    !db.has("household_allergen_shares/owned_" + OTHER) &&
+      !db.has("household_allergen_shares/owned_" + THIRD));
+  check("its diner profile is deleted", !db.has("diner_profiles/ella"));
+  const kept = db.get("households/notOwned");
+  check("a household someone else created keeps its other members",
+    JSON.stringify(kept?.memberUserIds) === JSON.stringify([OTHER, THIRD]) &&
+      db.has("household_allergen_shares/notOwned_" + OTHER),
+    JSON.stringify(kept));
+  check("…and loses the erased uid from its link",
+    kept !== undefined && !("sourceGroupOwnerId" in kept));
+}
+
 async function scenario_realtimeMenusOwnedAreDeleted(): Promise<void> {
   const db = new FakeFirestore();
   db.set("realtime_menus/mine", {
@@ -1084,6 +1205,197 @@ async function scenario_realtimeMenuLastEditorIsScrubbed(): Promise<void> {
     shared?.lastEditedBy === "deleted" &&
       shared?.lastEditedByDisplayName === "[Raderad användare]",
     `got ${JSON.stringify(shared)}`,
+  );
+}
+
+/**
+ * BUT-2151: live menus in `realtime_resources`. Owned goes; someone else's
+ * stays with the last-editor pair anonymized; the user leaves the roster in
+ * BOTH fields, which the rules require to match.
+ */
+async function scenario_realtimeResourcesAreErased(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/${UID}_m1`, {
+    type: "menu",
+    ownerId: UID,
+    participants: { [UID]: "owner" },
+    participantIds: [UID],
+  });
+  db.set(`realtime_resources/${OTHER}_m2`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "editor" },
+    participantIds: [OTHER, UID],
+    lastEditedBy: UID,
+    lastEditedByDisplayName: "Malin",
+    menuTitle: "Veckans middagar",
+  });
+
+  await deleteRealtimeResources(asDb(db), UID);
+
+  check(
+    "a live menu the user OWNS is deleted",
+    !db.has(`realtime_resources/${UID}_m1`),
+  );
+  const kept = db.get(`realtime_resources/${OTHER}_m2`);
+  check(
+    "someone else's live menu is kept for its owner",
+    kept?.menuTitle === "Veckans middagar",
+  );
+  check(
+    "its last-editor pair is anonymized",
+    kept?.lastEditedBy === "deleted" &&
+      kept?.lastEditedByDisplayName === "[Raderad användare]",
+    `got ${JSON.stringify(kept)}`,
+  );
+  check(
+    "the user leaves both roster fields",
+    Array.isArray(kept?.participantIds) &&
+      !(kept?.participantIds as string[]).includes(UID) &&
+      !Object.keys((kept?.participants ?? {}) as object).includes(UID),
+    `got ${JSON.stringify(kept)}`,
+  );
+}
+
+/**
+ * BUT-2214: the menus the user took part in stay for their owners, but no
+ * dish in them may name the user afterwards — by uid anywhere in it, or by
+ * the display name an older whole-recipe dish carries beside the uid.
+ */
+function menuWithDishes(): DocData {
+  return {
+    middag: [
+      // Flat, as the app stores a dish since BUT-2214; the user's uid also
+      // sits in two nested fields the core keeps.
+      {
+        id: "mine-flat",
+        title: "Linsgryta",
+        createdBy: UID,
+        heirloom: { addedByUserId: UID, writerName: "Farmor Elsa" },
+        tagOverrides: { lastEditedBy: UID },
+        // A map keyed by the uid, as a hand-rolled client could write.
+        handRolled: { [UID]: true },
+      },
+      { id: "theirs", title: "Pasta", createdBy: OTHER },
+      // A whole recipe, as a client before BUT-2214 stores it: names beside
+      // the ids, and the owner's personal tags.
+      {
+        core: {
+          id: "mine-whole",
+          title: "Soppa",
+          createdBy: UID,
+          personalTagIds: ["barnens-favoriter"],
+        },
+        type: 2,
+        socialData: {
+          ownerId: UID,
+          ownerDisplayName: "Malin",
+          memberPermissions: { [UID]: "editor", [OTHER]: "viewer" },
+        },
+        realtimeData: {
+          lastEditedByUserId: UID,
+          lastEditedByDisplayName: "Malin",
+        },
+      },
+    ],
+  };
+}
+
+function checkDishesScrubbed(where: string, menu: DocData | undefined): void {
+  const dishes = ((menu?.menuSnapshot as DocData | undefined)?.middag ??
+    []) as DocData[];
+  const text = JSON.stringify(dishes);
+  const flat = dishes.find((d) => d.id === "mine-flat");
+  const whole = dishes.find((d) => d.id === "mine-whole");
+  const theirs = dishes.find((d) => d.id === "theirs");
+  check(
+    `${where}: no dish holds the user's uid`,
+    dishes.length === 3 && !text.includes(UID),
+    `got ${text}`,
+  );
+  check(
+    `${where}: no dish holds the user's name`,
+    !text.includes("Malin"),
+    `got ${text}`,
+  );
+  check(
+    `${where}: the user's dishes keep their content, "deleted" in the uid's place`,
+    flat?.title === "Linsgryta" &&
+      flat?.createdBy === "deleted" &&
+      (flat?.heirloom as DocData | undefined)?.addedByUserId === "deleted" &&
+      (flat?.heirloom as DocData | undefined)?.writerName === "Farmor Elsa" &&
+      whole?.title === "Soppa" &&
+      whole?.createdBy === "deleted",
+    `got ${text}`,
+  );
+  check(
+    `${where}: an older whole-recipe dish becomes a menu dish`,
+    whole !== undefined &&
+      !("core" in whole) &&
+      !("socialData" in whole) &&
+      !("realtimeData" in whole) &&
+      !("type" in whole) &&
+      !("personalTagIds" in whole),
+    `got ${JSON.stringify(whole)}`,
+  );
+  check(
+    `${where}: someone else's dish is left as it was`,
+    JSON.stringify(theirs) ===
+      JSON.stringify({ id: "theirs", title: "Pasta", createdBy: OTHER }),
+    `got ${JSON.stringify(theirs)}`,
+  );
+}
+
+async function scenario_menuDishCreatorIsScrubbed(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/${OTHER}_m2`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "editor" },
+    participantIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  db.set("realtime_menus/theirs", {
+    ownerId: OTHER,
+    participantIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  // Shared without a members row (the direct-share managers) ...
+  db.set("shared_content/their-menu", {
+    contentType: "menu",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  // ... and through `addMember`, which writes the members row AND the array:
+  // the members leg removes the uid from the array before anything after it.
+  db.set("shared_content/invited-menu", {
+    contentType: "menu",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+    menuSnapshot: menuWithDishes(),
+  });
+  db.set(`shared_content/invited-menu/members/${UID}`, { userId: UID });
+
+  await deleteRealtimeResources(asDb(db), UID);
+  await deleteRealtimeMenus(asDb(db), UID);
+  const { removeFromSharedContent } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  await removeFromSharedContent(asDb(db), UID);
+
+  checkDishesScrubbed(
+    "realtime_resources",
+    db.get(`realtime_resources/${OTHER}_m2`),
+  );
+  checkDishesScrubbed("realtime_menus", db.get("realtime_menus/theirs"));
+  checkDishesScrubbed(
+    "shared_content, direct share",
+    db.get("shared_content/their-menu"),
+  );
+  checkDishesScrubbed(
+    "shared_content, invited",
+    db.get("shared_content/invited-menu"),
   );
 }
 
@@ -2385,6 +2697,59 @@ async function scenario_probeSeesLeftoverGroupMenuPlans(): Promise<void> {
     await probeResidualData(asDb(dirty), UID, dirtyResult);
     check(
       `a group menu plan still naming the user in ${label} is reported as residual`,
+      dirtyResult.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+    );
+  }
+}
+
+/**
+ * BUT-2151: the `realtime_resources` legs of the residual probe.
+ */
+async function scenario_probeSeesLeftoverRealtimeResources(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const result = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const clean = new FakeFirestore();
+  clean.set(`realtime_resources/${OTHER}_m`, {
+    ownerId: OTHER,
+    participantIds: [OTHER],
+    lastEditedBy: OTHER,
+  });
+  const cleanResult = result();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a live menu clean on all three handles probes CLEAN",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  for (const [label, doc] of [
+    [
+      "the owner field",
+      { ownerId: UID, participantIds: [OTHER], lastEditedBy: OTHER },
+    ],
+    [
+      "the last editor",
+      { ownerId: OTHER, participantIds: [OTHER], lastEditedBy: UID },
+    ],
+    [
+      "the roster",
+      { ownerId: OTHER, participantIds: [OTHER, UID], lastEditedBy: OTHER },
+    ],
+  ] as const) {
+    const dirty = new FakeFirestore();
+    dirty.set(`realtime_resources/${OTHER}_m`, doc);
+    const dirtyResult = result();
+    await probeResidualData(asDb(dirty), UID, dirtyResult);
+    check(
+      `a live menu still naming the user in ${label} is reported as residual`,
       dirtyResult.failedCollections.includes("residual_data_detected"),
       `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
     );
@@ -4486,6 +4851,220 @@ async function scenario_ingredientSuggestionsDeclineAboveCap(): Promise<void> {
 }
 
 /**
+ * P5-U27b: `recipe_suggestions` names two people, and a row goes with EITHER
+ * account: the ones the user suggested (`suggesterId`) and the ones made to the
+ * user's recipes (`ownerId`). A row between two OTHER people survives, which is
+ * what makes the delete assertions non-vacuous. The probe sees a leftover on
+ * each leg.
+ */
+async function scenario_recipeSuggestionsErasedWithEitherAccountAndProbed(): Promise<void> {
+  const {
+    deleteRecipeSuggestions,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set("recipe_suggestions/i-suggested", {
+    suggesterId: UID,
+    ownerId: OTHER,
+    recipeId: "r1",
+  });
+  store.set("recipe_suggestions/made-to-me", {
+    suggesterId: OTHER,
+    ownerId: UID,
+    recipeId: "r2",
+  });
+  store.set("recipe_suggestions/between-others", {
+    suggesterId: OTHER,
+    ownerId: "third-person",
+    recipeId: "r3",
+  });
+
+  const ok = await deleteRecipeSuggestions(asDb(store), UID);
+
+  check(
+    "the recipe-suggestion sweep reports success below its cap",
+    ok === true,
+    `returned ${ok}`,
+  );
+  check(
+    "a suggestion the user made is deleted",
+    !store.has("recipe_suggestions/i-suggested"),
+    `left behind: ${JSON.stringify(store.idsIn("recipe_suggestions"))}`,
+  );
+  check(
+    "a suggestion made to the user's recipe is deleted",
+    !store.has("recipe_suggestions/made-to-me"),
+    `left behind: ${JSON.stringify(store.idsIn("recipe_suggestions"))}`,
+  );
+  check(
+    "a suggestion between two other people survives",
+    store.has("recipe_suggestions/between-others"),
+    "the sweep is not filtered on the two people — it deleted a row it does not own",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const clean = emptyResult();
+  await probeResidualData(asDb(store), UID, clean);
+  check(
+    "with only other people's suggestions left, the probe stays clean",
+    !clean.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(clean.failedCollections)}`,
+  );
+
+  for (const field of ["suggesterId", "ownerId"]) {
+    const leftover = new FakeFirestore();
+    leftover.set("recipe_suggestions/survivor", {
+      suggesterId: field === "suggesterId" ? UID : OTHER,
+      ownerId: field === "ownerId" ? UID : OTHER,
+      recipeId: "r1",
+    });
+    const result = emptyResult();
+    await probeResidualData(asDb(leftover), UID, result);
+    check(
+      `a surviving recipe suggestion is reported on its ${field} leg`,
+      result.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(result.failedCollections)}`,
+    );
+  }
+}
+
+/**
+ * P5-U27b: the `ownerId` leg is filled by OTHER people's writes, so the sweep
+ * has no decline cap: many suggestions made to the user's recipes cannot hold
+ * the user's erasure in a failed state. It pages through both legs until they
+ * are empty, and a row between two other people survives.
+ */
+async function scenario_recipeSuggestionsManyRowsArePagedNotDeclined(): Promise<void> {
+  const {
+    deleteRecipeSuggestions,
+    RECIPE_SUGGESTION_SWEEP_PAGE,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  const many = RECIPE_SUGGESTION_SWEEP_PAGE * 4 + 7;
+  for (let i = 0; i < many; i++) {
+    store.set(`recipe_suggestions/to-me-${i}`, {
+      suggesterId: OTHER,
+      ownerId: UID,
+      recipeId: `r-${i}`,
+    });
+  }
+  for (let i = 0; i < RECIPE_SUGGESTION_SWEEP_PAGE + 1; i++) {
+    store.set(`recipe_suggestions/i-suggested-${i}`, {
+      suggesterId: UID,
+      ownerId: OTHER,
+      recipeId: `s-${i}`,
+    });
+  }
+  store.set("recipe_suggestions/between-others", {
+    suggesterId: OTHER,
+    ownerId: "third-person",
+    recipeId: "r",
+  });
+
+  const ok = await deleteRecipeSuggestions(asDb(store), UID);
+
+  check(
+    "many suggestions made to the user's recipes do not block the sweep",
+    ok === true,
+    `returned ${ok}; another person's writes must not fail this erasure`,
+  );
+  check(
+    "every page is deleted, on both legs",
+    store.idsIn("recipe_suggestions").length === 1 &&
+      store.has("recipe_suggestions/between-others"),
+    `rows left: ${JSON.stringify(store.idsIn("recipe_suggestions").slice(0, 5))}`,
+  );
+}
+
+/**
+ * P6-U09: `mfa_backup_codes/{uid}` and the per-account counter
+ * `mfa_recovery_attempts/uid_{uid}` go with the account. The HMAC-keyed
+ * per-IP counter and the global counter are not linkable to the account and
+ * are left to their TTL, and another account's codes survive — which is what
+ * makes the delete assertions non-vacuous. The probe sees a leftover of
+ * either document.
+ */
+async function scenario_mfaRecoveryDataErasedAndProbed(): Promise<void> {
+  const {
+    deleteMfaRecoveryData,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`mfa_backup_codes/${UID}`, {
+    codes: [{ salt: "s", hash: "h", usedAt: null }],
+    createdAt: 1,
+  });
+  store.set(`mfa_backup_codes/${OTHER}`, {
+    codes: [{ salt: "s", hash: "h", usedAt: null }],
+    createdAt: 1,
+  });
+  store.set(`mfa_recovery_attempts/uid_${UID}`, { failures: 2 });
+  store.set(`mfa_recovery_attempts/uid_${OTHER}`, { failures: 1 });
+  store.set("mfa_recovery_attempts/ip_0123abcd", { failures: 3 });
+  store.set("mfa_recovery_attempts/global", { failures: 9 });
+
+  const ok = await deleteMfaRecoveryData(asDb(store), UID);
+
+  check("the MFA recovery step reports success", ok === true, `returned ${ok}`);
+  check(
+    "the user's backup-code hashes are deleted",
+    !store.has(`mfa_backup_codes/${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("mfa_backup_codes"))}`,
+  );
+  check(
+    "the user's per-account recovery counter is deleted",
+    !store.has(`mfa_recovery_attempts/uid_${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("mfa_recovery_attempts"))}`,
+  );
+  check(
+    "another account's codes and counter survive, and so do the unlinkable counters",
+    store.has(`mfa_backup_codes/${OTHER}`) &&
+      store.has(`mfa_recovery_attempts/uid_${OTHER}`) &&
+      store.has("mfa_recovery_attempts/ip_0123abcd") &&
+      store.has("mfa_recovery_attempts/global"),
+    `codes: ${JSON.stringify(store.idsIn("mfa_backup_codes"))}, ` +
+      `attempts: ${JSON.stringify(store.idsIn("mfa_recovery_attempts"))}`,
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const clean = emptyResult();
+  await probeResidualData(asDb(store), UID, clean);
+  check(
+    "with only other accounts' MFA rows left, the probe stays clean",
+    !clean.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(clean.failedCollections)}`,
+  );
+
+  for (const path of [
+    `mfa_backup_codes/${UID}`,
+    `mfa_recovery_attempts/uid_${UID}`,
+  ]) {
+    const leftover = new FakeFirestore();
+    leftover.set(path, { failures: 1 });
+    const result = emptyResult();
+    await probeResidualData(asDb(leftover), UID, result);
+    check(
+      `a surviving ${path.split("/")[0]} document is reported by the probe`,
+      result.failedCollections.includes("residual_data_detected"),
+      `failed: ${JSON.stringify(result.failedCollections)}`,
+    );
+  }
+}
+
+/**
  * BUT-1693: `household_allergen_shares` is erased by the flat `userId` field,
  * across every household id, and the probe SEES a leftover.
  *
@@ -5067,7 +5646,7 @@ async function scenario_blockMirrorExemptionRestsOnTheSameDecision(): Promise<vo
 
   // The guard is only as live as its CI trigger: it reads a Dart file, so the
   // workflow must re-run it when that file changes.
-  assertGuardTriggersCoverItsDartInputs(repoRoot, [managerPath]);
+  assertGuardTriggersCoverItsDartInputs(repoRoot, [managerPath], check);
 }
 
 /**
@@ -5831,6 +6410,10 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     "ingredients",
     "rate_limits",
     "counters",
+    // P5-U26b: overwritten week menus and own recipes kept 30 days behind
+    // "Återställ". The TTL policy removes them after 30 days; an account
+    // deletion must erase them at once.
+    "overwritten_versions",
     // no live writer found; rows can predate their removal
     "category_memberships",
     "connection_tests",
@@ -6350,116 +6933,14 @@ async function scenario_exportCoversEveryDeletedSubcollection(): Promise<void> {
   // BUT-2002. The two paths are the ones THIS scenario just opened, passed as
   // values rather than restated as literals — a hand-kept second copy of the
   // list is the drift this whole file exists to prevent.
-  assertGuardTriggersCoverItsDartInputs(repoRoot, [constFile, exportFile]);
-}
-
-/**
- * BUT-2002. A guard that reads Dart is only as live as its CI trigger, and that
- * trigger lived in a different file with nothing tying the two together.
- *
- * Ranges over the files the caller actually opened, so it answers "will CI run
- * this scenario when one of its own inputs changes" rather than "does the
- * workflow contain some strings someone once typed".
- *
- * Checks `push` AND `pull_request` separately: they are two independent lists in
- * that file, and a fix applied to one is the obvious half-miss.
- *
- * NOT proven here: the workflow also lists `lib/services/account/**`, which this
- * scenario never reads. That glob is deliberate breadth, not a derived input —
- * the export MANAGERS and the service that builds them decide which repository
- * methods get called, so deleting a call there drops a section from the bundle
- * while the repository method survives and the chain-scan above still finds it.
- * This guard cannot see that case; the line is there so CI at least runs on it.
- */
-function assertGuardTriggersCoverItsDartInputs(
-  repoRoot: string,
-  dartInputsAbsolute: string[],
-): void {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const fs = require("fs");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const path = require("path");
-
-  const workflowRelative = ".github/workflows/cloud-functions-unit.yml";
-  const workflowPath = path.join(repoRoot, workflowRelative);
-  check(
-    "the guard can find its own CI workflow",
-    fs.existsSync(workflowPath),
-    `missing: ${workflowRelative}`,
-  );
-  if (!fs.existsSync(workflowPath)) return;
-  const workflow = fs.readFileSync(workflowPath, "utf8") as string;
-
-  /** The quoted entries under one `paths:` block, comments stripped. */
-  const pathsUnder = (trigger: string): string[] => {
-    const at = workflow.indexOf(`  ${trigger}:`);
-    if (at < 0) return [];
-    const pathsAt = workflow.indexOf("paths:", at);
-    if (pathsAt < 0) return [];
-    // The block ends at the first line that is not a comment and not a `- `
-    // entry — i.e. the next key at any indentation.
-    const lines = workflow.slice(pathsAt).split("\n").slice(1);
-    const entries: string[] = [];
-    for (const line of lines) {
-      const t = line.trim();
-      if (t === "" || t.startsWith("#")) continue;
-      if (!t.startsWith("- ")) break;
-      entries.push(t.slice(2).trim().replace(/^["']|["']$/g, ""));
-    }
-    return entries;
-  };
-
-  // Only the two glob shapes this file actually uses: a literal path, and a
-  // trailing `/**`. Deliberately not a general glob engine — an approximate
-  // matcher that silently says "covered" is the failure mode being fixed.
-  const covers = (pattern: string, file: string): boolean =>
-    pattern.endsWith("/**")
-      ? file.startsWith(pattern.slice(0, -2))
-      : pattern === file;
-
-  // A GitHub `!` exclusion is the one shape that would make this matcher say
-  // "covered" while CI skipped the file: the negation reads as an unmatchable
-  // literal here, and the positive glob beside it still matches. Refused for
-  // the whole trigger rather than modelled, because getting exclusion ordering
-  // subtly wrong is how an approximate matcher goes quiet again.
-  const rejectsNegations = (trigger: string, patterns: string[]): void => {
-    check(
-      `the ${trigger} trigger uses no path exclusions this guard cannot read`,
-      patterns.every((p) => !p.startsWith("!")),
-      "a `!` entry excludes files from the trigger, and the positive globs " +
-        "beside it would still report this guard's inputs as covered: " +
-        JSON.stringify(patterns.filter((p) => p.startsWith("!"))),
-    );
-  };
-
-  const relativeInputs = dartInputsAbsolute.map((p) =>
-    path.relative(repoRoot, p).split(path.sep).join("/"),
-  );
-  check(
-    "the guard's Dart inputs resolved to repo-relative paths",
-    relativeInputs.every((p) => p.startsWith("lib/")),
-    `expected lib/ paths, got ${JSON.stringify(relativeInputs)}`,
-  );
-
-  for (const trigger of ["push", "pull_request"]) {
-    const patterns = pathsUnder(trigger);
-    check(
-      `the ${trigger} trigger's paths: block is readable`,
-      patterns.length > 0,
-      `parsed no entries under ${trigger}`,
-    );
-    rejectsNegations(trigger, patterns);
-    const uncovered = relativeInputs.filter(
-      (file) => !patterns.some((p) => covers(p, file)),
-    );
-    check(
-      `every Dart file this guard reads re-runs it on ${trigger}`,
-      uncovered.length === 0,
-      "this scenario reads these files but CI would not run it when they " +
-        `change, so the invariant is unguarded for exactly the edit most ` +
-        `likely to break it: ${JSON.stringify(uncovered)}`,
-    );
-  }
+  // NOT proven by this call: the workflow also lists `lib/services/account/**`,
+  // which this scenario never reads. That glob is deliberate breadth, not a
+  // derived input — the export MANAGERS and the service that builds them decide
+  // which repository methods get called, so deleting a call there drops a
+  // section from the bundle while the repository method survives and the
+  // chain-scan above still finds it. This guard cannot see that case; the line
+  // is there so CI at least runs on it.
+  assertGuardTriggersCoverItsDartInputs(repoRoot, [constFile, exportFile], check);
 }
 
 /**
@@ -8806,6 +9287,235 @@ async function scenario_probeSeesLeftoverCommentTraces(): Promise<void> {
 }
 
 /**
+ * BUT-2115: the erased uid leaves every reaction list it is in, on any key,
+ * and every other reactor stays.
+ */
+async function scenario_commentReactionsLoseOnlyTheErasedUid(): Promise<void> {
+  const { scrubCommentReactions } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("recipe_comments/c1", {
+    authorId: OTHER,
+    text: "gott",
+    reactions: { heart: [UID, THIRD], thinking: [UID], fire: [THIRD] },
+  });
+  db.set("recipe_comments/c2", {
+    authorId: OTHER,
+    reactions: { yum: [OTHER, UID] },
+  });
+  db.set("recipe_comments/c3", {
+    authorId: OTHER,
+    reactions: { heart: [THIRD] },
+  });
+  db.set("recipe_comments/c4", { authorId: OTHER });
+
+  const ok = await scrubCommentReactions(asDb(db), UID);
+
+  check("the reaction scrub reports success", ok === true);
+  check(
+    "the erased uid leaves each list and the other reactors stay",
+    JSON.stringify(db.get("recipe_comments/c1")?.reactions) ===
+      JSON.stringify({ heart: [THIRD], thinking: [], fire: [THIRD] }) &&
+      JSON.stringify(db.get("recipe_comments/c2")?.reactions) ===
+        JSON.stringify({ yum: [OTHER] }),
+    JSON.stringify([db.get("recipe_comments/c1"), db.get("recipe_comments/c2")]),
+  );
+  check(
+    "the comment text and author survive",
+    db.get("recipe_comments/c1")?.text === "gott" &&
+      db.get("recipe_comments/c1")?.authorId === OTHER,
+  );
+  check(
+    "comments without the erased uid are not written to",
+    !db.updatedPaths.includes("recipe_comments/c3") &&
+      !db.updatedPaths.includes("recipe_comments/c4"),
+    JSON.stringify(db.updatedPaths),
+  );
+
+  const residual = emptyResult();
+  await probeAfter(db, residual);
+  check(
+    "after the scrub the probe reads zero",
+    !sawResidual(residual),
+    `failed: ${JSON.stringify(residual.failedCollections)}`,
+  );
+}
+
+async function probeAfter(db: FakeFirestore, result: DeletionResult): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+  await probeResidualData(asDb(db), UID, result);
+}
+
+/**
+ * BUT-2115: over the cap on one key that key declines and writes nothing, the
+ * other keys are still swept, and the step fails.
+ */
+async function scenario_implausibleReactionSweepDeclines(): Promise<void> {
+  const {
+    scrubCommentReactions,
+    MAX_COMMENT_REACTION_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const over = new FakeFirestore();
+  for (let i = 0; i <= MAX_COMMENT_REACTION_SWEEP_ROWS; i++) {
+    over.set(`recipe_comments/h-${i}`, { authorId: `p-${i}`, reactions: { heart: [UID] } });
+  }
+  over.set("recipe_comments/f", { authorId: OTHER, reactions: { fire: [UID, THIRD] } });
+  const overOk = await scrubCommentReactions(asDb(over), UID);
+  check("the reaction scrub fails the step when one key is over its cap", overOk === false);
+  check(
+    "the over-cap key is not written to",
+    !over.updatedPaths.some((p) => p.startsWith("recipe_comments/h-")),
+  );
+  check(
+    "the other keys are still swept",
+    JSON.stringify(over.get("recipe_comments/f")?.reactions) ===
+      JSON.stringify({ fire: [THIRD] }),
+    JSON.stringify(over.get("recipe_comments/f")),
+  );
+
+  const atCap = new FakeFirestore();
+  for (let i = 0; i < MAX_COMMENT_REACTION_SWEEP_ROWS; i++) {
+    atCap.set(`recipe_comments/h-${i}`, { authorId: `p-${i}`, reactions: { heart: [UID] } });
+  }
+  check(
+    "the reaction scrub runs at exactly its cap",
+    (await scrubCommentReactions(asDb(atCap), UID)) === true &&
+      atCap.updatedPaths.length === MAX_COMMENT_REACTION_SWEEP_ROWS,
+  );
+
+  const fails = new FakeFirestore();
+  fails.set("recipe_comments/x", { authorId: OTHER, reactions: { yum: [UID] } });
+  fails.batchFailures.set("recipe_comments/x", 13);
+  check(
+    "a rejected reaction-scrub chunk fails the step",
+    (await scrubCommentReactions(asDb(fails), UID)) === false,
+  );
+}
+
+/**
+ * BUT-2115: each reaction key's probe leg fires on its own residue, and
+ * another person's reaction does not fire it.
+ */
+async function scenario_probeSeesLeftoverReactions(): Promise<void> {
+  const { COMMENT_REACTION_KEYS } = require("../account/account-deletion-cascade");
+  const quiet: string[] = [];
+  for (const key of COMMENT_REACTION_KEYS as readonly string[]) {
+    const db = new FakeFirestore();
+    db.set("recipe_comments/x", { authorId: OTHER, reactions: { [key]: [THIRD, UID] } });
+    const r = emptyResult();
+    await probeAfter(db, r);
+    if (!sawResidual(r)) quiet.push(key);
+  }
+  check(
+    "a surviving reaction on every key is residual",
+    quiet.length === 0,
+    `keys the probe missed: ${quiet.join(", ")}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set("recipe_comments/x", { authorId: OTHER, reactions: { heart: [THIRD] } });
+  const r = emptyResult();
+  await probeAfter(clean, r);
+  check("another person's reaction does not fire the probe", !sawResidual(r));
+}
+
+/**
+ * BUT-2115: one reaction key list in three places — the rules' `reactionKeys()`,
+ * the app's `kReactionEmojis` and the cascade's `COMMENT_REACTION_KEYS`. A key
+ * the rules accept and the cascade does not sweep would survive an erasure; a
+ * key the app offers and the rules refuse would fail on every tap.
+ */
+async function scenario_reactionKeysAgreeAcrossRulesAppAndCascade(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const { COMMENT_REACTION_KEYS } = require("../account/account-deletion-cascade");
+  const repoRoot = path.resolve(__dirname, "..", "..", "..");
+  assertGuardTriggersCoverItsDartInputs(repoRoot, [
+    path.join(repoRoot, "lib", "widgets", "common", "emoji_reaction_picker.dart"),
+  ], check);
+  const quoted = (body: string): string[] =>
+    [...body.matchAll(/['"]([A-Za-z_]+)['"]\s*[,:\]]/g)].map((m) => m[1]);
+
+  const rules = fs.readFileSync(path.join(repoRoot, "firestore.rules"), "utf8") as string;
+  const rulesFn = rules.match(/function reactionKeys\(\)\s*\{\s*return\s*\[([^\]]*)\]/);
+  const rulesKeys = rulesFn ? quoted(rulesFn[1] + "]") : [];
+
+  const dart = fs.readFileSync(
+    path.join(repoRoot, "lib", "widgets", "common", "emoji_reaction_picker.dart"),
+    "utf8",
+  ) as string;
+  const dartMap = dart.match(/const Map<String, String> kReactionEmojis = \{([\s\S]*?)\n\};/);
+  const dartKeys = dartMap ? quoted(dartMap[1]) : [];
+
+  const cascade = JSON.stringify([...COMMENT_REACTION_KEYS]);
+  check(
+    "the rules' reactionKeys() equals COMMENT_REACTION_KEYS",
+    rulesKeys.length > 0 && JSON.stringify(rulesKeys) === cascade,
+    `rules ${JSON.stringify(rulesKeys)} vs cascade ${cascade}`,
+  );
+  check(
+    "the app's kReactionEmojis keys equal COMMENT_REACTION_KEYS",
+    dartKeys.length > 0 && JSON.stringify(dartKeys) === cascade,
+    `app ${JSON.stringify(dartKeys)} vs cascade ${cascade}`,
+  );
+}
+
+/**
+ * BUT-2169: a block holds the erased user off someone else's share. The scrub
+ * removes them from the held list and drops the entry that would restore them,
+ * and leaves every other held person in place.
+ */
+async function scenario_blockHeldShareLosesOnlyTheErasedUid(): Promise<void> {
+  const { scrubBlockHeldShares } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("shared_content/held", {
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER],
+    blockHeldUserIds: [UID, THIRD],
+    blockHeld: {
+      [UID]: { member: null, recipePermission: "view", recipeHadGrants: true },
+      [THIRD]: { member: null, recipePermission: null, recipeHadGrants: false },
+    },
+  });
+  // A share the erased user made, with someone else held on it: an unblock
+  // would rewrite that person's member row naming the erased user as adder.
+  db.set("shared_content/mine", {
+    sharedByUserId: UID,
+    sharedToUserIds: [UID],
+    blockHeldUserIds: [THIRD],
+    blockHeld: { [THIRD]: { member: { userId: THIRD, addedBy: UID } } },
+  });
+
+  const ok = await scrubBlockHeldShares(asDb(db), UID);
+
+  const row = db.get("shared_content/held");
+  check("the held-share scrub reports success", ok === true);
+  check(
+    "the erased uid leaves the held list and the other held person stays",
+    JSON.stringify(row?.blockHeldUserIds) === JSON.stringify([THIRD]),
+    JSON.stringify(row),
+  );
+  const held = (row?.blockHeld ?? {}) as Record<string, unknown>;
+  check("the entry that would restore them is gone", !(UID in held), JSON.stringify(held));
+  check("the other held person's entry stays", THIRD in held, JSON.stringify(held));
+  const mine = db.get("shared_content/mine");
+  check(
+    "a share the erased user made keeps nothing held for a release to restore",
+    mine !== undefined && !("blockHeld" in mine) && !("blockHeldUserIds" in mine),
+    JSON.stringify(mine),
+  );
+
+  const probe = require("../account/account-deletion-cascade").probeResidualData;
+  const residue = new FakeFirestore();
+  residue.set("shared_content/x", { sharedByUserId: OTHER, blockHeldUserIds: [UID] });
+  const r = emptyResult();
+  await probe(asDb(residue), UID, r);
+  check("a surviving held entry is residual", sawResidual(r));
+}
+
+/**
  * BUT-2112: the collection-group index the like sweep and its probe leg need.
  * Same reasoning as `scenario_pollVoteIndexIsDeclared`.
  */
@@ -8838,6 +9548,238 @@ async function scenario_commentLikeIndexIsDeclared(): Promise<void> {
   );
 }
 
+/**
+ * BUT-2272: a shared recipe of someone else's loses the erased uid from both
+ * `memberPermissions` and `grants`, and every other member keeps both. The
+ * erased user's own recipe is not written to. A viewer is stored as 0, which
+ * `!= null` must still find.
+ */
+async function scenario_recipeMemberKeyIsRemoved(): Promise<void> {
+  const {
+    scrubRecipeMemberPermissions,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set(`users/${OTHER}/recipes/shared`, {
+    core: { title: "Lasagne" },
+    socialData: {
+      ownerId: OTHER,
+      memberPermissions: { [OTHER]: 2, [UID]: 0, [THIRD]: 1 },
+      grants: { [UID]: ["direct"], [THIRD]: ["group:g1"] },
+    },
+  });
+  db.set(`users/${THIRD}/recipes/noGrants`, {
+    core: { title: "Soppa" },
+    socialData: { ownerId: THIRD, memberPermissions: { [THIRD]: 2, [UID]: 1 } },
+  });
+  db.set(`users/${OTHER}/recipes/notShared`, {
+    core: { title: "Gryta" },
+    socialData: { ownerId: OTHER, memberPermissions: { [OTHER]: 2, [THIRD]: 0 } },
+  });
+  db.set(`users/${UID}/recipes/own`, {
+    core: { title: "Min" },
+    socialData: {
+      ownerId: UID,
+      memberPermissions: { [UID]: 2, [OTHER]: 0 },
+      grants: { [OTHER]: ["direct"] },
+    },
+  });
+
+  const ok = await scrubRecipeMemberPermissions(asDb(db), UID);
+
+  const shared = db.get(`users/${OTHER}/recipes/shared`)?.socialData as
+    | { memberPermissions?: DocData; grants?: DocData }
+    | undefined;
+  check("the recipe member scrub reports success", ok === true);
+  check(
+    "exactly the two other people's recipes naming the uid were written",
+    JSON.stringify([...db.updatedPaths].sort()) ===
+      JSON.stringify([
+        `users/${OTHER}/recipes/shared`,
+        `users/${THIRD}/recipes/noGrants`,
+      ]),
+    JSON.stringify(db.updatedPaths),
+  );
+  check(
+    "the erased uid leaves memberPermissions and the other members stay",
+    shared?.memberPermissions !== undefined &&
+      !(UID in shared.memberPermissions) &&
+      shared.memberPermissions[OTHER] === 2 &&
+      shared.memberPermissions[THIRD] === 1,
+    JSON.stringify(shared),
+  );
+  check(
+    "the erased uid leaves grants and the other member's grant stays",
+    shared?.grants !== undefined &&
+      !(UID in shared.grants) &&
+      JSON.stringify(shared.grants[THIRD]) === JSON.stringify(["group:g1"]),
+    JSON.stringify(shared),
+  );
+  check(
+    "the recipe itself survives",
+    (db.get(`users/${OTHER}/recipes/shared`)?.core as DocData | undefined)
+      ?.title === "Lasagne",
+  );
+  const noGrants = db.get(`users/${THIRD}/recipes/noGrants`)?.socialData as
+    | DocData
+    | undefined;
+  check(
+    "a recipe without grants loses the key and gains no grants map",
+    noGrants !== undefined &&
+      !(UID in (noGrants.memberPermissions as DocData)) &&
+      !("grants" in noGrants),
+    JSON.stringify(noGrants),
+  );
+  const own = db.get(`users/${UID}/recipes/own`)?.socialData as
+    | { memberPermissions: DocData }
+    | undefined;
+  check(
+    "the erased user's own recipe is left for deleteRecipes",
+    own !== undefined && own.memberPermissions[UID] === 2,
+    JSON.stringify(own),
+  );
+}
+
+/**
+ * BUT-2272: run in cascade order, `deleteRecipes` takes the user's own
+ * recipes and the scrub stages no write on any of them.
+ */
+async function scenario_ownRecipesAreDeletedNotScrubbed(): Promise<void> {
+  const {
+    deleteRecipes,
+    scrubRecipeMemberPermissions,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set(`users/${UID}/recipes/own`, {
+    socialData: { memberPermissions: { [UID]: 2 } },
+  });
+  db.set(`users/${OTHER}/recipes/theirs`, {
+    socialData: { memberPermissions: { [OTHER]: 2, [UID]: 0 } },
+  });
+
+  await deleteRecipes(asDb(db), UID);
+  const ok = await scrubRecipeMemberPermissions(asDb(db), UID);
+
+  check("the own recipe is deleted", !db.has(`users/${UID}/recipes/own`));
+  check(
+    "the scrub wrote only the other owner's recipe",
+    JSON.stringify(db.updatedPaths) ===
+      JSON.stringify([`users/${OTHER}/recipes/theirs`]),
+    JSON.stringify(db.updatedPaths),
+  );
+  check("the scrub after deleteRecipes reports success", ok === true);
+}
+
+/** BUT-2272: over the cap the scrub declines and writes nothing. */
+async function scenario_implausibleRecipeMemberCountDeclines(): Promise<void> {
+  const {
+    scrubRecipeMemberPermissions,
+    MAX_RECIPE_MEMBER_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  // `<=` seeds exactly one row past the cap the `.limit(MAX + 1)` read can see.
+  for (let i = 0; i <= MAX_RECIPE_MEMBER_SWEEP_ROWS; i++) {
+    db.set(`users/peer-${i}/recipes/r`, {
+      socialData: { memberPermissions: { [`peer-${i}`]: 2, [UID]: 0 } },
+    });
+  }
+
+  const ok = await scrubRecipeMemberPermissions(asDb(db), UID);
+
+  check("the recipe member step reports itself INCOMPLETE", ok === false);
+  check(
+    "no recipe was written rather than a truncated sweep",
+    db.updatedPaths.length === 0,
+    `updated: ${db.updatedPaths.length}`,
+  );
+}
+
+/** BUT-2272: exactly at the cap the scrub still runs. */
+async function scenario_recipeMemberScrubRunsAtTheCap(): Promise<void> {
+  const {
+    scrubRecipeMemberPermissions,
+    MAX_RECIPE_MEMBER_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  const paths: string[] = [];
+  for (let i = 0; i < MAX_RECIPE_MEMBER_SWEEP_ROWS; i++) {
+    const p = `users/peer-${i}/recipes/r`;
+    paths.push(p);
+    db.set(p, {
+      socialData: { memberPermissions: { [`peer-${i}`]: 2, [UID]: 0 } },
+    });
+  }
+
+  const ok = await scrubRecipeMemberPermissions(asDb(db), UID);
+
+  const stillKeyed = paths.filter((p) => {
+    const perms = (db.get(p)?.socialData as { memberPermissions?: DocData })
+      ?.memberPermissions;
+    return perms === undefined || UID in perms;
+  });
+  check("a recipe member sweep of exactly the cap reports success", ok === true);
+  check(
+    "no recipe at the cap still carries the key",
+    paths.length === MAX_RECIPE_MEMBER_SWEEP_ROWS && stillKeyed.length === 0,
+    `still keyed: ${stillKeyed.length} of ${paths.length}`,
+  );
+}
+
+/** BUT-2272: a failed chunk fails the step rather than being swallowed. */
+async function scenario_failedRecipeMemberChunkFailsTheStep(): Promise<void> {
+  const {
+    scrubRecipeMemberPermissions,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set(`users/${OTHER}/recipes/x`, {
+    socialData: { memberPermissions: { [OTHER]: 2, [UID]: 0 } },
+  });
+  db.batchFailures.set(`users/${OTHER}/recipes/x`, 13);
+
+  const ok = await scrubRecipeMemberPermissions(asDb(db), UID);
+
+  check("a rejected recipe member chunk makes the step report failure", ok === false);
+  check(
+    "the key is still there for the probe to find",
+    (
+      db.get(`users/${OTHER}/recipes/x`)?.socialData as {
+        memberPermissions: DocData;
+      }
+    ).memberPermissions[UID] === 0,
+  );
+}
+
+/**
+ * BUT-2272: the probe sees a member key left on someone else's recipe, and
+ * stays quiet on a recipe shared only with other people.
+ */
+async function scenario_probeSeesLeftoverRecipeMemberKey(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const dirty = new FakeFirestore();
+  dirty.set(`users/${OTHER}/recipes/x`, {
+    socialData: { memberPermissions: { [OTHER]: 2, [UID]: 0 } },
+  });
+  const dirtyResult = emptyResult();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a surviving recipe member key is reported as residual",
+    sawResidual(dirtyResult),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set(`users/${OTHER}/recipes/x`, {
+    socialData: { memberPermissions: { [OTHER]: 2, [THIRD]: 0 } },
+  });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a recipe shared only with other people does not make the probe fire",
+    !sawResidual(cleanResult),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
@@ -8848,10 +9790,13 @@ async function main(): Promise<void> {
   await scenario_sharedContentItemAttributionIsScrubbed();
   await scenario_sharedContentItemScrubReportsItsOwnFailure();
   await scenario_anotherMembersLastMessageIsNotTombstoned();
+  await scenario_ownedGroupHouseholdIsTornDown();
   await scenario_realtimeMenusOwnedAreDeleted();
   await scenario_realtimeMenuLastEditorIsScrubbed();
   await scenario_ownedRealtimeMenuChildrenAreDeleted();
   await scenario_realtimeParticipationIsRemoved();
+  await scenario_realtimeResourcesAreErased();
+  await scenario_menuDishCreatorIsScrubbed();
   await scenario_featureRetentionRowsAreErased();
   await scenario_retentionAnalyticsRowsAreErased();
   await scenario_retentionAnalyticsWithNoRowsSucceeds();
@@ -8864,6 +9809,7 @@ async function main(): Promise<void> {
   await scenario_unclearableRosterLeavesTheParentStanding();
   await scenario_probeSeesLeftoverRosterRows();
   await scenario_probeSeesLeftoverGroupMenuPlans();
+  await scenario_probeSeesLeftoverRealtimeResources();
   await scenario_probeSeesLeftoverRecipes();
   await scenario_rosterIndexIsDeclared();
   await scenario_chatGroupMembershipIsErasedEverywhere();
@@ -8903,6 +9849,9 @@ async function main(): Promise<void> {
   await scenario_ingredientSuggestionsErasedAndProbed();
   await scenario_ingredientSuggestionsDeclineAboveCap();
   await scenario_householdAllergenSharesErasedAndProbed();
+  await scenario_recipeSuggestionsErasedWithEitherAccountAndProbed();
+  await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
+  await scenario_mfaRecoveryDataErasedAndProbed();
   await scenario_householdAllergenSharesDeclineAboveCap();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();
@@ -8962,7 +9911,18 @@ async function main(): Promise<void> {
   await scenario_commentSweepsRunAtTheCap();
   await scenario_commentSweepFailures();
   await scenario_probeSeesLeftoverCommentTraces();
+  await scenario_commentReactionsLoseOnlyTheErasedUid();
+  await scenario_implausibleReactionSweepDeclines();
+  await scenario_probeSeesLeftoverReactions();
+  await scenario_reactionKeysAgreeAcrossRulesAppAndCascade();
   await scenario_commentLikeIndexIsDeclared();
+  await scenario_blockHeldShareLosesOnlyTheErasedUid();
+  await scenario_recipeMemberKeyIsRemoved();
+  await scenario_ownRecipesAreDeletedNotScrubbed();
+  await scenario_implausibleRecipeMemberCountDeclines();
+  await scenario_recipeMemberScrubRunsAtTheCap();
+  await scenario_failedRecipeMemberChunkFailsTheStep();
+  await scenario_probeSeesLeftoverRecipeMemberKey();
 
   let failed = 0;
   for (const r of results) {

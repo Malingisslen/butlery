@@ -4,6 +4,8 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -64,6 +66,9 @@ class RecipeFormState extends ChangeNotifier {
   List<String> _imageUrls = [];
   String? _sourceUrl;
   TagOverrides? _tagOverrides;
+  // No field shows it, but an import's provenance stamp (voice, photo, link)
+  // must reach the saved recipe, and an edit must not erase it.
+  SourceArtefact? _sourceArtefact;
 
   // CRITICAL FIX: Remove internal arrays to eliminate dual state inconsistency
   // Single source of truth is now FormFieldsManager values only
@@ -84,10 +89,9 @@ class RecipeFormState extends ChangeNotifier {
   /// BUT-1845: the meal types to offer for a recipe that stores [storedValue],
   /// widened to include whatever that recipe actually carries.
   ///
-  /// `mealType` is a free-form `String` and several writers disagree with
-  /// [mealTypes]: the assisted import writes English (`'dinner'` by default),
-  /// text import can produce `'Huvudrätt'`, and the LLM enhancement writes
-  /// lowercase English. `DropdownButtonFormField` asserts in its CONSTRUCTOR —
+  /// `mealType` is a free-form `String` and writers disagree with
+  /// [mealTypes].
+  /// `DropdownButtonFormField` asserts in its CONSTRUCTOR —
   /// so on every build, not just the first — that exactly one item matches its
   /// value. Binding `items:` to [mealTypes] while `initialValue:` holds one of
   /// those values therefore throws on build in debug and renders a blank
@@ -101,9 +105,7 @@ class RecipeFormState extends ChangeNotifier {
   /// The stored value is offered PLAIN and first, not flagged as retired the
   /// way `personal_tag_rule_dialog.dart` flags a withdrawn tag property.
   /// Nothing was ever removed from [mealTypes] — these values come from writers
-  /// that never agreed with it — and no code can say whether `'Huvudrätt'`
-  /// means Lunch or Middag. Only the user can, so the value stays visible and
-  /// selected until they choose otherwise.
+  /// that never agreed with it.
   ///
   /// No trimming and no case folding: `'lunch'` sits beside `'Lunch'` as two
   /// near-identical rows. That is honest under "this must not change what any
@@ -119,8 +121,7 @@ class RecipeFormState extends ChangeNotifier {
   /// One consequence, so it is not read as a bug: the widening keys off the
   /// CURRENT value. The injected row IS selectable — picking it re-stores the
   /// same value and the row stays — but picking an OFFERED row drops it, and it
-  /// cannot be got back in that session. That is what "visible and selected
-  /// until they choose otherwise" means.
+  /// cannot be got back in that session.
   static ({List<String> values, String? selected}) mealTypeOptions(
     String storedValue,
   ) => (
@@ -139,6 +140,9 @@ class RecipeFormState extends ChangeNotifier {
     _initializeFormFields();
     _autoSaveManager = RecipeFormAutoSaveManager();
     _autoSaveManager.initialize(isTemplate: isTemplate);
+    // A draft write ends without a keystroke, so its outcome reaches the
+    // editor's indicator only through this (BUT-2224).
+    _autoSaveManager.addListener(_onAutoSaveChanged);
     if (initialRecipe != null) {
       _loadRecipeData(initialRecipe, isTemplate);
     } else {
@@ -240,6 +244,7 @@ class RecipeFormState extends ChangeNotifier {
     _imageUrls = List<String>.from(recipe.imageUrls);
     _sourceUrl = recipe.sourceUrl;
     _tagOverrides = recipe.tagOverrides;
+    _sourceArtefact = recipe.core.sourceArtefact;
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
     // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
@@ -441,6 +446,8 @@ class RecipeFormState extends ChangeNotifier {
   // Auto-save getters
   bool get isAutoSaving => _autoSaveManager.isAutoSaving;
   bool get hasRecentAutoSave => _autoSaveManager.hasRecentAutoSave;
+  bool get hasAutoSaveFailed => _autoSaveManager.hasAutoSaveFailed;
+  int get autoSaveFailurePeriod => _autoSaveManager.autoSaveFailurePeriod;
   String? get currentDraftId => _autoSaveManager.currentDraftId;
   RecipeFormAutoSaveManager get autoSaveManager => _autoSaveManager;
 
@@ -803,6 +810,12 @@ class RecipeFormState extends ChangeNotifier {
     return _autoSaveManager.getAvailableDrafts();
   }
 
+  Future<void> discardDrafts(Iterable<String> draftIds) async {
+    for (final id in draftIds) {
+      await _autoSaveManager.deleteDraft(id);
+    }
+  }
+
   /// Get current form data for external analysis
   Map<String, dynamic> serializeFormData() {
     return _serializeFormData();
@@ -813,14 +826,12 @@ class RecipeFormState extends ChangeNotifier {
     String? recipeId,
     List<String>? imageUrls,
     String? thumbnailUrl,
+    HeirloomMetadata? heirloom,
   }) {
     // BUT-1667: after dispose() the field managers have cleared their values,
     // so building here would silently yield a recipe with no ingredients and
     // no instructions — which a resuming save would then WRITE over the user's
-    // stored recipe. Fail loudly instead. The two RecipePersistenceManager
-    // callers sit inside safeExecute, which turns this into "kunde inte spara"
-    // rather than data loss; RecipeFormCoordinator.syncToCollaborative has no
-    // error boundary and guards on [isDisposed] before calling instead.
+    // stored recipe. Fail loudly instead.
     if (_isDisposed) {
       throw StateError(
         'createRecipe called on a disposed RecipeFormState — the form data is '
@@ -899,8 +910,13 @@ class RecipeFormState extends ChangeNotifier {
         updatedAt: clock.now(),
         tagResult: _originalRecipe?.tagResult,
         tagOverrides: _tagOverrides,
+        sourceArtefact: _sourceArtefact,
+        heirloom: heirloom ?? _originalRecipe?.core.heirloom,
       ),
       type: RecipeType.personal,
+      // BUT-2213: the revision the opened recipe was read at, so a queued
+      // save is compared against the version the user actually edited.
+      rev: _originalRecipe?.rev,
     );
   }
 
@@ -919,6 +935,7 @@ class RecipeFormState extends ChangeNotifier {
     _imageUrls = [];
     _sourceUrl = null;
     _tagOverrides = null;
+    _sourceArtefact = null;
 
     _ingredientsManager.updateItems(['']);
     _instructionsManager.updateItems(['']);
@@ -970,6 +987,10 @@ class RecipeFormState extends ChangeNotifier {
 
   bool _isDisposed = false;
 
+  void _onAutoSaveChanged() {
+    if (!_isDisposed) notifyListeners();
+  }
+
   /// Whether [dispose] has run. Once true the form's field VALUES are gone,
   /// not just its controllers, so nothing may be built from this state.
   bool get isDisposed => _isDisposed;
@@ -977,6 +998,7 @@ class RecipeFormState extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
+    _autoSaveManager.removeListener(_onAutoSaveChanged);
     _autoSaveManager.dispose();
     // BUT-1667: the three field managers own the form's TextEditingControllers;
     // without these the controllers leak on every recipe-form close.

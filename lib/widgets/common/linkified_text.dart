@@ -1,7 +1,7 @@
 /// BUT-962: small regex-based linkifier for user-generated text.
 ///
 /// Detects HTTP/HTTPS URLs in [text] and renders them as tappable spans
-/// styled per the host app (default: primary colour + underline). All
+/// styled per the host app (default: link colour + underline). All
 /// non-URL chunks stay plain. Tap → opens the OS browser via
 /// `url_launcher` in external-application mode.
 ///
@@ -22,6 +22,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 class LinkifiedText {
   const LinkifiedText._();
@@ -38,7 +40,8 @@ class LinkifiedText {
 
   /// Build a [Text.rich] widget with the URL spans tappable. Pass the
   /// plain [text] and the base [style] you'd normally hand to `Text(...)`.
-  /// [linkStyle] defaults to the theme primary colour + underline.
+  /// [linkStyle] defaults to text.link + underline, which is surface-bound:
+  /// pass a [linkStyle] when the text sits on surface.ink.
   static Widget from(
     String text, {
     TextStyle? style,
@@ -46,11 +49,10 @@ class LinkifiedText {
   }) {
     return Builder(
       builder: (context) {
-        final theme = Theme.of(context);
         final effectiveLinkStyle =
             linkStyle ??
             (style ?? const TextStyle()).copyWith(
-              color: theme.colorScheme.primary,
+              color: context.modeColors.textLink,
               decoration: TextDecoration.underline,
             );
 
@@ -80,13 +82,10 @@ class LinkifiedText {
             WidgetSpan(
               alignment: PlaceholderAlignment.baseline,
               baseline: TextBaseline.alphabetic,
-              child: Semantics(
-                link: true,
-                label: context.l10n.a11yLinkTo(url),
-                child: GestureDetector(
-                  onTap: () => _openUrl(url),
-                  child: Text(url, style: effectiveLinkStyle),
-                ),
+              child: ButleryLink(
+                semanticLabel: context.l10n.a11yLinkTo(url),
+                onTap: () => _openUrl(url),
+                child: Text(url, style: effectiveLinkStyle),
               ),
             ),
           );

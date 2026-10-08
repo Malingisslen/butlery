@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_theme.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import 'fake_personal_tag_viewmodel.dart';
@@ -122,12 +123,13 @@ void main() {
   testWidgets('loading while tag not yet present shows the loading title', (
     tester,
   ) async {
-    // Proves: the isLoading && tag==null branch shows the "Laddar..." app bar
-    // rather than prematurely flashing the not-found error.
+    // Proves: the isLoading && tag==null branch shows the plate line with
+    // "Hämtar taggen …" (produktregler.md:163, P4-U16) rather than
+    // prematurely flashing the not-found error.
     fakeVm.setState(tags: const [], isLoading: true);
     await pumpView(tester, 'pending-id');
 
-    expect(find.text('Laddar...'), findsOneWidget); // commonLoading
+    expect(find.text('Hämtar taggen …'), findsOneWidget); // loadingTag
     expect(find.text('Taggen kunde inte hittas'), findsNothing);
   });
 
@@ -145,7 +147,7 @@ void main() {
     );
     await pumpView(tester, tag.id);
 
-    await tester.tap(find.byIcon(Icons.edit));
+    await tester.tap(find.byIcon(ButleryIcons.pencil));
     await tester.pumpAndSettle();
 
     expect(find.text('Redigera tagg'), findsOneWidget); // tagDetailEditTitle
@@ -171,11 +173,11 @@ void main() {
     );
     await pumpView(tester, tag.id);
 
-    await tester.tap(find.byIcon(Icons.edit));
+    await tester.tap(find.byIcon(ButleryIcons.pencil));
     await tester.pumpAndSettle();
     expect(find.text('Spara'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byIcon(ButleryIcons.x));
     await tester.pumpAndSettle();
 
     expect(find.text('Spara'), findsNothing);

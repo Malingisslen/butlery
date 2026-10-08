@@ -18,6 +18,7 @@ import 'package:butlery/services/unified/modules/social_shopping/social_shopping
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Enumeration for shareable content types
 enum ShareableContentType {
@@ -162,10 +163,10 @@ class SocialSharingViewModel extends ChangeNotifier
   void toggleFriendSelection(String friendId) {
     if (_selectedFriendIds.contains(friendId)) {
       _selectedFriendIds.remove(friendId);
-      AppLogger.info('➖ Deselected friend: $friendId');
+      AppLogger.info('➖ Deselected friend: ${friendId.maskedUserId}');
     } else {
       _selectedFriendIds.add(friendId);
-      AppLogger.info('➕ Selected friend: $friendId');
+      AppLogger.info('➕ Selected friend: ${friendId.maskedUserId}');
     }
 
     notifyListeners();

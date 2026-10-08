@@ -15,8 +15,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
@@ -180,7 +186,7 @@ void main() {
         );
 
         expect(missingViewModel.hasError, isTrue);
-        expect(missingViewModel.listTitle, equals('Laddar...'));
+        expect(missingViewModel.listTitle, equals('Laddar …'));
 
         missingViewModel.dispose();
       });
@@ -385,17 +391,78 @@ void main() {
 
       test('should provide status color', () {
         const cs = ColorScheme.light();
-        const butlery = ButleryColors.light;
+        const butlery = ModeColors.light;
         final statusColor = viewModel.getStatusColor(cs, butlery);
         expect(statusColor, isA<Color>());
       });
 
       test('should provide progress color', () {
         const cs = ColorScheme.light();
-        const butlery = ButleryColors.light;
+        const butlery = ModeColors.light;
         final progressColor = viewModel.getProgressColor(cs, butlery);
         expect(progressColor, isA<Color>());
       });
+
+      test('BUT-2136: an item subtitle names a fine-grained aisle', () {
+        final manager = ShoppingDisplayManager();
+        final subtitle = manager.getItemSubtitle(
+          UnifiedShoppingItem(
+            id: 'i',
+            name: 'Fläskfilé',
+            amount: 1,
+            unit: '',
+            category: ShoppingCategory.meat,
+            bought: false,
+          ),
+        );
+
+        expect(subtitle, contains('Kött'));
+        expect(subtitle, isNot(contains('meat')));
+      });
+
+      // P7-C4: the progress colour reads the generated member for the
+      // mode (tokens.json:522; NULAGE.md:71-74), the same member the
+      // retired ButleryColors extension read, in both modes.
+      test(
+        'progress colour follows the mode: success, warning, text.primary',
+        () {
+          final manager = ShoppingDisplayManager();
+          const light = ColorScheme.light();
+          const dark = ColorScheme.dark();
+
+          expect(
+            manager.getProgressColor(light, ModeColors.light, 100),
+            AppColors.success,
+          );
+          expect(
+            manager.getProgressColor(dark, ModeColors.dark, 100),
+            AppColorsDark.success,
+          );
+          expect(
+            manager.getProgressColor(light, ModeColors.light, 75),
+            AppColors.warning,
+          );
+          expect(
+            manager.getProgressColor(dark, ModeColors.dark, 75),
+            AppColorsDark.warning,
+          );
+          expect(
+            manager.getProgressColor(light, ModeColors.light, 10),
+            light.onSurface,
+          );
+          expect(
+            manager.getProgressColor(dark, ModeColors.dark, 10),
+            dark.onSurface,
+          );
+          // BUT-2207: below half it is text.primary (onSurface), never
+          // cs.primary, which is surface.ink in dark: 1.19:1 on raised.
+          final appDark = AppColors.darkColorScheme;
+          expect(
+            manager.getProgressColor(appDark, ModeColors.dark, 10),
+            isNot(appDark.primary),
+          );
+        },
+      );
 
       test('should handle fully completed list', () async {
         final completedList = ShoppingListFactory.build(
@@ -557,7 +624,7 @@ void main() {
         }, (_, __) {});
 
         expect(nullViewModel.hasData, isFalse);
-        expect(nullViewModel.listTitle, equals('Laddar...'));
+        expect(nullViewModel.listTitle, equals('Laddar …'));
         expect(nullViewModel.totalItems, equals(0));
         expect(nullViewModel.completionPercentage, equals(0.0));
         expect(nullViewModel.hasError, isTrue);
@@ -594,6 +661,323 @@ void main() {
           ),
         ).called(1);
       });
+    });
+
+    // P6-U05 (flows-roles-budget.md:83, :132): a drop to read-only while the
+    // list is open is told once; a list that was read-only from the start is
+    // not a drop.
+    group('role lowered while open (P6-U05)', () {
+      test('editor to read-only is told once', () async {
+        mockShoppingService.emitState(
+          ShoppingStateData(lists: [testShoppingList]),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(viewModel.canEdit, isTrue);
+        expect(viewModel.editAccessLost, isFalse);
+
+        mockPermissionService.setPermissionState(
+          currentUserId: testUserId,
+          defaultHasPermission: false,
+        );
+        mockShoppingService.emitState(
+          ShoppingStateData(lists: [testShoppingList]),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(viewModel.canEdit, isFalse);
+        expect(viewModel.consumeEditAccessLost(), isTrue);
+        expect(viewModel.consumeEditAccessLost(), isFalse);
+      });
+
+      test('read-only from the first update is not a drop', () async {
+        mockPermissionService.setPermissionState(
+          currentUserId: testUserId,
+          defaultHasPermission: false,
+        );
+        mockShoppingService.emitState(
+          ShoppingStateData(lists: [testShoppingList]),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(viewModel.editAccessLost, isFalse);
+      });
+    });
+
+    // BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — read
+    // from lastActivityAt/lastActivityByUserId/lastActivityByDisplayName.
+    // No new Firestore field, no rules change.
+    group('updated-by notice (BUT-2187)', () {
+      test("shows the updater's name for another user's update", () async {
+        expect(viewModel.updatedByNotice, isNull);
+
+        mockShoppingService.emitState(
+          ShoppingStateData(
+            lists: [
+              testShoppingList.copyWith(
+                lastActivityAt: DateTime(2026, 9, 30, 12),
+                lastActivityByUserId: 'other-user',
+                lastActivityByDisplayName: 'Anna',
+              ),
+            ],
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          viewModel.updatedByNotice,
+          AppLocale.current.shoppingListUpdatedByNotice('Anna'),
+        );
+      });
+
+      test("shows nothing for the signed-in user's own update", () async {
+        mockShoppingService.emitState(
+          ShoppingStateData(
+            lists: [
+              testShoppingList.copyWith(
+                lastActivityAt: DateTime(2026, 9, 30, 12),
+                lastActivityByUserId: testUserId,
+                lastActivityByDisplayName: 'Malin',
+              ),
+            ],
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(viewModel.updatedByNotice, isNull);
+      });
+
+      test('can be dismissed', () async {
+        mockShoppingService.emitState(
+          ShoppingStateData(
+            lists: [
+              testShoppingList.copyWith(
+                lastActivityAt: DateTime(2026, 9, 30, 12),
+                lastActivityByUserId: 'other-user',
+                lastActivityByDisplayName: 'Anna',
+              ),
+            ],
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(viewModel.updatedByNotice, isNotNull);
+
+        viewModel.dismissUpdatedByNotice();
+
+        expect(viewModel.updatedByNotice, isNull);
+      });
+
+      test(
+        'uses the neutral fallback when the display name is missing',
+        () async {
+          mockShoppingService.emitState(
+            ShoppingStateData(
+              lists: [
+                testShoppingList.copyWith(
+                  lastActivityAt: DateTime(2026, 9, 30, 12),
+                  lastActivityByUserId: 'other-user',
+                  lastActivityByDisplayName: '',
+                ),
+              ],
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            viewModel.updatedByNotice,
+            AppLocale.current.shoppingListUpdatedByUnknown,
+          );
+        },
+      );
+
+      test(
+        'uses the neutral fallback when the display name is null (omitted)',
+        () async {
+          // testShoppingList's own lastActivityByDisplayName is already
+          // null, and copyWith cannot SET a field to null (only away from
+          // it) — leaving the parameter out keeps it null, distinct from
+          // the empty-string case above.
+          mockShoppingService.emitState(
+            ShoppingStateData(
+              lists: [
+                testShoppingList.copyWith(
+                  lastActivityAt: DateTime(2026, 9, 30, 12),
+                  lastActivityByUserId: 'other-user',
+                ),
+              ],
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            viewModel.updatedByNotice,
+            AppLocale.current.shoppingListUpdatedByUnknown,
+          );
+        },
+      );
+
+      test(
+        'a cold open does not show a stale update baked into the first load',
+        () async {
+          // The list is absent from `lists` until loadLists() resolves — and
+          // here it never does, so _currentList stays null while the
+          // state subscription is already active (the
+          // constructor subscribes right after _initialize() suspends at
+          // its first await, which happens before any real load settles).
+          final coldService = MockUnifiedShoppingService();
+          coldService.setShoppingState(lists: const [], activeListId: null);
+          when(
+            () => coldService.loadLists(),
+          ).thenAnswer((_) => Completer<void>().future);
+
+          final coldViewModel = CollaborativeShoppingViewModel(
+            listId: testListId,
+            shoppingService: coldService,
+          );
+          await Future<void>.delayed(Duration.zero);
+          expect(
+            coldViewModel.currentList,
+            isNull,
+            reason: 'sanity: the load never resolves in this test',
+          );
+
+          coldService.emitState(
+            ShoppingStateData(
+              lists: [
+                testShoppingList.copyWith(
+                  lastActivityAt: DateTime(2026, 9, 30, 12),
+                  lastActivityByUserId: 'other-user',
+                  lastActivityByDisplayName: 'Anna',
+                ),
+              ],
+            ),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(coldViewModel.updatedByNotice, isNull);
+
+          coldViewModel.dispose();
+        },
+      );
+
+      test('a re-broadcast of the same update stays dismissed', () async {
+        final t1 = DateTime(2026, 9, 30, 12);
+        final updatedAtT1 = testShoppingList.copyWith(
+          lastActivityAt: t1,
+          lastActivityByUserId: 'other-user',
+          lastActivityByDisplayName: 'Anna',
+        );
+
+        mockShoppingService.emitState(ShoppingStateData(lists: [updatedAtT1]));
+        await Future<void>.delayed(Duration.zero);
+        expect(viewModel.updatedByNotice, isNotNull);
+
+        viewModel.dismissUpdatedByNotice();
+        expect(viewModel.updatedByNotice, isNull);
+
+        // Same (timestamp, uid) pair arrives again — not a new update.
+        mockShoppingService.emitState(ShoppingStateData(lists: [updatedAtT1]));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(viewModel.updatedByNotice, isNull);
+      });
+
+      test(
+        'a new update after a dismiss shows again with the new name',
+        () async {
+          final t1 = DateTime(2026, 9, 30, 12);
+          final updatedAtT1 = testShoppingList.copyWith(
+            lastActivityAt: t1,
+            lastActivityByUserId: 'other-user',
+            lastActivityByDisplayName: 'Anna',
+          );
+          mockShoppingService.emitState(
+            ShoppingStateData(lists: [updatedAtT1]),
+          );
+          await Future<void>.delayed(Duration.zero);
+          viewModel.dismissUpdatedByNotice();
+          expect(viewModel.updatedByNotice, isNull);
+
+          final t2 = t1.add(const Duration(minutes: 1));
+          final updatedAtT2 = updatedAtT1.copyWith(
+            lastActivityAt: t2,
+            lastActivityByUserId: 'third-user',
+            lastActivityByDisplayName: 'Björn',
+          );
+          mockShoppingService.emitState(
+            ShoppingStateData(lists: [updatedAtT2]),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            viewModel.updatedByNotice,
+            AppLocale.current.shoppingListUpdatedByNotice('Björn'),
+          );
+        },
+      );
+
+      test(
+        'the same person editing again after a dismiss shows again',
+        () async {
+          final t1 = DateTime(2026, 9, 30, 12);
+          final first = testShoppingList.copyWith(
+            lastActivityAt: t1,
+            lastActivityByUserId: 'other-user',
+            lastActivityByDisplayName: 'Anna',
+          );
+          mockShoppingService.emitState(ShoppingStateData(lists: [first]));
+          await Future<void>.delayed(Duration.zero);
+          viewModel.dismissUpdatedByNotice();
+          expect(viewModel.updatedByNotice, isNull);
+
+          final again = first.copyWith(
+            lastActivityAt: t1.add(const Duration(minutes: 1)),
+          );
+          mockShoppingService.emitState(ShoppingStateData(lists: [again]));
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            viewModel.updatedByNotice,
+            AppLocale.current.shoppingListUpdatedByNotice('Anna'),
+          );
+        },
+      );
+
+      test(
+        'a late offline replay with an older timestamp still shows',
+        () async {
+          final t5 = DateTime(2026, 9, 30, 12);
+          final userBAtT5 = testShoppingList.copyWith(
+            lastActivityAt: t5,
+            lastActivityByUserId: 'user-b',
+            lastActivityByDisplayName: 'Bea',
+          );
+          mockShoppingService.emitState(
+            ShoppingStateData(lists: [userBAtT5]),
+          );
+          await Future<void>.delayed(Duration.zero);
+          expect(
+            viewModel.updatedByNotice,
+            AppLocale.current.shoppingListUpdatedByNotice('Bea'),
+          );
+
+          // Queued offline edit, made before T5 but only landing now — an
+          // OLDER timestamp than what is already on screen.
+          final t3 = t5.subtract(const Duration(minutes: 2));
+          final userAAtT3 = userBAtT5.copyWith(
+            lastActivityAt: t3,
+            lastActivityByUserId: 'user-a',
+            lastActivityByDisplayName: 'Alva',
+          );
+          mockShoppingService.emitState(
+            ShoppingStateData(lists: [userAAtT3]),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            viewModel.updatedByNotice,
+            AppLocale.current.shoppingListUpdatedByNotice('Alva'),
+          );
+        },
+      );
     });
   });
 }

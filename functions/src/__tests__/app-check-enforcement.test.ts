@@ -45,11 +45,17 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "logParseCorrection", // events/log-parse-correction.ts — import telemetry
   "requestAccountDeletion", // account/request-account-deletion.ts
   "exportAuditLogs", // exports/audit-logs.ts — GDPR Article 15 export
+  "exportMfaRecoveryData", // exports/mfa-recovery-data.ts — Art. 15 for backup codes (BUT-2142)
+  "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts
   "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
+  "acceptGroupInvitation", // social/accept-group-invitation.ts — BUT-2265 join a group (enforceAppCheck: true)
+  "sendGroupInvitations", // social/send-group-invitations.ts — BUT-2270 invite several to a group (enforceAppCheck: true)
+  "findUserByEmail", // social/find-user-by-email.ts — BUT-2264 friend search by exact address (enforceAppCheck: true)
+  "joinGroupHousehold", // family/join-group-household.ts — BUT-2267 join a group's household (enforceAppCheck: true)
   "setProfileSearchability", // social/set-profile-searchability.ts — minor search opt-in (enforceAppCheck: true)
   // BUT-1838: the chat-group membership callables. They replaced
   // `leaveGroupConversation`, which is deleted — its entry went with it, and
@@ -59,6 +65,9 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "addChatGroupMembers", // groups/add-chat-group-members.ts — admin-only member add (enforceAppCheck: true)
   "removeChatGroupMember", // groups/remove-chat-group-member.ts — leave / admin removal (enforceAppCheck: true)
   "ensureCategoryChat", // groups/ensure-category-chat.ts — BUT-1856 meal-vote chat reuse (enforceAppCheck: true)
+  "generateMfaBackupCodes", // account/mfa-backup-codes.ts — P6-U09 ten one-time backup codes (enforceAppCheck: true)
+  "recoverWithMfaBackupCode", // account/mfa-backup-codes.ts — P6-U09 sign-in with a backup code (enforceAppCheck: true, consumeAppCheckToken: true)
+  "clearMfaBackupCodes", // account/mfa-backup-codes.ts — P6-U09 delete the codes after MFA is switched off (enforceAppCheck: true)
 ]);
 
 /**

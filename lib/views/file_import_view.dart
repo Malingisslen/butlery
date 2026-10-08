@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -38,7 +40,10 @@ class _FileImportViewState extends State<FileImportView> {
     final selected = await Navigator.push<List<Recipe>>(
       context,
       MaterialPageRoute(
-        builder: (_) => BatchImportPreview(recipes: parsed),
+        builder: (_) => BatchImportPreview(
+          recipes: parsed,
+          backTo: context.l10n.importFromFile,
+        ),
       ),
     );
     if (!mounted) return;
@@ -67,9 +72,10 @@ class _FileImportViewState extends State<FileImportView> {
 
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+      // on the canonical top bar, left-aligned as drawn (v1:73).
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.importFromFile,
-        centerTitle: true,
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
@@ -104,7 +110,7 @@ class _FileImportViewState extends State<FileImportView> {
                             context.l10n.importFileColumnsRequired,
                             style: AppTextStyles.bodyMedium,
                           ),
-                          const SizedBox(height: AppDimensions.spacingS),
+                          const SizedBox(height: AppDimensions.space4),
                           _buildRequirement(context.l10n.importColumnTitle),
                           _buildRequirement(
                             context.l10n.importColumnIngredients,
@@ -112,12 +118,12 @@ class _FileImportViewState extends State<FileImportView> {
                           _buildRequirement(
                             context.l10n.importColumnInstructions,
                           ),
-                          const SizedBox(height: AppDimensions.spacingS),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             context.l10n.importFileColumnsOptional,
                             style: AppTextStyles.bodyMedium,
                           ),
-                          const SizedBox(height: AppDimensions.spacingS),
+                          const SizedBox(height: AppDimensions.space4),
                           _buildOptional(context.l10n.importColumnCookingTime),
                           _buildOptional(context.l10n.importColumnServings),
                           _buildOptional(context.l10n.importColumnCategory),
@@ -134,7 +140,7 @@ class _FileImportViewState extends State<FileImportView> {
                     UtilityComponents.primaryButton(
                       context,
                       label: context.l10n.importSelectFileAndImport,
-                      icon: Icons.file_upload,
+                      icon: ButleryIcons.download,
                       onPressed: _handleImport,
                     ),
 
@@ -142,14 +148,13 @@ class _FileImportViewState extends State<FileImportView> {
                   if (_vm.isLoading)
                     Column(
                       children: [
-                        const LoadingIndicator(),
-                        const SizedBox(height: AppDimensions.spacingL),
-                        if (_vm.statusMessage != null)
-                          Text(
-                            _vm.statusMessage!,
-                            style: AppTextStyles.bodyLarge,
-                            textAlign: TextAlign.center,
-                          ),
+                        // The plate line with its text (produktregler.md:163;
+                        // B-18): the status says what is being read.
+                        PlateLineMessage(
+                          message:
+                              _vm.statusMessage ??
+                              context.l10n.importReadingFile,
+                        ),
                         if (_vm.importedCount > 0 || _vm.failedCount > 0)
                           Padding(
                             padding: const EdgeInsets.only(
@@ -159,13 +164,13 @@ class _FileImportViewState extends State<FileImportView> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (_vm.importedCount > 0) ...[
-                                  Icon(
-                                    Icons.check_circle,
+                                  ButleryIcon(
+                                    ButleryIcons.circleCheck,
                                     color: Theme.of(
                                       context,
-                                    ).colorScheme.primary,
+                                    ).colorScheme.onSurface,
                                   ),
-                                  const SizedBox(width: AppDimensions.spacingS),
+                                  const SizedBox(width: AppDimensions.space4),
                                   Text(
                                     context.l10n.importSucceededCount(
                                       _vm.importedCount,
@@ -176,11 +181,11 @@ class _FileImportViewState extends State<FileImportView> {
                                     _vm.failedCount > 0)
                                   const SizedBox(width: AppDimensions.spacingL),
                                 if (_vm.failedCount > 0) ...[
-                                  Icon(
-                                    Icons.error,
+                                  ButleryIcon(
+                                    ButleryIcons.triangleAlert,
                                     color: Theme.of(context).colorScheme.error,
                                   ),
-                                  const SizedBox(width: AppDimensions.spacingS),
+                                  const SizedBox(width: AppDimensions.space4),
                                   Text(
                                     context.l10n.importFailedCount(
                                       _vm.failedCount,
@@ -230,12 +235,12 @@ class _FileImportViewState extends State<FileImportView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check,
+          ButleryIcon(
+            ButleryIcons.check,
             size: AppDimensions.iconSizeS,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(text, style: AppTextStyles.bodySmall),
         ],
       ),
@@ -250,12 +255,12 @@ class _FileImportViewState extends State<FileImportView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.add,
+          ButleryIcon(
+            ButleryIcons.plus,
             size: AppDimensions.iconSizeS,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Text(text, style: AppTextStyles.bodySmall),
         ],
       ),

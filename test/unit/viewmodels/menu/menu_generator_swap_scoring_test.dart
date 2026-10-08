@@ -29,6 +29,7 @@ import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
+import '../../../infrastructure/helpers/own_preferences_stub.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -88,7 +89,8 @@ void main() {
     mockRecipeService = MockUnifiedRecipeService();
     mockUserService = MockUserService();
 
-    when(() => mockUserService.allergenPreferences).thenReturn(
+    stubOwnPreferences(
+      mockUserService,
       const UserAllergenPreferences(
         trackedAllergens: {},
         trackedDietary: {},

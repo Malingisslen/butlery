@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
 /// Checkbox with debounce functionality to prevent spam clicking
 /// This widget wraps a standard checkbox and provides debouncing to prevent
@@ -13,12 +14,15 @@ class DebouncedCheckbox extends StatefulWidget {
   final Color? activeColor;
   final Duration debounceDuration;
 
+  /// A wait, not motion (produktbeslut R8-9 = A).
+  static const Duration defaultDebounce = Duration(milliseconds: 300);
+
   const DebouncedCheckbox({
     super.key,
     required this.value,
     required this.onChanged,
     this.activeColor,
-    this.debounceDuration = AppDimensions.animationDurationCommon,
+    this.debounceDuration = defaultDebounce,
   });
 
   @override
@@ -71,10 +75,15 @@ class _DebouncedCheckboxState extends State<DebouncedCheckbox> {
 
   @override
   Widget build(BuildContext context) {
-    return Checkbox(
-      value: _currentValue,
-      onChanged: _handleChanged,
-      activeColor: widget.activeColor,
+    // The shared grip: a 48 dp box with the focus ring around the whole box
+    // and no saffron focus tint (Grafisk manual v6:209, :381).
+    return ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
+      child: Checkbox(
+        value: _currentValue,
+        onChanged: _handleChanged,
+        activeColor: widget.activeColor,
+      ),
     );
   }
 }

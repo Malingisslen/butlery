@@ -1,10 +1,16 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
+import 'package:butlery/core/keyboard/app_actions.dart'
+    show mainTabSwitchRequest;
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/theme/theme_constants.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -14,8 +20,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main content area for shopping list.
 ///
-/// **UI Redesign:** Category headers with collapse/expand, progress indicators,
-/// and category-specific colors from ButleryColors.category* constants.
+/// **UI Redesign:** Category headers with collapse/expand.
 ///
 /// Kept as static class for backward compatibility. Use [ShoppingListContent.build]
 /// for the static variant, or [ShoppingListContentWidget] for the stateful version
@@ -29,6 +34,7 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onDeleteItem,
     VoidCallback onCreateList,
     VoidCallback onAddItem,
+    VoidCallback onClearCompleted,
   ) {
     return ShoppingListContentWidget(
       viewModel: viewModel,
@@ -37,6 +43,7 @@ class ShoppingListContent {
       onDeleteItem: onDeleteItem,
       onCreateList: onCreateList,
       onAddItem: onAddItem,
+      onClearCompleted: onClearCompleted,
     );
   }
 }
@@ -49,6 +56,7 @@ class ShoppingListContentWidget extends StatefulWidget {
   final Function(UnifiedShoppingItem) onDeleteItem;
   final VoidCallback onCreateList;
   final VoidCallback onAddItem;
+  final VoidCallback onClearCompleted;
 
   const ShoppingListContentWidget({
     super.key,
@@ -58,11 +66,44 @@ class ShoppingListContentWidget extends StatefulWidget {
     required this.onDeleteItem,
     required this.onCreateList,
     required this.onAddItem,
+    required this.onClearCompleted,
   });
 
-  /// Get category-specific color from ButleryColors (public for reuse).
+  /// The receipt after an item moved to [category], by drag or by the picker.
+  ///
+  /// A category move is class 3 (produktregler.md:133): no Ångra. The row
+  /// leaves the user's view, into a section that may be collapsed, so the
+  /// receipt stays, and a snackbar with no possible follow-up action gets
+  /// `Stäng` (content-style-guide.md:96-97). With an action Flutter would keep
+  /// it until tapped, so for most users [SnackBar.persist] is false and it
+  /// closes on its own after the app's normal snackbar time
+  /// ([SnackBarConfig.normalDuration]). Under assistive navigation it stays
+  /// until `Stäng`: the action must be a real focusable target
+  /// (tillganglighetshandoff:172), and Flutter's timeout does not pause while
+  /// a screen reader reads it (Grafisk manual v6:647).
+  static void showCategoryMoveReceipt(BuildContext context, String category) {
+    final messenger = ScaffoldMessenger.of(context);
+    final assistive = MediaQuery.accessibleNavigationOf(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          context.l10n.shoppingItemMoved(
+            ShoppingCategory.displayName(category),
+          ),
+        ),
+        duration: SnackBarConfig.normalDuration,
+        persist: assistive,
+        action: SnackBarAction(
+          label: context.l10n.commonClose,
+          onPressed: messenger.hideCurrentSnackBar,
+        ),
+      ),
+    );
+  }
+
+  /// Get category-specific color from ModeColors (public for reuse).
   static Color getCategoryColor(BuildContext context, String category) {
-    final bc = context.butleryColors;
+    final bc = context.modeColors;
     switch (category) {
       case ShoppingCategory.meatFish:
         return bc.categoryMeatFish;
@@ -189,7 +230,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final viewModel = widget.viewModel;
 
     if (viewModel.isLoading) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingShoppingList);
     }
 
     if (viewModel.hasError) {
@@ -209,11 +250,39 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (!viewModel.hasItems) {
       // A list exists but is empty — distinct from "no list at all" above, so
       // the copy must say "list is empty", not "no list to derive from".
-      return StateWidget.empty(
-        title: context.l10n.shoppingListEmpty,
-        subtitle: context.l10n.shoppingListEmptyHint,
-        actionLabel: context.l10n.shoppingAddItem,
-        onAction: widget.onAddItem,
+      //
+      // Skarmar v12 del 2 #tominkop: "Inget att handla", a line on sending
+      // the week's dishes here, "Från veckomenyn" as the one saffron action
+      // and an outlined "Lägg till vara" beside it (Komponentark v1:843-844).
+      return StateWidget(
+        type: StateType.empty,
+        title: context.l10n.shoppingEmptyTitle,
+        subtitle: context.l10n.shoppingEmptyBody,
+        customAction: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppDimensions.spacingSm,
+          runSpacing: AppDimensions.spacingSm,
+          children: [
+            HeroButton(
+              key: const ValueKey('shopping-empty-from-week-menu'),
+              label: context.l10n.shoppingFromWeekMenu,
+              // Opens the Meny tab in the shell the user is already in (the
+              // same bridge as Ctrl/Cmd+2, app_actions.dart), never a second
+              // shell on top. #tominkop draws only the label; sending the
+              // week's dishes to the list is done from Veckomeny's own
+              // "Till inköpslista".
+              onPressed: () {
+                mainTabSwitchRequest.value = 1;
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+            ),
+            OutlinedButton(
+              key: const ValueKey('shopping-empty-add-item'),
+              onPressed: widget.onAddItem,
+              child: Text(context.l10n.shoppingAddItem),
+            ),
+          ],
+        ),
       );
     }
 
@@ -290,7 +359,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         ...completedSections,
       ],
 
-      const SizedBox(height: AppDimensions.spacingHuge),
+      const SizedBox(
+        height: AppDimensions.buttonHeight + AppDimensions.space24,
+      ),
     ];
 
     return ListView.builder(
@@ -309,9 +380,14 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     int startingIndex = 0,
   }) {
     final cs = Theme.of(context).colorScheme;
-    final categoryColor = isCompleted
-        ? cs.onSurfaceVariant
-        : ShoppingListContentWidget.getCategoryColor(context, category);
+    // Skarmar v12 del 2 #inkop draws the rule in ink (light, :881) and in
+    // border.control (dark, :986), which is the dark scheme's outline.
+    final ruleColor = Theme.of(context).brightness == Brightness.dark
+        ? cs.outline
+        : cs.onSurface;
+    final labelStyle = AppTextStyles.overline.copyWith(
+      color: cs.onSurfaceVariant,
+    );
 
     final isCollapsed = _collapsedCategories.contains(category);
     final isDragOver = _dragOverCategory == category;
@@ -352,100 +428,73 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                     }
                   });
                 },
+                // #inkop: an uppercase heading over a hairline with "N av M"
+                // at the right, no category-coloured plate and no bar of its
+                // own.
+                // Min 48px keeps the collapse toggle a full tap target.
                 child: AnimatedContainer(
-                  duration: ThemeConstants.durationFast.respectingMotion(
+                  key: ValueKey(
+                    isCompleted
+                        ? 'shopping-category-header-bought-$category'
+                        : 'shopping-category-header-$category',
+                  ),
+                  duration: AppMotion.micro.respectingMotion(
                     context,
                   ),
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingMd,
-                    vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                  constraints: const BoxConstraints(
+                    minHeight: AppDimensions.minTouchTarget,
                   ),
-                  margin: const EdgeInsets.only(
-                    bottom: AppDimensions.spacingSm,
+                  padding: const EdgeInsets.only(
+                    top: AppDimensions.spacingMd,
+                    bottom: AppDimensions.spacingXs,
                   ),
                   decoration: BoxDecoration(
-                    color: categoryColor,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
-                    ),
-                    border: isDragOver
-                        ? Border.all(color: cs.onPrimary, width: 2)
-                        : null,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          // Chevron icon
-                          Icon(
-                            isCollapsed ? Icons.expand_more : Icons.expand_less,
-                            color: cs.onPrimary,
-                            size: AppDimensions.iconSizeM,
-                          ),
-                          const SizedBox(width: AppDimensions.spacingSm),
-                          Expanded(
-                            // Outer Semantics on the GestureDetector announces
-                            // this row as a toggle button; nesting `header:
-                            // true` here would make TalkBack stutter through
-                            // both roles. The button-with-toggled state is
-                            // more informative for the actionable case.
-                            child: Text(
-                              ShoppingCategory.displayName(
-                                category,
-                              ).toUpperCase(),
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: cs.onPrimary,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 2,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          // Progress badge: X/Y format
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.spacingSm,
-                              vertical: AppDimensions.spacingXxs,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cs.onPrimary.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusS,
-                              ),
-                            ),
-                            child: Text(
-                              progress != null
-                                  ? '${progress.completed}/${progress.total}'
-                                  : '${items.length}',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: cs.onPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+                    color: isDragOver ? cs.surfaceContainerHighest : null,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: ruleColor,
+                        width: isDragOver ? 2 : 1,
                       ),
-                      // Progress indicator
-                      if (progress != null && progress.total > 0) ...[
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusS,
-                          ),
-                          child: LinearProgressIndicator(
-                            value: progress.completed / progress.total,
-                            minHeight: 3,
-                            backgroundColor: cs.onPrimary.withValues(
-                              alpha: 0.2,
-                            ),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              cs.onPrimary.withValues(alpha: 0.7),
-                            ),
-                          ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        // Outer Semantics on the GestureDetector announces
+                        // this row as a toggle button; nesting `header:
+                        // true` here would make TalkBack stutter through
+                        // both roles.
+                        child: Text(
+                          ShoppingCategory.displayName(
+                            category,
+                          ).toUpperCase(),
+                          style: labelStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        progress != null
+                            ? context.l10n.shoppingCategoryProgress(
+                                progress.completed,
+                                progress.total,
+                              )
+                            : '${items.length}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                      ButleryIcon(
+                        isCollapsed
+                            ? ButleryIcons.chevronDown
+                            : ButleryIcons.chevronUp,
+                        color: cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeS,
+                      ),
                     ],
                   ),
                 ),
@@ -482,16 +531,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   Future<void> _handleItemDrop(String itemId, String category) async {
     final moved = await widget.viewModel.moveItemToCategory(itemId, category);
     if (moved && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.shoppingItemMoved(
-              ShoppingCategory.displayName(category),
-            ),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      ShoppingListContentWidget.showCategoryMoveReceipt(context, category);
     }
   }
 
@@ -504,15 +544,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       currentCategory: item.category,
     );
     if (selected != null && context.mounted) {
-      await widget.viewModel.moveItemToCategory(item.id, selected);
-      if (context.mounted) {
-        final displayName = ShoppingCategory.displayName(selected);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.shoppingItemMoved(displayName)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      final moved = await widget.viewModel.moveItemToCategory(
+        item.id,
+        selected,
+      );
+      if (moved && context.mounted) {
+        ShoppingListContentWidget.showCategoryMoveReceipt(context, selected);
       }
     }
   }
@@ -536,8 +573,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             }),
             child: Row(
               children: [
-                Icon(
-                  _showEmptyCategories ? Icons.expand_less : Icons.expand_more,
+                ButleryIcon(
+                  _showEmptyCategories
+                      ? ButleryIcons.chevronUp
+                      : ButleryIcons.chevronDown,
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
@@ -593,7 +632,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       },
       builder: (context, candidateData, rejectedData) {
         return AnimatedContainer(
-          duration: ThemeConstants.durationFast.respectingMotion(context),
+          duration: AppMotion.micro.respectingMotion(context),
           width: double.infinity,
           // Min 48px so the empty drop zone is a comfortable drag target
           // (touch-accessibility) rather than a thin, hard-to-hit strip.
@@ -609,7 +648,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             color: isDragOver
                 ? categoryColor.withValues(alpha: 0.3)
                 : cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(
               color: isDragOver ? categoryColor : cs.outlineVariant,
               width: isDragOver ? 2 : 1,
@@ -623,7 +662,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                 decoration: BoxDecoration(
                   color: categoryColor,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                 ),
               ),
@@ -641,6 +680,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     );
   }
 
+  /// "Köpt (N)" heading with the right-aligned "Rensa köpta" text action
+  /// (Grafisk manual v6:524; Skarmar v12 del 2 #inkop :915-916 light,
+  /// :1020-1021 dark). No icon, no subtitle line — the count lives in the
+  /// heading itself, per the facit.
   Widget _buildCompletedItemsHeader(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
@@ -649,34 +692,28 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     return Row(
       children: [
-        Icon(
-          Icons.check_circle,
-          size: AppDimensions.iconSizeM,
-          color: cs.primary,
-        ),
-        const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.shoppingPurchased,
-                style: AppTextStyles.bodyLargeBold.copyWith(
-                  color: cs.primary,
-                ),
-              ),
-              Text(
-                context.l10n.shoppingBoughtOfTotal(
-                  viewModel.boughtItems,
-                  viewModel.totalItems,
-                ),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.primary.withValues(
-                    alpha: AppDimensions.opacityVeryDark,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            context.l10n.shoppingBoughtCount(viewModel.boughtItems),
+            // Nearest role to the facit's 12/700: labelSmall is 11/700,
+            // the closest surviving weight-and-size match in the scale.
+            style: AppTextStyles.labelSmall.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
+        TextButton(
+          key: const ValueKey('shopping-clear-bought'),
+          onPressed: widget.onClearCompleted,
+          child: Text(
+            context.l10n.shoppingClearBought,
+            // Nearest role to the facit's 10.5/600: labelMedium is
+            // 12.5/600, the closest surviving weight match (overline is
+            // 10.5/700 — exact size, wrong weight; the facit's weight
+            // matters more for a tappable action than 2px does).
+            style: AppTextStyles.labelMedium.copyWith(
+              color: context.modeColors.textAccent,
+            ),
           ),
         ),
       ],

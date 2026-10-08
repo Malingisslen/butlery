@@ -49,6 +49,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Information about ownership succession when owner leaves group.
 /// Used to communicate leave group requirements to the UI.
@@ -386,7 +387,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     try {
       await executeAsync(() async {
         AppLogger.info(
-          'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid}',
+          'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid.maskedUserId}',
         );
 
         // Use transactional transfer to prevent TOCTOU race conditions
@@ -449,7 +450,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       filterByDietary: true,
     );
 
-    final pool = generator.availableRecipes;
+    final pool = await generator.getAvailableRecipesAsync();
     if (pool.isEmpty) return const [];
 
     // Group by meal type to encourage variety — cheap deterministic

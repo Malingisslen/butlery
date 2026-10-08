@@ -94,6 +94,19 @@ function bulkContributors(n: number, prefix = "bulk"): string[] {
   return Array.from({ length: n }, (_, i) => `${prefix}-${i}`);
 }
 
+/** `n` entries for `recentlyRemoved` (BUT-2140). */
+function removedRows(n: number, prefix = "rr"): Record<string, unknown>[] {
+  return Array.from({ length: n }, (_, i) => ({
+    id: `${prefix}-${i}`,
+    name: `Vara ${i}`,
+    amount: 1,
+    unit: "st",
+    category: "other",
+    note: "",
+    at: new Date("2026-10-01T12:00:00.000Z"),
+  }));
+}
+
 /** Minimal-but-valid shared shopping list owned by OWNER. */
 function validListBody(
   extra: Record<string, unknown> = {}
@@ -119,6 +132,9 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // Suites share one long-lived emulator; leftovers from an earlier run
+  // turn a create-only write into a denied update.
+  await env.clearFirestore();
 }
 
 async function teardown(): Promise<void> {
@@ -1116,6 +1132,176 @@ test("shared lists: the owner CAN still remove ANOTHER member with the new conju
       .firestore()
       .doc(`${COL}/leave-owner-control`)
       .update(leavePayload(VIEWER))
+  );
+});
+
+// ====================================================================
+// RECENTLY REMOVED — BUT-2140 S1, `recentlyRemoved` capped at 100 on
+// create and update
+// ====================================================================
+//
+// The bound is pinned per actor class that writes the field (edit member and
+// owner) and on both limbs, each with an at-bound allow beside the over-bound
+// deny.
+
+const REMOVED_CAP = 100;
+
+// SSL61: the ordinary write — an edit member records 30 removed rows in the
+// same update that changes `items`.
+test("shared lists: an edit member CAN write 30 recentlyRemoved entries", async () => {
+  await seedList("rr-editor-30", {
+    items: [{ id: "i40", name: "Mjölk", isBought: false }],
+  });
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-editor-30`)
+      .update({ items: [], recentlyRemoved: removedRows(30) })
+  );
+});
+
+// SSL62: the bound is inclusive — exactly 100 is allowed.
+test("shared lists: an edit member CAN write exactly 100 recentlyRemoved entries", async () => {
+  await seedList("rr-editor-100");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-editor-100`)
+      .update({ recentlyRemoved: removedRows(REMOVED_CAP) })
+  );
+});
+
+// SSL63: one over the bound, sent by an edit member. Pairs with SSL62.
+test("shared lists: an edit member CANNOT write 101 recentlyRemoved entries", async () => {
+  await seedList("rr-editor-101");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-editor-101`)
+      .update({ recentlyRemoved: removedRows(REMOVED_CAP + 1) })
+  );
+});
+
+// SSL64: one over the bound, sent by the OWNER. The owner arm has no diff
+// restriction, so this denies only if the bound sits outside the
+// `(owner || member || leave)` disjunction.
+test("shared lists: the owner CANNOT write 101 recentlyRemoved entries", async () => {
+  await seedList("rr-owner-101");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-owner-101`)
+      .update({ recentlyRemoved: removedRows(REMOVED_CAP + 1) })
+  );
+});
+
+// SSL65: the control for SSL64 — same actor, exactly 100.
+test("shared lists: the owner CAN write exactly 100 recentlyRemoved entries", async () => {
+  await seedList("rr-owner-100");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-owner-100`)
+      .update({ recentlyRemoved: removedRows(REMOVED_CAP) })
+  );
+});
+
+// SSL66: the offline replay shape — an `arrayUnion` onto a stored array
+// already at 100. Rules read the post-transform array, so the 101st entry is
+// refused.
+test("shared lists: an arrayUnion that takes a stored 100 entries to 101 is refused", async () => {
+  await seedList("rr-union-over", {
+    recentlyRemoved: removedRows(REMOVED_CAP),
+  });
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-union-over`)
+      .update({ recentlyRemoved: arrayUnion(removedRows(1, "extra")[0]) })
+  );
+});
+
+// SSL67: a view-only member cannot write the field at all, even well inside
+// the bound (plan condition S2).
+test("shared lists: a view-only member CANNOT write recentlyRemoved", async () => {
+  await seedList("rr-viewer");
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-viewer`)
+      .update({ recentlyRemoved: removedRows(30) })
+  );
+});
+
+// SSL68: leaving a list that already carries removed rows. The leave write
+// does not touch the field, so the stored array rides through unchanged.
+test("shared lists: a member CAN leave a list that carries recentlyRemoved entries", async () => {
+  await seedList("rr-leave", { recentlyRemoved: removedRows(30) });
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertSucceeds(
+    ctx.firestore().doc(`${COL}/rr-leave`).update(leavePayload(VIEWER))
+  );
+});
+
+// SSL69: a leave write cannot carry the field.
+test("shared lists: a leaving member CANNOT write recentlyRemoved in the same write", async () => {
+  await seedList("rr-leave-write", { recentlyRemoved: removedRows(30) });
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-leave-write`)
+      .update({ ...leavePayload(VIEWER), recentlyRemoved: [] })
+  );
+});
+
+// SSL70: create carrying an empty array.
+test("shared lists: the owner CAN create a list with an empty recentlyRemoved", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-create-empty-${RUN}`)
+      .set(validListBody({ contributorUserIds: [OWNER], recentlyRemoved: [] }))
+  );
+});
+
+// SSL71: create at the bound.
+test("shared lists: the owner CAN create a list with exactly 100 recentlyRemoved entries", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-create-100-${RUN}`)
+      .set(
+        validListBody({
+          contributorUserIds: [OWNER],
+          recentlyRemoved: removedRows(REMOVED_CAP),
+        })
+      )
+  );
+});
+
+// SSL72: create one over the bound. Pairs with SSL71.
+test("shared lists: the owner CANNOT create a list with 101 recentlyRemoved entries", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/rr-create-101-${RUN}`)
+      .set(
+        validListBody({
+          contributorUserIds: [OWNER],
+          recentlyRemoved: removedRows(REMOVED_CAP + 1),
+        })
+      )
   );
 });
 

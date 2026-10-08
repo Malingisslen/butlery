@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
 void main() {
@@ -75,6 +76,31 @@ void main() {
       // settle. A few explicit pumps is enough to prove the ticker runs.
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('pulses on the shared loop by default (R7-4 = B)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        wrap(const PulseDot(color: Color(0xFF4A7C59), size: 8)),
+      );
+      double scale() => tester
+          .widget<Transform>(
+            find.descendant(
+              of: find.byType(PulseDot),
+              matching: find.byType(Transform),
+            ),
+          )
+          .transform
+          .entry(0, 0);
+
+      // One loop is AppMotion.pulse: full at half, back at the start
+      // (produktbeslut R8-9 = A).
+      expect(scale(), closeTo(0.5, 0.005));
+      await tester.pump(AppMotion.pulse ~/ 2);
+      expect(scale(), closeTo(1.0, 0.005));
+      await tester.pump(AppMotion.pulse ~/ 2);
+      expect(scale(), closeTo(0.5, 0.005));
     });
 
     testWidgets('reduce-motion skips the Transform.scale wrapper', (

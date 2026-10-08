@@ -21,7 +21,6 @@ import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
-import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
@@ -61,6 +60,8 @@ import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
+import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
@@ -134,7 +135,6 @@ class UIModule implements DIModule {
     GroupInvitationsViewModel,
     // Import ViewModels
     TextImportViewModel,
-    UrlImportViewModel,
     PhotoImportViewModel,
     ArchiveImportViewModel,
 
@@ -169,11 +169,15 @@ class UIModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
-      // BUT-953: HeirloomBridge — singleton handoff slot between PhotoImportView
-      // and the save flow in ImportBaseViewModel. Registered here because
-      // both producer (photo VM) and consumer (text VM via base) live in this
-      // module's dependency graph.
+      // BUT-953 / BUT-2280: HeirloomBridge — singleton handoff slot between
+      // PhotoImportView and the recipe form that saves the parsed recipe.
       container.registerLazySingleton<HeirloomBridge>(() => HeirloomBridge());
+      container.registerLazySingleton<HeirloomUploader>(
+        () => HeirloomUploader(
+          storage: container<StorageRepository>(),
+          permission: container<PermissionService>(),
+        ),
+      );
 
       // Auth ViewModel - Auth service dependency
       container.registerFactory<AuthViewModel>(
@@ -329,13 +333,6 @@ class UIModule implements DIModule {
       // Text Import ViewModel
       container.registerFactory<TextImportViewModel>(
         () => TextImportViewModel(
-          importManager: container<ImportManager>(),
-        ),
-      );
-
-      // URL Import ViewModel
-      container.registerFactory<UrlImportViewModel>(
-        () => UrlImportViewModel(
           importManager: container<ImportManager>(),
         ),
       );

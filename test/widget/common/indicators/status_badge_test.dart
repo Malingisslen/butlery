@@ -1,6 +1,7 @@
 // test/widget/common/indicators/status_badge_test.dart
 // Comprehensive tests for StatusBadge using ultrathink methodology
 
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
@@ -205,7 +206,7 @@ void main() {
           container.padding,
           equals(
             const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.spacingXs,
             ),
           ),
@@ -256,7 +257,8 @@ void main() {
         );
 
         final text = tester.widget<Text>(find.text('BOLD'));
-        expect(text.style?.fontWeight, equals(FontWeight.w600));
+        // Vikten ags av den frysta typskalan, inte av provet.
+        expect(text.style?.fontWeight, equals(AppTextStyles.badge.fontWeight));
       });
     });
 

@@ -20,7 +20,15 @@ import 'package:butlery/repositories/firebase/firebase_cooking_session_repositor
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
-import 'package:butlery/services/realtime/realtime_recipe_service.dart';
+import 'package:butlery/services/offline/sync_queue_source.dart';
+import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_overwritten_version_repository.dart';
+import 'package:butlery/services/realtime/overwritten_version_service.dart';
+import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_suggestion_repository.dart';
+import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -42,7 +50,12 @@ class CollaborationModule implements DIModule {
   @override
   List<Type> get provides => [
     RealtimeSyncService,
-    RealtimeRecipeService,
+    // P5-U26b: overwritten versions kept 30 days behind "Återställ".
+    OverwrittenVersionRepository,
+    OverwrittenVersionService,
+    // P5-U27b: suggestions to someone else's shared recipe, kept 7 days.
+    RecipeSuggestionRepository,
+    RecipeSuggestionService,
     RealtimeMenuService,
     UnifiedShoppingService,
     MenuCollaborationRepository,
@@ -65,10 +78,79 @@ class CollaborationModule implements DIModule {
   Future<void> configureUserScope(GetIt container) async {
     final app = GetIt.instance;
 
+    // P5-U26b: the user's own overwritten versions (users/{uid}/
+    // overwritten_versions), kept by RealtimeSyncService when a save loses.
+    container.registerLazySingleton<OverwrittenVersionRepository>(
+      () => FirebaseOverwrittenVersionRepository(
+        authRepository: app<AuthRepository>(),
+      ),
+    );
+
+    // P5-U27b: suggestions to someone else's shared recipe
+    // (recipe_suggestions), stored by RealtimeSyncService when a non-owner's
+    // edit meets the owner's.
+    container.registerLazySingleton<RecipeSuggestionRepository>(
+      () => FirebaseRecipeSuggestionRepository(
+        authRepository: app<AuthRepository>(),
+      ),
+    );
+
+    // The owner's own library recipe, read and written the way the owner's
+    // own editor does it (RecipePersistenceManager.saveRecipe), so a write
+    // goes through the offline queue where there is one. Resolved at call
+    // time, so the content module's registration order does not matter.
+    Future<Recipe?> readOwnRecipe(String id) async =>
+        container.isRegistered<UnifiedRecipeService>()
+        ? container<UnifiedRecipeService>().getRecipeById(id)
+        : null;
+    Future<void> writeOwnRecipe(Recipe recipe) async {
+      final recipes = container<UnifiedRecipeService>();
+      final result = await recipes.personal.updateUnifiedRecipe(recipe);
+      if (!result.isSuccess) {
+        throw StateError(result.message ?? 'recipe update failed');
+      }
+    }
+
     container.registerLazySingleton<RealtimeSyncService>(
       () => RealtimeSyncService(
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
+        overwrittenVersions: container<OverwrittenVersionRepository>(),
+        suggestions: container<RecipeSuggestionRepository>(),
+        // P6-U08b: conflict notices wait for the offline queue to empty
+        // (produktregler.md:189).
+        queueSettled: () => SyncQueueSource.resolve().watchSettled(),
+        // BUT-2213: "Behåll min version" on a queued recipe edit.
+        writeOwnRecipe: writeOwnRecipe,
+      ),
+    );
+
+    // Q6-08 = A: a suggestion is taken into the owner's own library recipe.
+    container.registerLazySingleton<RecipeSuggestionService>(
+      () => RecipeSuggestionService(
+        repository: container<RecipeSuggestionRepository>(),
+        syncService: container<RealtimeSyncService>(),
+        readOwnRecipe: readOwnRecipe,
+        writeOwnRecipe: writeOwnRecipe,
+        // The suggester's view of their own suggestion reads the owner's
+        // recipe through the member's read path (recipe-shared-read-rules).
+        readSharedRecipe: ({required ownerId, required recipeId}) async =>
+            container.isRegistered<UnifiedRecipeService>()
+            ? container<UnifiedRecipeService>().fetchFriendRecipe(
+                ownerId: ownerId,
+                recipeId: recipeId,
+              )
+            : null,
+      ),
+    );
+
+    container.registerLazySingleton<OverwrittenVersionService>(
+      () => OverwrittenVersionService(
+        repository: container<OverwrittenVersionRepository>(),
+        syncService: container<RealtimeSyncService>(),
+        // BUT-2213: a kept recipe version comes back through the recipe.
+        readOwnRecipe: readOwnRecipe,
+        writeOwnRecipe: writeOwnRecipe,
       ),
     );
 
@@ -126,13 +208,6 @@ class CollaborationModule implements DIModule {
         authService: app<AuthService>(),
       ),
     );
-
-    container.registerLazySingleton<RealtimeRecipeService>(
-      () => RealtimeRecipeService(
-        syncService: container<RealtimeSyncService>(),
-        permissionService: app<PermissionService>(),
-      ),
-    );
   }
 
   @override
@@ -170,8 +245,8 @@ class CollaborationModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // RealtimeSyncService, UnifiedShoppingService, RealtimeMenuService,
-      // RealtimeRecipeService are user-scoped — initialized on login, not here
+      // RealtimeSyncService, UnifiedShoppingService and RealtimeMenuService
+      // are user-scoped — initialized on login, not here
 
       // Validate app-scoped services
       container<PermissionService>();
@@ -205,9 +280,6 @@ class CollaborationModule implements DIModule {
       }
       if (container.isRegistered<RealtimeMenuService>()) {
         services['RealtimeMenuService'] = container<RealtimeMenuService>();
-      }
-      if (container.isRegistered<RealtimeRecipeService>()) {
-        services['RealtimeRecipeService'] = container<RealtimeRecipeService>();
       }
 
       for (final entry in services.entries) {

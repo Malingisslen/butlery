@@ -20,17 +20,18 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class GroupMenuEntryButton extends StatelessWidget {
   const GroupMenuEntryButton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // The icon takes the bar's foreground: it sits on the week menu's light
+    // root bar (Komponentark v1:62), where paper would not show.
     return IconButton(
-      icon: Icon(
-        Icons.groups_outlined,
-        color: Theme.of(context).colorScheme.onPrimary,
-      ),
+      icon: const ButleryIcon(ButleryIcons.users),
       tooltip: context.l10n.groupMenuChatAction,
       onPressed: () => unawaited(_open(context)),
     );
@@ -54,9 +55,9 @@ class GroupMenuEntryButton extends StatelessWidget {
       // becomes an unhandled async error and the tap does nothing visible.
       AppLogger.error('Could not list conversations for the group menu', e);
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.groupMenuGroupsLoadFailed,
+          what: context.l10n.groupMenuGroupsLoadFailed,
         );
       }
       return;
@@ -110,7 +111,7 @@ class GroupMenuEntryButton extends StatelessWidget {
             ),
             for (final group in groups)
               ListTile(
-                leading: const Icon(Icons.groups_outlined),
+                leading: const ButleryIcon(ButleryIcons.users),
                 title: Text(
                   group.title ?? sheetContext.l10n.groupMenuUntitledGroup,
                 ),

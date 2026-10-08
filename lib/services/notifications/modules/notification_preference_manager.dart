@@ -41,7 +41,7 @@ class NotificationPreferenceManager {
   ) async {
     try {
       AppLogger.debug(
-        '🔔 Checking if user $_userId should receive ${category.name} ${type.name}',
+        '🔔 Checking if user ${_userId.maskedUserId} should receive ${category.name} ${type.name}',
       );
 
       final preferences = await getPreferences();
@@ -49,7 +49,7 @@ class NotificationPreferenceManager {
 
       if (!isEnabled) {
         AppLogger.info(
-          '📋 User $_userId has disabled ${category.name} notifications',
+          '📋 User ${_userId.maskedUserId} has disabled ${category.name} notifications',
         );
         return false;
       }
@@ -59,19 +59,19 @@ class NotificationPreferenceManager {
         final inQuietHours = await isInQuietHours();
         if (inQuietHours) {
           AppLogger.info(
-            '📋 User $_userId is in quiet hours, blocking ${type.name} notification',
+            '📋 User ${_userId.maskedUserId} is in quiet hours, blocking ${type.name} notification',
           );
           return false;
         }
       }
 
       AppLogger.success(
-        '✅ User $_userId should receive ${category.name} ${type.name} notification',
+        '✅ User ${_userId.maskedUserId} should receive ${category.name} ${type.name} notification',
       );
       return true;
     } catch (e) {
       AppLogger.error(
-        '❌ Failed to check notification preference for $_userId',
+        '❌ Failed to check notification preference for ${_userId.maskedUserId}',
         e,
       );
       // Default to true for critical notifications, false for others

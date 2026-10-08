@@ -1,22 +1,28 @@
 // lib/views/social/friend_requests/friend_request_builders.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 // Local
 import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Builds the header and app bar for friend requests view
 class FriendRequestsHeaderBuilder {
@@ -35,85 +41,94 @@ class FriendRequestsHeaderBuilder {
     final totalRequests =
         viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
-    return AppBar(
-      title: Text(context.l10n.socialNotificationsCount(totalRequests)),
-      bottom: TabBar(
-        controller: tabController,
-        onTap: (_) => onClearSelection(),
-        tabs: [
-          Tab(
-            icon: Badge(
-              isLabelVisible: viewModel.incomingRequests.isNotEmpty,
-              label: Text('${viewModel.incomingRequests.length}'),
-              child: const Icon(Icons.inbox),
+    // A subpage under Vänner (Skarmar v12 del 3 #forfragningar draws the back
+    // arrow; Komponentark v1 §01 pattern 2). The tab strip stands on the
+    // page's own surface below the ink bar, as the friends list draws its
+    // tabs, so its colours and focus ring are the light page's.
+    return ButleryTopBar.undersida(
+      title: context.l10n.socialNotificationsCount(totalRequests),
+      bottom: _PageSurfaceStrip(
+        child: TabBar(
+          // Tabs carry the canonical ring (ButleryTab), never a focus tint
+          // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+          overlayColor: ButleryControlFocus.withoutFocusTint(null),
+          controller: tabController,
+          onTap: (_) => onClearSelection(),
+          tabs: [
+            ButleryTab(
+              icon: Badge(
+                isLabelVisible: viewModel.incomingRequests.isNotEmpty,
+                label: Text('${viewModel.incomingRequests.length}'),
+                child: const ButleryIcon(ButleryIcons.inbox),
+              ),
+              text: context.l10n.socialIncoming,
             ),
-            text: context.l10n.socialIncoming,
-          ),
-          Tab(
-            icon: Badge(
-              isLabelVisible: viewModel.sentRequests.isNotEmpty,
-              label: Text('${viewModel.sentRequests.length}'),
-              child: const Icon(Icons.outbox),
+            ButleryTab(
+              icon: Badge(
+                isLabelVisible: viewModel.sentRequests.isNotEmpty,
+                label: Text('${viewModel.sentRequests.length}'),
+                child: const ButleryIcon(ButleryIcons.send),
+              ),
+              text: context.l10n.socialSent,
             ),
-            text: context.l10n.socialSent,
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
-          PopupMenuButton<String>(
-            enabled: !batchRunning,
-            icon: Icon(
-              Icons.checklist,
-              color: Theme.of(context).colorScheme.primary,
+          PressFill(
+            surface: PressSurface.base,
+            child: PopupMenuButton<String>(
+              enabled: !batchRunning,
+              // Paper on the ink bar (the bar's icon theme).
+              icon: const ButleryIcon(ButleryIcons.listCheck),
+              onSelected: (value) {
+                if (value == 'accept_all') {
+                  onBatchAccept();
+                } else if (value == 'reject_all') {
+                  onBatchReject();
+                }
+              },
+              itemBuilder: (context) => [
+                ButleryMenuItem(
+                  value: 'accept_all',
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.circleCheck,
+                        color: context.modeColors.success,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        context.l10n.socialAcceptCount(selectedIncoming.length),
+                      ),
+                    ],
+                  ),
+                ),
+                ButleryMenuItem(
+                  value: 'reject_all',
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.x,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Text(
+                        context.l10n.socialDeclineCount(
+                          selectedIncoming.length,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            onSelected: (value) {
-              if (value == 'accept_all') {
-                onBatchAccept();
-              } else if (value == 'reject_all') {
-                onBatchReject();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'accept_all',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: context.butleryColors.success,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      context.l10n.socialAcceptCount(selectedIncoming.length),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'reject_all',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.cancel,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      context.l10n.socialDeclineCount(selectedIncoming.length),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(
-            icon: Icon(
-              Icons.cancel,
-              color: Theme.of(context).colorScheme.error,
-            ),
+            icon: const ButleryIcon(ButleryIcons.x),
             onPressed: batchRunning ? null : onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),
@@ -133,20 +148,17 @@ class FriendRequestsHeaderBuilder {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
+        color: context.modeColors.surfaceTintDanger,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: cs.error),
-          const SizedBox(width: AppDimensions.spacingS),
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               viewModel.error!,
-              style: TextStyle(color: cs.error),
+              style: TextStyle(color: cs.onErrorContainer),
             ),
           ),
           TextButton(
@@ -154,6 +166,48 @@ class FriendRequestsHeaderBuilder {
             child: Text(context.l10n.commonClose),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A strip under the subpage bar that stands on the page's own surface
+/// (surface.base) rather than the bar's ink: text, icons and the focus ring
+/// take the page's colours again.
+class _PageSurfaceStrip extends StatelessWidget implements PreferredSizeWidget {
+  const _PageSurfaceStrip({required this.child});
+
+  final PreferredSizeWidget child;
+
+  /// The tabs carry an icon and a label, which Material's Tab draws 72 dp
+  /// tall (its private _kTextAndIconTabHeight), plus the indicator's default
+  /// 2 px. ButleryTab reports 48 whatever it holds, so the strip asks for the
+  /// height its tabs actually take; the bar would clip them otherwise.
+  static const double _iconAndTextTabHeight = 72;
+  static const double _indicatorWeight = 2;
+
+  @override
+  Size get preferredSize => Size.fromHeight(
+    child.preferredSize.height > _iconAndTextTabHeight + _indicatorWeight
+        ? child.preferredSize.height
+        : _iconAndTextTabHeight + _indicatorWeight,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return FocusRingSurface(
+      brightness: theme.brightness,
+      child: ColoredBox(
+        color: cs.surface,
+        child: IconTheme.merge(
+          data: IconThemeData(color: cs.onSurface),
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: cs.onSurface),
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -176,7 +230,7 @@ class IncomingRequestsTabBuilder {
       return StateWidget.empty(
         title: context.l10n.socialNoFriendRequests,
         subtitle: context.l10n.socialNoFriendRequestsDescription,
-        icon: Icons.inbox_outlined,
+        icon: ButleryIcons.inbox,
       );
     }
 
@@ -192,16 +246,14 @@ class IncomingRequestsTabBuilder {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist,
+                  ButleryIcon(
+                    ButleryIcons.listCheck,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.socialRequestsSelected(
                       selectedIncoming.length,
@@ -226,7 +278,7 @@ class IncomingRequestsTabBuilder {
               padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.incomingRequests.length,
               separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
               itemBuilder: (context, index) {
                 final request = viewModel.incomingRequests[index];
                 final isSelected = selectedIncoming.contains(request.id);
@@ -269,7 +321,7 @@ class SentRequestsTabBuilder {
       return StateWidget.empty(
         title: context.l10n.socialNoSentRequests,
         subtitle: context.l10n.socialNoSentRequestsDescription,
-        icon: Icons.outbox_outlined,
+        icon: ButleryIcons.send,
       );
     }
 
@@ -285,16 +337,14 @@ class SentRequestsTabBuilder {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist,
+                  ButleryIcon(
+                    ButleryIcons.listCheck,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.socialRequestsSelected(selectedSent.length),
                     style: AppTextStyles.titleSmall.copyWith(
@@ -317,7 +367,7 @@ class SentRequestsTabBuilder {
               padding: const EdgeInsets.all(AppDimensions.spacingL),
               itemCount: viewModel.sentRequests.length,
               separatorBuilder: (context, index) =>
-                  const SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.space4),
               itemBuilder: (context, index) {
                 final request = viewModel.sentRequests[index];
                 final isSelected = selectedSent.contains(request.id);

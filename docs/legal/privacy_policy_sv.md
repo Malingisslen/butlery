@@ -1,7 +1,7 @@
 # Integritetspolicy
 
 **Status:** Utkast. Ska granskas av juridiskt ombud och publiceras på en stabil URL (planerad: `butlery.se/integritet` när BUT-680 levereras).
-**Senast uppdaterad:** 2026-09-18
+**Senast uppdaterad:** 2026-10-06
 **Träder i kraft:** TBD vid publicering.
 
 ## 1. Vilka vi är
@@ -28,6 +28,10 @@ Vi samlar INTE in: exakt geolokalisering, betalningsuppgifter (ingen monetiserin
 ## 3. Allergier och kostpreferenser
 
 Allergi- och kostpreferensdata kan klassas som hälsorelaterad data enligt Apples iOS Privacy Manifest-ramverk (deklarerat som `NSPrivacyCollectedDataTypeHealthAndFitness`). Vi använder dessa uppgifter enbart för att (a) filtrera recept du bör undvika och (b) anpassa menyförslag. Vi delar inte allergidata med tredje part utöver underleverantörerna i avsnitt 7.
+
+**Delade allergier i hushållet (om du har samtyckt):**
+
+Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar — även de som går med senare — se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
 
 ## 4. Rättslig grund (GDPR Artikel 6)
 

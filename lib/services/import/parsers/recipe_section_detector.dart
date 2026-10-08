@@ -8,7 +8,13 @@ import 'package:butlery/utils/text/swedish_word_boundary.dart';
 /// Provides section header detection, instruction scoring, and content
 /// classification for Swedish and English recipe text.
 class RecipeSectionDetector {
-  /// Known recipe section headers in Swedish
+  /// Known recipe section headers in Swedish. This vocabulary is the ONLY way
+  /// a colon-less single word is read as a heading: a bare word outside it
+  /// ("ägg", "parmesanost", "tortillabröd") is an ingredient row whose
+  /// quantity the writer left out, and reading it as a heading deletes it
+  /// from the list allergen tagging reads. The caption-shaped headings a
+  /// pasted recipe uses without a colon ("Dressing", "Garnering",
+  /// "Tillbehör") are listed so they still leave the list.
   static const sectionHeaders = {
     // Ingredient sections
     'såsen',
@@ -22,6 +28,22 @@ class RecipeSectionDetector {
     'köttet',
     'gräddsåsen',
     'till servering',
+    'servering',
+    'tillbehör',
+    'dressing',
+    'garnering',
+    'fyllning',
+    'deg',
+    'topping',
+    'glasyr',
+    'frosting',
+    'marinad',
+    'montering',
+    'pensling',
+    'botten',
+    'smet',
+    'röra',
+    'kryddblandning',
     // Instruction sections
     'gör så här',
     'tillagning',
@@ -55,7 +77,7 @@ class RecipeSectionDetector {
   /// treats å/ä/ö as non-word, so `\bl\b` matched the last letter of "Kål".
   static final _subHeadingUnitGuard = SwedishWordBoundary.boundedRegExp(
     r'dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|paket|förp|'
-    r'nypa|knippe|klyfta|skiva|bit|näve|klick|droppe',
+    r'nypa|knippe|kruka|bunt|klyfta|skiva|bit|näve|klick|droppe',
     caseSensitive: false,
   );
 
@@ -78,9 +100,7 @@ class RecipeSectionDetector {
   /// returns null (→ stays an ingredient). A heading must clear ALL of: not a
   /// generic ingredient/instruction block marker, no digit, no unit token,
   /// label length ≤ 40, and be either colon-terminated OR in the curated
-  /// [sectionHeaders] vocabulary. Deliberately NOT [isSectionHeader], which
-  /// greenlights any short single word ("salt", "socker") and would eat real
-  /// ingredients.
+  /// [sectionHeaders] vocabulary.
   static String? componentSubHeadingLabel(String text) {
     final clean = text.trim();
     if (clean.isEmpty) return null;
@@ -141,18 +161,40 @@ class RecipeSectionDetector {
     return HeadingWordLists.isBareGlutenWord(label) ? label : null;
   }
 
-  /// Check if text is a section header (like "biffen", "såsen")
+  /// A block title ("Ingredienser", "Gör så här:", "Ingredients") that a site
+  /// emitted as an entry of its ingredient list. [componentSubHeadingLabel]
+  /// answers null for these because they are not component groups, and a
+  /// caller that reads that null as "ingredient" forwards the title to the
+  /// parser, where no registry row matches it and every allergen verdict on
+  /// the recipe turns UNKNOWN. Exact, colon-stripped vocabulary plus the
+  /// anchored ingredient-header check; the loose `contains` form of
+  /// [isInstructionHeader] is deliberately not consulted, so an ingredient
+  /// row that merely contains one of its words stays a row.
+  static bool isGenericBlockMarker(String text) {
+    final clean = text.trim();
+    final label = clean.endsWith(':')
+        ? clean.substring(0, clean.length - 1).trim()
+        : clean;
+    final lower = label.toLowerCase();
+    if (lower.isEmpty) return false;
+    // A title that runs into the first row ("Ingredienser: 2 dl mjölk") is a
+    // row, and this runs before the sub-heading guard that would say so.
+    if (RegExp(r'\d').hasMatch(label)) return false;
+    if (_subHeadingUnitGuard.hasMatch(label)) return false;
+    return HeadingWordLists.genericBlockMarkers.contains(lower) ||
+        isIngredientHeader(lower);
+  }
+
+  /// Check if text is a section header (like "biffen", "såsen").
+  ///
+  /// Vocabulary only. This used to greenlight ANY lowercase single word under
+  /// 15 characters as a component name, and because [isGarbage] and
+  /// [isValidIngredient] both defer here, every quantity-less ingredient row
+  /// ("ägg", "smör", "parmesanost") was dropped as a heading. A heading
+  /// outside the vocabulary is recognised by its SHAPE in the text import
+  /// strategy, which can see the lines around it; this function cannot.
   static bool isSectionHeader(String text) {
-    final clean = text.toLowerCase().trim();
-    // Check known headers
-    if (sectionHeaders.contains(clean)) return true;
-    // Single word < 15 chars that could be a component name
-    if (clean.length < 15 &&
-        !clean.contains(' ') &&
-        RegExp(r'^[a-zåäö]+$').hasMatch(clean)) {
-      return true;
-    }
-    return false;
+    return sectionHeaders.contains(text.toLowerCase().trim());
   }
 
   /// Check if a section header indicates instruction content
@@ -304,10 +346,12 @@ class RecipeSectionDetector {
       return false;
     }
 
-    // Reject orphan fragments (single short words without measurements)
-    if (text.length < 6 &&
-        !text.contains(RegExp(r'\d')) &&
-        text.split(' ').length == 1) {
+    // A lone unit token ("msk", "dl") is an OCR fragment, never an
+    // ingredient. A lone short WORD is not rejected: a quantity-less row
+    // ("ägg", "smör", "senap") carries its allergen, and dropping the row
+    // loses the allergen with it.
+    final trimmed = text.trim();
+    if (!trimmed.contains(' ') && _subHeadingUnitGuard.hasMatch(trimmed)) {
       return false;
     }
 

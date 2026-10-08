@@ -42,7 +42,8 @@ void main() {
 
   // The four main destinations, in order, keyed by the `test-nav-<route>` keys
   // ButleryBottomNavigation stamps on each item.
-  const expectedRoutes = ['/', '/veckomeny', '/inkopslista', '/laggTill'];
+  // PQ-17: Hem · Meny · Inköp · Mer; "Lägg till" is the separate plus.
+  const expectedRoutes = ['/', '/veckomeny', '/inkopslista', '/mer'];
 
   // Pumps the detail bottom nav inside a localized MaterialApp and returns the
   // observer recording every pushed route name.

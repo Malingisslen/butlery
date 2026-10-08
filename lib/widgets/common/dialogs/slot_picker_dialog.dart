@@ -18,7 +18,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -27,6 +28,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:clock/clock.dart';
 
 /// Triple identifying a single placement target in the weekly plan.
@@ -160,7 +162,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -173,7 +175,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),
@@ -199,7 +201,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.calendar_today_outlined),
+          const ButleryIcon(ButleryIcons.calendar),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -208,13 +210,13 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.chevron_left),
+            icon: const ButleryIcon(ButleryIcons.chevronLeft),
             tooltip: context.l10n.slotPickerPreviousWeek,
             onPressed: _isLoading ? null : _goToPreviousWeek,
           ),
           Text(weekLabel, style: AppTextStyles.bodyMedium),
           IconButton(
-            icon: const Icon(Icons.chevron_right),
+            icon: const ButleryIcon(ButleryIcons.chevronRight),
             tooltip: context.l10n.slotPickerNextWeek,
             onPressed: _isLoading ? null : _goToNextWeek,
           ),
@@ -229,7 +231,9 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
 
   Widget _buildBody(ScrollController scrollController) {
     if (_isLoading) {
-      return const Center(child: LoadingIndicator());
+      // The plate line with what is being fetched, never a spinner
+      // (produktregler.md:163, B-18; beslutslogg.md:25).
+      return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
     if (_loadFailed) {
       return StateWidget.error(
@@ -260,7 +264,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       children: [
         Text(
           slot.displayLabel,
-          style: AppTextStyles.titleMedium.copyWith(color: cs.primary),
+          style: AppTextStyles.titleMedium.copyWith(color: cs.onSurface),
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Row(
@@ -289,73 +293,88 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       ),
       button: true,
       selected: widget.multiSelect ? isSelected : null,
-      child: InkWell(
-        onTap: () => _selectSlot(day, slot),
-        child: Container(
-          height: 64,
-          padding: const EdgeInsets.all(AppDimensions.spacingXs),
-          decoration: BoxDecoration(
-            // Square per design language.
-            borderRadius: BorderRadius.zero,
-            border: Border.all(
-              color: (isSelected || isOccupied)
-                  ? cs.primary
-                  : cs.outlineVariant,
-              width: isSelected
-                  ? 2
-                  : isOccupied
-                  ? 1.5
-                  : 1,
-            ),
-            color: isSelected
-                ? cs.primaryContainer.withValues(alpha: 0.6)
-                : isOccupied
-                ? cs.primaryContainer.withValues(alpha: 0.3)
-                : cs.surface,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      day.displayLabel,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                        letterSpacing: 1,
-                      ),
-                    ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: (isSelected || isOccupied)
+              ? PressSurface.raised
+              : PressSurface.base,
+          child: InkWell(
+            onTap: () => _selectSlot(day, slot),
+            child: Ink(
+              height: 64,
+              decoration: BoxDecoration(
+                // Square per design language.
+                borderRadius: BorderRadius.zero,
+                color: (isSelected || isOccupied)
+                    ? cs.primaryContainer
+                    : cs.surface,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                decoration: BoxDecoration(
+                  // A chosen slot is surface.selected with a 1.5 px text.primary
+                  // border; an occupied one surface.raised with border.control.
+                  // Never a tint.
+                  // primaryContainer / onSurface / outline carry the tokens in
+                  // both schemes.
+                  border: Border.all(
+                    color: isSelected
+                        ? cs.onSurface
+                        : isOccupied
+                        ? cs.outline
+                        : cs.outlineVariant,
+                    width: isSelected ? 1.5 : 1,
                   ),
-                  if (widget.multiSelect)
-                    Icon(
-                      isSelected
-                          ? Icons.check_box
-                          : Icons.check_box_outline_blank,
-                      size: AppDimensions.iconSize18,
-                      color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            day.displayLabel,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                        if (widget.multiSelect)
+                          ButleryIcon(
+                            isSelected
+                                ? ButleryIcons.checkSquare
+                                : ButleryIcons.square,
+                            size: AppDimensions.iconSize18,
+                            color: isSelected
+                                ? cs.onSurface
+                                : cs.onSurfaceVariant,
+                          ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 2),
+                    Expanded(
+                      child: isOccupied
+                          ? Text(
+                              entries.first.recipeTitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.labelSmall,
+                            )
+                          : widget.multiSelect
+                          ? const SizedBox.shrink()
+                          : ButleryIcon(
+                              ButleryIcons.plus,
+                              size: AppDimensions.iconSize18,
+                              color: cs.onSurfaceVariant,
+                            ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 2),
-              Expanded(
-                child: isOccupied
-                    ? Text(
-                        entries.first.recipeTitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.labelSmall,
-                      )
-                    : widget.multiSelect
-                    ? const SizedBox.shrink()
-                    : Icon(
-                        Icons.add,
-                        size: AppDimensions.iconSize18,
-                        color: cs.onSurfaceVariant,
-                      ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -379,12 +398,6 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           height: 48,
           child: FilledButton(
             onPressed: _selected.isEmpty ? null : _confirmMultiSelection,
-            style: FilledButton.styleFrom(
-              // Square per design language.
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-            ),
             child: Text(
               context.l10n.slotPickerConfirmCount(_selected.length),
             ),

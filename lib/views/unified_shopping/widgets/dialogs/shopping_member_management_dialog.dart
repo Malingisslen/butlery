@@ -1,15 +1,21 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Comprehensive member management dialog for collaborative shopping list administration
 class ShoppingMemberManagementDialog extends StatefulWidget {
@@ -31,6 +37,8 @@ class ShoppingMemberManagementDialog extends StatefulWidget {
 
 class _ShoppingMemberManagementDialogState
     extends State<ShoppingMemberManagementDialog> {
+  static const double _avatarRadius = 20;
+
   final _searchController = TextEditingController();
   bool _isLoading = false;
   String? _error;
@@ -125,17 +133,12 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.shoppingPermissionUpdated(
-                  widget.userDisplayNames[userId] ??
-                      context.l10n.shoppingUnknownUser,
-                ),
-              ),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
+          // The ink snackbar (PQ-09 = A).
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingPermissionUpdated(
+              widget.userDisplayNames[userId] ??
+                  context.l10n.shoppingUnknownUser,
             ),
           );
         }
@@ -155,9 +158,12 @@ class _ShoppingMemberManagementDialogState
         });
       }
     } catch (e) {
+      AppLogger.error('Shopping member permission update failed', e);
       if (!mounted) return;
       setState(() {
-        _error = context.l10n.shoppingErrorUpdating(e.toString());
+        // What failed, never the exception (content-style-guide.md:95); the
+        // exception goes to the log.
+        _error = context.l10n.shoppingCouldNotUpdatePermission;
       });
     } finally {
       if (mounted) {
@@ -216,13 +222,9 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.shoppingMemberRemoved(userName)),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingMemberRemoved(userName),
           );
         }
       } else {
@@ -233,9 +235,12 @@ class _ShoppingMemberManagementDialogState
         });
       }
     } catch (e) {
+      AppLogger.error('Shopping member removal failed', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.shoppingErrorRemoving(e.toString());
+          // What failed, never the exception (content-style-guide.md:95); the
+          // exception goes to the log.
+          _error = context.l10n.shoppingCouldNotRemoveMember;
         });
       }
     } finally {
@@ -321,15 +326,9 @@ class _ShoppingMemberManagementDialogState
           firstFailureReason ?? shoppingService.consumeMutationError();
       if (mounted) {
         if (addedMembers.isNotEmpty) {
-          final cs = Theme.of(context).colorScheme;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.shoppingMembersAdded(addedMembers.length),
-              ),
-              backgroundColor: cs.primary,
-              duration: const Duration(seconds: 2),
-            ),
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.shoppingMembersAdded(addedMembers.length),
           );
           // Some selected friends were NOT added. Reporting only the
           // successes reads as "all done" while _selectedFriends.clear()
@@ -346,9 +345,12 @@ class _ShoppingMemberManagementDialogState
         }
       }
     } catch (e) {
+      AppLogger.error('Adding shopping members failed', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.shoppingErrorAdding(e.toString());
+          // What failed, never the exception (content-style-guide.md:95); the
+          // exception goes to the log.
+          _error = context.l10n.shoppingCouldNotAddMembers;
         });
       }
     } finally {
@@ -372,7 +374,11 @@ class _ShoppingMemberManagementDialogState
     return AlertDialog(
       title: Row(
         children: [
-          const Icon(Icons.manage_accounts, size: AppDimensions.iconSizeAction),
+          ButleryIcon(
+            ButleryIcons.users,
+            size: AppDimensions.iconSizeAction,
+            color: cs.onSurface,
+          ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
@@ -392,16 +398,16 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: cs.error.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
+                  color: context.modeColors.surfaceTintDanger,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: Text(
                   _error!,
-                  style: AppTextStyles.bodyMediumError,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onErrorContainer,
+                  ),
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
@@ -417,7 +423,7 @@ class _ShoppingMemberManagementDialogState
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: ListView.builder(
@@ -452,7 +458,7 @@ class _ShoppingMemberManagementDialogState
             StyledInput(
               controller: _searchController,
               hint: context.l10n.shoppingSearchFriends,
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const ButleryIcon(ButleryIcons.search),
               onChanged: (_) => _updateFilteredFriends(),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -462,7 +468,7 @@ class _ShoppingMemberManagementDialogState
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+                    AppDimensions.radiusControl,
                   ),
                 ),
                 child: _filteredFriends.isEmpty
@@ -494,7 +500,7 @@ class _ShoppingMemberManagementDialogState
                   label: context.l10n.shoppingAddFriendsCount(
                     _selectedFriends.length,
                   ),
-                  icon: Icons.person_add,
+                  icon: ButleryIcons.userPlus,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _addSelectedMembers,
                   isExpanded: true,
@@ -521,17 +527,24 @@ class _ShoppingMemberManagementDialogState
     bool isOwner,
   ) {
     final cs = Theme.of(context).colorScheme;
+    final tileTheme = ListTileTheme.of(context);
+    // The role picker's own row starts under the name: the tile's start
+    // padding, the avatar and the gap after it (Material 3 defaults when the
+    // theme sets none).
+    final nameInset =
+        (tileTheme.contentPadding?.resolve(Directionality.of(context)).left ??
+            AppDimensions.spacingMd) +
+        2 * _avatarRadius +
+        (tileTheme.horizontalTitleGap ?? AppDimensions.spacingMd);
 
-    return ListTile(
+    final tile = ListTile(
       leading: CircleAvatar(
-        radius: 20,
-        backgroundColor: cs.primary.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        radius: _avatarRadius,
+        backgroundColor: cs.surface,
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),
@@ -542,71 +555,109 @@ class _ShoppingMemberManagementDialogState
       subtitle: isOwner
           ? Text(
               context.l10n.shoppingPermissionOwner,
-              style: AppTextStyles.linkSmall,
+              style: AppTextStyles.linkSmall.copyWith(
+                color: context.modeColors.textLink,
+              ),
             )
-          : DropdownButton<SharedListPermission>(
-              value: permission,
-              onChanged: _isLoading
-                  ? null
-                  : (newPermission) {
-                      if (newPermission != null) {
-                        _updateMemberPermission(userId, newPermission);
-                      }
-                    },
-              items: [
-                DropdownMenuItem(
-                  value: SharedListPermission.view,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.visibility,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(context.l10n.shoppingPermissionView),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: SharedListPermission.edit,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.edit,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.secondary,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(context.l10n.shoppingPermissionEdit),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: SharedListPermission.admin,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.admin_panel_settings,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.primary,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(context.l10n.shoppingPermissionAdmin),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          : null,
       trailing: !isOwner
           ? IconButton(
               onPressed: _isLoading
                   ? null
                   : () => _removeMember(userId, userName),
-              icon: Icon(Icons.person_remove, color: cs.error),
+              icon: ButleryIcon(ButleryIcons.userMinus, color: cs.error),
               tooltip: context.l10n.shoppingRemoveMember,
             )
           : null,
+    );
+    if (isOwner) return tile;
+
+    // BUT-2190: beside the avatar and the remove button the picker had
+    // too little width for "Redigera", so it takes its own row. The row
+    // shares the tile's surface, so one member reads as one entry.
+    return Material(
+      color: tileTheme.tileColor ?? Colors.transparent,
+      shape: tileTheme.shape,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          tile,
+          Padding(
+            padding: EdgeInsetsDirectional.only(
+              start: nameInset,
+              end: AppDimensions.spacingMd,
+            ),
+            child: PressFill(
+              surface: PressSurface.base,
+              child: DropdownButton<SharedListPermission>(
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
+                isExpanded: true,
+                value: permission,
+                onChanged: _isLoading
+                    ? null
+                    : (newPermission) {
+                        if (newPermission != null) {
+                          _updateMemberPermission(userId, newPermission);
+                        }
+                      },
+                items: [
+                  DropdownMenuItem(
+                    value: SharedListPermission.view,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.eye,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(context.l10n.shoppingPermissionView),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: SharedListPermission.edit,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.pencil,
+                          size: AppDimensions.iconSizeS,
+                          // Saffron falls under 3:1 on the light surfaces, so
+                          // only dark mode keeps it.
+                          color: cs.brightness == Brightness.dark
+                              ? cs.secondary
+                              : cs.onSurface,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(context.l10n.shoppingPermissionEdit),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: SharedListPermission.admin,
+                    child: Row(
+                      children: [
+                        ButleryIcon(
+                          ButleryIcons.crown,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onSurface,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(context.l10n.shoppingPermissionAdmin),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -617,15 +668,13 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: cs.primary.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
+        backgroundColor: cs.surface,
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()
               : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
       ),

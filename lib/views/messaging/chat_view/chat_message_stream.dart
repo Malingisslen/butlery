@@ -22,6 +22,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
@@ -171,7 +173,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
             AppLogger.error('Message stream error', error);
             if (mounted) {
               setState(() {
-                _error = context.l10n.errorGeneric;
+                _error = context.l10n.chatMessagesLoadFailed;
               });
             }
           },
@@ -187,7 +189,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = context.l10n.errorGeneric;
+          _error = context.l10n.chatMessagesLoadFailed;
         });
       }
     }
@@ -195,9 +197,14 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
+      final target = _scrollController.position.maxScrollExtent;
+      if (isReducedMotion(context)) {
+        _scrollController.jumpTo(target);
+        return;
+      }
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: AppDimensions.animationDurationCommon,
+        target,
+        duration: AppMotion.standard,
         curve: Curves.easeOut,
       );
     }
@@ -273,7 +280,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       AppLogger.error('Failed to refresh messages', e);
       if (mounted) {
         setState(() {
-          _error = context.l10n.errorGeneric;
+          _error = context.l10n.chatMessagesLoadFailed;
         });
       }
     }
@@ -294,7 +301,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   ) async {
     final problem = await viewModel.votePoll(messageId, optionId);
     if (!mounted || problem == null) return;
-    SnackBarUtils.showError(context, problem);
+    SnackBarUtils.showFailure(context, what: problem);
   }
 
   /// BUT-1908: `closePoll` can now REFUSE, and a refusal that nobody shows is
@@ -306,7 +313,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   Future<void> _closePoll(ChatViewModel viewModel, String messageId) async {
     final problem = await viewModel.closePoll(messageId);
     if (!mounted || problem == null) return;
-    SnackBarUtils.showError(context, problem);
+    SnackBarUtils.showFailure(context, what: problem);
   }
 
   /// BUT-1904: clears the duplicate-guard notice the sender is looking at.
@@ -323,7 +330,10 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   ) async {
     final ok = await viewModel.deleteMessage(messageId);
     if (ok || !mounted) return ok;
-    SnackBarUtils.showError(context, context.l10n.chatCouldNotDeleteMessage);
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.chatCouldNotDeleteMessage,
+    );
     return false;
   }
 
@@ -332,7 +342,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     if (_isLoading) {
       return LoadingStates.buildLoadingState(
         context,
-        variant: LoadingVariant.spinner,
+        variant: LoadingVariant.plateLine,
         message: context.l10n.chatLoadingMessages,
       );
     }
@@ -378,7 +388,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           child: ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingS,
+              vertical: AppDimensions.space4,
             ),
             itemCount: _messages.length + (showJoinedDivider ? 1 : 0),
             itemBuilder: (context, rawIndex) {

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
 
 /// BUT-1283: Behavioural coverage for the cooking-mode active-timers overview
@@ -74,7 +75,7 @@ void main() {
       expect(find.text('10:00'), findsOneWidget);
       expect(find.text('03:00'), findsOneWidget);
       // The paused chip swaps the timer glyph for a pause glyph.
-      expect(find.byIcon(Icons.pause), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.pause), findsOneWidget);
 
       await cleanUp(tester, service);
     },
@@ -106,9 +107,9 @@ void main() {
     );
     // Exactly one live chip remains — the running step-0. The expired step-1 and
     // the idle default timer contribute no chip, so only one timer glyph shows.
-    expect(find.byIcon(Icons.timer_outlined), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.clock), findsOneWidget);
     // No paused timer → no pause glyph.
-    expect(find.byIcon(Icons.pause), findsNothing);
+    expect(find.byIcon(ButleryIcons.pause), findsNothing);
 
     await cleanUp(tester, service);
   });

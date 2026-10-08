@@ -34,7 +34,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   RecipePermissionManager get permissionManager;
   RecipePersistenceManager get persistenceManager;
   RecipeFormCoordinator get coordinator;
-  bool get isCollaborative;
 
   /// Save fork - creates a copy of the current recipe
   /// @deprecated Use forkRecipe() instead
@@ -50,27 +49,44 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   }
 
   /// Pick single image from camera (direct, no dialog)
-  Future<void> pickImageFromCamera(BuildContext context) async {
+  Future<void> pickImageFromCamera(
+    BuildContext context, {
+    bool askAgain = false,
+  }) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromCamera called');
     final recipeId =
         state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await imageManager.pickImageFromCamera(context, recipeId: recipeId);
-    coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    await imageManager.pickImageFromCamera(
+      context,
+      recipeId: recipeId,
+      askAgain: askAgain,
+    );
+    coordinator.syncImageUrls();
   }
 
   /// Pick single image from gallery (direct, no dialog)
-  Future<void> pickImageFromGallery(BuildContext context) async {
+  Future<void> pickImageFromGallery(
+    BuildContext context, {
+    bool askAgain = false,
+  }) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromGallery called');
     final recipeId =
         state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await imageManager.pickImageFromGallery(context, recipeId: recipeId);
-    coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    await imageManager.pickImageFromGallery(
+      context,
+      recipeId: recipeId,
+      askAgain: askAgain,
+    );
+    coordinator.syncImageUrls();
   }
 
   /// Pick multiple images from gallery (direct, no dialog)
-  Future<void> pickMultipleImagesFromGallery(BuildContext context) async {
+  Future<void> pickMultipleImagesFromGallery(
+    BuildContext context, {
+    bool askAgain = false,
+  }) async {
     AppLogger.info('🎯 VIEWMODEL: pickMultipleImagesFromGallery called');
     final recipeId =
         state.originalRecipe?.id ??
@@ -78,8 +94,9 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     await imageManager.pickMultipleImagesFromGallery(
       context,
       recipeId: recipeId,
+      askAgain: askAgain,
     );
-    coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    coordinator.syncImageUrls();
   }
 
   /// Legacy method - Pick multiple images (shows dialog)
@@ -128,7 +145,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// range collapsing, etc.) is deferred to the import pipeline only.
   void updateIngredient(int index, String value) {
     state.ingredientsManager.updateAt(index, value);
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Add new ingredient (respects max limit)
@@ -140,14 +156,12 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     // Coordinated: keeps the section sidecar's row list aligned.
     state.addIngredientLine();
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Remove ingredient at index
   void removeIngredient(int index) {
     state.removeIngredientLine(index);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Move an ingredient EDITOR ROW (line or heading) from [fromRow] to
@@ -156,7 +170,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   void moveIngredientRow(int fromRow, int toRow) {
     state.moveIngredientRow(fromRow, toRow);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Reassign the line at editor row [fromRow] to heading [headingId] (null =
@@ -164,14 +177,12 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   void moveIngredientLineToSection(int fromRow, String? headingId) {
     state.moveIngredientLineToSection(fromRow, headingId);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Add a component heading ("Deg", "Fyllning") to the ingredient list.
   void addIngredientHeading() {
     state.addIngredientHeading();
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Remove the component heading with [id]; its lines fall to the previous
@@ -179,13 +190,11 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   void removeIngredientHeading(String id) {
     state.removeIngredientHeading(id);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Update instruction at index
   void updateInstruction(int index, String value) {
     state.instructionsManager.updateAt(index, value);
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Add new instruction (respects max limit)
@@ -196,41 +205,35 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     }
     state.instructionsManager.add('');
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Remove instruction at index
   void removeInstruction(int index) {
     state.instructionsManager.removeAt(index);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Reorder instruction from [oldIndex] to [newIndex]
   void reorderInstruction(int oldIndex, int newIndex) {
     state.instructionsManager.reorderAt(oldIndex, newIndex);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Update tag at index
   void updateTag(int index, String value) {
     state.tagsManager.updateAt(index, value);
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Add new tag
   void addTag() {
     state.tagsManager.add('');
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Remove tag at index
   void removeTag(int index) {
     state.tagsManager.removeAt(index);
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Get edit mode (for backward compatibility)
@@ -314,7 +317,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     }
 
     notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Show image picker dialog - must be implemented by class

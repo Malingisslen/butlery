@@ -9,8 +9,10 @@ import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -62,13 +64,15 @@ class _MyReportsContent extends StatelessWidget {
     final vm = context.watch<MyReportsViewModel>();
     return BaseScaffold(
       title: l10n.myReportsTitle,
+      // Reached from Kontosäkerhet only (account_security_view).
+      backTo: l10n.accountSecurityTitle,
       body: _body(context, vm),
     );
   }
 
   Widget _body(BuildContext context, MyReportsViewModel vm) {
     if (vm.isLoading && !vm.hasReports) {
-      return StateWidget.loading();
+      return StateWidget.loading(message: context.l10n.loadingMyReports);
     }
     if (vm.hasError) {
       return StateWidget.error(
@@ -80,7 +84,7 @@ class _MyReportsContent extends StatelessWidget {
     if (!vm.hasReports) {
       return StateWidget.empty(
         title: context.l10n.myReportsEmpty,
-        icon: Icons.flag_outlined,
+        icon: ButleryIcons.flag,
       );
     }
     return RefreshIndicator(
@@ -108,7 +112,7 @@ class _ReportTile extends StatelessWidget {
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return ListTile(
-      leading: Icon(_iconForType(report.contentType)),
+      leading: ButleryIcon(_iconForType(report.contentType)),
       title: Text(
         report.reason,
         style: AppTextStyles.titleSmall,
@@ -128,17 +132,17 @@ class _ReportTile extends StatelessWidget {
   IconData _iconForType(ContentType type) {
     switch (type) {
       case ContentType.recipe:
-        return Icons.restaurant_menu_outlined;
+        return ButleryIcons.utensils;
       case ContentType.comment:
-        return Icons.chat_bubble_outline;
+        return ButleryIcons.messageSquare;
       case ContentType.message:
-        return Icons.message_outlined;
+        return ButleryIcons.messageSquare;
       case ContentType.profile:
-        return Icons.person_outline;
+        return ButleryIcons.user;
       case ContentType.cookSnap:
-        return Icons.photo_camera_outlined;
+        return ButleryIcons.camera;
       case ContentType.group:
-        return Icons.group_outlined;
+        return ButleryIcons.users;
     }
   }
 }
@@ -152,7 +156,7 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final (label, color) = _resolve(cs, context.butleryColors.success);
+    final (label, color) = _resolve(cs, context.modeColors.success);
     return StatusBadge(
       text: label,
       backgroundColor: color,

@@ -32,6 +32,7 @@ import 'package:butlery/widgets/menu/group_menu_entry_button.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class _MockMessagingService extends Mock implements MessagingService {}
 
@@ -152,9 +153,12 @@ void main() {
     await tapEntry(tester);
 
     expect(find.text('Du är inte med i någon grupp än.'), findsOneWidget);
-    // Informational, not an error: `showError` would draw its own dismiss
-    // action and read as something having gone wrong.
-    expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    // Informational, not an error: it carries "Stäng" as every
+    // confirmation does (Q4-01 = B, produktbeslut 2026-09-24) and closes by
+    // itself, where an error would stay until acted on.
+    expect(find.byType(InkSnackBar), findsOneWidget);
+    expect(find.text('Stäng'), findsOneWidget);
+    expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isFalse);
     expect(
       find.byType(GroupWeeklyMenuView),
       findsNothing,

@@ -21,6 +21,9 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -61,21 +64,11 @@ void main() {
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('detailed style shows email metadata by default', (
-      tester,
-    ) async {
+    // BUT-2264: another user's address is never shown, even when an older
+    // public profile still carries one.
+    testWidgets('never shows the address', (tester) async {
       await tester.pumpWidget(_wrap(FriendCard(user: _user())));
-      expect(find.text('anna@example.com'), findsOneWidget);
-    });
-
-    testWidgets('showMetadata=false hides the email row', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          FriendCard(user: _user(), showMetadata: false),
-        ),
-      );
       expect(find.text('anna@example.com'), findsNothing);
-      // Display name still rendered
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
@@ -96,7 +89,10 @@ void main() {
         _wrap(
           FriendCard(
             user: _user(),
-            trailing: const Icon(Icons.chevron_right, key: trailingKey),
+            trailing: const ButleryIcon(
+              ButleryIcons.chevronRight,
+              key: trailingKey,
+            ),
           ),
         ),
       );
@@ -133,18 +129,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Anna Andersson'), findsOneWidget);
-    });
-
-    testWidgets('empty email produces no metadata row in detailed style', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          FriendCard(user: _user(email: '')),
-        ),
-      );
-      expect(find.text('anna@example.com'), findsNothing);
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
   });
@@ -220,6 +204,36 @@ void main() {
       expect(find.text('Vill bli din vän'), findsOneWidget);
     });
 
+    testWidgets('names the sender, on the card and on both buttons', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            senderName: 'Erik Sandell',
+            onAccept: () {},
+            onDecline: () {},
+          ),
+        ),
+      );
+      expect(find.text('Erik Sandell'), findsOneWidget);
+      expect(find.text('Vänförfrågan'), findsNothing);
+      expect(find.bySemanticsLabel('Acceptera Erik Sandell'), findsOneWidget);
+      expect(find.bySemanticsLabel('Avböj Erik Sandell'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('a blank sender name falls back to the generic title', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(FriendRequestCard(friendRequest: _request(), senderName: ' ')),
+      );
+      expect(find.text('Vänförfrågan'), findsOneWidget);
+    });
+
     testWidgets('renders the optional message when present', (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -272,7 +286,7 @@ void main() {
           ),
         ),
       );
-      expect(find.widgetWithText(OutlinedButton, 'Avvisa'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Avböj'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Acceptera'), findsOneWidget);
     });
 
@@ -285,7 +299,7 @@ void main() {
           ),
         ),
       );
-      expect(find.widgetWithText(OutlinedButton, 'Avvisa'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Avböj'), findsOneWidget);
       expect(find.byType(ElevatedButton), findsNothing);
     });
 
@@ -333,7 +347,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Avvisa'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Avböj'));
       await tester.pump();
       expect(declines, 1);
     });
@@ -354,5 +368,22 @@ void main() {
       await tester.pump();
       expect(taps, 1);
     });
+  });
+
+  // BUT-2205: the card's own fill used to sit above the ink layer, so a
+  // pressed card showed nothing.
+  testWidgets('a pressed friend request card shows surface.raised', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(FriendRequestCard(friendRequest: _request(), onTap: () {})),
+    );
+    final title = find.text('Vänförfrågan');
+    final cs = Theme.of(tester.element(title)).colorScheme;
+    expect(pressIsCovered(tester, title), isFalse);
+    expect(borderIsAbovePress(tester, title), isTrue);
+    final gesture = await holdPress(tester, title);
+    expect(paintsInkFill(tester, title, cs.surfaceContainerHighest), isTrue);
+    await gesture.cancel();
   });
 }

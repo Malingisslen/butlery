@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Reusable stat item: icon + value + label in a vertical column.
 /// Used across profile views, group detail, and category statistics.
@@ -31,13 +32,13 @@ class StatItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final effectiveColor = color ?? cs.primary;
+    final effectiveColor = color ?? cs.onSurface;
     final effectiveLabelColor = labelColor ?? cs.onSurfaceVariant;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
+        ButleryIcon(
           icon,
           color: effectiveColor,
           size: iconSize ?? AppDimensions.iconSizeXl,

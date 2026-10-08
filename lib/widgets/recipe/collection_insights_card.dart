@@ -3,6 +3,9 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/base/base_service.dart' show StringExtensions;
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -36,9 +39,9 @@ class CollectionInsightsCard extends StatelessWidget {
     return Padding(
       padding: AppDimensions.responsiveContentPadding(context),
       child: ExpansionTile(
-        leading: Icon(
-          Icons.insights,
-          color: colorScheme.primary,
+        leading: ButleryIcon(
+          ButleryIcons.barChart,
+          color: colorScheme.onSurface,
           size: AppDimensions.iconSizeM,
         ),
         title: Text(
@@ -101,7 +104,7 @@ class CollectionInsightsCard extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           for (final cuisine in topCuisines)
             Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+              padding: const EdgeInsets.only(bottom: AppDimensions.space4),
               child: Text(
                 '${cuisine.label} (${cuisine.count})',
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -188,13 +191,10 @@ class _DietaryBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          LinearProgressIndicator(
-            value: fraction,
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            color: colorScheme.primary,
-            minHeight: 6,
-            borderRadius: BorderRadius.zero,
-          ),
+          // A measured share is the determinate plate line: progressIndicator
+          // on progressTrack, per mode (Komponentark v1:305; B-18). The text
+          // above carries the number, so the line is not read twice.
+          ExcludeSemantics(child: PlateLine(value: fraction)),
         ],
       ),
     );

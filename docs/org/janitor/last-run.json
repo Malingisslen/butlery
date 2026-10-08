@@ -3,6 +3,7 @@
   "dossiersRefreshed": 0,
   "worldWatchRoles": 2,
   "retroDue": true,
-  "acceptRate": 0.896,
-  "notes": "No stale dossier markers; Security Architect + Release/App-Store Compliance scanned clean, no material findings; retro has NEVER run since go-live 2026-06-27 (both shakedown and full are drastically overdue) — needs Malin; accept-rate healthy at 89.6%."
+  "acceptRate": 0.898,
+  "scratchCleared": 0,
+  "notes": "This session's own first accept-rate measurement was invalid (computed against a 17-day-stale local clone before merging in three intervening janitor runs) and was dropped; recomputed fresh post-merge: 0.898 (49 commits, 5 reworked). Accept-rate was genuinely below 0.5 for two straight weeks (2026-09-28: 0.352; 2026-10-05: 0.426), tied to the in-flight design-migration ('package 7') commit series — the rolling 30-day window has now aged that batch out, not a fix. Worth confirming with Malin whether that series is actually done or just outside the window. Dossier markers: 0 visible (gitignored, cloud checkout). Security Architect + Release/App-Store Compliance world-watch scanned clean, no material findings. Retro has NEVER run since go-live 2026-06-27 (both shakedown and full are drastically overdue) — needs Malin."
 }

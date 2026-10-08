@@ -37,7 +37,7 @@ class TextDisplayCard extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: backgroundColor ?? cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: borderColor ?? cs.outlineVariant),
       ),
       child: scrollable ? SingleChildScrollView(child: textWidget) : textWidget,

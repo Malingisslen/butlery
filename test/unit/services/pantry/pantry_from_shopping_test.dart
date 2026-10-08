@@ -59,7 +59,12 @@ void main() {
       pantryService: pantry,
       userService: users,
     );
-    when(() => pantry.updateItem(any(), any())).thenAnswer((_) async {});
+    when(
+      () => pantry.updateItem(any(), any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => pantry.adjustQuantity(any(), any(), any()),
+    ).thenAnswer((_) async => true);
     when(
       () => pantry.addFromShoppingItem(any(), any()),
     ).thenAnswer((_) async => _pantryItem(name: 'added', qty: 1));
@@ -82,10 +87,15 @@ void main() {
         wasBought: false,
       );
 
+      // P5-U28: what was bought is sent as a relative change (+3), never as
+      // a total computed on this device (produktregler.md:146).
       final captured =
-          verify(() => pantry.updateItem('u1', captureAny())).captured.single
+          verify(
+                () => pantry.adjustQuantity('u1', captureAny(), 3),
+              ).captured.single
               as PantryItem;
-      expect(captured.quantity, 5); // 2 existing + 3 bought
+      expect(captured.ingredientName, 'Mjölk');
+      verifyNever(() => pantry.updateItem(any(), any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
 
@@ -98,6 +108,7 @@ void main() {
 
       verify(() => pantry.addFromShoppingItem('u1', item)).called(1);
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
     test('does nothing when the auto-add preference is OFF', () async {
@@ -113,6 +124,7 @@ void main() {
       verifyNever(() => pantry.getAll(any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
     test(
@@ -150,6 +162,7 @@ void main() {
 
       verify(() => pantry.addFromShoppingItem('u1', item)).called(1);
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
 
     test('does nothing when user profile is null (not yet loaded)', () async {
@@ -167,6 +180,87 @@ void main() {
       verifyNever(() => pantry.getAll(any()));
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
       verifyNever(() => pantry.updateItem(any(), any()));
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
     });
+  });
+
+  // Q5-02 = A (produktbeslut 2026-09-24): buying something the pantry has as
+  // "har hemma" (no amount) gives that row the bought amount.
+  group('a pantry row without an amount (Q5-02)', () {
+    PantryItem atHome({String unit = 'st'}) => PantryItem(
+      id: 'p_agg',
+      ingredientName: 'Ägg',
+      quantity: null,
+      unit: unit,
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2024, 1, 1),
+    );
+
+    setUp(() {
+      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      when(
+        () => pantry.updateItem(any(), any(), previous: any(named: 'previous')),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
+      ).thenAnswer((_) async => true);
+    });
+
+    // Sent relatively (produktregler.md:146): two purchases landing on one
+    // "har hemma" row at once add up, none overwrites the other.
+    test('takes the bought amount', () async {
+      final row = atHome();
+      when(() => pantry.getAll('u1')).thenAnswer((_) async => [row]);
+
+      await service.onItemCheckedOff(
+        'u1',
+        _shoppingItem(name: 'ägg', amount: 12),
+        wasBought: false,
+      );
+
+      verify(() => pantry.fillUnknownQuantity('u1', row, 12, 'st')).called(1);
+      verifyNever(
+        () => pantry.updateItem(any(), any(), previous: any(named: 'previous')),
+      );
+      verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
+    test('takes the bought unit when the row had another one', () async {
+      final row = atHome(unit: '');
+      when(() => pantry.getAll('u1')).thenAnswer((_) async => [row]);
+
+      await service.onItemCheckedOff(
+        'u1',
+        _shoppingItem(name: 'Ägg', amount: 6, unit: 'st'),
+        wasBought: false,
+      );
+
+      verify(() => pantry.fillUnknownQuantity('u1', row, 6, 'st')).called(1);
+      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+    });
+
+    test(
+      'a bought item without an amount leaves "har hemma" as it is',
+      () async {
+        when(() => pantry.getAll('u1')).thenAnswer((_) async => [atHome()]);
+
+        await service.onItemCheckedOff(
+          'u1',
+          _shoppingItem(name: 'Ägg', amount: 0),
+          wasBought: false,
+        );
+
+        verifyNever(
+          () =>
+              pantry.updateItem(any(), any(), previous: any(named: 'previous')),
+        );
+        verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+        verifyNever(() => pantry.adjustQuantity(any(), any(), any()));
+        verifyNever(
+          () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
+        );
+      },
+    );
   });
 }

@@ -9,6 +9,8 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/rule_condition_card.dart';
 
 /// Bottom sheet that allows creating or editing a [PersonalTagRule].
@@ -100,24 +102,24 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.ruleNameRequired);
+      SnackBarUtils.showFailure(context, what: context.l10n.ruleNameRequired);
       return;
     }
 
     for (final condition in _conditions) {
       if (condition.type.isNumeric) {
         if (condition.numericValue == 0) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.ruleAllConditionsNeedValue,
+            what: context.l10n.ruleAllConditionsNeedValue,
           );
           return;
         }
       } else {
         if (condition.stringValue.trim().isEmpty) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.ruleAllConditionsNeedValue,
+            what: context.l10n.ruleAllConditionsNeedValue,
           );
           return;
         }
@@ -159,7 +161,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -199,7 +201,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
       height: 4,
       decoration: BoxDecoration(
         color: colorScheme.onSurfaceVariant,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusKnob),
       ),
     );
   }
@@ -288,7 +290,10 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
           fit: FlexFit.loose,
           child: TextButton.icon(
             onPressed: _addCondition,
-            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.plus,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.commonAdd),
           ),
         ),

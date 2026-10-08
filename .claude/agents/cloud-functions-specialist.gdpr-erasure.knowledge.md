@@ -156,6 +156,10 @@
   decision-record sentence it falsifies. Name each withheld collection in a
   `data_minimisation` line, verifying WHICH line, or the gap is undisclosed
   (Art. 12(1)).
+- **A fail-closed export allowlist is pinned to its Dart `toFirestore` per LEVEL** —
+  a nested map field (`previous` = `ShoppingRowSnapshot`) gets its own key list,
+  source-pinned to ITS model file and that file added to the CI `paths:`; the
+  parent pin sees only the key `previous`, so a new snapshot key drops silently.
 - **A SCHEDULED JOB writing uid-keyed rows under a non-`users/{uid}` path is
   invisible to both of the cascade's structural loops** (e.g.
   `analytics/notifications/effectiveness`) — give each its own probe leg; a
@@ -173,6 +177,23 @@
   throws FAILED_PRECONDITION on every real erasure while the fake stays green.
   COLLECTION-scoped equality needs none unless `fieldOverrides` EXEMPTS the
   field — check exemptions, not `indexes`.
+  A uid-keyed MAP (`socialData.memberPermissions.<uid>`) is indexed by an
+  override on the MAP field — subfields inherit it — and the BUT-1781 guard
+  lists it under `MAP_REQUIRED`. Query `where(new FieldPath(map, uid), "!=",
+  null)`: it matches a stored `0` (a `viewer`), and `collectionGroup("recipes")`
+  also returns the legacy top-level `recipes/{id}`. `batch.update(ref,
+  FieldPath, FieldValue.delete(), …)` keeps a dotted uid one key, and deleting
+  a key under a null or absent map is a no-op — no error, no `{}` created.
+
+  COLLECTION-scoped equality or `array-contains` — including on a nested map
+  subfield such as `reactions.<key>` — needs none unless `fieldOverrides`
+  EXEMPTS the field — check exemptions, not `indexes`.
+- **A cascade-suite guard that parses a file outside `functions/src` runs on CI
+  only if `.github/workflows/cloud-functions-unit.yml` `paths:` (push AND
+  pull_request) lists that file** — a key-agreement guard over Dart or
+  `firestore.rules` is otherwise skipped on exactly the edit it exists for. Call
+  `assertGuardTriggersCoverItsDartInputs(repoRoot, [absoluteDartPath])` for each
+  `lib/` input (its parameter is `dartInputsAbsolute`); a `firestore.rules` input has no helper, so add it to `paths:`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - **A cleanup helper writing an ATTRIBUTION row takes the ACTOR as an argument,

@@ -2,22 +2,78 @@
 /// its expiry status badge.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class PantryItemCard extends StatelessWidget {
   const PantryItemCard({super.key, required this.item});
 
   final PantryItem item;
+
+  /// When the row was last changed, per content-style-guide.md:34-36:
+  /// relative only for the latest days (`nu` · `5 min sedan` · `i dag 14:02`
+  /// · `i går`), then the date (`9 juli`, with the year when it is not this
+  /// year). Clock times are 24-hour with a colon (content-style-guide.md:30).
+  ///
+  /// Interpretation: produktregler.md:105 says the row's timestamp updates,
+  /// but no drawing shows the row with one, so the word "ändrad" names what
+  /// the time is.
+  static String changedLabel(
+    AppLocalizations l10n,
+    DateTime changedAt,
+    DateTime now,
+  ) {
+    final at = changedAt.toLocal();
+    final local = now.toLocal();
+    final age = local.difference(at);
+    if (age.inMinutes < 1) return l10n.pantryItemChangedNow;
+    if (age.inHours < 1) return l10n.pantryItemChangedMinutesAgo(age.inMinutes);
+    final today = DateTime(local.year, local.month, local.day);
+    final day = DateTime(at.year, at.month, at.day);
+    if (day == today) {
+      final time =
+          '${at.hour.toString().padLeft(2, '0')}:'
+          '${at.minute.toString().padLeft(2, '0')}';
+      return l10n.pantryItemChangedToday(time);
+    }
+    if (day == today.subtract(const Duration(days: 1))) {
+      return l10n.pantryItemChangedYesterday;
+    }
+    final date = at.year == local.year
+        ? DateFormat.MMMMd(l10n.localeName).format(at)
+        : DateFormat.yMMMMd(l10n.localeName).format(at);
+    return l10n.pantryItemChangedOn(date);
+  }
+
+  /// The line under the name: the amount, and when the row last changed.
+  String _metaLine(BuildContext context) {
+    // An unknown amount says "har hemma" (Q5-03 = B, produktbeslut
+    // 2026-09-24; produktregler.md:148: "har hemma, vet inte hur mycket"),
+    // never a unit on its own, with or without a change time.
+    final amount = item.quantity == null
+        ? context.l10n.pantryItemAmountUnknown
+        : '${item.formattedQuantity} ${item.unit}'.trim();
+    final changedAt = item.updatedAt;
+    if (changedAt == null) return amount;
+    final changed = changedLabel(context.l10n, changedAt, clock.now());
+    return amount.isEmpty ? changed : '$amount · $changed';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +85,10 @@ class PantryItemCard extends StatelessWidget {
 
     // Captured BEFORE dismissal: onDismissed fires after the row's element
     // is deactivated, so context lookups there would hit a dead element.
-    final messenger = ScaffoldMessenger.maybeOf(context);
+    final undo = UndoSnackBar.capture(context);
     final removedMessage = context.l10n.pantryItemRemovedUndoMessage(
       item.ingredientName,
     );
-    final undoLabel = context.l10n.commonUndo;
 
     // BUT-948: in selection mode tap toggles and long-press is a no-op (already
     // selecting); otherwise tap edits and long-press enters selection.
@@ -43,18 +98,27 @@ class PantryItemCard extends StatelessWidget {
           : context.l10n.a11yPantryEditItem(item.ingredientName),
       button: true,
       selected: selectionMode ? selected : null,
-      child: InkWell(
-        onTap: selectionMode
-            ? () => selection.toggleSelection(item.id)
-            : () => _showEditSheet(context, viewModel),
-        onLongPress: selectionMode
-            ? null
-            : () => selection.enterSelectionMode(item.id),
-        child: _buildRow(
-          context,
-          cs,
-          selectionMode: selectionMode,
-          selected: selected,
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.raised : PressSurface.base,
+          child: InkWell(
+            onTap: selectionMode
+                ? () => selection.toggleSelection(item.id)
+                : () => _showEditSheet(context, viewModel),
+            onLongPress: selectionMode
+                ? null
+                : () => selection.enterSelectionMode(item.id),
+            child: Ink(
+              color: selected ? cs.primaryContainer : null,
+              child: _buildRow(
+                context,
+                cs,
+                selectionMode: selectionMode,
+                selected: selected,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -71,9 +135,8 @@ class PantryItemCard extends StatelessWidget {
       // "Destructive-action confirmation".)
       onDismissed: (_) => _removeWithUndo(
         viewModel,
-        messenger: messenger,
+        undo: undo,
         message: removedMessage,
-        undoLabel: undoLabel,
       ),
       background: Container(
         color: cs.error,
@@ -81,7 +144,7 @@ class PantryItemCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
         ),
-        child: Icon(Icons.delete, color: cs.onError),
+        child: ButleryIcon(ButleryIcons.trash2, color: cs.onError),
       ),
       child: tappable,
     );
@@ -98,21 +161,22 @@ class PantryItemCard extends StatelessWidget {
         horizontal: AppDimensions.spacingLg,
         vertical: AppDimensions.spacingMd,
       ),
+      // A chosen row is surface.selected, never a 12 % ink tint, and the
+      // hairline is border.subtle itself, never faded (enhet-3 valda
+      // tonplattor pantry_item_card.dart:102; tokens.json:40-53). The
+      // primaryContainer / outlineVariant slots carry those tokens in both
+      // schemes.
       decoration: BoxDecoration(
-        color: selected ? cs.primary.withValues(alpha: 0.12) : null,
         border: Border(
-          top: BorderSide(
-            color: cs.outlineVariant.withValues(alpha: 0.4),
-            width: 1,
-          ),
+          top: BorderSide(color: cs.outlineVariant, width: 1),
         ),
       ),
       child: Row(
         children: [
           if (selectionMode) ...[
-            Icon(
-              selected ? Icons.check_circle : Icons.circle_outlined,
-              color: selected ? cs.primary : cs.onSurfaceVariant,
+            ButleryIcon(
+              selected ? ButleryIcons.circleCheck : ButleryIcons.circle,
+              color: selected ? cs.onSurface : cs.onSurfaceVariant,
               size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingMd),
@@ -131,7 +195,7 @@ class PantryItemCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${item.formattedQuantity} ${item.unit}'.trim(),
+                  _metaLine(context),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
@@ -150,22 +214,11 @@ class PantryItemCard extends StatelessWidget {
 
   void _removeWithUndo(
     PantryViewModel viewModel, {
-    required ScaffoldMessengerState? messenger,
+    required UndoSnackBar undo,
     required String message,
-    required String undoLabel,
   }) {
     viewModel.removeItem(item.id);
-    messenger?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: SnackBarAction(
-          label: undoLabel,
-          onPressed: () => viewModel.restoreItem(item),
-        ),
-        duration: const Duration(seconds: 7),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    undo.show(message, onUndo: () => viewModel.restoreItem(item));
   }
 
   void _showEditSheet(BuildContext context, PantryViewModel viewModel) {
@@ -189,7 +242,7 @@ class _ExpiryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.butleryColors;
+    final colors = context.modeColors;
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final status = item.expiryStatus;

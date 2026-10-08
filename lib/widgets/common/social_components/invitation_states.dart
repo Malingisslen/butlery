@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Invitation target state widgets.
 class InvitationStates {
@@ -17,11 +19,7 @@ class InvitationStates {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LoadingIndicator(),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Text(displayText),
-            ],
+            children: [PlateLineMessage(message: displayText)],
           ),
         );
       },
@@ -38,8 +36,13 @@ class InvitationStates {
           count,
           (index) => Card(
             child: ListTile(
-              leading: const LoadingIndicator(),
-              title: Text(context.l10n.commonLoading),
+              leading: SizedBox(
+                width: AppDimensions.iconSizeXl,
+                child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
+              ),
+              title: ExcludeSemantics(
+                child: Text(context.l10n.loadingGeneric),
+              ),
             ),
           ),
         ),
@@ -54,13 +57,16 @@ class InvitationStates {
   }) {
     return Builder(
       builder: (context) {
-        final displayText = text ?? context.l10n.commonLoading;
+        final displayText = text ?? context.l10n.loadingGeneric;
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            LoadingIndicator(size: size, strokeWidth: 2),
+            SizedBox(
+              width: size * 2,
+              child: PlateLine(semanticLabel: displayText),
+            ),
             const SizedBox(width: AppDimensions.spacingSm),
-            Text(displayText),
+            ExcludeSemantics(child: Text(displayText)),
           ],
         );
       },
@@ -74,13 +80,13 @@ class InvitationStates {
     String? message,
     VoidCallback? onRetry,
     String? retryText,
-    IconData errorIcon = Icons.error_outline,
+    IconData errorIcon = ButleryIcons.triangleAlert,
   }) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             errorIcon,
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.error,
@@ -120,7 +126,7 @@ class InvitationStates {
       message: message ?? context.l10n.invitationCheckConnection,
       onRetry: onRetry,
       retryText: retryText ?? context.l10n.commonRetry,
-      errorIcon: Icons.wifi_off,
+      errorIcon: ButleryIcons.wifiOff,
     );
   }
 
@@ -136,10 +142,10 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.lock,
+          ButleryIcon(
+            ButleryIcons.lock,
             size: AppDimensions.iconSizeXXXl,
-            color: context.butleryColors.warning,
+            color: context.modeColors.warning,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -167,7 +173,7 @@ class InvitationStates {
     BuildContext context, {
     String? title,
     String? message,
-    IconData icon = Icons.group_outlined,
+    IconData icon = ButleryIcons.users,
     VoidCallback? onAddTargets,
     String? addButtonText,
     bool showAddButton = true,
@@ -176,7 +182,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -208,7 +214,7 @@ class InvitationStates {
     String? query,
     String? title,
     String? message,
-    IconData icon = Icons.search_off,
+    IconData icon = ButleryIcons.searchOff,
     VoidCallback? onClearSearch,
     String? clearButtonText,
     bool showClearButton = true,
@@ -217,7 +223,7 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -257,13 +263,13 @@ class InvitationStates {
     BuildContext context, {
     String? title,
     String? message,
-    IconData icon = Icons.checklist_outlined,
+    IconData icon = ButleryIcons.listCheck,
   }) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -288,7 +294,7 @@ class InvitationStates {
     required int selectedCount,
     String? title,
     String? message,
-    IconData icon = Icons.check_circle_outline,
+    IconData icon = ButleryIcons.circleCheck,
     VoidCallback? onContinue,
     String? continueButtonText,
     Color? successColor,
@@ -297,10 +303,10 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXXXl,
-            color: successColor ?? context.butleryColors.success,
+            color: successColor ?? context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -333,7 +339,7 @@ class InvitationStates {
     required int sentCount,
     String? title,
     String? message,
-    IconData icon = Icons.send,
+    IconData icon = ButleryIcons.send,
     VoidCallback? onDone,
     String? doneButtonText,
     Color? successColor,
@@ -342,10 +348,10 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXXXl,
-            color: successColor ?? context.butleryColors.success,
+            color: successColor ?? context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -381,10 +387,14 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LoadingIndicator(
-            size: 100,
-            value: progress,
-            strokeWidth: 8,
+          // The real progress on the plate line, never a ring
+          // (Komponentark v1:305; B-18).
+          SizedBox(
+            width: PlateLineMessage.maxWidth,
+            child: PlateLine(
+              value: progress,
+              semanticLabel: title ?? context.l10n.invitationSendingInvitations,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
@@ -412,9 +422,12 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
+          SizedBox(
+            width: PlateLineMessage.maxWidth,
+            child: PlateLine(
+              value: progress,
+              semanticLabel: operationName ?? context.l10n.invitationProcessing,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(

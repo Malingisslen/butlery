@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
@@ -15,6 +16,8 @@ import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
@@ -23,11 +26,13 @@ import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -280,7 +285,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       child: Padding(
         padding: const EdgeInsets.only(
           top: AppDimensions.paddingM,
-          bottom: AppDimensions.spacingTight,
+          bottom: AppDimensions.space4,
         ),
         child: Container(
           padding: const EdgeInsetsDirectional.only(
@@ -294,7 +299,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           child: Text(
             label.toUpperCase(),
             style: AppTextStyles.titleSmall.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
@@ -324,64 +329,72 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         Semantics(
           label: context.l10n.a11yShowSubstitutionsFor(parsed.name),
           button: true,
-          child: InkWell(
-            onTap: () => _showSubstitutionSheet(context, parsed.name),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingModerate,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 70,
-                    child: Text(
-                      parsed.unit.isNotEmpty
-                          ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                          : parsed.quantity > 0
-                          ? _formatQuantity(parsed.quantity)
-                          : '',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.end,
-                    ),
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: () => _showSubstitutionSheet(context, parsed.name),
+              child: ConstrainedBox(
+                // BUT-2194: a row is a control (tap), so it is at least 48 dp tall
+                // (tokens.json touchTarget).
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.space12,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXl),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        if (isAllergen)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                              end: AppDimensions.spacingXs,
-                            ),
-                            child: Icon(
-                              Icons.warning_amber,
-                              size: AppDimensions.iconSizeS,
-                              color: cs.error,
-                            ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 70,
+                        child: Text(
+                          parsed.unit.isNotEmpty
+                              ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                              : parsed.quantity > 0
+                              ? _formatQuantity(parsed.quantity)
+                              : '',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: cs.onSurface,
+                            fontWeight: FontWeight.w600,
                           ),
-                        Expanded(
-                          child: Text(
-                            parsed.name,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: isAllergen ? cs.error : cs.onSurface,
-                            ),
-                          ),
+                          textAlign: TextAlign.end,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingXl),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (isAllergen)
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(
+                                  end: AppDimensions.spacingXs,
+                                ),
+                                child: ButleryIcon(
+                                  ButleryIcons.triangleAlert,
+                                  size: AppDimensions.iconSizeS,
+                                  color: cs.error,
+                                ),
+                              ),
+                            Expanded(
+                              child: Text(
+                                parsed.name,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: isAllergen ? cs.error : cs.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ButleryIcon(
+                        ButleryIcons.swapHorizontal,
+                        size: AppDimensions.iconSizeS,
+                        color: AppModeColors.textDisabled(cs.brightness),
+                      ),
+                    ],
                   ),
-                  Icon(
-                    Icons.swap_horiz,
-                    size: AppDimensions.iconSizeS,
-                    color: cs.onSurfaceVariant.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -437,36 +450,39 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         label: context.l10n.a11yToggleStepDone(index + 1),
         button: true,
         toggled: isCompleted,
-        child: InkWell(
-          onTap: () => _toggleStepCompletion(index),
-          borderRadius: BorderRadius.zero,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingXs,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStepCheckbox(context, index + 1, isCompleted),
-                const SizedBox(width: AppDimensions.spacingMd),
-                Expanded(
-                  // BUT-604: duration phrases render as inline tappable
-                  // chips that open the step-timer sheet — same affordance
-                  // as cooking mode, no long-press discovery needed.
-                  child: InlineTimerText(
-                    text: instruction,
-                    onTimerTap: (match) =>
-                        _openStepTimer(context, instruction, match),
-                    chipColor: cs.primary,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
-                      decoration: isCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: () => _toggleStepCompletion(index),
+            borderRadius: BorderRadius.zero,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingXs,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStepCheckbox(context, index + 1, isCompleted),
+                  const SizedBox(width: AppDimensions.spacingMd),
+                  Expanded(
+                    // BUT-604: duration phrases render as inline tappable
+                    // chips that open the step-timer sheet — same affordance
+                    // as cooking mode, no long-press discovery needed.
+                    child: InlineTimerText(
+                      text: instruction,
+                      onTimerTap: (match) =>
+                          _openStepTimer(context, instruction, match),
+                      chipColor: cs.onSurface,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
+                        decoration: isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -487,7 +503,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
 
     showModalBottomSheet<void>(
       context: context,
@@ -499,10 +514,13 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         sourcePhrase: instruction,
         onExpired: () {
           HapticFeedback.mediumImpact();
+          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
+          // v1:745-750). The messenger is captured before the sheet, so
+          // this builds SnackBarUtils' content directly.
           messenger?.showSnackBar(
             SnackBar(
-              content: Text(l10n.timerExpired),
-              backgroundColor: starGold,
+              content: InkSnackBar(message: l10n.timerExpired),
+              padding: InkSnackBar.padding,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -519,28 +537,30 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final cs = Theme.of(context).colorScheme;
 
     return AnimatedContainer(
-      duration: AppDimensions.animationDurationFast.respectingMotion(context),
+      duration: AppMotion.micro.respectingMotion(context),
       width: 28,
       height: 28,
       decoration: BoxDecoration(
         color: isCompleted ? cs.primary : cs.surfaceContainerHighest,
         shape: BoxShape.circle,
+        // Done: control.checked.background, ink in both modes (tokens.json:
+        // 145-148). Not done: a text.primary edge, paper on dark.
         border: Border.all(
-          color: cs.primary,
+          color: isCompleted ? cs.primary : cs.onSurface,
           width: 2,
         ),
       ),
       child: Center(
         child: isCompleted
-            ? Icon(
-                Icons.check,
+            ? ButleryIcon(
+                ButleryIcons.check,
                 size: 16,
                 color: cs.onPrimary,
               )
             : Text(
                 '$stepNumber',
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -640,9 +660,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.local_offer_outlined,
-                color: cs.primary,
+              ButleryIcon(
+                ButleryIcons.tag,
+                color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -654,38 +674,27 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: _topEffectiveTags.map((tag) {
               final isUserAdded = userAddedTags.contains(tag);
               final displayName = TagDisplayUtils.getDisplayName(tag);
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(
-                  color: isUserAdded
-                      ? cs.primary.withValues(
-                          alpha: AppDimensions.opacityLightSubtle,
-                        )
-                      : cs.primary.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                  color: cs.surface,
                   border: Border.all(
-                    color: isUserAdded
-                        ? cs.primary.withValues(
-                            alpha: AppDimensions.opacityHalf,
-                          )
-                        : cs.primary.withValues(
-                            alpha: AppDimensions.opacityMediumLight,
-                          ),
+                    color: isUserAdded ? cs.onSurface : cs.outlineVariant,
+                    width: isUserAdded ? 1.5 : 1,
                   ),
                 ),
                 child: Text(
                   displayName,
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                     fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
@@ -714,9 +723,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
-                Icon(
-                  Icons.photo_library_outlined,
-                  color: cs.primary,
+                ButleryIcon(
+                  ButleryIcons.image,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -827,9 +836,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           // Header with expand/collapse
           Row(
             children: [
-              Icon(
-                Icons.label_outline,
-                color: cs.primary,
+              ButleryIcon(
+                ButleryIcons.tag,
+                color: cs.onSurface,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -842,8 +851,10 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               if (hasOverflow)
                 TextButton.icon(
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                  icon: Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  icon: ButleryIcon(
+                    _isExpanded
+                        ? ButleryIcons.chevronUp
+                        : ButleryIcons.chevronDown,
                     size: AppDimensions.iconSizeM,
                   ),
                   label: Text(
@@ -854,7 +865,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                   style: TextButton.styleFrom(
                     padding: AppDimensions.paddingHorizontal8,
                     minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    // BUT-2218: the button stays compact, its tap area is
+                    // padded to 48 dp (tokens.json touchTarget).
+                    tapTargetSize: MaterialTapTargetSize.padded,
                   ),
                 ),
             ],
@@ -862,8 +875,11 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           const SizedBox(height: AppDimensions.spacingM),
           // Tags
           Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
+            // The overflow chip's hit area makes its run taller than the
+            // tags; centring keeps the chips level with each other.
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               ...displayNames.map((name) => _buildPersonalTag(context, name)),
               if (!_isExpanded && hasOverflow)
@@ -883,19 +899,17 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
-        border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
+        color: cs.surface,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         name,
         style: AppTextStyles.metadataEmphasized.copyWith(
-          color: cs.primary,
+          color: cs.onSurface,
         ),
       ),
     );
@@ -908,22 +922,33 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       label: context.l10n.a11yShowMore(count),
       button: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _isExpanded = true),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
-            vertical: AppDimensions.spacingXs,
+        // BUT-2218: the chip stays small; its hit area is 48 dp tall and wide
+        // (tokens.json touchTarget), the chip centred inside it.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: AppDimensions.minTouchTarget,
+            minHeight: AppDimensions.minTouchTarget,
           ),
-          decoration: BoxDecoration(
-            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-            border: Border.all(
-              color: cs.primary.withValues(alpha: AppDimensions.opacityLight),
-            ),
-          ),
-          child: Text(
-            context.l10n.commonMoreCount(count),
-            style: AppTextStyles.metadataEmphasized.copyWith(
-              color: cs.primary.withValues(alpha: AppDimensions.opacityDark),
+          child: Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.space4,
+                vertical: AppDimensions.spacingXs,
+              ),
+              decoration: BoxDecoration(
+                color: cs.surface,
+                border: Border.all(color: cs.outlineVariant),
+              ),
+              child: Text(
+                context.l10n.commonMoreCount(count),
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: AppModeColors.textSecondaryOnRaised(cs.brightness),
+                ),
+              ),
             ),
           ),
         ),

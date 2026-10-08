@@ -1,11 +1,14 @@
 // lib/widgets/common/share_dialog/share_target_selection_enhanced.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 enum ShareTargetType { friends, groups }
@@ -53,8 +56,8 @@ class ShareTargetSelectionEnhanced {
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            prefixIcon: Icon(
-              Icons.search,
+            prefixIcon: ButleryIcon(
+              ButleryIcons.search,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -72,7 +75,7 @@ class ShareTargetSelectionEnhanced {
             border: Border.all(
               color: Theme.of(context).colorScheme.outline,
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: selectedTab == ShareTargetType.friends
               ? _buildFriendsList(
@@ -106,7 +109,7 @@ class ShareTargetSelectionEnhanced {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
@@ -114,7 +117,7 @@ class ShareTargetSelectionEnhanced {
             child: _buildTabButton(
               context,
               context.l10n.shareTabFriends,
-              Icons.people,
+              ButleryIcons.users,
               ShareTargetType.friends,
               selectedTab,
               onTabChanged,
@@ -124,7 +127,7 @@ class ShareTargetSelectionEnhanced {
             child: _buildTabButton(
               context,
               context.l10n.shareTabGroups,
-              Icons.group,
+              ButleryIcons.users,
               ShareTargetType.groups,
               selectedTab,
               onTabChanged,
@@ -160,19 +163,19 @@ class ShareTargetSelectionEnhanced {
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeM,
                 color: isSelected
                     ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingS),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 label,
                 style: isSelected
@@ -210,7 +213,7 @@ class ShareTargetSelectionEnhanced {
     if (filteredFriends.isEmpty) {
       return _buildEmptyState(
         context,
-        searchQuery.isEmpty ? Icons.people_outline : Icons.search_off,
+        searchQuery.isEmpty ? ButleryIcons.users : ButleryIcons.searchOff,
         searchQuery.isEmpty
             ? context.l10n.shareNoFriendsAvailable
             : context.l10n.shareNoFriendsMatchedSearch,
@@ -223,9 +226,9 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        // border.subtle, not border.control at half opacity
+        // (tokens.json:40-53).
+        color: Theme.of(context).colorScheme.outlineVariant,
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -234,65 +237,49 @@ class ShareTargetSelectionEnhanced {
         final isExistingCollaborator =
             existingCollaborators?.contains(friend.uid) ?? false;
 
-        return Opacity(
-          opacity: isExistingCollaborator
-              ? 0.5
-              : 1.0, // PHASE 2: Gray out existing collaborators
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            enabled:
-                !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
-            leading: UserDisplayWidgets.avatar(
-              imageUrl: friend.avatarUrl,
-              displayName: friend.displayName,
-              size: ImageSize.small,
+        // An existing collaborator is disabled: text.disabled.onRaised on the
+        // name and a disabled checkbox, never the row at half opacity
+        // (tokens.json:40-53; Grafisk manual v6:423).
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          enabled:
+              !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
+          leading: UserDisplayWidgets.avatar(
+            imageUrl: friend.avatarUrl,
+            displayName: friend.displayName,
+            size: ImageSize.small,
+          ),
+          title: Text(
+            friend.displayName,
+            style: AppTextStyles.contentTitle.copyWith(
+              color: isExistingCollaborator
+                  ? AppModeColors.textDisabled(
+                      Theme.of(context).colorScheme.brightness,
+                    )
+                  : null,
             ),
-            title: Text(
-              friend.displayName,
-              style: AppTextStyles.contentTitle.copyWith(
-                color: isExistingCollaborator
-                    ? Theme.of(context).colorScheme.onSurface.withValues(
-                        alpha: AppDimensions.opacityMediumDark,
-                      )
-                    : null,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  friend.email,
-                  style: AppTextStyles.bodySmall.copyWith(
+          ),
+          subtitle: isExistingCollaborator
+              ? Text(
+                  context.l10n.shareAlreadySharingList,
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                ),
-                if (isExistingCollaborator) ...[
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    context
-                        .l10n
-                        .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            trailing: Checkbox(
-              value: isSelected,
-              onChanged: isExistingCollaborator
-                  ? null
-                  : (_) => onFriendToggled(
-                      friend.uid,
-                    ), // PHASE 2: Disable checkbox for existing collaborators
-            ),
-            onTap: isExistingCollaborator
+                )
+              : null,
+          trailing: Checkbox(
+            value: isSelected,
+            onChanged: isExistingCollaborator
                 ? null
-                : () => onFriendToggled(
+                : (_) => onFriendToggled(
                     friend.uid,
-                  ), // PHASE 2: Disable tap for existing collaborators
+                  ), // PHASE 2: Disable checkbox for existing collaborators
           ),
+          onTap: isExistingCollaborator
+              ? null
+              : () => onFriendToggled(
+                  friend.uid,
+                ), // PHASE 2: Disable tap for existing collaborators
         );
       },
     );
@@ -314,7 +301,7 @@ class ShareTargetSelectionEnhanced {
     if (filteredGroups.isEmpty) {
       return _buildEmptyState(
         context,
-        searchQuery.isEmpty ? Icons.group_outlined : Icons.search_off,
+        searchQuery.isEmpty ? ButleryIcons.users : ButleryIcons.searchOff,
         searchQuery.isEmpty
             ? context.l10n.shareNoGroupsAvailable
             : context.l10n.shareNoGroupsMatchedSearch,
@@ -327,9 +314,9 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        // border.subtle, not border.control at half opacity
+        // (tokens.json:40-53).
+        color: Theme.of(context).colorScheme.outlineVariant,
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -341,7 +328,7 @@ class ShareTargetSelectionEnhanced {
           leading: DecoratedBox(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: SizedBox(
               width: 40,
@@ -383,7 +370,7 @@ class ShareTargetSelectionEnhanced {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

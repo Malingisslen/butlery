@@ -101,8 +101,22 @@
   `Future.wait` must not discard already-materialized results mid-batch.
 - A cross-copy "single source of truth" test must READ every copy — an unexported duplicate still
   drifts. Windows: `/c/tools/flutter/bin/flutter test <forward-slash-path>` via Bash works directly.
+  **The unit vocabulary is FOUR hand-mirrored tables, and a diff that touches two of them owes a
+  grep of the other two**: `UnitDefinitions.standaloneUnits` (regex parser), `kSwedishUnits`
+  (LlmTier unknown-unit DROP), `kMaxAmountByUnit` (LlmTier ceiling, falls back to 10000 so a
+  missing key is permissive, not fatal) and `RecipeSectionDetector._subHeadingUnitGuard` (whose
+  own comment says "mirror it here"). `grep -rln 'kSwedishUnits\|kMaxAmountByUnit' test/` was
+  ZERO files on 2026-10-05, so a unit added there is pinned only by the regex-parser suite while
+  the LLM path can drop the row green. Same round: a `.map(strip ?? t)` step appended to a
+  `where`-filter chain is the identity on every existing fixture — grade it by grepping the suite
+  for a line INSIDE its domain (a lone gluten word + colon), not by the two filters beside it.
 
 ### Menu & tagging domain
+- **`RecipeFactory.build` has NO `tagResult`/`tagOverrides` param; `RecipeBuilder` does.** Every
+  tagging-gated render (`recipe.tagResult != null` guards the card's allergen/dietary rows) is
+  UNREACHABLE from a factory-built fixture, so a test written on the factory passes vacuously
+  rather than failing to compile — that is how BUT-1780 shipped "fixed" with no badge ever on
+  screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or tag-related.
 - Weighted-random selectors: assert WEIGHT MATH via a `@visibleForTesting debug*` hook, never the
   sampled outcome; unrated == 1★ value; ceilings via `closeTo` at extremes.
 - Any feature persisting entity ids later intersected with a live collection needs a ZERO-INTERSECTION

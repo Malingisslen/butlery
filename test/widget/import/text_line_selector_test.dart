@@ -9,8 +9,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 
+import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -40,14 +44,14 @@ void main() {
       // Swedish locale → "Butlerys förslag". One suggested line ⇒ exactly one chip.
       expect(find.text('Butlerys förslag'), findsOneWidget);
       // The auto_awesome glyph is the chip's icon.
-      expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.sparkles), findsOneWidget);
     });
 
     testWidgets('shows no chip when no lines are ai-suggested', (tester) async {
       await tester.pumpWidget(buildSelector());
 
       expect(find.text('Butlerys förslag'), findsNothing);
-      expect(find.byIcon(Icons.auto_awesome), findsNothing);
+      expect(find.byIcon(ButleryIcons.sparkles), findsNothing);
     });
 
     testWidgets('renders one chip per ai-suggested line', (tester) async {
@@ -78,7 +82,7 @@ void main() {
 
       // The chip's icon resolves to onSecondaryContainer — a theme tweak should
       // move this in lockstep, not break the test.
-      final icon = tester.widget<Icon>(find.byIcon(Icons.auto_awesome));
+      final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.sparkles));
       expect(icon.color, cs.onSecondaryContainer);
     });
   });
@@ -123,4 +127,116 @@ void main() {
       expect(lastSelection, contains(0));
     });
   });
+
+  // P7-B4: a chosen line is surface.selected with a real border, never a
+  // tint (tokens.json:40-53, :116-119; Grafisk manual v6:209).
+  for (final dark in [false, true]) {
+    testWidgets('a chosen line is the solid surface.selected plate '
+        '(${dark ? 'dark' : 'light'})', (tester) async {
+      final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Theme(
+            data: theme,
+            child: TextLineSelector(
+              lines: lines,
+              selectedIndices: const {1},
+              onSelectionChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final plates = tester
+          .widgetList<Material>(
+            find.descendant(
+              of: find.byType(TextLineSelector),
+              matching: find.byType(Material),
+            ),
+          )
+          .map((m) => m.color)
+          .whereType<Color>()
+          .toList();
+      expect(
+        plates.where((c) => c == theme.colorScheme.surfaceContainerHighest),
+        hasLength(1),
+      );
+      expect(
+        plates.where((c) => c.a > 0 && c.a < 1),
+        isEmpty,
+        reason: 'no plate is a translucent tint',
+      );
+
+      // The chosen line's edge is the drawn "Vald" border: 1.5 px
+      // text.primary (Grafisk manual v6:207).
+      final borders = tester
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(TextLineSelector),
+              matching: find.byType(Container),
+            ),
+          )
+          .map((c) => c.decoration)
+          .whereType<BoxDecoration>()
+          .map((d) => d.border)
+          .whereType<Border>()
+          .where((b) => b.top.width == 1.5)
+          .toList();
+      expect(borders, hasLength(1));
+      expect(borders.single.top.color, theme.colorScheme.onSurface);
+    });
+  }
+
+  // BUT-2205: a chosen line rests on surface.raised, so its press takes the
+  // step on raised; an unchosen line rests on the dialog and takes raised.
+  for (final dark in [false, true]) {
+    final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+    final mode = dark ? 'dark' : 'light';
+
+    Widget selector() => createLocalizedTestApp(
+      child: Theme(
+        data: theme,
+        child: TextLineSelector(
+          lines: lines,
+          selectedIndices: const {1},
+          onSelectionChanged: (_) {},
+        ),
+      ),
+    );
+
+    testWidgets('a pressed chosen line takes the step on raised ($mode)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(selector());
+      final target = find.text('Vispa ihop');
+      final gesture = await holdPress(tester, target);
+      expect(
+        paintsInkFill(
+          tester,
+          target,
+          ModeColors.of(theme.brightness).pressedOnRaised,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+
+    testWidgets('a pressed unchosen line takes surface.raised ($mode)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(selector());
+      final target = find.text('200 g smör');
+      final gesture = await holdPress(tester, target);
+      expect(
+        paintsInkFill(
+          tester,
+          target,
+          theme.colorScheme.surfaceContainerHighest,
+        ),
+        isTrue,
+      );
+      await gesture.cancel();
+    });
+  }
 }

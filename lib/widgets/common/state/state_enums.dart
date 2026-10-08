@@ -35,11 +35,9 @@ enum EmptyStateVariant {
 
 /// Enum for different loading variants
 enum LoadingVariant {
-  /// Standard circular progress indicator
-  spinner,
-
-  /// Animated pea pod (UI Redesign branded loading)
-  peaAnimation,
+  /// Tallrikslinjen med text (beslut B-18; produktregler.md:163). Ingen
+  /// snurra och ingen ärtbalja ritas.
+  plateLine,
 
   /// Skeleton card placeholder
   skeletonRecipeCard,
@@ -50,6 +48,6 @@ enum LoadingVariant {
   /// Generic skeleton placeholder
   skeletonGeneric,
 
-  /// Simple shimmer box
-  shimmerBox,
+  /// Stillastående ruta, visas efter 300 ms. Ingen shimmer (beslut B-18).
+  staticBox,
 }

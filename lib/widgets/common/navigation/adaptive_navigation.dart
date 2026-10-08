@@ -1,61 +1,38 @@
 // lib/widgets/common/navigation/adaptive_navigation.dart
 //
-// UI Redesign: Updated to 4 nav items (removed Upptäck to avatar menu)
-// Uses forest green background with rust indicator for selected item
+// PQ-17 = A (fas2/produktbeslut-2026-09-23.json): the shell has four
+// destinations, Hem · Meny · Inköp · Mer, and a separate "Lägg till"
+// (tillganglighetshandoff 'Navigation & toppfält'; Komponentark v1:661-667).
+// The bar, the plus and the rail live in butlery_bottom_navigation.dart.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
-import 'package:butlery/core/utils/accessibility_utils.dart';
-import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
+import 'package:butlery/widgets/common/navigation/butlery_navigation_rail.dart';
+import 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
-/// BUT-557: Wraps a nav region (bottom-bar / rail / drawer) with the
-/// container-level Semantics landmark Material widgets don't expose. WCAG
-/// 1.3.1 (Info and Relationships); `explicitChildNodes: true` keeps each
-/// destination focusable individually.
-Widget _navigationLandmark({
-  required BuildContext context,
-  required Widget child,
-}) => Semantics(
-  label: context.l10n.a11yNavigationLandmark,
-  container: true,
-  explicitChildNodes: true,
-  child: child,
-);
+export 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
+export 'package:butlery/widgets/common/navigation/butlery_navigation_rail.dart';
+export 'package:butlery/widgets/common/navigation/navigation_item.dart';
 
-/// Navigation item model for adaptive navigation
-class AdaptiveNavigationItem {
-  final String label;
-  final IconData icon;
-  final IconData activeIcon;
-  final String route;
-  final int? badgeCount;
+/// Whether the shell draws the rail rather than the bottom row:
+/// "Skena vid bredd ≥ 768 OCH höjd ≥ 500. Under 500 px höjd gäller en spalt
+/// och bottenrad oavsett bredd" (produktregler.md:1054).
+bool useNavigationRail(Size size) =>
+    size.width >= Breakpoints.tablet && size.height >= _railMinHeight;
 
-  /// Semantic label for screen readers. Defaults to label if not provided.
-  final String? semanticLabel;
+const double _railMinHeight = 500;
 
-  const AdaptiveNavigationItem({
-    required this.label,
-    required this.icon,
-    required this.activeIcon,
-    required this.route,
-    this.badgeCount,
-    this.semanticLabel,
-  });
-
-  /// Get the semantic label, falling back to label if not set.
-  String get accessibleLabel => semanticLabel ?? label;
-}
-
-/// Adaptive navigation that switches between BottomNavigationBar, NavigationRail, and Drawer
-/// Automatically adapts based on screen width:
-/// - Mobile (< 600px): BottomNavigationBar
-/// - Tablet (600-1024px): NavigationRail (compact sidebar)
-/// - Desktop (>= 1024px): NavigationRail (extended) or Drawer
+/// The shell's scaffold: the bottom row on a phone, the rail from 768 dp.
+///
 /// Usage:
 /// ```dart
 /// AdaptiveNavigationScaffold(
@@ -74,20 +51,14 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
   /// Main content
   final Widget body;
 
-  /// App bar title
-  final String? title;
-
-  /// App bar actions
-  final List<Widget>? actions;
-
   /// Floating action button
   final Widget? floatingActionButton;
 
   /// Callback when navigation item tapped
   final ValueChanged<int>? onNavigationChanged;
 
-  /// Whether to extend NavigationRail on desktop (show labels)
-  final bool extendedRailOnDesktop;
+  /// What the plus does. Null opens the add sheet.
+  final VoidCallback? onAdd;
 
   /// Custom app bar
   final PreferredSizeWidget? appBar;
@@ -97,11 +68,9 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     required this.currentIndex,
     required this.items,
     required this.body,
-    this.title,
-    this.actions,
     this.floatingActionButton,
     this.onNavigationChanged,
-    this.extendedRailOnDesktop = true,
+    this.onAdd,
     this.appBar,
   });
 
@@ -109,30 +78,52 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = Breakpoints.isMobileWidth(constraints.maxWidth);
-        final isDesktop = Breakpoints.isDesktopWidth(constraints.maxWidth);
+        final size = Size(
+          constraints.maxWidth,
+          constraints.hasBoundedHeight
+              ? constraints.maxHeight
+              : MediaQuery.sizeOf(context).height,
+        );
 
-        // Mobile: BottomNavigationBar
-        if (isMobile) {
+        if (!useNavigationRail(size)) {
           return Scaffold(
-            appBar: _buildAppBar(context),
+            appBar: appBar,
             body: FocusTraversalGroup(child: body),
             floatingActionButton: floatingActionButton,
             bottomNavigationBar: FocusTraversalGroup(
-              child: _buildBottomNavigation(context),
+              child: ButleryBottomNavigation(
+                currentIndex: currentIndex,
+                items: items,
+                onTap: (index) => _select(context, index),
+                onAdd: onAdd,
+              ),
             ),
           );
         }
 
-        // Tablet/Desktop: NavigationRail
+        // The rail is read after the content, as the bottom row is
+        // (tillganglighetshandoff 'Navigation & toppfält').
         return Scaffold(
-          appBar: _buildAppBar(context),
+          appBar: appBar,
           body: Row(
             children: [
-              FocusTraversalGroup(
-                child: _buildNavigationRail(context, isDesktop),
+              Semantics(
+                sortKey: const OrdinalSortKey(1),
+                child: FocusTraversalGroup(
+                  child: ButleryNavigationRail(
+                    currentIndex: currentIndex,
+                    items: items,
+                    onTap: (index) => _select(context, index),
+                    onAdd: onAdd,
+                  ),
+                ),
               ),
-              Expanded(child: FocusTraversalGroup(child: body)),
+              Expanded(
+                child: Semantics(
+                  sortKey: const OrdinalSortKey(0),
+                  child: FocusTraversalGroup(child: body),
+                ),
+              ),
             ],
           ),
           floatingActionButton: floatingActionButton,
@@ -141,99 +132,15 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget? _buildAppBar(BuildContext context) {
-    if (appBar != null) return appBar;
-    if (title == null) return null;
-
-    return AppBar(
-      title: Text(
-        title!,
-        style: AppTextStyles.headlineSmall,
-      ),
-      actions: actions,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      automaticallyImplyLeading: false,
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    return ButleryBottomNavigation(
-      currentIndex: currentIndex,
-      items: items,
-      onTap: (index) {
-        if (onNavigationChanged != null) {
-          onNavigationChanged!(index);
-        } else {
-          _navigateToRoute(context, items[index].route, currentIndex, index);
-        }
-      },
-    );
-  }
-
-  Widget _buildNavigationRail(BuildContext context, bool isDesktop) {
-    final extended = isDesktop && extendedRailOnDesktop;
-
-    // BUT-557: navigation landmark wrap (WCAG 1.3.1).
-    return _navigationLandmark(
-      context: context,
-      child: NavigationRail(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          if (onNavigationChanged != null) {
-            onNavigationChanged!(index);
-          } else {
-            _navigateToRoute(context, items[index].route, currentIndex, index);
-          }
-        },
-        extended: extended,
-        labelType: extended
-            ? NavigationRailLabelType.none
-            : NavigationRailLabelType.all,
-        leading: extended
-            ? Padding(
-                padding: const EdgeInsets.only(
-                  top: AppDimensions.spacingLg,
-                  bottom: AppDimensions.spacingMd,
-                ),
-                child: Text(
-                  'Butlery',
-                  style: AppTextStyles.headlineMedium,
-                ),
-              )
-            : null,
-        destinations: items.map((item) {
-          return NavigationRailDestination(
-            icon: _buildBadgedIcon(item.icon, item.badgeCount),
-            selectedIcon: _buildBadgedIcon(item.activeIcon, item.badgeCount),
-            label: Text(item.label),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildBadgedIcon(IconData icon, int? badgeCount) {
-    if (badgeCount == null || badgeCount == 0) {
-      return Icon(icon);
+  void _select(BuildContext context, int index) {
+    final onChanged = onNavigationChanged;
+    if (onChanged != null) {
+      onChanged(index);
+      return;
     }
-
-    return Badge(
-      label: Text(badgeCount.toString()),
-      child: Icon(icon),
-    );
-  }
-
-  void _navigateToRoute(
-    BuildContext context,
-    String route,
-    int currentIndex,
-    int newIndex,
-  ) {
     // Don't navigate if already on that page
-    if (currentIndex == newIndex) return;
-
-    Navigator.pushReplacementNamed(context, route);
+    if (index == currentIndex) return;
+    Navigator.pushReplacementNamed(context, items[index].route);
   }
 }
 
@@ -245,55 +152,52 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
 /// ButleryAdaptiveNavigation(
 ///   currentIndex: 0,
 ///   body: YourContent(),
-///   title: 'Page Title',
 /// )
 /// ```
 class ButleryAdaptiveNavigation extends StatelessWidget {
   final int currentIndex;
   final Widget body;
-  final String? title;
-  final List<Widget>? actions;
   final Widget? floatingActionButton;
 
   const ButleryAdaptiveNavigation({
     super.key,
     required this.currentIndex,
     required this.body,
-    this.title,
-    this.actions,
     this.floatingActionButton,
   });
 
-  /// Navigation items for the bottom bar (4 items).
-  /// UI Redesign: Order matches mockup (recept, meny, inköp, lägg till)
-  /// Uses outline icons for both states per mockup design.
-  /// UI Redesign: "recept" uses grid icon per mockup (not book)
+  /// The shell's four destinations, in the drawn order Hem · Meny · Inköp ·
+  /// Mer (tillganglighetshandoff 'Navigation & toppfält'; Skarmar v12 del 1
+  /// #hemrecept). "Lägg till" is not among them: it is the separate plus
+  /// (produktregler.md:1056). Labels are capitalised as drawn (Komponentark
+  /// v1:663-666; NAV-INK); the tab says "Meny", not "Veckomeny" (B-17).
   static List<AdaptiveNavigationItem> getNavigationItems(
     BuildContext context,
   ) => [
     AdaptiveNavigationItem(
-      label: context.l10n.navigationRecipes,
-      icon: AdaptiveIcons.gridOutlined,
-      activeIcon: AdaptiveIcons.gridOutlined, // Outline for both states
-      route: '/',
+      label: context.l10n.navigationHome,
+      icon: ButleryIcons.navHome,
+      activeIcon: ButleryIcons.navHome, // Outline for both states
+      route: Routes.home,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationMenu,
-      icon: AdaptiveIcons.calendarOutlined,
-      activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
-      route: '/veckomeny',
+      icon: ButleryIcons.navWeek,
+      activeIcon: ButleryIcons.navWeek, // Outline for both states
+      route: Routes.weeklyMenu,
     ),
     AdaptiveNavigationItem(
       label: context.l10n.navigationShopping,
-      icon: AdaptiveIcons.cartOutlined,
-      activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
-      route: '/inkopslista',
+      icon: ButleryIcons.navShopping,
+      activeIcon: ButleryIcons.navShopping, // Outline for both states
+      route: Routes.shoppingList,
     ),
     AdaptiveNavigationItem(
-      label: context.l10n.navigationAddNew,
-      icon: AdaptiveIcons.addOutlined,
-      activeIcon: AdaptiveIcons.addOutlined, // Outline for both states
-      route: '/laggTill',
+      label: context.l10n.navigationMore,
+      // Three lines, as drawn (Komponentark v1:666).
+      icon: ButleryIcons.navMore,
+      activeIcon: ButleryIcons.navMore,
+      route: Routes.more,
     ),
   ];
 
@@ -303,8 +207,6 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
       currentIndex: currentIndex,
       items: getNavigationItems(context),
       body: body,
-      title: title,
-      actions: actions,
       floatingActionButton: floatingActionButton,
     );
   }
@@ -315,9 +217,11 @@ extension AdaptiveNavigationItemExtension on BottomNavigationBarItem {
   AdaptiveNavigationItem toAdaptiveItem({required String route}) {
     return AdaptiveNavigationItem(
       label: label.orEmpty(),
-      icon: (icon as Icon).icon ?? Icons.error,
+      icon: (icon as Icon).icon ?? ButleryIcons.triangleAlert,
       activeIcon:
-          (activeIcon as Icon?)?.icon ?? (icon as Icon).icon ?? Icons.error,
+          (activeIcon as Icon?)?.icon ??
+          (icon as Icon).icon ??
+          ButleryIcons.triangleAlert,
       route: route,
     );
   }
@@ -351,7 +255,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // BUT-557: navigation landmark for the desktop drawer variant.
-    return _navigationLandmark(
+    return navigationLandmark(
       context: context,
       child: Drawer(
         child: ListView(
@@ -426,206 +330,12 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
     BuildContext context,
   ) {
     if (badgeCount == null || badgeCount == 0) {
-      return Icon(icon);
+      return ButleryIcon(icon);
     }
 
     return Badge(
       label: Text(badgeCount.toString()),
-      child: Icon(icon),
+      child: ButleryIcon(icon),
     );
-  }
-}
-
-/// Custom bottom navigation bar with Butlery styling.
-///
-/// Features:
-/// - Cream-dark background (#E8E2D6)
-/// - Rust underline indicator for selected item
-/// - Forest green dark/muted green icon colors
-/// - Josefin Sans lowercase labels
-class ButleryBottomNavigation extends StatelessWidget {
-  const ButleryBottomNavigation({
-    super.key,
-    required this.currentIndex,
-    required this.items,
-    required this.onTap,
-    this.backgroundColor,
-    this.selectedItemColor,
-    this.unselectedItemColor,
-  });
-
-  final int? currentIndex;
-  final List<AdaptiveNavigationItem> items;
-  final ValueChanged<int> onTap;
-
-  /// Override background color (defaults to navBackground/forestGreen)
-  final Color? backgroundColor;
-
-  /// Override selected item color (defaults to navSelectedItem/white)
-  final Color? selectedItemColor;
-
-  /// Override unselected item color (defaults to navUnselectedItem/70% white)
-  final Color? unselectedItemColor;
-
-  @override
-  Widget build(BuildContext context) {
-    // BUT-557: navigation landmark wrap (WCAG 1.3.1).
-    return _navigationLandmark(
-      context: context,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color:
-              backgroundColor ??
-              Theme.of(context).colorScheme.surfaceContainerLow,
-        ),
-        child: SafeArea(
-          top: false,
-          child: AccessibilityUtils.clampTextScaling(
-            context: context,
-            child: SizedBox(
-              height:
-                  56 +
-                  AppDimensions.spacingXs, // Standard nav height + indicator
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: items.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  final isSelected =
-                      currentIndex != null && index == currentIndex;
-
-                  return Expanded(
-                    child: _BottomNavItem(
-                      item: item,
-                      isSelected: isSelected,
-                      onTap: () => onTap(index),
-                      selectedColor: selectedItemColor,
-                      unselectedColor: unselectedItemColor,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  const _BottomNavItem({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-    this.selectedColor,
-    this.unselectedColor,
-  });
-
-  final AdaptiveNavigationItem item;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Color? selectedColor;
-  final Color? unselectedColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final color = isSelected
-        ? (selectedColor ?? cs.primary)
-        : (unselectedColor ?? cs.onSurfaceVariant);
-
-    // BUT-403: identifier `nav-{route}` (e.g. `nav-/`, `nav-/veckomeny`) for
-    // browser a11y tree queries. Route is used verbatim so Chrome MCP can
-    // match by destination rather than translated label.
-    return Semantics(
-      identifier: 'nav-${item.route}',
-      label: item.accessibleLabel,
-      button: true,
-      selected: isSelected,
-      child: InkWell(
-        key: ValueKey('test-nav-${item.route}'),
-        onTap: onTap,
-        splashColor: cs.surfaceContainerHighest.withValues(alpha: 0.1),
-        highlightColor: cs.surfaceContainerHighest.withValues(alpha: 0.05),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: AppDimensions.spacingXs),
-            // Icon with optional badge
-            _buildIcon(context, color),
-            const SizedBox(height: AppDimensions.spacingXxs),
-            // Label in Josefin Sans lowercase with underline indicator
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  item.label.toLowerCase(),
-                  style: AppTextStyles.navLabel.copyWith(
-                    color: color,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    letterSpacing: 1,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppDimensions.spacingXxs),
-                // Rust indicator bar below text when selected (text width)
-                AnimatedContainer(
-                  duration: AnimationUtils.getDuration(
-                    context,
-                    AppDimensions.animationDurationFast,
-                  ),
-                  height: AppDimensions.spacingXxs,
-                  width: isSelected ? _getTextWidth(context) : 0,
-                  color: isSelected ? cs.secondary : Colors.transparent,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Calculate approximate text width for the underline.
-  double _getTextWidth(BuildContext context) {
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: item.label.toLowerCase(),
-        style: AppTextStyles.navLabel.copyWith(
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1,
-        ),
-      ),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    )..layout();
-    return textPainter.width;
-  }
-
-  Widget _buildIcon(BuildContext context, Color color) {
-    final cs = Theme.of(context).colorScheme;
-    final iconData = isSelected ? item.activeIcon : item.icon;
-
-    Widget icon = Icon(
-      iconData,
-      color: color,
-      size: AppDimensions.iconSizeL,
-    );
-
-    if (item.badgeCount != null && item.badgeCount! > 0) {
-      icon = Badge(
-        label: Text(
-          item.badgeCount.toString(),
-          style: const TextStyle(fontSize: 10),
-        ),
-        backgroundColor: cs.secondary,
-        child: icon,
-      );
-    }
-
-    return icon;
   }
 }

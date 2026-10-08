@@ -41,6 +41,7 @@ import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../infrastructure/helpers/own_preferences_stub.dart';
 
 class _MockHouseholdRosterService extends Mock
     implements HouseholdRosterService {}
@@ -148,7 +149,8 @@ void main() {
     menuService = MockMenuService();
     recipeService = MockUnifiedRecipeService();
     userService = MockUserService();
-    when(() => userService.allergenPreferences).thenReturn(
+    stubOwnPreferences(
+      userService,
       const UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
     );
     // The signed-in user's settings were read and hold no allergies — a
@@ -170,17 +172,15 @@ void main() {
     final perm = _MockPermissionService();
     when(() => perm.currentUserId).thenReturn(_self);
     hhRepo = _MockHouseholdRepository();
-    when(() => hhRepo.getForUser(any())).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh1',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: _self,
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      ],
+    when(() => hhRepo.getActiveForUser(any())).thenAnswer(
+      (_) async => Household(
+        id: 'hh1',
+        name: Household.defaultName,
+        members: const [],
+        createdBy: _self,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
     );
     roster = _MockHouseholdRosterService();
     when(() => roster.tryGetRoster(any())).thenAnswer(
@@ -302,10 +302,8 @@ void main() {
       // With no household the present path cannot run, so we fall through to
       // single-user filtering — which must still apply the user's own
       // allergens (here gluten), never silently ship an unfiltered menu.
-      when(() => hhRepo.getForUser(any())).thenAnswer((_) async => []);
-      when(
-        () => userService.allergenPreferences,
-      ).thenReturn(_prefs({'gluten'}));
+      when(() => hhRepo.getActiveForUser(any())).thenAnswer((_) async => null);
+      stubOwnPreferences(userService, _prefs({'gluten'}));
       generator.filterByAllergens = true;
       generator.presentMemberIds = [_kid];
       usePool([
@@ -430,8 +428,14 @@ void main() {
 
     test('total failure with no household, user never set preferences: the '
         'floor applies but no diet is imposed', () async {
-      // What UserService.allergenPreferences returns for an unset profile —
-      // it carries tracked diets, which must not reach this path.
+      // Production shape for a profile that carries no preferences: the
+      // profile itself is empty, and `UserService.allergenPreferences`
+      // substitutes the defaults, whose tracked diets must not reach this
+      // path. The two sources DISAGREE on purpose, so a reader that falls
+      // back to the getter turns this test red.
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(_self, settingsMerged: true));
       when(
         () => userService.allergenPreferences,
       ).thenReturn(UserAllergenPreferences.defaults);
@@ -518,7 +522,9 @@ void main() {
 
     test('a household lookup that throws is treated as a total failure, not '
         'as an error or an empty union', () async {
-      when(() => hhRepo.getForUser(any())).thenThrow(StateError('offline'));
+      when(
+        () => hhRepo.getActiveForUser(any()),
+      ).thenThrow(StateError('offline'));
       generator.presentMemberIds = [_self];
       usePool([
         floorSafe('nuts', {'jordnötter': TriState.contains}),

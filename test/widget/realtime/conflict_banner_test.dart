@@ -2,7 +2,7 @@
 /// of the silent-conflict feature.
 ///
 /// The banner subscribes to [RealtimeSyncService.conflictStream], filters by an
-/// optional [ConflictBanner.filterDocId], renders a localized message, exposes a
+/// optional [ConflictBanner.filterDocId], renders the drawn title and body, exposes a
 /// "View" action for the active event (BUT-1163: self-wired to the built-in
 /// diff view, with [ConflictBanner.onViewChange] as an optional override), and
 /// dismisses on the close button. A broken subscription, a wrong filter, or a
@@ -13,6 +13,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,24 +21,39 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 
-class _FakeResource extends Fake implements RealtimeResource {}
+class _FakeResource extends Fake implements RealtimeResource {
+  _FakeResource([this.lastEditedByDisplayName = 'Per']);
 
-ConflictEvent _event({String docId = 'doc-1'}) => ConflictEvent(
+  @override
+  final String lastEditedByDisplayName;
+}
+
+ConflictEvent _event({
+  String docId = 'doc-1',
+  ConflictEntity entity = ConflictEntity.recipeOwn,
+  String editor = 'Per',
+  ConflictOrigin origin = ConflictOrigin.realtime,
+}) => ConflictEvent(
   collectionPath: 'recipes',
   docId: docId,
   localValue: _FakeResource(),
-  remoteValue: _FakeResource(),
+  remoteValue: _FakeResource(editor),
   chosenStrategy: ConflictResolutionStrategy.localWon,
+  entity: entity,
   occurredAt: DateTime(2026, 5, 28),
+  origin: origin,
 );
 
 void main() {
@@ -65,6 +81,9 @@ void main() {
   // Captures the live l10n strings so assertions never hardcode copy that can
   // drift from the ARB files.
   late String message;
+  late String weekTitle;
+  late String body;
+  late String unnamedBody;
   late String dismissTooltip;
   late String viewLabel;
 
@@ -72,7 +91,10 @@ void main() {
     return createLocalizedTestApp(
       child: Builder(
         builder: (context) {
-          message = context.l10n.conflictBannerMessage;
+          message = context.l10n.conflictBannerTitleRecipe;
+          weekTitle = context.l10n.conflictBannerTitleWeek;
+          body = context.l10n.conflictBannerBody('Per');
+          unnamedBody = context.l10n.conflictBannerBodyUnnamed;
           dismissTooltip = context.l10n.a11yConflictBannerDismiss;
           viewLabel = context.l10n.commonView;
           return ConflictBanner(
@@ -89,7 +111,7 @@ void main() {
     await tester.pump();
 
     expect(find.text(message), findsNothing);
-    expect(find.byIcon(Icons.sync_problem), findsNothing);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
     expect(find.byType(SizedBox), findsWidgets); // SizedBox.shrink placeholder
   });
 
@@ -103,7 +125,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(message), findsOneWidget);
-    expect(find.byIcon(Icons.sync_problem), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
   });
 
   testWidgets('filterDocId ignores events for other documents', (tester) async {
@@ -176,4 +198,226 @@ void main() {
       expect(tapped, 1);
     },
   );
+
+  group('P3-U08: drawn anatomy (Komponentark v1:755-758)', () {
+    testWidgets('title names the recipe and the body names the other editor', (
+      tester,
+    ) async {
+      await tester.pumpWidget(harness());
+      conflicts.add(_event());
+      await tester.pumpAndSettle();
+
+      expect(message, 'Två versioner av receptet');
+      expect(find.text(message), findsOneWidget);
+      expect(find.text(body), findsOneWidget);
+      expect(body, startsWith('Per ändrade samtidigt.'));
+    });
+
+    // Q6-08 = A: a member never writes someone else's recipe, so without a
+    // stored suggestion the banner says the owner's version stays and that
+    // the change was neither saved nor sent; it offers no choice.
+    testWidgets('a shared recipe without a suggestion says the owner\'s '
+        'version stays and the change was not sent', (tester) async {
+      late String ownersTitle;
+      late String notSent;
+      late String notSentUnnamed;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              message = context.l10n.conflictBannerTitleRecipe;
+              ownersTitle = context.l10n.conflictBannerTitleSuggestion;
+              notSent = context.l10n.conflictBannerBodyMemberNotSent('Per');
+              notSentUnnamed =
+                  context.l10n.conflictBannerBodyMemberNotSentUnnamed;
+              return const ConflictBanner();
+            },
+          ),
+        ),
+      );
+      conflicts.add(_event(entity: ConflictEntity.recipeShared));
+      await tester.pumpAndSettle();
+
+      expect(find.text(ownersTitle), findsOneWidget);
+      expect(find.text(message), findsNothing);
+      expect(find.text(notSent), findsOneWidget);
+
+      conflicts.add(_event(entity: ConflictEntity.recipeShared, editor: ' '));
+      await tester.pumpAndSettle();
+      expect(find.text(notSentUnnamed), findsOneWidget);
+    });
+
+    testWidgets('a week menu gets the week title', (tester) async {
+      await tester.pumpWidget(harness());
+      conflicts.add(_event(entity: ConflictEntity.weekMenu));
+      await tester.pumpAndSettle();
+
+      expect(weekTitle, 'Två versioner av veckan');
+      expect(find.text(weekTitle), findsOneWidget);
+      expect(find.text(message), findsNothing);
+    });
+
+    testWidgets('an unknown editor name falls back to a nameless body', (
+      tester,
+    ) async {
+      await tester.pumpWidget(harness());
+      conflicts.add(_event(editor: '  '));
+      await tester.pumpAndSettle();
+
+      expect(find.text(unnamedBody), findsOneWidget);
+    });
+
+    testWidgets('the banner is one live region per event', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(harness());
+      conflicts.add(_event());
+      await tester.pumpAndSettle();
+
+      final liveRegions = find.byWidgetPredicate(
+        (w) => w is Semantics && (w.properties.liveRegion ?? false),
+      );
+      expect(liveRegions, findsOneWidget);
+      handle.dispose();
+    });
+
+    // Token values from tokens.json: text.danger :96-98, text.primary :54-56,
+    // text.body :58-60, surface.tint.danger (BUT-2191).
+    for (final (mode, danger, primary, bodyText, surface) in [
+      (
+        ThemeMode.light,
+        const Color(0xFF9C3B23),
+        const Color(0xFF24382C),
+        const Color(0xFF37453A),
+        const Color(0xFFF2DDD6),
+      ),
+      (
+        ThemeMode.dark,
+        const Color(0xFFDE9078),
+        const Color(0xFFF5F4ED),
+        const Color(0xFFF5F4ED),
+        const Color(0xFF2F4437),
+      ),
+    ]) {
+      testWidgets('colours follow the tokens in ${mode.name} mode', (
+        tester,
+      ) async {
+        late String title;
+        late String text;
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: mode,
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  title = context.l10n.conflictBannerTitleRecipe;
+                  text = context.l10n.conflictBannerBody('Per');
+                  return const ConflictBanner();
+                },
+              ),
+            ),
+          ),
+        );
+        conflicts.add(_event());
+        await tester.pumpAndSettle();
+
+        final material = tester.widget<Material>(
+          find
+              .ancestor(of: find.text(title), matching: find.byType(Material))
+              .first,
+        );
+        expect(material.color, surface);
+        // B83-2 = A: no border. Border-radius 8 px (radius.control,
+        // tokens.json).
+        final shape = material.shape! as RoundedRectangleBorder;
+        expect(shape.side, BorderSide.none);
+        expect(shape.borderRadius, BorderRadius.circular(8));
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.triangleAlert)).color,
+          danger,
+        );
+        final titleText = tester.widget<Text>(find.text(title));
+        expect(titleText.style!.color, primary);
+        expect(titleText.style!.fontWeight, FontWeight.w700);
+        expect(tester.widget<Text>(find.text(text)).style!.color, bodyText);
+      });
+    }
+  });
+
+  // BUT-2213 (TR::FLOW::08::ko::toms::konfliktbanner): a queued edit of the
+  // user's own recipe that met a newer server version.
+  group('a queue conflict', () {
+    testWidgets('says the recipe was changed on another device (B1)', (
+      tester,
+    ) async {
+      late String otherDevice;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              message = context.l10n.conflictBannerTitleRecipe;
+              otherDevice = context.l10n.conflictBannerBodyOtherDevice;
+              return const ConflictBanner();
+            },
+          ),
+        ),
+      );
+      conflicts.add(_event(origin: ConflictOrigin.queue));
+      await tester.pumpAndSettle();
+
+      expect(
+        otherDevice,
+        'Du ändrade receptet på en annan enhet. Din version finns kvar — '
+        'välj vilken som gäller.',
+      );
+      expect(find.text(message), findsOneWidget);
+      expect(find.text(otherDevice), findsOneWidget);
+    });
+
+    testWidgets('released before the recipe was opened shows when it '
+        'opens', (tester) async {
+      final pending = _event(docId: 'r1', origin: ConflictOrigin.queue);
+      when(() => service.pendingQueuedConflict('r1')).thenReturn(pending);
+
+      await tester.pumpWidget(harness(filterDocId: 'r1'));
+      await tester.pump();
+
+      expect(find.text(message), findsOneWidget);
+    });
+
+    testWidgets('closing it forgets the waiting notice', (tester) async {
+      final pending = _event(docId: 'r1', origin: ConflictOrigin.queue);
+      when(() => service.pendingQueuedConflict('r1')).thenReturn(pending);
+      await tester.pumpWidget(harness(filterDocId: 'r1'));
+      await tester.pump();
+
+      await tester.tap(find.byTooltip(dismissTooltip));
+      await tester.pump();
+
+      verify(() => service.clearQueuedConflict('r1')).called(1);
+      expect(find.text(message), findsNothing);
+    });
+
+    testWidgets('closing a live conflict leaves the queue notices alone', (
+      tester,
+    ) async {
+      await tester.pumpWidget(harness());
+      conflicts.add(_event());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip(dismissTooltip));
+      await tester.pump();
+
+      verifyNever(() => service.clearQueuedConflict(any()));
+    });
+  });
 }

@@ -7,6 +7,8 @@
 /// invocation per branch of the resolver.
 library;
 
+import 'dart:io';
+
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,9 +20,22 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/realtime/conflict_resolution_module.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 
+import '../../../infrastructure/builders/realtime_menu_builder.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 
 class _FakeFirestoreRepository extends Mock implements FirestoreRepository {}
+
+/// A resource whose comparison fields throw, so resolveConflict falls into
+/// its error branch before choosing a side.
+class _ThrowingResource extends Fake implements RealtimeResource {
+  _ThrowingResource(this.id);
+
+  @override
+  final String id;
+
+  @override
+  int get editCount => throw StateError('corrupt editCount');
+}
 
 RealtimeRecipe _makeRecipe({
   required String id,
@@ -63,7 +78,11 @@ void main() {
       final local = _makeRecipe(id: 'a', editCount: 5, lastEditedAt: now);
       final remote = _makeRecipe(id: 'a', editCount: 3, lastEditedAt: now);
 
-      final result = await module.resolveConflict(local, remote);
+      final result = await module.resolveConflict(
+        local,
+        remote,
+        entity: ConflictEntity.recipeOwn,
+      );
 
       expect(result.editCount, 5, reason: 'local should win on editCount');
       expect(emitted, hasLength(1));
@@ -73,6 +92,11 @@ void main() {
       );
       expect(emitted.single.collectionPath, 'recipes');
       expect(emitted.single.docId, 'rt-a');
+      expect(
+        emitted.single.entity,
+        ConflictEntity.recipeOwn,
+        reason: 'the entity the caller passed rides on the event',
+      );
     });
 
     test('remoteWon when remote.editCount > local.editCount', () async {
@@ -80,7 +104,11 @@ void main() {
       final local = _makeRecipe(id: 'a', editCount: 2, lastEditedAt: now);
       final remote = _makeRecipe(id: 'a', editCount: 7, lastEditedAt: now);
 
-      final result = await module.resolveConflict(local, remote);
+      final result = await module.resolveConflict(
+        local,
+        remote,
+        entity: ConflictEntity.recipeOwn,
+      );
 
       expect(result.editCount, 7, reason: 'remote should win on editCount');
       expect(emitted, hasLength(1));
@@ -96,7 +124,11 @@ void main() {
       final local = _makeRecipe(id: 'a', editCount: 1, lastEditedAt: newer);
       final remote = _makeRecipe(id: 'a', editCount: 1, lastEditedAt: older);
 
-      final result = await module.resolveConflict(local, remote);
+      final result = await module.resolveConflict(
+        local,
+        remote,
+        entity: ConflictEntity.recipeOwn,
+      );
 
       expect(result.lastEditedAt, newer);
       expect(emitted, hasLength(1));
@@ -112,7 +144,11 @@ void main() {
       final local = _makeRecipe(id: 'a', editCount: 1, lastEditedAt: older);
       final remote = _makeRecipe(id: 'a', editCount: 1, lastEditedAt: newer);
 
-      final result = await module.resolveConflict(local, remote);
+      final result = await module.resolveConflict(
+        local,
+        remote,
+        entity: ConflictEntity.recipeOwn,
+      );
 
       expect(result.lastEditedAt, newer);
       expect(emitted, hasLength(1));
@@ -294,10 +330,142 @@ void main() {
     final local = _makeRecipe(id: 'a', editCount: 5, lastEditedAt: now);
     final remote = _makeRecipe(id: 'a', editCount: 3, lastEditedAt: now);
 
-    final result = await silentModule.resolveConflict(local, remote);
+    final result = await silentModule.resolveConflict(
+      local,
+      remote,
+      entity: ConflictEntity.recipeOwn,
+    );
 
     expect(result.editCount, 5);
     // Implicit: no callback wired → no NPE, nothing in [emitted].
     expect(emitted, isEmpty);
+  });
+
+  group('P3-U07: the resolver error branch is not silent', () {
+    // produktregler.md:109: no strategy may silently drop data that only
+    // exists locally; flows-roles-budget.md:18: the user always learns that a
+    // conflict happened. When the resolver throws, the remote is kept, so the
+    // local edit is overwritten exactly as in a remoteWon.
+    test('emits exactly one remoteWon and returns the remote', () async {
+      final local = _ThrowingResource('doc-err');
+      final remote = _ThrowingResource('doc-err');
+
+      final result = await module.resolveConflict<RealtimeResource>(
+        local,
+        remote,
+        entity: ConflictEntity.weekMenu,
+      );
+
+      expect(identical(result, remote), isTrue, reason: 'remote is kept');
+      expect(emitted, hasLength(1));
+      expect(
+        emitted.single.chosenStrategy,
+        ConflictResolutionStrategy.remoteWon,
+      );
+      expect(emitted.single.entity, ConflictEntity.weekMenu);
+      expect(identical(emitted.single.localValue, local), isTrue);
+      expect(emitted.single.docId, 'doc-err');
+    });
+
+    test('a sink that throws is called once and never re-emitted', () async {
+      var calls = 0;
+      final throwingSinkModule = ConflictResolutionModule(
+        firestoreRepository: repo,
+        getLatestResource: <T extends RealtimeResource>(_) async =>
+            throw UnimplementedError(),
+        onConflict: (_) {
+          calls++;
+          throw StateError('listener crashed');
+        },
+        collectionPath: 'recipes',
+      );
+      final now = clock.now();
+      final local = _makeRecipe(id: 'a', editCount: 5, lastEditedAt: now);
+      final remote = _makeRecipe(id: 'a', editCount: 3, lastEditedAt: now);
+
+      final result = await throwingSinkModule.resolveConflict(
+        local,
+        remote,
+        entity: ConflictEntity.recipeOwn,
+      );
+
+      expect(calls, 1, reason: 'the error branch must not emit a second time');
+      expect(
+        result.editCount,
+        5,
+        reason: 'a broken listener must not flip the resolver to the remote',
+      );
+    });
+
+    test('a throwing sink in the error branch is called once', () async {
+      var calls = 0;
+      final throwingSinkModule = ConflictResolutionModule(
+        firestoreRepository: repo,
+        getLatestResource: <T extends RealtimeResource>(_) async =>
+            throw UnimplementedError(),
+        onConflict: (_) {
+          calls++;
+          throw StateError('listener crashed');
+        },
+      );
+      final remote = _ThrowingResource('doc-err');
+
+      final result = await throwingSinkModule.resolveConflict<RealtimeResource>(
+        _ThrowingResource('doc-err'),
+        remote,
+        entity: ConflictEntity.recipeOwn,
+      );
+
+      expect(calls, 1);
+      expect(identical(result, remote), isTrue);
+    });
+  });
+
+  group('P3-U07: the model declares its conflict entity', () {
+    // produktregler.md:97-107 and beslutslogg B-09: one rule per entity, no
+    // generic rule. The model says which row applies; nothing reads the
+    // collection path.
+    test('a recipe is recipeOwn for its owner', () {
+      final recipe = _makeRecipe(
+        id: 'a',
+        editCount: 1,
+        lastEditedAt: DateTime(2026, 1, 1),
+      );
+      expect(recipe.conflictEntityFor('owner'), ConflictEntity.recipeOwn);
+    });
+
+    test('a recipe is recipeShared for anyone else', () {
+      final recipe = _makeRecipe(
+        id: 'a',
+        editCount: 1,
+        lastEditedAt: DateTime(2026, 1, 1),
+      );
+      expect(
+        recipe.conflictEntityFor('collaborator'),
+        ConflictEntity.recipeShared,
+      );
+    });
+
+    test('a week menu is weekMenu for owner and collaborator alike', () {
+      final menu = RealtimeMenuBuilder().withOwner('owner', 'Anna').build();
+      expect(menu.conflictEntityFor('owner'), ConflictEntity.weekMenu);
+      expect(menu.conflictEntityFor('collaborator'), ConflictEntity.weekMenu);
+    });
+
+    test('the realtime sync never derives the entity from the path', () {
+      final sources = [
+        'lib/services/realtime/conflict_resolution_module.dart',
+        'lib/services/realtime_sync_service.dart',
+        'lib/widgets/realtime/conflict_banner.dart',
+      ];
+      for (final path in sources) {
+        final source = File(path).readAsStringSync();
+        expect(
+          RegExp(r'switch\s*\(\s*[\w.]*collectionPath').hasMatch(source),
+          isFalse,
+          reason: '$path must read ConflictEvent.entity, not the path',
+        );
+      }
+    });
   });
 }

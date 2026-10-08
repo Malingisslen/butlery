@@ -7,8 +7,10 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/widgets/common/content_cards/friend_card.dart' as cards;
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -67,8 +69,11 @@ class FriendRequestCard {
     FriendRequest request,
     FriendsViewModel viewModel,
   ) {
-    return ContentCard.friendRequest(
+    final profile = viewModel.getUserProfile(request.fromUserId);
+    return cards.FriendRequestCard(
       friendRequest: request,
+      senderName: profile?.displayName,
+      senderAvatarUrl: profile?.avatarUrl,
       onAccept: () => _acceptRequest(context, request, viewModel),
       onDecline: () => _rejectRequest(context, request, viewModel),
     );
@@ -113,9 +118,7 @@ class GroupCard {
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(
-            alpha: AppDimensions.opacityVeryLight,
-          ),
+          backgroundColor: Theme.of(context).colorScheme.surface,
           child: Text(
             group.emoji ?? '👥',
             style: AppTextStyles.headlineMedium,
@@ -146,8 +149,8 @@ class GroupCard {
             ),
           ],
         ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
+        trailing: ButleryIcon(
+          ButleryIcons.chevronRight,
           size: AppDimensions.iconSizeS,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),

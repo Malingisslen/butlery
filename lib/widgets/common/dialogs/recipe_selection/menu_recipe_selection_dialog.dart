@@ -6,6 +6,8 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -72,18 +74,18 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(
                       context,
-                    ).colorScheme.surfaceContainerHighest,
+                    ).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusM,
+                        AppDimensions.radiusControl,
                       ),
                     ),
                   ),
-                  icon: const Icon(Icons.add),
+                  icon: const ButleryIcon(ButleryIcons.plus),
                   label: Text(
                     '${context.l10n.commonAdd} (${_selectedRecipeIds.length})',
                   ),
@@ -199,18 +201,16 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: AppDimensions.spacingXxs,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.zero,
             ),
             child: Text(
               context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -265,7 +265,7 @@ class MenuRecipeListItem extends StatelessWidget {
               width: AppDimensions.iconSizeDisplay,
               height: AppDimensions.iconSizeDisplay,
               fit: BoxFit.contain,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               errorWidget: _buildPlaceholder(context),
             )
           : _buildPlaceholder(context),
@@ -281,7 +281,7 @@ class MenuRecipeListItem extends StatelessWidget {
         onChanged: (value) => onSelectionChanged(value ?? false),
         activeColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       ),
       onTap: () => onSelectionChanged(!isSelected),
@@ -296,7 +296,7 @@ class MenuRecipeListItem extends StatelessWidget {
         Text(
           recipe.mealType,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
           ),
         ),
         if (recipe.description.isNotEmpty) ...[
@@ -312,12 +312,12 @@ class MenuRecipeListItem extends StatelessWidget {
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
-              Icon(
-                Icons.access_time,
+              ButleryIcon(
+                ButleryIcons.clock,
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '${recipe.timeMinutes} min',
                 style: AppTextStyles.labelSmall,
@@ -325,16 +325,16 @@ class MenuRecipeListItem extends StatelessWidget {
             ],
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text('•', style: AppTextStyles.bodySmall),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
               ],
-              Icon(
-                Icons.people,
+              ButleryIcon(
+                ButleryIcons.users,
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '${recipe.portions} port',
                 style: AppTextStyles.labelSmall,
@@ -351,14 +351,12 @@ class MenuRecipeListItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
-      child: Icon(
-        Icons.restaurant_menu,
-        color: Theme.of(context).colorScheme.primary,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
+        color: Theme.of(context).colorScheme.onSurface,
         size: AppDimensions.iconSizeAction,
       ),
     );

@@ -6120,3 +6120,117 @@ with a plain subject, so the sentence now asserts that named writers ARE Admin-S
 — without asserting that the list is exhaustive. That is strictly weaker and strictly true.
 
 Parse re-verified after the edit (`initializeTestEnvironment`, throwaway project id): OK.
+
+## 2026-10-05 — BUT-2017 / BUT-2122 review (block gates on messages/DM/menu votes; counterId bound)
+
+Rules `firestore.rules` (4072 lines, LF today), suites conversations 104/104, realtime-menus 13/13,
+poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built by
+`scratchpad/mut-b17.js` (anchor count asserted == 1), each run under its own lowercase project id:
+
+- conv-no-gate (drop `isNotBlockedBy(otherParticipant(...))` from conversations create): B1 red
+  ALONE. B3 ("deny holds when the blocker is first") stayed GREEN — it targets
+  `direct_{blocker}_{blocked}`, which B2 (declared before it) CREATES, so B3 is an UPDATE refused
+  on `createdAt`/`metadata.creatorId`. Vacuous as a create test; BUT-1831's deterministic-id trap.
+- msg-no-dm-arm: M5 red alone. msg-no-mirror-arm: M1 red alone.
+- msg-dm-two-directional (also read `blocks/{me}_{other}` in the messages DM arm): 104/104 — no
+  test pins the direction of the DM arm on messages; M4 runs with the block row already deleted.
+  conv-two-directional on conversations create: B2 red, so that surface IS pinned.
+- vote-create-no-gate: V1 red alone. vote-update-no-gate: V3 red alone.
+- ctr-stranger-unbound: both BUT-2122 denies red (the owner's `{0,0}` payload passes the unbound
+  stranger arm). ctr-owner-unbound: owner deny red alone.
+- mirror-fail-closed (drop `!exists(mirror) ||`): conversations 98/104 (M3, M6, M4 + three
+  older sends), realtime-menus 9/13 (V4, V5, tests 1 and 4), poll-votes 48/56 — fail-open is
+  pinned on all three surfaces.
+- cap-same-doc-12 vs cap-distinct-12 on votes create: 14 calls / 2 docs ALLOWED (test 1 green;
+  V2 red only because the mutant's `!exists(mirror)` is false when a mirror exists), 14 distinct
+  docs DENIED (test 1, V2, V4, V5 red). Emulator cap is per distinct document.
+- Standalone probe (deleted in the same call): blocked person, block row standing, DM seeded —
+  message create DENIED; `set({lastMessage: {...}}, {merge: true})` on the conversation ALLOWED.
+
+## 2026-10-07 — BUT-2169 `shared_content` block hold (commit-gate review, uncommitted tree)
+- New suite `shared-content-block-rules.test.ts` 13/13. No env-var probe seam; probed via a
+  sed copy (`PROJECT_ID`/`RULES_PATH` from env, `path.resolve` kept so `path` stays used),
+  deleted by trap. Mutants sliced to the `shared_content` block, match count asserted 1.
+- create-no-mirror: C2 red alone. create-no-keys-deny: C4+C5 red. update-no-held-hasAny: U2 red
+  alone. cannotModify minus `blockHeldUserIds`: U4 red alone. cannotModify minus `blockHeld`:
+  13/13 GREEN — no test moves the `blockHeld` map on update (deny-list key held constant by
+  `seedRow`). gain-arm `|| true`: U5 red alone. gain test `== -1`: U6 red alone.
+  members-no-held-check: M2 red alone.
+- Neighbour suites green on the same rules: rate-limit 76, shared-content-counters 24,
+  shared-content-metadata 11, members-collection-group 7, iter102 21, poll-votes 56.
+- Re-review same day: suite 16/16. cannotModify minus `blockHeld` now kills U7 alone; dropping
+  the new members `notBlockedByAnyOf([userId])` kills M3 alone (M4, a different target with the same mirror, is its control
+  and writes in `addMember`'s order: member row, then the parent arrayUnion).
+
+## 2026-10-07 — BUT-2246 commit-gate review (conversations `lastMessage` block gate)
+
+- Retired verbatim from the domain-facts chapter (superseded in place by the BUT-2246 bullet):
+  "**A block gate on `messages` create does not reach the `conversations` UPDATE limb, and
+  `lastMessage` is a client-written field there** (deny-list limb; BUT-1903's comment
+  already records it). Measured 2026-10-05 (BUT-2017): with `blocks/{blocker}_{blocked}`
+  standing, the blocked person's message create DENIES and their merge-set of
+  `lastMessage.content` onto the same DM document is ALLOWED — the chat-list preview is a
+  second write path into the blocker's screen. Any sentence saying a blocked person's
+  "writes" into a room are refused is true of `messages` only; probe the parent document's
+  update limb before passing it."
+- Suite on the diff: 110/110. Deny-always mutant on the new gate (`|| false`): 103/110, killing
+  L2, L5, L6 plus C10, C10B, C11, C11B (the pre-existing real-`ConversationDto` merge-set
+  tests), so the production send payload lands under the real gate.
+- Presence mutant (`affectedKeys().hasAny(['lastMessage'])` -> `'lastMessage' in
+  request.resource.data`): 110/110 SURVIVES. Standalone probe: real rules ALLOW a blocked
+  person's `lastReadTimestamps.{uid}` update on a DM storing a `lastMessage`; the mutant DENIES it.
+  L3's fixture (`seedRoom`) stores no `lastMessage`, so it cannot tell the two apart.
+- Standalone probe, real rules (file deleted in the same call): ALLOW — DM batch (message create
+  + DTO merge-set), group batch without mirror, group batch with non-overlapping mirror, dotted
+  `lastMessage.status` by a non-blocked sender, the blocker's DM send batch after the block,
+  blocked person's read receipt. DENY — blocked person's dotted `lastMessage.status`, and
+  `lastMessage: null`. ALLOW (residual routes) — blocked person's `update({content})` of their
+  own pre-block message in a DM and in a group (messages sender limb, no block gate; the CF's
+  `shouldReplaceLastMessage` `>=` tie projects the edit into the preview), blocked person's
+  merge of `participantDisplayNames.{self}` in a DM, `title` in a group.
+
+## 2026-10-07 — BUT-2246 re-review (edit gate on messages sender `allow update`)
+
+- Retired verbatim from domain-facts (BUT-2246 bullet, sentences superseded once the edit gate
+  landed): "Still OPEN after it,
+  measured 2026-10-07: the blocked person EDITS their own pre-block message (messages sender
+  `allow update` carries no block gate) and `syncConversationLastMessage` re-projects the
+  edit into `lastMessage` under the Admin SDK, because its `>=` tie rule exists precisely so
+  an edit refreshes the preview."
+- Retired verbatim from domain-facts (already stale before this ticket: `recipe_ratings`
+  update carries it since BUT-2057, and now two more update limbs): "**`isNotBlockedBy` sits on
+  CREATE limbs only** (`social_requests`, `recipe_comments`,
+  `recipe_ratings`, `user_notifications`) and is a bare `exists()` reading no field — so no
+  READ limb in `firestore.rules` is block-gated, and a sentence saying a change to the helper
+  would put it "on the read side" confuses reading the block doc's FIELDS with the read limb."
+- Runs on the re-staged bytes: conversations 116/116; cook-snaps-and-message-mod 51/51;
+  poll-votes 56/56; account-maturity 5/5; age-gate 42/42; rate-limit 76/76.
+- Edit-gate deny-always (`|| false`): conversations 114/116 (E2, E4); cook-snaps 47/51 (the
+  four sender-edit allows); poll-votes 53/56 (sender edit + two BUT-2092 "still editable"
+  cases). No BUT-2092 close test died, so `closePoll` (metadata only) never reaches the gate.
+- Edit-gate two-way mutant (adds `!exists(blocks/{me}_{other})`): conversations 116/116
+  SURVIVES — no edit test has the blocker editing with the block row standing.
+
+## 2026-10-07 — BUT-2115 commit-gate review (recipe_comments reaction limbs)
+
+- Suite 56/56 on staged rules. Mutants (via PROBE_RULES_PATH, one per run, match count asserted in a
+  slice from `match /recipe_comments/{commentId}`): rmTrue kills 10 denies; rmNoRead, addNoRead, noAge,
+  noDeleted, noOwnerBlock, noAuthorBlock, ownerBlockUnconditional, cap501, cap499 (`< 500`),
+  noKeysHasOnly, noAffected each kill exactly their own test; noLost kills 7; noGrownOnly kills 3;
+  key1off (heart) kills 8; addAsRemove kills the 7 add allows.
+- SURVIVORS 56/56: key0off, key2off, key3off, key4off, key5off (no deny on any key but heart);
+  noIsList (masked by `toSet()`); noIsMap (masked by `.keys()`); noAuthorDisjunct
+  (`isNotBlockedBy(self)` is true without a self-block doc); allKeysAlways (dropping every
+  `!(keys[i] in changed) ||` skip).
+- Budget: add limb prefixed `false &&` -> 49/56, only the 7 add allows fail, every deny holds. An
+  extra `reactionShapeOk(false)` in the remove limb reddens only the six-key worst case; an extra
+  single `reactionListOk('heart', false)` reddens nothing.
+- Duplicates on current rules: `[S]->[S,S]`, `[S]->[S,owner x10]`, `[owner,S]->[S,S]` ALLOWED as
+  owner; with `&& after.toSet().size() == after.size()` in reactionListOk all three DENIED and the
+  suite stays 56/56. `EmojiReactionDisplay` renders `userIds.length`.
+- Other probes on current rules: whole-map replace dropping another's `fire` DENIED; `[123]` DENIED;
+  stored `reactions: null` DENIED (`map.diff(null)`); unauth remove DENIED; owner adding `shared` on
+  `thinking` DENIED.
+- Re-review same day after fixes: suite 72/72. Dropping `after.toSet().size() == after.size()` -> 69/72,
+  killing exactly the three duplicate denies. key0/2/3/4/5off each 71/72, killing only that key's
+  per-key deny.

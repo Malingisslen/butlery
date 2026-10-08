@@ -9,11 +9,15 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart'
+    show WeeklyMenuOverflowReason;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 
 class WeekNavHeader extends StatelessWidget {
@@ -43,9 +47,40 @@ class WeekNavHeader extends StatelessWidget {
     this.onSelectMode,
   });
 
+  /// Key of the week label.
+  static const Key labelKey = ValueKey('week-nav-label');
+
+  /// Key of the second row that holds the week actions when they do not fit
+  /// beside the label.
+  static const Key actionsRowKey = ValueKey('week-nav-actions-row');
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final style = AppTextStyles.titleSmall.copyWith(color: cs.onSurface);
+    final actions = <Widget>[
+      if (onSelectMode != null)
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.listCheck),
+          color: cs.onPrimaryContainer,
+          onPressed: onSelectMode,
+          tooltip: context.l10n.weeklyMenuSelectAction,
+        ),
+      if (onCopyWeek != null)
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.copy),
+          color: cs.onPrimaryContainer,
+          onPressed: onCopyWeek,
+          tooltip: context.l10n.weeklyMenuCopyToNextAction,
+        ),
+      if (onClearWeek != null)
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.trash2),
+          color: cs.onPrimaryContainer,
+          onPressed: onClearWeek,
+          tooltip: context.l10n.weeklyMenuClearWeekAction,
+        ),
+    ];
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
@@ -57,51 +92,71 @@ class WeekNavHeader extends StatelessWidget {
           bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
       ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            color: cs.onPrimaryContainer,
-            onPressed: onPrev,
-            tooltip: context.l10n.weeklyMenuPrevWeek,
-          ),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.titleSmall.copyWith(
-                color: cs.onSurface,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The drawing (Skarmar v12 etapp 2, #kalender) puts the week
+          // actions on the label's row. On a narrow phone or with large text
+          // that leaves the label too little room and it breaks letter by
+          // letter, so the actions then move to a second row and the label
+          // keeps the full width between the chevrons.
+          final painter = TextPainter(
+            text: TextSpan(
+              text: label,
+              style: DefaultTextStyle.of(context).style.merge(style),
+            ),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          final labelWidth = painter.width;
+          painter.dispose();
+          final buttonsInline = 2 + actions.length;
+          final roomInline =
+              constraints.maxWidth -
+              buttonsInline * AppDimensions.minTouchTarget;
+          final inline = actions.isEmpty || roomInline >= labelWidth;
+
+          final navRow = Row(
+            children: [
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.chevronLeft),
+                color: cs.onPrimaryContainer,
+                onPressed: onPrev,
+                tooltip: context.l10n.weeklyMenuPrevWeek,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          if (onSelectMode != null)
-            IconButton(
-              icon: const Icon(Icons.checklist_outlined),
-              color: cs.onPrimaryContainer,
-              onPressed: onSelectMode,
-              tooltip: context.l10n.weeklyMenuSelectAction,
-            ),
-          if (onCopyWeek != null)
-            IconButton(
-              icon: const Icon(Icons.copy_all_outlined),
-              color: cs.onPrimaryContainer,
-              onPressed: onCopyWeek,
-              tooltip: context.l10n.weeklyMenuCopyToNextAction,
-            ),
-          if (onClearWeek != null)
-            IconButton(
-              icon: const Icon(Icons.delete_sweep_outlined),
-              color: cs.onPrimaryContainer,
-              onPressed: onClearWeek,
-              tooltip: context.l10n.weeklyMenuClearWeekAction,
-            ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            color: cs.onPrimaryContainer,
-            onPressed: onNext,
-            tooltip: context.l10n.weeklyMenuNextWeek,
-          ),
-        ],
+              Expanded(
+                child: Text(
+                  label,
+                  key: labelKey,
+                  style: style,
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (inline) ...actions,
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.chevronRight),
+                color: cs.onPrimaryContainer,
+                onPressed: onNext,
+                tooltip: context.l10n.weeklyMenuNextWeek,
+              ),
+            ],
+          );
+          if (inline) return navRow;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              navRow,
+              Row(
+                key: actionsRowKey,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -133,13 +188,13 @@ class SelectionActionBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.primaryContainer,
         border: Border(
-          bottom: BorderSide(color: cs.primary, width: 2),
+          bottom: BorderSide(color: cs.onSurface, width: 2),
         ),
       ),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const ButleryIcon(ButleryIcons.x),
             color: cs.onPrimaryContainer,
             onPressed: onCancel,
             tooltip: context.l10n.commonCancel,
@@ -154,7 +209,7 @@ class SelectionActionBar extends StatelessWidget {
           ),
           TextButton.icon(
             onPressed: selectedCount > 0 ? onMove : null,
-            icon: const Icon(Icons.drive_file_move_outline),
+            icon: const ButleryIcon(ButleryIcons.move),
             label: Text(context.l10n.weeklyMenuMoveSelectionAction),
             style: TextButton.styleFrom(
               foregroundColor: cs.onPrimaryContainer,
@@ -166,81 +221,169 @@ class SelectionActionBar extends StatelessWidget {
   }
 }
 
+/// P5-U23: the tray of recipes that did not fit (produktregler.md:1123-1127,
+/// § 22.6; drawn in Skarmar v12 etapp 11 breda vyer:233-242, #vmbdelvis, and
+/// etapp 2:681-686, #veckooverflow).
+///
+/// It is a partial outcome of a bulk placement, so it takes the shared I-29
+/// form ([PartialOutcome]: surface.raised with a warning edge,
+/// produktregler.md:905-909, which names "massmenyläggning"). It
+/// - counts in recipes: "2 av 5 rätter placerade" (produktregler.md:206);
+/// - says why the rest did not fit (produktregler.md:1125) and that it stays
+///   until placed ("ett arbetsförråd, inte en notis");
+/// - names each recipe as written, never re-cased (produktregler.md:892: "De
+///   recept som inte får plats namnges");
+/// - offers next week as a choice in the tray (produktregler.md:1127), which
+///   makes a snackbar "next week" action unnecessary. The week menu has none;
+/// - comes back quietly after a restart and can be emptied with "Släng
+///   resten" (Q5-01 = A, produktbeslut 2026-09-24), which the caller follows
+///   with a 7 s Ångra (produktregler.md:131).
+///
+/// The chips stay draggable into the week, as before (OverflowPayload).
 class OverflowTray extends StatelessWidget {
   final List<Recipe> overflow;
+
+  /// How many of [totalCount] have a place.
+  final int placedCount;
+
+  /// How many recipes the placement was given.
+  final int totalCount;
+
+  /// Why the rest did not fit. Null for a tray whose reason is unknown.
+  final WeeklyMenuOverflowReason? reason;
+
+  /// "Lägg i vecka N". Null hides it (no reason, or the two-week limit).
+  final VoidCallback? onPlaceInNextWeek;
+
+  /// "Släng resten" (Q5-01). Null hides it.
+  final VoidCallback? onDiscard;
 
   const OverflowTray({
     super.key,
     required this.overflow,
+    required this.placedCount,
+    required this.totalCount,
+    this.reason,
+    this.onPlaceInNextWeek,
+    this.onDiscard,
   });
+
+  /// Key of the "Lägg i vecka N" action.
+  static const Key nextWeekKey = ValueKey('overflow-tray-next-week');
+
+  /// Key of the "Släng resten" action.
+  static const Key discardKey = ValueKey('overflow-tray-discard');
+
+  /// Key of the chip for the recipe with [recipeId].
+  static Key chipKey(String recipeId) => ValueKey('overflow-chip-$recipeId');
 
   @override
   Widget build(BuildContext context) {
-    final butleryColors = context.butleryColors;
-    return Container(
+    final l = context.l10n;
+    final why = reason;
+    final offersNext = onPlaceInNextWeek != null && why != null;
+    final nextWeek = why == null
+        ? null
+        : IsoWeekUtils.isoWeekNumber(why.nextWeekStart);
+    final message = [
+      if (why != null)
+        l.weeklyMenuOverflowReason(IsoWeekUtils.isoWeekNumber(why.weekStart)),
+      if (why != null && why.pastDaysSkipped) l.weeklyMenuOverflowPastDays,
+      if (offersNext)
+        l.weeklyMenuOverflowKeepOrNextWeek(nextWeek!)
+      else
+        l.weeklyMenuOverflowKeep,
+    ].join(' ');
+    return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
-      decoration: BoxDecoration(
-        color: butleryColors.warningContainer,
-        border: Border(
-          bottom: BorderSide(color: butleryColors.warning, width: 2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline, size: 14, color: butleryColors.warning),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text(
-                context.l10n.weeklyMenuOverflowTitle,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  letterSpacing: 1,
-                ),
+      child: PartialOutcome(
+        title: l.weeklyMenuOverflowPlacedCount(placedCount, totalCount),
+        message: message,
+        actions: [
+          if (offersNext)
+            Semantics(
+              container: true,
+              label: l.weeklyMenuOverflowNextWeekA11y(
+                overflow.length,
+                nextWeek!,
               ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingXs),
-          Wrap(
-            spacing: AppDimensions.spacingXs,
-            runSpacing: AppDimensions.spacingXs,
-            children: [
-              for (final recipe in overflow) _OverflowChip(recipe: recipe),
-            ],
-          ),
+              button: true,
+              onTap: onPlaceInNextWeek,
+              excludeSemantics: true,
+              child: OutlinedButton(
+                key: nextWeekKey,
+                onPressed: onPlaceInNextWeek,
+                child: Text(l.weeklyMenuOverflowNextWeekAction(nextWeek)),
+              ),
+            ),
+          // The quieter of the two: a text button after the way on.
+          // Interpretation: the drawing (#vmbdelvis) has no discard action;
+          // the label is the decided "Släng resten".
+          if (onDiscard != null)
+            TextButton(
+              key: discardKey,
+              onPressed: onDiscard,
+              child: Text(l.weeklyMenuOverflowDiscardAction),
+            ),
         ],
+        child: Wrap(
+          spacing: AppDimensions.space4,
+          runSpacing: AppDimensions.space4,
+          children: [
+            for (final recipe in overflow)
+              _OverflowChip(key: chipKey(recipe.id), recipe: recipe),
+          ],
+        ),
       ),
     );
   }
 }
 
+/// One recipe in the tray: its title as written, with a drag handle
+/// (Skarmar v12 etapp 11:237-239: 48 px high, 1 px border, 12.5/600).
+///
+/// Colours, both modes from the theme: surface.base (`colorScheme.surface`,
+/// #F5F4ED light, #17251D dark), border.control (`colorScheme.outline`,
+/// #7D897C light, paper 35 % dark), text.primary (`onSurface`) and the handle
+/// in text.secondary (`onSurfaceVariant`). The drawing's dark chip is ink
+/// #24382C; the delivered theme has no surface role for that on
+/// surface.raised, so the chip uses surface.base (interpretation).
 class _OverflowChip extends StatelessWidget {
   final Recipe recipe;
 
-  const _OverflowChip({required this.recipe});
+  const _OverflowChip({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final chip = Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: 4,
+      constraints: const BoxConstraints(
+        minHeight: AppDimensions.minTouchTarget,
       ),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space8),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(
-          left: BorderSide(color: context.butleryColors.warning, width: 2),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 2),
-        ),
+        color: cs.surface,
+        border: Border.all(color: cs.outline),
       ),
-      child: Text(
-        recipe.title.toLowerCase(),
-        style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ButleryIcon(
+            ButleryIcons.drag,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppDimensions.spacingSm),
+          Flexible(
+            child: Text(
+              recipe.title,
+              style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
+            ),
+          ),
+        ],
       ),
     );
     return wrapAsDraggable(

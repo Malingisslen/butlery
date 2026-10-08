@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
 import 'package:butlery/models/user_profile.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -90,7 +92,7 @@ void main() {
 
       // Check for correct Swedish empty state text
       expect(find.text('Inga vänner tillgängliga'), findsOneWidget);
-      expect(find.byIcon(Icons.people_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.users), findsOneWidget);
     });
 
     testWidgets('shows correct Swedish text for no search results', (
@@ -123,7 +125,40 @@ void main() {
 
       // Check for correct Swedish no results text
       expect(find.text('Inga vänner matchade din sökning'), findsOneWidget);
-      expect(find.byIcon(Icons.search_off), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.searchOff), findsOneWidget);
     });
+
+    // BUT-2183: the list separator is border.subtle (outlineVariant), not the
+    // old 50 % tint of the control outline.
+    for (final (name, theme, edge) in [
+      ('light', AppTheme.lightTheme, const Color(0xFFCCD1C2)),
+      ('dark', AppTheme.darkTheme, const Color(0x2EF5F4ED)),
+    ]) {
+      testWidgets('$name: friend rows are separated by border.subtle', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: Builder(
+                builder: (context) => ShareTargetSelection.build(
+                  context,
+                  mockFriends,
+                  <String>{},
+                  '',
+                  (_) {},
+                  (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final dividers = tester.widgetList<Divider>(find.byType(Divider));
+        expect(dividers, isNotEmpty);
+        expect(dividers.map((d) => d.color).toSet(), {edge});
+      });
+    }
   });
 }

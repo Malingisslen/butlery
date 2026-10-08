@@ -167,14 +167,10 @@ void main() {
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
 
-        // Each instruction should be trimmed
-        for (final inst in instructions) {
-          if (inst is Map && inst['text'] != null) {
-            final text = inst['text'].toString();
-            expect(text, equals(text.trim()));
-            expect(text, isNot(startsWith(' ')));
-            expect(text, isNot(endsWith(' ')));
-          }
+        expect(instructions, isNotEmpty);
+        expect(instructions, everyElement(isA<String>()));
+        for (final inst in instructions.cast<String>()) {
+          expect(inst, equals(inst.trim()));
         }
       });
     });
@@ -189,6 +185,7 @@ void main() {
         expect(recipe['recipeIngredient'], hasLength(greaterThan(3)));
         expect(recipe['recipeInstructions'], isA<List>());
         expect(recipe['recipeInstructions'], hasLength(greaterThan(3)));
+        expect(recipe['recipeInstructions'], everyElement(isA<String>()));
       });
 
       test('should extract portions from CSS selectors', () {

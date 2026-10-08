@@ -45,7 +45,6 @@ import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
-import 'package:butlery/services/theme/seasonal_accent_service.dart';
 // Core providers
 import 'package:butlery/core/providers/locale_provider.dart';
 
@@ -55,6 +54,7 @@ import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
+import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
 // Device security
@@ -119,7 +119,6 @@ class CoreModule implements DIModule {
       // Core providers
       LocaleProvider,
       ThemeService,
-      SeasonalAccentService,
       // Feature flags
       FeatureFlagService,
       // Beta feedback
@@ -176,11 +175,6 @@ class CoreModule implements DIModule {
 
       // ThemeService for dark/light mode management
       container.registerSingleton<ThemeService>(ThemeService());
-
-      // SeasonalAccentService — subtle month-based palette tint (BUT-347)
-      container.registerLazySingleton<SeasonalAccentService>(
-        () => const SeasonalAccentService(),
-      );
 
       // Feature flags for gradual rollouts and kill switches
       container.registerSingleton<FeatureFlagService>(FeatureFlagService());
@@ -278,6 +272,8 @@ class CoreModule implements DIModule {
         () => AuthMfaService(
           analyticsService: container<AnalyticsService>(),
           authRepository: container<AuthRepository>(),
+          // P6-U09: the backup-code callables (mfa-backup-codes.ts).
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
 
@@ -358,6 +354,9 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           firestoreRepository: container<FirestoreRepository>(),
           dataExportRepository: container<FirebaseDataExportRepository>(),
+          sharedResidueExportManager: SharedResidueExportManager(
+            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+          ),
         ),
       );
 

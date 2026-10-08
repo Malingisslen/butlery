@@ -6,6 +6,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Builds action buttons for group detail view.
 class GroupActionButtons extends StatelessWidget {
@@ -60,7 +62,7 @@ class GroupActionButtons extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: onShareRecipe,
-                icon: const Icon(Icons.restaurant_menu),
+                icon: const ButleryIcon(ButleryIcons.utensils),
                 label: Text(context.l10n.groupShareRecipe),
               ),
             ),
@@ -68,7 +70,7 @@ class GroupActionButtons extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: onShareMenu,
-                icon: const Icon(Icons.calendar_today),
+                icon: const ButleryIcon(ButleryIcons.calendar),
                 label: Text(context.l10n.groupShareMenu),
               ),
             ),
@@ -79,7 +81,7 @@ class GroupActionButtons extends StatelessWidget {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: onShareShoppingList,
-            icon: const Icon(Icons.shopping_cart),
+            icon: const ButleryIcon(ButleryIcons.shoppingCart),
             label: Text(context.l10n.groupShareShoppingList),
           ),
         ),
@@ -88,7 +90,7 @@ class GroupActionButtons extends StatelessWidget {
           width: double.infinity,
           child: FilledButton.icon(
             onPressed: onAskWhatToEat,
-            icon: const Icon(Icons.how_to_vote),
+            icon: const ButleryIcon(ButleryIcons.vote),
             label: Text(context.l10n.askWhatToEat),
           ),
         ),
@@ -108,13 +110,13 @@ class GroupActionButtons extends StatelessWidget {
         if (isAdmin) ...[
           FilledButton.icon(
             onPressed: onEditGroup,
-            icon: const Icon(Icons.edit),
+            icon: const ButleryIcon(ButleryIcons.pencil),
             label: Text(context.l10n.groupEditGroup),
           ),
           const SizedBox(height: AppDimensions.spacingL),
           OutlinedButton.icon(
             onPressed: onDeleteGroup,
-            icon: const Icon(Icons.delete),
+            icon: const ButleryIcon(ButleryIcons.trash2),
             label: Text(context.l10n.groupDeleteGroup),
             style: ComponentThemes.deleteButtonStyle(
               Theme.of(context).colorScheme,
@@ -123,7 +125,7 @@ class GroupActionButtons extends StatelessWidget {
         ] else
           OutlinedButton.icon(
             onPressed: onLeaveGroup,
-            icon: const Icon(Icons.exit_to_app),
+            icon: const ButleryIcon(ButleryIcons.logOut),
             label: Text(context.l10n.groupLeaveGroup),
             style: ComponentThemes.outlinedButtonStyle(
               Theme.of(context).colorScheme,

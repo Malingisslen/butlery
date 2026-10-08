@@ -25,7 +25,8 @@ class UnitDefinitions {
     'st', 'bit', 'bitar', 'skiva', 'skivor', 'skvätt', 'nypa',
     'klyfta', 'klyftor', 'sked',
     'glas', 'kopp', 'mugg', 'port', 'portioner', 'pers', 'personer',
-    'knippe', 'bunch', 'blad', 'kvist', 'kvistar', 'tube', 'tub',
+    'knippe', 'knippen', 'kruka', 'krukor', 'bunt', 'buntar', 'bunch',
+    'blad', 'kvist', 'kvistar', 'tube', 'tub',
     'kasse', 'låda', 'burkar', 'paket',
     // Informal Swedish measures
     'näve', 'nävar', 'gnutta', 'klick', 'droppe', 'droppar',

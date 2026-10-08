@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Empty state widget for image picker with add button
 class EmptyImageState extends StatelessWidget {
@@ -26,9 +28,7 @@ class EmptyImageState extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -62,11 +62,11 @@ class EmptyImageState extends StatelessWidget {
     return [
       Builder(
         builder: (context) {
-          final cs = Theme.of(context).colorScheme;
-          return LoadingIndicator(
-            size: AppDimensions.iconSizeXl,
-            strokeWidth: 2,
-            color: cs.primary,
+          // The plate line, not a spinner (Grafisk manual v6:209). The
+          // text under it says what is happening.
+          return SizedBox(
+            width: AppDimensions.iconSizeXl * 2,
+            child: PlateLine(semanticLabel: context.l10n.imageAddingImage),
           );
         },
       ),
@@ -75,9 +75,7 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) => Text(
           context.l10n.imageAddingImage,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityDark,
-            ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -93,14 +91,12 @@ class EmptyImageState extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: cs.primary.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
+              color: cs.surface,
             ),
-            child: Icon(
-              Icons.add_photo_alternate_outlined,
+            child: ButleryIcon(
+              ButleryIcons.camera,
               size: AppDimensions.iconSizeXl,
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           );
         },
@@ -112,14 +108,12 @@ class EmptyImageState extends StatelessWidget {
           style: AppTextStyles.contentLabel,
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingXxs),
+      const SizedBox(height: AppDimensions.space4),
       Builder(
         builder: (context) => Text(
           context.l10n.imageTapToAddUpTo(maxImages),
           style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(
-              alpha: AppDimensions.opacityDark,
-            ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),

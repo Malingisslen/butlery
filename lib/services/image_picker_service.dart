@@ -25,6 +25,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -32,7 +33,13 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+
+export 'package:butlery/core/utils/os_permission_helper.dart'
+    show OsPermissionOutcome, OsPermissionOutcomeX;
 
 /// Image selection service providing comprehensive camera and gallery access with advanced permission management.
 /// This service manages complete image selection workflows including permission handling, image optimization,
@@ -59,6 +66,93 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// // Debug permission status
 /// await imageService.debugPermissions();
 /// ```
+/// Our own explanation before the system prompt for camera or photos
+/// (flows-roles-budget.md:100; Skarmar v12 etapp 3 #behkamera). Returns true
+/// when the user tapped Tillåt. The OS is asked only then
+/// (produktregler.md:682).
+typedef MediaRationalePrompt = Future<bool> Function(ImageSource source);
+
+/// What a pick produced, with the permission outcome that decided it
+/// (flow 07). Replaces the bare `null` / `[]` that could not tell a
+/// cancelled pick from a denied permission.
+class ImagePickOutcome {
+  const ImagePickOutcome({required this.permission, this.files = const []});
+
+  /// The typed permission outcome for the source that was asked for.
+  final OsPermissionOutcome permission;
+
+  /// The picked and validated files. Empty when the user cancelled, the
+  /// permission was not usable, or no file passed validation.
+  final List<File> files;
+
+  /// The single picked file, when there is one.
+  File? get file => files.isEmpty ? null : files.first;
+
+  /// True when the permission, not the user, stopped the pick.
+  bool get blockedByPermission => !permission.isUsable;
+}
+
+/// Our explanation before the system prompt for camera and photos on the
+/// surfaces other than recipe import (avatar, recipe images, comments).
+/// Recipe import has its own drawn copy (Skarmar v12 etapp 3 #behkamera).
+MediaRationalePrompt mediaRationalePrompt(BuildContext context) =>
+    (source) async {
+      if (!context.mounted) return false;
+      final l10n = context.l10n;
+      final camera = source == ImageSource.camera;
+      return OsPermissionHelper.presentExplanation(
+        context,
+        title: camera ? l10n.permCameraTitle : l10n.permPhotosTitle,
+        body: camera ? l10n.permCameraBody : l10n.permPhotosBody,
+        grantLabel: l10n.permAllow,
+        declineLabel: l10n.permNotNow,
+        icon: camera ? ButleryIcons.camera : ButleryIcons.image,
+      );
+    };
+
+/// Explains a permission answer that stopped a pick, on the surfaces other
+/// than recipe import (flow 07): a permanent no says so with "Öppna
+/// inställningar"; a device block says so without a button; a plain no is a
+/// silent skip — tapping the control again asks again
+/// (produktregler.md:683). These surfaces offer no invented alternative
+/// (Q-P6-E15; produktregler.md:535).
+void explainMediaPermission(
+  BuildContext context,
+  OsPermissionOutcome outcome,
+  ImageSource source,
+) {
+  if (!context.mounted) return;
+  final l10n = context.l10n;
+  final camera = source == ImageSource.camera;
+  switch (outcome) {
+    case OsPermissionOutcome.permanentlyDenied:
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      messenger?.showSnackBar(
+        SnackBar(
+          content: Text(
+            camera
+                ? l10n.permCameraPermanentlyDenied
+                : l10n.permPhotosPermanentlyDenied,
+          ),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: l10n.permOpenSettings,
+            onPressed: () => OsPermissionHelper.openSettings(),
+          ),
+        ),
+      );
+    case OsPermissionOutcome.restricted:
+      OsPermissionHelper.presentRestricted(
+        context,
+        camera ? l10n.permCameraRestricted : l10n.permPhotosRestricted,
+      );
+    case OsPermissionOutcome.granted:
+    case OsPermissionOutcome.limited:
+    case OsPermissionOutcome.denied:
+      break;
+  }
+}
+
 class ImagePickerService extends BaseService {
   @override
   String get serviceName => 'ImagePickerService';
@@ -110,6 +204,29 @@ class ImagePickerService extends BaseService {
     double? maxHeight,
     int? imageQuality,
   }) async {
+    final outcome = await pickImageWithOutcome(
+      source,
+      enableCrop: enableCrop,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      imageQuality: imageQuality,
+    );
+    return outcome.file;
+  }
+
+  /// [pickImage] with the typed permission outcome (flow 07). With a
+  /// [rationale], our explanation comes before the system prompt and the OS
+  /// is asked only after Tillåt (produktregler.md:682). Without one, the
+  /// system prompt comes directly, as before.
+  Future<ImagePickOutcome> pickImageWithOutcome(
+    ImageSource source, {
+    MediaRationalePrompt? rationale,
+    bool enableCrop = false,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+  }) async {
+    var permission = OsPermissionOutcome.denied;
     try {
       AppLogger.debug(
         '🔍 IMAGE_PICKER: Starting image selection from: ${source.name}',
@@ -118,16 +235,12 @@ class ImagePickerService extends BaseService {
 
       // Check permissions
       AppLogger.debug('🔍 IMAGE_PICKER: Checking permissions...');
-      final hasPermission = await _checkAndRequestPermission(source);
-      AppLogger.debug('🔑 IMAGE_PICKER: Permission result: $hasPermission');
-      AppLogger.info('🔑 Permission result: $hasPermission');
+      permission = await resolvePermission(source, rationale: rationale);
+      AppLogger.info('🔑 Permission result: ${permission.name}');
 
-      if (!hasPermission) {
-        AppLogger.warning(
-          '❌ IMAGE_PICKER: Permission denied for ${source.name}',
-        );
-        AppLogger.warning('❌ Permission denied for ${source.name}');
-        return null;
+      if (!permission.isUsable) {
+        AppLogger.warning('❌ Permission not usable for ${source.name}');
+        return ImagePickOutcome(permission: permission);
       }
 
       AppLogger.debug('📱 IMAGE_PICKER: Calling image picker provider...');
@@ -149,7 +262,7 @@ class ImagePickerService extends BaseService {
           '❌ IMAGE_PICKER: No image selected (user cancelled or error)',
         );
         AppLogger.info('❌ No image selected (user cancelled)');
-        return null;
+        return ImagePickOutcome(permission: permission);
       }
 
       AppLogger.info('✅ IMAGE_PICKER: Image selected: ${pickedFile.path}');
@@ -165,7 +278,10 @@ class ImagePickerService extends BaseService {
         );
         // For web, return a File with the blob URL
         // The actual upload will need to read bytes from the XFile
-        return File(pickedFile.path); // This is a blob URL on web
+        return ImagePickOutcome(
+          permission: permission,
+          files: [File(pickedFile.path)], // A blob URL on web
+        );
       }
 
       // On mobile platforms, proceed with normal File handling
@@ -177,7 +293,7 @@ class ImagePickerService extends BaseService {
 
       if (!exists) {
         AppLogger.error('❌ File does not exist on disk');
-        return null;
+        return ImagePickOutcome(permission: permission);
       }
 
       // Check file size
@@ -190,7 +306,7 @@ class ImagePickerService extends BaseService {
 
       if (!isValid) {
         AppLogger.error('❌ Invalid image file: ${file.path}');
-        return null;
+        return ImagePickOutcome(permission: permission);
       }
 
       AppLogger.success('🎉 Image selection successful!');
@@ -198,14 +314,17 @@ class ImagePickerService extends BaseService {
       // Crop if requested (mobile only — web returns early above)
       if (enableCrop) {
         final cropped = await cropImage(file);
-        return cropped ?? file;
+        return ImagePickOutcome(
+          permission: permission,
+          files: [cropped ?? file],
+        );
       }
 
-      return file;
+      return ImagePickOutcome(permission: permission, files: [file]);
     } catch (e, stackTrace) {
       AppLogger.error('💥 Error during image selection: $e');
       AppLogger.error('📍 Stack trace: $stackTrace');
-      return null;
+      return ImagePickOutcome(permission: permission);
     }
   }
 
@@ -232,18 +351,30 @@ class ImagePickerService extends BaseService {
   /// - Size analysis and reporting for memory management
   /// - Detailed logging for each step of the validation process
   Future<List<File>> pickMultipleImages({int maxImages = 5}) async {
+    final outcome = await pickMultipleImagesWithOutcome(maxImages: maxImages);
+    return outcome.files;
+  }
+
+  /// [pickMultipleImages] with the typed permission outcome (flow 07); see
+  /// [pickImageWithOutcome] for [rationale].
+  Future<ImagePickOutcome> pickMultipleImagesWithOutcome({
+    int maxImages = 5,
+    MediaRationalePrompt? rationale,
+  }) async {
+    var permission = OsPermissionOutcome.denied;
     try {
       AppLogger.info('🔍 Starting multiple image selection (max: $maxImages)');
 
       // Check gallery permission
-      final hasPermission = await _checkAndRequestPermission(
+      permission = await resolvePermission(
         ImageSource.gallery,
+        rationale: rationale,
       );
-      AppLogger.info('🔑 Gallery permission: $hasPermission');
+      AppLogger.info('🔑 Gallery permission: ${permission.name}');
 
-      if (!hasPermission) {
-        AppLogger.warning('❌ Gallery permission denied');
-        return [];
+      if (!permission.isUsable) {
+        AppLogger.warning('❌ Gallery permission not usable');
+        return ImagePickOutcome(permission: permission);
       }
 
       AppLogger.info('📱 Calling multiple image picker...');
@@ -257,7 +388,7 @@ class ImagePickerService extends BaseService {
 
       if (pickedFiles.isEmpty) {
         AppLogger.info('❌ No images selected');
-        return [];
+        return ImagePickOutcome(permission: permission);
       }
 
       AppLogger.info('📸 ${pickedFiles.length} images selected from picker');
@@ -268,6 +399,16 @@ class ImagePickerService extends BaseService {
       if (pickedFiles.length > maxImages) {
         AppLogger.info(
           '✂️ Limiting from ${pickedFiles.length} to $maxImages images',
+        );
+      }
+
+      // Same as the single-pick path: on web each path is a blob URL, and the
+      // file checks below throw there, which the catch turned into an empty
+      // pick that looked like a cancel.
+      if (kIsWeb) {
+        return ImagePickOutcome(
+          permission: permission,
+          files: [for (final xFile in limitedFiles) File(xFile.path)],
         );
       }
 
@@ -299,11 +440,11 @@ class ImagePickerService extends BaseService {
       }
 
       AppLogger.success('🎉 ${files.length} valid images selected');
-      return files;
+      return ImagePickOutcome(permission: permission, files: files);
     } catch (e, stackTrace) {
       AppLogger.error('💥 Error during multiple image selection: $e');
       AppLogger.error('📍 Stack trace: $stackTrace');
-      return [];
+      return ImagePickOutcome(permission: permission);
     }
   }
 
@@ -349,88 +490,76 @@ class ImagePickerService extends BaseService {
     }
   }
 
-  /// Check and request permissions with debug logging
-  Future<bool> _checkAndRequestPermission(ImageSource source) async {
+  /// Resolves the camera or photo-library permission to a typed outcome
+  /// (flow 07, flows-roles-budget.md:98-106; produktregler.md:680-687).
+  ///
+  /// With a [rationale], our explanation comes first and the OS is asked only
+  /// after Tillåt; "Inte nu" returns [OsPermissionOutcome.denied] without
+  /// touching the OS budget. A permanent no is never re-asked here, and a
+  /// device-blocked permission is [OsPermissionOutcome.restricted].
+  /// [skipRationale] is for an explicit "Fråga igen".
+  Future<OsPermissionOutcome> resolvePermission(
+    ImageSource source, {
+    MediaRationalePrompt? rationale,
+    bool skipRationale = false,
+  }) async {
     try {
-      // Check if we're on web platform - permissions are handled by browser
-      if (kIsWeb) {
-        AppLogger.debug(
-          '🌐 PERMISSION: Running on web - permissions handled by browser',
-        );
-        return true;
+      // Web: the browser owns the prompt.
+      if (kIsWeb) return OsPermissionOutcome.granted;
+
+      final permission = source == ImageSource.camera
+          ? Permission.camera
+          : Permission.photos;
+      final status = OsPermissionHelper.outcomeOf(
+        await _permissionProvider.checkPermission(permission),
+      );
+      AppLogger.info('🔍 ${permission.toString()} status: ${status.name}');
+
+      if (status.isUsable || status == OsPermissionOutcome.restricted) {
+        return status;
       }
 
-      if (source == ImageSource.camera) {
-        AppLogger.debug('🔍 PERMISSION: Checking camera permission...');
-        AppLogger.info('🔍 Checking camera permission...');
-        final status = await _permissionProvider.checkPermission(
-          Permission.camera,
-        );
-        AppLogger.debug('📷 PERMISSION: Camera status: ${status.name}');
-        AppLogger.info('📷 Camera permission status: ${status.name}');
-
-        if (status.isDenied) {
-          AppLogger.debug('🔑 PERMISSION: Requesting camera permission...');
-          AppLogger.info('🔑 Requesting camera permission...');
-          final result = await _permissionProvider.requestPermission(
-            Permission.camera,
-          );
-          AppLogger.debug(
-            '📷 PERMISSION: Camera request result: ${result.name}',
-          );
-          AppLogger.info('📷 Camera permission result: ${result.name}');
-          return result.isGranted;
+      if (status == OsPermissionOutcome.permanentlyDenied) {
+        // Older Android keeps the gallery behind the storage permission.
+        if (source == ImageSource.gallery) {
+          return _resolveLegacyStorage();
         }
-        return status.isGranted;
-      } else {
-        // For gallery - handle both photos and storage permissions smartly
-        AppLogger.debug('🔍 PERMISSION: Checking gallery permission...');
-        AppLogger.info('🔍 Checking gallery permission...');
-        final status = await _permissionProvider.checkPermission(
-          Permission.photos,
-        );
-        AppLogger.debug('🖼️ PERMISSION: Gallery status: ${status.name}');
-        AppLogger.info('🖼️ Gallery permission status: ${status.name}');
-
-        // LIMITED is OK for gallery - user has selected certain photos
-        if (status.isGranted || status.isLimited) {
-          return true;
-        }
-
-        if (status.isDenied) {
-          AppLogger.info('🔑 Requesting gallery permission...');
-          final result = await _permissionProvider.requestPermission(
-            Permission.photos,
-          );
-          AppLogger.info('🖼️ Gallery permission result: ${result.name}');
-
-          // LIMITED is also OK
-          if (result.isGranted || result.isLimited) {
-            return true;
-          }
-        }
-
-        // If photos permission is permanently denied, try storage (older Android)
-        if (status.isPermanentlyDenied) {
-          final storageStatus = await _permissionProvider.checkPermission(
-            Permission.storage,
-          );
-
-          if (storageStatus.isDenied) {
-            final storageResult = await _permissionProvider.requestPermission(
-              Permission.storage,
-            );
-            return storageResult.isGranted;
-          }
-          return storageStatus.isGranted;
-        }
-
-        return false;
+        return status;
       }
+
+      if (rationale != null && !skipRationale) {
+        final wantsToGrant = await rationale(source);
+        if (!wantsToGrant) return OsPermissionOutcome.denied;
+      }
+      final result = OsPermissionHelper.outcomeOf(
+        await _permissionProvider.requestPermission(permission),
+      );
+      AppLogger.info('🔑 ${permission.toString()} result: ${result.name}');
+      return result;
     } catch (e) {
       AppLogger.error('💥 Error during permission check: $e');
-      return false;
+      return OsPermissionOutcome.denied;
     }
+  }
+
+  /// The storage route behind a permanent photos no. Our explanation is not
+  /// shown here: the user has already said no to photos, and a second no is
+  /// a silent skip with no repeated explanation (produktregler.md:683). On
+  /// Android 13+ storage reads as denied and a request is refused without a
+  /// dialog, so this falls through to the permanent-no notice.
+  Future<OsPermissionOutcome> _resolveLegacyStorage() async {
+    final storage = OsPermissionHelper.outcomeOf(
+      await _permissionProvider.checkPermission(Permission.storage),
+    );
+    if (storage.isUsable) return storage;
+    if (storage != OsPermissionOutcome.denied) {
+      // Photos permanently denied and no storage route either.
+      return OsPermissionOutcome.permanentlyDenied;
+    }
+    final result = OsPermissionHelper.outcomeOf(
+      await _permissionProvider.requestPermission(Permission.storage),
+    );
+    return result.isUsable ? result : OsPermissionOutcome.permanentlyDenied;
   }
 
   /// Format bytes to human-readable text

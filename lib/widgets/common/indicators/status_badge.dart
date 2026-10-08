@@ -30,7 +30,7 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(

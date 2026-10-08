@@ -1,9 +1,12 @@
 // lib/views/messaging/conversation_group_detail_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -64,18 +67,14 @@ class ConversationGroupDetailView extends StatelessWidget {
     BuildContext context,
     GroupDetailViewModel viewModel,
   ) {
-    return AppBar(
-      title: Text(
-        context.l10n.messagingGroupInfo,
-        style: AppTextStyles.headlineSmall,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).colorScheme.onSurface,
-      elevation: AppDimensions.elevationLow,
+    // A subpage of the chat (Komponentark v1 §01 pattern 2; Skarmar v12
+    // etapp 9 'Chattens gruppinfo' draws the back arrow).
+    return ButleryTopBar.undersida(
+      title: context.l10n.messagingGroupInfo,
       actions: [
         if (viewModel.isAdmin)
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const ButleryIcon(ButleryIcons.pencil),
             onPressed: () => _showEditGroupNameDialog(context, viewModel),
             tooltip: context.l10n.messagingEditGroupName,
           ),
@@ -152,7 +151,7 @@ class ConversationGroupDetailView extends StatelessWidget {
             ActionButtons.textButton(
               context,
               label: context.l10n.commonAdd,
-              icon: Icons.person_add,
+              icon: ButleryIcons.userPlus,
               onPressed: () => _showAddMembersDialog(context, viewModel),
             ),
           ],
@@ -197,7 +196,7 @@ class ConversationGroupDetailView extends StatelessWidget {
         ActionButtons.secondaryButton(
           context,
           label: context.l10n.messagingLeaveGroup,
-          icon: Icons.exit_to_app,
+          icon: ButleryIcons.logOut,
           onPressed: viewModel.isLeavingGroup
               ? null
               : () => _confirmLeaveGroup(context, viewModel),
@@ -261,9 +260,11 @@ class ConversationGroupDetailView extends StatelessWidget {
             context.l10n.messagingGroupNameUpdated,
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotUpdateGroupName,
+            what:
+                viewModel.error ??
+                context.l10n.messagingCouldNotUpdateGroupName,
           );
         }
       }
@@ -307,9 +308,9 @@ class ConversationGroupDetailView extends StatelessWidget {
             context.l10n.chatGroupMembersAddedCount(addedCount),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.chatGroupAddMembersFailed,
+            what: viewModel.error ?? context.l10n.chatGroupAddMembersFailed,
           );
         }
       }
@@ -337,9 +338,9 @@ class ConversationGroupDetailView extends StatelessWidget {
             context.l10n.messagingMemberRemoved(memberName),
           );
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
+            what: viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
           );
         }
       }
@@ -380,9 +381,9 @@ class ConversationGroupDetailView extends StatelessWidget {
           SnackBarUtils.showSuccess(context, context.l10n.messagingLeftGroup);
           Navigator.of(context).pop(); // Go back to conversations list
         } else {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotLeaveGroup(''),
+            what: viewModel.error ?? context.l10n.groupLeaveFailed,
           );
         }
       }

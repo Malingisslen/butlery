@@ -468,5 +468,24 @@ void main() {
         );
       },
     );
+
+    test('BUT-2280: importing the same recipe twice makes two copies, each '
+        'with its own id', () async {
+      when(
+        () => mockPersonalOps.addMultipleUnifiedRecipes(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('OK'));
+
+      await manager.importSelectedRecipes(allRecipes, {'r1'}, () {});
+      await manager.importAllRecipes(const [], [recipe1], () {});
+
+      final batches = verify(
+        () => mockPersonalOps.addMultipleUnifiedRecipes(captureAny()),
+      ).captured.cast<List<Recipe>>();
+      final ids = [for (final batch in batches) batch.single.id];
+      expect(ids, hasLength(2));
+      expect(ids.toSet(), hasLength(2));
+      expect(ids, isNot(contains('r1')));
+      expect(batches.map((b) => b.single.title), everyElement('Kycklinggryta'));
+    });
   });
 }

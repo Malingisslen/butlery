@@ -1,6 +1,8 @@
 // lib/widgets/import/components/editable_list_builder.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/components/add_item_field.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -57,11 +59,11 @@ class EditableListBuilder extends StatelessWidget {
                       border: const OutlineInputBorder(),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.paddingMs,
+                        vertical: AppDimensions.space8,
                       ),
                       suffixIcon: IconButton(
-                        icon: const Icon(
-                          Icons.close,
+                        icon: const ButleryIcon(
+                          ButleryIcons.x,
                           size: AppDimensions.iconSize18,
                         ),
                         onPressed: () => onRemove(index),
@@ -117,10 +119,10 @@ class EditableListHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
+        ButleryIcon(
           icon,
           size: AppDimensions.iconSizeM,
-          color: theme.colorScheme.primary,
+          color: theme.colorScheme.onSurface,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Text(
@@ -129,10 +131,10 @@ class EditableListHeader extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Container(
-          padding: AppDimensions.paddingSymmetric8x2,
+          padding: AppDimensions.badgePadding,
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           ),
           child: Text(
             '$count',

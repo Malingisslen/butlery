@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_factory.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/recipe_image_widget.dart';
@@ -116,8 +120,8 @@ void main() {
           ),
         );
 
-        // Empty state uses buildPlaceholder which defaults to Icons.restaurant_menu
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        // Empty state uses buildPlaceholder which defaults to ButleryIcons.utensils
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       });
 
       testWidgets('accepts onTap callback', (tester) async {
@@ -210,7 +214,7 @@ void main() {
 
         // Single image uses carousel with EditActionsPanel showing add_photo_alternate_outlined
         expect(
-          find.byIcon(Icons.add_photo_alternate_outlined),
+          find.byIcon(ButleryIcons.camera),
           findsOneWidget,
         );
       });
@@ -227,7 +231,7 @@ void main() {
 
         // Empty state shows add_photo_alternate_outlined icon
         expect(
-          find.byIcon(Icons.add_photo_alternate_outlined),
+          find.byIcon(ButleryIcons.camera),
           findsOneWidget,
         );
       });
@@ -262,7 +266,7 @@ void main() {
         );
 
         // Empty gallery shows photo_library_outlined icon
-        expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.image), findsOneWidget);
       });
     });
 
@@ -278,7 +282,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       });
     });
 
@@ -346,4 +350,120 @@ void main() {
       });
     });
   });
+
+  // BUT-2183 5c: badges on a photo are overlay.paperCard with ink; the grid's
+  // add control is not on a photo and takes surface.raised with border.subtle.
+  for (final (name, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    group('BUT-2183 5c image badge tokens ($name)', () {
+      final cs = theme.colorScheme;
+      final modes = ModeColors.of(theme.brightness);
+
+      setUpAll(() async {
+        await BaseWidgetTest.setupWidget();
+      });
+
+      setUp(() async {
+        await TestServiceLocator.initialize();
+      });
+
+      tearDown(() async {
+        await BaseWidgetTest.teardownWidget();
+      });
+
+      BoxDecoration fillAround(WidgetTester tester, Finder of) => tester
+          .widgetList<Container>(
+            find.ancestor(of: of, matching: find.byType(Container)),
+          )
+          .map((c) => c.decoration)
+          .whereType<BoxDecoration>()
+          .firstWhere((d) => d.color != null);
+
+      testWidgets('card: multiple-photo indicator is overlay.paperCard with '
+          'ink', (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: SizedBox(
+                width: 200,
+                height: 150,
+                child: ImageFactory.recipeCard(
+                  imageUrls: [
+                    'https://example.com/a.jpg',
+                    'https://example.com/b.jpg',
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final count = find.text('2');
+        expect(fillAround(tester, count).color, modes.overlayPaperCard);
+        expect(tester.widget<Text>(count).style?.color, cs.primary);
+      });
+
+      testWidgets('detail: page counter is overlay.paperCard with ink', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: ImageFactory.recipeDetail(
+                imageUrls: [
+                  'https://example.com/a.jpg',
+                  'https://example.com/b.jpg',
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final counter = find.text('1/2');
+        expect(fillAround(tester, counter).color, modes.overlayPaperCard);
+        expect(tester.widget<Text>(counter).style?.color, cs.primary);
+      });
+
+      testWidgets('edit grid: unchosen-primary badge is overlay.paperCard, '
+          'add control is raised with border.subtle', (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: SingleChildScrollView(
+                child: ImageFactory.recipeEdit(
+                  imageUrls: [
+                    'https://example.com/a.jpg',
+                    'https://example.com/b.jpg',
+                  ],
+                  maxImages: 5,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final badge = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .where((d) => d.color == modes.overlayPaperCard);
+        expect(badge, hasLength(1));
+        final star = tester.widget<ButleryIcon>(
+          find.byWidgetPredicate(
+            (w) => w is ButleryIcon && w.icon == ButleryIcons.primaryOutline,
+          ),
+        );
+        expect(star.color, cs.primary);
+
+        final add = fillAround(tester, find.text('Lägg till (3)'));
+        expect(add.color, cs.surfaceContainerHighest);
+        expect((add.border! as Border).top.color, cs.outlineVariant);
+      });
+    });
+  }
 }

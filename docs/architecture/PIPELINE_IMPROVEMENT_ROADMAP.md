@@ -76,7 +76,7 @@ not new systems.
   (the cookbook use case!), text-paste, Instagram/TikTok/YouTube, and URL tiers 2–7 produce
   zero training data. Attach the pre-edit snapshot per import (keyed by recipe id, tagged
   with source) and diff on any imported recipe.
-- [ ] **Log parse events for every import path, not just URL** (S) → BUT-1470
+- [x] **Log parse events for every import path, not just URL** (S) → BUT-1470
   One `ParseEventLogger` call at the end of `ImportManager._parseWithStrategy` (strategy,
   success, needsAssistance, elapsed) covers photo/text/social in one place; reuses the
   existing CF + dashboard.
@@ -107,34 +107,25 @@ not new systems.
   session, re-fetches hourly. Dominant per-user read cost, grows on two axes. Fix: version-
   stamped JSON snapshot in Storage + one version-doc read (export pipeline already exists),
   or bundled snapshot + delta fetch. ~99% read reduction.
-- [ ] **Single LLM escalation owner for URL imports** (L) → BUT-1476
+- [x] **Single LLM escalation owner for URL imports** (L) → BUT-1476
   Two nested tier waterfalls each end in Gemini: inner `LlmTier` can fire on HTTP HTML and
   again on scraper HTML, then the outer `LlmExtractionFallback` fires too — up to 3 full
   LLM calls per failed import (+selective-enhance calls). Pass `useLlm:false` from
   `_tryEnhancedParser` and keep exactly one escalation point; reconcile the duplicated
   structured-extraction and per-site-selector systems (Firestore `site_configs` vs Dart
   `SiteParserRegistry`).
-- [ ] **Server-side daily LLM cap** (S) → BUT-1477
+- [x] **Server-side daily LLM cap** (S) → BUT-1477
   Cost ceilings are client-only; server per-minute buckets allow ~4.3k calls/user/day. Add
   a per-day counter in the existing rate-limiter transaction.
-- [ ] **Write retagged results back to GlobalRecipeCache** (was S — actually L)
-  ATTEMPTED + REVERTED 2026-07-02: a client-side write-back is **impossible by design** —
-  firestore.rules restricts cache updates to access stats as a deliberate cache-poisoning
-  defense (code review confirmed: loosening it would let one client's tags, incl. per-user
-  ingredient overrides and partial timeout results, become canonical shared allergen data).
-  Real fix requires a server-side path (Cloud Function re-running the tagging engine —
-  which is Dart client code, so this means a TS port or a headless tagging service) OR
-  accepting per-hit client retag cost. Accepted for now (pre-launch scale, pennies);
-  revisit before user growth. The 2.2.0 retag bump shipped WITHOUT it (Legal condition —
-  known-wrong FREE verdicts must not persist — outweighed the FinOps deferral at ~1 user).
+- [x] **Write retagged results back to GlobalRecipeCache** → moot: the cache was removed (BUT-2244)
 - [ ] **TTL on `parse_events`** (S) → BUT-1478 — grows unbounded, one doc per import attempt, stores raw
   userId+URL forever (also a quiet GDPR surface). Mirror the `llm_response_samples` TTL.
-- [ ] **Confirm Gemini pricing constants** (S) → BUT-1479 — BUT-1187 TODO; all cost telemetry and the
+- [x] **Confirm Gemini pricing constants** (S) → BUT-1479 — BUT-1187 TODO; all cost telemetry and the
   spend ceilings derive from two unverified constants (`gemini-client.ts:833`).
 
 ## P2 — Flow consolidation & dead code
 
-- [ ] **Unify the two URL import pipelines** (M) → BUT-1480 — OS share sheet AND '/importViaUrl' use the
+- [x] **Unify the two URL import pipelines** (M) → BUT-1480 (done by BUT-2240) — OS share sheet AND '/importViaUrl' use the
   legacy WebScraper path (no platform pipelines/cache/rate-limit/telemetry; YouTube shares
   get a body scrape instead of transcripts). Route both into `ImportManager.autoImport`.
 - [ ] **Delete `TagGenerator.generate()`** (L, mostly test re-homing) → BUT-1481 — ~175-line dead
@@ -145,8 +136,7 @@ not new systems.
   ever bumping `kTagGeneratorVersion` at scale (currently: every client re-tags everything).
 - [ ] **Rebuild `TagGenerator` when config loads late** (S) → BUT-1483 — constructed once from
   `configOrNull`; a slow/failed config fetch pins the session to static fallback rules.
-- [ ] **Thread real tier/confidence into cache `ExtractionMeta`** (S) → BUT-1484 — currently hardcoded
-  `tier: 0, confidence: 0.8`; the real tier is computed and discarded.
+- [x] **Thread real tier/confidence into cache `ExtractionMeta`** (S) → BUT-1484
 - [ ] **One `ImportResultV2→legacy` adapter** (S) → BUT-1485 — currently copied in 3 pipelines.
 - [ ] **Correction-upload failure metric** (S) → BUT-1486 — unknown-tier and salt-not-loaded drops are
   silent (return 0, debug log); mirror `parseEventLogFailed` (BUT-616 pattern). Also
@@ -162,7 +152,7 @@ not new systems.
   seeded) `IngredientLookupService` → assert specific allergen TriStates. The current
   "Import → Tagging Integration" test runs no import, fakes the lookup, and drives the dead
   orchestrator. 3–4 representative recipes close the pipeline's largest untested seam.
-- [ ] **CI-gate the tag scorecard** (S) → BUT-1489 — `test/corpus/tag_scorecard_test.dart` (the allergen
+- [x] **CI-gate the tag scorecard** (S) → BUT-1489 — `test/corpus/tag_scorecard_test.dart` (the allergen
   accuracy metric) runs only manually; add to the suite matrix in `test.yml` with a numeric
   floor, like the CRF golden gate (BUT-1443 pattern).
 - [ ] **Grow the gated corpora** (M) → BUT-1490 — parsing golden set has 4 recipes; site-parser fixtures

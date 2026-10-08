@@ -1,6 +1,7 @@
 // lib/views/social/friend_requests/friend_request_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 // Models
 import 'package:butlery/models/friend_request.dart';
@@ -8,13 +9,15 @@ import 'package:butlery/models/friend_request.dart';
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -35,10 +38,22 @@ class FriendRequestCard {
     final avatarUrl = userProfile?.avatarUrl;
     final isOnline = userProfile?.isOnline ?? false;
 
+    // Chosen is surface.selected with a real border, never a tint
+    // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+    // :108-119). surfaceContainerHighest is surface.raised, which
+    // carries surface.selected's values in both modes; the border is
+    // text.primary (onSurface): ink on light, paper on dark.
     return Card(
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(
-              alpha: AppDimensions.opacityMediumLight,
+          ? Theme.of(context).colorScheme.surfaceContainerHighest
+          : null,
+      shape: isSelected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 1.5,
+              ),
             )
           : null,
       child: Semantics(
@@ -47,7 +62,7 @@ class FriendRequestCard {
         selected: isSelected,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Column(
@@ -58,7 +73,7 @@ class FriendRequestCard {
                       value: isSelected,
                       onChanged: (value) => onSelectionChanged(value ?? false),
                     ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
 
                     // User avatar with online indicator
                     Stack(
@@ -76,7 +91,7 @@ class FriendRequestCard {
                               width: 12,
                               height: 12,
                               decoration: BoxDecoration(
-                                color: context.butleryColors.success,
+                                color: context.modeColors.success,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.surface,
@@ -112,17 +127,12 @@ class FriendRequestCard {
                             const SizedBox(height: AppDimensions.spacingXs),
                             Container(
                               padding: const EdgeInsets.all(
-                                AppDimensions.spacingS,
+                                AppDimensions.space4,
                               ),
                               decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest
-                                    .withValues(
-                                      alpha: AppDimensions.opacityHalf,
-                                    ),
+                                color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadius8,
+                                  AppDimensions.radiusControl,
                                 ),
                               ),
                               child: Text(
@@ -153,30 +163,43 @@ class FriendRequestCard {
                 // Actions (not shown during bulk selection)
                 if (!isSelected) ...[
                   const SizedBox(height: AppDimensions.spacingL),
+                  // Acceptera first, then the decline action, in the order
+                  // drawn in Skarmar v12 del 3 #forfragningar, which labels
+                  // the decline action "Avböj" (del 3:406, :420).
                   Row(
                     children: [
+                      // PQ-18 = A (produktbeslut 2026-09-23, revised after
+                      // the prototype): every incoming row keeps a saffron
+                      // "Acceptera", as drawn. This is a deliberate exception
+                      // to one saffron action per view (Komponentark
+                      // v1:843-844; Grafisk manual v6:219), for friend
+                      // requests only.
                       Expanded(
-                        child: ActionButtons.outlinedButton(
-                          context,
-                          label: context.l10n.socialDecline,
-                          icon: Icons.close,
-                          onPressed: viewModel.isLoading
-                              ? null
-                              : () =>
-                                    _rejectRequest(context, request, viewModel),
-                        ),
-                      ),
-                      const SizedBox(width: AppDimensions.spacingL),
-                      Expanded(
-                        child: ActionButtons.primaryButton(
-                          context,
+                        child: HeroButton(
+                          key: ValueKey('friendRequest.accept.${request.id}'),
                           label: context.l10n.commonAccept,
-                          icon: Icons.check,
+                          semanticLabel: context.l10n
+                              .a11yAcceptFriendRequestFrom(displayName),
+                          icon: ButleryIcons.check,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
                                     _acceptRequest(context, request, viewModel),
-                          isExpanded: true,
+                          expand: true,
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingL),
+                      Expanded(
+                        child: ActionButtons.outlinedButton(
+                          context,
+                          label: context.l10n.socialDecline,
+                          semanticLabel: context.l10n
+                              .a11yDeclineFriendRequestFrom(displayName),
+                          icon: ButleryIcons.x,
+                          onPressed: viewModel.isLoading
+                              ? null
+                              : () =>
+                                    _rejectRequest(context, request, viewModel),
                         ),
                       ),
                     ],
@@ -211,35 +234,47 @@ class FriendRequestCard {
 
     switch (request.status) {
       case FriendRequestStatus.pending:
-        statusColor = context.butleryColors.warning;
-        statusIcon = Icons.schedule;
+        statusColor = context.modeColors.warning;
+        statusIcon = ButleryIcons.clock;
         statusText = context.l10n.socialPendingResponse;
         break;
       case FriendRequestStatus.accepted:
-        statusColor = context.butleryColors.success;
-        statusIcon = Icons.check_circle;
+        statusColor = context.modeColors.success;
+        statusIcon = ButleryIcons.circleCheck;
         statusText = context.l10n.socialAccepted;
         break;
       case FriendRequestStatus.rejected:
         statusColor = cs.error;
-        statusIcon = Icons.cancel;
+        statusIcon = ButleryIcons.x;
         statusText = context.l10n.socialDeclined;
         break;
       case FriendRequestStatus.expired:
         statusColor = cs.onSurfaceVariant;
-        statusIcon = Icons.timer_off;
+        statusIcon = ButleryIcons.clock;
         statusText = context.l10n.socialExpired;
         break;
       default:
         statusColor = cs.onSurfaceVariant;
-        statusIcon = Icons.help;
+        statusIcon = ButleryIcons.circleHelp;
         statusText = context.l10n.socialUnknownStatus;
     }
 
+    // Chosen is surface.selected with a real border, never a tint
+    // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
+    // :108-119). surfaceContainerHighest is surface.raised, which
+    // carries surface.selected's values in both modes; the border is
+    // text.primary (onSurface): ink on light, paper on dark.
     return Card(
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withValues(
-              alpha: AppDimensions.opacityMediumLight,
+          ? Theme.of(context).colorScheme.surfaceContainerHighest
+          : null,
+      shape: isSelected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 1.5,
+              ),
             )
           : null,
       child: Semantics(
@@ -248,7 +283,7 @@ class FriendRequestCard {
         selected: isSelected,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Row(
@@ -263,7 +298,7 @@ class FriendRequestCard {
                     width: AppDimensions.spacingXxxl,
                   ), // Placeholder for alignment
 
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
 
                 // User avatar with online indicator
                 Stack(
@@ -281,7 +316,7 @@ class FriendRequestCard {
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: context.butleryColors.success,
+                            color: context.modeColors.success,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Theme.of(context).colorScheme.surface,
@@ -317,7 +352,7 @@ class FriendRequestCard {
                       const SizedBox(height: AppDimensions.spacingXs),
                       Row(
                         children: [
-                          Icon(
+                          ButleryIcon(
                             statusIcon,
                             size: AppDimensions.iconSizeS,
                             color: statusColor,
@@ -349,7 +384,7 @@ class FriendRequestCard {
                   IconButton(
                     onPressed: () =>
                         _cancelSentRequest(context, request, viewModel),
-                    icon: Icon(Icons.cancel, color: cs.error),
+                    icon: ButleryIcon(ButleryIcons.x, color: cs.error),
                     tooltip: context.l10n.socialCancelRequest,
                   ),
               ],

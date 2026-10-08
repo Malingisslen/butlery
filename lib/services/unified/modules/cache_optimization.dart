@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:clock/clock.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// ```dart
 /// final timer = CacheOptimization.startPeriodicCleanup(interval, cacheHelper, getUserId);
@@ -171,7 +172,7 @@ class CacheOptimization {
   }) async {
     try {
       AppLogger.debug(
-        'Cleaning up invalid permissions for user: $currentUserId',
+        'Cleaning up invalid permissions for user: ${currentUserId.maskedUserId}',
       );
 
       final allKeys = await cacheHelper.getAllKeys();

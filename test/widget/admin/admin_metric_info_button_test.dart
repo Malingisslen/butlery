@@ -3,11 +3,11 @@
 /// explanations registry, and close cleanly.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/views/admin/widgets/admin_metric_info_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -21,7 +21,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.info_outline));
+    await tester.tap(find.byIcon(ButleryIcons.info));
     await tester.pumpAndSettle();
 
     // The three teaching sections are present.

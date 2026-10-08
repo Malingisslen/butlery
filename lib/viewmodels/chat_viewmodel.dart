@@ -388,7 +388,7 @@ class ChatViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to send text message', e);
-      _sendError = AppLocale.current.errorCouldNotSend('meddelande');
+      _sendError = AppLocale.current.chatCouldNotSendMessage;
       _isSending = false;
       _safeNotifyListeners();
       return false;
@@ -434,7 +434,7 @@ class ChatViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to send recipe share', e);
-      _sendError = AppLocale.current.errorCouldNotShare('recept');
+      _sendError = AppLocale.current.chatCouldNotShareRecipe;
       _isSending = false;
       _safeNotifyListeners();
       return false;
@@ -701,7 +701,7 @@ class ChatViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to send reply', e);
-      _sendError = AppLocale.current.errorCouldNotSend('svar');
+      _sendError = AppLocale.current.chatCouldNotSendReply;
       _isSending = false;
       _safeNotifyListeners();
       return false;

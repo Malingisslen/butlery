@@ -12,8 +12,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/comment_image_attachments.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -64,6 +66,8 @@ void main() {
       findsNWidgets(3),
       reason: 'each thumbnail must be independently tappable',
     );
+    // R8-4 = C: each thumbnail scales while pressed.
+    expect(find.byType(PressScale), findsNWidgets(3));
   });
 
   testWidgets('tapping a thumbnail opens a full-screen viewer', (tester) async {
@@ -93,6 +97,6 @@ void main() {
       reason: 'tapping a thumbnail must open the full-screen viewer dialog',
     );
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.x), findsOneWidget);
   });
 }

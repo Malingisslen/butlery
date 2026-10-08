@@ -18,8 +18,8 @@ class OnboardingWelcomePage extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingXl,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -35,7 +35,7 @@ class OnboardingWelcomePage extends StatelessWidget {
                 Text(
                   context.l10n.onboardingWelcomeTitle,
                   style: AppTextStyles.headlineMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -51,7 +51,7 @@ class OnboardingWelcomePage extends StatelessWidget {
                 Text(
                   context.l10n.onboardingWelcomeNote,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.outline,
+                    color: cs.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),

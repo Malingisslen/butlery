@@ -12,8 +12,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/theme/theme_constants.dart';
 
 class StyledCard extends StatelessWidget {
   final Widget child;
@@ -42,10 +40,13 @@ class StyledCard extends StatelessWidget {
     this.borderColor,
     this.semanticLabel,
   }) : assert(
-         borderRadius == null || borderRadius == 0,
-         'StyledCard is square by design — pass null or 0 (all '
-         'AppDimensions.borderRadius* constants are 0.0). A non-zero radius '
-         'would reintroduce rounded corners the design system forbids.',
+         borderRadius == null ||
+             borderRadius == AppDimensions.radiusSharp ||
+             borderRadius == AppDimensions.radiusControl ||
+             borderRadius == AppDimensions.radiusCard,
+         'A StyledCard corner comes from the radius scale (tokens.json '
+         'space.radius): card 12 by default, control 8, or sharp 0 for an '
+         'editorial surface. Any other radius is off the scale.',
        );
 
   /// Standard card with default Material Design styling
@@ -58,7 +59,7 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
     this.semanticLabel,
   }) : elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -72,7 +73,7 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
     this.semanticLabel,
   }) : elevation = AppDimensions.elevationMedium,
-       borderRadius = AppDimensions.borderRadius12,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -87,7 +88,7 @@ class StyledCard extends StatelessWidget {
     this.borderColor,
     this.semanticLabel,
   }) : elevation = 0,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = true;
 
   /// Recipe card styling
@@ -100,7 +101,7 @@ class StyledCard extends StatelessWidget {
   }) : padding = null,
        margin = null,
        elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius12,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -114,7 +115,7 @@ class StyledCard extends StatelessWidget {
   }) : padding = null,
        margin = null,
        elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = false,
        borderColor = null;
 
@@ -127,7 +128,7 @@ class StyledCard extends StatelessWidget {
        onTap = null,
        backgroundColor = null,
        elevation = AppDimensions.elevationHigh,
-       borderRadius = AppDimensions.borderRadius16,
+       borderRadius = AppDimensions.radiusControl,
        showBorder = false,
        borderColor = null,
        semanticLabel = null;
@@ -146,7 +147,7 @@ class StyledCard extends StatelessWidget {
        elevation = isSelected
            ? AppDimensions.elevationMedium
            : AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
+       borderRadius = AppDimensions.radiusCard,
        showBorder = isSelected,
        borderColor = null;
 
@@ -187,11 +188,11 @@ class StyledCard extends StatelessWidget {
       margin: effectiveMargin ?? EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-          borderRadius ?? AppDimensions.borderRadius8,
+          borderRadius ?? AppDimensions.radiusCard,
         ),
         side: showBorder
             ? BorderSide(
-                color: borderColor ?? Theme.of(context).colorScheme.primary,
+                color: borderColor ?? Theme.of(context).colorScheme.onSurface,
                 width: AppDimensions.borderWidthStandard,
               )
             : BorderSide.none,
@@ -211,7 +212,7 @@ class StyledCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(
-            borderRadius ?? AppDimensions.borderRadius8,
+            borderRadius ?? AppDimensions.radiusCard,
           ),
           child: card,
         ),
@@ -219,152 +220,5 @@ class StyledCard extends StatelessWidget {
     }
 
     return card;
-  }
-}
-
-/// Specialized card variants for specific content types
-class StyledCards {
-  /// Empty state card
-  static Widget emptyState({
-    required Widget child,
-    VoidCallback? onAction,
-  }) {
-    return StyledCard.outlined(
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      onTap: onAction,
-      child: child,
-    );
-  }
-
-  /// Error state card
-  static Widget error({
-    required Widget child,
-    VoidCallback? onRetry,
-  }) {
-    return Builder(
-      builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return StyledCard.outlined(
-          backgroundColor: cs.errorContainer,
-          borderColor: cs.error,
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          onTap: onRetry,
-          child: child,
-        );
-      },
-    );
-  }
-
-  /// Info card
-  static Widget info({
-    required Widget child,
-  }) {
-    return Builder(
-      builder: (context) {
-        final bc = context.butleryColors;
-        return StyledCard.outlined(
-          backgroundColor: bc.infoContainer,
-          borderColor: bc.info,
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: child,
-        );
-      },
-    );
-  }
-
-  /// Success card
-  static Widget success({
-    required Widget child,
-  }) {
-    return Builder(
-      builder: (context) {
-        final bc = context.butleryColors;
-        return StyledCard.outlined(
-          backgroundColor: bc.successContainer,
-          borderColor: bc.success,
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: child,
-        );
-      },
-    );
-  }
-
-  /// Warning card
-  static Widget warning({
-    required Widget child,
-  }) {
-    return Builder(
-      builder: (context) {
-        final bc = context.butleryColors;
-        return StyledCard.outlined(
-          backgroundColor: bc.warningContainer,
-          borderColor: bc.warning,
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: child,
-        );
-      },
-    );
-  }
-
-  /// Loading card placeholder
-  static Widget loading({
-    double? height,
-    double? width,
-  }) {
-    return Builder(
-      builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return StyledCard.standard(
-          child: Container(
-            height: height ?? 100,
-            width: width,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  cs.outlineVariant,
-                  cs.surface,
-                  cs.outlineVariant,
-                ],
-                stops: const [0.0, 0.5, 1.0],
-                begin: AlignmentDirectional.centerStart,
-                end: AlignmentDirectional.centerEnd,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Image card for galleries
-  static Widget image({
-    required Widget imageWidget,
-    Widget? overlay,
-    VoidCallback? onTap,
-  }) {
-    return StyledCard.standard(
-      onTap: onTap,
-      padding: EdgeInsets.zero,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        child: Stack(
-          children: [
-            imageWidget,
-            if (overlay != null)
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: ThemeConstants.blackOverlay20,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadius8,
-                    ),
-                  ),
-                  child: overlay,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }

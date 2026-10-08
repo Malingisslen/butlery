@@ -11,10 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Mirrors the exact structure used by `cooking_mode_view._buildTopBar`
 /// after the A3 migration. Matching the wrapping (ColoredBox parent,
@@ -27,8 +29,8 @@ Widget _cookingModeCloseButton(BuildContext context, VoidCallback onTap) {
     child: TappableWrapper(
       onTap: onTap,
       semanticLabel: 'Avsluta matlagning',
-      child: Icon(
-        Icons.close,
+      child: ButleryIcon(
+        ButleryIcons.x,
         color: cs.primary,
         size: AppDimensions.iconSizeM,
       ),

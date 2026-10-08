@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -218,24 +219,30 @@ class PersonalTagCrudService extends BaseService {
     );
   }
 
-  /// BUT-994: bulk-delete multiple tags in one atomic batch — each tag's
-  /// recipe-cascade pulls + the tag-doc deletes share the same WriteBatch,
-  /// so either every cascade lands or none do.
+  /// BUT-994: bulk-delete multiple tags in chunked atomic batches — each
+  /// tag's recipe-cascade pulls + the tag-doc deletes share the same
+  /// WriteBatch, so within a chunk either every cascade lands or none do.
   ///
   /// Chunks at 100 tags per batch as a safety margin under the Firestore
   /// 500-op limit (each tag may cascade to many recipes; 100 tags × ~4
   /// cascaded recipes each = ~400 ops, comfortably under 500).
   ///
-  /// Returns total tag count deleted across all chunks. Per-tag cascade
-  /// counts are logged but not surfaced — the caller wanted a bulk-clean,
-  /// not a per-tag audit.
-  Future<int> bulkDeleteTags(List<String> tagIds) async {
-    if (tagIds.isEmpty) return 0;
-    final result = await executeServiceOperation<int>(
+  /// P5-U33: a chunk that fails does not stop the next one, and the result
+  /// says per tag id what went and what did not (produktregler.md:905-909).
+  /// Before this, a failure anywhere was swallowed by the base service and
+  /// reported as "0 deleted", even after an earlier chunk had landed.
+  Future<PersonalTagBulkDeleteResult> bulkDeleteTags(
+    List<String> tagIds,
+  ) async {
+    if (tagIds.isEmpty) {
+      return const PersonalTagBulkDeleteResult(deletedIds: [], failedIds: []);
+    }
+    final result = await executeServiceOperation<PersonalTagBulkDeleteResult>(
       () async {
         const chunkSize = 100;
         final recipeRepo = _getFirebaseRecipeRepository();
-        var totalDeleted = 0;
+        final deleted = <String>[];
+        final failed = <String>[];
         var totalCascaded = 0;
 
         for (var i = 0; i < tagIds.length; i += chunkSize) {
@@ -243,31 +250,42 @@ class PersonalTagCrudService extends BaseService {
             i,
             i + chunkSize > tagIds.length ? tagIds.length : i + chunkSize,
           );
-          final batch = _tagRepository.newWriteBatch();
-          for (final tagId in chunk) {
-            if (recipeRepo != null) {
-              totalCascaded += await recipeRepo
-                  .addRemovePersonalTagFromRecipesToBatch(
-                    batch,
-                    tagId,
-                  );
+          try {
+            final batch = _tagRepository.newWriteBatch();
+            var cascaded = 0;
+            for (final tagId in chunk) {
+              if (recipeRepo != null) {
+                cascaded += await recipeRepo
+                    .addRemovePersonalTagFromRecipesToBatch(batch, tagId);
+              }
+              _tagRepository.addDeleteToBatch(batch, tagId);
             }
-            _tagRepository.addDeleteToBatch(batch, tagId);
+            await batch.commit();
+            deleted.addAll(chunk);
+            totalCascaded += cascaded;
+          } catch (e, stackTrace) {
+            AppLogger.error(
+              'Bulk-delete chunk of ${chunk.length} tags failed: $e',
+              stackTrace,
+            );
+            failed.addAll(chunk);
           }
-          await batch.commit();
-          totalDeleted += chunk.length;
         }
 
-        _invalidateTagsCache();
+        if (deleted.isNotEmpty) _invalidateTagsCache();
         AppLogger.info(
-          'Bulk-deleted $totalDeleted tags; cascaded to $totalCascaded recipe rows',
+          'Bulk-deleted ${deleted.length} tags (${failed.length} failed); '
+          'cascaded to $totalCascaded recipe rows',
         );
-        return totalDeleted;
+        return PersonalTagBulkDeleteResult(
+          deletedIds: List.unmodifiable(deleted),
+          failedIds: List.unmodifiable(failed),
+        );
       },
       operationName: 'Bulk-delete personal tags',
       requiresAuth: true,
     );
-    return result ?? 0;
+    return result ?? PersonalTagBulkDeleteResult.noneDeleted(tagIds);
   }
 
   /// BUT-1042 / BUT-1186: merges [fromId] into [toId]. Every recipe carrying

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
   group('SearchInputWidget', () {
@@ -51,7 +53,7 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
         // Default hint from l10n.searchHint = 'sök...'
         expect(find.text('sök...'), findsOneWidget);
-        expect(find.byIcon(Icons.search), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
       });
 
       testWidgets('renders with custom hint text', (tester) async {
@@ -66,13 +68,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initially no clear button
-        expect(find.byIcon(Icons.clear), findsNothing);
+        expect(find.byIcon(ButleryIcons.x), findsNothing);
 
         // Enter text — the widget listens to controller changes internally
         await tester.enterText(find.byType(TextFormField), 'Test');
         await tester.pump();
 
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
 
       testWidgets('hides clear button when text is empty', (tester) async {
@@ -81,13 +83,13 @@ void main() {
         await tester.pumpWidget(buildWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
 
         // Clear text via the controller — widget rebuilds via listener
         controller.clear();
         await tester.pump();
 
-        expect(find.byIcon(Icons.clear), findsNothing);
+        expect(find.byIcon(ButleryIcons.x), findsNothing);
       });
 
       testWidgets('applies custom padding when provided', (tester) async {
@@ -125,7 +127,7 @@ void main() {
         await tester.pumpWidget(buildWidget(onClear: () => clearCalled = true));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.clear));
+        await tester.tap(find.byIcon(ButleryIcons.x));
         await tester.pump();
 
         expect(clearCalled, isTrue);
@@ -201,7 +203,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should not crash when tapping clear with null callback
-        await tester.tap(find.byIcon(Icons.clear));
+        await tester.tap(find.byIcon(ButleryIcons.x));
         await tester.pump();
       });
 
@@ -211,13 +213,13 @@ void main() {
         await tester.pumpWidget(buildWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.clear), findsNothing);
+        expect(find.byIcon(ButleryIcons.x), findsNothing);
 
         // Change controller text externally — widget listens internally
         controller.text = 'External update';
         await tester.pump();
 
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
     });
 
@@ -227,7 +229,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(Icons.search), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
       });
 
       testWidgets('handles keyboard actions properly', (tester) async {
@@ -246,7 +248,10 @@ void main() {
       testWidgets('renders trailing widget when provided', (tester) async {
         await tester.pumpWidget(
           buildWidget(
-            trailing: const Icon(Icons.tune, key: Key('trailing')),
+            trailing: const ButleryIcon(
+              ButleryIcons.filter,
+              key: Key('trailing'),
+            ),
           ),
         );
         await tester.pumpAndSettle();
@@ -268,25 +273,31 @@ void main() {
 
         await tester.pumpWidget(
           buildWidget(
-            trailing: const Icon(Icons.tune, key: Key('trailing')),
+            trailing: const ButleryIcon(
+              ButleryIcons.filter,
+              key: Key('trailing'),
+            ),
             onClear: () {},
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
         expect(find.byKey(const Key('trailing')), findsOneWidget);
       });
 
       testWidgets('shows only trailing when text is empty', (tester) async {
         await tester.pumpWidget(
           buildWidget(
-            trailing: const Icon(Icons.tune, key: Key('trailing')),
+            trailing: const ButleryIcon(
+              ButleryIcons.filter,
+              key: Key('trailing'),
+            ),
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.clear), findsNothing);
+        expect(find.byIcon(ButleryIcons.x), findsNothing);
         expect(find.byKey(const Key('trailing')), findsOneWidget);
       });
     });

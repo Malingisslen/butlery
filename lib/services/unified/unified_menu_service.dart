@@ -25,6 +25,7 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 
 /// Result of importing a shared menu.
 /// Indicates whether the import joined a collaborative session or created a local copy.
@@ -434,6 +435,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     required List<String> inviteeUserIds,
     String? message,
     bool allowCollaboration = false,
+    List<String>? groupIds,
   }) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -443,6 +445,13 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
     final result = await safeExecute<String?>(() async {
       try {
+        // BUT-2169: nothing new is shared across a block, in either direction.
+        inviteeUserIds = await BlockedUserFilter.shareRecipients(
+          inviteeUserIds,
+        );
+        if (inviteeUserIds.isEmpty) {
+          return null;
+        }
         AppLogger.info(
           '🔍🔍🔍 DEBUG SHARE ENTRY: createMenuInvitation called with "$menuTitle" for ${inviteeUserIds.length} users',
         );
@@ -496,6 +505,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         final invitationId = await _sharedMenuRepository.createSharedMenu(
           sharedMenu,
           recipientIds: inviteeUserIds,
+          groupIds: groupIds,
         );
 
         AppLogger.success(
@@ -522,6 +532,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     required List<String> friendIds,
     String? message,
     bool allowCollaboration = false,
+    List<String>? groupIds,
   }) async {
     final invitationId = await createMenuInvitation(
       menuTitle: menuTitle,
@@ -529,6 +540,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       inviteeUserIds: friendIds,
       message: message,
       allowCollaboration: allowCollaboration,
+      groupIds: groupIds,
     );
 
     return invitationId != null;

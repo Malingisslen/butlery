@@ -29,6 +29,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/views/photo_import_view.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/helpers/offline_banner_support.dart';
 
 /// Thin fake mirroring the one in photo_import_announce_test.dart, extended
 /// per BUT-1221 with a configurable persisted draft and recorded
@@ -208,6 +209,20 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   @override
   String get heirloomNote => '';
 
+  // P6-U07 / Q4-04: the view wires the permission resolver and reads the
+  // permission notice and the pages waiting for "Läs av".
+  @override
+  PhotoPermissionResolver? permissionResolver;
+
+  @override
+  PhotoPermissionNotice? get permissionNotice => null;
+
+  @override
+  int get unreadPageCount => 0;
+
+  @override
+  bool get canReadPages => false;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -223,6 +238,7 @@ void main() {
     getIt.registerFactory<PhotoImportViewModel>(() => vm);
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
   }
 
   tearDown(() async {

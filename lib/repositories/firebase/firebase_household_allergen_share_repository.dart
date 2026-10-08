@@ -31,9 +31,8 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 /// Firestore rules are the authoritative isolation layer; these checks are the
 /// client-side first line and the audit trail.
 ///
-/// Every caller in this app — the household aggregate's read and the settings
-/// row's grant/withdraw — sits behind `enable_household_allergen_sharing`
-/// (OFF). That flag gates the APP, not the server: `firestore.rules` has a
+/// Every caller in this app sits behind `enable_household_allergen_sharing`.
+/// That flag gates the APP, not the server: `firestore.rules` has a
 /// block for this collection, so a household member using a hand-rolled client
 /// can write a share before the flag is on (Malin's call, 2026-09-15; see
 /// ACCEPTED_DEVIATIONS.md). Such a row is erasable and exportable, and carries
@@ -53,6 +52,12 @@ class FirebaseHouseholdAllergenShareRepository
 
   @override
   String get collectionName => FirestoreCollections.householdAllergenShares;
+
+  /// The most members, and shares, [getByHousehold] answers for. The join
+  /// callable (`functions/src/family/group-household.ts`,
+  /// `MAX_HOUSEHOLD_MEMBERS`) refuses to grow a household past it; the two must
+  /// stay equal.
+  static const int maxHouseholdMembers = 20;
 
   /// The document id is authoritative: it is what the Firestore rules derive
   /// ownership from, so a body that disagrees with its own path is refused
@@ -345,11 +350,25 @@ class FirebaseHouseholdAllergenShareRepository
       );
     }
     final currentMembers = household.memberUserIds.toSet();
+    if (currentMembers.length > maxHouseholdMembers) {
+      throw HouseholdTooLargeForSharesException(
+        'Household has ${currentMembers.length} members; shares are read for '
+        'at most $maxHouseholdMembers',
+      );
+    }
 
+    // One past the cap, so "more than the cap" is visible without reading
+    // everything.
     final snap = await collection
         .where('householdId', isEqualTo: householdId)
+        .limit(maxHouseholdMembers + 1)
         .get();
     // Equality-only filter, so the automatic single-field index covers it.
+    if (snap.docs.length > maxHouseholdMembers) {
+      throw const HouseholdTooLargeForSharesException(
+        'More allergen shares than the read answers for',
+      );
+    }
 
     final shares = <HouseholdAllergenShare>[];
     for (final doc in snap.docs) {

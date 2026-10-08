@@ -12,7 +12,7 @@ start a registration. Does NOT submit — submission is a separate journey.
    5 entries).
 
 2. **Wait** for the auth screen. Assert via `preview_snapshot`: the text
-   "butlery" is present (brand wordmark in the header), and an input with
+   "butlery" is present, and an input with
    key `email_field` (translates to attribute `flt-semantics-identifier` or
    a `<flutter-view>` child — accept any matcher that confirms an email
    input is rendered).

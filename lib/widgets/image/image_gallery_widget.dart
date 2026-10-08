@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -127,23 +130,17 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
-        border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        border: Border.all(color: cs.outlineVariant),
         color: cs.surfaceContainerHighest,
       ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.photo_library_outlined,
+            ButleryIcon(
+              ButleryIcons.image,
               size: AppDimensions.iconSizeXxl,
-              color: cs.onSurface.withValues(
-                alpha: AppDimensions.opacityMedium,
-              ),
+              color: AppModeColors.textDisabled(Theme.of(context).brightness),
             ),
             const SizedBox(
               height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -151,18 +148,14 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Text(
               context.l10n.imageNoImagesYet,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMediumDark,
-                ),
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               context.l10n.imageWillAppearHere,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMedium,
-                ),
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -180,13 +173,13 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         color: cs.primary,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             color: cs.onPrimary,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -219,9 +212,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -238,16 +229,16 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.add_photo_alternate_outlined,
+                  ButleryIcon(
+                    ButleryIcons.camera,
                     size: AppDimensions.iconSizeXl,
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     context.l10n.commonAdd,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.primary,
+                      color: cs.onSurface,
                     ),
                   ),
                 ],
@@ -271,11 +262,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           decoration: BoxDecoration(
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(
-              color: isSelected
-                  ? cs.primary
-                  : cs.outlineVariant.withValues(
-                      alpha: AppDimensions.opacityLight,
-                    ),
+              // Chosen: the 2 px text.primary border (Grafisk manual v6:209).
+              // Not chosen: border.subtle itself, never faded
+              // (tokens.json:40-53).
+              color: isSelected ? cs.onSurface : cs.outlineVariant,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -302,14 +292,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                         config: widget.config,
                       ),
                     ),
-
-                    // Selection overlay
-                    if (isSelected)
-                      Container(
-                        color: cs.primary.withValues(
-                          alpha: AppDimensions.opacityLight,
-                        ),
-                      ),
+                    // No tint over a chosen photo: opacity is never a state
+                    // (tokens.json:40-53). The 2 px text.primary border and
+                    // the checked circle carry the choice (Grafisk manual
+                    // v6:209, "Vald = riktig border").
                   ],
                 ),
               ),
@@ -323,28 +309,19 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             top: AppDimensions.spacingSm,
             right: AppDimensions.spacingSm,
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingXxs),
+              padding: const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected
-                    ? cs.primary
-                    : cs.surfaceContainerHighest.withValues(
-                        alpha: AppDimensions.opacityVeryDark,
-                      ),
-                border: Border.all(
-                  color: cs.outlineVariant.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
-                  ),
-                ),
+                // Solid plates, no opacity as state (tokens.json:40-53):
+                // ink with a paper check when chosen, paper with a hairline
+                // and a secondary-text ring when not.
+                color: isSelected ? cs.primary : cs.surface,
+                border: Border.all(color: cs.outlineVariant),
               ),
-              child: Icon(
-                isSelected ? Icons.check : Icons.circle_outlined,
+              child: ButleryIcon(
+                isSelected ? ButleryIcons.check : ButleryIcons.circle,
                 size: AppDimensions.iconSizeS,
-                color: isSelected
-                    ? cs.surfaceContainerHighest
-                    : cs.onSurface.withValues(
-                        alpha: AppDimensions.opacityMediumDark,
-                      ),
+                color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -444,23 +421,17 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
-          border: Border.all(
-            color: cs.outlineVariant.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          border: Border.all(color: cs.outlineVariant),
           color: cs.surfaceContainerHighest,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.photo_library_outlined,
+              ButleryIcon(
+                ButleryIcons.image,
                 size: AppDimensions.iconSizeXxl,
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityMedium,
-                ),
+                color: AppModeColors.textDisabled(Theme.of(context).brightness),
               ),
               const SizedBox(
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -468,9 +439,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               Text(
                 context.l10n.imageNoImagesToDisplay,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: cs.onSurface.withValues(
-                    alpha: AppDimensions.opacityMediumDark,
-                  ),
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],

@@ -1,0 +1,34 @@
+{
+  "corpora": {
+    "sites": {
+      "recall": 1.0,
+      "headingLeaks": 0,
+      "titleExact": 13,
+      "stepsExact": 8,
+      "portionsExact": 10,
+      "timeExact": 9,
+      "failures": 0
+    },
+    "text": {
+      "recall": 0.9675,
+      "headingLeaks": 3,
+      "titleExact": 29,
+      "stepsExact": 11,
+      "portionsExact": 0,
+      "timeExact": 0,
+      "failures": 0
+    }
+  },
+  "knownRed": [
+    {
+      "fixture": "text/21-kanelbullar",
+      "key": "smör",
+      "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
+    },
+    {
+      "fixture": "text/26-sockerkaka-formen",
+      "key": "smör",
+      "reason": "Två rader med samma vara slås ihop och den ena mängden försvinner (hittad av grinden 2026-10-05)."
+    }
+  ]
+}

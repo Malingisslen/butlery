@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -98,18 +100,9 @@ class _GroupShoppingListSelectionDialogState
 
   Widget _buildContent() {
     if (_isLoading) {
+      // The plate line with its text (produktregler.md:163).
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingM),
-            Text(
-              context.l10n.shoppingLoadingLists,
-              style: AppTextStyles.bodyMedium,
-            ),
-          ],
-        ),
+        child: PlateLineMessage(message: context.l10n.loadingShoppingLists),
       );
     }
 
@@ -133,7 +126,7 @@ class _GroupShoppingListSelectionDialogState
       return StateWidget.empty(
         title: context.l10n.dialogNoShoppingLists,
         subtitle: context.l10n.dialogNoShoppingListsToShare,
-        icon: Icons.shopping_cart,
+        icon: ButleryIcons.shoppingCart,
       );
     }
 
@@ -177,14 +170,12 @@ class _ShoppingListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color: cs.primary.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              color: cs.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
-            child: Icon(
-              Icons.shopping_cart,
-              color: cs.primary,
+            child: ButleryIcon(
+              ButleryIcons.shoppingCart,
+              color: cs.onSurface,
               size: AppDimensions.iconSizeAction,
             ),
           );
@@ -210,13 +201,13 @@ class _ShoppingListItem extends StatelessWidget {
           Text(
             context.l10n.dialogItemsProgress(completedCount, totalCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
       ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
+      trailing: const ButleryIcon(
+        ButleryIcons.chevronRight,
         size: AppDimensions.iconSizeS,
       ),
       onTap: onTap,

@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Live editing indicators and animations for collaborative content
 class CollaborativeLiveWidgets {
@@ -14,7 +15,7 @@ class CollaborativeLiveWidgets {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = AppDimensions.animationDurationCommon,
+    Duration animationDuration = AppMotion.standard,
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
@@ -24,24 +25,19 @@ class CollaborativeLiveWidgets {
           duration: AnimationUtils.getDuration(context, animationDuration),
           tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
           builder: (context, opacity, child) {
-            final indicatorColor = color ?? context.butleryColors.warning;
+            final indicatorColor =
+                color ??
+                AppModeColors.textWarning(Theme.of(context).brightness);
             return Opacity(
               opacity: opacity,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
+                  horizontal: AppDimensions.space4,
                   vertical: AppDimensions.spacingXs,
                 ),
                 decoration: BoxDecoration(
-                  color: indicatorColor.withValues(
-                    alpha: AppDimensions.opacityVeryLight,
-                  ),
-                  borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
-                  border: Border.all(
-                    color: indicatorColor.withValues(
-                      alpha: AppDimensions.opacityMediumLight,
-                    ),
-                  ),
+                  color: context.modeColors.surfaceTintWarning,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -94,7 +90,7 @@ class _PulsingDotState extends State<_PulsingDot>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: AppMotion.pulseHalf,
       vsync: this,
     );
     _animation = Tween<double>(begin: 0.3, end: 1.0).animate(

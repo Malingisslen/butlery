@@ -33,7 +33,7 @@ class PersonalRecipeCrud {
     List<String> ingredients = const [],
     List<String> instructions = const [],
     List<String> imageUrls = const [],
-    String mealType = 'Lunch',
+    String mealType = 'Middag',
     int? portions,
     int? timeMinutes,
     double? rating,
@@ -53,7 +53,15 @@ class PersonalRecipeCrud {
       personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
+    return _addCreated(recipeId);
+  }
 
+  /// BUT-2280: see
+  /// `PersonalRecipeModule.createPersonalRecipeFrom`.
+  Future<String?> createPersonalRecipeFrom(Recipe draft) async =>
+      _addCreated(await personalModule.createPersonalRecipeFrom(draft));
+
+  Future<String?> _addCreated(String? recipeId) async {
     if (recipeId != null) {
       // BUG-003 FIX: On web, cache is stubbed so we use direct recipe access
       // instead of loading from cache (which would return null).

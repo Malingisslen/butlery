@@ -20,9 +20,12 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 class HouseholdSizeView extends StatefulWidget {
   const HouseholdSizeView({super.key});
@@ -85,7 +88,10 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
         if (shouldPop && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-        appBar: AdaptiveAppBar(title: context.l10n.settingsHouseholdSizeTitle),
+        appBar: ButleryTopBar.undersida(
+          title: context.l10n.settingsHouseholdSizeTitle,
+          backTo: context.l10n.commonSettings,
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
@@ -99,9 +105,9 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.groups,
-                        color: cs.primary,
+                      ButleryIcon(
+                        ButleryIcons.users,
+                        color: cs.onSurface,
                         size: AppDimensions.iconSizeAction,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
@@ -124,12 +130,14 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
                     ),
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
-                  ActionButtons.primaryButton(
-                    context,
+                  // The view's one saffron action (Skarmar v12 etapp 9
+                  // 'Hushållsstorlek', "Spara"; Grafisk manual v6:219).
+                  HeroButton(
                     label: context.l10n.commonSave,
                     onPressed: canSave ? _save : null,
-                    isLoading: viewModel.isSaving,
-                    isExpanded: true,
+                    busy: viewModel.isSaving,
+                    busyLabel: context.l10n.statusSaving,
+                    expand: true,
                   ),
                 ],
               ),
@@ -153,9 +161,9 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
     } else {
       // Mirror the profile-edit save path — surface the failure instead of
       // leaving the user with un-saved changes and no explanation.
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        viewModel.error ?? context.l10n.profileCouldNotSave,
+        what: viewModel.error ?? context.l10n.profileCouldNotSave,
       );
     }
   }
@@ -247,7 +255,7 @@ class _HouseholdSizeControl extends StatelessWidget {
                   : () => viewModel.updateHouseholdSize(
                       size <= UserProfile.minHouseholdSize ? null : size - 1,
                     ),
-              icon: const Icon(Icons.remove),
+              icon: const ButleryIcon(ButleryIcons.minus),
               tooltip: context.l10n.a11yDecreaseHouseholdSize,
             ),
             Expanded(
@@ -263,7 +271,7 @@ class _HouseholdSizeControl extends StatelessWidget {
               onPressed: (size != null && size >= UserProfile.maxHouseholdSize)
                   ? null
                   : () => viewModel.updateHouseholdSize((size ?? 0) + 1),
-              icon: const Icon(Icons.add),
+              icon: const ButleryIcon(ButleryIcons.plus),
               tooltip: context.l10n.a11yIncreaseHouseholdSize,
             ),
           ],

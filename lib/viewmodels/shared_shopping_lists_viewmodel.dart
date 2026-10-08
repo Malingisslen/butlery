@@ -7,6 +7,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class SharedShoppingListsViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
@@ -28,7 +29,7 @@ class SharedShoppingListsViewModel extends ChangeNotifier
       await executeAsync(() async {
         await _shoppingService.loadLists();
         _sharedLists = _shoppingService.collaborativeLists;
-      }, errorPrefix: 'Kunde inte ladda delade inköpslistor');
+      }, errorPrefix: AppLocale.current.sharedShoppingListsLoadFailed);
     } catch (_) {
       // Error already captured by StateNotifierMixin
     }

@@ -1,7 +1,11 @@
 // lib/widgets/messaging/new_conversation_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -83,8 +87,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           _filteredFriends = _friends;
         } else {
           _filteredFriends = _friends.where((friend) {
-            return friend.displayName.toLowerCase().contains(query) ||
-                friend.email.toLowerCase().contains(query);
+            return friend.displayName.toLowerCase().contains(query);
           }).toList();
         }
       });
@@ -119,7 +122,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
               child: OutlinedButton.icon(
                 onPressed: _navigateToGroupCreation,
-                icon: const Icon(Icons.group_add),
+                icon: const ButleryIcon(ButleryIcons.usersPlus),
                 label: Text(context.l10n.conversationCreateGroup),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
@@ -161,9 +164,10 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         ActionButtons.primaryButton(
           context,
           label: context.l10n.commonCreate,
-          onPressed: _selectedFriendIds.isEmpty || _isCreating
-              ? null
-              : _createConversation,
+          onPressed: _selectedFriendIds.isEmpty ? null : _createConversation,
+          // Creating keeps the name and draws the plate line (Komponentark
+          // v1:372); busy ignores presses rather than disabling.
+          isLoading: _isCreating,
         ),
       ],
     );
@@ -174,9 +178,9 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       controller: _searchController,
       decoration: InputDecoration(
         hintText: context.l10n.chatSearchFriends,
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const ButleryIcon(ButleryIcons.search),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
       ),
     );
@@ -187,8 +191,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   Widget _buildFriendsList() {
     final cs = Theme.of(context).colorScheme;
     if (_isLoading) {
-      return const Center(
-        child: LoadingIndicator(),
+      return Center(
+        child: PlateLineMessage(message: context.l10n.messagingLoadingFriends),
       );
     }
 
@@ -197,8 +201,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
+            ButleryIcon(
+              ButleryIcons.triangleAlert,
               size: AppDimensions.iconSizeXxl,
               color: cs.error,
             ),
@@ -215,7 +219,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
                 setState(() => _hasError = false);
                 _loadFriends();
               },
-              icon: const Icon(Icons.refresh),
+              icon: const ButleryIcon(ButleryIcons.refreshCw),
               label: Text(context.l10n.commonRetry),
             ),
           ],
@@ -228,8 +232,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.people_outline,
+            ButleryIcon(
+              ButleryIcons.users,
               size: AppDimensions.iconSizeXxl,
               color: cs.onSurfaceVariant,
             ),
@@ -245,7 +249,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               context.l10n.conversationAddFriendsFirst,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.outline,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -273,7 +277,6 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         return CheckboxListTile(
           key: ValueKey(friend.uid),
           title: Text(friend.displayName),
-          subtitle: Text(friend.email),
           value: isSelected,
           onChanged: (bool? selected) {
             if (mounted) {
@@ -354,12 +357,12 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         }
       }
     } catch (e) {
+      // Never the exception's own text (content-style-guide.md:95).
+      AppLogger.error('Could not create conversation', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.conversationCreateError(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.errorCouldNotStartConversation,
         );
       }
     } finally {

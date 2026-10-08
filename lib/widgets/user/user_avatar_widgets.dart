@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Avatar widgets and related functionality
 class UserAvatarWidgets {
@@ -32,7 +36,7 @@ class UserAvatarWidgets {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         final avatarSize = explicitSize ?? _getAvatarSize(size);
         // UI Redesign: Avatar uses rust (secondary) color scheme
         final effectiveBackgroundColor = backgroundColor ?? cs.secondary;
@@ -68,8 +72,8 @@ class UserAvatarWidgets {
                       effectiveBackgroundColor,
                       effectiveTextColor,
                     ),
-                    fadeInDuration: AppDimensions.animationDurationCommon,
-                    fadeOutDuration: AppDimensions.animationDurationCommon,
+                    fadeInDuration: AppMotion.standard,
+                    fadeOutDuration: AppMotion.standard,
                   ),
                 )
               : _buildInitialsAvatar(
@@ -108,8 +112,8 @@ class UserAvatarWidgets {
                         width: AppDimensions.borderWidthThin,
                       ),
                     ),
-                    child: Icon(
-                      isOnline ? Icons.circle : Icons.circle_outlined,
+                    child: ButleryIcon(
+                      isOnline ? ButleryIcons.dot : ButleryIcons.circle,
                       size: statusSize,
                       color: isOnline ? bc.success : cs.outline,
                     ),
@@ -126,11 +130,7 @@ class UserAvatarWidgets {
                 child: Semantics(
                   label: context.l10n.a11yProfileImage(displayName),
                   button: true,
-                  child: InkWell(
-                    onTap: onTap,
-                    borderRadius: BorderRadius.zero,
-                    child: avatarWidget,
-                  ),
+                  child: PressScale(onTap: onTap, child: avatarWidget),
                 ),
               )
             // BUT-908: also label the non-tappable avatar so screen readers
@@ -165,7 +165,7 @@ class UserAvatarWidgets {
               imageUrl: imageUrl,
               displayName: displayName,
               size: size,
-              borderColor: borderColor ?? cs.primary,
+              borderColor: borderColor ?? cs.onSurface,
               borderWidth: borderWidth ?? AppDimensions.spacingXs,
             ),
             Positioned(
@@ -177,26 +177,28 @@ class UserAvatarWidgets {
                 child: Semantics(
                   label: context.l10n.a11yChangeProfileImage,
                   button: true,
-                  child: InkWell(
-                    onTap: onEditTap,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
-                    ),
-                    child: Container(
-                      width: AppDimensions.iconSizeXl,
-                      height: AppDimensions.iconSizeXl,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: cs.primary,
-                        border: Border.all(
-                          color: cs.surfaceContainerHighest,
-                          width: AppDimensions.borderWidthThick,
-                        ),
+                  child: PressFill(
+                    surface: PressSurface.ink,
+                    child: InkWell(
+                      onTap: onEditTap,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusPill,
                       ),
-                      child: Icon(
-                        Icons.edit,
-                        size: AppDimensions.iconSizeM,
-                        color: cs.surfaceContainerHighest,
+                      child: Container(
+                        width: AppDimensions.iconSizeXl,
+                        height: AppDimensions.iconSizeXl,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: cs.onPrimary,
+                            width: AppDimensions.borderWidthThick,
+                          ),
+                        ),
+                        child: ButleryIcon(
+                          ButleryIcons.pencil,
+                          size: AppDimensions.iconSizeM,
+                          color: cs.onPrimary,
+                        ),
                       ),
                     ),
                   ),
@@ -221,15 +223,15 @@ class UserAvatarWidgets {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        final bc = context.butleryColors;
+        final bc = context.modeColors;
         final indicatorSize = size ?? AppDimensions.iconSizeM;
         return Semantics(
           label: isOnline
               ? context.l10n.a11yStatusOnline
               : context.l10n.a11yStatusOffline,
           excludeSemantics: true,
-          child: Icon(
-            isOnline ? Icons.circle : Icons.circle_outlined,
+          child: ButleryIcon(
+            isOnline ? ButleryIcons.dot : ButleryIcons.circle,
             size: indicatorSize,
             color: isOnline ? bc.success : cs.outline,
           ),
@@ -309,7 +311,7 @@ class UserAvatarWidgets {
     TextStyle? baseStyle,
   }) {
     if (initials == unknownInitials) {
-      return Icon(Icons.person, size: fontSize * 1.5, color: color);
+      return ButleryIcon(ButleryIcons.user, size: fontSize * 1.5, color: color);
     }
     return Text(
       initials,

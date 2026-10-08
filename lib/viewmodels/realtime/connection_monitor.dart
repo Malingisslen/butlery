@@ -4,8 +4,10 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+
+/// A wait, not motion (produktbeslut R8-9 = A).
+const Duration _flapDebounce = Duration(milliseconds: 350);
 
 /// Status for connection monitoring
 enum ConnectionStatus {
@@ -84,7 +86,7 @@ class ConnectionMonitor {
 
     // Debounce rapid connection changes (ignorera flapping)
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(AppDimensions.animationDurationSlow, () {
+    _debounceTimer = Timer(_flapDebounce, () {
       _processConnectionChange(wasOnline, isOnline, isConnected);
     });
   }

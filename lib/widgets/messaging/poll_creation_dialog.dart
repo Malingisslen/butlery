@@ -8,6 +8,8 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog for creating a new poll in a chat conversation.
 /// Supports 2-4 options, single/multiple choice toggle, and optional deadline.
@@ -127,7 +129,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
     return Dialog(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(AppDimensions.borderRadiusS),
+          Radius.circular(AppDimensions.radiusControl),
         ),
       ),
       child: ConstrainedBox(
@@ -154,7 +156,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   hintText: context.l10n.pollQuestionHint,
                   border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(
-                      Radius.circular(AppDimensions.borderRadiusS),
+                      Radius.circular(AppDimensions.radiusControl),
                     ),
                   ),
                   labelStyle: AppTextStyles.labelMedium.copyWith(
@@ -186,7 +188,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                               ),
                               border: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
-                                  Radius.circular(AppDimensions.borderRadiusS),
+                                  Radius.circular(AppDimensions.radiusControl),
                                 ),
                               ),
                               labelStyle: AppTextStyles.labelMedium.copyWith(
@@ -199,7 +201,11 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                         if (_optionControllers.length > 2)
                           IconButton(
                             onPressed: () => _removeOption(index),
-                            icon: Icon(Icons.close, color: cs.error, size: 20),
+                            icon: ButleryIcon(
+                              ButleryIcons.x,
+                              color: cs.error,
+                              size: 20,
+                            ),
                             tooltip: context.l10n.tooltipRemoveOption,
                           ),
                       ],
@@ -213,11 +219,11 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
                       onPressed: _addOption,
-                      icon: const Icon(Icons.add, size: 18),
+                      icon: const ButleryIcon(ButleryIcons.plus, size: 18),
                       label: Text(
                         context.l10n.pollAddOption,
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                       ),
                     ),
@@ -232,7 +238,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   Switch(
                     value: _allowMultiple,
                     onChanged: (v) => setState(() => _allowMultiple = v),
-                    activeThumbColor: cs.primary,
+                    // The theme's switch: ink track, paper knob when on
+                    // (feedback_themes.dart switchTheme). An ink knob on the
+                    // ink track vanished in both modes.
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Text(
@@ -262,10 +270,10 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     onPressed: _isValid ? _submit : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
-                      foregroundColor: cs.surfaceContainerHighest,
+                      foregroundColor: cs.onPrimary,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(
-                          Radius.circular(AppDimensions.borderRadiusS),
+                          Radius.circular(AppDimensions.radiusControl),
                         ),
                       ),
                     ),
@@ -338,8 +346,8 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
   Widget _fallbackThumb(ColorScheme cs) {
     return DecoratedBox(
       decoration: BoxDecoration(color: cs.surfaceContainerHighest),
-      child: Icon(
-        Icons.restaurant_menu,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
         color: cs.onSurfaceVariant,
         size: 20,
       ),

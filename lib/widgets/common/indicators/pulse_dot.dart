@@ -1,11 +1,11 @@
 // lib/widgets/common/indicators/pulse_dot.dart
 //
-// BUT-408: Reusable pulsing status dot, extracted from [EditIndicatorWidget]
-// so cooking session cards and other live-presence widgets share the same
-// animation contract (WCAG 2.3.3 reduce-motion aware).
+// BUT-408: Reusable pulsing status dot, so cooking session cards and other
+// live-presence widgets share the same animation contract (WCAG 2.3.3
+// reduce-motion aware).
 //
 // Behavior:
-// - Pulses from scale 0.5 → 1.0 and back, over 2s.
+// - Pulses from scale 0.5 → 1.0 and back.
 // - Respects MediaQuery.disableAnimations — renders a static square when
 //   reduced motion is enabled (no scale animation).
 // - Square shape by design system (no BorderRadius).
@@ -13,6 +13,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// A small pulsing dot used to indicate live activity (editing, cooking,
 /// presence). Square by design system rule. Respects reduce-motion.
@@ -20,7 +21,7 @@ class PulseDot extends StatefulWidget {
   const PulseDot({
     required this.color,
     this.size = 8.0,
-    this.duration = const Duration(seconds: 2),
+    this.duration = AppMotion.pulseHalf,
     super.key,
   });
 
@@ -30,8 +31,6 @@ class PulseDot extends StatefulWidget {
   /// Edge length in logical pixels (square).
   final double size;
 
-  /// Full pulse cycle (0.5 → 1.0 → 0.5). 2s matches the original
-  /// [EditIndicatorWidget] cadence.
   final Duration duration;
 
   @override

@@ -16,7 +16,6 @@ import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
@@ -28,6 +27,7 @@ import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../infrastructure/helpers/own_preferences_stub.dart';
 
 class _MockHouseholdService extends Mock implements HouseholdService {}
 
@@ -90,7 +90,8 @@ void main() {
     userService = MockUserService();
     // Single-user prefs deliberately EMPTY — if any test passes with these,
     // filtering came from the household union, not the user's own prefs.
-    when(() => userService.allergenPreferences).thenReturn(
+    stubOwnPreferences(
+      userService,
       const UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
     );
 
@@ -143,24 +144,16 @@ void main() {
       // A household exists, but the user has opted out via the settings toggle
       // (profile.useHouseholdAllergens == false, which the generator reads live).
       when(() => household.hasHousehold).thenReturn(true);
-      when(() => userService.currentUserProfile).thenReturn(
-        UserProfile(
-          uid: 'u1',
-          displayName: 'Test',
-          email: 't@example.com',
-          joinedAt: DateTime(2026),
-          lastActiveAt: DateTime(2026),
-          useHouseholdAllergens: false,
-        ),
-      );
       // The OWNER tracks gluten. If the household union were (wrongly) consulted
       // it would also hide gluten — so the discriminators are prefSource AND
       // that aggregateAllergenPreferences is never called.
-      when(() => userService.allergenPreferences).thenReturn(
+      stubOwnPreferences(
+        userService,
         const UserAllergenPreferences(
           trackedAllergens: {'gluten'},
           trackedDietary: {},
         ),
+        useHouseholdAllergens: false,
       );
 
       final safe = recipeWith('safe', tag({'gluten': TriState.free}));

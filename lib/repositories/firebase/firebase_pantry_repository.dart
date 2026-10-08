@@ -6,6 +6,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/pantry/pantry_previous_version.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 
 /// Firebase implementation of [PantryRepository].
@@ -53,13 +54,55 @@ class FirebasePantryRepository
     }
   }
 
+  /// Who changed the row and when; the server sets the time.
+  Map<String, Object> _stamp(String userId) => {
+    'updatedAt': FieldValue.serverTimestamp(),
+    'updatedBy': userId,
+  };
+
   @override
-  Future<void> update(String userId, PantryItem item) async {
+  Future<void> updateFields(
+    String userId,
+    String itemId,
+    Map<String, Object> changes, {
+    PantryItem? before,
+  }) async {
+    if (changes.isEmpty) return;
     try {
-      await _col(userId).doc(item.id).update(item.toFirestore());
-      AppLogger.info('PantryItem updated: ${item.id}');
+      // Only the changed fields: the whole item used to be written here, so
+      // the last device to save won every field (produktregler.md:105).
+      await _col(userId).doc(itemId).update({
+        ...changes,
+        ..._stamp(userId),
+        // In the same update, so keeping it costs no write of its own.
+        if (before != null)
+          'previous': PantryPreviousVersion.toFirestore(
+            before.storedValues(changes.keys),
+          ),
+      });
+      AppLogger.info(
+        'PantryItem updated: $itemId (${changes.keys.join(', ')})',
+      );
     } catch (e, stack) {
       AppLogger.error('Failed to update pantry item: $e', stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> adjustQuantity(
+    String userId,
+    String itemId,
+    double delta,
+  ) async {
+    try {
+      await _col(userId).doc(itemId).update({
+        'quantity': FieldValue.increment(delta),
+        ..._stamp(userId),
+      });
+      AppLogger.info('PantryItem quantity adjusted: $itemId');
+    } catch (e, stack) {
+      AppLogger.error('Failed to adjust pantry quantity: $e', stack);
       rethrow;
     }
   }

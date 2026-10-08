@@ -1,7 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart' as app;
+import 'package:butlery/core/di/di_container.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/factories/mock_factory.dart';
 
 // Fake ExtractionManager whose extractFromUrl is controlled by the test.
 // Subclasses the concrete class so BaseService's serviceName / onDispose are
@@ -19,9 +23,13 @@ class _FakeExtractionManager extends ExtractionManager {
 // ExtractionManager that throws unconditionally — drives the null-coalescing
 // fallback inside SocialMediaExtractor.extractFromUrl.
 class _ThrowingExtractionManager extends ExtractionManager {
+  int callCount = 0;
+
   @override
-  Future<ExtractionResult> extractFromUrl(String url) =>
-      throw Exception('network timeout');
+  Future<ExtractionResult> extractFromUrl(String url) {
+    callCount++;
+    throw Exception('network timeout');
+  }
 }
 
 void main() {
@@ -32,12 +40,26 @@ void main() {
     await BaseUnitTest.setupUnit();
   });
 
-  setUp(() {
+  setUp(() async {
+    await TestServiceLocator.initialize();
+    // executeServiceOperation reads AuthRepository through the PRODUCTION
+    // ServiceLocator. Unwired, its auth pre-flight returns the fallback result
+    // and the manager is never called, so these tests would pass on the
+    // fallback. DIContainer wraps the same GetIt.instance the harness
+    // registers into.
+    TestServiceLocator.registerMock<AuthRepository>(
+      MockFactory.createAuthRepository(
+        isAuthenticated: true,
+        userId: 'test_user_123',
+      ),
+    );
+    app.ServiceLocator.initialize(DIContainer());
     service = SocialMediaExtractor();
   });
 
   tearDown(() async {
     await service.dispose();
+    app.ServiceLocator.reset();
     BaseUnitTest.resetMocks();
     await TestServiceLocator.reset();
   });
@@ -120,6 +142,7 @@ void main() {
         final result = await service.extractFromUrl('not-a-valid-url');
 
         expect(result, isA<ExtractionResult>());
+        expect(result.metadata['reason'], equals('unknown_platform'));
       });
 
       test('should handle empty URL', () async {
@@ -278,6 +301,7 @@ void main() {
           'https://unsupported-platform.com',
         );
         expect(result, isA<ExtractionResult>());
+        expect(result.metadata['reason'], equals('unknown_platform'));
       });
 
       test('should handle malformed URL', () async {
@@ -372,8 +396,6 @@ void main() {
     });
 
     // BUT-1336 — Criterion 2: failure-path carries success==false + non-null error.
-    // The existing tests above only assert isA<ExtractionResult>; they never check
-    // the failure contract that receive_share_view depends on.
     group('extractFromUrl failure path (BUT-1336)', () {
       // Intent: extractFromUrl returns success==false and a non-null error string
       // when the ExtractionManager itself reports failure. Would fail if the facade
@@ -405,9 +427,10 @@ void main() {
           );
           expect(
             result.error,
-            isNotNull,
+            equals(errorMessage),
             reason:
-                'The error string must not be dropped — receive_share_view reads result.error',
+                'The manager\'s own error string must be forwarded, not '
+                'replaced by the facade fallback',
           );
         },
       );
@@ -419,15 +442,15 @@ void main() {
       test(
         'returns success==false with non-null error when ExtractionManager throws',
         () async {
-          final extractor = SocialMediaExtractor(
-            manager: _ThrowingExtractionManager(),
-          );
+          final manager = _ThrowingExtractionManager();
+          final extractor = SocialMediaExtractor(manager: manager);
           addTearDown(extractor.dispose);
 
           final result = await extractor.extractFromUrl(
             'https://instagram.com/p/ABC123',
           );
 
+          expect(manager.callCount, equals(1));
           expect(
             result.success,
             isFalse,
@@ -437,23 +460,15 @@ void main() {
           expect(
             result.error,
             isNotNull,
-            reason:
-                'The fallback path must populate error so receive_share_view can display it',
+            reason: 'The fallback path must populate error',
           );
         },
       );
 
       // Intent: every failure that flows through the facade carries a non-null
-      // metadata['reason'] code, so receive_share_view passes a meaningful errorType
-      // to logExtractionError instead of always-null analytics. BUT-1348 fix (flipped
+      // metadata['reason'] code. BUT-1348 fix (flipped
       // from the BUT-1336 characterization test). Would fail if a failure branch
       // dropped the reason key.
-      //
-      // NOTE: we deliberately do NOT assert the exact code here. Whether the facade
-      // forwards the manager's reason ('unknown_platform') or returns its own
-      // fallback ('network') depends on auth/ServiceLocator state, which differs
-      // between an isolated run and the full suite — asserting one exact value makes
-      // this test order-dependent. The robust contract is "a known, non-null code".
       const knownReasons = {
         'unknown_platform',
         'no_content',
@@ -483,13 +498,18 @@ void main() {
             result.metadata['reason'],
             isNotNull,
             reason:
-                'BUT-1348: every failure ExtractionResult must carry a reason code so '
-                'receive_share_view logs a meaningful errorType, not null.',
+                'BUT-1348: every failure ExtractionResult must carry a reason code',
           );
           expect(
             knownReasons,
             contains(result.metadata['reason']),
             reason: 'reason must be one of the agreed stable codes',
+          );
+          expect(
+            result.metadata['reason'],
+            equals('unknown_platform'),
+            reason:
+                'the manager\'s reason is forwarded, not the facade fallback',
           );
         },
       );
@@ -500,22 +520,22 @@ void main() {
       test(
         'throwing manager falls back to a non-null network reason code (BUT-1348)',
         () async {
-          final extractor = SocialMediaExtractor(
-            manager: _ThrowingExtractionManager(),
-          );
+          final manager = _ThrowingExtractionManager();
+          final extractor = SocialMediaExtractor(manager: manager);
           addTearDown(extractor.dispose);
 
           final result = await extractor.extractFromUrl(
             'https://instagram.com/p/ABC123',
           );
 
+          expect(manager.callCount, equals(1));
           expect(result.metadata['reason'], isNotNull);
           expect(result.metadata['reason'], equals('network'));
         },
       );
 
       // Intent: the per-branch reason codes that production failure paths stamp are
-      // exactly the stable set receive_share_view expects. Constructed directly because
+      // exactly the stable set. Constructed directly because
       // the WebView/network branches can't be driven in a unit test. Would fail if a
       // code were renamed away from the agreed set. BUT-1348.
       test('failure reason codes belong to the stable set (BUT-1348)', () {

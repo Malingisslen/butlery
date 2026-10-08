@@ -1,7 +1,5 @@
 // lib/views/recipe_detail/handlers/recipe_management_handler.dart
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
@@ -26,9 +24,10 @@ class RecipeManagementHandler {
   ///
   /// BUT-927: matches the bulk-delete UX in `RecipeDeleteManager` —
   /// optimistically remove the recipe from the local list, navigate back,
-  /// show a 5-second snackbar with an Undo action, and only commit the
-  /// Firestore delete + analytics after the timer fires (or skip both if
-  /// the user pressed Undo).
+  /// show the 7 s Ångra snackbar, and only commit the Firestore delete +
+  /// analytics once that snackbar has closed (or skip both if the user
+  /// pressed Ångra). The commit follows the snackbar, never a timer of its
+  /// own, so it cannot land while Ångra is on screen.
   static Future<void> deleteRecipe(
     BuildContext context, {
     required VoidCallback onSuccess,
@@ -47,8 +46,8 @@ class RecipeManagementHandler {
 
     // Capture everything we need before popping the route — once the detail
     // view is gone, `context` is no longer mounted and `viewModel` may be
-    // disposed by the time the timer fires.
-    final messenger = ScaffoldMessenger.of(context);
+    // disposed by the time the snackbar closes.
+    final undo = UndoSnackBar.capture(context);
     final l10n = context.l10n;
     final recipeService = ServiceLocator.get<UnifiedRecipeService>();
     final analyticsService = ServiceLocator.get<AnalyticsService>();
@@ -59,9 +58,7 @@ class RecipeManagementHandler {
     popNavigation();
     onSuccess();
 
-    var undone = false;
-    final timer = Timer(const Duration(seconds: 5), () async {
-      if (undone) return;
+    Future<void> commit() async {
       try {
         // Note: `optimisticRemoveWithIndex` already stripped the recipe
         // from the local list. `recipeService.deleteRecipe` issues the
@@ -86,21 +83,14 @@ class RecipeManagementHandler {
       } catch (e, st) {
         AppLogger.error('BUT-927 delete commit failed: $e\n$st');
       }
-    });
+    }
 
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.recipeDeleted),
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: l10n.commonUndo,
-          onPressed: () {
-            undone = true;
-            timer.cancel();
-            recipeService.optimisticRestoreAt(recipe, originalIndex);
-          },
-        ),
-      ),
+    // No messenger means no Ångra could be offered, so showDeferred restores
+    // the recipe instead of deleting it without one.
+    undo.showDeferred(
+      l10n.recipeDeleted,
+      onUndo: () => recipeService.optimisticRestoreAt(recipe, originalIndex),
+      onCommit: commit,
     );
   }
 
@@ -127,7 +117,10 @@ class RecipeManagementHandler {
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.recipeCouldNotOpenEditor);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeCouldNotOpenEditor,
+      );
     }
   }
 
@@ -181,7 +174,10 @@ class RecipeManagementHandler {
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.recipeCouldNotMarkAsCooked);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeCouldNotMarkAsCooked,
+      );
     }
   }
 
@@ -210,7 +206,10 @@ class RecipeManagementHandler {
       SnackBarUtils.showSuccess(context, context.l10n.recipeShared);
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.recipeCouldNotShare);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeCouldNotShare,
+      );
     }
   }
 
@@ -235,10 +234,19 @@ class RecipeManagementHandler {
     Recipe recipe,
   ) async {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    try {
+      if (!friendsService.isInitialized) await friendsService.initialize();
+    } catch (e) {
+      AppLogger.warning('Friends list load before collaboration failed: $e');
+    }
+    if (!context.mounted) return;
     final friends = friendsService.friendsList;
 
     if (friends.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.collaborationNoFriends);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.collaborationNoFriends,
+      );
       return;
     }
 
@@ -260,9 +268,6 @@ class RecipeManagementHandler {
                     .map(
                       (friend) => CheckboxListTile(
                         title: Text(friend.displayName),
-                        subtitle: friend.email.isNotEmpty
-                            ? Text(friend.email)
-                            : null,
                         value: selectedIds.contains(friend.uid),
                         activeColor: dialogCs.primary,
                         onChanged: (v) => setDialogState(() {
@@ -296,18 +301,19 @@ class RecipeManagementHandler {
 
     if (confirmed == true && selectedIds.isNotEmpty) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.realtime.enableCollaborativeEditing(
-        recipe.id,
-        selectedIds.toList(),
-      );
+      final success = await recipeService.collaboration
+          .enableCollaborativeEditing(
+            recipe.id,
+            selectedIds.toList(),
+          );
 
       if (!context.mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(context, context.l10n.collaborationEnabled);
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.collaborationCouldNotEnable,
+          what: context.l10n.collaborationCouldNotEnable,
         );
       }
     }
@@ -338,9 +344,10 @@ class RecipeManagementHandler {
 
     if (confirmed == true) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.realtime.disableCollaborativeEditing(
-        recipe.id,
-      );
+      final success = await recipeService.collaboration
+          .disableCollaborativeEditing(
+            recipe.id,
+          );
 
       if (!context.mounted) return;
       if (success) {
@@ -349,9 +356,9 @@ class RecipeManagementHandler {
           context.l10n.collaborationDeactivated,
         );
       } else {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.collaborationCouldNotDeactivate,
+          what: context.l10n.collaborationCouldNotDeactivate,
         );
       }
     }

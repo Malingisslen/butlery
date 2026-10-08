@@ -15,6 +15,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// One generated recipe waiting to be placed (or already placed) on the
 /// week grid. [mealType] is the raw category key from the generated map so
@@ -151,7 +152,7 @@ class MenuPlacementViewModel extends BaseViewModel {
         _selectedIndex = _firstUnplacedIndex();
         notifyListeners();
       },
-      errorPrefix: 'Kunde inte ladda veckomenyn',
+      errorPrefix: AppLocale.current.weeklyMenuLoadError,
     );
   }
 
@@ -264,11 +265,14 @@ class MenuPlacementViewModel extends BaseViewModel {
       setError(weeklyPlanReadFailedMessage);
       return null;
     }
-    final current = _plan;
-    if (current == null || !hasPlacements) return null;
+    final working = _plan;
+    if (working == null || !hasPlacements) return null;
+    // BUT-2215: the week menu adopts the returned plan and builds its next
+    // edit on it, so it must carry the revision that was saved.
+    final current = working.nextRevision();
     final ok = await executeAsyncVoid(
-      () => _service.save(current),
-      errorPrefix: 'Kunde inte spara veckomenyn',
+      () => _service.saveRevision(current),
+      errorPrefix: AppLocale.current.weeklyMenuSaveError,
     );
     if (!ok) return null;
     return (

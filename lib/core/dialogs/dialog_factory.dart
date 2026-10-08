@@ -1,62 +1,39 @@
 // lib/core/dialogs/dialog_factory.dart - CONSOLIDATED VERSION
 // Merged from confirmation_dialog_factory.dart + feedback_dialog_factory.dart + interactive_dialog_factory.dart
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// Consolidated dialog factory with all dialog functionality
 class DialogFactory {
   // Prevent instantiation
   DialogFactory._();
 
-  /// Check if running on iOS platform (web-safe)
-  static bool get _isIOS =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
-
   // Merged from confirmation_dialog_factory.dart
-  /// Shows a platform-adaptive confirmation dialog.
-  /// Uses CupertinoAlertDialog on iOS, AlertDialog on Android.
+  /// Shows a confirmation dialog.
+  ///
+  /// One Material dialog on both platforms: Butlery looks like Butlery on
+  /// iOS and Android alike (plattformsmatris.md:73-75); the platform feel
+  /// lives in motion and gesture, not in the component's form (beslutslogg
+  /// B-45).
+  /// [confirmText] is required and says what the button does
+  /// (content-style-guide.md:77); there is no generic "OK" fallback.
   static Future<bool?> showConfirmation(
     BuildContext context, {
     required String title,
     required String message,
-    String? confirmText,
+    required String confirmText,
     String? cancelText,
     Color? confirmColor,
     bool isDangerous = false,
   }) {
     final l10n = context.l10n;
-    final effectiveConfirmText = confirmText ?? l10n.commonOk;
     final effectiveCancelText = cancelText ?? l10n.commonCancel;
     final dangerColor = isDangerous
         ? Theme.of(context).colorScheme.error
         : confirmColor;
-
-    if (_isIOS) {
-      return showCupertinoDialog<bool>(
-        context: context,
-        builder: (dialogContext) => CupertinoAlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(effectiveCancelText),
-            ),
-            CupertinoDialogAction(
-              isDestructiveAction: isDangerous,
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(effectiveConfirmText),
-            ),
-          ],
-        ),
-      );
-    }
 
     return showDialog<bool>(
       context: context,
@@ -73,7 +50,7 @@ class DialogFactory {
             style: TextButton.styleFrom(
               foregroundColor: dangerColor,
             ),
-            child: Text(effectiveConfirmText),
+            child: Text(confirmText),
           ),
         ],
       ),
@@ -135,8 +112,12 @@ class DialogFactory {
     );
   }
 
-  /// Platform-adaptive error dialog.
-  /// Uses CupertinoAlertDialog on iOS, AlertDialog on Android.
+  /// Error dialog, one Material dialog on both platforms
+  /// (plattformsmatris.md:73-75).
+  ///
+  /// [buttonText] stays optional; without it the only button closes the
+  /// dialog and says "Stäng" (commonClose), never "OK"
+  /// (content-style-guide.md:77).
   static Future<void> showError(
     BuildContext context, {
     String? title,
@@ -145,23 +126,7 @@ class DialogFactory {
   }) {
     final l10n = context.l10n;
     final effectiveTitle = title ?? l10n.dialogErrorTitle;
-    final effectiveButtonText = buttonText ?? l10n.commonOk;
-
-    if (_isIOS) {
-      return showCupertinoDialog<void>(
-        context: context,
-        builder: (dialogContext) => CupertinoAlertDialog(
-          title: Text(effectiveTitle),
-          content: Text(message),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(effectiveButtonText),
-            ),
-          ],
-        ),
-      );
-    }
+    final effectiveButtonText = buttonText ?? l10n.commonClose;
 
     return showDialog<void>(
       context: context,
@@ -189,14 +154,11 @@ class DialogFactory {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
+      // Plate line plus text, never a spinner (produktregler.md:163, B-18).
       builder: (dialogContext) => AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: AppDimensions.spacingM),
-            Text(effectiveMessage),
-          ],
+        content: PlateLineMessage(
+          message: effectiveMessage,
+          textAlign: TextAlign.start,
         ),
       ),
     );
@@ -226,19 +188,19 @@ class DialogFactory {
     );
   }
 
-  // Text input dialog
+  // Text input dialog. [confirmText] is required and says what the button
+  // does (content-style-guide.md:77).
   static Future<String?> showTextInput(
     BuildContext context, {
     required String title,
     String? hintText,
     String? initialValue,
-    String? confirmText,
+    required String confirmText,
     String? cancelText,
     bool required = false,
     int maxLines = 1,
   }) {
     final l10n = context.l10n;
-    final effectiveConfirmText = confirmText ?? l10n.commonOk;
     final effectiveCancelText = cancelText ?? l10n.commonCancel;
     final controller = TextEditingController(text: initialValue);
 
@@ -267,7 +229,7 @@ class DialogFactory {
               if (required && text.isEmpty) return;
               Navigator.pop(dialogContext, text.isEmpty ? null : text);
             },
-            child: Text(effectiveConfirmText),
+            child: Text(confirmText),
           ),
         ],
       ),

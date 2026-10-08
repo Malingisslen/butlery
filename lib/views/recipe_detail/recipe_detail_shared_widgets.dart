@@ -15,9 +15,12 @@ import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -25,6 +28,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 /// Shared widget builders for recipe detail layouts (mobile + tablet).
 abstract final class RecipeDetailSharedWidgets {
@@ -69,32 +73,30 @@ abstract final class RecipeDetailSharedWidgets {
 
     return Padding(
       padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-      child: Semantics(
-        link: true,
-        child: GestureDetector(
-          onTap: () => launchSourceUrl(context, url),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // BUT-1041: platform-aware leading icon so video imports read as
-              // media at a glance, generic links as external.
-              Icon(
-                sourceIcon(url),
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.spacingXxs),
-              Flexible(
-                child: Text(
-                  context.l10n.recipeSourceFrom(Uri.tryParse(url)?.host ?? url),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurfaceVariant,
-                    decoration: TextDecoration.underline,
-                  ),
+      child: ButleryLink(
+        onTap: () => launchSourceUrl(context, url),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // BUT-1041: platform-aware leading icon so video imports read as
+            // media at a glance, generic links as external.
+            ButleryIcon(
+              sourceIcon(url),
+              size: AppDimensions.iconSizeS,
+              color: cs.onSurfaceVariant,
+            ),
+            const SizedBox(width: AppDimensions.space4),
+            Flexible(
+              child: Text(
+                context.l10n.recipeSourceFrom(Uri.tryParse(url)?.host ?? url),
+                // text.link (R8-11 = A).
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -122,14 +124,18 @@ abstract final class RecipeDetailSharedWidgets {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // The recipe's title under the media hero, as the view's heading,
+          // written as the user wrote it (Komponentark v1:81-89 "Titeln står
+          // under heron"; Skarmar v12 del 1 'Receptdetalj'). text.primary so
+          // it reads on surface.raised in dark mode too; primary is ink in
+          // both modes.
           Semantics(
             header: true,
+            headingLevel: 1,
             child: Text(
-              recipe.title.toLowerCase(),
-              style: AppTextStyles.titleLarge.copyWith(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: cs.primary,
+              recipe.title,
+              style: AppTextStyles.headlineSmall.copyWith(
+                color: cs.onSurface,
                 letterSpacing: 1,
               ),
             ),
@@ -202,17 +208,17 @@ abstract final class RecipeDetailSharedWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.tips_and_updates_outlined,
+              ButleryIcon(
+                ButleryIcons.info,
                 size: 18,
-                color: cs.primary,
+                color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               // Flexible: the title must wrap at narrow widths (BUT-1230 —
@@ -258,12 +264,12 @@ abstract final class RecipeDetailSharedWidgets {
   static IconData sourceIcon(String url) {
     final host = (Uri.tryParse(url)?.host.toLowerCase()).orEmpty();
     if (host.contains('youtube.') || host.contains('youtu.be')) {
-      return Icons.play_circle_outline;
+      return ButleryIcons.video;
     }
     if (host.contains('tiktok.')) {
-      return Icons.music_note;
+      return ButleryIcons.video;
     }
-    return Icons.open_in_new;
+    return ButleryIcons.externalLink;
   }
 
   /// Launches an external URL, telling the user when it does not open.
@@ -282,10 +288,13 @@ abstract final class RecipeDetailSharedWidgets {
     try {
       if (await openExternalLink(Uri.parse(url))) return;
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorCouldNotOpenLink);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.errorCouldNotOpenLink,
+      );
     } catch (_) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.errorInvalidLink);
+      SnackBarUtils.showFailure(context, what: context.l10n.errorInvalidLink);
     }
   }
 

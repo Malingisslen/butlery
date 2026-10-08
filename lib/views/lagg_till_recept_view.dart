@@ -1,21 +1,16 @@
-/// Recipe addition view with 4 simplified import method options.
-///
-/// **UI Redesign:** Simplified from 7 buttons to 4 buttons in a 2x2 grid:
-/// - Importera länk (rust) → /smartImport
-/// - Skriv manuellt (green) → /skrivSjalv
-/// - Från bild (green) → /photoImport
-/// - Från arkiv (rust) → /importFranArkiv
-
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/main_view_header.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-403 identifier scheme (browser a11y tree hooks):
 ///  - `btn-quick-save`  → Snabbspara (top full-width button)
@@ -23,8 +18,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 ///  - `btn-write-manually` → "Skriv manuellt" grid button
 ///  - `btn-photo-import` → "Från bild" grid button
 ///  - `btn-archive-import` → "Från arkiv" grid button
-///
-/// Recipe addition view with simplified 2x2 grid of import options.
 class LaggTillReceptView extends StatelessWidget {
   const LaggTillReceptView({super.key});
 
@@ -37,10 +30,10 @@ class LaggTillReceptView extends StatelessWidget {
     final padding = AppDimensions.responsiveContentPadding(context);
 
     return Scaffold(
-      appBar: MainViewHeader(
-        title: context.l10n.addRecipeTitle,
-        ghostIllustration: VegetableType.redOnion,
-      ),
+      // The root bar for now (Komponentark v1:60-68). Whether "Lägg till"
+      // stays a tab or becomes an action in the shell is Q-P4-06b
+      // (produktregler.md:1056) and is not decided here.
+      appBar: ButleryTopBar.rot(title: context.l10n.addRecipeTitle),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -79,7 +72,7 @@ class LaggTillReceptView extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.flash_on),
+                          const ButleryIcon(ButleryIcons.zap),
                           const SizedBox(width: AppDimensions.spacingSm),
                           Flexible(
                             child: Column(
@@ -93,11 +86,12 @@ class LaggTillReceptView extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   context.l10n.quickCaptureSubtitle,
+                                  // Full paper on ink, never a faded
+                                  // copy (tokens.json:40-53 opacityLadder).
                                   style: AppTextStyles.labelSmall.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary
-                                        .withValues(alpha: 0.85),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
                                   ),
                                 ),
                               ],
@@ -121,7 +115,6 @@ class LaggTillReceptView extends StatelessWidget {
     );
   }
 
-  /// Builds the 2x2 button grid with alternating rust/green colors.
   Widget _buildButtonGrid(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -140,7 +133,6 @@ class LaggTillReceptView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Row 1: Import link (rust) + Write manually (green)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -148,8 +140,8 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-import-url'),
                     semanticIdentifier: 'btn-import-url',
                     label: context.l10n.recipeImportLink,
-                    icon: Icons.link,
-                    color: Theme.of(context).colorScheme.secondary,
+                    icon: ButleryIcons.link,
+                    saffron: true,
                     size: size,
                     onTap: () => _navigate(context, '/smartImport'),
                   ),
@@ -158,15 +150,14 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-write-manually'),
                     semanticIdentifier: 'btn-write-manually',
                     label: context.l10n.recipeWriteManually,
-                    icon: Icons.edit,
-                    color: Theme.of(context).colorScheme.primary,
+                    icon: ButleryIcons.pencil,
+                    saffron: false,
                     size: size,
                     onTap: () => _navigate(context, '/skrivSjalv'),
                   ),
                 ],
               ),
               const SizedBox(height: spacing),
-              // Row 2: From image (green) + From archive (rust) — diagonal pattern
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -174,8 +165,8 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-photo-import'),
                     semanticIdentifier: 'btn-photo-import',
                     label: context.l10n.recipeFromImage,
-                    icon: Icons.image,
-                    color: Theme.of(context).colorScheme.primary,
+                    icon: ButleryIcons.image,
+                    saffron: false,
                     size: size,
                     onTap: () => _navigate(context, '/photoImport'),
                   ),
@@ -184,22 +175,20 @@ class LaggTillReceptView extends StatelessWidget {
                     key: const ValueKey('test-lagg-till-archive-import'),
                     semanticIdentifier: 'btn-archive-import',
                     label: context.l10n.recipeFromArchive,
-                    icon: Icons.archive,
-                    color: Theme.of(context).colorScheme.secondary,
+                    icon: ButleryIcons.archive,
+                    saffron: true,
                     size: size,
                     onTap: () => _navigate(context, '/importFranArkiv'),
                   ),
                 ],
               ),
               const SizedBox(height: spacing),
-              // Row 3: voice dictation (kb-whisper plan) — green continues
-              // the diagonal rust/green alternation from row 2's rust.
               _AddRecipeButton(
                 key: const ValueKey('test-lagg-till-voice-import'),
                 semanticIdentifier: 'btn-voice-import',
                 label: context.l10n.recipeVoiceImport,
-                icon: Icons.mic_none,
-                color: Theme.of(context).colorScheme.primary,
+                icon: ButleryIcons.mic,
+                saffron: false,
                 size: size,
                 onTap: () => _navigate(context, '/voiceImport'),
               ),
@@ -217,7 +206,7 @@ class _AddRecipeButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.icon,
-    required this.color,
+    required this.saffron,
     required this.size,
     required this.onTap,
     this.semanticIdentifier,
@@ -225,7 +214,9 @@ class _AddRecipeButton extends StatelessWidget {
 
   final String label;
   final IconData icon;
-  final Color color;
+
+  /// Saffron (action.primary) rather than ink.
+  final bool saffron;
   final double size;
   final VoidCallback onTap;
 
@@ -234,41 +225,59 @@ class _AddRecipeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+    );
+    Widget content(Color foreground) => Padding(
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ButleryIcon(
+            icon,
+            size: AppDimensions.iconSizeXl,
+            color: foreground,
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
     final tile = SizedBox(
       width: size,
       height: size,
-      child: Material(
-        color: color,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.onPrimary,
+      child: saffron
+          ? SaffronPress(
+              shape: shape,
+              onTap: onTap,
+              builder: (context, pressed) => content(
+                pressed
+                    ? AppModeColors.onActionPrimaryPressed(cs.brightness)
+                    : AppModeColors.onActionPrimary(cs.brightness),
+              ),
+            )
+          : Material(
+              color: cs.primary,
+              shape: shape,
+              child: PressFill(
+                surface: PressSurface.ink,
+                child: InkWell(
+                  onTap: onTap,
+                  customBorder: shape,
+                  child: content(cs.onPrimary),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
 
     if (semanticIdentifier != null) {

@@ -399,6 +399,11 @@ class RealtimeMenu extends RealtimeResource {
   double get healthinessScore =>
       RealtimeMenuAnalytics.getHealthinessScore(_data);
 
+  /// A week menu follows one rule whoever edits it: the last save wins
+  /// (produktregler.md:104).
+  @override
+  ConflictEntity conflictEntityFor(String userId) => ConflictEntity.weekMenu;
+
   @override
   RealtimeMenu addParticipant(
     String userId,

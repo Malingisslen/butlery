@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Invitation target display widgets.
 class InvitationDisplays {
@@ -143,7 +145,7 @@ class InvitationDisplays {
               ),
             ),
             if (status != null && showStatusIcon)
-              Icon(
+              ButleryIcon(
                 _getStatusIcon(status),
                 color: statusColor ?? _getStatusColor(status, context),
               ),
@@ -220,7 +222,9 @@ class InvitationDisplays {
         ...displayTargets.map(
           (target) => ListTile(
             dense: true,
-            leading: showIcons ? Icon(_getTargetIcon(target.type)) : null,
+            leading: showIcons
+                ? ButleryIcon(_getTargetIcon(target.type))
+                : null,
             title: Text(target.displayName),
             onTap: onTargetTap != null ? () => onTargetTap(target) : null,
           ),
@@ -234,13 +238,13 @@ class InvitationDisplays {
   static IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'accepted':
-        return Icons.check_circle;
+        return ButleryIcons.circleCheck;
       case 'declined':
-        return Icons.cancel;
+        return ButleryIcons.x;
       case 'expired':
-        return Icons.schedule;
+        return ButleryIcons.clock;
       default:
-        return Icons.pending;
+        return ButleryIcons.hourglass;
     }
   }
 
@@ -248,22 +252,22 @@ class InvitationDisplays {
     final cs = Theme.of(context).colorScheme;
     switch (status.toLowerCase()) {
       case 'accepted':
-        return context.butleryColors.success;
+        return context.modeColors.success;
       case 'declined':
         return cs.error;
       case 'expired':
-        return context.butleryColors.warning;
+        return context.modeColors.warning;
       default:
-        return cs.primary;
+        return cs.onSurface;
     }
   }
 
   static IconData _getTargetIcon(InvitationTargetType type) {
     switch (type) {
       case InvitationTargetType.group:
-        return Icons.group;
+        return ButleryIcons.users;
       case InvitationTargetType.individual:
-        return Icons.person;
+        return ButleryIcons.user;
     }
   }
 }

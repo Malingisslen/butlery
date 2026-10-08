@@ -10,7 +10,11 @@
 // Text / Semantics and drive taps through the widget, never via a span
 // recognizer (which no longer exists).
 
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:url_launcher_platform_interface/link.dart';
@@ -135,6 +139,30 @@ void main() {
 
       expect(launcher.launched, contains('https://butlery.se/recipe'));
     });
+
+    for (final (label, theme, expected) in [
+      ('light', AppTheme.lightTheme, AppColors.textLink),
+      ('dark', AppTheme.darkTheme, AppColorsDark.textLink),
+    ]) {
+      testWidgets('the link is drawn in text.link in $label mode', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: LinkifiedText.from('Read https://butlery.se/policy now.'),
+            ),
+          ),
+        );
+
+        final link = tester.widget<Text>(
+          find.text('https://butlery.se/policy'),
+        );
+        expect(link.style?.color, expected);
+        expect(link.style?.decoration, TextDecoration.underline);
+      });
+    }
 
     testWidgets('linkified URL exposes a link role and accessible name', (
       tester,

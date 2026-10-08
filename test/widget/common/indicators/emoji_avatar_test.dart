@@ -59,7 +59,7 @@ void main() {
         expect(text.style?.fontSize, equals(24));
       });
 
-      testWidgets('uses theme primary as tinted default background', (
+      testWidgets('uses the raised surface as default background', (
         WidgetTester tester,
       ) async {
         late ColorScheme cs;
@@ -80,7 +80,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(
           decoration.color,
-          equals(cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)),
+          equals(cs.surfaceContainerHighest),
         );
       });
 
@@ -155,7 +155,7 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         expect(
           decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+          equals(BorderRadius.circular(AppDimensions.radiusPill)),
         );
       });
     });

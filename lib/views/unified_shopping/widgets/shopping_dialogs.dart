@@ -16,6 +16,7 @@ import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_ope
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Main facade for shopping dialog coordination
 class ShoppingDialogs {
@@ -23,29 +24,21 @@ class ShoppingDialogs {
   static Future<void> showAddItemDialog(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
-    return ShoppingItemDialogs.showAddItemDialog(
-      context,
-      viewModel,
-      onSuccess,
-      onError,
-    );
+    return ShoppingItemDialogs.showAddItemDialog(context, viewModel, onError);
   }
 
   static Future<void> showEditItemDialog(
     BuildContext context,
     UnifiedShoppingItem item,
     UnifiedShoppingViewModel viewModel,
-    Function(String) onSuccess,
     Function(String) onError,
   ) async {
     return ShoppingItemDialogs.showEditItemDialog(
       context,
       item,
       viewModel,
-      onSuccess,
       onError,
     );
   }
@@ -165,7 +158,9 @@ class ShoppingDialogs {
               actions: [
                 ActionButtons.primaryButton(
                   context,
-                  label: context.l10n.commonOk,
+                  // It only closes: Stäng, never OK (content-style-guide.md
+                  // :77, :96).
+                  label: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -181,8 +176,8 @@ class ShoppingDialogs {
         AppLogger.info(
           'Showing share dialog for list: ${viewModel.activeList!.name}',
         );
-        await showDialog(
-          context: context,
+        await showUniversalShareSheet(
+          context,
           builder: (context) => UniversalShareDialog.shoppingList(
             shoppingList: viewModel.activeList!,
             viewModel: shareViewModel,
@@ -194,15 +189,11 @@ class ShoppingDialogs {
     } catch (e) {
       AppLogger.error('Error showing share dialog: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.shoppingCouldNotShowShareDialog(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(seconds: 4),
+        // The ink snackbar (PQ-09 = A).
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.shoppingCouldNotShowShareDialog(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

@@ -2,7 +2,6 @@ import 'package:clock/clock.dart';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -113,73 +112,70 @@ class FriendsInvitationsOperations {
     required String groupId,
     String? customMessage,
   }) async {
+    final results = await sendGroupInvitations(
+      userIds: [userId],
+      groupId: groupId,
+      customMessage: customMessage,
+    );
+    return results[userId] ?? false;
+  }
+
+  /// Invites [userIds] to [groupId] and returns, per invitee, whether an
+  /// invitation went out. Someone already invited, already a member, or not a
+  /// friend comes back false.
+  ///
+  /// BUT-2270: one server call. The database allows a client one social
+  /// request per 10 s, so sending them one by one dropped all but the first.
+  Future<Map<String, bool>> sendGroupInvitations({
+    required List<String> userIds,
+    required String groupId,
+    String? customMessage,
+  }) async {
+    final notSent = {for (final id in userIds) id: false};
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null || userIds.isEmpty || groupId.isEmpty) {
+      AppLogger.error('Cannot send group invitations: missing user or group');
+      return notSent;
+    }
+    final group = _getCategories().getCategoryById(groupId);
+    if (group == null) {
+      AppLogger.error('Cannot send invitations: Group $groupId not found');
+      return notSent;
+    }
+
     try {
-      // Validate inputs
-      if (!_validation.validateGroupInvitationInputs(
-        userId: userId,
+      final sent = await _friendsRepository.sendGroupInvitations(
         groupId: groupId,
-      )) {
-        AppLogger.error(
-          'Cannot send invitation: userId and groupId are required',
-        );
-        return false;
-      }
-
-      // Get current user info
-      final currentUserId = _getCurrentUserId();
-      if (currentUserId == null) {
-        AppLogger.error('Cannot send invitation: User not authenticated');
-        return false;
-      }
-
-      // Check if already invited
-      final existingInvitation = _validation.findDuplicateGroupInvitation(
-        invitations: getSentInvitations(),
-        userId: userId,
-        groupId: groupId,
+        userIds: userIds,
+        message: customMessage,
       );
-
-      if (existingInvitation != null) {
-        AppLogger.warning(
-          'Invitation already exists for user ${userId.maskedUserId} to group $groupId',
+      final sentAt = clock.now();
+      final senderName = _getCurrentUserDisplayName() ?? 'Unknown';
+      for (final MapEntry(key: userId, value: invitationId) in sent.entries) {
+        _addSentInvitationInternal(
+          GroupInvitation(
+            id: invitationId,
+            groupId: groupId,
+            groupName: group.name,
+            groupEmoji: group.emoji.orEmpty(),
+            fromUserId: currentUserId,
+            fromUserName: senderName,
+            toUserId: userId,
+            personalMessage: customMessage,
+            sentAt: sentAt,
+          ),
         );
-        return false;
       }
-
-      // Get group information
-      final group = _getCategories().getCategoryById(groupId);
-      if (group == null) {
-        AppLogger.error('Cannot send invitation: Group $groupId not found');
-        return false;
-      }
-
-      // Get sender name
-      final currentUserDisplayName = _getCurrentUserDisplayName() ?? 'Unknown';
-
-      // Create proper invitation
-      final invitation = GroupInvitation(
-        id: const Uuid().v4(),
-        groupId: groupId,
-        groupName: group.name,
-        groupEmoji: group.emoji.orEmpty(),
-        fromUserId: currentUserId,
-        fromUserName: currentUserDisplayName,
-        toUserId: userId,
-        personalMessage: customMessage,
-        sentAt: clock.now(),
-      );
-
-      await _friendsRepository.saveInvitation(invitation);
-      _addSentInvitationInternal(invitation);
-      _notifyListeners();
+      if (sent.isNotEmpty) _notifyListeners();
 
       AppLogger.success(
-        'Group invitation sent to user ${userId.maskedUserId} for group "${group.name}"',
+        '${sent.length} of ${userIds.length} group invitations sent for '
+        'group "${group.name}"',
       );
-      return true;
+      return {for (final id in userIds) id: sent.containsKey(id)};
     } catch (e) {
-      AppLogger.error('Failed to send group invitation', e);
-      return false;
+      AppLogger.error('Failed to send group invitations', e);
+      return notSent;
     }
   }
 
@@ -645,50 +641,28 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      var existingGroup = _getCategories().getCategoryById(invitation.groupId);
+      // BUT-2265: the group rules admit only the owner and existing members,
+      // so the server adds the invitee and marks the invitation accepted.
+      await _friendsRepository.acceptGroupInvitation(invitationId);
 
-      if (existingGroup == null) {
-        try {
-          final fetchedGroup = await _categoryRepository.getCategory(
-            invitation.fromUserId,
-            invitation.groupId,
-          );
-
-          if (fetchedGroup != null) {
-            _addCategoryInternal(fetchedGroup);
-            existingGroup = fetchedGroup;
-          } else {
-            AppLogger.error('Group not found in Firestore');
-            return false;
-          }
-        } catch (e) {
-          AppLogger.error('Failed to fetch group from Firestore', e);
-          return false;
-        }
-      }
-
-      final addedToGroup = await _getCategories().addFriendToCategory(
-        invitation.toUserId,
-        invitation.groupId,
-        skipFriendshipCheck: true,
-        skipPermissionCheck: true,
-      );
-
-      if (!addedToGroup) {
-        AppLogger.error(
-          'Failed to add user to group after accepting invitation',
+      // Readable now that the caller is a member. The join has already
+      // happened, so a failed read must not report the accept as failed.
+      try {
+        final joinedGroup = await _categoryRepository.getCategory(
+          invitation.fromUserId,
+          invitation.groupId,
         );
-        return false;
+        if (joinedGroup != null) {
+          _addCategoryInternal(joinedGroup);
+        }
+      } catch (e) {
+        AppLogger.warning('Joined group could not be read yet: $e');
       }
 
       final acceptedInvitation = invitation.accept();
 
       _updateSentInvitationInternal(invitationId, acceptedInvitation);
       _notifyListeners();
-      await _updateInvitationStatusInternal(
-        acceptedInvitation.id,
-        acceptedInvitation.status,
-      );
 
       GroupEventBus.memberAdded();
       AppLogger.success('Group invitation accepted successfully');

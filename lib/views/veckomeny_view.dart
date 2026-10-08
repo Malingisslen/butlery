@@ -14,29 +14,43 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
-import 'package:butlery/services/shopping/menu_shopping_list_generator.dart'
-    show MenuShoppingGenerationResult;
+import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
     show PlacementSaveResult;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/group_menu_entry_button.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
-import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
+import 'package:butlery/widgets/menu/menu_view_helpers.dart';
+import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
+import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
+import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
+    show VeckomenyDialogs;
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
+/// The week menu's root-bar overflow actions.
+enum _VeckomenyRootAction { load, save, clear }
+
 class VeckomenyView extends StatelessWidget {
   final SharedMenu? sharedMenu;
 
@@ -109,6 +123,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         orElse: () => VeckomenyViewMode.lista,
       );
       if (mode != _viewMode) setState(() => _viewMode = mode);
+      // Kalender reads the week itself; Lista needs it for the week line.
+      if (mode != VeckomenyViewMode.kalender) {
+        await context.read<WeeklyMenuPlanViewModel>().loadWeek(clock.now());
+      }
       return;
     }
     // First run (no stored preference): the saved weekly plan only renders in
@@ -140,6 +158,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final menuVm = context.read<MenuViewModel>();
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
 
+    // P6-U01: offline, generation is switched off (produktregler.md:1131).
+    // The button is already off with its reason; this keeps a stale tap from
+    // starting anything.
+    if (!VeckomenyConnectivity.isOnlineNow()) return;
+
     // If we're in calendar mode and the visible week already has entries,
     // confirm before overwriting.
     if (_viewMode == VeckomenyViewMode.kalender && calendarVm.hasEntries) {
@@ -156,6 +179,31 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // is a follow-up (BUT-1625).
     await menuVm.generateMenu(_promptController.text);
     if (!mounted) return;
+
+    // P6-U01: "Inga recept matchar" is drawn in Lista (Skarmar v12 del 1
+    // #veckoingamatch), so a calendar-mode generation that matched nothing
+    // goes there to say so. The week is untouched.
+    if (_viewMode == VeckomenyViewMode.kalender &&
+        menuVm.noMatchOutcome != null) {
+      await _setViewMode(VeckomenyViewMode.lista);
+      return;
+    }
+
+    // P6-U01: offline during generation. The flow's "avbrutet, tidigare
+    // vecka orörd" (flows-roles-budget.md:34): nothing is placed, the saved
+    // week stays as it was, and the suggestion waits in Lista.
+    if (_viewMode == VeckomenyViewMode.kalender &&
+        menuVm.hasMenu &&
+        !VeckomenyConnectivity.isOnlineNow()) {
+      await _setViewMode(VeckomenyViewMode.lista);
+      if (!mounted) return;
+      SnackBarUtils.showInfo(
+        context,
+        context.l10n.menuGenerateOfflineStopped,
+        showCloseButton: true,
+      );
+      return;
+    }
 
     if (_viewMode == VeckomenyViewMode.kalender && menuVm.hasMenu) {
       // Overwrite was already confirmed above.
@@ -204,13 +252,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     if (placed == null && mounted) {
       final error = calendarVm.error;
       if (error != null) {
-        // The publish-first path may already have put the success toast on
-        // screen, and it carries an ÄNDRA action that opens placement. A
-        // queued error would sit behind
-        // it for its full duration; hiding it first is what stops the last
-        // thing the user reads from being the one that is no longer true.
-        SnackBarUtils.hide(context);
-        SnackBarUtils.showError(context, error);
+        showWeekPlacementFailure(
+          context,
+          what: error,
+          weekUnchanged: calendarVm.lastApplyLeftWeekUnchanged,
+          // The retry asks again whenever the week holds entries. The first
+          // confirmation covered the week as it was then; by now the user may
+          // have changed it (the rollback is skipped when they moved on), or
+          // an empty week may have been filled. Overwriting always asks
+          // (content-style-guide.md, "Behåll min vecka / Skriv över").
+          onRetry: () => unawaited(
+            _applyGeneratedToCalendar(onPublished: onPublished),
+          ),
+        );
       }
     }
     return placed;
@@ -234,12 +288,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   void _showAutoPlacedToast(int placed) {
-    SnackBarUtils.showSuccessWithAction(
-      context,
+    UndoSnackBar.capture(context).showReceipt(
       context.l10n.menuAutoPlacedToast(placed),
       actionLabel: context.l10n.menuAutoPlacedChangeAction,
       onAction: () => unawaited(_openPlacement(redoAuto: true)),
-      duration: const Duration(seconds: 7),
     );
   }
 
@@ -304,281 +356,645 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
-  /// Get current week number
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
-    final weekNumber = IsoWeekUtils.isoWeekNumber(clock.now());
-    final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
+    // The root bar (Komponentark v1:60-68; Skarmar v12 del 1 #veckomeny,
+    // #tomvecka): "Veckomeny" with the week and the number of dishes on the
+    // line under it, and the Lista/Kalender tabs under the bar.
+    //
+    // P5-U26a: the week menu listens for "{namn} sparade veckan", and
+    // BUT-2215 for its own week saved on another device.
+    final planVm = context.watch<WeeklyMenuPlanViewModel>();
+    return VeckomenyConflictNotice(
+      weekConflicts: planVm.weekConflicts,
+      onKeepMine: planVm.keepMine,
+      child: _buildScaffold(context, viewModel, planVm),
+    );
+  }
+
+  /// The week line counts the SAVED week, never the generated suggestion: a
+  /// suggestion is not planned until it is placed, and a week saved on
+  /// another device or in an earlier session has no suggestion at all.
+  String _weekLine(BuildContext context, WeeklyMenuPlanViewModel planVm) {
+    final week = IsoWeekUtils.isoWeekNumber(planVm.currentWeekStart);
+    final dishes = planVm.plannedDishCount;
+    if (dishes == null) return context.l10n.menuWeekBadgeOnly(week);
+    if (dishes == 0) return context.l10n.menuWeekBadgeEmpty(week);
+    return context.l10n.menuWeekBadgeWithCount(week, dishes);
+  }
+
+  Widget _buildScaffold(
+    BuildContext context,
+    MenuViewModel viewModel,
+    WeeklyMenuPlanViewModel planVm,
+  ) {
     return Scaffold(
-      appBar: MainViewHeader(
-        title: context.l10n.veckomenyHeaderTitle,
-        ghostIllustration: VegetableType.peaPod,
-        countBadge: viewModel.hasMenu
-            ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
-            : context.l10n.menuWeekBadge(weekNumber),
+      appBar: ButleryTopBar.rot(
+        title: context.l10n.menuWeek,
+        secondaryLine: _weekLine(context, planVm),
         actions: _buildHeaderActions(context, viewModel),
+        bottom: VeckomenyViewModeToggle(
+          mode: _viewMode,
+          onSelect: (mode) => unawaited(_setViewMode(mode)),
+        ),
       ),
       body: _buildBody(context, viewModel),
       floatingActionButton: _buildShoppingFab(context, viewModel),
     );
   }
 
-  /// Mode-aware menu→shopping FAB: the generated-menu (lista) mode keeps the
-  /// existing per-recipe list-selector flow; the calendar (kalender) mode
-  /// generates the BUT-956 aggregated week list from the plan.
+  /// P6-U02: "Till inköpslistan" opens the merge sheet from both view modes,
+  /// "enda vägen från veckomeny till lista" (Skarmar v12 del 2 #inkopmerge;
+  /// flows-roles-budget.md:46). Calendar mode merges the visible week's
+  /// plan; list mode merges the generated menu into the current week's list.
   Widget? _buildShoppingFab(BuildContext context, MenuViewModel viewModel) {
-    if (_viewMode == VeckomenyViewMode.kalender) {
-      final planVm = context.watch<WeeklyMenuPlanViewModel>();
-      if (!planVm.hasEntries) return null;
-      return ActionButtons.actionButton(
-        context,
-        label: context.l10n.menuToShoppingList,
-        icon: Icons.shopping_cart,
-        // An unacked save does not lock this button (BUT-1975).
-        // Generate-vs-generate re-entrancy still holds: `generateShoppingList`
-        // runs through `executeAsync`, which does set the flag.
-        isLoading: planVm.isLoading,
-        onPressed: _generateWeekShoppingList,
-        style: ActionButtonStyle.primary,
-      );
-    }
-    if (!viewModel.hasMenu) return null;
+    final planVm = context.watch<WeeklyMenuPlanViewModel>();
+    final hasSource = _viewMode == VeckomenyViewMode.kalender
+        ? planVm.hasEntries
+        : viewModel.hasMenu;
+    if (!hasSource) return null;
     return ActionButtons.actionButton(
       context,
       label: context.l10n.menuToShoppingList,
-      icon: Icons.shopping_cart,
-      onPressed: () => VeckomenyDialogs.showShoppingListSelector(
-        context,
-        viewModel: viewModel,
-      ),
+      icon: ButleryIcons.shoppingCart,
+      isLoading: planVm.isShoppingFlowRunning,
+      onPressed: () => unawaited(_openShoppingMerge()),
       style: ActionButtonStyle.primary,
     );
   }
 
-  /// BUT-956/BUT-1234: generation lives on the ViewModel — the view only
-  /// triggers it and renders the result as snackbars (null = failure,
-  /// alreadyRunning = silence, empty-plan sentinel = warning, otherwise
-  /// success).
-  Future<void> _generateWeekShoppingList() async {
-    final result = await context
-        .read<WeeklyMenuPlanViewModel>()
-        .generateShoppingList();
+  /// P6-U02: flow 02. Three outcomes stay apart (produktregler.md:705):
+  /// nothing to generate (a warning), failed (what happened, what is kept,
+  /// Försök igen) and already running (silence). A confirmed merge opens the
+  /// list and offers Ångra for 7 s (produktregler.md:131, § 2.4).
+  ///
+  /// One flow at a time, from the tap until the sheet has closed and the
+  /// write has finished (WeeklyMenuPlanViewModel.runShoppingFlow): a second
+  /// tap during the week or pantry read opens no second sheet.
+  Future<void> _openShoppingMerge() => context
+      .read<WeeklyMenuPlanViewModel>()
+      .runShoppingFlow(_runShoppingMerge);
+
+  Future<void> _runShoppingMerge() async {
+    final planVm = context.read<WeeklyMenuPlanViewModel>();
+    final menuVm = context.read<MenuViewModel>();
+    final source = _viewMode == VeckomenyViewMode.kalender
+        ? await planVm.shoppingSource()
+        : MenuShoppingListGenerator.sourceForMenu(menuVm.menu, clock.now());
     if (!mounted) return;
-    if (result == null) {
-      SnackBarUtils.showError(
+    if (source == null) {
+      showWeekShoppingListFailure(
         context,
-        context.l10n.menuShoppingListGenerationFailed,
+        onRetry: () => unawaited(_openShoppingMerge()),
       );
       return;
     }
-    // A double-tap raced an in-flight generation — the first call's
-    // snackbar will speak for both.
-    if (identical(result, MenuShoppingGenerationResult.alreadyRunning)) {
-      return;
-    }
-    if (result.isEmptyPlan) {
+    if (source.isEmpty) {
       SnackBarUtils.showWarning(
         context,
         context.l10n.menuShoppingListGenerationEmpty,
       );
       return;
     }
-    // BUT-1613: when one or more meals were scaled to who's home, explain the
-    // adjusted quantities so a shrunk list doesn't read as a bug. Shown on the
-    // root messenger, so it rides over the navigation below.
-    if (result.scaledMeals > 0) {
-      SnackBarUtils.showInfo(
+    final pantry = await planVm.readPantryForShopping();
+    if (!mounted) return;
+    final merge = await showShoppingMergeSheet(
+      context,
+      source: source,
+      pantry: pantry,
+      retryPantry: planVm.readPantryForShopping,
+      canReplace: planVm.canReplaceShoppingList(source.week),
+    );
+    if (merge == null || !mounted) return;
+    final receipt = await planVm.applyShoppingMerge(merge);
+    if (!mounted) return;
+    if (identical(receipt, shoppingMergeAlreadyRunning)) return;
+    if (receipt == null) {
+      showWeekShoppingListFailure(
         context,
-        context.l10n.menuShoppingScaledToPresence,
+        onRetry: () => unawaited(_openShoppingMerge()),
       );
+      return;
     }
-    // BUT-900 follow-on: navigate straight to the generated list (mirrors the
-    // lista-mode FAB) instead of a toast-only "VISA" the user can miss — the
-    // list view itself is the confirmation. (mounted already guarded above; only
-    // synchronous checks sit between, so no second guard is needed here.)
-    Navigator.pushNamed(context, Routes.shoppingList);
+    // The list itself is the confirmation (BUT-900); the receipt rides on
+    // the root messenger above it. SnackbarRouteObserver clears snackbars on
+    // every push, so the receipt is shown after the push.
+    unawaited(Navigator.pushNamed(context, Routes.shoppingList));
+    showShoppingMergeReceipt(
+      context,
+      receipt,
+      onUndo: () => unawaited(_undoShoppingMerge(planVm, receipt)),
+    );
+  }
+
+  /// Ångra failed: says so, and that the rows are still on the list
+  /// (content-style-guide.md:87-97).
+  Future<void> _undoShoppingMerge(
+    WeeklyMenuPlanViewModel planVm,
+    MenuShoppingMergeReceipt receipt,
+  ) async {
+    final undone = await planVm.undoShoppingMerge(receipt);
+    if (undone || !mounted) return;
+    SnackBarUtils.showFailure(
+      context,
+      what: context.l10n.shoppingMergeUndoFailed,
+      preserved: context.l10n.shoppingMergeUndoFailedKept,
+    );
   }
 
   List<Widget> _buildHeaderActions(
     BuildContext context,
     MenuViewModel viewModel,
   ) {
+    // The bar gives the icons its own foreground: text.primary on the light
+    // root bar in both modes (ButleryTopBar).
+    //
+    // Skarmar v12 del 1 #veckomeny draws no icons on the root bar, and four
+    // 48 dp icons would leave "Veckomeny" too little width on a 320 dp
+    // phone. The group week keeps its icon (it is reached from here and from
+    // the group chat, BUT-1971); load, save and clear share one overflow
+    // menu, so the title always has room.
     return [
-      VeckomenyViewModeToggle(
-        mode: _viewMode,
-        onSelect: (mode) => unawaited(_setViewMode(mode)),
-      ),
       const GroupMenuEntryButton(),
-      // Load menu / template button
-      IconButton(
-        icon: Icon(
-          Icons.folder_open,
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
-        onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
-          context,
-          viewModel: viewModel,
-          onTemplateSelected: (prompt) {
-            _promptController.text = prompt;
-            setState(() {});
+      PressFill(
+        surface: PressSurface.base,
+        child: PopupMenuButton<_VeckomenyRootAction>(
+          key: const ValueKey('veckomeny-root-more'),
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
+          tooltip: context.l10n.rootBarMoreActions,
+          onSelected: (action) {
+            switch (action) {
+              case _VeckomenyRootAction.load:
+                unawaited(
+                  VeckomenyDialogs.showLoadMenuBottomSheet(
+                    context,
+                    viewModel: viewModel,
+                    onTemplateSelected: (prompt) {
+                      _promptController.text = prompt;
+                      setState(() {});
+                    },
+                  ),
+                );
+              case _VeckomenyRootAction.save:
+                unawaited(
+                  VeckomenyDialogs.showSaveMenuDialog(
+                    context,
+                    viewModel: viewModel,
+                    availableFriends: _friendsService.friends,
+                  ),
+                );
+              case _VeckomenyRootAction.clear:
+                _clearMenu();
+            }
           },
+          itemBuilder: (menuContext) => [
+            _rootItem(
+              _VeckomenyRootAction.load,
+              ButleryIcons.folder,
+              context.l10n.menuLoadSaved,
+            ),
+            if (viewModel.hasMenu)
+              _rootItem(
+                _VeckomenyRootAction.save,
+                ButleryIcons.save,
+                context.l10n.menuSave,
+              ),
+            if (viewModel.hasMenu)
+              _rootItem(
+                _VeckomenyRootAction.clear,
+                ButleryIcons.x,
+                context.l10n.menuClear,
+              ),
+          ],
         ),
-        tooltip: context.l10n.menuLoadSaved,
       ),
-      // Save menu button (only when menu exists)
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: Icon(
-            Icons.save,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-          onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
-            context,
-            viewModel: viewModel,
-            availableFriends: _friendsService.friends,
-          ),
-          tooltip: context.l10n.menuSave,
-        ),
-      // Clear menu button
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: Icon(
-            Icons.clear,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-          onPressed: _clearMenu,
-          tooltip: context.l10n.menuClear,
-        ),
     ];
   }
 
+  /// One overflow row; icon and text take the menu's foreground (onSurface,
+  /// text.primary in both modes).
+  ButleryMenuItem<_VeckomenyRootAction> _rootItem(
+    _VeckomenyRootAction value,
+    IconData icon,
+    String label,
+  ) {
+    return ButleryMenuItem<_VeckomenyRootAction>(
+      key: ValueKey('veckomeny-root-${value.name}'),
+      value: value,
+      child: Row(
+        children: [
+          ButleryIcon(icon, size: AppDimensions.iconSizeM),
+          const SizedBox(width: AppDimensions.spacingM),
+          Flexible(child: Text(label)),
+        ],
+      ),
+    );
+  }
+
+  /// The view's one saffron action, switched off offline with the reason
+  /// in text (P6-U01, [VeckomenyGenerateButton]).
+  Widget _buildGenerateButton(BuildContext context, MenuViewModel viewModel) {
+    final hasPrompt = _promptController.text.isNotEmpty;
+    return Center(
+      key: const ValueKey('test-veckomeny-generate'),
+      child: VeckomenyGenerateButton(
+        label: viewModel.hasMenu
+            ? context.l10n.menuGenerateNew
+            : context.l10n.menuGenerate,
+        busy: viewModel.isGenerating,
+        busyLabel: context.l10n.weekMenuPlanningTitle,
+        onGenerate: hasPrompt ? () => unawaited(_generateMenu()) : null,
+      ),
+    );
+  }
+
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
-    return Stack(
-      children: [
-        Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 900,
-                desktop: 1200,
-              ),
-            ),
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                // BUT-407: online-members presence bar (union across groups).
-                const FamilyPresenceBar(),
-                // BUT-408: live cooking session card for the user's groups.
-                const VeckomenyCookingSessionCard(),
-                Padding(
-                  padding: AppDimensions.responsiveContentPadding(context),
-                  child: Column(
-                    children: [
-                      MenuContentWidgets.buildPromptInput(
-                        context,
-                        controller: _promptController,
-                        focusNode: _promptFocusNode,
-                        isGenerating: viewModel.isGenerating,
-                        onClear: () {
-                          _promptController.clear();
-                          setState(() {});
-                        },
-                        onChanged: () => setState(() {}),
-                        // Voice prompt (kb-whisper plan): transcript lands
-                        // EDITABLE here — the user reviews before generating.
-                        voiceButton: VoicePromptButton(
-                          enabled: !viewModel.isGenerating,
-                          onTranscript: (text) {
-                            _promptController.text = text;
-                            _promptController.selection =
-                                TextSelection.collapsed(
-                                  offset: text.length,
-                                );
-                            _promptFocusNode.requestFocus();
-                            setState(() {});
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        height: LayoutComponents.valueFor(
-                          context: context,
-                          mobile: AppDimensions.spacingL,
-                          tablet: AppDimensions.spacingXl,
-                          desktop: AppDimensions.spacingXl,
-                        ),
-                      ),
-                      MenuContentWidgets.buildGenerateButton(
-                        context,
-                        viewModel: viewModel,
-                        hasPrompt: _promptController.text.isNotEmpty,
-                        onGenerate: () => unawaited(_generateMenu()),
-                      ),
-                      SizedBox(
-                        height: LayoutComponents.valueFor(
-                          context: context,
-                          mobile: AppDimensions.spacingXl,
-                          tablet: AppDimensions.spacingXl * 1.5,
-                          desktop: AppDimensions.spacingXxl,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: AppDimensions.responsiveHorizontalPadding(context),
-                    child: _viewMode == VeckomenyViewMode.kalender
-                        ? SingleChildScrollView(
-                            // BUT-1611: per-meal "who's home" lives inside the
-                            // calendar (faces on each slot + a collapsible
-                            // week overview), not a separate strip.
-                            child: CalendarWeeklyMenuWidget(
-                              onRefinePrompt: _promptFocusNode.requestFocus,
-                            ),
-                          )
-                        : Column(
-                            children: [
-                              Expanded(
-                                child: MenuContentWidgets.buildMenuContent(
-                                  context,
-                                  viewModel: viewModel,
-                                  onRetry: _promptController.text.isNotEmpty
-                                      ? () => unawaited(_generateMenu())
-                                      : null,
-                                ),
-                              ),
-                              // BUT-1241: explicit placement choice for the
-                              // generated result.
-                              if (viewModel.hasMenu &&
-                                  !viewModel.isGenerating &&
-                                  !viewModel.hasError)
-                                MenuPlacementChoiceFooter(
-                                  // BUT-1987: the placement state lives on the
-                                  // CALENDAR viewmodel, which owns the write.
-                                  isPlacing: context
-                                      .watch<WeeklyMenuPlanViewModel>()
-                                      .isPlacingGeneratedMenu,
-                                  onPlaceAuto: () =>
-                                      unawaited(_onPlaceAutomatically()),
-                                  onPlaceManual: () => unawaited(
-                                    _openPlacement(redoAuto: false),
-                                  ),
-                                ),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,
+            tablet: 900,
+            desktop: 1200,
           ),
         ),
-        // Loading overlay
-        if (viewModel.isGenerating) const VeckomenyGeneratingOverlay(),
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            // BUT-407: online-members presence bar (union across groups).
+            const FamilyPresenceBar(),
+            // BUT-408: live cooking session card for the user's groups.
+            const VeckomenyCookingSessionCard(),
+            Padding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                children: [
+                  MenuContentWidgets.buildPromptInput(
+                    context,
+                    controller: _promptController,
+                    focusNode: _promptFocusNode,
+                    isGenerating: viewModel.isGenerating,
+                    onClear: () {
+                      _promptController.clear();
+                      setState(() {});
+                    },
+                    onChanged: () => setState(() {}),
+                    // Voice prompt (kb-whisper plan): transcript lands
+                    // EDITABLE here — the user reviews before generating.
+                    voiceButton: VoicePromptButton(
+                      enabled: !viewModel.isGenerating,
+                      onTranscript: (text) {
+                        _promptController.text = text;
+                        _promptController.selection = TextSelection.collapsed(
+                          offset: text.length,
+                        );
+                        _promptFocusNode.requestFocus();
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    height: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: AppDimensions.spacingL,
+                      tablet: AppDimensions.spacingXl,
+                      desktop: AppDimensions.spacingXl,
+                    ),
+                  ),
+                  _buildGenerateButton(context, viewModel),
+                  SizedBox(
+                    height: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: AppDimensions.spacingXl,
+                      tablet: AppDimensions.spacingXl * 1.5,
+                      desktop: AppDimensions.spacingXxl,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: AppDimensions.responsiveHorizontalPadding(context),
+                child: viewModel.isGenerating
+                    // The week while it is planned: the plate line with
+                    // text in the content area, never an overlay over the
+                    // view (Skarmar v12 del 1 #veckogenererarpanel;
+                    // ux-beslut.json D-03).
+                    ? const Align(
+                        alignment: Alignment.topCenter,
+                        child: VeckomenyGeneratingOverlay(),
+                      )
+                    : _viewMode == VeckomenyViewMode.kalender
+                    ? SingleChildScrollView(
+                        // BUT-1611: per-meal "who's home" lives inside the
+                        // calendar (faces on each slot + a collapsible
+                        // week overview), not a separate strip.
+                        child: CalendarWeeklyMenuWidget(
+                          onRefinePrompt: _promptFocusNode.requestFocus,
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          // P5-U25: fewer dishes than asked is a partial
+                          // outcome, named above the list.
+                          if (viewModel.partialOutcome != null &&
+                              !viewModel.hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppDimensions.spacingSm,
+                              ),
+                              child: VeckomenyPartialResult(
+                                outcome: viewModel.partialOutcome!,
+                              ),
+                            ),
+                          Expanded(
+                            child:
+                                viewModel.noMatchOutcome != null &&
+                                    !viewModel.hasError
+                                // P6-U01: nothing matched is its own
+                                // outcome, never "Ett fel uppstod".
+                                ? VeckomenyNoMatch(
+                                    outcome: viewModel.noMatchOutcome!,
+                                    onEditPrompt: _promptFocusNode.requestFocus,
+                                    onPlanYourself: () => unawaited(
+                                      _setViewMode(VeckomenyViewMode.kalender),
+                                    ),
+                                  )
+                                : MenuContentWidgets.buildMenuContent(
+                                    context,
+                                    viewModel: viewModel,
+                                    onRetry: _promptController.text.isNotEmpty
+                                        ? () => unawaited(_generateMenu())
+                                        : null,
+                                  ),
+                          ),
+                          // BUT-1241: explicit placement choice for the
+                          // generated result.
+                          if (viewModel.hasMenu &&
+                              !viewModel.isGenerating &&
+                              !viewModel.hasError)
+                            MenuPlacementChoiceFooter(
+                              // BUT-1987: the placement state lives on the
+                              // CALENDAR viewmodel, which owns the write.
+                              isPlacing: context
+                                  .watch<WeeklyMenuPlanViewModel>()
+                                  .isPlacingGeneratedMenu,
+                              onPlaceAuto: () =>
+                                  unawaited(_onPlaceAutomatically()),
+                              onPlaceManual: () => unawaited(
+                                _openPlacement(redoAuto: false),
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// P5-U25: a generation that found fewer dishes than were asked for
+/// (produktregler.md:206: "1 ≤ n < begärt antal recept"). It says "Vi hittade
+/// n av m rätter" and names each meal type that is short (produktregler.md:
+/// 893: "Ett antal utan namn är ingen upplysning"), in the shared I-29 form
+/// (produktregler.md:905-909). Instead of looking complete, the result says
+/// what it is. The way on is the view's own Generera, which stays.
+class VeckomenyPartialResult extends StatelessWidget {
+  const VeckomenyPartialResult({super.key, required this.outcome});
+
+  final MenuPartialOutcome outcome;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return PartialOutcome(
+      title: l.menuPartialTitle(outcome.found, outcome.requested),
+      message: l.menuPartialBody,
+      items: [
+        for (final meal in outcome.missing)
+          PartialOutcomeItem(
+            id: 'meal-${meal.mealType}',
+            label: MenuViewHelpers.capitalizeCategory(meal.mealType),
+            reason: l.menuPartialMissing(
+              meal.found,
+              meal.requested,
+              meal.missing,
+            ),
+          ),
       ],
     );
   }
+}
+
+/// P6-U01: a generation where nothing matched (flows-roles-budget.md:32;
+/// fas2/block288-uxfrysning.json TR::FLOW::01::genererar::0-recept-placerade
+/// REQUIRED).
+///
+/// Skarmar v12 del 1 #veckoingamatch: "Nollresultat säger vad som stoppade
+/// det och erbjuder minsta möjliga eftergift — inte en generisk feltext.
+/// Illustration, inte felikon: ingenting har gått sönder." The title "Inga
+/// recept matchar", a line with the size of the library, the requirements
+/// the prompt was read as, and two ways on.
+///
+/// Interpretations, recorded: the drawing's "Släpp ett krav" chips and its
+/// "Planera utan tidsgräns" rewrite the prompt, which nothing in the app can
+/// do yet, so the requirements are named as text and "Ändra beskrivningen"
+/// moves focus to the prompt. "Lägg dagarna själv" opens the calendar. Both
+/// are outlined, because the view's one saffron action is Generera
+/// (Komponentark v1:843-844). The app has no cookbook illustration, so the
+/// empty state's no-search-results illustration stands in.
+class VeckomenyNoMatch extends StatelessWidget {
+  const VeckomenyNoMatch({
+    super.key,
+    required this.outcome,
+    required this.onEditPrompt,
+    required this.onPlanYourself,
+  });
+
+  final MenuNoMatchOutcome outcome;
+  final VoidCallback onEditPrompt;
+  final VoidCallback onPlanYourself;
+
+  static const Key editPromptKey = ValueKey<String>('veckomeny-nomatch-edit');
+  static const Key planYourselfKey = ValueKey<String>(
+    'veckomeny-nomatch-plan',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    return StateWidget(
+      type: StateType.empty,
+      emptyVariant: EmptyStateVariant.noSearchResults,
+      title: l.menuNoMatchTitle,
+      subtitle: l.menuNoMatchBody(outcome.poolSize),
+      customAction: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (outcome.constraints.isNotEmpty) ...[
+            Text(
+              l.menuNoMatchConstraints(outcome.constraints.join(', ')),
+              textAlign: TextAlign.center,
+              // text.secondary in both modes (onSurfaceVariant).
+              style: AppTextStyles.captionBase.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingMd),
+          ],
+          OutlinedButton(
+            key: editPromptKey,
+            onPressed: onEditPrompt,
+            child: Text(l.menuNoMatchEditPrompt),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          OutlinedButton(
+            key: planYourselfKey,
+            onPressed: onPlanYourself,
+            child: Text(l.menuNoMatchPlanYourself),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// P5-U26a: mounts P3-U08's week conflict snackbar on the week menu.
+///
+/// produktregler.md:104: for the week menu the last save wins and the user
+/// sees "*Namn* sparade veckan" for 30 s; ux-beslut.json D-04 keeps that 30 s
+/// window apart from the 7 s undo. [ConflictSnackBar.showWeekSaved] owns the
+/// text, the window, the action and the filter (only a week-menu conflict the
+/// user's edit lost); this widget only listens to
+/// [RealtimeSyncService.conflictStream] while the week menu is open. Without
+/// a registered sync service it listens to nothing.
+///
+/// BUT-2215: it also listens to [weekConflicts], the week menu viewmodel's
+/// refused saves of the user's own week, and shows
+/// [ConflictSnackBar.showWeekSavedElsewhere] with [onKeepMine] behind
+/// "Behåll min".
+class VeckomenyConflictNotice extends StatefulWidget {
+  const VeckomenyConflictNotice({
+    super.key,
+    required this.child,
+    this.weekConflicts,
+    this.onKeepMine,
+  });
+
+  final Widget child;
+  final Stream<WeekConflict>? weekConflicts;
+  final Future<bool> Function(WeekConflict conflict)? onKeepMine;
+
+  @override
+  State<VeckomenyConflictNotice> createState() =>
+      _VeckomenyConflictNoticeState();
+}
+
+class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
+  StreamSubscription<ConflictEvent>? _sub;
+  StreamSubscription<WeekConflict>? _weekSub;
+
+  @override
+  void initState() {
+    super.initState();
+    final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+    _sub = svc?.conflictStream.listen((event) {
+      if (!mounted) return;
+      ConflictSnackBar.showWeekSaved(context, event);
+    });
+    _weekSub = widget.weekConflicts?.listen((conflict) {
+      final keep = widget.onKeepMine;
+      if (!mounted || keep == null) return;
+      ConflictSnackBar.showWeekSavedElsewhere(
+        context,
+        onKeepMine: () => keep(conflict),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    _weekSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// P5-U15 (veckogenerering ERROR): placing a generated menu failed.
+///
+/// Three parts (content-style-guide.md:87-97): what happened ([what], the
+/// one message of BUT-2132), what was kept, and Försök igen, which places the
+/// same menu again. The week is said to be unchanged only when
+/// [weekUnchanged] is true: the rollback may have been skipped, and a message
+/// claims only an undo that happened. The generated menu is always kept
+/// (produktregler.md:201: a generated result is not in the week until it is
+/// placed).
+///
+/// The publish-first path may already have put the success toast on screen,
+/// with an ÄNDRA that opens placement. A queued error would sit behind it for
+/// its full duration, so it is hidden first: the last thing the user reads
+/// must not be the one that is no longer true.
+void showWeekPlacementFailure(
+  BuildContext context, {
+  required String what,
+  required bool weekUnchanged,
+  required VoidCallback onRetry,
+}) {
+  final l10n = context.l10n;
+  SnackBarUtils.hide(context);
+  SnackBarUtils.showFailure(
+    context,
+    what: what,
+    preserved: weekUnchanged
+        ? l10n.weekPlacementFailedWeekUnchanged
+        : l10n.weekPlacementFailedMenuKept,
+    action: FailureAction.retry(onRetry),
+  );
+}
+
+/// P6-U02: the receipt after a merge, with Ångra. When the list had been
+/// changed on another device before the write, it says so and that nothing
+/// was overwritten (BUT-2140; flows-roles-budget.md:18, the user is always
+/// told about a conflict).
+void showShoppingMergeReceipt(
+  BuildContext context,
+  MenuShoppingMergeReceipt receipt, {
+  required VoidCallback onUndo,
+}) {
+  final l10n = context.l10n;
+  final message = receipt.concurrentChange
+      ? l10n.shoppingMergeConcurrentChange(receipt.itemCount)
+      : receipt.replaced
+      ? l10n.shoppingMergeReplaced(receipt.itemCount, receipt.listName)
+      : l10n.shoppingMergeAdded(receipt.itemCount, receipt.listName);
+  SnackBarUtils.showUndo(context, message, onUndo: onUndo);
+}
+
+/// P5-U16 (veckomeny ERROR): the week's shopping list could not be made.
+///
+/// Says the week is unchanged (making a list never writes the week) and
+/// offers Försök igen, which runs the generation again
+/// (content-style-guide.md:87-97).
+void showWeekShoppingListFailure(
+  BuildContext context, {
+  required VoidCallback onRetry,
+}) {
+  final l10n = context.l10n;
+  SnackBarUtils.showFailure(
+    context,
+    what: l10n.menuShoppingListGenerationFailed,
+    preserved: l10n.menuShoppingListGenerationPreserved,
+    action: FailureAction.retry(onRetry),
+  );
 }

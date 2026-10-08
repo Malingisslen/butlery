@@ -2,11 +2,14 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Köksbutlern's mic control (tasks/koksbutlern-plan.md, Batch D) — the big,
 /// knuckle-friendly button bottom-right of the instructions panel that
@@ -45,7 +48,7 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
   static const double _buttonEdge = 56;
 
   late final AnimationController _pulse = AnimationController(
-    duration: const Duration(milliseconds: 900),
+    duration: AppMotion.pulseHalf,
     vsync: this,
   );
 
@@ -149,16 +152,16 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
     switch (state) {
       case VoiceAssistState.idle:
         background = cs.primary;
-        content = Icon(
-          Icons.mic_none,
+        content = ButleryIcon(
+          ButleryIcons.mic,
           color: cs.onPrimary,
           size: AppDimensions.iconSizeXl,
         );
         label = l10n.voiceAssistMicTooltip;
       case VoiceAssistState.listening:
         background = cs.error;
-        content = Icon(
-          Icons.stop,
+        content = ButleryIcon(
+          ButleryIcons.stop,
           color: cs.onError,
           size: AppDimensions.iconSizeXl,
         );
@@ -167,16 +170,17 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
         label = l10n.voicePromptStop;
       case VoiceAssistState.transcribing:
         background = cs.primary;
-        content = LoadingIndicator(
-          size: AppDimensions.iconSizeL,
-          color: cs.onPrimary,
+        // The plate line, not a spinner (Grafisk manual v6:209). It stands
+        // still under reduced motion (PlateLine).
+        content = PlateLine(
+          width: AppDimensions.iconSizeL,
           semanticLabel: l10n.voicePromptTranscribing,
         );
         label = l10n.voicePromptTranscribing;
       case VoiceAssistState.speaking:
         background = cs.primary;
-        content = Icon(
-          Icons.volume_up,
+        content = ButleryIcon(
+          ButleryIcons.volume,
           color: cs.onPrimary,
           size: AppDimensions.iconSizeXl,
         );

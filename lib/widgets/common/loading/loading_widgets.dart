@@ -1,10 +1,13 @@
 // lib/widgets/common/loading/loading_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// LoadingWidgets - Loading and error utility components
 /// Provides loading overlays, error boundaries, and responsive wrappers.
@@ -24,37 +27,21 @@ class LoadingWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return ColoredBox(
-          color:
-              overlayColor ??
-              cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: overlayColor ?? AppColors.overlayBlack40,
           child: Center(
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusL,
+                  AppDimensions.radiusCard,
                 ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: AppDimensions.iconSizeM,
-                    height: AppDimensions.iconSizeM,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-                    ),
-                  ),
-                  if (loadingMessage != null) ...[
-                    const SizedBox(height: AppDimensions.spacingM),
-                    Text(
-                      loadingMessage,
-                      style: AppTextStyles.titleMedium,
-                    ),
-                  ],
-                ],
+              // Plate line plus text, never a spinner (produktregler.md:163,
+              // B-18). Without a message the generic one stands in: the line
+              // never carries the news alone.
+              child: PlateLineMessage(
+                message: loadingMessage ?? context.l10n.loadingGeneric,
               ),
             ),
           ),
@@ -91,22 +78,19 @@ class LoadingWidgets {
                       final cs = Theme.of(ctx).colorScheme;
                       return Container(
                         padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        // An error notice (B83-2): the mode's tint with no
+                        // border, and text in the on-colour that reads on it.
                         decoration: BoxDecoration(
-                          color: cs.error.withValues(
-                            alpha: AppDimensions.opacityVeryLight,
-                          ),
+                          color: ctx.modeColors.surfaceTintDanger,
                           borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusM,
-                          ),
-                          border: Border.all(
-                            color: cs.error.withValues(
-                              alpha: AppDimensions.opacityMediumLight,
-                            ),
+                            AppDimensions.radiusControl,
                           ),
                         ),
                         child: Text(
                           ctx.l10n.errorUnexpected,
-                          style: AppTextStyles.bodyMediumError,
+                          style: AppTextStyles.bodyMediumError.copyWith(
+                            color: cs.onErrorContainer,
+                          ),
                         ),
                       );
                     },

@@ -8,6 +8,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -37,6 +38,7 @@ class PersonalTagViewModel extends ChangeNotifier
   bool _isLoadingRuleStats = false;
   String? _selectedTagId;
   bool _isDisposed = false;
+  bool _loadFailed = false;
 
   // Stream subscriptions
   StreamSubscription<PersonalTagsWithGroups>? _tagsWithGroupsSubscription;
@@ -55,6 +57,10 @@ class PersonalTagViewModel extends ChangeNotifier
 
   bool get hasTags => _tags.isNotEmpty;
   bool get hasGroups => _groups.isNotEmpty;
+
+  // The shared error also carries failed actions (create, delete, rules);
+  // only this says the tags themselves could not be read.
+  bool get loadFailed => _loadFailed;
   Map<String, int> get tagUsageCounts => Map.unmodifiable(_tagUsageCounts);
   Map<String, int> get ruleMatchCounts => Map.unmodifiable(_ruleMatchCounts);
   bool get isLoadingStats => _isLoadingStats;
@@ -139,10 +145,15 @@ class PersonalTagViewModel extends ChangeNotifier
   Future<void> _doInitialize() async {
     setLoading(true);
     clearError();
+    _loadFailed = false;
 
     try {
-      _tags = await _service.getAllTags();
-      _groups = await _service.getAllGroups();
+      final (tags, groups) = await (
+        _service.getAllTags(),
+        _service.getAllGroups(),
+      ).wait;
+      _tags = tags;
+      _groups = groups;
       _invalidateUnusedTagsCache();
 
       _watchTagsWithGroups();
@@ -169,6 +180,7 @@ class PersonalTagViewModel extends ChangeNotifier
         return _doInitialize();
       }
 
+      _loadFailed = true;
       setError(AppLocale.current.errorCouldNotLoadTags);
     }
   }
@@ -303,8 +315,8 @@ class PersonalTagViewModel extends ChangeNotifier
     return merged;
   }
 
-  /// BUT-1185: bulk-deletes [tagIds]. Returns tags deleted.
-  Future<int> bulkDeleteTags(List<String> tagIds) =>
+  /// BUT-1185: bulk-deletes [tagIds]. Returns what went per tag id (P5-U33).
+  Future<PersonalTagBulkDeleteResult> bulkDeleteTags(List<String> tagIds) =>
       _service.bulkDeleteTags(tagIds);
 
   /// Reorders tags.

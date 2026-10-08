@@ -4,12 +4,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -141,32 +143,32 @@ class ImageGridWidgets {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingXs,
-                    vertical: AppDimensions.spacingXxs,
+                    vertical: AppDimensions.badgePaddingY,
                   ),
                   decoration: BoxDecoration(
                     color: isPrimary
                         ? Theme.of(context).primaryColor
-                        : Theme.of(context).colorScheme.onSurface.withValues(
-                            alpha: AppDimensions.opacityMediumDark,
-                          ),
+                        : context.modeColors.overlayPaperCard,
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusS,
+                      AppDimensions.radiusControl,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      ButleryIcon(
                         isPrimary
-                            ? AdaptiveIcons.primaryFilled
-                            : AdaptiveIcons.primaryOutline,
+                            ? ButleryIcons.primary
+                            : ButleryIcons.primaryOutline,
                         size: AppDimensions.iconSizeXs,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
+                        color: isPrimary
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest
+                            : Theme.of(context).colorScheme.primary,
                       ),
                       if (isPrimary) ...[
-                        const SizedBox(width: AppDimensions.spacingXxs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(
                           context.l10n.imagePrimary,
                           style: AppTextStyles.labelSmall.copyWith(
@@ -197,7 +199,7 @@ class ImageGridWidgets {
                       onRemoveImage(index);
                     },
                     child: buildGridActionButton(
-                      icon: Icons.close,
+                      icon: ButleryIcons.x,
                       tooltip: context.l10n.imageRemoveImage,
                       isDestructive: true,
                     ),
@@ -229,7 +231,7 @@ class ImageGridWidgets {
               shape: BoxShape.circle,
               boxShadow: AppShadows.subtle,
             ),
-            child: Icon(
+            child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeS,
               color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
@@ -261,38 +263,35 @@ class ImageGridWidgets {
               decoration: BoxDecoration(
                 borderRadius: config.effectiveBorderRadius,
                 border: Border.all(
-                  color: cs.primary.withValues(
-                    alpha: AppDimensions.opacityMediumLight,
-                  ),
+                  color: cs.outlineVariant,
                   width: AppDimensions.borderWidthThin,
                 ),
-                color: cs.primary.withValues(
-                  alpha: AppDimensions.opacityExtraVeryLight,
-                ),
+                color: cs.surfaceContainerHighest,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (isLoading) ...[
-                    LoadingIndicator(
-                      size: AppDimensions.iconSizeM,
-                      strokeWidth: AppDimensions.borderWidthThin,
-                      color: cs.primary,
+                    SizedBox(
+                      width: AppDimensions.iconSizeL,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.imageAdding,
+                      ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Flexible(
                       child: Text(
                         context.l10n.imageAdding,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ] else ...[
-                    Icon(
-                      Icons.add_photo_alternate_outlined,
-                      color: cs.primary,
+                    ButleryIcon(
+                      ButleryIcons.camera,
+                      color: cs.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -300,7 +299,7 @@ class ImageGridWidgets {
                       child: Text(
                         context.l10n.imageAddCount(remainingSlots),
                         style: AppTextStyles.contentLabel.copyWith(
-                          color: cs.primary,
+                          color: cs.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),

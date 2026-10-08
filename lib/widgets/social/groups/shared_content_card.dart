@@ -5,7 +5,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 /// Card widget for displaying shared content items (recipes, menus, shopping lists)
@@ -24,13 +26,13 @@ class SharedContentCard extends StatelessWidget {
   IconData _getIconForType(String type) {
     switch (type) {
       case 'recipe':
-        return Icons.restaurant_menu;
+        return ButleryIcons.utensils;
       case 'menu':
-        return Icons.calendar_today;
+        return ButleryIcons.calendar;
       case 'shopping_list':
-        return Icons.shopping_cart;
+        return ButleryIcons.shoppingCart;
       default:
-        return Icons.share;
+        return ButleryIcons.share2;
     }
   }
 
@@ -38,11 +40,11 @@ class SharedContentCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     switch (type) {
       case 'recipe':
-        return cs.primary;
+        return cs.onSurface;
       case 'menu':
-        return context.butleryColors.success;
+        return context.modeColors.onSuccessContainer;
       case 'shopping_list':
-        return context.butleryColors.warning;
+        return AppModeColors.textWarning(Theme.of(context).brightness);
       default:
         return cs.onSurfaceVariant;
     }
@@ -76,7 +78,7 @@ class SharedContentCard extends StatelessWidget {
         button: true,
         child: InkWell(
           onTap: onView,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             child: Column(
@@ -88,14 +90,12 @@ class SharedContentCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.paddingS),
                       decoration: BoxDecoration(
-                        color: iconColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        color: cs.surface,
                         borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
+                          AppDimensions.radiusControl,
                         ),
                       ),
-                      child: Icon(
+                      child: ButleryIcon(
                         _getIconForType(item.type),
                         color: iconColor,
                         size: AppDimensions.iconSizeM,
@@ -137,19 +137,17 @@ class SharedContentCard extends StatelessWidget {
                     else
                       CircleAvatar(
                         radius: 12,
-                        backgroundColor: cs.primary.withValues(
-                          alpha: AppDimensions.opacityLight,
-                        ),
+                        backgroundColor: cs.surface,
                         child: Text(
                           item.sharedByDisplayName.isNotEmpty
                               ? item.sharedByDisplayName[0].toUpperCase()
                               : '?',
                           style: AppTextStyles.textXs.copyWith(
-                            color: cs.primary,
+                            color: cs.onSurface,
                           ),
                         ),
                       ),
-                    const SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
                         context.l10n.groupSharedBy(item.sharedByDisplayName),
@@ -177,20 +175,20 @@ class SharedContentCard extends StatelessWidget {
                     if (onImport != null) ...[
                       TextButton.icon(
                         onPressed: onImport,
-                        icon: const Icon(
-                          Icons.download,
+                        icon: const ButleryIcon(
+                          ButleryIcons.download,
                           size: AppDimensions.iconSize18,
                         ),
                         label: Text(context.l10n.groupImport),
                       ),
-                      const SizedBox(width: AppDimensions.spacingS),
+                      const SizedBox(width: AppDimensions.space4),
                     ],
                     if (onView != null)
                       Flexible(
                         child: FilledButton.icon(
                           onPressed: onView,
-                          icon: const Icon(
-                            Icons.visibility,
+                          icon: const ButleryIcon(
+                            ButleryIcons.eye,
                             size: AppDimensions.iconSize18,
                           ),
                           label: Text(context.l10n.groupView),

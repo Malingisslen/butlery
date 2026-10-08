@@ -2,9 +2,12 @@
 /// ```dart
 /// final im = ImportManager(ops); await im.autoImport(text);
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
@@ -15,13 +18,14 @@ import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/voice_import_strategy.dart';
+import 'package:butlery/services/import/file_import_strategy.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
-import 'package:butlery/services/import/cache/global_recipe_cache.dart';
-import 'package:butlery/services/import/cache/cache_entry.dart';
-import 'package:butlery/services/import/cache/url_normalizer.dart';
+import 'package:butlery/services/import/import_event.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -42,10 +46,6 @@ class ImportManager {
   /// at construction (see ParseEventLogger), so the default is test-safe too.
   final ParseEventLogger _eventLogger;
 
-  /// Lazily initialized cache reference
-  GlobalRecipeCache? _cache;
-  UrlNormalizer? _urlNormalizer;
-
   ImportManager(this._personalOperations, {ParseEventLogger? eventLogger})
     : _eventLogger = eventLogger ?? ParseEventLogger() {
     _initializeStrategies();
@@ -60,30 +60,6 @@ class ImportManager {
     ParseEventLogger? eventLogger,
   }) : _eventLogger = eventLogger ?? ParseEventLogger() {
     _strategies.addAll(strategies);
-  }
-
-  /// Get the global recipe cache (lazy initialization with graceful fallback)
-  GlobalRecipeCache? get _globalCache {
-    if (_cache != null) return _cache;
-    try {
-      _cache = ServiceLocator.get<GlobalRecipeCache>();
-      return _cache;
-    } catch (e) {
-      AppLogger.debug('ImportManager: GlobalRecipeCache not available: $e');
-      return null;
-    }
-  }
-
-  /// Get the URL normalizer (lazy initialization with graceful fallback)
-  UrlNormalizer? get _normalizer {
-    if (_urlNormalizer != null) return _urlNormalizer;
-    try {
-      _urlNormalizer = ServiceLocator.get<UrlNormalizer>();
-      return _urlNormalizer;
-    } catch (e) {
-      AppLogger.debug('ImportManager: UrlNormalizer not available: $e');
-      return null;
-    }
   }
 
   /// Get the YouTube import strategy (lazy initialization with graceful fallback)
@@ -140,10 +116,6 @@ class ImportManager {
 
   void _initializeStrategies() {
     // Register available import strategies in priority order.
-    // FileImportStrategy is deliberately NOT registered: its canHandle()
-    // always returns false (file import is picker-driven, not text-driven),
-    // so it was unreachable in the auto loops (BUT-1487). The picker path
-    // constructs it directly via FileImportViewModel.
     _strategies.addAll([
       ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
       UrlImportStrategy(
@@ -152,10 +124,10 @@ class ImportManager {
       TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
       PhotoImportStrategy(), // 4. Photo import (OCR extraction)
       // 5. Voice dictation — canHandle() always false (explicitly launched
-      // from the voice wizard, never auto-selected); registered so
-      // importVoiceTranscript flows through _parseWithStrategy and gets
-      // parse-event telemetry under its own 'voice' source tag.
+      // from the voice wizard, never auto-selected).
       VoiceImportStrategy(),
+      // 6. File — canHandle() always false (picker-driven, see importFile).
+      FileImportStrategy(),
     ]);
   }
 
@@ -163,15 +135,46 @@ class ImportManager {
   List<ImportStrategy> get availableStrategies =>
       List.unmodifiable(_strategies);
 
+  /// Of two strategy failures, keep the one that knows its cause: the first
+  /// failure carrying an [ImportErrorCode] wins over any without one, and
+  /// [ImportErrorCode.unknown] counts as not knowing.
+  static ImportManagerResult _keepBetterFailure(
+    ImportManagerResult? kept,
+    ImportManagerResult next,
+  ) => kept == null || (!_knowsCause(kept) && _knowsCause(next)) ? next : kept;
+
+  static bool _knowsCause(ImportManagerResult r) =>
+      r.errorCode != null && r.errorCode != ImportErrorCode.unknown;
+
+  /// The answer when no strategy produced a recipe: the kept strategy
+  /// failure with its message, code and metadata, or the generic line when
+  /// no strategy even tried.
+  ImportManagerResult _noRecipeResult(ImportManagerResult? failure) {
+    final strategies = _strategies.map((s) => s.strategyName).toList();
+    if (failure == null) {
+      return ImportManagerResult.failure(
+        'No import strategy could handle the provided input',
+        availableStrategies: strategies,
+      );
+    }
+    return ImportManagerResult.failure(
+      failure.errorMessage ?? 'Parse failed',
+      strategy: failure.strategy,
+      warnings: failure.warnings,
+      metadata: failure.metadata,
+      errorCode: failure.errorCode,
+      availableStrategies: strategies,
+    );
+  }
+
   /// Auto-detects strategy and parses recipe WITHOUT saving (for preview/validation).
-  /// ```dart
-  /// final r = await im.autoParseOnly(text); if (r.isSuccess) showPreview(r.recipe!);
-  Future<ImportManagerResult> autoParseOnly(
+  Future<ImportManagerResult> _autoParseOnly(
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
   }) async {
     try {
+      ImportManagerResult? failure;
       // Try preferred strategy first if provided
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
         final result = await _parseWithStrategy(
@@ -182,6 +185,7 @@ class ImportManager {
         if (result.isSuccess) {
           return result;
         }
+        failure = _keepBetterFailure(failure, result);
       }
 
       // Try all compatible strategies
@@ -191,14 +195,11 @@ class ImportManager {
           if (result.isSuccess) {
             return result;
           }
+          failure = _keepBetterFailure(failure, result);
         }
       }
 
-      // No strategy could handle the input
-      return ImportManagerResult.failure(
-        'No import strategy could handle the provided input',
-        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
-      );
+      return _noRecipeResult(failure);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -211,6 +212,22 @@ class ImportManager {
   /// ```dart
   /// final r = await im.autoImport(content, preferredStrategy: textStrategy);
   Future<ImportManagerResult> autoImport(
+    String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+    void Function(String phase)? onProgress,
+  }) => _measured(
+    _looksLikeLink(input) ? ImportChannel.link : ImportChannel.text,
+    input,
+    () => _autoImport(
+      input,
+      preferredStrategy: preferredStrategy,
+      options: options,
+      onProgress: onProgress,
+    ),
+  );
+
+  Future<ImportManagerResult> _autoImport(
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
@@ -229,12 +246,18 @@ class ImportManager {
         }
       }
 
-      // Phase: fetching — cache check and strategy selection
+      // Phase: fetching — strategy selection
       onProgress?.call('fetching');
 
-      final cacheResult = await _checkCacheForUrl(input);
-      if (cacheResult != null) {
-        return cacheResult;
+      ImportManagerResult? failure;
+      // An import asks the model at most once (BUT-2239): once a platform
+      // strategy has made a call, later strategies run without AI and the
+      // call's cost rides on whatever result the import ends with.
+      var spent = const <String, dynamic>{};
+      void noteCall(ImportManagerResult result) {
+        if (result.metadata?['usedLlm'] != true) return;
+        spent = {'usedLlm': true, 'llmCost': ?result.metadata?['llmCost']};
+        options = {...?options, 'skipLlm': true};
       }
 
       final youtubeStrategy = _youtubeStrategy;
@@ -250,7 +273,6 @@ class ImportManager {
         // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result;
         }
 
@@ -269,6 +291,8 @@ class ImportManager {
         }
 
         // YouTube strategy failed, continue with other strategies
+        noteCall(result);
+        failure = _keepBetterFailure(failure, result);
       }
 
       final tiktokPipeline = _tiktokPipeline;
@@ -277,10 +301,11 @@ class ImportManager {
         final result = await _parseWithStrategy(tiktokPipeline, input, options);
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result;
         }
         // TikTok pipeline failed, continue with other strategies
+        noteCall(result);
+        failure = _keepBetterFailure(failure, result);
       }
 
       final instagramPipeline = _instagramPipeline;
@@ -293,9 +318,10 @@ class ImportManager {
         );
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
           return result;
         }
+        noteCall(result);
+        failure = _keepBetterFailure(failure, result);
       }
 
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
@@ -307,14 +333,14 @@ class ImportManager {
         );
         if (result.isSuccess) {
           onProgress?.call('creating');
-          await _saveToCacheIfUrl(input, result);
-          return result;
+          return result.withLlmUse(spent);
         }
         // Tier-7: an assisted-import result is a terminal outcome, not a
         // fallback-worthy miss — return it instead of trying other strategies.
         if (result.needsAssistance) {
-          return result;
+          return result.withLlmUse(spent);
         }
+        failure = _keepBetterFailure(failure, result);
       }
 
       for (final strategy in _strategies) {
@@ -323,20 +349,16 @@ class ImportManager {
           final result = await _parseWithStrategy(strategy, input, options);
           if (result.isSuccess) {
             onProgress?.call('creating');
-            await _saveToCacheIfUrl(input, result);
-            return result;
+            return result.withLlmUse(spent);
           }
           if (result.needsAssistance) {
-            return result;
+            return result.withLlmUse(spent);
           }
+          failure = _keepBetterFailure(failure, result);
         }
       }
 
-      // No strategy could handle the input
-      return ImportManagerResult.failure(
-        'No import strategy could handle the provided input',
-        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
-      );
+      return _noRecipeResult(failure).withLlmUse(spent);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -359,11 +381,17 @@ class ImportManager {
   /// strategy's result directly so that message survives to the ViewModel.
   ///
   /// The rate-limit CHECK mirrors [autoImport] (same local `basic('auto')` check
-  /// → structured `rateLimit(denied)` on denial). It does not record basic-bucket
-  /// usage on success — the cost is metered on the LLM vision bucket, same as the
-  /// normal multi-page photo path (`autoParseMulti`), so handwritten stays
-  /// consistent with the rest of the photo feature.
+  /// → structured `rateLimit(denied)` on denial).
   Future<ImportManagerResult> importSinglePhoto(
+    String input, {
+    Map<String, dynamic>? options,
+  }) => _measured(
+    ImportChannel.photo,
+    input,
+    () => _importSinglePhoto(input, options: options),
+  );
+
+  Future<ImportManagerResult> _importSinglePhoto(
     String input, {
     Map<String, dynamic>? options,
   }) async {
@@ -401,10 +429,17 @@ class ImportManager {
   ///
   /// Mirrors [importSinglePhoto]: rate-limit check up front (structured
   /// denial survives to the ViewModel), then straight to the voice
-  /// strategy via [_parseWithStrategy] — the telemetry choke point — so
-  /// dictated imports are rate-limited AND logged under source 'voice'
-  /// (the direct TextImportStrategy call would silently skip both).
+  /// strategy via [_parseWithStrategy].
   Future<ImportManagerResult> importVoiceTranscript(
+    String input, {
+    Map<String, dynamic>? options,
+  }) => _measured(
+    ImportChannel.voice,
+    input,
+    () => _importVoiceTranscript(input, options: options),
+  );
+
+  Future<ImportManagerResult> _importVoiceTranscript(
     String input, {
     Map<String, dynamic>? options,
   }) async {
@@ -427,15 +462,7 @@ class ImportManager {
         );
       }
 
-      final result = await _parseWithStrategy(strategy, input, options);
-      // Unlike photo (metered on its LLM-vision bucket), voice consumes no
-      // metered downstream resource — the basic bucket IS its quota, so a
-      // successful import must record usage or the checkLimit above is
-      // inert (review finding #6: unlimited voice imports).
-      if (result.isSuccess) {
-        await _recordImportUsage('voice');
-      }
-      return result;
+      return await _parseWithStrategy(strategy, input, options);
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -444,33 +471,188 @@ class ImportManager {
     }
   }
 
-  /// Record successful import usage for rate limiting.
-  Future<void> _recordImportUsage(String sourceType) async {
+  /// Runs one import and then measures it (BUT-2238): exactly one parse
+  /// event, and one use of the import quota whatever the outcome. A request
+  /// the rate limiter refused is neither measured nor counted.
+  Future<ImportManagerResult> _measured(
+    ImportChannel channel,
+    String input,
+    Future<ImportManagerResult> Function() run,
+  ) async {
+    final stopwatch = Stopwatch()..start();
+    final result = await run();
+    await _finishImport(channel, input, result, stopwatch.elapsed);
+    return result;
+  }
+
+  Future<void> _finishImport(
+    ImportChannel channel,
+    String input,
+    ImportManagerResult result,
+    Duration elapsed,
+  ) async {
+    if (result.rateLimitDenied != null) return;
+    _record(
+      ImportEvent.fromResult(
+        result,
+        channel: channel,
+        input: input,
+        elapsed: elapsed,
+      ),
+    );
+  }
+
+  void _record(ImportEvent event) {
+    _eventLogger.log(event);
+    // Not awaited: the quota write retries on a transient error, and an
+    // offline failure must reach the user without waiting for it.
+    unawaited(_recordUsage(event.channel));
+    unawaited(_trackImport(event));
+  }
+
+  Future<void> _trackImport(ImportEvent event) async {
+    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    if (analytics == null) return;
     try {
-      await _rateLimiter?.recordUsage(ImportOperation.basic(sourceType));
+      final source = event.channel.name;
+      await analytics.logImportStarted(source: source);
+      if (event.success) await analytics.logImportSuccess(source: source);
+    } catch (e) {
+      AppLogger.debug('ImportManager: Failed to log import analytics: $e');
+    }
+  }
+
+  /// File entry point (BUT-2240): every recipe in one picked CSV, Excel or
+  /// Paprika file, for the batch preview. A cancelled picker is not an
+  /// import, so it is neither limited nor measured.
+  Future<FileImportResult> importFile() async {
+    final strategy = _strategies.whereType<FileImportStrategy>().firstOrNull;
+    final file = await strategy?.pickFile();
+    if (strategy == null || file == null) {
+      return const FileImportResult.cancelled();
+    }
+
+    final limitResult = await _rateLimiter?.checkLimit(
+      ImportOperation.basic('auto'),
+    );
+    if (limitResult is RateLimitDenied) {
+      return FileImportResult.rateLimit(limitResult);
+    }
+
+    final stopwatch = Stopwatch()..start();
+    final recipes = await strategy.importPicked(file);
+    _record(
+      ImportEvent(
+        channel: ImportChannel.file,
+        strategy: ImportEvent.strategyId(strategy.strategyName),
+        outcome: recipes.isEmpty ? 'failure' : 'recipe',
+        parseTimeMs: stopwatch.elapsedMilliseconds,
+        errorCode: recipes.isEmpty ? ImportErrorCode.parsingFailed.name : null,
+      ),
+    );
+    return FileImportResult(recipes);
+  }
+
+  Future<void> _recordUsage(ImportChannel channel) async {
+    try {
+      await _rateLimiter?.recordUsage(ImportOperation.basic(channel.name));
     } catch (e) {
       AppLogger.debug('ImportManager: Failed to record import usage: $e');
     }
   }
+
+  // Domain-like input without a scheme, e.g. "ica.se/recept/...".
+  static final _domainPattern = RegExp(
+    r'^[\w\-]+\.[\w\-]+(?:\.[\w\-]+)*(?:/.*)?$',
+    caseSensitive: false,
+  );
+
+  bool _looksLikeLink(String input) {
+    final trimmed = input.trim().toLowerCase();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return true;
+    }
+    return _domainPattern.hasMatch(trimmed);
+  }
+
+  ImportChannel _channelForStrategy(String strategyName, String input) =>
+      switch (ImportEvent.strategyId(strategyName)) {
+        'photo' => ImportChannel.photo,
+        'voice' => ImportChannel.voice,
+        _ => _looksLikeLink(input) ? ImportChannel.link : ImportChannel.text,
+      };
 
   /// Import using a specific strategy
   Future<ImportManagerResult> importWithStrategy(
     String strategyName,
     String input, {
     Map<String, dynamic>? options,
-  }) async {
-    final strategy = _strategies
-        .where((s) => s.strategyName == strategyName)
-        .firstOrNull;
+  }) => _measured(
+    _channelForStrategy(strategyName, input),
+    input,
+    () => _importWithStrategy(strategyName, input, options: options),
+  );
 
-    if (strategy == null) {
+  Future<ImportManagerResult> _importWithStrategy(
+    String strategyName,
+    String input, {
+    Map<String, dynamic>? options,
+  }) => _rateLimitedParse(
+    _strategies.where((s) => s.strategyName == strategyName).firstOrNull,
+    input,
+    options,
+    missing: 'Strategy not found: $strategyName',
+  );
+
+  /// BUT-2279: re-reads a saved recipe from the capture it was made from. A
+  /// link is fetched again; every other capture is parsed as text.
+  Future<ImportManagerResult> reimportFromArtefact(SourceArtefact artefact) {
+    final isLink = artefact.type == SourceArtefactType.url;
+    return _measured(
+      isLink ? ImportChannel.link : ImportChannel.text,
+      artefact.payload,
+      () => _rateLimitedParse(
+        isLink
+            ? _strategies.whereType<UrlImportStrategy>().firstOrNull
+            : _strategies.whereType<TextImportStrategy>().firstOrNull,
+        artefact.payload,
+        null,
+        missing: 'No ${artefact.type.name} import strategy is available',
+      ),
+    );
+  }
+
+  Future<ImportManagerResult> _rateLimitedParse(
+    ImportStrategy? strategy,
+    String input,
+    Map<String, dynamic>? options, {
+    required String missing,
+  }) async {
+    try {
+      final rateLimiter = _rateLimiter;
+      if (rateLimiter != null) {
+        final limitResult = await rateLimiter.checkLimit(
+          ImportOperation.basic('auto'),
+        );
+        if (limitResult is RateLimitDenied) {
+          return ImportManagerResult.rateLimit(limitResult);
+        }
+      }
+
+      if (strategy == null) {
+        return ImportManagerResult.failure(
+          missing,
+          availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+        );
+      }
+
+      return await _parseWithStrategy(strategy, input, options);
+    } catch (e) {
       return ImportManagerResult.failure(
-        'Strategy not found: $strategyName',
+        'Import manager error: $e',
         availableStrategies: _strategies.map((s) => s.strategyName).toList(),
       );
     }
-
-    return await _parseWithStrategy(strategy, input, options);
   }
 
   /// Processes multiple recipe imports in batch with comprehensive progress tracking and error aggregation.
@@ -600,7 +782,7 @@ class ImportManager {
   ///
   /// [MultiRecipeSplitter] segments the text; when it finds a single recipe it
   /// returns `[input]`, so this collapses to exactly the existing
-  /// [autoParseOnly] behaviour (wrapped in a 1-element [BatchImportResult]).
+  /// [_autoParseOnly] behaviour (wrapped in a 1-element [BatchImportResult]).
   /// Callers that want a picker check `successfulRecipes.length > 1`.
   ///
   /// **The single-recipe path is no longer byte-unchanged, and that is
@@ -619,12 +801,61 @@ class ImportManager {
   /// reasons: the splitter's guarantee is worth keeping, and the eval arms can
   /// only measure a trim if it sits outside `split`.
   /// A run without a [layout] is still byte-identical to before.
+  ///
+  /// [channel] null means this parse belongs to an import that was already
+  /// measured — a page added, removed or reordered, a restored draft, the
+  /// text behind a handwritten photo — so it writes no event and uses no quota.
   Future<BatchImportResult> autoParseMulti(
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
     DocumentLayout? layout,
+    ImportChannel? channel = ImportChannel.text,
   }) async {
+    // Same limit as autoImport; an already measured import was checked when
+    // it was counted.
+    if (channel != null) {
+      final limitResult = await _rateLimiter?.checkLimit(
+        ImportOperation.basic('auto'),
+      );
+      if (limitResult is RateLimitDenied) {
+        return BatchImportResult(
+          results: [ImportManagerResult.rateLimit(limitResult)],
+          successfulRecipes: const [],
+          errors: [limitResult.message],
+          totalProcessed: 0,
+          successCount: 0,
+          failureCount: 1,
+        );
+      }
+    }
+    final stopwatch = Stopwatch()..start();
+    final batch = await _autoParseMulti(
+      input,
+      preferredStrategy: preferredStrategy,
+      options: options,
+      layout: layout,
+    );
+    if (channel == null) return batch;
+    // One page is one import, however many recipes it held: the event
+    // describes the first recipe found, or the failure that knew its cause.
+    final answer =
+        batch.results
+            .where((r) => r.isSuccess && r.recipe != null)
+            .firstOrNull ??
+        _noRecipeResult(
+          batch.results.fold<ImportManagerResult?>(
+            null,
+            (kept, r) => _keepBetterFailure(kept, r),
+          ),
+        );
+    await _finishImport(channel, input, answer, stopwatch.elapsed);
+    return batch;
+  }
+
+  /// The recipe blocks [autoParseMulti] parses [input] as, one per recipe.
+  /// Deterministic and free, so a caller can ask before choosing a path.
+  static List<String> recipeBlocks(String input, {DocumentLayout? layout}) {
     // [layout] is where the words sat on the page, when a reader measured
     // them. Only the photo path can supply it; the paste path never can, so it
     // stays optional and null reproduces today's behaviour exactly.
@@ -645,17 +876,23 @@ class ImportManager {
     // page's median type size under the leading trim and cost a real recipe
     // title; `frame_trim.dart` carries the executed case.
     final trimmed = withoutFrameNoise(input, layout);
-    final blocks = MultiRecipeSplitter().split(
-      trimmed.text,
-      layout: trimmed.layout,
-    );
+    return MultiRecipeSplitter().split(trimmed.text, layout: trimmed.layout);
+  }
+
+  Future<BatchImportResult> _autoParseMulti(
+    String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+    DocumentLayout? layout,
+  }) async {
+    final blocks = recipeBlocks(input, layout: layout);
 
     final results = <ImportManagerResult>[];
     final recipes = <Recipe>[];
     final errors = <String>[];
 
     for (final block in blocks) {
-      final result = await autoParseOnly(
+      final result = await _autoParseOnly(
         block,
         preferredStrategy: preferredStrategy,
         options: options,
@@ -730,17 +967,13 @@ class ImportManager {
 
   /// Save imported recipe using PersonalRecipeOperations.
   /// Tagging is handled by PersonalRecipeModule._applyTagging on save —
-  /// no need to tag here (the result would be dropped by addUnifiedRecipe's
-  /// parameter decomposition anyway).
+  /// no need to tag here.
   Future<ImportManagerResult> saveImportedRecipe(Recipe recipe) async {
     try {
       final saveResult = await _personalOperations.addUnifiedRecipe(recipe);
 
       if (saveResult.isSuccess) {
-        return ImportManagerResult.success(
-          recipe,
-          strategy: 'direct_save',
-        );
+        return ImportManagerResult.success(recipe, strategy: 'direct_save');
       } else {
         return ImportManagerResult.failure(
           'Failed to save recipe: ${saveResult.message}',
@@ -761,15 +994,9 @@ class ImportManager {
     String input,
     Map<String, dynamic>? options,
   ) async {
-    final stopwatch = Stopwatch()..start();
     try {
       // Execute import strategy to parse recipe
       final importResult = await strategy.import(input, options: options);
-
-      // BUT-1470: log a server-side parse event for every import path at this
-      // shared choke point, so photo/text/social imports are measured the way
-      // URL imports already are.
-      _logParseEvent(strategy, importResult, stopwatch.elapsedMilliseconds);
 
       // Tier-7 recovery: a strategy can return `needsAssistance` (extracted
       // text the parser couldn't structure) instead of a recipe. This is NOT
@@ -791,6 +1018,8 @@ class ImportManager {
           importResult.errorMessage ?? 'Parse failed',
           strategy: strategy.strategyName,
           warnings: importResult.warnings,
+          metadata: importResult.metadata,
+          errorCode: importResult.errorCode,
         );
       }
 
@@ -803,10 +1032,8 @@ class ImportManager {
 
       // HIGH-1: Generate preview tags for immediate allergen/dietary display.
       // Preview tagging is an optional enhancement — it must NEVER fail an
-      // already-parsed recipe. Wrap it in its own guard (mirrors
-      // _retagCachedRecipe) so a tagging throw falls back to the untagged
-      // recipe instead of discarding the parse and double-logging the parse
-      // event (BUT-1470 telemetry) via the outer catch.
+      // already-parsed recipe. Wrap it in its own guard so a tagging throw
+      // falls back to the untagged recipe instead of discarding the parse.
       var recipeWithPreview = importResult.recipe!;
       final taggingService = _taggingService;
       if (taggingService != null && recipeWithPreview.tagResult == null) {
@@ -836,49 +1063,11 @@ class ImportManager {
         metadata: importResult.metadata,
       );
     } catch (e) {
-      // BUT-1597: an exception thrown before a result is returned is still a
-      // parse outcome — log it (success=false) so exception failures are
-      // measured, not just the success/needsAssistance/failure return paths.
-      // Mirrors _logParseEvent's UrlImportStrategy skip (it self-logs per-tier)
-      // to avoid double-counting. Never throws: ParseEventLogger swallows errors.
-      if (strategy is! UrlImportStrategy) {
-        _eventLogger.logEvent(
-          url: null,
-          source: _sourceTypeFromStrategy(strategy.strategyName),
-          success: false,
-          parseTimeMs: stopwatch.elapsedMilliseconds,
-        );
-      }
       return ImportManagerResult.failure(
         'Parse execution error: $e',
         strategy: strategy.strategyName,
       );
     }
-  }
-
-  /// BUT-1470: emit a fire-and-forget parse event for a strategy outcome.
-  ///
-  /// [UrlImportStrategy] already logs its own per-tier parse events (and its
-  /// enhanced-parser tier logs again via RecipeParserService), so it is skipped
-  /// here to avoid double-counting the most common import path. Every other
-  /// strategy (photo/OCR, text, archive, and the social pipelines) had no
-  /// parse-event coverage before this — this is the single choke point that
-  /// closes that gap. Never throws: ParseEventLogger swallows its own errors.
-  void _logParseEvent(
-    ImportStrategy strategy,
-    ImportResult result,
-    int parseTimeMs,
-  ) {
-    if (strategy is UrlImportStrategy) return;
-
-    _eventLogger.logEvent(
-      // The input for these paths is raw text / image bytes / a file id, not a
-      // fetchable URL, so there is no meaningful `url` to record.
-      url: null,
-      source: _sourceTypeFromStrategy(strategy.strategyName),
-      success: result.isSuccess && result.recipe != null,
-      parseTimeMs: parseTimeMs,
-    );
   }
 
   double _calculateConfidence(ImportStrategy strategy, String input) {
@@ -896,224 +1085,5 @@ class ImportManager {
     }
 
     return 0.5; // Default confidence
-  }
-
-  /// Check if input looks like a URL and return cached result if available.
-  Future<ImportManagerResult?> _checkCacheForUrl(String input) async {
-    final cache = _globalCache;
-    final normalizer = _normalizer;
-
-    if (cache == null || normalizer == null) {
-      return null; // Cache not available
-    }
-
-    // Only check cache for URL-like inputs
-    if (!normalizer.looksLikeUrl(input)) {
-      return null;
-    }
-
-    try {
-      final cacheEntry = await cache.findByUrl(input);
-
-      if (cacheEntry == null) {
-        return null; // Cache miss
-      }
-
-      // Create recipe from cached data
-      var recipe = _recipeFromCacheEntry(cacheEntry);
-      if (recipe == null) {
-        AppLogger.warning('ImportManager: Invalid recipe data in cache');
-        return null;
-      }
-
-      // HIGH-2: Check if cached recipe needs retagging.
-      // NOTE (2026-07-02): the retag result is deliberately NOT written back
-      // to the shared cache entry — firestore.rules restricts cache updates
-      // to access stats as a cache-poisoning defense (a client-writable
-      // shared recipe would let one user's tags, incl. user-defined
-      // ingredient overrides, become canonical for everyone). Per-hit
-      // client-side retag is the accepted cost; see roadmap P1.
-      final needsRetagging = _cachedRecipeNeedsRetagging(recipe, cacheEntry);
-      if (needsRetagging) {
-        AppLogger.info(
-          'ImportManager: Cache hit but needs retagging '
-          '(age: ${cacheEntry.ageInDays} days)',
-        );
-        recipe = await _retagCachedRecipe(recipe);
-      }
-
-      // Note: Recipe is NOT saved here - user will save after reviewing in editor
-
-      AppLogger.info(
-        'ImportManager: Loaded from cache '
-        '(source: ${cacheEntry.sourceType}, domain: ${cacheEntry.domain})',
-      );
-
-      return ImportManagerResult.success(
-        recipe,
-        strategy: 'cache',
-        metadata: {
-          'fromCache': true,
-          'cacheAge': cacheEntry.ageInDays,
-          'originalPipeline': cacheEntry.extractionMeta.pipeline,
-          'originalTier': cacheEntry.extractionMeta.tier,
-          'originalMethod': cacheEntry.extractionMeta.method,
-          'retagged': needsRetagging,
-        },
-      );
-    } catch (e) {
-      AppLogger.debug('ImportManager: Cache lookup failed: $e');
-      return null; // Continue with normal import on cache error
-    }
-  }
-
-  /// Save successful import result to cache if input is a URL, and record usage.
-  Future<void> _saveToCacheIfUrl(
-    String input,
-    ImportManagerResult result,
-  ) async {
-    final sourceType = _sourceTypeFromStrategy(result.strategy);
-    await _recordImportUsage(sourceType);
-
-    final cache = _globalCache;
-    final normalizer = _normalizer;
-
-    if (cache == null || normalizer == null) {
-      return; // Cache not available
-    }
-
-    // Only cache URL-based imports
-    if (!normalizer.looksLikeUrl(input)) {
-      return;
-    }
-
-    // Don't cache if already from cache
-    if (result.metadata?['fromCache'] == true) {
-      return;
-    }
-
-    if (result.recipe == null) {
-      return;
-    }
-
-    try {
-      final recipeData = result.recipe!.toJson();
-
-      // BUT-1484: thread the pipeline's actually-computed tier + confidence
-      // (carried in the strategy result metadata) into the cache entry instead
-      // of hardcoding, so cross-user cache analytics reflect real extraction
-      // quality. `tier` is the strategy's numeric tier (some paths emit a
-      // non-int marker like 'multi'); confidence comes from the parser's
-      // `overallQuality` score (0.0–1.0). Both fall back to the prior defaults
-      // when a strategy doesn't emit them.
-      final meta = result.metadata;
-      final computedTier = meta?['tier'];
-      final computedConfidence = meta?['overallQuality'];
-      final extractionMeta = ExtractionMeta(
-        pipeline: sourceType,
-        tier: computedTier is int ? computedTier : 0,
-        method: result.strategy ?? 'unknown',
-        confidence: computedConfidence is num
-            ? computedConfidence.toDouble()
-            : 0.8,
-      );
-
-      await cache.save(
-        input: input,
-        recipeData: recipeData,
-        extractionMeta: extractionMeta,
-        sourceType: sourceType,
-      );
-
-      AppLogger.debug(
-        'ImportManager: Saved to cache (source: $sourceType)',
-      );
-    } catch (e) {
-      // Don't fail import if cache save fails
-      AppLogger.debug('ImportManager: Cache save failed: $e');
-    }
-  }
-
-  /// Create a Recipe from cache entry data.
-  Recipe? _recipeFromCacheEntry(CacheEntry entry) {
-    try {
-      return Recipe.fromJson(entry.recipe);
-    } catch (e) {
-      AppLogger.warning('ImportManager: Failed to parse cached recipe: $e');
-      return null;
-    }
-  }
-
-  /// Determine source type from strategy name.
-  String _sourceTypeFromStrategy(String? strategy) {
-    if (strategy == null) return 'unknown';
-
-    final lower = strategy.toLowerCase();
-    if (lower.contains('url')) return 'website';
-    if (lower.contains('youtube')) return 'youtube';
-    if (lower.contains('tiktok')) return 'tiktok';
-    if (lower.contains('instagram')) return 'instagram';
-    if (lower.contains('photo') || lower.contains('ocr')) return 'ocr';
-    // Voice before text: dictated transcripts must never blend into the
-    // pasted-text telemetry bucket (Data/Integrations panel condition).
-    if (lower.contains('voice')) return 'voice';
-    if (lower.contains('text')) return 'text';
-    if (lower.contains('archive')) return 'archive';
-
-    return 'website'; // Default for URL imports
-  }
-
-  /// HIGH-2: Checks if a cached recipe needs retagging.
-  ///
-  /// Returns true if:
-  /// - Cache entry is older than 30 days
-  /// - Recipe has no tags
-  /// - Recipe's tagResult indicates it needs retagging
-  bool _cachedRecipeNeedsRetagging(Recipe recipe, CacheEntry cacheEntry) {
-    // Age-based retagging (> 30 days)
-    if (cacheEntry.ageInDays > 30) {
-      return true;
-    }
-
-    // No tags at all
-    final tagResult = recipe.tagResult;
-    if (tagResult == null) {
-      return true;
-    }
-
-    // Check if tagResult indicates it needs retagging
-    return tagResult.needsRetagging;
-  }
-
-  /// HIGH-2: Retags a cached recipe.
-  ///
-  /// Returns the recipe with updated tags, or the original recipe if
-  /// tagging fails.
-  Future<Recipe> _retagCachedRecipe(Recipe recipe) async {
-    final taggingService = _taggingService;
-    if (taggingService == null) {
-      return recipe; // Can't retag without service
-    }
-
-    try {
-      final tagResult = await taggingService.generateTags(recipe);
-      if (tagResult != null) {
-        AppLogger.success(
-          '✅ Retagged cached recipe with ${tagResult.tags.length} tags '
-          '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
-        );
-        return Recipe(
-          core: recipe.core.copyWith(tagResult: tagResult),
-          type: recipe.type,
-          socialData: recipe.socialData,
-          realtimeData: recipe.realtimeData,
-          offlineData: recipe.offlineData,
-        );
-      }
-    } catch (e) {
-      AppLogger.warning('Failed to retag cached recipe: $e');
-    }
-
-    return recipe; // Return original on failure
   }
 }

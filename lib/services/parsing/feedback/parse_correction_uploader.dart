@@ -106,9 +106,9 @@ class ParseCorrectionUploader {
     String name,
     Map<String, dynamic> body,
   ) async {
-    await FirebaseFunctions.instance
-        .httpsCallable(name)
-        .call<Map<String, dynamic>>(body);
+    await FirebaseFunctions.instanceFor(
+      region: 'europe-west1',
+    ).httpsCallable(name).call<Map<String, dynamic>>(body);
   }
 
   /// Hash an identifier the same way [FirebaseAnalyticsRepository] hashes

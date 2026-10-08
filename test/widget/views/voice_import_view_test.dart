@@ -24,6 +24,7 @@ import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/views/voice_import_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -149,23 +150,23 @@ void main() {
       voice.transcript = 'två deciliter mjölk och tre ägg';
       await pump(tester);
 
-      await tester.tap(find.byIcon(Icons.mic_none).at(1)); // ingredients
+      await tester.tap(find.byIcon(ButleryIcons.mic).at(1)); // ingredients
       await tester.pumpAndSettle();
 
       expect(
-        find.byIcon(Icons.stop),
+        find.byIcon(ButleryIcons.stop),
         findsOneWidget,
         reason: "direction A's big stop control shows in the active card",
       );
       // The other cards' mics pause while one records.
-      expect(find.byIcon(Icons.mic_none), findsNWidgets(2));
+      expect(find.byIcon(ButleryIcons.mic), findsNWidgets(2));
 
-      await tester.tap(find.byIcon(Icons.stop));
+      await tester.tap(find.byIcon(ButleryIcons.stop));
       await tester.pumpAndSettle();
 
       expect(find.text('två deciliter mjölk och tre ägg'), findsOneWidget);
       expect(
-        find.byIcon(Icons.check),
+        find.byIcon(ButleryIcons.check),
         findsOneWidget,
         reason: 'the dictated card shows the done checkmark',
       );
@@ -185,9 +186,9 @@ void main() {
       voice.transcript = 'grädda i ugnen i tjugo minuter';
       await pump(tester);
 
-      await tester.tap(find.byIcon(Icons.mic_none).at(2)); // steps
+      await tester.tap(find.byIcon(ButleryIcons.mic).at(2)); // steps
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.stop), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.stop), findsOneWidget);
 
       // The service fires the per-capture cap callback — no user tap.
       voice.capturedOnAutoStopped!();
@@ -199,14 +200,14 @@ void main() {
         reason: 'an auto-stopped dictation must be visible in its card',
       );
       expect(
-        find.byIcon(Icons.stop),
+        find.byIcon(ButleryIcons.stop),
         findsNothing,
         reason: 'the capture ended — the big stop control is gone',
       );
       // All three cards are idle again (mic stays on the done card too —
       // re-dictation is one tap), and only the dictated card shows done.
-      expect(find.byIcon(Icons.mic_none), findsNWidgets(3));
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.mic), findsNWidgets(3));
+      expect(find.byIcon(ButleryIcons.check), findsOneWidget);
     },
   );
 
@@ -260,7 +261,7 @@ void main() {
     await pump(tester);
 
     await tester.enterText(find.byType(TextField).first, 'Redan skrivet');
-    await tester.tap(find.byIcon(Icons.mic_none).first);
+    await tester.tap(find.byIcon(ButleryIcons.mic).first);
     await tester.pumpAndSettle();
 
     expect(

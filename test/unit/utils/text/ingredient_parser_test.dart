@@ -129,6 +129,19 @@ void main() {
         expect(result.name, equals('socker'));
       });
 
+      test('parses a mixed fraction without a unit', () {
+        // A scaled "1 citron" at 1.5x is written "1 ½ citroner"; the recipe
+        // page re-parses that line and showed "1" beside "½ citroner".
+        var result = IngredientParser.parseIngredient('1 ½ citroner');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, isEmpty);
+        expect(result.name, equals('citroner'));
+
+        result = IngredientParser.parseIngredient('2½ ägg');
+        expect(result.quantity, equals(2.5));
+        expect(result.name, equals('ägg'));
+      });
+
       test('should parse packaging units', () {
         var result = IngredientParser.parseIngredient(
           '1 burk krossade tomater',
@@ -386,6 +399,86 @@ void main() {
       });
     });
 
+    // Resa 11: dictation writes amounts as words, and "tre deciliter" was
+    // stored as amount 1 while "tre ägg" got no amount at all.
+    group('Swedish number words as amounts', () {
+      for (final (line, quantity, unit, name) in [
+        ('tre deciliter vetemjöl', 3.0, 'deciliter', 'vetemjöl'),
+        ('tre ägg', 3.0, '', 'ägg'),
+        ('Två dl mjölk', 2.0, 'dl', 'mjölk'),
+        ('en gul lök', 1.0, '', 'gul lök'),
+        ('ett par ägg', 2.0, '', 'ägg'),
+        ('en halv citron', 0.5, '', 'citron'),
+        ('halva citronen', 0.5, '', 'citronen'),
+        ('åtta skivor bacon', 8.0, 'skivor', 'bacon'),
+        ('tolv dl vatten', 12.0, 'dl', 'vatten'),
+      ]) {
+        test('"$line" → $quantity $unit $name', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, quantity);
+          expect(r.unit, unit);
+          expect(r.name, name);
+        });
+      }
+
+      for (final (line, name) in [
+        ('gul lök en stor', 'gul lök en stor'),
+        ('salt', 'salt'),
+        ('halvfet ost', 'halvfet ost'),
+        ('tretton ägg', 'tretton ägg'),
+        ('sexton nötter', 'sexton nötter'),
+      ]) {
+        test('"$line" is not read as a spoken amount', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, 1.0);
+          expect(r.name, name);
+        });
+      }
+
+      // Review of resa 11: a line that is only the phrase must not be cut
+      // into an amount and the rest of the phrase.
+      for (final line in ['en halv', 'ett halvt', 'ett par', 'Ett par']) {
+        test('"$line" alone is left as it was', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, 1.0);
+          expect(r.name, line.toLowerCase());
+        });
+      }
+
+      for (final (line, quantity, unit, name) in [
+        ('en och en halv dl mjölk', 1.5, 'dl', 'mjölk'),
+        ('två och en halv dl grädde', 2.5, 'dl', 'grädde'),
+        ('2 och en halv dl grädde', 2.5, 'dl', 'grädde'),
+        ('halvannan liter vatten', 1.5, 'liter', 'vatten'),
+      ]) {
+        test('"$line" → $quantity $unit $name', () {
+          final r = IngredientParser.parseIngredient(line);
+          expect(r.quantity, quantity);
+          expect(r.unit, unit);
+          expect(r.name, name);
+        });
+      }
+
+      test('"en och en halv" is one amount, not two ingredients', () {
+        final parts = IngredientParser.parseCompoundIngredient(
+          'en och en halv dl mjölk',
+        );
+        expect(parts.map((p) => (p.quantity, p.unit, p.name)), [
+          (1.5, 'dl', 'mjölk'),
+        ]);
+      });
+
+      test('a spoken amount after och is its own, not inherited', () {
+        final parts = IngredientParser.parseCompoundIngredient(
+          'tre ägg och en gul lök',
+        );
+        expect(parts.map((p) => (p.quantity, p.name)), [
+          (3.0, 'ägg'),
+          (1.0, 'gul lök'),
+        ]);
+      });
+    });
+
     group('BUG-10: compound och with explicit quantity', () {
       test('should keep explicit quantity for second part after och', () {
         // "2 ägg och 1 smör" - second part has explicit "1"
@@ -471,6 +564,29 @@ void main() {
         expect(results, hasLength(2));
         expect(results[0].name, equals('salt'));
         expect(results[1].name, equals('peppar'));
+      });
+    });
+
+    group('potted herbs (felkartan punkt 3)', () {
+      // "1 kruka koriander" used to parse as the name "kruka koriander",
+      // which no registry row matches, so one herb row turned every
+      // allergen verdict on the recipe to UNKNOWN.
+      test('1 kruka koriander → koriander, unit kruka', () {
+        final parsed = IngredientParser.parseIngredient('1 kruka koriander');
+        expect(parsed.name, 'koriander');
+        expect(parsed.unit, 'kruka');
+        expect(parsed.quantity, 1.0);
+      });
+
+      test('2 krukor basilika and 1 bunt persilja', () {
+        expect(
+          IngredientParser.parseIngredient('2 krukor basilika').name,
+          'basilika',
+        );
+        expect(
+          IngredientParser.parseIngredient('1 bunt persilja').name,
+          'persilja',
+        );
       });
     });
 

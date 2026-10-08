@@ -31,9 +31,11 @@
 library;
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -90,6 +92,8 @@ void main() {
   late _MockCoordinator coordinator;
   late FakePermissionService permissionService;
   late MockUnifiedFriendsService friendsService;
+  final savedCopies = <Recipe>[];
+  var copySucceeds = true;
 
   setUpAll(() async {
     registerFallbackValue(_FakeSharedRecipeArg());
@@ -99,6 +103,8 @@ void main() {
   setUp(() async {
     await TestServiceLocator.initialize();
     coordinator = _MockCoordinator();
+    savedCopies.clear();
+    copySucceeds = true;
     permissionService = FakePermissionService();
     friendsService = MockUnifiedFriendsService();
 
@@ -130,8 +136,15 @@ void main() {
     BaseUnitTest.resetMocks();
   });
 
-  SharedRecipeViewModel makeVm() =>
-      SharedRecipeViewModel(socialRecipeCoordinator: coordinator);
+  SharedRecipeViewModel makeVm() => SharedRecipeViewModel(
+    socialRecipeCoordinator: coordinator,
+    addPersonalRecipe: (recipe) async {
+      savedCopies.add(recipe);
+      return copySucceeds
+          ? RecipeOperationResult.success('ok')
+          : RecipeOperationResult.failure('nope');
+    },
+  );
 
   group('loadContentFromRepository', () {
     /// Auth-required contract: if the permission service has no current user,
@@ -410,43 +423,145 @@ void main() {
   });
 
   group('importSharedRecipe', () {
-    /// Happy path: VM delegates to `coordinator.joinSharedRecipe` with the
-    /// recipe id + optional new title, returning the coordinator's new id.
-    /// BUT-1073 removed the dead `legacyMode` parameter that previously
-    /// branched to the same call site.
-    test('delegates to joinSharedRecipe with id + newTitle', () async {
-      final r = _recipe(id: 'i1', title: 'pasta');
+    Recipe source() => Recipe(
+      core: RecipeCore(
+        id: 'orig-i1',
+        title: 'Pasta',
+        description: '',
+        ingredients: const ['400 g pasta'],
+        instructions: const ['Koka'],
+        imageUrls: const [],
+        mealType: 'Middag',
+        personalTagIds: const ['their-tag'],
+        rating: 4,
+        heirloom: HeirloomMetadata(
+          sourceImageUrl: 'https://storage/heirloom/theirs.jpg',
+          addedAt: DateTime(2026, 10, 1),
+          addedByUserId: 'the-sharer',
+        ),
+      ),
+      type: RecipeType.personal,
+    );
+
+    void stubSource(Recipe? recipe) {
+      when(
+        () => coordinator.getSharedRecipeSource(any()),
+      ).thenAnswer((_) async => recipe);
+    }
+
+    void stubMark(String? result) {
       when(
         () => coordinator.joinSharedRecipe(
           sharedRecipeId: any(named: 'sharedRecipeId'),
           newTitle: any(named: 'newTitle'),
         ),
-      ).thenAnswer((_) async => 'new-id');
+      ).thenAnswer((_) async => result);
+    }
+
+    // BUT-2268: "Importera" used to write the mark and nothing else.
+    test('saves a copy without their tags or rating, then marks it', () async {
+      stubSource(source());
+      stubMark('i1');
 
       final vm = makeVm();
-      final id = await vm.importSharedRecipe(r, newTitle: 'A');
+      final id = await vm.importSharedRecipe(_recipe(id: 'i1'), newTitle: 'A');
 
-      expect(id, 'new-id');
+      expect(id, 'i1');
+      final copy = savedCopies.single;
+      expect(copy.title, 'A');
+      expect(copy.ingredients, ['400 g pasta']);
+      expect(copy.personalTagIds, isEmpty);
+      expect(copy.rating, isNull);
+      // BUT-2280: the copy is stored whole, so it must not reuse the
+      // source's id, and an heirloom the sharer added stays theirs.
+      expect(copy.id, isNot('orig-i1'));
+      expect(copy.heirloom, isNull);
       verify(
         () => coordinator.joinSharedRecipe(sharedRecipeId: 'i1', newTitle: 'A'),
       ).called(1);
       vm.dispose();
     });
 
-    test('returns null and sets error when coordinator throws', () async {
-      final r = _recipe(id: 'i2');
-      when(
+    test('makes nothing when the recipe cannot be read', () async {
+      stubSource(null);
+
+      final vm = makeVm();
+      final id = await vm.importSharedRecipe(_recipe(id: 'i2'));
+
+      expect(id, isNull);
+      expect(savedCopies, isEmpty);
+      verifyNever(
         () => coordinator.joinSharedRecipe(
           sharedRecipeId: any(named: 'sharedRecipeId'),
           newTitle: any(named: 'newTitle'),
         ),
+      );
+      vm.dispose();
+    });
+
+    test('a failed copy is not marked imported', () async {
+      stubSource(source());
+      copySucceeds = false;
+
+      final vm = makeVm();
+      final id = await vm.importSharedRecipe(_recipe(id: 'i3'));
+
+      expect(id, isNull);
+      verifyNever(
+        () => coordinator.joinSharedRecipe(
+          sharedRecipeId: any(named: 'sharedRecipeId'),
+          newTitle: any(named: 'newTitle'),
+        ),
+      );
+      vm.dispose();
+    });
+
+    test('a failed mark after the copy still reports success', () async {
+      stubSource(source());
+      stubMark(null);
+
+      final vm = makeVm();
+      final id = await vm.importSharedRecipe(_recipe(id: 'i4'));
+
+      expect(id, 'i4');
+      expect(savedCopies, hasLength(1));
+      vm.dispose();
+    });
+
+    test('returns null and sets error when the read throws', () async {
+      when(
+        () => coordinator.getSharedRecipeSource(any()),
       ).thenThrow(Exception('boom'));
 
       final vm = makeVm();
-      final result = await vm.importSharedRecipe(r);
+      final result = await vm.importSharedRecipe(_recipe(id: 'i5'));
 
       expect(result, isNull);
       expect(vm.hasError, isTrue);
+      vm.dispose();
+    });
+  });
+
+  group('loadFullRecipe', () {
+    test('shows the full recipe when it can be read', () async {
+      final full = _recipeWithIngredients(['1 lök']);
+      when(
+        () => coordinator.getSharedRecipeSource(any()),
+      ).thenAnswer((_) async => full);
+
+      final vm = makeVm();
+      expect(await vm.loadFullRecipe(_recipe(id: 'f1')), same(full));
+      vm.dispose();
+    });
+
+    test('falls back to the summary when it cannot', () async {
+      when(
+        () => coordinator.getSharedRecipeSource(any()),
+      ).thenThrow(Exception('permission-denied'));
+
+      final vm = makeVm();
+      final shown = await vm.loadFullRecipe(_recipe(id: 'f2', title: 'Soppa'));
+      expect(shown.title, 'Soppa');
       vm.dispose();
     });
   });

@@ -165,11 +165,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final saveButton = find.widgetWithText(ElevatedButton, sv.commonSave);
+      final saveButton = find.widgetWithText(FilledButton, sv.commonSave);
       expect(saveButton, findsOneWidget);
 
       expect(
-        tester.widget<ElevatedButton>(saveButton).onPressed,
+        tester.widget<FilledButton>(saveButton).onPressed,
         isNull,
         reason: 'no unsaved changes yet → Save must be disabled',
       );
@@ -181,7 +181,7 @@ void main() {
       await tester.pump();
 
       expect(
-        tester.widget<ElevatedButton>(saveButton).onPressed,
+        tester.widget<FilledButton>(saveButton).onPressed,
         isNotNull,
         reason: 'a household-size change must arm the Save button',
       );

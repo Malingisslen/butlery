@@ -25,6 +25,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -107,5 +108,54 @@ void main() {
       findsNothing,
       reason: 'the raw English decimal point is the bug',
     );
+  });
+
+  // P4-T6: the time and portion glyphs are text.primary (onSurface), paper
+  // on the dark page; cs.primary is ink in both schemes (tokens.json:54-57).
+  testWidgets('dark mode: the metadata glyphs are paper, not ink', (
+    tester,
+  ) async {
+    final vm = RecipeDetailViewModel(recipe: recipe);
+    addTearDown(vm.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('sv', 'SE'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: RecipeDetailMetadata(
+            viewModel: vm,
+            currentPortions: 4,
+            isScaled: true,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final paper = AppTheme.darkTheme.colorScheme.onSurface;
+    final clock = tester.widget<Icon>(find.byIcon(ButleryIcons.clock));
+    expect(clock.color, paper);
+    final time = tester.widget<Text>(
+      find
+          .descendant(
+            of: find
+                .ancestor(
+                  of: find.byIcon(ButleryIcons.clock),
+                  matching: find.byType(Row),
+                )
+                .first,
+            matching: find.byType(Text),
+          )
+          .first,
+    );
+    expect(time.style?.color, paper);
   });
 }

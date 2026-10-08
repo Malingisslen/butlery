@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/components/input_themes.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
@@ -18,6 +20,7 @@ import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 ///
@@ -100,22 +103,26 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     // UI Redesign: Left green border + bottom rust border. The selected state
-    // uses its own green-outline decoration and is not affected by hover.
+    // is surface.selected with a real border, never a tint: #flerbar draws
+    // the chosen row on the raised surface with a 1.5 px ink border
+    // (Skarmar v12 etapp 9 #flerbar; Grafisk manual v6:209 "Vald = riktig
+    // border"). surface.selected and surface.raised carry the same values
+    // in both modes (tokens.json:108-119), and colorScheme
+    // surfaceContainerHighest is surface.raised (tools/app-theme-map.json).
+    // The border is text.primary (onSurface): ink on light, paper on dark.
     final BoxDecoration restDecoration = isSelected
         ? BoxDecoration(
-            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(
-              color: cs.primary,
-              width: 2,
-            ),
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+            border: Border.all(color: cs.onSurface, width: 1.5),
           )
-        : InputThemes.recipeCardDecoration;
+        : _restDecoration(context, cs);
 
     return RepaintBoundary(
       child: Semantics(
         label: context.l10n.recipeCardSemantics(recipe.title),
         button: onTap != null,
+        selected: isSelected,
         child: HoverableCard(
           // Only interactive cards get a hover affordance — a card with no tap
           // handler shouldn't imply clickability under the cursor.
@@ -127,24 +134,39 @@ class RecipeCard extends StatelessWidget {
                 vertical: AppDimensions.borderWidthStandard,
               ),
           restDecoration: restDecoration,
-          hoverDecoration: _hoverDecoration(restDecoration),
+          hoverDecoration: _hoverDecoration(restDecoration, cs),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             child: InkWell(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusCard,
+              ),
+              // The ring carries focus; no saffron focus tint under it.
+              focusColor: Colors.transparent,
+              overlayColor: HoverableCard.inkOverlay(cs),
               onTap: onTap != null ? () => onTap!(recipe) : null,
               onLongPress: onLongPress != null
                   ? () => onLongPress!(recipe)
                   : null,
-              child: Container(
-                padding:
-                    padding ??
-                    const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingModerate,
-                      horizontal: AppDimensions.spacingMd,
-                    ),
-                child: _buildCardContent(context),
+              // The canonical focus ring around the whole card when the
+              // card itself has keyboard focus, never saffron
+              // (tokens.json:155-160; Komponentark v1:657). It follows the
+              // InkWell's own node, so focus on the heart or the menu
+              // inside the card rings only that button.
+              child: ButleryAncestorFocusRing(
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusCard,
+                ),
+                child: Container(
+                  padding:
+                      padding ??
+                      const EdgeInsets.symmetric(
+                        vertical: AppDimensions.space12,
+                        horizontal: AppDimensions.spacingMd,
+                      ),
+                  child: _buildCardContent(context),
+                ),
               ),
             ),
           ),
@@ -153,11 +175,28 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  /// Hover variant of [base]: a stronger lift (web/desktop only). Reuses the
-  /// base decoration so border + corner treatment stay identical — only the
-  /// shadow deepens, keeping the square design language intact.
-  BoxDecoration _hoverDecoration(BoxDecoration base) {
-    return base.copyWith(boxShadow: AppShadows.elevated);
+  /// The resting card on surface.base for the current mode; the shared
+  /// decoration in InputThemes holds the light values only.
+  BoxDecoration _restDecoration(BuildContext context, ColorScheme cs) {
+    final modeColors = context.modeColors;
+    return InputThemes.recipeCardDecoration.copyWith(
+      color: cs.surface,
+      border: Border(
+        left: BorderSide(color: modeColors.recipeCardLeftBorder, width: 4),
+        bottom: BorderSide(color: modeColors.recipeCardBottomBorder, width: 3),
+      ),
+    );
+  }
+
+  /// Hover variant of [base]: fills to surface.raised (B83-1 = A, BUT-2183,
+  /// produktbeslut-2026-09-30.json),
+  /// plus a stronger shadow lift (web/desktop only). Reuses the base
+  /// decoration so border + corner treatment stay identical.
+  BoxDecoration _hoverDecoration(BoxDecoration base, ColorScheme cs) {
+    return base.copyWith(
+      color: cs.surfaceContainerHighest,
+      boxShadow: AppShadows.elevated,
+    );
   }
 
   Widget _buildCardContent(BuildContext context) {
@@ -423,11 +462,11 @@ class RecipeCard extends StatelessWidget {
       width: width ?? imageSize,
       height: height ?? imageSize,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         color: Theme.of(context).colorScheme.surface,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: hasImage
             ? SimpleImageWidget(
                 imageUrl: thumbnailOrImage,
@@ -435,7 +474,7 @@ class RecipeCard extends StatelessWidget {
                 // PERFORMANCE FIX: Use thumbnail config for 64x64 display
                 config: ImageConfig.thumbnail(
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
+                    AppDimensions.radiusControl,
                   ),
                   heroTag: ImageConfig.recipeHeroTag(recipe.id),
                 ),
@@ -452,7 +491,7 @@ class RecipeCard extends StatelessWidget {
                 child: VegetableIllustration(
                   type: VegetableIllustration.randomForRecipe(recipe.id),
                   size: imageSize * 0.7,
-                  opacity: 0.8,
+                  opacity: VegetableIllustration.recipePlaceholderOpacity,
                 ),
               ),
       ),
@@ -473,18 +512,17 @@ class RecipeCard extends StatelessWidget {
   /// view. Collaborative wins over `isPublic` — a collab recipe is always
   /// scoped to its members regardless of the public flag.
   Widget _buildVisibilityIcon(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final (IconData icon, String label) = switch (recipe) {
       Recipe(isCollaborative: true) => (
-        Icons.people_outline,
+        ButleryIcons.users,
         context.l10n.recipeVisibilityCollaborative,
       ),
       Recipe(isPublic: true) => (
-        Icons.public,
+        ButleryIcons.globe,
         context.l10n.recipeVisibilityPublic,
       ),
       _ => (
-        Icons.lock_outline,
+        ButleryIcons.lock,
         context.l10n.recipeVisibilityPrivate,
       ),
     };
@@ -495,12 +533,10 @@ class RecipeCard extends StatelessWidget {
         child: Semantics(
           label: label,
           excludeSemantics: true,
-          child: Icon(
+          child: ButleryIcon(
             icon,
             size: AppDimensions.iconSizeS,
-            color: cs.onSurfaceVariant.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
+            color: AppModeColors.textDisabled(Theme.of(context).brightness),
           ),
         ),
       ),
@@ -517,14 +553,12 @@ class RecipeCard extends StatelessWidget {
         height: 32,
         child: IconButton(
           onPressed: () => onFavoriteToggle?.call(recipe),
-          icon: Icon(
-            isFav
-                ? AdaptiveIcons.favouriteFilled
-                : AdaptiveIcons.favouriteOutline,
+          icon: ButleryIcon(
+            isFav ? ButleryIcons.favourite : ButleryIcons.favouriteOutline,
             size: 20,
             // Colour convention (BUT-1213): green = personal favourite,
             // red stays reserved for social likes.
-            color: isFav ? cs.primary : cs.onSurfaceVariant,
+            color: isFav ? cs.onSurface : cs.onSurfaceVariant,
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -598,7 +632,11 @@ class RecipeCard extends StatelessWidget {
         if (parts.isNotEmpty)
           Text(
             parts.join(' \u00B7 '),
-            style: AppTextStyles.recipeMeta,
+            style: AppTextStyles.recipeMeta.copyWith(
+              color: AppModeColors.textSecondaryOnRaised(
+                Theme.of(context).brightness,
+              ),
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -633,14 +671,14 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yFamilyRatingPill(formatRatingComma(avg)),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: demoted
             ? BoxDecoration(border: Border.all(color: cs.outlineVariant))
             : BoxDecoration(color: cs.primary),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.groups_outlined, size: 12, color: fg),
+            ButleryIcon(ButleryIcons.users, size: 12, color: fg),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeFamilyRatingPill(formatRatingComma(avg)),
@@ -661,12 +699,12 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yAllaRatingPill(formatRatingComma(avg)),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(color: cs.secondary),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.star, size: 12, color: cs.surface),
+            ButleryIcon(ButleryIcons.star, size: 12, color: cs.surface),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeAllaRatingPill(formatRatingComma(avg)),
@@ -687,19 +725,15 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.recipeCardPantryMatchA11y(pct),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-          border: Border.all(
-            color: cs.primary.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          color: _chipFill(cs),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Text(
           '$pct%',
           style: AppTextStyles.badge.copyWith(
-            color: cs.primary,
+            color: cs.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -718,7 +752,7 @@ class RecipeCard extends StatelessWidget {
         recipe.rating!.toStringAsFixed(1),
       ),
       child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
+        padding: AppDimensions.badgePadding,
         decoration: demoted
             ? BoxDecoration(
                 border: Border.all(color: cs.outlineVariant),
@@ -760,29 +794,33 @@ class RecipeCard extends StatelessWidget {
   }) {
     final cs = Theme.of(context).colorScheme;
     final displayName = TagDisplayUtils.getDisplayName(tag);
+    // A tag the user added is marked with surface.selected and a real
+    // border, not a tint (enhet-3 valda tonplattor recipe_card.dart:767,
+    // :772; tokens.json:116-119, opacityLadder :40-53). The other tags keep
+    // border.subtle (outlineVariant) on the base surface. Text is text.primary
+    // (onSurface) so it reads on dark too; primary is ink in both modes.
     return Container(
-      padding: AppDimensions.paddingSymmetric4x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
-        color: isUserAdded
-            ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-            : cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+        color: isUserAdded ? cs.surfaceContainerHighest : cs.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
-          color: isUserAdded
-              ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
-              : cs.outlineVariant.withValues(
-                  alpha: AppDimensions.opacityMediumLight,
-                ),
+          color: isUserAdded ? cs.onSurface : cs.outlineVariant,
         ),
       ),
       child: Text(
         displayName,
         style: AppTextStyles.labelSmall.copyWith(
-          color: isUserAdded ? cs.primary : cs.onSurfaceVariant,
+          color: isUserAdded ? cs.onSurface : cs.onSurfaceVariant,
         ),
       ),
     );
   }
+
+  // The card rests on surface.base; a chip fills to surface.raised there, and
+  // to surface.base once the card itself is the raised (selected) surface.
+  Color _chipFill(ColorScheme cs) =>
+      isSelected ? cs.surface : cs.surfaceContainerHighest;
 
   /// Whether the recipe has any metadata to display.
   bool get _hasAnyMetadata {
@@ -926,18 +964,16 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: AppDimensions.paddingSymmetric8x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
+        color: _chipFill(cs),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         name,
         style: AppTextStyles.labelSmall.copyWith(
-          color: cs.primary,
+          color: cs.onSurface,
         ),
       ),
     );
@@ -947,18 +983,18 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: AppDimensions.paddingSymmetric8x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityLight),
-        ),
+        color: _chipFill(cs),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityDark),
+          color: AppModeColors.textSecondaryOnRaised(
+            Theme.of(context).brightness,
+          ),
         ),
       ),
     );
@@ -969,6 +1005,12 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tagResult = recipe.tagResult;
     final hasFailed = tagResult?.hasFailed ?? false;
+    // B83-2: a notice is the mode's surface tint with no border; the text and
+    // glyph take the matching on-colour, never the raw status colour.
+    final modeColors = context.modeColors;
+    final noticeFg = hasFailed
+        ? cs.onErrorContainer
+        : AppModeColors.textWarning(Theme.of(context).brightness);
 
     return Semantics(
       label: hasFailed
@@ -977,18 +1019,19 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: (hasFailed ? cs.error : context.butleryColors.warning)
-              .withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          color: hasFailed
+              ? modeColors.surfaceTintDanger
+              : modeColors.surfaceTintWarning,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              hasFailed ? Icons.error_outline : Icons.pending_outlined,
+            ButleryIcon(
+              hasFailed ? ButleryIcons.triangleAlert : ButleryIcons.hourglass,
               size: 14,
-              color: hasFailed ? cs.error : context.butleryColors.warning,
+              color: noticeFg,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible for the reason on the unassessed marker above.
@@ -998,7 +1041,7 @@ class RecipeCard extends StatelessWidget {
                     ? context.l10n.recipeAnalysisFailed
                     : context.l10n.recipeAnalyzing,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: hasFailed ? cs.error : context.butleryColors.warning,
+                  color: noticeFg,
                 ),
               ),
             ),
@@ -1034,26 +1077,30 @@ class RecipeCard extends StatelessWidget {
   /// the paraphrase is not in the committed diff, and the warning stands on
   /// the mechanism above rather than on a trace you can go and find.
   ///
-  /// Neutral `outline`, not `warning` — this is an absence of information, not
-  /// a hazard, and colouring it as a hazard would be its own false claim.
+  /// Neutral, not `warning` — this is an absence of information, not a hazard,
+  /// and colouring it as a hazard would be its own false claim.
   ///
   /// Not shown when the user has turned badges off: silence is then their own
   /// choice and needs no explanation.
   Widget _buildUnassessedIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final secondary = AppModeColors.textSecondaryOnRaised(
+      Theme.of(context).brightness,
+    );
     return Semantics(
       label: context.l10n.recipeAllergensUnassessedA11y,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          color: _chipFill(cs),
+          border: Border.all(color: cs.outlineVariant),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.help_outline, size: 14, color: cs.outline),
+            ButleryIcon(ButleryIcons.info, size: 14, color: secondary),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
@@ -1074,7 +1121,7 @@ class RecipeCard extends StatelessWidget {
             Flexible(
               child: Text(
                 context.l10n.recipeAllergensUnassessed,
-                style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+                style: AppTextStyles.labelSmall.copyWith(color: secondary),
               ),
             ),
           ],
@@ -1085,26 +1132,34 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildCompletenessIndicator(BuildContext context, double rawScore) {
     final cs = Theme.of(context).colorScheme;
+    final secondary = AppModeColors.textSecondaryOnRaised(
+      Theme.of(context).brightness,
+    );
     final score = (rawScore * 100).round();
     return Semantics(
       label: context.l10n.recipeCompletenessA11y(score),
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          color: _chipFill(cs),
+          border: Border.all(color: cs.outlineVariant),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.pie_chart_outline, size: 14, color: cs.outline),
+            ButleryIcon(
+              ButleryIcons.barChart,
+              size: 14,
+              color: secondary,
+            ),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible for the reason on the unassessed marker above.
             Flexible(
               child: Text(
                 context.l10n.recipeCompleteness(score),
-                style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+                style: AppTextStyles.labelSmall.copyWith(color: secondary),
               ),
             ),
           ],
@@ -1116,56 +1171,59 @@ class RecipeCard extends StatelessWidget {
   Widget _buildContextMenuButton(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: cs.onSurfaceVariant,
+    return PressFill(
+      surface: PressSurface.raised,
+      child: PopupMenuButton<String>(
+        icon: ButleryIcon(
+          ButleryIcons.moreVertical,
+          color: cs.onSurfaceVariant,
+        ),
+        // Ensure minimum touch target size for accessibility
+        constraints: const BoxConstraints(
+          minWidth: 48,
+          minHeight: 48,
+        ),
+        onSelected: (value) {
+          // Handle context menu actions
+          switch (value) {
+            case 'edit':
+              // Handle edit
+              break;
+            case 'share':
+              // Handle share
+              break;
+            case 'delete':
+              // Handle delete
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          ButleryMenuItem(
+            value: 'edit',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.pencil),
+              title: Text(context.l10n.commonEdit),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          ButleryMenuItem(
+            value: 'share',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.share2),
+              title: Text(context.l10n.commonShare),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          ButleryMenuItem(
+            value: 'delete',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.trash2),
+              title: Text(context.l10n.commonDelete),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ],
       ),
-      // Ensure minimum touch target size for accessibility
-      constraints: const BoxConstraints(
-        minWidth: 48,
-        minHeight: 48,
-      ),
-      onSelected: (value) {
-        // Handle context menu actions
-        switch (value) {
-          case 'edit':
-            // Handle edit
-            break;
-          case 'share':
-            // Handle share
-            break;
-          case 'delete':
-            // Handle delete
-            break;
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'edit',
-          child: ListTile(
-            leading: const Icon(Icons.edit),
-            title: Text(context.l10n.commonEdit),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        PopupMenuItem(
-          value: 'share',
-          child: ListTile(
-            leading: const Icon(Icons.share),
-            title: Text(context.l10n.commonShare),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        PopupMenuItem(
-          value: 'delete',
-          child: ListTile(
-            leading: const Icon(Icons.delete),
-            title: Text(context.l10n.commonDelete),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -6,25 +6,38 @@ import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/brand/butlery_lockup.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/session_timeout_service.dart';
+import 'package:butlery/views/auth/mfa_challenge_view.dart';
+import 'package:butlery/app/auth/auth_wrapper.dart';
+import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
 
-  /// The screen a returning user is sent to after a successful LOGIN.
+  /// The screen a user is sent to after a successful LOGIN.
   /// Overridable in tests so the post-login navigation can be asserted without
-  /// inflating the entire main-menu service graph. Defaults to the real shell.
+  /// inflating the entire main-menu service graph. Defaults to AuthWrapper, so
+  /// an account that never verified its e-mail or finished onboarding (and with
+  /// it the age check) meets those gates on login too, not only on cold start.
   @visibleForTesting
   static WidgetBuilder postLoginDestinationBuilder = (context) =>
-      LayoutScaffolds.mainMenu(initialIndex: 0);
+      const AuthWrapper();
 
   @override
   State<AuthView> createState() => _AuthViewState();
@@ -38,7 +51,6 @@ class _AuthViewState extends State<AuthView> {
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _nameFocus = FocusNode();
-  bool _ageConfirmed = false;
   bool _termsAccepted = false;
   late final AuthViewModel _viewModel;
 
@@ -73,11 +85,7 @@ class _AuthViewState extends State<AuthView> {
               children: [
                 SafeArea(
                   bottom: false,
-                  child: _buildGreenHeader(cs),
-                ),
-                Container(
-                  height: AppDimensions.spacingXs,
-                  color: cs.secondary,
+                  child: _buildHeader(context),
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -88,7 +96,17 @@ class _AuthViewState extends State<AuthView> {
                           padding: const EdgeInsets.only(
                             top: AppDimensions.spacingLg,
                           ),
-                          child: _buildLoginCard(viewModel),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (SessionEndNotice.pending != null)
+                                _buildSessionEndNotice(
+                                  cs,
+                                  SessionEndNotice.pending!,
+                                ),
+                              _buildLoginCard(viewModel),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -103,48 +121,92 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildGreenHeader(ColorScheme cs) {
-    return Container(
-      color: cs.onPrimaryContainer,
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingXl,
-        AppDimensions.spacingXxl,
-        AppDimensions.spacingXl,
-        AppDimensions.spacingXl + AppDimensions.spacingSm,
-      ),
+  /// The locked logo lockup on the page background, per the drawing
+  /// (Skarmar v12 del 2 #inloggning rad 1467-1490, #inloggningmorkt rad
+  /// 1205-1228): a centred 148 px lockup in a `padding:56px 28px 0` block,
+  /// the tagline 10 px below it, no divider underneath. The green header and
+  /// the broccoli illustration are gone; the logo is never written as text
+  /// (beslut 2026-09-30, B96-2 = A).
+  Widget _buildHeader(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 56, 28, 0),
       child: Column(
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/illustrations/broccoli.webp',
-                height: 60,
-                excludeFromSemantics: true,
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.paddingMs),
-                child: Text(
-                  'butlery',
-                  style: AppTextStyles.headlineBold.copyWith(
-                    fontSize: 38,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 1,
-                    color: cs.onPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const ButleryLockup(),
+          const SizedBox(height: 10),
           Text(
             context.l10n.authTagline,
+            textAlign: TextAlign.center,
+            // The drawing's 13/400 has no role; bodyMedium (14/400) keeps the
+            // weight. The 12/400 caption role failed the rendered
+            // text-contrast check at 360 dp in both modes.
             style: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onPrimary,
+              color: cs.onSurfaceVariant,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Skarmar v12 etapp 9 #globsessiontyst (globala tillstand och flerval:98)
+  /// draws the notice and its words.
+  /// A background timeout could not warn, so it is explained here, calmly:
+  /// "som en lugn upplysning (`surface.raised`, `text.success`-glyf) med
+  /// skälet och antalet väntande ändringar. Aldrig som fel"
+  /// (produktregler.md:834). `surface.raised` is `surfaceContainerHighest`
+  /// and `text.success` is `modeColors.success`, in both modes
+  /// (app_colors.dart / app_colors_dark.dart).
+  Widget _buildSessionEndNotice(ColorScheme cs, SessionEnd end) {
+    final l10n = context.l10n;
+    // The drawn body is secondary ink, bold parts in ink (#globsessiontyst):
+    // semantic text.body, #37453A light / #F5F4ED dark (tokens.json:58-60).
+    // The drawing's dark #C9D3C4 is the palette's bodyOnDark, which the
+    // semantic token does not deliver; the token wins.
+    final bodyColor = AppModeColors.textBody(cs.brightness);
+    return Container(
+      key: const ValueKey('auth.sessionEndNotice'),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ButleryIcon(
+            ButleryIcons.circleCheck,
+            color: context.modeColors.success,
+            size: AppDimensions.iconSizeM,
+          ),
+          const SizedBox(width: AppDimensions.spacingSm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.sessionEndedBackgroundTitle,
+                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  l10n.sessionEndedBackgroundReason,
+                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  l10n.sessionEndedBackgroundPending(end.pendingChanges.total),
+                  style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: l10n.commonClose,
+            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurfaceVariant),
+            onPressed: () => setState(SessionEndNotice.clear),
           ),
         ],
       ),
@@ -186,6 +248,10 @@ class _AuthViewState extends State<AuthView> {
                 _buildLabeledField(
                   label: context.l10n.authYourName,
                   child: TextFormField(
+                    style: fieldTextStyle(
+                      context,
+                      enabled: !viewModel.isLoading,
+                    ),
                     key: const Key('name_field'),
                     controller: _nameController,
                     focusNode: _nameFocus,
@@ -208,6 +274,7 @@ class _AuthViewState extends State<AuthView> {
               _buildLabeledField(
                 label: context.l10n.authEmail,
                 child: TextFormField(
+                  style: fieldTextStyle(context, enabled: !viewModel.isLoading),
                   key: const Key('email_field'),
                   controller: _emailController,
                   focusNode: _emailFocus,
@@ -230,6 +297,7 @@ class _AuthViewState extends State<AuthView> {
               _buildLabeledField(
                 label: context.l10n.authPassword,
                 child: TextFormField(
+                  style: fieldTextStyle(context, enabled: !viewModel.isLoading),
                   key: const Key('password_field'),
                   controller: _passwordController,
                   focusNode: _passwordFocus,
@@ -246,10 +314,10 @@ class _AuthViewState extends State<AuthView> {
                       button: true,
                       enabled: !viewModel.isLoading,
                       child: IconButton(
-                        icon: Icon(
-                          viewModel.isPasswordVisible
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                        icon: const ButleryIcon(
+                          // One glyph for both states until design draws the second one
+                          // (P7-U08 open question); the tooltip/label carries the state.
+                          ButleryIcons.eye,
                           size: AppDimensions.iconSizeAction,
                         ),
                         onPressed: viewModel.togglePasswordVisibility,
@@ -292,42 +360,8 @@ class _AuthViewState extends State<AuthView> {
                 ),
               ],
 
-              // Age confirmation (registration only)
               if (!viewModel.isLoginMode) ...[
                 const SizedBox(height: AppDimensions.spacingMd),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildConsentCheckbox(
-                      value: _ageConfirmed,
-                      onChanged: viewModel.isLoading
-                          ? null
-                          : (value) =>
-                                setState(() => _ageConfirmed = value ?? false),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        toggled: _ageConfirmed,
-                        child: GestureDetector(
-                          onTap: viewModel.isLoading
-                              ? null
-                              : () => setState(
-                                  () => _ageConfirmed = !_ageConfirmed,
-                                ),
-                          child: Text(
-                            context.l10n.authAgeConfirmation,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.spacingSm),
                 // Terms acceptance (registration only)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,10 +378,8 @@ class _AuthViewState extends State<AuthView> {
                     Expanded(
                       // BUT-1426: the inline ToS / Privacy links were
                       // TapGestureRecognizer spans — no link role, no
-                      // accessible name, invisible to the a11y audit scanner.
-                      // Each link is now a Semantics(link:)+GestureDetector
-                      // widget; the plain-label words toggle the checkbox,
-                      // mirroring the age-confirm row above.
+                      // accessible name.
+                      // The plain-label words toggle the checkbox.
                       child: Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
@@ -368,15 +400,12 @@ class _AuthViewState extends State<AuthView> {
                               ),
                             ),
                           ),
-                          Semantics(
-                            link: true,
-                            label: context.l10n.a11yTermsOfServiceLink,
-                            child: GestureDetector(
-                              onTap: _navigateToTerms,
-                              child: Text(
-                                context.l10n.authTermsOfService,
-                                style: _termsLinkStyle(cs),
-                              ),
+                          ButleryLink(
+                            semanticLabel: context.l10n.a11yTermsOfServiceLink,
+                            onTap: _navigateToTerms,
+                            child: Text(
+                              context.l10n.authTermsOfService,
+                              style: _termsLinkStyle(cs),
                             ),
                           ),
                           Text(
@@ -385,15 +414,12 @@ class _AuthViewState extends State<AuthView> {
                               color: cs.onSurface,
                             ),
                           ),
-                          Semantics(
-                            link: true,
-                            label: context.l10n.a11yPrivacyPolicyLink,
-                            child: GestureDetector(
-                              onTap: _navigateToPrivacy,
-                              child: Text(
-                                context.l10n.profilePrivacyPolicy,
-                                style: _termsLinkStyle(cs),
-                              ),
+                          ButleryLink(
+                            semanticLabel: context.l10n.a11yPrivacyPolicyLink,
+                            onTap: _navigateToPrivacy,
+                            child: Text(
+                              context.l10n.profilePrivacyPolicy,
+                              style: _termsLinkStyle(cs),
                             ),
                           ),
                         ],
@@ -411,17 +437,18 @@ class _AuthViewState extends State<AuthView> {
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
 
-              // Submit button
-              ActionButtons.primaryButton(
-                context,
+              // The step's one saffron action, "Logga in" or "Skapa konto"
+              // (Skarmar v12 etapp 3 'Auth — logga in', 'Auth — skapa
+              // konto'; Grafisk manual v6:219). Working keeps the name and
+              // draws the plate line under it (Komponentark v1:372).
+              HeroButton(
+                key: const ValueKey('auth.submit'),
                 label: viewModel.isLoginMode
                     ? context.l10n.authLogin
                     : context.l10n.authCreateAccount,
-                onPressed: viewModel.isLoading
-                    ? null
-                    : () => _handleSubmit(viewModel),
-                isLoading: viewModel.isLoading,
-                isExpanded: true,
+                onPressed: () => _handleSubmit(viewModel),
+                busy: viewModel.isLoading,
+                expand: true,
               ),
 
               const SizedBox(height: AppDimensions.spacingLg),
@@ -456,14 +483,13 @@ class _AuthViewState extends State<AuthView> {
                       ? null
                       : () {
                           // Clear mode-specific state so switching login<->signup
-                          // doesn't carry a stale password, name, or age tick.
+                          // doesn't carry a stale password or name.
                           _passwordController.clear();
                           _nameController.clear();
-                          setState(() => _ageConfirmed = false);
                           viewModel.toggleAuthMode();
                         },
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: cs.primary),
+                    side: BorderSide(color: cs.onSurface),
                     shape: const RoundedRectangleBorder(),
                   ),
                   child: Text(
@@ -512,10 +538,12 @@ class _AuthViewState extends State<AuthView> {
       hintStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       filled: true,
       fillColor: cs.surfaceContainerLow,
+      // A field on surface.base: hover takes surface.raised (BUT-2205).
+      hoverColor: cs.surfaceContainerHighest,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingModerate,
+        vertical: AppDimensions.space12,
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
@@ -525,9 +553,15 @@ class _AuthViewState extends State<AuthView> {
         borderRadius: BorderRadius.zero,
         borderSide: BorderSide(color: cs.outline),
       ),
+      // Focus is the canonical ring colour at the ring's width, ink on
+      // light and paper on dark, never saffron (tokens.json:155-160;
+      // Grafisk manual v6:209; enhet-4 auth_view.dart:528).
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.primary),
+        borderSide: BorderSide(
+          color: context.modeColors.focusRing,
+          width: AppDimensions.focusRingWidth,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
@@ -555,10 +589,11 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
+  // text.link (R8-11 = A).
   TextStyle _termsLinkStyle(ColorScheme cs) => AppTextStyles.bodySmall.copyWith(
-    color: cs.onPrimaryContainer,
+    color: context.modeColors.textLink,
     decoration: TextDecoration.underline,
-    decorationColor: cs.onPrimaryContainer,
+    decorationColor: context.modeColors.textLink,
   );
 
   void _navigateToTerms() =>
@@ -572,50 +607,57 @@ class _AuthViewState extends State<AuthView> {
 
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Semantics(
-              link: true,
-              label: context.l10n.a11yTermsOfServiceLink,
-              child: InkWell(
-                onTap: () =>
-                    Navigator.pushNamed(context, Routes.termsOfService),
-                child: Text(
-                  context.l10n.authTermsOfService,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onPrimaryContainer,
-                    decoration: TextDecoration.underline,
-                    decorationColor: cs.onPrimaryContainer,
-                  ),
+      // The links' 48 dp boxes stand in for the vertical padding the row had.
+      // The equal side padding keeps the gap on both sides of the dot the
+      // same when a link's text is narrower than its 48 dp box.
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
+            child: ButleryLink(
+              semanticLabel: context.l10n.a11yTermsOfServiceLink,
+              onTap: _navigateToTerms,
+              child: Text(
+                context.l10n.authTermsOfService,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
+                  decorationColor: context.modeColors.textLink,
                 ),
               ),
             ),
-            Text(
-              ' \u00B7 ',
+          ),
+          // A separator, not content: a screen reader reads the two links.
+          ExcludeSemantics(
+            child: Text(
+              '\u00B7',
               style: AppTextStyles.labelMedium.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            Semantics(
-              link: true,
-              label: context.l10n.a11yPrivacyPolicyLink,
-              child: InkWell(
-                onTap: () => Navigator.pushNamed(context, Routes.privacyPolicy),
-                child: Text(
-                  context.l10n.profilePrivacyPolicy,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onPrimaryContainer,
-                    decoration: TextDecoration.underline,
-                    decorationColor: cs.onPrimaryContainer,
-                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
+            child: ButleryLink(
+              semanticLabel: context.l10n.a11yPrivacyPolicyLink,
+              onTap: _navigateToPrivacy,
+              child: Text(
+                context.l10n.profilePrivacyPolicy,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: context.modeColors.textLink,
+                  decoration: TextDecoration.underline,
+                  decorationColor: context.modeColors.textLink,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -624,15 +666,6 @@ class _AuthViewState extends State<AuthView> {
     viewModel.clearError();
 
     if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    // Age confirmation required for registration
-    if (!viewModel.isLoginMode && !_ageConfirmed) {
-      SnackBarUtils.showWarning(
-        context,
-        context.l10n.authAgeConfirmationRequired,
-      );
       return;
     }
 
@@ -650,11 +683,29 @@ class _AuthViewState extends State<AuthView> {
 
     bool success;
 
+    var signedInWithBackupCode = false;
     if (wasLoginMode) {
       success = await viewModel.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
+      // Two-step verification: the password was right and the second factor
+      // is asked for (P6-U09; Skarmar v12 etapp 3 #authmfa).
+      final challenge = viewModel.pendingMfaChallenge;
+      if (!success && challenge != null && mounted) {
+        final result = await Navigator.of(context).push<MfaChallengeResult>(
+          MaterialPageRoute(
+            builder: (_) => MfaChallengeView(
+              challenge: challenge,
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          ),
+        );
+        success = result != null;
+        signedInWithBackupCode =
+            result == MfaChallengeResult.signedInWithBackupCode;
+      }
     } else {
       success = await viewModel.register(
         email: _emailController.text,
@@ -663,23 +714,38 @@ class _AuthViewState extends State<AuthView> {
       );
     }
 
-    // Only a returning user (login) is sent straight to the recipe list.
-    // A successful REGISTER must NOT navigate manually: AuthView lives in the
-    // '/' subtree, so pushReplacement here replaces the whole route and tears
-    // out AuthWrapper — skipping email-verification, the GDPR age gate,
-    // onboarding, and starter-content seeding. Letting the auth-state change
-    // drive AuthWrapper routes the new user through verification -> onboarding.
+    // A successful REGISTER must NOT navigate manually: letting the auth-state
+    // change drive AuthWrapper routes the new user through verification ->
+    // onboarding.
     if (success && wasLoginMode && mounted) {
       AppLogger.debug(
-        'AuthView: LOGIN SUCCESS - Direct navigation to main app',
+        'AuthView: LOGIN SUCCESS',
       );
 
-      // Route into the main nav shell (LayoutScaffolds.mainMenu), not the bare
-      // MinaReceptView — the bare view has no bottom navigation bar, so logging
-      // in used to land on a recipe list with no nav until the user moved tabs.
-      Navigator.of(context).pushReplacement(
+      final navigator = Navigator.of(context);
+      navigator.pushReplacement(
         MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
       );
+      SessionEndNotice.clear();
+      // After a timeout, the same account lands where it was
+      // (TR::FLOW::06::session::utgang; Q-P6-E07).
+      final userId = ServiceLocator.get<AuthService>().currentUserId;
+      final returnTo = userId == null
+          ? null
+          : SessionReturnPath.takeFor(userId);
+      if (returnTo != null) {
+        navigator.pushNamed(returnTo.routeName, arguments: returnTo.arguments);
+      }
+      // A backup code switched the phone factor off; say so, and where to
+      // add a phone again (P6-U09, TR::FLOW::06::mfa::aterstallning-engangskoder).
+      if (signedInWithBackupCode) {
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.mfaBackupCodeRecovered,
+          duration: const Duration(seconds: 10),
+          showCloseButton: true,
+        );
+      }
     }
   }
 
@@ -691,8 +757,6 @@ class _AuthViewState extends State<AuthView> {
     String? emailError;
 
     // Capture before async gap (showDialog)
-    final messenger = ScaffoldMessenger.of(context);
-    final theme = Theme.of(context);
     final l10n = context.l10n;
 
     final email = await showDialog<String?>(
@@ -732,9 +796,18 @@ class _AuthViewState extends State<AuthView> {
               label: context.l10n.commonCancel,
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
-            ActionButtons.primaryButton(
-              context,
-              label: context.l10n.commonSend,
+            // "Skicka" is the dialog's saffron action (Skarmar v12 etapp 3
+            // 'Auth — glömt lösenordet'), sized to its label in the row.
+            FilledButton(
+              key: const ValueKey('auth.resetSend'),
+              style:
+                  ComponentThemes.heroButtonStyle(
+                    Theme.of(context).colorScheme,
+                  ).copyWith(
+                    minimumSize: const WidgetStatePropertyAll(
+                      Size(0, AppDimensions.minTouchTarget),
+                    ),
+                  ),
               onPressed: () {
                 final trimmed = emailValue.trim();
                 // Validate inline so a malformed address is caught before we
@@ -745,6 +818,7 @@ class _AuthViewState extends State<AuthView> {
                 }
                 Navigator.of(dialogContext).pop(trimmed);
               },
+              child: Text(context.l10n.commonSend),
             ),
           ],
         ),
@@ -753,11 +827,6 @@ class _AuthViewState extends State<AuthView> {
 
     if (email == null || !mounted) return;
 
-    final primaryColor = theme.colorScheme.primary.withValues(
-      alpha: AppDimensions.opacityVeryDark,
-    );
-    final errorColor = theme.colorScheme.error;
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
@@ -765,16 +834,14 @@ class _AuthViewState extends State<AuthView> {
 
       if (!mounted) return;
 
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? l10n.authResetEmailSent
-                : viewModel.errorMessage ?? l10n.authResetEmailFailed,
-          ),
-          backgroundColor: success ? primaryColor : errorColor,
-        ),
-      );
+      if (success) {
+        SnackBarUtils.showSuccess(this.context, l10n.authResetEmailSent);
+      } else {
+        SnackBarUtils.showFailure(
+          this.context,
+          what: viewModel.errorMessage ?? l10n.authResetEmailFailed,
+        );
+      }
     });
   }
 }

@@ -4,68 +4,35 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart'; // ShoppingCategory + UnifiedShoppingItem
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages UI display helpers including colors, status text, and item formatting.
 class ShoppingDisplayManager {
-  /// Translate language-neutral category constant to localized display name.
-  String _categoryDisplayName(String category) {
-    final l = AppLocale.current;
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return l.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return l.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return l.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return l.categoryBread;
-      case ShoppingCategory.pantry:
-        return l.categoryPantry;
-      case ShoppingCategory.frozen:
-        return l.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return l.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return l.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return l.categoryHygiene;
-      case ShoppingCategory.spices:
-        return l.categorySpices;
-      case ShoppingCategory.canned:
-        return l.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return l.categoryDryGoods;
-      case ShoppingCategory.other:
-        return l.categoryOther;
-      default:
-        return category;
-    }
-  }
-
   Color getStatusColor(
     ColorScheme cs,
-    ButleryColors butleryColors,
+    ModeColors modeColors,
     bool hasData,
     String statusText,
   ) {
     if (!hasData) return cs.onSurfaceVariant;
 
     final l = AppLocale.current;
-    if (statusText == l.statusCompleted) return butleryColors.success;
-    if (statusText == l.statusInProgress) return butleryColors.warning;
+    if (statusText == l.statusCompleted) return modeColors.success;
+    if (statusText == l.statusInProgress) {
+      return AppModeColors.textWarning(cs.brightness);
+    }
     return cs.onSurfaceVariant;
   }
 
   Color getProgressColor(
     ColorScheme cs,
-    ButleryColors butleryColors,
+    ModeColors modeColors,
     double completionPercentage,
   ) {
-    if (completionPercentage == 100) return butleryColors.success;
-    if (completionPercentage > 50) return butleryColors.warning;
-    return cs.primary;
+    if (completionPercentage == 100) return modeColors.success;
+    if (completionPercentage > 50) return modeColors.warning;
+    return cs.onSurface;
   }
 
   String? getItemSubtitle(UnifiedShoppingItem item) {
@@ -80,7 +47,7 @@ class ShoppingDisplayManager {
     }
 
     if (item.category.isNotEmpty && item.category != ShoppingCategory.other) {
-      parts.add(_categoryDisplayName(item.category));
+      parts.add(ShoppingCategory.displayName(item.category));
     }
 
     if (item.bought) {

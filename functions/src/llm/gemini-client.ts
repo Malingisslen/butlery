@@ -874,8 +874,8 @@ export const TEMPERATURE = 0.3;
 // BUT-1479 (closes the BUT-1187 TODO): verified 2026-07-07 against Google's
 // published Gemini 2.5 Flash-Lite pricing — input $0.10/M, output $0.40/M,
 // unchanged (no drift). Re-verify if falling back to gemini-2.5-flash, which
-// is pricier + bills thinking tokens. Cost telemetry only (does not affect
-// request behavior).
+// is pricier + bills thinking tokens. `llm_cost_ledger.ts` sums these costs
+// against each user's ceiling (BUT-2243).
 const INPUT_COST_PER_M = 0.10;
 const OUTPUT_COST_PER_M = 0.40;
 
@@ -883,9 +883,7 @@ const OUTPUT_COST_PER_M = 0.40;
  * BUT-1032: Vertex AI implicit caching is on by default for Gemini 2.5
  * models — cached prompt tokens (reported as
  * `usageMetadata.cachedContentTokenCount`) are billed at ~10% of the
- * standard input rate. This constant only improves cost-telemetry accuracy;
- * it does not affect request behavior (no cachedContent resources are
- * created, no request fields change).
+ * standard input rate.
  *
  * BUT-1479: verified 2026-07-07 — Vertex bills 2.5-series cached tokens at
  * 10% of the input rate (90% discount), so 0.10 is correct.

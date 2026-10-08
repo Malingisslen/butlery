@@ -1,14 +1,5 @@
 /// Cleans the user-supplied text on a [Recipe] before it is written anywhere.
 ///
-/// BUT-1819. This lived as a private method on `FirebaseRecipeRepository` until
-/// it turned out a SECOND writer reaches the same collection without going
-/// through the repository at all: `OfflineSyncManager` pushes
-/// `recipe.toFirestore()` straight at `/users/{uid}/recipes` on EVERY offline
-/// save that syncs — a recipe created offline, and an offline edit of one
-/// created online. That is a service in another layer, so the function had to
-/// become shared, and it is the live path most likely to be carrying raw
-/// imported text.
-///
 /// It sits beside `html_sanitizer.dart` rather than in `lib/core/utils/` because
 /// it imports both a model and a service, which no file in `core/utils` does
 /// BOTH of today (three import one or the other); the repository already

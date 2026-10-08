@@ -247,14 +247,13 @@ void main() {
         expect(profile.matchesSearchTerm('anna@'), isFalse);
       });
 
-      test('should match email when allowEmailSearch is true', () {
-        // Arrange
+      // BUT-2264: an exact address is matched by the `findUserByEmail`
+      // callable; the local match never reads the address.
+      test('does not match email even when allowEmailSearch is true', () {
         final profile = testProfile.copyWith(allowEmailSearch: true);
 
-        // Assert
-        expect(profile.matchesSearchTerm('example.com'), isTrue);
-        expect(profile.matchesSearchTerm('anna@'), isTrue);
-        expect(profile.matchesSearchTerm('ANNA@'), isTrue); // Case insensitive
+        expect(profile.matchesSearchTerm('example.com'), isFalse);
+        expect(profile.matchesSearchTerm('anna@'), isFalse);
       });
     });
 
@@ -782,7 +781,8 @@ void main() {
 
         // Assert
         expect(firestore['displayName'], equals(testProfile.displayName));
-        expect(firestore['email'], equals(testProfile.email));
+        // BUT-2264: the address is never published.
+        expect(firestore.containsKey('email'), isFalse);
         expect(firestore['joinedAt'], isNotNull);
         expect(firestore['lastActiveAt'], isNotNull);
         // Note: uid is not included in Firestore data (it's the document ID)
@@ -834,7 +834,7 @@ void main() {
 
         // Owner-editable fields all survive — this is not a blanket strip.
         expect(editable['displayName'], equals(hidden.displayName));
-        expect(editable['email'], equals(hidden.email));
+        expect(editable.containsKey('email'), isFalse);
         expect(editable['avatarUrl'], equals(hidden.avatarUrl));
         expect(editable['isSearchable'], equals(hidden.isSearchable));
         expect(editable['allowEmailSearch'], equals(hidden.allowEmailSearch));

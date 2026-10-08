@@ -9,8 +9,8 @@ export const Collections = {
   recipes: "recipes",
   ingredients: "ingredients",
   sharedRecipes: "shared_recipes",
-  realtimeRecipes: "realtime_recipes",
   realtimeMenus: "realtime_menus",
+  realtimeResources: "realtime_resources",
   messages: "messages",
   conversations: "conversations",
   // The roster subcollection under `conversations/{id}`, and the collection-group
@@ -48,6 +48,11 @@ export const Collections = {
   // with no uniqueness across accounts, so anything keyed on it must carry the
   // owner too.
   friendCategories: "friend_categories",
+  // BUT-2267: the shared household and its members' allergen shares. The Dart
+  // spellings are `FirestoreCollections.households` and
+  // `FirestoreCollections.householdAllergenShares`.
+  households: "households",
+  householdAllergenShares: "household_allergen_shares",
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",
@@ -84,4 +89,9 @@ export const Collections = {
   // carries a literal like every other entry in that register, which is a list
   // of names rather than a caller.)
   erasureHolds: "erasure_holds",
+  // BUT-2169: one document per account erasure while its cascade runs, keyed on
+  // the uid being erased. `holdSharesOnBlock` declines to release a share while
+  // one names either person. Removed by a TTL on `expireAt`. Admin SDK only; no
+  // rules block, so clients are denied by the catch-all.
+  erasuresInProgress: "erasures_in_progress",
 } as const;

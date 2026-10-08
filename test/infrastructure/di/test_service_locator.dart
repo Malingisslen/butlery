@@ -24,7 +24,6 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 
 // Service interfaces
@@ -54,7 +53,6 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/family_rating.dart';
 
 // ViewModel imports
-import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -305,11 +303,6 @@ class TestServiceLocator {
       MockFactory.createAnalyticsRepository(),
     );
 
-    // Collaborative Recipe Repository
-    getIt.registerSingleton<CollaborativeRecipeRepository>(
-      MockFactory.createCollaborativeRecipeRepository(),
-    );
-
     // Family-rating repositories (BUT-1448). ensureForUser is stubbed so the
     // recipe-detail breakdown's load() resolves a household then finds no
     // ratings → renders nothing.
@@ -317,11 +310,22 @@ class TestServiceLocator {
     when(
       () => householdRepo.ensureForUser(any()),
     ).thenAnswer((_) async => Household.create(creatorId: 'test-user-123'));
+    // No household and no diner profiles by default: the menu generator reads
+    // both, and an unstubbed read throws, which the generator rightly treats
+    // as an unreadable family (safety floor).
+    when(
+      () => householdRepo.getForUser(any()),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => householdRepo.getActiveForUser(any()),
+    ).thenAnswer((_) async => null);
     getIt.registerSingleton<HouseholdRepository>(householdRepo);
 
-    getIt.registerSingleton<DinerProfileRepository>(
-      _MockDinerProfileRepository(),
-    );
+    final dinerRepo = _MockDinerProfileRepository();
+    when(
+      () => dinerRepo.getByHousehold(any()),
+    ).thenAnswer((_) async => const []);
+    getIt.registerSingleton<DinerProfileRepository>(dinerRepo);
   }
 
   /// Register all service mocks
@@ -496,11 +500,6 @@ class TestServiceLocator {
       () => MockFactory.createSettingsViewModel(),
     );
 
-    // URL Import ViewModel
-    getIt.registerFactory<UrlImportViewModel>(
-      () => MockFactory.createUrlImportViewModel(),
-    );
-
     // Photo Import ViewModel
     getIt.registerFactory<PhotoImportViewModel>(
       () => MockFactory.createPhotoImportViewModel(),
@@ -538,12 +537,7 @@ class TestServiceLocator {
       MockFactory.createNetworkManager(),
     );
 
-    // HeirloomBridge — BUT-953 photo-import handoff slot. BUT-1181: import
-    // ViewModels' saveImportedRecipe() resolves it via the production
-    // ServiceLocator.get (fail-loud, not tryGet), so it must exist in the
-    // shared GetIt or every import-save test throws. A real (empty) bridge has
-    // hasPending == false, so _attachHeirloomIfPending early-returns and the
-    // normal save path proceeds — no draft is stashed by these tests.
+    // HeirloomBridge — BUT-953 photo-import handoff slot.
     getIt.registerSingleton<HeirloomBridge>(HeirloomBridge());
   }
 

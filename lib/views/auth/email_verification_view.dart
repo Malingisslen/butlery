@@ -1,11 +1,16 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Soft-gate verification screen shown to new users after registration.
 /// Polls for email verification status and auto-navigates when verified.
@@ -30,6 +35,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
 
   late final AuthService _authService;
   Timer? _pollTimer;
+  // Redraws once a second through the resend wait, so the countdown moves
+  // and the button comes back when the wait is over.
+  Timer? _cooldownTicker;
   bool _isSending = false;
   bool _verified = false;
   String? _errorMessage;
@@ -100,15 +108,12 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
     try {
       await _authService.sendEmailVerification();
       _lastResendTime = clock.now();
-    } catch (_) {
+      _startCooldownTicker();
+    } catch (e) {
       if (mounted) {
-        // Use service error message if available, fall back to generic
-        final serviceError = _authService.errorMessage;
-        setState(() {
-          _errorMessage = (serviceError != null && serviceError.isNotEmpty)
-              ? serviceError
-              : AppLocalizations.of(context).errorNetwork;
-        });
+        setState(
+          () => _errorMessage = _resendFailure(AppLocalizations.of(context), e),
+        );
       }
     } finally {
       if (mounted) {
@@ -117,8 +122,37 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
     }
   }
 
+  /// Part one of the error (content-style-guide.md:90): what happened, with
+  /// the cause when it is one the user can act on. The cause is read from
+  /// the Firebase code the service rethrows, never from its text: only no
+  /// network and too many attempts count, in the view's own language.
+  String _resendFailure(AppLocalizations l, Object error) {
+    final cause = switch (error) {
+      FirebaseAuthException(code: 'network-request-failed') => l.errorNetwork,
+      FirebaseAuthException(code: 'too-many-requests') =>
+        l.errorTooManyAttempts,
+      _ => null,
+    };
+    return cause == null
+        ? l.emailVerificationResendFailed
+        : l.emailVerificationResendFailedBecause(cause);
+  }
+
+  void _startCooldownTicker() {
+    _cooldownTicker?.cancel();
+    _cooldownTicker = Timer.periodic(const Duration(seconds: 1), (ticker) {
+      if (!mounted) {
+        ticker.cancel();
+        return;
+      }
+      setState(() {});
+      if (_canResend) ticker.cancel();
+    });
+  }
+
   @override
   void dispose() {
+    _cooldownTicker?.cancel();
     _pollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -137,7 +171,11 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, size: 64, color: cs.primary),
+              ButleryIcon(
+                ButleryIcons.circleCheck,
+                size: 64,
+                color: cs.onSurface,
+              ),
               const SizedBox(height: AppDimensions.spacingM),
               Text(l.emailVerificationSuccess, style: tt.titleLarge),
             ],
@@ -147,73 +185,101 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
     }
 
     final resendDisabled = _isSending || !_canResend;
-    final cooldownText = !_canResend
-        ? '${l.emailVerificationResend} (${_resendCooldownRemaining}s)'
-        : l.emailVerificationResend;
 
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              // BUT-701: scope keyboard tab-order to this screen's controls
-              // (resend + continue) so Tab walks them in visual order. No
-              // visual change.
-              child: FocusTraversalGroup(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.mark_email_unread_outlined,
-                      size: 80,
-                      color: cs.primary,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    Text(
-                      l.emailVerificationTitle,
-                      style: tt.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingM),
-                    Text(
-                      l.emailVerificationMessage(widget.email),
-                      style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: AppDimensions.spacingM),
-                      Text(
-                        _errorMessage!,
-                        style: tt.bodyMedium?.copyWith(color: cs.error),
-                        textAlign: TextAlign.center,
+        child: Column(
+          children: [
+            // BUT-2182: a status, not a control (Malin, 2026-10-03).
+            StatusIndicators.offlineIndicator(),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    // BUT-701: scope keyboard tab-order to this screen's controls
+                    // (resend + continue) so Tab walks them in visual order. No
+                    // visual change.
+                    child: FocusTraversalGroup(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ButleryIcon(
+                            ButleryIcons.mail,
+                            size: 80,
+                            color: cs.onSurface,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingXl),
+                          Text(
+                            l.emailVerificationTitle,
+                            style: tt.headlineSmall,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingM),
+                          Text(
+                            l.emailVerificationMessage(widget.email),
+                            style: tt.bodyLarge?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          // P5-U02: the three-part error (content-style-guide.md:
+                          // 87-97) as an alert live region. Part three is the
+                          // "Skicka igen" button right under it, so the box carries
+                          // no second button of its own (interpretation).
+                          if (_errorMessage != null) ...[
+                            const SizedBox(height: AppDimensions.spacingM),
+                            InlineError(
+                              what: _errorMessage!,
+                              preserved: l.emailVerificationAddressUnchanged,
+                            ),
+                          ],
+                          const SizedBox(height: AppDimensions.spacingXxl),
+                          ActionButtons.primaryButton(
+                            context,
+                            label: l.emailVerificationResend,
+                            onPressed: resendDisabled
+                                ? null
+                                : _resendVerification,
+                            isLoading: _isSending,
+                          ),
+                          if (!_canResend) ...[
+                            const SizedBox(height: AppDimensions.spacingSm),
+                            Text(
+                              l.emailVerificationResendCountdown(
+                                _resendCooldownRemaining,
+                              ),
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                          const SizedBox(height: AppDimensions.spacingM),
+                          TextButton(
+                            onPressed: () {
+                              _pollTimer?.cancel();
+                              widget.onDismiss?.call();
+                            },
+                            child: Text(
+                              l.emailVerificationContinue,
+                              // BUT-2196: text.secondary, not the border
+                              // colour (outline), which fails 4.5:1 as text.
+                              style: tt.bodyMedium?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                    const SizedBox(height: AppDimensions.spacingXxl),
-                    ActionButtons.primaryButton(
-                      context,
-                      label: cooldownText,
-                      onPressed: resendDisabled ? null : _resendVerification,
-                      isLoading: _isSending,
                     ),
-                    const SizedBox(height: AppDimensions.spacingM),
-                    TextButton(
-                      onPressed: () {
-                        _pollTimer?.cancel();
-                        widget.onDismiss?.call();
-                      },
-                      child: Text(
-                        l.emailVerificationContinue,
-                        style: tt.bodyMedium?.copyWith(color: cs.outline),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -31,6 +32,7 @@ void main() {
         await tester.pumpWidget(
           _wrap(
             LoadingStateBuilder<List<String>>(
+              loadingMessage: 'Hämtar listan …',
               isLoading: true, // even when loading
               error: 'Något gick fel',
               data: const ['hej'], // and data present
@@ -56,6 +58,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<String>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             error: 'boom',
             builder: (_, __) => const SizedBox.shrink(),
@@ -76,6 +79,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<String>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             error: 'boom',
             builder: (_, __) => const SizedBox.shrink(),
@@ -95,6 +99,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<String>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             error: 'X',
             builder: (_, __) => const SizedBox.shrink(),
@@ -117,12 +122,13 @@ void main() {
         await tester.pumpWidget(
           _wrap(
             LoadingStateBuilder<List<String>>(
+              loadingMessage: 'Hämtar listan …',
               isLoading: true,
               builder: (_, __) => const Text('data-view'),
             ),
           ),
         );
-        // Pea animation/spinner — don't pumpAndSettle.
+        // The plate line animates, so no pumpAndSettle.
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -136,14 +142,14 @@ void main() {
         _wrap(
           LoadingStateBuilder<String>(
             isLoading: true,
-            loadingMessage: 'Genererar meny...',
-            loadingVariant: LoadingVariant.spinner,
+            loadingMessage: 'Genererar menyn …',
+            loadingVariant: LoadingVariant.plateLine,
             builder: (_, __) => const SizedBox.shrink(),
           ),
         ),
       );
       await tester.pump();
-      expect(find.text('Genererar meny...'), findsOneWidget);
+      expect(find.text('Genererar menyn …'), findsOneWidget);
     });
 
     testWidgets('skeletonRecipeList variant uses ListView skeleton', (
@@ -152,6 +158,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: true,
             loadingVariant: LoadingVariant.skeletonRecipeList,
             skeletonItemCount: 3,
@@ -159,7 +166,8 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
+      // Skelettet visas först efter 300 ms (produktregler.md:304).
+      await tester.pump(const Duration(milliseconds: 301));
       // Skeleton list builds N Card placeholders.
       expect(find.byType(Card), findsNWidgets(3));
     });
@@ -168,6 +176,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<String>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: true,
             builder: (_, __) => const SizedBox.shrink(),
             loadingBuilder: (_) => const Text('custom-loader'),
@@ -189,6 +198,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: null,
             builder: (_, __) => const Text('builder-should-not-render'),
@@ -205,6 +215,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const <String>[],
             builder: (_, __) => const Text('hidden'),
@@ -220,6 +231,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<Map<String, int>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const <String, int>{},
             builder: (_, __) => const Text('hidden'),
@@ -234,6 +246,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<String>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: '',
             builder: (_, __) => const Text('hidden'),
@@ -251,12 +264,13 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const [],
             builder: (_, __) => const SizedBox.shrink(),
             emptyTitle: 'Tomt här',
             emptySubtitle: 'Lägg till något',
-            emptyIcon: Icons.search_off,
+            emptyIcon: ButleryIcons.searchOff,
             emptyActionLabel: 'Lägg till',
             onEmptyAction: () => taps++,
           ),
@@ -266,7 +280,7 @@ void main() {
 
       expect(find.text('Tomt här'), findsOneWidget);
       expect(find.text('Lägg till något'), findsOneWidget);
-      expect(find.byIcon(Icons.search_off), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.searchOff), findsOneWidget);
 
       await tester.tap(find.text('Lägg till'));
       await tester.pump();
@@ -277,6 +291,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const [],
             builder: (_, __) => const SizedBox.shrink(),
@@ -295,6 +310,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: null,
             showEmptyWhenNull: false,
@@ -315,6 +331,7 @@ void main() {
         await tester.pumpWidget(
           _wrap(
             LoadingStateBuilder<List<String>>(
+              loadingMessage: 'Hämtar listan …',
               isLoading: false,
               data: const <String>[],
               showEmptyWhenNull: false,
@@ -333,6 +350,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<int>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: 0, // not null, not a List/Map/String — would normally render
             isDataEmpty: (v) => v == 0,
@@ -351,6 +369,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const ['a', 'b'],
             builder: (_, list) => Text('items:${list.length}'),
@@ -373,6 +392,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const [],
             emptyState: variant,
@@ -456,6 +476,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
             isLoading: false,
             data: const [],
             emptyState: EmptyStateVariant.noRecipes,
@@ -478,6 +499,7 @@ void main() {
   group('LoadingStateBuilderExtensions.withLoadingState', () {
     testWidgets('renders the wrapped widget when data present', (tester) async {
       final wrapped = const Text('extension-content').withLoadingState<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         data: 'value',
       );
@@ -490,6 +512,7 @@ void main() {
       tester,
     ) async {
       final wrapped = const Text('extension-content').withLoadingState<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         error: 'oops',
         data: 'value',
@@ -507,6 +530,7 @@ void main() {
   group('LoadingStateBuilderUtils.forList', () {
     testWidgets('renders builder when items non-empty', (tester) async {
       final b = LoadingStateBuilderUtils.forList<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         items: const ['a'],
         builder: (_, items) => Text('count:${items.length}'),
@@ -520,6 +544,7 @@ void main() {
       tester,
     ) async {
       final b = LoadingStateBuilderUtils.forList<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         items: const [],
         builder: (_, items) => const Text('hidden'),
@@ -535,6 +560,7 @@ void main() {
       tester,
     ) async {
       final b = LoadingStateBuilderUtils.forRecipeList<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         recipes: const [],
         builder: (_, __) => const Text('hidden'),
@@ -548,6 +574,7 @@ void main() {
 
     testWidgets('renders builder when recipes provided', (tester) async {
       final b = LoadingStateBuilderUtils.forRecipeList<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         recipes: const ['r1', 'r2'],
         builder: (_, recipes) => Text('recipes:${recipes.length}'),
@@ -561,12 +588,13 @@ void main() {
   group('LoadingStateBuilderUtils.forFriendList', () {
     testWidgets('wires EmptyStateVariant.noFriends', (tester) async {
       final b = LoadingStateBuilderUtils.forFriendList<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         friends: const [],
         builder: (_, __) => const Text('hidden'),
       );
       expect(b.emptyState, EmptyStateVariant.noFriends);
-      expect(b.loadingVariant, LoadingVariant.spinner);
+      expect(b.loadingVariant, LoadingVariant.plateLine);
     });
   });
 
@@ -575,6 +603,7 @@ void main() {
       tester,
     ) async {
       final b = LoadingStateBuilderUtils.forMenu<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         menuData: 'data',
         builder: (_, d) => Text('menu:$d'),
@@ -589,6 +618,7 @@ void main() {
   group('LoadingStateBuilderUtils.forShoppingList', () {
     testWidgets('wires EmptyStateVariant.noShoppingList', (tester) async {
       final b = LoadingStateBuilderUtils.forShoppingList<String>(
+        loadingMessage: 'Hämtar listan …',
         isLoading: false,
         items: const [],
         builder: (_, __) => const Text('hidden'),

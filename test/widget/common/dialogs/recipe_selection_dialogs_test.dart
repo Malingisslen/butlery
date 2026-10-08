@@ -16,7 +16,7 @@
 ///      `showMenuRecipeSelector` returns `Future<List<Recipe>?>`. A wrong
 ///      signature would fail at static analysis time, so this also runs as
 ///      a compile-time contract test.
-///   2. **Inner list items** — [FriendRecipeListItem] and
+///   2. **Inner list items** — [RecipeShareListItem] and
 ///      [MenuRecipeListItem] are pure `StatelessWidget`s; they render
 ///      recipe metadata, the localized Swedish badge ("Delad"), and wire
 ///      tap/checkbox callbacks. These items are what end-users actually
@@ -29,10 +29,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors_dark.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -77,6 +82,22 @@ Recipe _recipe({
   );
 }
 
+Widget _wrapThemed(Widget child, ThemeData theme) => MaterialApp(
+  theme: theme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
+
+BoxDecoration _boxAround(WidgetTester tester, Finder of) => tester
+    .widgetList<Container>(
+      find.ancestor(of: of, matching: find.byType(Container)),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .firstWhere((d) => d.color != null);
+
 void main() {
   // Touch the facade members so a compile error in their signatures fails
   // this test file at build time — closest we can get to a "facade contract"
@@ -115,13 +136,13 @@ void main() {
     );
   });
 
-  group('FriendRecipeListItem rendering', () {
+  group('RecipeShareListItem rendering', () {
     testWidgets('renders title, mealType, description, time, and portions', (
       tester,
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -141,7 +162,7 @@ void main() {
     testWidgets('checkbox value reflects isSelected=true', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: true,
             isAlreadyShared: false,
@@ -161,7 +182,7 @@ void main() {
       bool? lastValue;
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -187,7 +208,7 @@ void main() {
       bool? lastValue;
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -208,7 +229,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: true,
@@ -227,7 +248,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(),
             isSelected: false,
             isAlreadyShared: false,
@@ -245,7 +266,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(description: ''),
             isSelected: false,
             isAlreadyShared: false,
@@ -263,7 +284,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(timeMinutes: null),
             isSelected: false,
             isAlreadyShared: false,
@@ -273,7 +294,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.access_time), findsNothing);
+      expect(find.byIcon(ButleryIcons.clock), findsNothing);
       expect(find.text('30 min'), findsNothing);
     });
 
@@ -282,7 +303,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          FriendRecipeListItem(
+          RecipeShareListItem(
             recipe: _recipe(portions: null),
             isSelected: false,
             isAlreadyShared: false,
@@ -292,7 +313,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.people), findsNothing);
+      expect(find.byIcon(ButleryIcons.users), findsNothing);
       expect(find.text('4 port'), findsNothing);
     });
 
@@ -301,7 +322,7 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           _wrap(
-            FriendRecipeListItem(
+            RecipeShareListItem(
               recipe: _recipe(),
               isSelected: false,
               isAlreadyShared: false,
@@ -311,8 +332,35 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       },
+    );
+  });
+
+  // BUT-2208: the friend dialog's copy of this row spaced the time, the dot
+  // and the portions with heights, so they ran together.
+  testWidgets('the time, the dot and the portions sit apart', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        RecipeShareListItem(
+          recipe: _recipe(),
+          isSelected: false,
+          isAlreadyShared: false,
+          onSelectionChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    double gap(Finder left, Finder right) =>
+        tester.getTopLeft(right).dx - tester.getTopRight(left).dx;
+    expect(
+      gap(find.byIcon(ButleryIcons.clock), find.text('30 min')),
+      AppDimensions.spacingXs,
+    );
+    expect(gap(find.text('30 min'), find.text('•')), AppDimensions.spacingM);
+    expect(
+      gap(find.text('•'), find.byIcon(ButleryIcons.users)),
+      AppDimensions.spacingM,
     );
   });
 
@@ -441,7 +489,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.access_time), findsNothing);
+      expect(find.byIcon(ButleryIcons.clock), findsNothing);
       expect(find.text('30 min'), findsNothing);
     });
 
@@ -457,7 +505,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.people), findsNothing);
+      expect(find.byIcon(ButleryIcons.users), findsNothing);
       expect(find.text('4 port'), findsNothing);
     });
 
@@ -475,8 +523,92 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.utensils), findsOneWidget);
       },
     );
+  });
+
+  // BUT-2183 5b: fills leave the old opacity steps. "Delad" is a done notice
+  // (B83-2: tint fill, no border) and the placeholder tile is surface.raised,
+  // or surface.tint.success once the recipe is shared.
+  group('recipe selection tokens (BUT-2183)', () {
+    for (final (name, theme, raised, successTint, onSuccess) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        AppColors.lightColorScheme.surfaceContainerHighest,
+        AppColors.surfaceTintSuccess,
+        AppColors.onSuccessContainer,
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        AppColors.darkColorScheme.surfaceContainerHighest,
+        AppColorsDark.surfaceTintSuccess,
+        AppColorsDark.onSuccessContainer,
+      ),
+    ]) {
+      testWidgets('$name: the "Delad" badge is tint.success without a border '
+          'and carries onSuccessContainer text', (tester) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            RecipeShareListItem(
+              recipe: _recipe(),
+              isSelected: false,
+              isAlreadyShared: true,
+              onSelectionChanged: (_) {},
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final badge = find.text('Delad');
+        final box = _boxAround(tester, badge);
+        expect(box.color, successTint);
+        expect(box.border, isNull);
+        expect(tester.widget<Text>(badge).style?.color, onSuccess);
+      });
+
+      testWidgets('$name: the friend placeholder is surface.raised, and '
+          'tint.success when already shared', (tester) async {
+        for (final shared in [false, true]) {
+          await tester.pumpWidget(
+            _wrapThemed(
+              RecipeShareListItem(
+                recipe: _recipe(),
+                isSelected: false,
+                isAlreadyShared: shared,
+                onSelectionChanged: (_) {},
+              ),
+              theme,
+            ),
+          );
+          await tester.pump();
+
+          final box = _boxAround(tester, find.byIcon(ButleryIcons.utensils));
+          expect(box.color, shared ? successTint : raised);
+        }
+      });
+
+      testWidgets('$name: the menu placeholder is surface.raised', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrapThemed(
+            MenuRecipeListItem(
+              recipe: _recipe(),
+              isSelected: false,
+              onSelectionChanged: (_) {},
+            ),
+            theme,
+          ),
+        );
+        await tester.pump();
+
+        final box = _boxAround(tester, find.byIcon(ButleryIcons.utensils));
+        expect(box.color, raised);
+      });
+    }
   });
 }

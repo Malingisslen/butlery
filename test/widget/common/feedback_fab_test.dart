@@ -17,6 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
 
 import '../../infrastructure/factories/mock_factory.dart';
@@ -188,7 +189,7 @@ void main() {
       expect(detector.onTap, isNotNull);
     });
 
-    testWidgets('"!" glyph color uses theme primary', (tester) async {
+    testWidgets('"!" glyph color is text.primary (onSurface)', (tester) async {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
@@ -201,8 +202,10 @@ void main() {
           matching: find.text('!'),
         ),
       );
-      expect(text.style?.color, cs.primary);
-      expect(text.style?.fontSize, 24);
+      // text.primary on the page; primary is ink in both modes (P4-T7).
+      expect(text.style?.color, cs.onSurface);
+      // The title role, 22/700 (tokens.json typography.roles.title).
+      expect(text.style?.fontSize, AppTextStyles.headlineSmall.fontSize);
     });
 
     testWidgets('wraps tap target in Semantics(label, button: true)', (

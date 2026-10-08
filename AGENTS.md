@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Rules in `.Codex/rules/` are auto-loaded; some load only when you open the code they
+Rules in `.claude/rules/` are auto-loaded; some load only when you open the code they
 govern.
 
 ## Critical Rules
@@ -75,7 +75,7 @@ treating anything as a real finding.
 
 ## Agents
 
-**Before filing any review finding, check `.Codex/rules/accepted-deviations.md`** — those
+**Before filing any review finding, check `.claude/rules/accepted-deviations.md`** — those
 calls are decided, and the full reasoning is in `docs/architecture/ACCEPTED_DEVIATIONS.md`,
 which the commit gate names when it blocks. Point review agents at it too.
 
@@ -83,7 +83,7 @@ which the commit gate names when it blocks. Point review agents at it too.
 - **Commit-gated specialists** — a `.dart` or `functions/src` diff is blocked until the
   matching specialist has reviewed it and the marker names every staged file. The gate
   names the exact agent, marker and command when it fires; the authoritative mapping is
-  `.Codex/shared-plugin.json → reviewGates`. Agents stall on more than three files — split
+  `.claude/shared-plugin.json → reviewGates`. Agents stall on more than three files — split
   the commit or run them in batches.
 - **On request** — uiux-designer, performance-optimizer, flutter-developer, e2e-test-specialist.
 

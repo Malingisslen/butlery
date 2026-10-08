@@ -6,21 +6,18 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
-import '../../../../infrastructure/mocks/firestore_singleton.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   group('RecipeCacheModule', () {
     late RecipeCacheModule module;
     late FakeJsonCacheHelper mockCacheHelper;
-    late FakeFirebaseFirestore fakeFirestore;
     late Recipe testRecipe;
 
     String? currentUserId;
@@ -32,7 +29,6 @@ void main() {
 
     setUp(() {
       mockCacheHelper = FakeJsonCacheHelper();
-      fakeFirestore = FirestoreSingleton.instance;
 
       currentUserId = 'test-user-123';
       notifyListenersCalled = 0;
@@ -44,7 +40,6 @@ void main() {
       );
 
       module = RecipeCacheModule(
-        firestore: fakeFirestore,
         cacheHelper: mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         setError: (error) {},
@@ -142,20 +137,6 @@ void main() {
         await module.stopFirebaseSync();
         expect(module.isSyncing, isFalse);
       });
-
-      test('should not start sync when no Firestore instance', () async {
-        final noFirestoreModule = RecipeCacheModule(
-          firestore: null,
-          cacheHelper: mockCacheHelper,
-          getCurrentUserId: () => currentUserId,
-          setError: (error) {},
-          notifyListeners: () {},
-        );
-
-        await noFirestoreModule.startFirebaseSync();
-        expect(noFirestoreModule.isSyncing, isFalse);
-        await noFirestoreModule.dispose();
-      });
     });
 
     group('Debounced Sync Operations', () {
@@ -236,12 +217,113 @@ void main() {
     // web would double-fire. If no callback is wired (native), the module owns
     // the single notify. These tests pin both halves of that contract through
     // the test seam that drives the exact private path the sync stream invokes.
+    // BUT-2162: a recipe with a write in the offline queue is newer on the
+    // device than on the server. The server's copy must not replace it on
+    // screen before the queue has sent it.
+    group('unsent writes in the offline queue', () {
+      RecipeCacheModule moduleWith(
+        Set<String> unsent, {
+        Map<String, Recipe> server = const {},
+      }) => RecipeCacheModule(
+        cacheHelper: mockCacheHelper,
+        getCurrentUserId: () => currentUserId,
+        setError: (error) {},
+        notifyListeners: () => notifyListenersCalled++,
+        hasUnsentWrite: (id) async => unsent.contains(id),
+        readRecipe: (id) async => server[id],
+      );
+
+      test('once the queue has sent it, the server copy is shown', () async {
+        final module = moduleWith(
+          {},
+          server: {'r1': RecipeFactory.build(id: 'r1', title: 'Normaliserad')},
+        );
+        await module.saveRecipeToCache(
+          RecipeFactory.build(id: 'r1', title: 'Min ändring'),
+        );
+
+        await module.refreshAfterQueueSend('r1');
+
+        expect((await module.loadRecipeFromCache('r1'))!.title, 'Normaliserad');
+        await module.dispose();
+      });
+
+      test('a sent deletion takes the recipe off the screen', () async {
+        final module = moduleWith({});
+        await module.saveRecipeToCache(RecipeFactory.build(id: 'r1'));
+
+        await module.refreshAfterQueueSend('r1');
+
+        expect(await module.loadRecipeFromCache('r1'), isNull);
+        await module.dispose();
+      });
+
+      // BUT-2295: offline the server cannot say the recipe is gone, so the
+      // drop must not wait on a read.
+      test('a dropped phone-only recipe leaves without a read', () async {
+        final module = moduleWith(
+          {},
+          server: {'r1': RecipeFactory.build(id: 'r1')},
+        );
+        await module.saveRecipeToCache(RecipeFactory.build(id: 'r1'));
+
+        await module.dropDiscardedRecipe('r1');
+
+        expect(await module.loadRecipeFromCache('r1'), isNull);
+        await module.dispose();
+      });
+
+      test('nothing is read while another write of it waits', () async {
+        final module = moduleWith(
+          {'r1'},
+          server: {'r1': RecipeFactory.build(id: 'r1', title: 'Serverns')},
+        );
+        await module.saveRecipeToCache(
+          RecipeFactory.build(id: 'r1', title: 'Min senaste'),
+        );
+
+        await module.refreshAfterQueueSend('r1');
+
+        expect((await module.loadRecipeFromCache('r1'))!.title, 'Min senaste');
+        await module.dispose();
+      });
+
+      test(
+        'a server copy of a recipe with an unsent write is ignored',
+        () async {
+          final guarded = moduleWith({'r1'});
+          await guarded.saveRecipeToCache(
+            RecipeFactory.build(id: 'r1', title: 'Min ändring'),
+          );
+
+          await guarded.debugApplyRecipeUpdate(
+            RecipeFactory.build(id: 'r1', title: 'Serverns gamla'),
+          );
+
+          final loaded = await guarded.loadRecipeFromCache('r1');
+          expect(loaded!.title, 'Min ändring');
+          await guarded.dispose();
+        },
+      );
+
+      test('a server copy of any other recipe is taken', () async {
+        final guarded = moduleWith({'r1'});
+
+        await guarded.debugApplyRecipeUpdate(
+          RecipeFactory.build(id: 'r2', title: 'Från servern'),
+        );
+
+        final loaded = await guarded.loadRecipeFromCache('r2');
+        expect(loaded!.title, 'Från servern');
+        await guarded.dispose();
+      });
+    });
+
     group('BUT-1256 direct-callback single-notify', () {
       test('web update path: direct callback fires, cache updates immediately, '
           'module does NOT notify (callback owns the signal)', () async {
         final updated = <Recipe>[];
         final webModule = RecipeCacheModule(
-          firestore: fakeFirestore,
           cacheHelper: mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           setError: (error) {},
@@ -299,7 +381,6 @@ void main() {
           'module does NOT notify', () async {
         final removed = <String>[];
         final webModule = RecipeCacheModule(
-          firestore: fakeFirestore,
           cacheHelper: mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           setError: (error) {},

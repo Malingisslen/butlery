@@ -1,4 +1,5 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
@@ -19,6 +20,54 @@ enum MembershipWriteIntent {
   selfRemoval,
 }
 
+/// BUT-2140: what the week menu's merge asks to write into a personal list.
+///
+/// [rows] is a function rather than a list because "Ersätt listan" carries a
+/// bought tick over from the recipe rows it takes off (produktregler.md § 8.7),
+/// and which rows those are is only known once the server's copy is read. It
+/// is called with no rows for a plain add. It must return the same row ids on
+/// every call: the write may be computed twice, once against the server and
+/// once against the copy in memory when the device turns out to be offline.
+class PersonalMergeRequest {
+  const PersonalMergeRequest({
+    required this.rows,
+    required this.replace,
+    this.generatedForWeek,
+  });
+
+  final List<UnifiedShoppingItem> Function(List<UnifiedShoppingItem> removed)
+  rows;
+
+  /// Takes off the rows the list's `menuItemIds` names before adding.
+  final bool replace;
+  final String? generatedForWeek;
+}
+
+/// BUT-2140: what a personal-list merge wrote, as the server holds it.
+class PersonalMergeResult {
+  const PersonalMergeResult({
+    required this.list,
+    required this.added,
+    required this.removed,
+    required this.concurrentChange,
+  });
+
+  /// The list after the merge, built on the server's rows when they could be
+  /// read, so rows another device added show up here too.
+  final UnifiedShoppingList list;
+  final List<UnifiedShoppingItem> added;
+
+  /// The recipe rows a replace took off, as the server held them. A row
+  /// another device deleted first is not here, so Ångra cannot bring it back.
+  final List<UnifiedShoppingItem> removed;
+
+  /// The server's list differed from the copy in memory: another device had
+  /// changed it. False whenever the server could not be read, and while this
+  /// device still has writes of its own waiting to sync, which would otherwise
+  /// read as somebody else's change.
+  final bool concurrentChange;
+}
+
 /// Repository interface for shopping list operations.
 abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Stream of collaborative lists for real-time updates from Firestore
@@ -31,10 +80,28 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   Future<void> addItemsBatch(String listId, List<UnifiedShoppingItem> items);
 
   /// Removes an item from the specified shopping list.
-  Future<void> removeItem(String listId, String itemId);
+  ///
+  /// BUT-2140: [removed] is the caller's copy of the row, which a personal
+  /// list records in `recentlyRemoved` for the 30-day restore. Without it the
+  /// removal keeps no history there. A shared list records the live row and
+  /// ignores it.
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  });
 
   /// Updates an existing item in the specified shopping list atomically.
-  Future<void> updateItem(String listId, UnifiedShoppingItem item);
+  ///
+  /// BUT-2140: [before] is the caller's copy of the row before the edit. On a
+  /// personal list a content edit against it keeps [before]'s content as the
+  /// row's `previous`; without it `previous` is left as stored. A shared list
+  /// takes `previous` from the live row and ignores it.
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  });
 
   /// BUT-1697: updates several existing items in ONE write. On a
   /// collaborative list that is a single transaction, not one per item —
@@ -44,7 +111,27 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   Future<void> updateItemsBatch(String listId, List<UnifiedShoppingItem> items);
 
   /// Removes multiple items from the specified shopping list using batch operations.
-  Future<void> removeItemsBatch(String listId, List<String> itemIds);
+  /// [removed] works as on [removeItem].
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  });
+
+  /// BUT-2140: puts the removed row [entry] back with its old id and takes it
+  /// out of `recentlyRemoved` in the same write, stamping the caller as
+  /// `addedBy`. A row already holding that id is not duplicated. Returns the
+  /// row as written, or null when nothing was put back. On a shared list this
+  /// needs edit rights, as any row write does.
+  Future<UnifiedShoppingItem?> restoreRemovedRow(
+    String listId,
+    ShoppingRowSnapshot entry,
+  );
+
+  /// BUT-2140: swaps row [itemId]'s content with its `previous`, so the
+  /// version it replaces becomes the new `previous`. Returns the row as
+  /// written, or null when it has nothing restorable.
+  Future<UnifiedShoppingItem?> restoreChangedRow(String listId, String itemId);
 
   /// BUT-1665: applies [mutate] to a collaborative list inside a Firestore
   /// transaction that re-reads the live document, so a concurrent household
@@ -100,6 +187,25 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
     UnifiedShoppingList updated,
     UnifiedShoppingList base, {
     required MembershipWriteIntent intent,
+  });
+
+  /// BUT-2140: writes the week menu's rows into the personal list [base] by
+  /// operation, never by replacing the list document, so a change the same
+  /// account made on another device survives. [base] is the copy in memory:
+  /// the server's copy is compared against it to tell the user about such a
+  /// change, and the write falls back on it offline.
+  Future<PersonalMergeResult> applyPersonalMerge(
+    UnifiedShoppingList base,
+    PersonalMergeRequest request,
+  );
+
+  /// BUT-2140: Ångra for [applyPersonalMerge]. Takes off exactly the rows
+  /// [addedIds] names and puts [restore] back, and touches nothing else.
+  /// Returns [base] as it reads after the undo.
+  Future<UnifiedShoppingList> undoPersonalMerge(
+    UnifiedShoppingList base, {
+    required List<String> addedIds,
+    required List<UnifiedShoppingItem> restore,
   });
 
   /// BUT-1723: how many items the SERVER holds for [listId], or null when that

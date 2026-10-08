@@ -756,12 +756,6 @@
       "path": "Firestore"
     },
     {
-      "id": "svc-reextract-strategy",
-      "label": "Re-extract-strategi (URL/text, kringgår vattenfallet)",
-      "context": "service",
-      "path": "lib/viewmodels/recipe_detail_viewmodel.dart"
-    },
-    {
       "id": "v-personal-tags",
       "label": "Personliga taggar — översikt",
       "context": "view",
@@ -894,12 +888,6 @@
       "path": "lib/core/bootstrap/handlers/deep_link_handler.dart"
     },
     {
-      "id": "v-receive-share",
-      "label": "Ta emot delning (oanvänd vy)",
-      "context": "view",
-      "path": "lib/views/receive_share_view.dart"
-    },
-    {
       "id": "svc-social-media-extractor",
       "label": "Social medieextraktion (fasad, legacy)",
       "context": "service",
@@ -916,30 +904,6 @@
       "label": "WebScraper (headless WebView, legacy)",
       "context": "service",
       "path": "lib/services/extraction/web_scraper.dart"
-    },
-    {
-      "id": "v-import-via-url",
-      "label": "Importera via URL (legacy-väg)",
-      "context": "view",
-      "path": "lib/views/import_via_url_view.dart"
-    },
-    {
-      "id": "vm-url-import",
-      "label": "URL-import-vymodell (legacy)",
-      "context": "viewmodel",
-      "path": "lib/viewmodels/url_import_viewmodel.dart"
-    },
-    {
-      "id": "svc-index-page-detector",
-      "label": "Indexsidedetektor",
-      "context": "service",
-      "path": "lib/services/import/index_page_detector.dart"
-    },
-    {
-      "id": "svc-index-page-expander",
-      "label": "Indexsideexpanderare",
-      "context": "service",
-      "path": "lib/services/import/index_page_expander.dart"
     },
     {
       "id": "ext-target-website",
@@ -1174,6 +1138,12 @@
       "label": "Realtidsmenyer (Firestore)",
       "context": "datastore",
       "path": "realtime_menus"
+    },
+    {
+      "id": "ds-realtime-resources",
+      "label": "Realtidsresurser (Firestore)",
+      "context": "datastore",
+      "path": "realtime_resources"
     },
     {
       "id": "v-menu-preview",
@@ -2268,12 +2238,6 @@
       "path": "Firebase Storage"
     },
     {
-      "id": "cf-cleanup-cache",
-      "label": "cleanupExpiredCache (02:00 dagligen)",
-      "context": "cloud-function",
-      "path": "functions/src/cleanup/cleanup-cache.ts"
-    },
-    {
       "id": "cf-cleanup-notifications",
       "label": "cleanupOldNotifications (sön 04:00)",
       "context": "cloud-function",
@@ -2320,12 +2284,6 @@
       "label": "onRecipeDeleted — städar Storage-filer",
       "context": "cloud-function",
       "path": "functions/src/cleanup/cleanup-recipe-storage.ts"
-    },
-    {
-      "id": "ds-global-cache",
-      "label": "globalRecipeCache",
-      "context": "datastore",
-      "path": "Firestore"
     },
     {
       "id": "ds-rate-limits",
@@ -2428,7 +2386,7 @@
     {
       "id": "flow1",
       "label": "importera recept (URL)",
-      "description": "Fulla pipelinen bakom “Importera länk”. Obs: en äldre parallell importväg (delningsark + /importViaUrl) går via WebScraper utan cache, hastighetsgräns eller telemetri — verklig men degraderad. Fotoimport (OCR) är en tredje, separat delväg.",
+      "description": "Fulla pipelinen bakom “Importera länk”. Fotoimport (OCR) är en tredje, separat delväg.",
       "steps": [
         {
           "from": "v-smart-import",
@@ -2440,7 +2398,7 @@
         {
           "from": "vm-smart-import",
           "to": "svc-import-manager",
-          "payload": "url → 7-stegs vattenfall med GlobalRecipeCache, hastighetsgräns och parse-telemetri",
+          "payload": "url → vattenfall med hastighetsgräns och parse-telemetri",
           "transport": "method call",
           "verified": true
         },
@@ -2523,7 +2481,7 @@
     {
       "id": "flow-voice-import",
       "label": "tala in recept (röstimport)",
-      "description": "IMP-12 (kb-whisper-planen, riktning B beslutad 2026-07-13): tre guidade sektioner (namn → ingredienser → gör så här) dikteras i valfri ordning i voice_import_view; varje sektion transkriberas PÅ ENHETEN av KB-Whisper via VoiceCaptureService (ljudet raderas på alla utfallsvägar), texten är alltid redigerbar. voice_transcript_assembler bygger kanonisk svensk recepttext (Ingredienser:/Gör så här:-rubriker, ingrediensuppräkning splittras per rad) så den deterministiska textparsern klarar jobbet utan LLM. ImportManager.importVoiceTranscript är ingången: rate-limit + parse_events med källtagg 'voice' (aldrig 'text' — mätbarhetsvillkor från integrationsgranskningen), VoiceImportStrategy stämplar SourceArtefactType.voiceDictation. Lyckad parse → SkrivSjalvReceptView-granskning; svag parse → assisted-import-dialogen.",
+      "description": "IMP-12 (kb-whisper-planen, riktning B beslutad 2026-07-13): tre guidade sektioner (namn → ingredienser → gör så här) dikteras i valfri ordning i voice_import_view; varje sektion transkriberas PÅ ENHETEN av KB-Whisper via VoiceCaptureService (ljudet raderas på alla utfallsvägar), texten är alltid redigerbar. voice_transcript_assembler bygger kanonisk svensk recepttext (Ingredienser:/Gör så här:-rubriker, ingrediensuppräkning splittras per rad) så den deterministiska textparsern klarar jobbet utan LLM. ImportManager.importVoiceTranscript är ingången: rate-limit + en parse_events-rad med kanalen 'voice' (aldrig 'text' — mätbarhetsvillkor från integrationsgranskningen), VoiceImportStrategy stämplar SourceArtefactType.voiceDictation. Lyckad parse → SkrivSjalvReceptView-granskning; svag parse → assisted-import-dialogen.",
       "features": [
         "IMP-12"
       ],
@@ -2538,7 +2496,7 @@
         {
           "from": "v-voice-import",
           "to": "svc-import-manager",
-          "payload": "importVoiceTranscript(assemblerad kanonisk recepttext) — rate-limit basic('auto') + parse_events source='voice' via _parseWithStrategy-chokepointen",
+          "payload": "importVoiceTranscript(assemblerad kanonisk recepttext) — rate-limit basic('auto') + en parse_events-rad med channel='voice', skriven av ImportManager efter importen (BUT-2238)",
           "transport": "method call",
           "verified": true
         },
@@ -2918,14 +2876,14 @@
         {
           "from": "svc-data-export",
           "to": "svc-export-managers",
-          "payload": "Future.wait över ~36 namngivna sektioner (Increment 5 lade till pooled_rating_events; BUT-1732 lade till shared_shopping_lists)",
+          "payload": "Future.wait över ~36 namngivna sektioner (Increment 5 lade till pooled_rating_events; BUT-1732 lade till shared_shopping_lists; BUT-2151 lade till live_menus)",
           "transport": "method call",
           "verified": true
         },
         {
           "from": "svc-export-managers",
           "to": "ds-users",
-          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
+          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till), realtime_resources (BUT-2151, ägd/deltagare; andras visningsnamn stryps) m.fl. Regelstyrt betyder också en gräns: group_weekly_menu_plans för veckor användaren lämnat nås inte alls härifrån — läsregeln grindar på memberPermissions och Firestore nekar hela frågan, så paketet anger luckan i text i stället. Planens contributorUserIds är ett raderingshandtag och stryps ur paketet (BUT-1971).",
           "transport": "Firestore reads",
           "verified": true
         },
@@ -3622,7 +3580,7 @@
     {
       "id": "flow-rec-3",
       "label": "skapa & redigera recept",
-      "description": "Snabbspara sparar bara titel + måltidstyp direkt, utan taggning. Manuellt skrivet och redigerat recept går genom samma RecipeFormCoordinator-motor, som kör deterministisk auto-taggning OCH användarens taggregler innan Firestore-skrivningen. Måltidstypen är FRITEXT och flera skrivare är oense om vokabulären (assisterad import skriver engelska, textimport kan skriva 'Huvudrätt'); sedan BUT-1845 bygger formulärens listor via RecipeFormState.mealTypeOptions, som lägger till receptets faktiska värde först i stället för att krascha på build.",
+      "description": "Snabbspara sparar bara titel + måltidstyp direkt, utan taggning. Manuellt skrivet och redigerat recept går genom samma RecipeFormCoordinator-motor, som kör deterministisk auto-taggning OCH användarens taggregler innan Firestore-skrivningen. Måltidstypen är FRITEXT och flera skrivare är oense om vokabulären; sedan BUT-1845 bygger formulärens listor via RecipeFormState.mealTypeOptions, som lägger till receptets faktiska värde först i stället för att krascha på build.",
       "features": [
         "REC-07",
         "REC-08",
@@ -3706,7 +3664,7 @@
     {
       "id": "flow-rec-4",
       "label": "receptdetalj",
-      "description": "Cook-snap-galleriet är en egen liveström filtrerad på vänskap, separat från receptets huvuddata. Källåterextraktion (BUT-1205) hoppar över hela 7-stegsvattenfallet i importManager — den anropar URL-/textstrategin direkt och skriver över endast de tolkade fälten, med recept-id, skapad-datum och käll-metadata bevarade.",
+      "description": "Cook-snap-galleriet är en egen liveström filtrerad på vänskap, separat från receptets huvuddata. Källåterextraktion (BUT-1205) hoppar över hela 7-stegsvattenfallet i importManager och skriver över endast de tolkade fälten, med recept-id, skapad-datum och käll-metadata bevarade.",
       "features": [
         "REC-11",
         "REC-12",
@@ -3764,8 +3722,8 @@
         },
         {
           "from": "vm-recipe-detail",
-          "to": "svc-reextract-strategy",
-          "payload": "strategy(artefact.type).import(artefact.payload) — UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
+          "to": "svc-import-manager",
+          "payload": "reimportFromArtefact(artefact) — importkvot och importhändelse som en vanlig import; UrlImportStrategy för URL, TextImportStrategy för transkript/bildtext/inklistrad/OCR-text",
           "transport": "method call",
           "verified": true
         },
@@ -3858,7 +3816,7 @@
     {
       "id": "flow-imp-1",
       "label": "Fotoimport (OCR)",
-      "description": "Kamera/galleri-bild går genom flerleverantörs-OCR (OCR.space, Google Vision, Tesseract) och tolkas med samma regelbaserade textparser som klistra-in-flödet, inte den ML-kaskad (CRF/NER/ONNX) som bara körs för URL-import. Handskriven-togglen (BUT-1460) hoppar över kvalitetsgrinden och går direkt till Gemini Vision via en dedikerad handskriven-prompt; samma modell används som Tier-4-reservväg när tecken-OCR eller textparsern misslyckas på tryckt text.",
+      "description": "Kamera/galleri-bild går genom flerleverantörs-OCR (OCR.space, Google Vision, Tesseract) och tolkas med samma regelbaserade textparser som klistra-in-flödet. Handskriven-togglen (BUT-1460) hoppar över kvalitetsgrinden och går direkt till Gemini Vision via en dedikerad handskriven-prompt; samma modell används som Tier-4-reservväg när tecken-OCR eller textparsern misslyckas på tryckt text.",
       "features": [
         "IMP-04",
         "ENG-09"
@@ -4003,7 +3961,7 @@
     {
       "id": "flow-imp-2",
       "label": "Text/klistra in-import",
-      "description": "Inklistrad text (från extern app, klippbord eller efter social/URL-extraktion) körs genom samma regelbaserade textparser som fotoimporten — ingen ML-kaskad, ingen skillnad mot foto-vägens parsning bortsett från att OCR-steget saknas.",
+      "description": "Inklistrad text (från extern app, klippbord eller efter social/URL-extraktion) körs genom samma regelbaserade textparser som fotoimporten — ingen skillnad mot foto-vägens parsning bortsett från att OCR-steget saknas.",
       "features": [
         "IMP-05"
       ],
@@ -4084,7 +4042,7 @@
     {
       "id": "flow-imp-3",
       "label": "Dela-till-Butlery & social extraktion",
-      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning via samma delningsmeny är i praktiken DÖD: appen registrerar intent-filter för text/plain, text/html och text/* i manifestet (så den syns i delningsmenyn), men delningspaketet app_links (v6.4.1) returnerar explicit null för ACTION_SEND-intents — EXTRA_TEXT-utläsningen är utkommenterad i pluginets Android-källkod — så ingen delad text/URL når Dart-sidan. Den avsedda mottagarvyn (ReceiveShareView, som skulle routa till den degraderade legacy-WebScraper-vägen '/importViaUrl' eller till textklistring) har noll pushNamed-anrop någonstans i kodbasen och är därför oåtkomlig död kod. Enda fungerande text/URL-ingången är webbens Share Target (query-parametrar), som går till SmartImport = den FULLA pipelinen, inte legacy-vägen. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
+      "description": "Bilddelning från OS-delningsmenyn fungerar (dedikerad native-kanal → fotoimport). Text/URL-delning (BUT-2241) läses av MainActivity ur EXTRA_TEXT och går samma native-kanal; webbens Share Target går via djuplänkshanteraren. En text med länk öppnar SmartImport på länken, annan text öppnar textimporten ifylld; från delningsmenyn i appen startar importen utan extra tryck, medan en djuplänk (som vilken sida som helst kan bygga, även webbens Share Target) bara fyller i. Instagram/TikTok/YouTube-extraktion från '/smartImport' fungerar och är den moderna, levande vägen.",
       "features": [
         "IMP-06",
         "IMP-07"
@@ -4113,51 +4071,31 @@
         },
         {
           "from": "ext-os-share-sheet",
-          "to": "svc-deep-link-handler",
-          "payload": "Text/URL (SEND, mimeType text/*) — avsedd väg via app_links",
-          "transport": "platform-intent",
-          "verified": true,
-          "status": "dead"
+          "to": "svc-incoming-share",
+          "payload": "Text/länk (SEND, mimeType text/*) — EXTRA_TEXT via MainActivity",
+          "transport": "platform-channel",
+          "verified": true
         },
         {
-          "from": "svc-deep-link-handler",
-          "to": "v-receive-share",
-          "payload": "Skulle routa delad text/URL hit — aldrig når hit (app_links.getUrl() = null för ACTION_SEND)",
+          "from": "svc-incoming-share",
+          "to": "svc-incoming-share-handler",
+          "payload": "Delad text (cold-start eller warm-start)",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
+          "from": "svc-incoming-share-handler",
+          "to": "v-smart-import",
+          "payload": "Text med länk → pushNamed(smartImport, SmartImportRouteArgs) — startar importen",
           "transport": "navigation",
-          "verified": true,
-          "status": "dead"
+          "verified": true
         },
         {
-          "from": "v-receive-share",
-          "to": "v-import-via-url",
-          "payload": "Vanlig receptlänk → '/importViaUrl' (legacy WebScraper)",
+          "from": "svc-incoming-share-handler",
+          "to": "v-fran-sociala-medier",
+          "payload": "Text utan länk → pushNamed(franSocialaMedier, text)",
           "transport": "navigation",
-          "verified": true,
-          "status": "dead"
-        },
-        {
-          "from": "v-receive-share",
-          "to": "svc-social-media-extractor",
-          "payload": "Social-URL → extractFromUrl()",
-          "transport": "method-call",
-          "verified": true,
-          "status": "dead"
-        },
-        {
-          "from": "svc-social-media-extractor",
-          "to": "svc-extraction-manager",
-          "payload": "Fasad-delegering",
-          "transport": "method-call",
-          "verified": true,
-          "status": "dead"
-        },
-        {
-          "from": "svc-extraction-manager",
-          "to": "svc-web-scraper",
-          "payload": "Legacy-skrapning per plattform",
-          "transport": "method-call",
-          "verified": true,
-          "status": "dead"
+          "verified": true
         },
         {
           "from": "ext-os-share-sheet",
@@ -4169,7 +4107,14 @@
         {
           "from": "svc-deep-link-handler",
           "to": "v-smart-import",
-          "payload": "pushNamed(smartImport, url) — fungerande väg, full pipeline",
+          "payload": "pushNamed(smartImport, SmartImportRouteArgs(autoStart: false)) — fyller i länken",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "svc-deep-link-handler",
+          "to": "v-fran-sociala-medier",
+          "payload": "text utan länk → textimporten, ifylld",
           "transport": "navigation",
           "verified": true
         },
@@ -4263,7 +4208,7 @@
     {
       "id": "flow-imp-4",
       "label": "Filimport & arkiv",
-      "description": "Två separata, oberoende vägar: (1) CSV/Excel/Paprika-arkiv-filer parsas lokalt (regex/XLSX-läsning, ingen LLM) och sparas direkt via UnifiedRecipeService — förbi ImportManager helt, så FileImportStrategy är registrerad i ImportManager men den dedikerade filimport-UI:n anropar den aldrig. (2) Butlerys bundlade receptarkiv (curerade recept i appdata) filtreras/väljs och sparas i batch, också förbi ImportManager — ArchiveImportStrategy är på samma sätt registrerad men oanvänd av denna vy.",
+      "description": "Två separata, oberoende vägar: (1) CSV/Excel/Paprika-arkiv-filer väljs och parsas lokalt via ImportManager.importFile() (kvot och importhändelse; regex/XLSX-läsning, ingen LLM) och sparas sedan direkt via UnifiedRecipeService, förbi ImportManager. (2) Butlerys bundlade receptarkiv (curerade recept i appdata) filtreras/väljs och sparas i batch, också förbi ImportManager — ArchiveImportStrategy är registrerad men oanvänd av denna vy.",
       "features": [
         "IMP-08",
         "IMP-09"
@@ -4278,8 +4223,15 @@
         },
         {
           "from": "vm-file-import",
+          "to": "svc-import-manager",
+          "payload": "importFile() (kvotkontroll + importhändelse)",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
+          "from": "svc-import-manager",
           "to": "svc-file-import-strategy",
-          "payload": "importMultiple()",
+          "payload": "pickFile() + importPicked()",
           "transport": "method-call",
           "verified": true
         },
@@ -4292,8 +4244,15 @@
         },
         {
           "from": "svc-file-import-strategy",
-          "to": "vm-file-import",
+          "to": "svc-import-manager",
           "payload": "List<Recipe> (parsad från CSV/Excel/arkiv-export)",
+          "transport": "method-call",
+          "verified": true
+        },
+        {
+          "from": "svc-import-manager",
+          "to": "vm-file-import",
+          "payload": "FileImportResult (recept eller kvotavslag)",
           "transport": "method-call",
           "verified": true
         },
@@ -4374,7 +4333,7 @@
     {
       "id": "flow-imp-5",
       "label": "Assisterad import",
-      "description": "En 3-stegsguide där användaren TRYCKER FRAM ingrediens- och instruktionsrader från extraherad/OCR:ad/inklistrad text, styrd av rena regel-heuristiker (nyckelord, radmönster) — själva radplockningen i guiden är fortfarande ren heuristik. Den ML-baserade ingrediensrad-kaskaden (CRF → NER/ONNX → selektiv LLM) körs sedan BUT-1501 även för klistra in-/foto-/röst-importer via TextImportStrategy (den fyller BARA det additiva structuredIngredients-fältet; den platta ingredienslistan som allergimärkningen läser rörs aldrig), men matas inte av guidens manuella radval. Sedan BUT-1501 ankrar guiden dessutom en PII-skrubbad korrigeringssnapshot (BUT-1469-loopen) från det färdiga receptet, så senare redigeringar diffas till aktivt lärande — tidigare var endast Tier-1 URL-importer kopplade till parsing_corrections.",
+      "description": "En 3-stegsguide där användaren TRYCKER FRAM ingrediens- och instruktionsrader från extraherad/OCR:ad/inklistrad text, styrd av rena regel-heuristiker (nyckelord, radmönster) — själva radplockningen i guiden är fortfarande ren heuristik. Den ML-baserade ingrediensrad-kaskaden (CRF → NER/ONNX) körs sedan BUT-1501 även för klistra in-/foto-/röst-importer via TextImportStrategy (den fyller BARA det additiva structuredIngredients-fältet; den platta ingredienslistan som allergimärkningen läser rörs aldrig), men matas inte av guidens manuella radval. Sedan BUT-1501 ankrar guiden dessutom en PII-skrubbad korrigeringssnapshot (BUT-1469-loopen) från det färdiga receptet, så senare redigeringar diffas till aktivt lärande — tidigare var endast Tier-1 URL-importer kopplade till parsing_corrections.",
       "features": [
         "IMP-10",
         "IMP-11",
@@ -4459,101 +4418,6 @@
           "transport": "method-call",
           "verified": true,
           "status": "dormant"
-        }
-      ],
-      "area": "import"
-    },
-    {
-      "id": "flow-imp-6",
-      "label": "Listsideexpansion",
-      "description": "Efter ett enskilt URL-hämtningsförsök som inte hittar ett recept, sonderas sidan för om den är en receptlista/samlingssida (regex-ankaranalys, min. 5 receptlika länkar, max 50). Vid träff visas ett opt-in-banner — expansion sker aldrig automatiskt. Användaren godkänner, vilket kör den befintliga sekventiella batch-hämtningen (en URL i taget, samma legacy-WebScraper-väg) och slutligen matar den kombinerade texten in i samma textklistrings-parser som flow 2.",
-      "features": [
-        "IMP-02"
-      ],
-      "steps": [
-        {
-          "from": "v-import-via-url",
-          "to": "vm-url-import",
-          "payload": "fetchFromUrl() (enskild URL, hittar inget recept)",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "vm-url-import",
-          "to": "svc-web-scraper",
-          "payload": "scrapeContent(url) (legacy-väg)",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "vm-url-import",
-          "to": "svc-index-page-expander",
-          "payload": "detectIndexPage() — sondera om listsida",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "svc-index-page-expander",
-          "to": "ext-target-website",
-          "payload": "fetchHtmlWithTimeout(url) (SSRF-skyddad hämtning)",
-          "transport": "https",
-          "verified": true
-        },
-        {
-          "from": "svc-index-page-expander",
-          "to": "svc-index-page-detector",
-          "payload": "extractRecipeLinks(html) — regex-ankaranalys, max 50 länkar",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "svc-index-page-expander",
-          "to": "vm-url-import",
-          "payload": "Skördade länkar (≥5 = indexkandidat)",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "vm-url-import",
-          "to": "v-import-via-url",
-          "payload": "Visa 'Importera N recept'-banner (opt-in, ingen auto-expansion)",
-          "transport": "notify",
-          "verified": true
-        },
-        {
-          "from": "v-import-via-url",
-          "to": "vm-url-import",
-          "payload": "expandIndexPage() — användaren trycker",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "vm-url-import",
-          "to": "svc-web-scraper",
-          "payload": "fetchMultipleUrls() — sekventiell hämtning, en URL i taget (kostnadsskydd)",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "vm-url-import",
-          "to": "v-import-via-url",
-          "payload": "successfulBatchText (kombinerad, blankradsavgränsad)",
-          "transport": "method-call",
-          "verified": true
-        },
-        {
-          "from": "v-import-via-url",
-          "to": "v-fran-sociala-medier",
-          "payload": "pushNamed('/franSocialaMedier', {text: combined})",
-          "transport": "navigation",
-          "verified": true
-        },
-        {
-          "from": "v-fran-sociala-medier",
-          "to": "svc-import-manager",
-          "payload": "autoParseMulti(combined) → svc-multi-recipe-splitter → N recept",
-          "transport": "method-call",
-          "verified": true
         }
       ],
       "area": "import"
@@ -4777,7 +4641,7 @@
         },
         {
           "from": "svc-realtime-sync",
-          "to": "ds-realtime-menus",
+          "to": "ds-realtime-resources",
           "payload": "skriv menydokument, kontrollerar konflikt mot senaste version",
           "transport": "Firestore write",
           "verified": true
@@ -4910,7 +4774,7 @@
     {
       "id": "flow-menu-5",
       "label": "Inköpslistor",
-      "description": "Enhetlig hantering av inköpslistor: skapa en delad lista, handla tillsammans i realtid (ta/lämna varor, närvaroindikator för vem som handlar just nu), bläddra bland delade listor, och dela en redan befintlig lista med fler vänner. BUT-1665 (2026-07-26): samtidiga ändringar på en delad lista slår inte längre ut varandra — varje enskild varuändring skrivs transaktionellt mot serverns version av listan i stället för mot klientens cache, så två personer som bockar av var sin vara i butiken båda får sina bockar kvar. ConflictBanner nedan ytar fortfarande den tysta konfliktlösningen; skillnaden är att den vanliga avbockningen inte längre ÄR en konflikt. BUT-1696/BUT-1697 (2026-07-26): när en avbockning ändå misslyckas visas numera VARFÖR — nekad behörighet, borttagen lista eller tappad anslutning — i stället för att bocken bara hoppar tillbaka tyst. Samma gäller \"Avmarkera alla\".",
+      "description": "Enhetlig hantering av inköpslistor: skapa en delad lista, handla tillsammans i realtid (ta/lämna varor, närvaroindikator för vem som handlar just nu), bläddra bland delade listor, och dela en redan befintlig lista med fler vänner. BUT-1665 (2026-07-26): samtidiga ändringar på en delad lista slår inte längre ut varandra — varje enskild varuändring skrivs transaktionellt mot serverns version av listan i stället för mot klientens cache, så två personer som bockar av var sin vara i butiken båda får sina bockar kvar. BUT-1696/BUT-1697 (2026-07-26): när en avbockning ändå misslyckas visas numera VARFÖR — nekad behörighet, borttagen lista eller tappad anslutning — i stället för att bocken bara hoppar tillbaka tyst. Samma gäller \"Avmarkera alla\".",
       "features": [
         "MENU-11",
         "MENU-12",
@@ -5011,10 +4875,10 @@
           "verified": true
         },
         {
-          "from": "svc-realtime-sync",
+          "from": "vm-collaborative-shopping",
           "to": "v-collaborative-shopping",
-          "payload": "ConflictBanner ytar tyst konfliktlösning vid samtidig redigering av samma lista",
-          "transport": "onSnapshot stream",
+          "payload": "beskedet \"Listan uppdaterades av namn\" när någon annan ändrat den öppna listan (BUT-2187)",
+          "transport": "method call",
           "verified": true
         },
         {
@@ -7178,7 +7042,7 @@
         {
           "from": "svc-connectivity-monitoring",
           "to": "repo-connectivity",
-          "payload": "isConnectedToInternet/isConnectedToFirebase — wrappar connectivity_plus + Firestore .info/connected. Måste startas explicit via startMonitoring(), idag bara anropad från recipe_collaborative_manager.dart",
+          "payload": "isConnectedToInternet/isConnectedToFirebase — wrappar connectivity_plus + Firestore .info/connected. Måste startas explicit via startMonitoring().",
           "transport": "method call",
           "verified": true
         },
@@ -7314,20 +7178,13 @@
     {
       "id": "flow-eng-4",
       "label": "Schemalagd städning & web-extra",
-      "description": "Sju schemalagda Cloud Functions städar utgångna Firestore-samlingar och en trigger städar Storage-filer vid receptradering. Web-specifikt: en egenbyggd PWA-installationsbanner ovanpå webbläsarens beforeinstallprompt, och en webbanpassad receptutskrift.",
+      "description": "Schemalagda Cloud Functions städar utgångna Firestore-samlingar och en trigger städar Storage-filer vid receptradering. Web-specifikt: en egenbyggd PWA-installationsbanner ovanpå webbläsarens beforeinstallprompt, och en webbanpassad receptutskrift.",
       "features": [
         "ENG-24",
         "ENG-25",
         "ENG-26"
       ],
       "steps": [
-        {
-          "from": "cf-cleanup-cache",
-          "to": "ds-global-cache",
-          "payload": "tar bort utgångna cache-poster (TTL, standard 90 dagar), dagligen 02:00 UTC",
-          "transport": "schemalagd funktion (cron)",
-          "verified": true
-        },
         {
           "from": "cf-cleanup-notifications",
           "to": "ds-notification-history",

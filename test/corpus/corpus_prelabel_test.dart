@@ -9,7 +9,7 @@
 /// What it does, per image in `<book>/inbox/`:
 ///   1. OCR the image (OCR.space directly, shrunk to clear the 1.5 MB free cap)
 ///      → page-01.jpg (full-res) + ocr.txt + ocr.meta.json
-///   2. Parse the text (ImportManager.autoParseOnly) → title/portions/time/steps
+///   2. Parse the text → title/portions/time/steps
 ///   3. Structure each ingredient line (IngredientParsingStrategy.parseLine)
 ///   4. Write draft.json (the parser's prediction) + a gold.json seed
 ///      (verified:false copy you then correct by hand and flip to true)

@@ -107,7 +107,12 @@
 - Notification `when(...)` stubs are not coverage (the wrapper swallows everything incl.
   `MissingStubError`) — only `verify(...).called(n)` + `verifyNever` on the retained member.
 - A test passing an OPTIONAL override bypasses the changed default branch — grep every call site.
-  Worst case: a remote KILL SWITCH override present in every test by construction. **The MIRROR is
+  Worst case: a remote KILL SWITCH override present in every test by construction. **When a
+  sweep changes N default LITERALS at once, build one caller table (call site × passes / omits
+  / DROPS the argument) before writing any test**: nine `mealType` defaults had zero reachable
+  instances — every `lib/` caller passed it and one layer accepted-and-dropped it — so they
+  owed nothing, and the test budget belonged to the TWIN WRITER with no pin at all (the
+  dialog's item values; 2026-10-05 meal-type sweep, archive). **The MIRROR is
   the useful half when grading a new defaulted flag: the DEFAULT is pinned only by a NEGATIVE
   assertion on a caller that OMITS it.** The explicit caller's positive assertion is byte-identical
   under a flipped default and under an unconditional body, so a `findsNothing` on the omitting path
@@ -209,3 +214,4 @@
   mutation driver into `head` (SIGPIPE kills its own cleanup).
 - A probe file lives in scratch, not `test/` — a `// delete after` header is not a deletion. Close
   every round with `git status --porcelain`.
+- **A service test is only as authenticated as the PRODUCTION `ServiceLocator` says.** `executeServiceOperation`'s pre-flight reads `AuthRepository` there; unwired, the closure never runs and a shape assertion (`isA<Result>`, `anyOf(isTrue,isFalse)`) matches the fallback. Register an authenticated `AuthRepository` in the file-level setUp and add one discriminating assertion per delegating test (a forwarded error string, a spy `callCount`, a `reason` the fallback does not produce). Once the closure runs, check the next layer too: `RealtimeRecipeOperations` is built with no sync service, so `startRealtimeEditing` is false whatever the wiring (BUT-1937).

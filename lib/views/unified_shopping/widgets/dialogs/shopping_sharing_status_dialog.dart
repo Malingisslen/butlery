@@ -2,9 +2,9 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -15,6 +15,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_leave_list_action.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Comprehensive sharing status dialog showing detailed information about list collaboration
 class ShoppingShareStatusDialog extends StatelessWidget {
@@ -37,7 +39,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
+          ButleryIcon(
             _getListTypeIcon(),
             color: _getListTypeColor(cs),
             size: AppDimensions.iconSizeAction,
@@ -82,7 +84,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           ActionButtons.secondaryButton(
             context,
             label: context.l10n.shoppingManageSharing,
-            icon: Icons.manage_accounts,
+            icon: ButleryIcons.users,
             onPressed: () {
               Navigator.pop(context);
               _showManageSharing(context);
@@ -127,9 +129,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: _getListTypeColor(
-        cs,
-      ).withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -138,7 +138,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Text(
               context.l10n.shoppingListInfo,
               style: AppTextStyles.titleMedium.copyWith(
-                color: cs.primary,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -173,42 +173,46 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     if (isOwner) {
       permissionLabel = context.l10n.shoppingAdminOwner;
       permissionDescription = context.l10n.shoppingAdminOwnerDescription;
-      permissionIcon = Icons.admin_panel_settings;
-      permissionColor = cs.primary;
+      permissionIcon = ButleryIcons.crown;
+      permissionColor = cs.onSurface;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
           permissionLabel = context.l10n.shoppingPermissionViewOnly;
           permissionDescription =
               context.l10n.shoppingPermissionViewDescription;
-          permissionIcon = Icons.visibility;
+          permissionIcon = ButleryIcons.eye;
           permissionColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionDescription =
               context.l10n.shoppingPermissionEditDescription;
-          permissionIcon = Icons.edit;
-          permissionColor = cs.secondary;
+          permissionIcon = ButleryIcons.pencil;
+          // Saffron falls under 3:1 on the light surfaces, so only dark mode
+          // keeps it.
+          permissionColor = cs.brightness == Brightness.dark
+              ? cs.secondary
+              : cs.onSurface;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdministrator;
           permissionDescription =
               context.l10n.shoppingPermissionAdminDescription;
-          permissionIcon = Icons.admin_panel_settings;
-          permissionColor = cs.primary;
+          permissionIcon = ButleryIcons.crown;
+          permissionColor = cs.onSurface;
           break;
         default:
           permissionLabel = context.l10n.shoppingPermissionUnspecified;
           permissionDescription =
               context.l10n.shoppingPermissionUnspecifiedDescription;
-          permissionIcon = Icons.help;
+          permissionIcon = ButleryIcons.circleHelp;
           permissionColor = cs.onSurfaceVariant;
       }
     }
 
     return Card(
-      color: permissionColor.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -216,16 +220,16 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                ButleryIcon(
                   permissionIcon,
                   color: permissionColor,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingYourPermission,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -257,7 +261,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     allMembers.addAll(list.memberPermissions);
 
     return Card(
-      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -265,16 +269,16 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.people,
-                  color: cs.primary,
+                ButleryIcon(
+                  ButleryIcons.users,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingMembersCount(allMembers.length),
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -307,47 +311,55 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     String permissionLabel;
     IconData permissionIcon;
     Color permissionColor;
+    // Only the role glyph carries the saffron; the words stay ink.
+    Color permissionTextColor;
 
     if (isOwner) {
       permissionLabel = context.l10n.shoppingPermissionOwner;
-      permissionIcon = Icons.admin_panel_settings;
-      permissionColor = cs.primary;
+      permissionIcon = ButleryIcons.crown;
+      permissionColor = cs.onSurface;
+      permissionTextColor = cs.onSurface;
     } else {
       switch (permission) {
         case SharedListPermission.view:
           permissionLabel = context.l10n.shoppingPermissionView;
-          permissionIcon = Icons.visibility;
+          permissionIcon = ButleryIcons.eye;
           permissionColor = cs.onSurfaceVariant;
+          permissionTextColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
-          permissionIcon = Icons.edit;
-          permissionColor = cs.secondary;
+          permissionIcon = ButleryIcons.pencil;
+          // Saffron falls under 3:1 on the light surfaces, so only dark mode
+          // keeps it.
+          permissionColor = cs.brightness == Brightness.dark
+              ? cs.secondary
+              : cs.onSurface;
+          permissionTextColor = cs.onSurface;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdmin;
-          permissionIcon = Icons.admin_panel_settings;
-          permissionColor = cs.primary;
+          permissionIcon = ButleryIcons.crown;
+          permissionColor = cs.onSurface;
+          permissionTextColor = cs.onSurface;
           break;
       }
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: cs.primary.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
+            backgroundColor: cs.surface,
             child: Text(
               // Keyed off the RESOLVED name, not the rendered one: the unknown
               // fallback is a sentence, and its initial ("O" for "Okänd
               // användare") would read as a real person's initial.
               knownName != null ? knownName[0].toUpperCase() : '?',
               style: AppTextStyles.labelLarge.copyWith(
-                color: cs.primary,
+                color: cs.onSurface,
               ),
             ),
           ),
@@ -364,7 +376,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Icon(
+                    ButleryIcon(
                       permissionIcon,
                       size: AppDimensions.iconSizeS,
                       color: permissionColor,
@@ -373,7 +385,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                     Text(
                       permissionLabel,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: permissionColor,
+                        color: permissionTextColor,
                       ),
                     ),
                   ],
@@ -390,7 +402,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -398,16 +410,16 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.history,
-                  color: cs.primary,
+                ButleryIcon(
+                  ButleryIcons.history,
+                  color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.shoppingRecentActivity,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -454,7 +466,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               style: AppTextStyles.labelMedium,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               value,
@@ -469,20 +481,20 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   IconData _getListTypeIcon() {
     switch (list.type) {
       case ListType.personal:
-        return Icons.person;
+        return ButleryIcons.user;
       case ListType.collaborative:
-        return Icons.people;
+        return ButleryIcons.users;
       case ListType.template:
-        return AdaptiveIcons.savedTemplate;
+        return ButleryIcons.savedTemplate;
     }
   }
 
   Color _getListTypeColor(ColorScheme cs) {
     switch (list.type) {
       case ListType.personal:
-        return cs.primary;
+        return cs.onSurface;
       case ListType.collaborative:
-        return cs.primary;
+        return cs.onSurface;
       case ListType.template:
         return cs.onSurfaceVariant;
     }
@@ -528,13 +540,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     } catch (e) {
       AppLogger.error('Error loading friends for member management: $e');
       if (context.mounted) {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.shoppingCouldNotLoadFriends(e.toString()),
-            ),
-            backgroundColor: cs.error,
+        // The ink snackbar (PQ-09 = A), and the cause in words, never the
+        // raw exception (content-style-guide.md:96).
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.shoppingCouldNotLoadFriends(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

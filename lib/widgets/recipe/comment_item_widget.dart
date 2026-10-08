@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/recipe/comment_time_formatter.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -25,7 +26,7 @@ class CommentItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: Container(
-        margin: AppDimensions.paddingOnlyBottom3,
+        margin: AppDimensions.paddingOnlyBottom4,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -41,7 +42,7 @@ class CommentItemWidget extends StatelessWidget {
                   ),
                   size: ImageSize.small,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +55,7 @@ class CommentItemWidget extends StatelessWidget {
                             ),
                             style: AppTextStyles.labelLarge,
                           ),
-                          const SizedBox(width: AppDimensions.spacingS),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(
                             CommentTimeFormatter.format(comment.createdAt),
                             style: AppTextStyles.bodySmall,
@@ -92,14 +93,14 @@ class CommentItemWidget extends StatelessWidget {
       child: InkWell(
         onTap: () => socialViewModel.toggleCommentLike(comment.id),
         child: Padding(
-          padding: AppDimensions.paddingSymmetric4x3,
+          padding: AppDimensions.paddingAll4,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              ButleryIcon(
                 socialViewModel.hasLikedComment(comment.id)
-                    ? AdaptiveIcons.favouriteFilled
-                    : AdaptiveIcons.favouriteOutline,
+                    ? ButleryIcons.favourite
+                    : ButleryIcons.favouriteOutline,
                 size: AppDimensions.iconSizeM,
                 // Red is deliberate (BUT-1213): red = social like,
                 // green (cs.primary) = personal favourite.
@@ -128,11 +129,11 @@ class CommentItemWidget extends StatelessWidget {
       child: InkWell(
         onTap: () => socialViewModel.setReplyTo(comment.id),
         child: Padding(
-          padding: AppDimensions.paddingSymmetric4x3,
+          padding: AppDimensions.paddingAll4,
           child: Text(
             context.l10n.commentReply,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

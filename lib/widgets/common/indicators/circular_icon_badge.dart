@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Reusable circular icon badge component
 /// Provides consistent styling for circular icons with background.
@@ -24,7 +26,7 @@ class CircularIconBadge extends StatelessWidget {
   const CircularIconBadge.add({
     super.key,
     this.size,
-  }) : icon = Icons.add,
+  }) : icon = ButleryIcons.plus,
        backgroundColor = null,
        iconColor = null;
 
@@ -40,7 +42,7 @@ class CircularIconBadge extends StatelessWidget {
         color: backgroundColor ?? cs.primary,
         shape: BoxShape.circle,
       ),
-      child: Icon(
+      child: ButleryIcon(
         icon,
         size: badgeSize,
         color: iconColor ?? cs.surfaceContainerHighest,

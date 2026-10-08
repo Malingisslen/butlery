@@ -1,5 +1,17 @@
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/repositories/interfaces/repository.dart';
+
+/// [HouseholdAllergenShareRepository.getByHousehold] DECLINED: the household
+/// holds more members, or more shares, than the read answers for. Never a
+/// partial answer — a clipped list would drop someone's allergens while
+/// looking complete — so the caller must treat the shares as unknown, which
+/// puts the household on the common-allergen floor (accepted deviation,
+/// BUT-1693, 2026-09-16).
+class HouseholdTooLargeForSharesException extends RepositoryException {
+  const HouseholdTooLargeForSharesException(super.message)
+    : super(code: 'household-too-large-for-shares');
+}
 
 /// Repository for [HouseholdAllergenShare] — a member's own allergen list,
 /// shared with their household by explicit consent (BUT-1693, GDPR Art. 9).
@@ -15,6 +27,8 @@ abstract class HouseholdAllergenShareRepository
   /// Only shares whose consent is intact are returned: a document without a
   /// valid consent record is not a declaration, and its member must keep the
   /// safety floor.
+  ///
+  /// Throws [HouseholdTooLargeForSharesException] above its cap.
   Future<List<HouseholdAllergenShare>> getByHousehold(String householdId);
 
   /// The caller's own share in [householdId], or null when they have not

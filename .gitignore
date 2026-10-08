@@ -81,6 +81,9 @@ firebase-debug.log
 test/**/results/logs/*.log
 test/**/results/*.log
 
+# Local test reports (the design-state runs write here; CI uploads them)
+test_results/
+
 # Claude Code cache and logs - DO NOT COMMIT (local analysis data)
 .claude/cache/
 .claude/cache/**
@@ -118,6 +121,8 @@ nul
 !tools/gen_role_paths.py
 # Role-org Phase-2 stakeholder router (committed tooling)
 !tools/stakeholder_router.py
+# Opus-vs-Sonnet review trial (committed tooling)
+!.claude/hooks/review_trial.py
 
 # Temp analysis files
 *tmp_analyze*

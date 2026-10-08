@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Available emoji reactions for comments.
 /// Maps internal key to display emoji.
@@ -32,10 +33,10 @@ class EmojiReactionPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: AppDimensions.paddingSymmetric4x3,
+      padding: AppDimensions.paddingAll4,
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
         boxShadow: AppShadows.card,
       ),
@@ -97,19 +98,21 @@ class _EmojiButtonState extends State<_EmojiButton> {
           child: AnimatedContainer(
             duration: AnimationUtils.getDuration(
               context,
-              AppDimensions.animationDurationFast,
+              AppMotion.micro,
             ),
             padding: AppDimensions.paddingAll8,
             decoration: BoxDecoration(
               color: _isHovered
                   ? Theme.of(context).colorScheme.surface
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: ExcludeSemantics(
               child: Text(
                 widget.emoji,
-                style: const TextStyle(fontSize: 22),
+                style: const TextStyle(
+                  fontSize: AppDimensions.emojiGlyphPicker,
+                ),
               ),
             ),
           ),

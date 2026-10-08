@@ -8,12 +8,17 @@ import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     as export_helper;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -32,9 +37,8 @@ class DataExportView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => context.read<DataExportViewModel>(),
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        appBar: ButleryTopBar.undersida(
           title: context.l10n.dataExportTitle,
-          centerTitle: true,
         ),
         body: SafeArea(
           // RESPONSIVE: Center and constrain content on large screens
@@ -51,7 +55,9 @@ class DataExportView extends StatelessWidget {
               child: Consumer<DataExportViewModel>(
                 builder: (context, viewModel, _) {
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppDimensions.paddingXl),
+                    padding: EdgeInsets.all(
+                      AppDimensions.layoutMarginOf(context),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -83,16 +89,16 @@ class DataExportView extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.download_rounded,
+                ButleryIcon(
+                  ButleryIcons.export,
                   size: 32,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
@@ -125,16 +131,20 @@ class DataExportView extends StatelessWidget {
       return const SizedBox.shrink(); // Hide button when data is exported
     }
 
-    return ElevatedButton.icon(
-      onPressed: viewModel.isExporting
-          ? null
-          : () => _handleExport(context, viewModel),
-      icon: const Icon(Icons.cloud_download_rounded),
-      label: Text(context.l10n.dataExportTitle),
-      style: ElevatedButton.styleFrom(
-        padding: AppDimensions.paddingVertical16,
-        textStyle: AppTextStyles.titleMedium,
-      ),
+    // After the export the view's one saffron action is "Spara filen", as
+    // drawn (Skarmar v12 etapp 6 'Dataexport — allt du lagt in', :130-156;
+    // Grafisk manual v6:219). The drawing shows only the finished state, so
+    // making the export itself the saffron action before it is an
+    // interpretation, not drawn. While exporting the button keeps its
+    // shape and says what it does, with the plate line (Komponentark v1:372).
+    return HeroButton(
+      key: const ValueKey('dataExport.export'),
+      label: context.l10n.dataExportTitle,
+      icon: ButleryIcons.export,
+      onPressed: () => _handleExport(context, viewModel),
+      busy: viewModel.isExporting,
+      busyLabel: context.l10n.dataExportExporting,
+      expand: true,
     );
   }
 
@@ -144,15 +154,10 @@ class DataExportView extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        // The export button above carries the plate line and the busy
+        // label; this card only says how long it may take.
         child: Column(
           children: [
-            const LoadingIndicator(),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              context.l10n.dataExportExporting,
-              style: AppTextStyles.contentTitle,
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               context.l10n.dataExportMayTakeSeconds,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -165,41 +170,109 @@ class DataExportView extends StatelessWidget {
     );
   }
 
+  /// Three causes, three messages (produktregler.md:735; Skarmar v12
+  /// etapp 6 #dataexportfel): an expired sign-in leads to signing in, a
+  /// refusal is our fault and asks for no retry, a dropped connection gets
+  /// "Inte nu" and "Försök igen". Only the general case asks for a retry
+  /// without saying why. No partial file is ever offered.
   Widget _buildErrorState(BuildContext context, DataExportViewModel viewModel) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final failure = viewModel.failure ?? ExportFailure.other;
+
+    final String title;
+    final String body;
+    switch (failure) {
+      case ExportFailure.network:
+        title = l10n.dataExportNetworkTitle;
+        body = l10n.dataExportNetworkBody;
+      case ExportFailure.signedOut:
+        title = l10n.dataExportSignedOutTitle;
+        body = l10n.dataExportSignedOutBody;
+      case ExportFailure.permissionDenied:
+        title = l10n.dataExportDeniedTitle;
+        body = l10n.dataExportDeniedBody;
+      case ExportFailure.other:
+        title = l10n.dataExportFailed;
+        body = viewModel.errorMessage ?? l10n.errorExportFailed;
+    }
+
+    final List<Widget> actions = switch (failure) {
+      ExportFailure.network => [
+        TextButton(
+          key: const ValueKey('dataExport.notNow'),
+          onPressed: viewModel.reset,
+          child: Text(l10n.dataExportNotNow),
+        ),
+        const SizedBox(width: AppDimensions.spacingSm),
+        FilledButton(
+          key: const ValueKey('dataExport.retry'),
+          onPressed: () => viewModel.retryExport(),
+          child: Text(l10n.commonRetry),
+        ),
+      ],
+      ExportFailure.signedOut => [
+        FilledButton(
+          key: const ValueKey('dataExport.signIn'),
+          onPressed: () => _handleSignInAgain(context),
+          child: Text(l10n.dataExportSignIn),
+        ),
+      ],
+      ExportFailure.permissionDenied => const <Widget>[],
+      ExportFailure.other => [
+        FilledButton(
+          key: const ValueKey('dataExport.retry'),
+          onPressed: () => viewModel.retryExport(),
+          child: Text(l10n.commonRetry),
+        ),
+      ],
+    };
 
     return Card(
-      color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
+      key: ValueKey('dataExport.error.${failure.name}'),
+      color: cs.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: cs.error,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              context.l10n.dataExportFailed,
-              style: AppTextStyles.titleBold,
-            ),
+            Text(title, style: AppTextStyles.titleBold),
             const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-              viewModel.errorMessage ?? context.l10n.errorUnexpected,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            ElevatedButton.icon(
-              onPressed: () => viewModel.retryExport(),
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.commonRetry),
-            ),
+            Text(body, style: Theme.of(context).textTheme.bodyMedium),
+            if (failure == ExportFailure.network) ...[
+              const SizedBox(height: AppDimensions.spacingSm),
+              Text(
+                l10n.dataExportNoPartialFile,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingMd),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions,
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  /// "Utgången inloggning leder till inloggningen" (produktregler.md:735).
+  /// The session is no longer usable, so it is ended and the sign-in screen
+  /// shown. It is not the user's own sign-out: nothing in the queue is
+  /// touched.
+  Future<void> _handleSignInAgain(BuildContext context) async {
+    await ServiceLocator.get<AuthService>().forceSignOut();
+    if (context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        Routes.auth,
+        (_) => false,
+      );
+    }
   }
 
   Widget _buildSuccessState(
@@ -209,17 +282,18 @@ class DataExportView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: context.butleryColors.success.withValues(
-        alpha: AppDimensions.opacityVeryLight,
+      color: context.modeColors.surfaceTintSuccess,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           children: [
-            Icon(
-              Icons.check_circle_outline,
+            ButleryIcon(
+              ButleryIcons.circleCheck,
               size: 48,
-              color: context.butleryColors.success,
+              color: context.modeColors.onSuccessContainer,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
@@ -240,15 +314,17 @@ class DataExportView extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.paddingXl),
+            const SizedBox(height: AppDimensions.space16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: HeroButton(
+                    key: const ValueKey('dataExport.saveFile'),
+                    label: context.l10n.dataExportSaveFile,
+                    icon: ButleryIcons.download,
                     onPressed: () => _handleDownload(context, viewModel),
-                    icon: const Icon(Icons.save_alt),
-                    label: Text(context.l10n.dataExportSaveFile),
+                    expand: true,
                   ),
                 ),
                 if (export_helper.canShareFiles) ...[
@@ -256,17 +332,28 @@ class DataExportView extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _handleShare(context, viewModel),
-                      icon: const Icon(Icons.share),
+                      icon: const ButleryIcon(ButleryIcons.share2),
                       label: Text(context.l10n.commonShare),
                     ),
                   ),
                 ],
               ],
             ),
+            const SizedBox(height: AppDimensions.spacingMd),
+            // The file lives only in memory and is cleared when the view is
+            // left, and the view says so (produktregler.md:733; Skarmar v12
+            // etapp 6 #kontodataexport).
+            Text(
+              context.l10n.dataExportMemoryNotice,
+              key: const ValueKey('dataExport.memoryNotice'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: AppDimensions.spacingL),
             TextButton.icon(
               onPressed: () => _handleClear(context, viewModel),
-              icon: const Icon(Icons.delete_outline),
+              icon: const ButleryIcon(ButleryIcons.trash2),
               label: Text(context.l10n.dataExportClear),
               style: TextButton.styleFrom(
                 foregroundColor: cs.onSurfaceVariant,
@@ -280,19 +367,17 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoSection(BuildContext context) {
     return Card(
-      color: context.butleryColors.info.withValues(
-        alpha: AppDimensions.opacityVeryLight,
-      ),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.info_outline,
-                  color: context.butleryColors.info,
+                ButleryIcon(
+                  ButleryIcons.info,
+                  color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -313,7 +398,7 @@ class DataExportView extends StatelessWidget {
             _buildInfoItem(context, context.l10n.dataExportIncludesAuditLogs),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              context.l10n.dataExportOnlyYourData,
+              context.l10n.dataExportSharedDataNote,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -330,10 +415,10 @@ class DataExportView extends StatelessWidget {
       padding: AppDimensions.paddingVertical4,
       child: Row(
         children: [
-          Icon(
-            Icons.check,
+          ButleryIcon(
+            ButleryIcons.check,
             size: AppDimensions.iconSizeS,
-            color: context.butleryColors.success,
+            color: context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(text, style: Theme.of(context).textTheme.bodyMedium),
@@ -351,11 +436,9 @@ class DataExportView extends StatelessWidget {
     final success = await viewModel.exportData();
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.dataExportExportedSuccessfully),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.dataExportExportedSuccessfully,
       );
     }
   }
@@ -378,30 +461,20 @@ class DataExportView extends StatelessWidget {
       await export_helper.downloadJsonFile(viewModel.exportedData!, fileName);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dataExportFileSaved(fileName)),
-            backgroundColor: context.butleryColors.success,
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: context.l10n.commonOk,
-              textColor: context.butleryColors.onSuccess,
-              onPressed: () {},
-            ),
-          ),
+        // No "OK" action: a snackbar action is never OK (Komponentark
+        // v1:750), and this one did nothing.
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.dataExportFileSaved(fileName),
+          duration: const Duration(seconds: 4),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.dataExportCouldNotSaveFile(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ),
-            ),
-            backgroundColor: cs.error,
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.dataExportCouldNotSaveFile(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }
@@ -434,15 +507,10 @@ class DataExportView extends StatelessWidget {
       );
     } catch (e) {
       if (context.mounted) {
-        final cs = Theme.of(context).colorScheme;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.dataExportCouldNotShare(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ),
-            ),
-            backgroundColor: cs.error,
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.dataExportCouldNotShare(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }
@@ -479,11 +547,7 @@ class DataExportView extends StatelessWidget {
     if (confirmed == true) {
       viewModel.clearExportedData();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dataExportCleared),
-          ),
-        );
+        SnackBarUtils.showInfo(context, context.l10n.dataExportCleared);
       }
     }
   }

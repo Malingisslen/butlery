@@ -174,18 +174,6 @@ void main() {
         expect(result, isFalse);
       });
 
-      test('should get recipe by ID', () async {
-        // Arrange
-        const recipeId = 'recipe-1';
-
-        // Act
-        final result = await adapter.getRecipeById(recipeId);
-
-        // Assert
-        // Currently returns null as getById is not implemented
-        expect(result, isNull);
-      });
-
       test('should get recipes for user', () async {
         // Arrange
         const userId = 'user-123';

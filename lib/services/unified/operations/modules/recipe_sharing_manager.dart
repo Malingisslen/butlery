@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -18,6 +19,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 
 typedef CreateCollaborativeRecipeFn =
     Future<String?> Function({
@@ -118,6 +120,11 @@ class RecipeSharingManager {
     List<String>? categoryIds,
   }) async {
     try {
+      // BUT-2169: nothing new is shared across a block, in either direction.
+      memberIds = await BlockedUserFilter.shareRecipients(memberIds);
+      if (memberIds.isEmpty) {
+        return null;
+      }
       AppLogger.info('🔄 Starting recipe share process for recipe: $recipeId');
 
       // Find the recipe to share (personal OR collaborative)
@@ -196,6 +203,7 @@ class RecipeSharingManager {
         await _syncCollaborativeRecipeToSharedCollection(
           recipe: recipeToShare,
           memberIds: memberIds,
+          groupIds: categoryIds,
         );
         finalRecipeId = recipeId;
         AppLogger.success('✅ Collaborative recipe synced to shared collection');
@@ -235,6 +243,7 @@ class RecipeSharingManager {
           recipeTitle: recipeToShare.title,
           memberIds: memberIds,
           recipeData: recipeToShare,
+          groupIds: categoryIds,
         );
       }
 
@@ -341,6 +350,11 @@ class RecipeSharingManager {
     List<String>? categoryIds,
   }) async {
     try {
+      // Before the copy exists, so a share nobody can receive leaves no copy.
+      memberIds = await BlockedUserFilter.shareRecipients(memberIds);
+      if (memberIds.isEmpty) {
+        return null;
+      }
       AppLogger.info('🔄 Duplicating and sharing recipe: $recipeId');
 
       // First, create a duplicate of the personal recipe
@@ -564,6 +578,7 @@ class RecipeSharingManager {
       ),
       realtimeData: recipe.realtimeData,
       offlineData: recipe.offlineData,
+      rev: recipe.rev,
     );
 
     return _updateRecipe(updated);
@@ -574,6 +589,7 @@ class RecipeSharingManager {
   Future<void> _syncCollaborativeRecipeToSharedCollection({
     required Recipe recipe,
     required List<String> memberIds,
+    List<String>? groupIds,
   }) async {
     try {
       AppLogger.info('🔄 Syncing collaborative recipe to shared collection');
@@ -591,6 +607,7 @@ class RecipeSharingManager {
           ...memberIds,
         ], // Combine existing + new members
         recipeData: recipe,
+        groupIds: groupIds,
       );
 
       AppLogger.success('✅ Collaborative recipe synced to shared collection');
@@ -671,6 +688,7 @@ class RecipeSharingManager {
     // replaced with `.orEmpty()` to satisfy the BUT-581 arch guard. Typing the
     // parameter is the root-cause fix; both call sites already pass a Recipe.
     required Recipe recipeData,
+    List<String>? groupIds,
   }) async {
     try {
       final permissionService = ServiceLocator.get<PermissionService>();
@@ -756,6 +774,8 @@ class RecipeSharingManager {
         // spelling, so rows predating the fix stayed readable — retired
         // 2026-08-03 once it was established the project holds only test data.
         'sharedToUserIds': allUserIds,
+        if (groupIds != null && groupIds.isNotEmpty)
+          sharedContentGroupIdsField: groupIds,
         'isActive': true,
         'imageUrl': recipeData.imageUrls.isNotEmpty
             ? recipeData.imageUrls.first

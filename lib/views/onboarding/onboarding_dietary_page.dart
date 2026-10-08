@@ -6,19 +6,21 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class OnboardingDietaryPage extends StatelessWidget {
   const OnboardingDietaryPage({super.key});
 
-  static const Map<String, IconData> _dietaryIcons = {
-    'vegetarisk': Icons.eco,
-    'vegansk': Icons.spa,
-    'pescetarian': Icons.set_meal,
-    'glutenfri': Icons.no_food,
-    'laktosfri': Icons.water_drop_outlined,
-    'halalanpassad': Icons.verified,
-    'kosheranpassad': Icons.star_outline,
-  };
+  static const List<String> _dietaryKeys = [
+    'vegetarisk',
+    'vegansk',
+    'pescetarian',
+    'glutenfri',
+    'laktosfri',
+    'halalanpassad',
+    'kosheranpassad',
+  ];
 
   static String _dietaryLabel(BuildContext context, String key) {
     final l10n = context.l10n;
@@ -56,7 +58,9 @@ class OnboardingDietaryPage extends StatelessWidget {
     // Scrollable so landscape phones (~360dp height) don't overflow the
     // 7 dietary cards + title block. Portrait already fits — scroll is a no-op.
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -64,7 +68,7 @@ class OnboardingDietaryPage extends StatelessWidget {
           Text(
             context.l10n.onboardingDietaryTitle,
             style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.primary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
@@ -75,16 +79,15 @@ class OnboardingDietaryPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingLg),
-          ..._dietaryIcons.entries.map((entry) {
-            final isSelected = viewModel.isDietaryPrefSelected(entry.key);
+          ..._dietaryKeys.map((key) {
+            final isSelected = viewModel.isDietaryPrefSelected(key);
             return Padding(
               padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
               child: _DietaryToggleCard(
-                label: _dietaryLabel(context, entry.key),
-                icon: entry.value,
-                description: _dietaryDescription(context, entry.key),
+                label: _dietaryLabel(context, key),
+                description: _dietaryDescription(context, key),
                 isSelected: isSelected,
-                onTap: () => viewModel.toggleDietaryPref(entry.key),
+                onTap: () => viewModel.toggleDietaryPref(key),
               ),
             );
           }),
@@ -97,14 +100,12 @@ class OnboardingDietaryPage extends StatelessWidget {
 
 class _DietaryToggleCard extends StatelessWidget {
   final String label;
-  final IconData icon;
   final String description;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _DietaryToggleCard({
     required this.label,
-    required this.icon,
     required this.description,
     required this.isSelected,
     required this.onTap,
@@ -125,24 +126,21 @@ class _DietaryToggleCard extends StatelessWidget {
             context,
             const Duration(milliseconds: 200),
           ),
+          // Chosen is a real border, never a tint (Grafisk manual v6:209,
+          // "Vald = riktig border"; tokens.json:40-53). The fill stays
+          // surface.raised (surfaceContainerHighest), which is also
+          // surface.selected (tokens.json:108-119), and the border is
+          // text.primary: ink on light, paper on dark.
           decoration: BoxDecoration(
-            color: isSelected
-                ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
-                : cs.surfaceContainerHighest,
+            color: cs.surfaceContainerHighest,
             border: Border.all(
-              color: isSelected ? cs.primary : cs.outlineVariant,
-              width: isSelected ? 2 : 1,
+              color: isSelected ? cs.onSurface : cs.outlineVariant,
+              width: isSelected ? 1.5 : 1,
             ),
           ),
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: AppDimensions.iconSizeXl,
-                color: isSelected ? cs.primary : cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +148,7 @@ class _DietaryToggleCard extends StatelessWidget {
                     Text(
                       label,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: isSelected ? cs.primary : cs.onSurface,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
@@ -164,10 +162,10 @@ class _DietaryToggleCard extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check_circle,
+                ButleryIcon(
+                  ButleryIcons.circleCheck,
                   size: AppDimensions.iconSizeL,
-                  color: cs.primary,
+                  color: cs.onSurface,
                 ),
             ],
           ),

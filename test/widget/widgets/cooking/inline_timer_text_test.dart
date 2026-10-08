@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/utils/duration_parser.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -35,7 +36,7 @@ void main() {
     );
 
     expect(
-      find.byIcon(Icons.timer_outlined),
+      find.byIcon(ButleryIcons.clock),
       findsOneWidget,
       reason: 'The chip is the visible timer affordance.',
     );
@@ -45,7 +46,7 @@ void main() {
       reason: 'The chip carries the matched phrase verbatim.',
     );
 
-    await tester.tap(find.byIcon(Icons.timer_outlined));
+    await tester.tap(find.byIcon(ButleryIcons.clock));
     expect(tapped, isNotNull, reason: 'Tap must surface the parsed match.');
     expect(tapped!.duration, const Duration(minutes: 25));
   });
@@ -62,7 +63,7 @@ void main() {
     );
 
     expect(find.text('en halvtimme'), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.timer_outlined));
+    await tester.tap(find.byIcon(ButleryIcons.clock));
     expect(tapped!.duration, const Duration(minutes: 30));
   });
 
@@ -79,7 +80,7 @@ void main() {
     );
 
     expect(
-      find.byIcon(Icons.timer_outlined),
+      find.byIcon(ButleryIcons.clock),
       findsNothing,
       reason: 'A chip on a non-duration line is a phantom affordance.',
     );

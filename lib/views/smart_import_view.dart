@@ -8,15 +8,20 @@
 /// - User-assisted fallback for difficult imports
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
@@ -30,11 +35,13 @@ import 'package:butlery/views/smart_import/import_result_handler.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
-  /// URL handed in by the OS share sheet (web-share into the app). When set it
-  /// prefills the import field and takes precedence over the clipboard check.
+  /// When set it prefills the import field and takes precedence over the
+  /// clipboard check.
   final String? initialUrl;
 
-  const SmartImportView({super.key, this.initialUrl});
+  final bool autoStart;
+
+  const SmartImportView({super.key, this.initialUrl, this.autoStart = false});
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +49,19 @@ class SmartImportView extends StatelessWidget {
       create: (_) => SmartImportViewModel(
         importManager: ServiceLocator.get<ImportManager>(),
       ),
-      child: _SmartImportViewContent(initialUrl: initialUrl),
+      child: _SmartImportViewContent(
+        initialUrl: initialUrl,
+        autoStart: autoStart,
+      ),
     );
   }
 }
 
 class _SmartImportViewContent extends StatefulWidget {
   final String? initialUrl;
+  final bool autoStart;
 
-  const _SmartImportViewContent({this.initialUrl});
+  const _SmartImportViewContent({this.initialUrl, this.autoStart = false});
 
   @override
   State<_SmartImportViewContent> createState() =>
@@ -70,12 +81,13 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
       final viewModel = context.read<SmartImportViewModel>();
 
-      // A URL shared into the app (web-share) wins over the clipboard. Prefill
+      // A URL wins over the clipboard. Prefill
       // the field and sync the VM (programmatic text doesn't fire onChanged).
       final shared = widget.initialUrl;
       if (shared != null && shared.isNotEmpty) {
         _inputController.text = shared;
         viewModel.updateInput(shared);
+        if (widget.autoStart) await _handleImport(context, viewModel);
         return;
       }
 
@@ -99,7 +111,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SmartImportViewModel>();
-    final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
       canPop: !viewModel.isImporting,
@@ -112,13 +123,17 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         }
       },
       child: Scaffold(
-        appBar: AdaptiveAppBar(
+        // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
+        // on the canonical top bar, left-aligned as drawn (v1:73).
+        appBar: ButleryTopBar.undersida(
           title: context.l10n.importRecipeTitle,
-          centerTitle: true,
         ),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           behavior: HitTestBehavior.translucent,
+          // Tapping outside a field closes the keyboard; it is not a control,
+          // so a screen reader must not announce the whole page as one.
+          excludeFromSemantics: true,
           child: SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -189,12 +204,10 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                   ),
                                   ImportErrorMessage(
                                     message: viewModel.error!,
-                                    colorScheme: colorScheme,
-                                    onPasteText: () => _handlePaste(viewModel),
-                                    onManualAdd: () => Navigator.pushNamed(
-                                      context,
-                                      Routes.manualEntry,
-                                    ),
+                                    preserved: viewModel.failurePreserved,
+                                    routes: viewModel.failureRoutes,
+                                    onRoute: (route) =>
+                                        _openRoute(context, viewModel, route),
                                   ),
                                 ],
 
@@ -240,6 +253,23 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     );
   }
 
+  /// P5-U06: the error's other ways to the same recipe
+  /// (produktregler.md:557).
+  void _openRoute(
+    BuildContext context,
+    SmartImportViewModel viewModel,
+    ImportRoute route,
+  ) {
+    switch (route) {
+      case ImportRoute.photo:
+        unawaited(Navigator.pushNamed(context, Routes.photoImport));
+      case ImportRoute.pasteText:
+        unawaited(_handlePaste(viewModel));
+      case ImportRoute.manual:
+        unawaited(Navigator.pushNamed(context, Routes.manualEntry));
+    }
+  }
+
   Future<void> _handlePaste(SmartImportViewModel viewModel) async {
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
     if (clipboardData?.text != null) {
@@ -268,6 +298,13 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           ImportResultHandler.navigateToRecipeEditor(context, recipe);
         }
 
+      case ImportSucceededMultiple(:final recipes):
+        await ImportResultHandler.pickAndSaveMultiple(
+          context,
+          viewModel,
+          recipes,
+        );
+
       case ImportNeedsUserHelp():
         await _showAssistedImportDialog(context, viewModel, result);
 
@@ -295,14 +332,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     );
 
     if (!context.mounted || recipe == null) return;
-
-    final result = await viewModel.handleAssistedRecipe(recipe);
-
-    if (!context.mounted) return;
-
-    if (result is ImportSucceeded) {
-      ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
-    }
+    await _saveAssisted(context, viewModel, recipe);
   }
 
   Future<void> _showAssistedImportDialog(
@@ -343,13 +373,34 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     );
 
     if (!context.mounted || recipe == null) return;
+    await _saveAssisted(context, viewModel, recipe);
+  }
 
+  /// Saves an assisted import. A refused save is a failure snackbar whose
+  /// Försök igen saves the same recipe again (P5-U06;
+  /// content-style-guide.md:87-97).
+  Future<void> _saveAssisted(
+    BuildContext context,
+    SmartImportViewModel viewModel,
+    Recipe recipe,
+  ) async {
     final result = await viewModel.handleAssistedRecipe(recipe);
-
     if (!context.mounted) return;
-
-    if (result is ImportSucceeded) {
-      ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
+    switch (result) {
+      case ImportSucceeded(:final recipe):
+        ImportResultHandler.navigateToRecipeEditor(context, recipe);
+      case ImportFailed(:final message):
+        SnackBarUtils.showFailure(
+          context,
+          what: message,
+          action: FailureAction.retry(
+            () => unawaited(_saveAssisted(context, viewModel, recipe)),
+          ),
+        );
+      case ImportNeedsUserHelp() ||
+          ImportRateLimited() ||
+          ImportSucceededMultiple():
+        break;
     }
   }
 
@@ -362,10 +413,10 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: Icon(
-          Icons.videocam_off,
+        icon: ButleryIcon(
+          ButleryIcons.triangleAlert,
           size: 48,
-          color: theme.colorScheme.primary,
+          color: theme.colorScheme.onSurface,
         ),
         title: Text(context.l10n.importVideoNoText),
         content: Text(
@@ -378,7 +429,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(dialogContext).pop('photo'),
-            icon: const Icon(Icons.photo_camera),
+            icon: const ButleryIcon(ButleryIcons.camera),
             label: Text(context.l10n.importPhotoImport),
           ),
         ],

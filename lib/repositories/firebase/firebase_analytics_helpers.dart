@@ -77,21 +77,6 @@ class AnalyticsBuckets {
     return '21+';
   }
 
-  /// Free-text error string → coarse category. Swedish substrings are
-  /// historical — most extraction errors bubble up localized.
-  static String categorizeError(String error) {
-    final errorLower = error.toLowerCase();
-    if (errorLower.contains('timeout')) return 'timeout';
-    if (errorLower.contains('ingen text')) return 'no_content_found';
-    if (errorLower.contains('kunde inte ladda')) return 'page_load_error';
-    if (errorLower.contains('okänd plattform')) return 'unknown_platform';
-    if (errorLower.contains('tekniskt fel')) return 'technical_error';
-    if (errorLower.contains('cors') || errorLower.contains('webben')) {
-      return 'web_limitation';
-    }
-    return 'other';
-  }
-
   /// Recipe-count → user-segmentation bucket label.
   static String recipeCountRange(int count) {
     if (count == 0) return '0';

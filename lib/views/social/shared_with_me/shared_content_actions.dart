@@ -1,7 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_actions.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -15,11 +15,27 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SharedContentActions - Action methods for shared content
 /// Handles import, dismiss, and other actions for shared content.
 class SharedContentActions {
   /// Import a shared recipe
+  /// Opens the shared recipe in full. The share row alone holds a summary
+  /// without ingredients or steps, which is what this used to show.
+  static Future<void> viewRecipe(
+    BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
+    SharedRecipe sharedRecipe, {
+    required bool isRead,
+  }) async {
+    final recipeViewModel = viewModel.recipeViewModel;
+    if (!isRead) recipeViewModel.markAsViewed(sharedRecipe);
+    final recipe = await recipeViewModel.loadFullRecipe(sharedRecipe);
+    if (!context.mounted) return;
+    await Navigator.pushNamed(context, Routes.recipeDetail, arguments: recipe);
+  }
+
   static Future<void> importRecipe(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
@@ -30,22 +46,17 @@ class SharedContentActions {
     );
 
     if (recipeId != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle),
-          ),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle),
       );
-    } else if (context.mounted && viewModel.recipeViewModel.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+    } else if (context.mounted) {
+      // The import path reports most failures by returning null without
+      // setting an error, so waiting for one left the button silent.
+      SnackBarUtils.showFailure(
+        context,
+        what:
             viewModel.recipeViewModel.error ?? context.l10n.sharedImportFailed,
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
       );
     }
   }
@@ -61,16 +72,12 @@ class SharedContentActions {
     if (result != null && context.mounted) {
       if (result.isCollaborative) {
         // Navigate to collaborative menu view
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.sharedConnectingToCollaborativeMenu(
-                sharedMenu.menuTitle,
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            duration: const Duration(seconds: 2),
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.sharedConnectingToCollaborativeMenu(
+            sharedMenu.menuTitle,
           ),
+          duration: const Duration(seconds: 2),
         );
         // Navigate to the realtime menu view
         AppRouter.navigateTo(
@@ -80,23 +87,15 @@ class SharedContentActions {
         );
       } else {
         // Regular menu import
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.sharedMenuImported(sharedMenu.menuTitle),
-            ),
-            backgroundColor: context.butleryColors.success,
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.sharedMenuImported(sharedMenu.menuTitle),
         );
       }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed,
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      SnackBarUtils.showFailure(
+        context,
+        what: viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed,
       );
     }
   }
@@ -138,28 +137,18 @@ class SharedContentActions {
       );
 
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.sharedContentHidden(sharedRecipe.recipeTitle),
-            ),
-            backgroundColor: context.butleryColors.success,
-            action: SnackBarAction(
-              label: context.l10n.commonUndo,
-              onPressed: () =>
-                  viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
-            ),
-          ),
+        SnackBarUtils.showUndo(
+          context,
+          context.l10n.sharedContentHidden(sharedRecipe.recipeTitle),
+          onUndo: () =>
+              viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
         );
       } else if (context.mounted && viewModel.recipeViewModel.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        SnackBarUtils.showFailure(
+          context,
+          what:
               viewModel.recipeViewModel.error ??
-                  context.l10n.sharedCouldNotHideRecipe,
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+              context.l10n.sharedCouldNotHideRecipe,
         );
       }
     }
@@ -202,28 +191,17 @@ class SharedContentActions {
       );
 
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.sharedContentHidden(sharedMenu.menuTitle),
-            ),
-            backgroundColor: context.butleryColors.success,
-            action: SnackBarAction(
-              label: context.l10n.commonUndo,
-              onPressed: () =>
-                  viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
-            ),
-          ),
+        SnackBarUtils.showUndo(
+          context,
+          context.l10n.sharedContentHidden(sharedMenu.menuTitle),
+          onUndo: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
         );
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        SnackBarUtils.showFailure(
+          context,
+          what:
               viewModel.menuViewModel.error ??
-                  context.l10n.sharedCouldNotHideMenu,
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+              context.l10n.sharedCouldNotHideMenu,
         );
       }
     }
@@ -240,13 +218,9 @@ class SharedContentActions {
 
     if (collaborativeListId != null && context.mounted) {
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.sharedJoinedList(sharedShoppingList.listName),
-          ),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.sharedJoinedList(sharedShoppingList.listName),
       );
 
       // AUTO-NAVIGATION: Set collaborative list as active and navigate to unified interface
@@ -278,16 +252,12 @@ class SharedContentActions {
           }
 
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  context.l10n.sharedJoinedListFindInShopping(
-                    sharedShoppingList.listName,
-                  ),
-                ),
-                backgroundColor: context.butleryColors.success,
-                duration: const Duration(seconds: 4),
+            SnackBarUtils.showSuccess(
+              context,
+              context.l10n.sharedJoinedListFindInShopping(
+                sharedShoppingList.listName,
               ),
+              duration: const Duration(seconds: 4),
             );
           }
         } catch (fallbackError) {
@@ -295,33 +265,26 @@ class SharedContentActions {
 
           // Show error to user since both navigation attempts failed
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.sharedJoinedButCouldNotNavigate),
-                backgroundColor: context.butleryColors.warning,
-                duration: const Duration(seconds: 5),
-              ),
+            SnackBarUtils.showWarning(
+              context,
+              context.l10n.sharedJoinedButCouldNotNavigate,
+              duration: const Duration(seconds: 5),
             );
           }
         }
       }
     } else if (collaborativeListId == null && context.mounted) {
       if (viewModel.shoppingViewModel.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        SnackBarUtils.showFailure(
+          context,
+          what:
               viewModel.shoppingViewModel.error ??
-                  context.l10n.sharedCouldNotJoinList,
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+              context.l10n.sharedCouldNotJoinList,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.sharedCouldNotJoinListTryAgain),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.sharedCouldNotJoinListTryAgain,
         );
       }
     }
@@ -363,28 +326,19 @@ class SharedContentActions {
           .dismissSharedShoppingList(sharedShoppingList);
 
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.sharedContentHidden(sharedShoppingList.listName),
-            ),
-            backgroundColor: context.butleryColors.success,
-            action: SnackBarAction(
-              label: context.l10n.commonUndo,
-              onPressed: () => viewModel.shoppingViewModel
-                  .undismissSharedShoppingList(sharedShoppingList),
-            ),
+        SnackBarUtils.showUndo(
+          context,
+          context.l10n.sharedContentHidden(sharedShoppingList.listName),
+          onUndo: () => viewModel.shoppingViewModel.undismissSharedShoppingList(
+            sharedShoppingList,
           ),
         );
       } else if (context.mounted && viewModel.shoppingViewModel.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        SnackBarUtils.showFailure(
+          context,
+          what:
               viewModel.shoppingViewModel.error ??
-                  context.l10n.sharedCouldNotHideShoppingList,
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+              context.l10n.sharedCouldNotHideShoppingList,
         );
       }
     }
@@ -400,7 +354,7 @@ class SharedContentActions {
       title: context.l10n.unshareRecipeTitle,
       message: context.l10n.unshareRecipeConfirm(sharedRecipe.recipeTitle),
       confirmText: context.l10n.unshareButton,
-      icon: Icons.link_off,
+      icon: ButleryIcons.x,
       isDangerous: true,
     );
 
@@ -415,31 +369,17 @@ class SharedContentActions {
       if (!context.mounted) return;
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.l10n.unshareSuccess(sharedRecipe.recipeTitle),
-            ),
-            backgroundColor: context.butleryColors.success,
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.unshareSuccess(sharedRecipe.recipeTitle),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.unshareFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
       }
     } catch (e) {
       AppLogger.error('Failed to unshare recipe', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.unshareFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
       }
     }
   }
@@ -456,7 +396,7 @@ class SharedContentActions {
       title: context.l10n.unshareMenuTitle,
       message: context.l10n.unshareMenuConfirm(sharedMenu.menuTitle),
       confirmText: context.l10n.unshareButton,
-      icon: Icons.link_off,
+      icon: ButleryIcons.x,
       isDangerous: true,
     );
 
@@ -466,19 +406,12 @@ class SharedContentActions {
     if (!context.mounted) return;
 
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.unshareSuccess(sharedMenu.menuTitle)),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.unshareSuccess(sharedMenu.menuTitle),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.unshareFailed),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
     }
   }
 
@@ -496,7 +429,7 @@ class SharedContentActions {
         sharedShoppingList.listName,
       ),
       confirmText: context.l10n.unshareButton,
-      icon: Icons.link_off,
+      icon: ButleryIcons.x,
       isDangerous: true,
     );
 
@@ -508,21 +441,12 @@ class SharedContentActions {
     if (!context.mounted) return;
 
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.unshareSuccess(sharedShoppingList.listName),
-          ),
-          backgroundColor: context.butleryColors.success,
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.unshareSuccess(sharedShoppingList.listName),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.unshareFailed),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showFailure(context, what: context.l10n.unshareFailed);
     }
   }
 }

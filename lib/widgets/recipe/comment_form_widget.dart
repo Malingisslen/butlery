@@ -8,16 +8,22 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/models/media_permission_notice.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Form widget for posting new comments or replies on recipes.
 /// Handles both top-level comments and threaded replies with visual feedback.
@@ -60,6 +66,9 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
   final List<File> _selectedImages = [];
   bool _isUploadingImages = false;
 
+  // Flow 07: what the last pick's photo-library answer leaves to explain.
+  MediaPermissionNotice? _permissionNotice;
+
   late final ImagePickerService _imagePicker;
   late final StorageService _storageService;
 
@@ -100,13 +109,25 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     _draftManager.save(text);
   }
 
-  Future<void> _pickImages() async {
-    if (_atImageCap) return;
+  /// [askAgain] is "Fråga igen" on the notice: the user asked for the
+  /// system prompt, so our explanation is not repeated
+  /// (produktregler.md:683).
+  Future<void> _pickImages({bool askAgain = false}) async {
+    // The notice's Fråga igen stays tappable while a post uploads the list.
+    if (_atImageCap || _isBusy) return;
     final remaining = RecipeComment.maxImageUrls - _selectedImages.length;
-    final picked = await _imagePicker.pickMultipleImages(maxImages: remaining);
-    if (picked.isEmpty || !mounted) return;
+    // Flow 07: explanation before the system prompt (produktregler.md:682).
+    final outcome = await _imagePicker.pickMultipleImagesWithOutcome(
+      maxImages: remaining,
+      rationale: askAgain ? null : mediaRationalePrompt(context),
+    );
+    if (!mounted) return;
     setState(() {
-      _selectedImages.addAll(picked.take(remaining));
+      _permissionNotice = MediaPermissionNotice.after(
+        ImageSource.gallery,
+        outcome.permission,
+      );
+      _selectedImages.addAll(outcome.files.take(remaining));
     });
   }
 
@@ -232,31 +253,31 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
       children: [
         if (socialViewModel.isReplying) ...[
           Container(
-            padding: AppDimensions.paddingAll3,
+            padding: AppDimensions.paddingAll4,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.reply,
+                ButleryIcon(
+                  ButleryIcons.reply,
                   size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.commentReplyingTo,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: socialViewModel.cancelReply,
-                  icon: const Icon(
-                    Icons.close,
+                  icon: const ButleryIcon(
+                    ButleryIcons.x,
                     size: AppDimensions.iconSizeM,
                   ),
                   constraints: const BoxConstraints(),
@@ -275,7 +296,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               displayName: context.l10n.commentYou,
               size: ImageSize.small,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Expanded(
               child: TextField(
                 controller: _controller,
@@ -286,16 +307,16 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                       : context.l10n.commentWriteComment,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+                      AppDimensions.radiusControl,
                     ),
                   ),
-                  contentPadding: AppDimensions.paddingAll3,
+                  contentPadding: AppDimensions.paddingAll4,
                 ),
                 maxLines: 3,
                 minLines: 1,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             VoicePromptButton(
               onTranscript: _onVoiceTranscript,
               enabled: !_isBusy,
@@ -308,16 +329,20 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               IconButton(
                 tooltip: context.l10n.commentAttachImage,
                 onPressed: _isBusy ? null : _pickImages,
-                icon: const Icon(Icons.add_photo_alternate_outlined),
+                icon: const ButleryIcon(ButleryIcons.camera),
               ),
             IconButton(
               onPressed: _canSend ? _onSendPressed : null,
+              // Busy: the plate line in the button's place, never a
+              // spinner (Grafisk manual v6:209).
               icon: _isBusy
-                  ? const LoadingIndicator(
-                      size: AppDimensions.iconSizeS,
-                      strokeWidth: 2,
+                  ? SizedBox(
+                      width: AppDimensions.iconSizeM,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.sendingComment,
+                      ),
                     )
-                  : const Icon(Icons.send),
+                  : const ButleryIcon(ButleryIcons.send),
               style: IconButton.styleFrom(
                 backgroundColor: _canSend
                     ? Theme.of(context).colorScheme.primary
@@ -329,8 +354,20 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             ),
           ],
         ),
+        if (_permissionNotice case final notice?) ...[
+          const SizedBox(height: AppDimensions.space4),
+          // The library is the only source here, and writing it yourself
+          // is offered in photo import (Malin, decision A, 2026-10-07).
+          MediaPermissionNoticeCard(
+            source: notice.source,
+            outcome: notice.outcome,
+            deniedMessage: context.l10n.permPhotosDeniedImage,
+            onAskAgain: () => _pickImages(askAgain: true),
+            onOpenSettings: OsPermissionHelper.openSettings,
+          ),
+        ],
         if (_selectedImages.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           _buildImagePreviewRow(context),
         ],
       ],
@@ -351,7 +388,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
         scrollDirection: Axis.horizontal,
         itemCount: _selectedImages.length,
         separatorBuilder: (_, __) =>
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
         itemBuilder: (context, index) {
           return Stack(
             children: [
@@ -370,14 +407,16 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 child: Semantics(
                   label: context.l10n.a11yCommentRemoveSelectedImage,
                   button: true,
-                  child: InkWell(
-                    onTap: _isBusy ? null : () => _removeImageAt(index),
-                    child: ColoredBox(
-                      color: cs.scrim.withValues(alpha: 0.6),
-                      child: Icon(
-                        Icons.close,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onPrimary,
+                  child: PressUnchanged(
+                    child: InkWell(
+                      onTap: _isBusy ? null : () => _removeImageAt(index),
+                      child: ColoredBox(
+                        color: cs.scrim.withValues(alpha: 0.6),
+                        child: ButleryIcon(
+                          ButleryIcons.x,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onPrimary,
+                        ),
                       ),
                     ),
                   ),

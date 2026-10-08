@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -43,9 +45,27 @@ class ModeratorReviewViewModel extends BaseViewModel {
       },
       onError: (Object err) {
         if (isDisposed) return;
-        setError(err.toString());
+        // The error state names what failed; the raw exception belongs to
+        // the log (content-style-guide.md:89-94, P5-U01). Release the
+        // subscription; [_hasStarted] stays set so a rebuild of the view
+        // (which calls [startListening]) does not re-subscribe behind the
+        // error. Only [retry] opens a fresh one.
+        AppLogger.error('Moderator review stream failed', err);
+        _reportsSub?.cancel();
+        _reportsSub = null;
+        setError(AppLocale.current.moderatorReportsLoadFailed);
       },
     );
+  }
+
+  /// The error state's Försök igen: drop any open subscription and listen
+  /// again from scratch.
+  void retry() {
+    _reportsSub?.cancel();
+    _reportsSub = null;
+    _hasStarted = false;
+    clearError();
+    startListening();
   }
 
   /// Whether the reported content's owner account belongs to a minor.
@@ -93,23 +113,19 @@ class ModeratorReviewViewModel extends BaseViewModel {
     if (anyMinor) notifyListeners();
   }
 
-  Future<void> advance(ContentReport report) async {
-    await executeAsyncVoid(
-      () async {
-        await _reportService.advanceReportStatus(report);
-      },
-      errorPrefix: 'advanceReportStatus',
-    );
-  }
+  /// Moves [report] one step on. Returns false when the write was refused;
+  /// the view then shows the failure as a snackbar (content-style-guide.md
+  /// :87-97), and the list and its load-error state are left alone, so a
+  /// refused action never replaces the queue.
+  Future<bool> advance(ContentReport report) => _act(
+    'Moderator advance failed',
+    () => _reportService.advanceReportStatus(report),
+  );
 
-  Future<void> close(ContentReport report) async {
-    await executeAsyncVoid(
-      () async {
-        await _reportService.closeReport(report);
-      },
-      errorPrefix: 'closeReport',
-    );
-  }
+  Future<bool> close(ContentReport report) => _act(
+    'Moderator close failed',
+    () => _reportService.closeReport(report),
+  );
 
   /// Dispatches the moderator's takedown action for [report]:
   /// - profile → suspend (hide flag, reversible)
@@ -117,17 +133,27 @@ class ModeratorReviewViewModel extends BaseViewModel {
   ///
   /// The dashboard binds a single button to this method; the verb in the
   /// confirmation dialog should reflect [isReversibleAction].
-  Future<void> takeDown(ContentReport report) async {
-    await executeAsyncVoid(
-      () async {
-        if (report.contentType == ContentType.profile) {
-          await _reportService.suspendReportedProfile(report);
-        } else {
-          await _reportService.deleteReportedContent(report);
-        }
-      },
-      errorPrefix: 'takeDown',
-    );
+  Future<bool> takeDown(ContentReport report) => _act(
+    'Moderator takedown failed',
+    () => report.contentType == ContentType.profile
+        ? _reportService.suspendReportedProfile(report)
+        : _reportService.deleteReportedContent(report),
+  );
+
+  /// Runs one moderator action. The service reports a refusal as `false`
+  /// (its safeExecute swallows the exception), so that result is the
+  /// failure; a thrown error counts too. The exception goes to the log only;
+  /// what the user reads is the view's failure snackbar.
+  Future<bool> _act(String logLabel, Future<bool> Function() action) async {
+    if (isDisposed) return false;
+    try {
+      final ok = await action();
+      if (!ok) AppLogger.error(logLabel, 'refused');
+      return ok;
+    } catch (e) {
+      AppLogger.error(logLabel, e);
+      return false;
+    }
   }
 
   /// Whether the takedown action for [report] is reversible (true for

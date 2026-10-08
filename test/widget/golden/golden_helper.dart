@@ -118,8 +118,8 @@ bool get goldensCompareHere => _goldensCompareHere;
 ///    all 4 localization delegates;
 ///  * pinned surface size + device pixel ratio of 1.0, so a given widget
 ///    always lands on the same pixel grid;
-///  * the default test font (Ahem) rather than the app's JosefinSans /
-///    SpaceGrotesk, so glyph shapes don't depend on which fonts resolved;
+///  * the default test font (Ahem) rather than the app's ButlerySans, so
+///    glyph shapes don't depend on which fonts resolved;
 ///  * an image-error filter around the comparison — drops asset-load /
 ///    network-image noise that doesn't affect the pixel output, and lets
 ///    everything else through so a real mismatch still fails the test;

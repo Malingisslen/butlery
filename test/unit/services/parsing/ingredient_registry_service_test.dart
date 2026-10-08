@@ -222,6 +222,25 @@ void main() {
         expect(service.allIngredients.length, firstResult);
       });
 
+      test(
+        'an all-empty load (read denied before sign-in) is retried later',
+        () async {
+          await service.enrichFromFirestore();
+          expect(service.allIngredients, equals(KnownIngredients.all));
+
+          fakeRepo.addGroupIngredients('spice', [
+            _makeIngredient(
+              id: 'firestoreonlyspice',
+              swedish: 'firestoreonlyspice',
+              group: 'spice',
+            ),
+          ]);
+          await service.enrichFromFirestore();
+
+          expect(service.allIngredients, contains('firestoreonlyspice'));
+        },
+      );
+
       test('should gracefully handle Firestore errors', () async {
         fakeRepo.throwOnGetByGroup = true;
 

@@ -262,6 +262,60 @@ void main() {
       expect(restored.schemaVersion, 1);
       expect(restored.entries, isEmpty);
     });
+
+    // BUT-2215: the week's lineage, checked by `firestore.rules`.
+    test('revId and baseRevId round-trip through toFirestore and fromMap', () {
+      final plan = planWith([]).nextRevision().nextRevision();
+      final data = plan.toFirestore();
+      final restored = WeeklyMenuPlan.fromMap(plan.id, data);
+      expect(data['revId'], plan.revId);
+      expect(data['baseRevId'], plan.baseRevId);
+      expect(restored.revId, plan.revId);
+      expect(restored.baseRevId, plan.baseRevId);
+    });
+
+    test('a document without revId reads as null and writes neither key', () {
+      final restored = WeeklyMenuPlan.fromMap('id', {
+        'userId': 'u1',
+        'weekStartDate': '2026-01-05T00:00:00.000Z',
+        'createdAt': '2026-01-05T00:00:00.000Z',
+        'updatedAt': '2026-01-05T00:00:00.000Z',
+        'entries': const [],
+      });
+      expect(restored.revId, isNull);
+      expect(restored.baseRevId, isNull);
+      expect(restored.toFirestore().containsKey('revId'), isFalse);
+      expect(restored.toFirestore().containsKey('baseRevId'), isFalse);
+      expect(
+        WeeklyMenuPlan.empty(userId: 'u1', date: DateTime(2026)).revId,
+        isNull,
+      );
+    });
+
+    test('nextRevision mints a fresh revId, names the old one as its base and '
+        'changes nothing else; copyWith keeps both', () {
+      final base = planWith([
+        entry(DayOfWeek.mon, MealSlot.middag, 'e1'),
+      ]).nextRevision();
+      final next = base.nextRevision();
+      expect(next.revId, isA<String>());
+      expect(next.revId, isNot(base.revId));
+      expect(next.baseRevId, base.revId);
+      expect(next.id, base.id);
+      expect(next.entries, base.entries);
+      expect(next.createdAt, base.createdAt);
+      expect(next.updatedAt, base.updatedAt);
+      final copied = base.copyWith(entries: const []);
+      expect(copied.revId, base.revId);
+      expect(copied.baseRevId, base.baseRevId);
+    });
+
+    test('the first revision of a week without revId names no base', () {
+      final first = planWith([]).nextRevision();
+      expect(first.revId, isNotNull);
+      expect(first.baseRevId, isNull);
+      expect(first.toFirestore().containsKey('baseRevId'), isFalse);
+    });
   });
 
   group('WeeklyMenuPlan per-slot presence (BUT-1611)', () {

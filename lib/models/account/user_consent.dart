@@ -247,3 +247,49 @@ class ConsentPurposes {
     );
   }
 }
+
+/// How a purpose changed in a consent version.
+enum ConsentChangeKind {
+  /// The purpose did not exist before this version.
+  added,
+
+  /// The purpose exists but what it covers changed.
+  changed,
+}
+
+/// One line of "what changed" in a consent version.
+///
+/// "Förnyelse visar vad som ändrats. `needsRenewal` är enbart en
+/// versionsjämförelse, så gränssnittet får inte påstå att något viktigt
+/// hänt utan att säga vad" (produktregler.md:731). Whoever bumps the consent
+/// version adds its lines to `ConsentService.changelog` in the same change
+/// (Q-P6-A18); the sentence shown for each line lives in the l10n files.
+class ConsentChange {
+  const ConsentChange({
+    required this.version,
+    required this.purpose,
+    required this.kind,
+  });
+
+  /// The consent version that made the change.
+  final String version;
+
+  final ConsentPurpose purpose;
+  final ConsentChangeKind kind;
+}
+
+/// Compares two dotted version strings numerically ("1.10.0" > "1.9.0").
+/// A missing or non-numeric part counts as 0.
+int compareConsentVersions(String a, String b) {
+  List<int> parts(String v) =>
+      v.split('.').map((p) => int.tryParse(p.trim()) ?? 0).toList();
+  final pa = parts(a);
+  final pb = parts(b);
+  final length = pa.length > pb.length ? pa.length : pb.length;
+  for (var i = 0; i < length; i++) {
+    final x = i < pa.length ? pa[i] : 0;
+    final y = i < pb.length ? pb[i] : 0;
+    if (x != y) return x.compareTo(y);
+  }
+  return 0;
+}

@@ -30,7 +30,10 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 class InitializationWrapper extends StatelessWidget {
   // CRITICAL: Use GlobalKey to prevent AuthWrapper recreation
@@ -174,7 +177,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
             onRetry: () => _userService.retryLoadProfile(),
           );
         }
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        // Plate line plus text, never a spinner (produktregler.md:163).
+        return Scaffold(
+          body: Center(
+            child: PlateLineMessage(message: context.l10n.loadingProfileBusy),
+          ),
+        );
       }
       if (!profile.hasCompletedOnboarding) {
         AppLogger.debug('AuthWrapper: User needs onboarding');
@@ -201,7 +209,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
 
       AppLogger.debug(
-        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid}',
+        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid.maskedUserId}',
       );
       return KeyedSubtree(
         key: ValueKey(user.uid),
@@ -262,8 +270,12 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
       future: _future,
       builder: (context, snap) {
         if (!snap.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Center(
+              child: PlateLineMessage(
+                message: context.l10n.loadingOnboardingResume,
+              ),
+            ),
           );
         }
         final resolution = snap.data!;
@@ -288,7 +300,10 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
         final cs = Theme.of(ctx).colorScheme;
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(ctx),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +311,7 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
                 Text(
                   l10n.onboardingResumeTitle,
                   style: AppTextStyles.headlineSmall.copyWith(
-                    color: cs.primary,
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
@@ -350,12 +365,15 @@ class _ProfileLoadErrorView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMarginOf(context),
+              vertical: AppDimensions.space16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.error_outline,
+                ButleryIcon(
+                  ButleryIcons.triangleAlert,
                   size: AppDimensions.iconSizeXxl,
                   color: cs.error,
                 ),

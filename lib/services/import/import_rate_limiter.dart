@@ -13,7 +13,9 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// Tracks usage across:
 /// - Basic imports (per-minute, per-hour, per-day)
 /// - LLM operations (enhancement, extraction, vision)
-/// - LLM costs (daily and monthly budgets)
+///
+/// The AI cost ceilings are read from the server's ledger ([ServerLlmCost]),
+/// which this class never writes.
 class ImportRateLimiter extends BaseService {
   @override
   String get serviceName => 'ImportRateLimiter';
@@ -27,9 +29,10 @@ class ImportRateLimiter extends BaseService {
   /// Production keeps the helper's default 1s base.
   final Duration _retryBaseDelay;
 
-  /// In-memory cache of current usage (refreshed on each check)
+  /// In-memory cache of current usage, keyed to the user it was read for.
   UsageLimits? _cachedUsage;
   DateTime? _cacheTimestamp;
+  String? _cachedUserId;
 
   /// Cache duration before refreshing from Firestore
   static const _cacheDuration = Duration(seconds: 30);
@@ -68,7 +71,8 @@ class ImportRateLimiter extends BaseService {
 
       // Check LLM limits if operation requires LLM
       if (operation.requiresLlm) {
-        final llmResult = _checkLlmLimits(usage, operation, now);
+        final cost = await _getServerLlmCost(userId, now);
+        final llmResult = _checkLlmLimits(usage, cost, operation, now);
         if (llmResult != null) {
           return llmResult;
         }
@@ -95,11 +99,8 @@ class ImportRateLimiter extends BaseService {
 
   /// Record a completed import operation.
   ///
-  /// Call this after a successful import to update usage counters.
-  Future<void> recordUsage(
-    ImportOperation operation, {
-    double? llmCost,
-  }) async {
+  /// Call this after an import to update usage counters.
+  Future<void> recordUsage(ImportOperation operation) async {
     final userId = _authRepo.currentUserId;
     if (userId == null) return;
 
@@ -107,14 +108,10 @@ class ImportRateLimiter extends BaseService {
       final now = clock.now();
       final docRef = _getRateLimitDoc(userId);
 
-      // BUT-1415: by the time we record usage the Gemini call has ALREADY been
-      // billed at Google. If this transaction fails transiently (unavailable /
-      // aborted / offline / contention) the spend goes permanently untracked
-      // and the daily/monthly cost ceilings can be silently overrun. Give the
-      // write a small bounded retry on transient Firestore codes. Retrying the
-      // whole read-modify-write is safe: a thrown transaction did NOT commit
-      // (Firestore transactions are atomic), so each attempt re-reads the
-      // latest doc and adds this op's cost exactly once — no double-count.
+      // BUT-1415: a small bounded retry on transient Firestore codes. Retrying
+      // the whole read-modify-write is safe: a thrown transaction did NOT
+      // commit (Firestore transactions are atomic), so each attempt re-reads
+      // the latest doc and counts this op exactly once.
       await RetryHelper.retryWithBackoff(
         () => _firestoreRepo.firestore.runTransaction((transaction) async {
           final doc = await transaction.get(docRef);
@@ -122,13 +119,12 @@ class ImportRateLimiter extends BaseService {
           final usage = UsageLimits.fromFirestore(currentData);
 
           // Calculate updated usage with window resets
-          final updated = _updateUsage(usage, operation, now, llmCost);
+          final updated = _updateUsage(usage, operation, now);
 
-          transaction.set(
-            docRef,
-            updated.toFirestore(),
-            SetOptions(merge: true),
-          );
+          // The whole document, never a merge: the rules admit only the keys
+          // `toFirestore()` writes, and a merge would carry along any other key
+          // already stored and be refused.
+          transaction.set(docRef, updated.toFirestore());
         }),
         maxRetries: 3,
         baseDelay: _retryBaseDelay,
@@ -138,20 +134,16 @@ class ImportRateLimiter extends BaseService {
       // Invalidate cache
       _cachedUsage = null;
       _cacheTimestamp = null;
+      _cachedUserId = null;
 
       AppLogger.debug(
         'ImportRateLimiter: Recorded ${operation.sourceType} import'
         '${operation.requiresLlm ? ' (LLM: ${operation.llmType?.name})' : ''}',
       );
     } catch (e) {
-      // BUT-1415: cost recording failed even after retries. This is a real
-      // cost-tracking gap (the LLM call was already billed), not a benign miss
-      // — log at ERROR with the untracked cost so the ceiling under-count is
-      // visible in monitoring, rather than a swallowed warning.
       AppLogger.error(
-        'ImportRateLimiter: cost recording FAILED after retries — '
-        '${operation.requiresLlm ? 'LLM ' : ''}usage NOT tracked '
-        '(llmCost: ${llmCost ?? 0}); daily/monthly ceiling may under-count: $e',
+        'ImportRateLimiter: usage recording FAILED after retries — '
+        '${operation.requiresLlm ? 'LLM ' : ''}usage NOT tracked: $e',
       );
     }
   }
@@ -198,10 +190,23 @@ class ImportRateLimiter extends BaseService {
         .doc('imports');
   }
 
+  /// The server's AI cost ledger. Read on every AI check, never cached: the
+  /// server writes it after each call.
+  Future<ServerLlmCost> _getServerLlmCost(String userId, DateTime now) async {
+    final doc = await _firestoreRepo.firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userRateLimits)
+        .doc(ServerLlmCost.docId)
+        .get();
+    return ServerLlmCost.fromFirestore(doc.data(), now);
+  }
+
   /// Get current usage, using cache if valid.
   Future<UsageLimits> _getCurrentUsage(String userId) async {
     // Check cache
     if (_cachedUsage != null &&
+        _cachedUserId == userId &&
         _cacheTimestamp != null &&
         clock.now().difference(_cacheTimestamp!) < _cacheDuration) {
       return _cachedUsage!;
@@ -215,6 +220,7 @@ class ImportRateLimiter extends BaseService {
       _cachedUsage = UsageLimits.fromFirestore(doc.data()!);
     }
     _cacheTimestamp = clock.now();
+    _cachedUserId = userId;
 
     return _cachedUsage!;
   }
@@ -293,6 +299,7 @@ class ImportRateLimiter extends BaseService {
   /// Check LLM-specific rate limits.
   RateLimitDenied? _checkLlmLimits(
     UsageLimits usage,
+    ServerLlmCost cost,
     ImportOperation operation,
     DateTime now,
   ) {
@@ -320,49 +327,35 @@ class ImportRateLimiter extends BaseService {
         case null:
           break;
       }
-
-      // Check daily cost limit
-      final estimatedCost = operation.estimatedCost ?? 0.0;
-      if (usage.llmCostToday + estimatedCost > ImportRateLimits.llmCostPerDay) {
-        AppLogger.analytics('rate_limit_denied', {
-          'limitType': 'costDaily',
-          'currentCost': usage.llmCostToday,
-          'limit': ImportRateLimits.llmCostPerDay,
-        });
-        return RateLimitDenied(
-          message: 'Daily AI budget exceeded',
-          retryAfter: _timeUntilWindowReset(
-            usage.dayWindowStart!,
-            const Duration(days: 1),
-            now,
-          ),
-          limitType: LimitType.costDaily,
-          suggestedAction: FallbackAction.skipLlm,
-        );
-      }
     }
 
-    // Check monthly cost limit
-    if (_isInWindow(usage.monthWindowStart, now, const Duration(days: 30))) {
-      final estimatedCost = operation.estimatedCost ?? 0.0;
-      if (usage.llmCostThisMonth + estimatedCost >
-          ImportRateLimits.llmCostPerMonth) {
-        AppLogger.analytics('rate_limit_denied', {
-          'limitType': 'costMonthly',
-          'currentCost': usage.llmCostThisMonth,
-          'limit': ImportRateLimits.llmCostPerMonth,
-        });
-        return RateLimitDenied(
-          message: 'Monthly AI budget exceeded',
-          retryAfter: _timeUntilWindowReset(
-            usage.monthWindowStart!,
-            const Duration(days: 30),
-            now,
-          ),
-          limitType: LimitType.costMonthly,
-          suggestedAction: FallbackAction.skipLlm,
-        );
-      }
+    // The same comparisons, in the same order, as the server's
+    // `checkCostCeiling`.
+    if (cost.costThisMonth >= ImportRateLimits.llmCostPerMonth) {
+      AppLogger.analytics('rate_limit_denied', {
+        'limitType': 'costMonthly',
+        'currentCost': cost.costThisMonth,
+        'limit': ImportRateLimits.llmCostPerMonth,
+      });
+      return RateLimitDenied(
+        message: 'Monthly AI budget exceeded',
+        retryAfter: ServerLlmCost.monthResetAfter(now).difference(now),
+        limitType: LimitType.costMonthly,
+        suggestedAction: FallbackAction.skipLlm,
+      );
+    }
+    if (cost.costToday >= ImportRateLimits.llmCostPerDay) {
+      AppLogger.analytics('rate_limit_denied', {
+        'limitType': 'costDaily',
+        'currentCost': cost.costToday,
+        'limit': ImportRateLimits.llmCostPerDay,
+      });
+      return RateLimitDenied(
+        message: 'Daily AI budget exceeded',
+        retryAfter: ServerLlmCost.dayResetAfter(now).difference(now),
+        limitType: LimitType.costDaily,
+        suggestedAction: FallbackAction.skipLlm,
+      );
     }
 
     return null; // All LLM limits OK
@@ -433,7 +426,6 @@ class ImportRateLimiter extends BaseService {
     UsageLimits current,
     ImportOperation operation,
     DateTime now,
-    double? llmCost,
   ) {
     // Reset windows if expired
     final minuteWindow =
@@ -448,21 +440,20 @@ class ImportRateLimiter extends BaseService {
         _isInWindow(current.dayWindowStart, now, const Duration(days: 1))
         ? current.dayWindowStart
         : now;
-    final monthWindow =
-        _isInWindow(current.monthWindowStart, now, const Duration(days: 30))
-        ? current.monthWindowStart
-        : now;
 
-    // Calculate new counters (reset if window changed)
+    // Calculate new counters (reset if window changed). A model call made
+    // during an import is not a second import (BUT-2239): it moves only the
+    // AI counters.
+    final imports = operation.requiresLlm ? 0 : 1;
     final newMinuteCount = minuteWindow == current.minuteWindowStart
-        ? current.importsThisMinute + 1
-        : 1;
+        ? current.importsThisMinute + imports
+        : imports;
     final newHourCount = hourWindow == current.hourWindowStart
-        ? current.importsThisHour + 1
-        : 1;
+        ? current.importsThisHour + imports
+        : imports;
     final newDayCount = dayWindow == current.dayWindowStart
-        ? current.importsToday + 1
-        : 1;
+        ? current.importsToday + imports
+        : imports;
 
     // LLM counters
     int newEnhancements = dayWindow == current.dayWindowStart
@@ -492,17 +483,6 @@ class ImportRateLimiter extends BaseService {
       }
     }
 
-    // Cost tracking
-    final newDayCost = dayWindow == current.dayWindowStart
-        ? current.llmCostToday + (llmCost ?? 0.0)
-        : (llmCost ?? 0.0);
-    final newMonthCost = monthWindow == current.monthWindowStart
-        ? current.llmCostThisMonth + (llmCost ?? 0.0)
-        : (llmCost ?? 0.0);
-    final newMonthOps = monthWindow == current.monthWindowStart
-        ? current.llmOperationsThisMonth + (operation.requiresLlm ? 1 : 0)
-        : (operation.requiresLlm ? 1 : 0);
-
     return UsageLimits(
       importsThisMinute: newMinuteCount,
       minuteWindowStart: minuteWindow,
@@ -513,10 +493,6 @@ class ImportRateLimiter extends BaseService {
       llmEnhancementsToday: newEnhancements,
       llmExtractionsToday: newExtractions,
       llmVisionToday: newVision,
-      llmCostToday: newDayCost,
-      llmCostThisMonth: newMonthCost,
-      llmOperationsThisMonth: newMonthOps,
-      monthWindowStart: monthWindow,
     );
   }
 }

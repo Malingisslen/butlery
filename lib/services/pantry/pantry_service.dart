@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/pantry/pantry_previous_version.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -130,12 +131,121 @@ class PantryService extends BaseService {
     );
   }
 
-  Future<void> updateItem(String userId, PantryItem item) async {
+  /// Saves an edited item, writing only the fields that differ from
+  /// [previous] (produktregler.md:105, :142). Without [previous] every
+  /// editable field is written, but a missing amount still never wipes a
+  /// known one (produktregler.md:148).
+  ///
+  /// With [previous], the values it replaces are kept for Återställ
+  /// (BUT-2140) and returned; without it there is nothing to keep, and the
+  /// result is null, as it is when nothing was written.
+  Future<PantryPreviousVersion?> updateItem(
+    String userId,
+    PantryItem item, {
+    PantryItem? previous,
+  }) async {
     _validateInput(item.ingredientName, item.quantity);
-    await executeServiceOperation<void>(
-      () => _pantryRepository.update(userId, item),
+    final changes = previous == null
+        ? item.editableFields()
+        : item.changesFrom(previous);
+    if (changes.isEmpty) return null;
+    final written = await executeServiceOperation<bool>(
+      () async {
+        await _pantryRepository.updateFields(
+          userId,
+          item.id,
+          changes,
+          before: previous,
+        );
+        return true;
+      },
       operationName: 'updateItem',
+      defaultValue: false,
     );
+    if (written != true || previous == null) return null;
+    return PantryPreviousVersion(
+      fields: previous.storedValues(changes.keys),
+      at: clock.now(),
+    );
+  }
+
+  /// Återställ (BUT-2140): puts [item]'s previous values back and keeps the
+  /// values they replace as the new previous version, in one update, so the
+  /// restore can itself be restored. Returns the item as it is now stored.
+  Future<PantryItem> restorePrevious(String userId, PantryItem item) async {
+    final restored = item.withPreviousRestored(clock.now());
+    final kept = item.previous;
+    if (restored == null || kept == null || kept.fields.isEmpty) {
+      throw StateError('restorePrevious: no previous version');
+    }
+    final written = await executeServiceOperation<bool>(
+      () async {
+        await _pantryRepository.updateFields(
+          userId,
+          item.id,
+          kept.restoreChanges,
+          before: item,
+        );
+        return true;
+      },
+      operationName: 'restorePrevious',
+    );
+    if (written != true) {
+      throw StateError('restorePrevious failed');
+    }
+    return restored.copyWith(updatedBy: userId);
+  }
+
+  /// Changes a known amount by [delta] — a relative change, never a new
+  /// total (produktregler.md:146). An item without an amount ("har hemma")
+  /// has nothing to count from, so it is left as it is. Returns whether the
+  /// change was written; false also for a zero [delta] and a failed write.
+  Future<bool> adjustQuantity(
+    String userId,
+    PantryItem item,
+    double delta,
+  ) async {
+    if (item.quantity == null || delta == 0) return false;
+    final written = await executeServiceOperation<bool>(
+      () async {
+        await _pantryRepository.adjustQuantity(userId, item.id, delta);
+        return true;
+      },
+      operationName: 'adjustQuantity',
+      defaultValue: false,
+    );
+    return written ?? false;
+  }
+
+  /// Q5-02 = A (produktbeslut 2026-09-24): a row without an amount ("har
+  /// hemma") takes a bought [amount] in [unit]. The amount is sent as a
+  /// relative change (produktregler.md:146): the store's increment starts a
+  /// missing amount at the delta, so two purchases that land on the same
+  /// row at once add up instead of one overwriting the other. The unit is
+  /// written first; if the amount then fails, the row is still "har hemma".
+  /// Returns whether both were written; false for a zero or negative
+  /// [amount], a row that already has an amount, and a failed write.
+  Future<bool> fillUnknownQuantity(
+    String userId,
+    PantryItem item,
+    double amount,
+    String unit,
+  ) async {
+    if (item.quantity != null || amount <= 0) return false;
+    final written = await executeServiceOperation<bool>(
+      () async {
+        if (item.unit != unit) {
+          await _pantryRepository.updateFields(userId, item.id, {
+            'unit': unit,
+          });
+        }
+        await _pantryRepository.adjustQuantity(userId, item.id, amount);
+        return true;
+      },
+      operationName: 'fillUnknownQuantity',
+      defaultValue: false,
+    );
+    return written ?? false;
   }
 
   Future<void> removeItem(String userId, String itemId) async {
@@ -225,14 +335,15 @@ class PantryService extends BaseService {
     return result ?? const [];
   }
 
-  void _validateInput(String name, double quantity) {
+  /// A null [quantity] is "har hemma" without an amount and is valid.
+  void _validateInput(String name, double? quantity) {
     if (name.trim().isEmpty) {
       throw ValidationException(
         'Ingredient name cannot be empty',
         field: 'ingredientName',
       );
     }
-    if (quantity <= 0) {
+    if (quantity != null && quantity <= 0) {
       throw ValidationException(
         'Quantity must be positive',
         field: 'quantity',

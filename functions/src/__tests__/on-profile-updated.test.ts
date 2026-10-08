@@ -367,13 +367,57 @@ void (async () => {
       },
     },
     {
+      // BUT-2151: live menus carry the same owner and last-editor name pair.
+      name: "a rename reaches the live menus in realtime_resources",
+      fn: async () => {
+        const fake = makeFakeDb({
+          [Collections.realtimeResources]: [
+            {
+              id: `${UID}_m1`,
+              data: {
+                ownerId: UID,
+                ownerDisplayName: "Anna",
+                lastEditedBy: UID,
+                lastEditedByDisplayName: "Anna",
+              },
+            },
+            {
+              id: `${OTHER}_m2`,
+              data: {
+                ownerId: OTHER,
+                ownerDisplayName: "Keep",
+                lastEditedBy: UID,
+                lastEditedByDisplayName: "Anna",
+              },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Anna", "Annika", null, null);
+
+        const [mine, theirs] = fake.store[Collections.realtimeResources];
+        assertEqual(mine.data.ownerDisplayName, "Annika", "own menu owner name");
+        assertEqual(
+          mine.data.lastEditedByDisplayName,
+          "Annika",
+          "own menu last-editor name"
+        );
+        assertEqual(theirs.data.ownerDisplayName, "Keep", "other owner kept");
+        assertEqual(
+          theirs.data.lastEditedByDisplayName,
+          "Annika",
+          "last-editor name on someone else's menu"
+        );
+      },
+    },
+    {
       name: "avatar-only change skips the name-only collections",
       fn: async () => {
         const fake = makeFakeDb({
           [Collections.messages]: [
             { id: "m1", data: { senderId: UID, senderDisplayName: "Anna" } },
           ],
-          [Collections.realtimeRecipes]: [
+          [Collections.realtimeResources]: [
             { id: "r1", data: { ownerId: UID, ownerDisplayName: "Anna" } },
           ],
           [Collections.groupInvitations]: [
@@ -426,7 +470,7 @@ void (async () => {
         );
         // Name-only collections must not be touched at all.
         assertEqual(
-          fake.store[Collections.realtimeRecipes][0].data.ownerDisplayName,
+          fake.store[Collections.realtimeResources][0].data.ownerDisplayName,
           "Anna",
           "realtime owner name untouched on avatar-only change"
         );
@@ -474,7 +518,7 @@ void (async () => {
       name: "dual-field overlap doc gets BOTH owner and last-editor names",
       fn: async () => {
         const fake = makeFakeDb({
-          [Collections.realtimeRecipes]: [
+          [Collections.realtimeResources]: [
             // owner == last-editor == UID (the common overlap case).
             {
               id: "both",
@@ -494,7 +538,7 @@ void (async () => {
 
         await propagateProfileUpdate(fake.db, UID, "Old", "New", "av", "av");
 
-        const rows = fake.store[Collections.realtimeRecipes];
+        const rows = fake.store[Collections.realtimeResources];
         const both = rows.find((d) => d.id === "both")!;
         assertEqual(both.data.ownerDisplayName, "New", "overlap owner name");
         assertEqual(

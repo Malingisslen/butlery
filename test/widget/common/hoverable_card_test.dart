@@ -207,4 +207,29 @@ void main() {
       const Duration(milliseconds: 200),
     );
   });
+
+  // B83-1 = A (BUT-2183): the card's InkWell must not paint the theme's hover
+  // tint over the raised hover decoration, and a mouse click (pressed while
+  // hovered) must still show surface.raised.
+  group('inkOverlay', () {
+    const cs = ColorScheme.light(surfaceContainerHighest: Color(0xFFE6EAD9));
+    final overlay = HoverableCard.inkOverlay(cs);
+
+    test('hovered is transparent, so the decoration alone shows hover', () {
+      expect(overlay.resolve({WidgetState.hovered}), Colors.transparent);
+    });
+
+    test('pressed, alone or while hovered, is surface.raised', () {
+      expect(overlay.resolve({WidgetState.pressed}), const Color(0xFFE6EAD9));
+      expect(
+        overlay.resolve({WidgetState.pressed, WidgetState.hovered}),
+        const Color(0xFFE6EAD9),
+      );
+    });
+
+    test('focus and rest resolve to null (InkWell defaults)', () {
+      expect(overlay.resolve({WidgetState.focused}), isNull);
+      expect(overlay.resolve({}), isNull);
+    });
+  });
 }

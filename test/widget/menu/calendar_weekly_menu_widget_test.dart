@@ -26,6 +26,7 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
@@ -35,8 +36,11 @@ import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
 import '../golden/golden_helper.dart';
 
-class _MockWeeklyMenuPlanService extends Mock
-    implements WeeklyMenuPlanService {}
+class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
@@ -124,7 +128,7 @@ void main() {
     setUp(() {
       service = _MockWeeklyMenuPlanService();
       recipeService = _MockUnifiedRecipeService();
-      when(() => service.save(any())).thenAnswer((_) async {});
+      when(() => service.saveRevision(any())).thenAnswer((_) async {});
     });
 
     testWidgets('renders the empty-hint state (arrow + StateWidget.empty) when '
@@ -151,7 +155,7 @@ void main() {
 
       // Empty-hint path: up-arrow icon (nudges user to the prompt above)
       // + StateWidget.empty with the l10n "Ingen planering än" title.
-      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.arrowUp), findsOneWidget);
       expect(find.byType(StateWidget), findsOneWidget);
       expect(find.text('Ingen planering än'), findsOneWidget);
     });
@@ -303,11 +307,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The overflow tray header (l10n) should be present.
-      expect(find.text('Recept som inte fick plats'), findsOneWidget);
-      // Each overflow recipe title appears (lowercased) as a chip.
-      expect(find.text('överflöd ett'), findsOneWidget);
-      expect(find.text('överflöd två'), findsOneWidget);
+      // P5-U23: the tray counts in dishes (produktregler.md:206): nothing
+      // was placed and two did not fit.
+      expect(find.text('0 av 2 rätter placerade'), findsOneWidget);
+      // Each overflow recipe is named as written, never lower-cased
+      // (produktregler.md:892).
+      expect(find.text('Överflöd Ett'), findsOneWidget);
+      expect(find.text('Överflöd Två'), findsOneWidget);
     });
 
     testWidgets('today badge renders only when the visible week matches the '
@@ -460,15 +466,15 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Nav arrows use Icons.chevron_left / chevron_right.
-          await tester.tap(find.byIcon(Icons.chevron_right));
+          // Nav arrows use ButleryIcons.chevronLeft / chevron_right.
+          await tester.tap(find.byIcon(ButleryIcons.chevronRight));
           await tester.pumpAndSettle();
           expect(vm.currentWeekStart, nextWeek.weekStartDate);
 
           // Going back twice crosses the anchor to prevWeek.
-          await tester.tap(find.byIcon(Icons.chevron_left));
+          await tester.tap(find.byIcon(ButleryIcons.chevronLeft));
           await tester.pumpAndSettle();
-          await tester.tap(find.byIcon(Icons.chevron_left));
+          await tester.tap(find.byIcon(ButleryIcons.chevronLeft));
           await tester.pumpAndSettle();
           expect(vm.currentWeekStart, prevWeek.weekStartDate);
         },
@@ -509,12 +515,12 @@ void main() {
           // header nor its copy/select buttons are present.
           await pumpPopulated(tester, plan: _plan(weekStart: weekStart));
           expect(
-            find.byIcon(Icons.copy_all_outlined),
+            find.byIcon(ButleryIcons.copy),
             findsNothing,
             reason: 'copy is meaningless with nothing to copy',
           );
           expect(
-            find.byIcon(Icons.checklist_outlined),
+            find.byIcon(ButleryIcons.listCheck),
             findsNothing,
             reason: 'select is meaningless with nothing to select',
           );
@@ -539,8 +545,8 @@ void main() {
               ],
             ),
           );
-          expect(find.byIcon(Icons.copy_all_outlined), findsOneWidget);
-          expect(find.byIcon(Icons.checklist_outlined), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.copy), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.listCheck), findsOneWidget);
         },
       );
 
@@ -569,7 +575,7 @@ void main() {
           expect(find.byType(SelectionActionBar), findsNothing);
 
           // Tap the select (checklist) button -> beginSelection().
-          await tester.tap(find.byIcon(Icons.checklist_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.listCheck));
           await tester.pumpAndSettle();
           expect(vm.selectionMode, isTrue);
           expect(find.byType(SelectionActionBar), findsOneWidget);
@@ -580,7 +586,7 @@ void main() {
           );
 
           // Tap cancel (close) in the action bar -> clearSelection().
-          await tester.tap(find.byIcon(Icons.close));
+          await tester.tap(find.byIcon(ButleryIcons.x));
           await tester.pumpAndSettle();
           expect(vm.selectionMode, isFalse);
           expect(find.byType(WeekNavHeader), findsOneWidget);
@@ -610,12 +616,12 @@ void main() {
           );
 
           // Enter selection mode.
-          await tester.tap(find.byIcon(Icons.checklist_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.listCheck));
           await tester.pumpAndSettle();
 
           // Before tapping: the cell shows an EMPTY checkbox.
-          expect(find.byIcon(Icons.check_box_outline_blank), findsOneWidget);
-          expect(find.byIcon(Icons.check_box), findsNothing);
+          expect(find.byIcon(ButleryIcons.square), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.checkSquare), findsNothing);
 
           // Tap the assigned cell (its lowercased title surfaces the recipe).
           await tester.tap(find.text('pasta'));
@@ -624,8 +630,8 @@ void main() {
           // The entry is now selected: filled checkbox, VM agrees, count is 1.
           expect(vm.isSelected('mon-m'), isTrue);
           expect(vm.selectedCount, 1);
-          expect(find.byIcon(Icons.check_box), findsOneWidget);
-          expect(find.byIcon(Icons.check_box_outline_blank), findsNothing);
+          expect(find.byIcon(ButleryIcons.checkSquare), findsOneWidget);
+          expect(find.byIcon(ButleryIcons.square), findsNothing);
 
           // Navigation must NOT have fired — the tap toggled instead.
           verifyNever(() => recipeService.getRecipeById(any()));
@@ -660,7 +666,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Enter selection mode and select the one populated cell.
-        await tester.tap(find.byIcon(Icons.checklist_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.listCheck));
         await tester.pumpAndSettle();
         await tester.tap(find.text('pasta'));
         await tester.pumpAndSettle();
@@ -704,7 +710,7 @@ void main() {
 
           // The action bar's move button (drive_file_move_outline) opens the
           // "Flytta till" target sheet.
-          await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+          await tester.tap(find.byIcon(ButleryIcons.move));
           await tester.pumpAndSettle();
           expect(
             find.text('Flytta till'),
@@ -754,7 +760,7 @@ void main() {
 
           await pumpSelectedOneEntry(tester, plan: plan);
 
-          await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+          await tester.tap(find.byIcon(ButleryIcons.move));
           await tester.pumpAndSettle();
           await tester.tap(find.text('mån · lunch'));
           await tester.pumpAndSettle();
@@ -774,7 +780,7 @@ void main() {
           final plan = oneEntryWeek();
           final vm = await pumpSelectedOneEntry(tester, plan: plan);
 
-          await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+          await tester.tap(find.byIcon(ButleryIcons.move));
           await tester.pumpAndSettle();
           expect(find.text('Flytta till'), findsOneWidget);
 
@@ -842,7 +848,7 @@ void main() {
 
       testWidgets('a REFUSED clear shows no success snackbar', (tester) async {
         await pumpWeekWithOneEntry(tester);
-        when(() => service.save(any())).thenThrow(Exception('denied'));
+        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
         await tester.tap(find.byTooltip('Rensa veckan'));
         await tester.pumpAndSettle();
@@ -854,7 +860,7 @@ void main() {
       // that never shows the snackbar at all.
       testWidgets('a successful clear does show it', (tester) async {
         await pumpWeekWithOneEntry(tester);
-        when(() => service.save(any())).thenAnswer((_) async {});
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
         await tester.tap(find.byTooltip('Rensa veckan'));
         await tester.pumpAndSettle();
@@ -899,8 +905,8 @@ void main() {
         final householdRepo = _MockHouseholdRepository();
         final household = Household.create(creatorId: 'test-user-123');
         when(
-          () => householdRepo.getForUser(any()),
-        ).thenAnswer((_) async => [household]);
+          () => householdRepo.getActiveForUser(any()),
+        ).thenAnswer((_) async => household);
         TestServiceLocator.registerSingleton<HouseholdRepository>(
           householdRepo,
         );
@@ -996,7 +1002,7 @@ void main() {
         final handle = tester.ensureSemantics();
         // BUT-1988: presence publishes from the resident plan and SAVES, so
         // the refusal to stage is the save's.
-        when(() => service.save(any())).thenThrow(Exception('denied'));
+        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester);
 
@@ -1008,7 +1014,7 @@ void main() {
       // that never shows the notice at all.
       testWidgets('a successful presence save does show it', (tester) async {
         final handle = tester.ensureSemantics();
-        when(() => service.save(any())).thenAnswer((_) async {});
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester);
 
@@ -1025,7 +1031,7 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(() => service.save(any())).thenThrow(Exception('denied'));
+        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
@@ -1037,7 +1043,7 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(() => service.save(any())).thenAnswer((_) async {});
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
@@ -1099,7 +1105,7 @@ void main() {
 
         await pumpOneEntryWeek(tester);
 
-        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.copy));
         await tester.pumpAndSettle();
         // Confirm dialog header (l10n weeklyMenuCopyToNextConfirmTitle).
         expect(find.text('Kopiera veckan?'), findsOneWidget);
@@ -1132,7 +1138,7 @@ void main() {
 
         await pumpOneEntryWeek(tester);
 
-        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.tap(find.byIcon(ButleryIcons.copy));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Fortsätt'));
         await tester.pumpAndSettle();
@@ -1157,7 +1163,7 @@ void main() {
 
           await pumpOneEntryWeek(tester);
 
-          await tester.tap(find.byIcon(Icons.copy_all_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.copy));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Fortsätt'));
           await tester.pumpAndSettle();
@@ -1176,7 +1182,7 @@ void main() {
         (tester) async {
           await pumpOneEntryWeek(tester);
 
-          await tester.tap(find.byIcon(Icons.copy_all_outlined));
+          await tester.tap(find.byIcon(ButleryIcons.copy));
           await tester.pumpAndSettle();
           expect(find.text('Kopiera veckan?'), findsOneWidget);
 
@@ -1232,7 +1238,7 @@ void main() {
 
       final service = _MockWeeklyMenuPlanService();
       final recipeService = _MockUnifiedRecipeService();
-      when(() => service.save(any())).thenAnswer((_) async {});
+      when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
       // Use a week in the past so the "today" badge doesn't render (the
       // badge path uses DateTime.now() and would make the golden

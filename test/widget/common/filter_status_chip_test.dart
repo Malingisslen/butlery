@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/filter_status_chip.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
@@ -48,13 +49,13 @@ void main() {
     expect(find.text('0 valda'), findsOneWidget);
   });
 
-  testWidgets('uses the Icons.tune leading icon', (tester) async {
+  testWidgets('uses the ButleryIcons.filter leading icon', (tester) async {
     await tester.pumpWidget(
       _wrap(
         const FilterStatusChip(filterParts: ['x'], selectedCount: 1),
       ),
     );
-    expect(find.byIcon(Icons.tune), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.filter), findsOneWidget);
   });
 
   testWidgets('container takes full width (double.infinity)', (tester) async {
@@ -69,7 +70,7 @@ void main() {
     expect(container.constraints?.maxWidth, double.infinity);
   });
 
-  testWidgets('decoration uses rounded border + secondary-container tint', (
+  testWidgets('decoration is a rounded raised chip with no border', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -82,8 +83,13 @@ void main() {
     );
     final deco = container.decoration! as BoxDecoration;
     expect(deco.borderRadius, isNotNull);
-    expect(deco.border, isA<Border>());
-    expect(deco.color, isNotNull);
+    expect(deco.border, isNull);
+    expect(
+      deco.color,
+      Theme.of(
+        tester.element(find.byType(FilterStatusChip)),
+      ).colorScheme.surfaceContainerHighest,
+    );
   });
 
   testWidgets('count text styled with the primary color', (tester) async {
@@ -106,6 +112,6 @@ void main() {
     );
     // No render exceptions.
     expect(tester.takeException(), isNull);
-    expect(find.byIcon(Icons.tune), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.filter), findsOneWidget);
   });
 }

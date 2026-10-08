@@ -1,10 +1,13 @@
 // lib/views/social/shared_with_me/shared_content_tab_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
 /// Handles tab navigation between recipes, menus, and shared shopping lists with unread counts.
@@ -23,18 +26,24 @@ class SharedContentTabBar {
         margin: AppDimensions.screenPadding,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: TabBar(
+          // Tabs carry the canonical ring (ButleryTab), never a focus tint
+          // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+          overlayColor: ButleryControlFocus.withoutFocusTint(null),
           controller: tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
           tabs: [
-            Tab(
+            ButleryTab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.restaurant, size: AppDimensions.iconSizeM),
+                  const ButleryIcon(
+                    ButleryIcons.utensils,
+                    size: AppDimensions.iconSizeM,
+                  ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
                     context.l10n.sharedTabRecipes(
@@ -51,12 +60,12 @@ class SharedContentTabBar {
                 ],
               ),
             ),
-            Tab(
+            ButleryTab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.calendar_month,
+                  const ButleryIcon(
+                    ButleryIcons.calendar,
                     size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
@@ -75,12 +84,12 @@ class SharedContentTabBar {
                 ],
               ),
             ),
-            Tab(
+            ButleryTab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.shopping_cart,
+                  const ButleryIcon(
+                    ButleryIcons.shoppingCart,
                     size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
@@ -102,7 +111,7 @@ class SharedContentTabBar {
           ],
           indicator: BoxDecoration(
             color: Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           labelColor: Theme.of(context).colorScheme.onPrimary,
           unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -114,10 +123,10 @@ class SharedContentTabBar {
 
   static Widget _buildUnreadBadge(BuildContext context, int count) {
     return Container(
-      padding: AppDimensions.paddingSymmetric6x2,
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.error,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
         '$count',

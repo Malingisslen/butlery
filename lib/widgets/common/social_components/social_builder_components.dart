@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -23,7 +25,7 @@ class SocialBuilderComponents {
     bool loading = false,
   }) {
     return SocialFacade.socialActionButton(
-      icon: icon ?? Icons.add,
+      icon: icon ?? ButleryIcons.plus,
       label: text,
       onPressed: onPressed,
       backgroundColor: backgroundColor,
@@ -138,24 +140,24 @@ class SocialBuilderComponents {
       'friends': {
         'value': friendCount,
         'label': context.l10n.shareTabFriends,
-        'icon': Icons.people,
+        'icon': ButleryIcons.users,
       },
       'groups': {
         'value': groupCount,
         'label': context.l10n.shareTabGroups,
-        'icon': Icons.group,
+        'icon': ButleryIcons.users,
       },
       if (sharedRecipeCount != null)
         'shared_recipes': {
           'value': sharedRecipeCount,
           'label': context.l10n.socialSharedRecipes,
-          'icon': Icons.restaurant,
+          'icon': ButleryIcons.utensils,
         },
       if (sharedMenuCount != null)
         'shared_menus': {
           'value': sharedMenuCount,
           'label': context.l10n.socialSharedMenus,
-          'icon': Icons.menu_book,
+          'icon': ButleryIcons.utensils,
         },
     };
 
@@ -181,18 +183,18 @@ class SocialBuilderComponents {
       'active': {
         'value': activeCollaborations,
         'label': context.l10n.socialActiveCollaborations,
-        'icon': Icons.sync,
+        'icon': ButleryIcons.refreshCw,
       },
       'members': {
         'value': totalMembers,
         'label': context.l10n.socialTotalMembers,
-        'icon': Icons.people,
+        'icon': ButleryIcons.users,
       },
       if (totalEdits != null)
         'edits': {
           'value': totalEdits,
           'label': context.l10n.socialChanges,
-          'icon': Icons.edit,
+          'icon': ButleryIcons.pencil,
         },
     };
 
@@ -231,24 +233,24 @@ class SocialBuilderComponents {
       'sent': {
         'value': sentInvitations,
         'label': context.l10n.socialSent,
-        'icon': Icons.send,
+        'icon': ButleryIcons.send,
       },
       'received': {
         'value': receivedInvitations,
         'label': context.l10n.socialReceived,
-        'icon': Icons.inbox,
+        'icon': ButleryIcons.inbox,
       },
       if (acceptedInvitations != null)
         'accepted': {
           'value': acceptedInvitations,
           'label': context.l10n.socialAccepted,
-          'icon': Icons.check_circle,
+          'icon': ButleryIcons.circleCheck,
         },
       if (pendingInvitations != null)
         'pending': {
           'value': pendingInvitations,
           'label': context.l10n.socialPending,
-          'icon': Icons.pending,
+          'icon': ButleryIcons.hourglass,
         },
     };
 
@@ -315,7 +317,7 @@ class SocialBuilderComponents {
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, size: AppDimensions.iconSizeM),
+            ButleryIcon(icon, size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingSm),
           ],
           Expanded(
@@ -339,8 +341,8 @@ class SocialBuilderComponents {
           if (onAction != null && actionText != null)
             TextButton.icon(
               onPressed: onAction,
-              icon: Icon(
-                actionIcon ?? Icons.arrow_forward,
+              icon: ButleryIcon(
+                actionIcon ?? ButleryIcons.arrowRight,
                 size: AppDimensions.iconSizeS,
               ),
               label: Text(actionText),
@@ -372,7 +374,7 @@ class SocialBuilderComponents {
           onTap: onTap,
           borderRadius:
               borderRadius ??
-              BorderRadius.circular(AppDimensions.borderRadius8),
+              BorderRadius.circular(AppDimensions.radiusControl),
           child: Container(
             padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: border != null
@@ -380,7 +382,7 @@ class SocialBuilderComponents {
                     border: border,
                     borderRadius:
                         borderRadius ??
-                        BorderRadius.circular(AppDimensions.borderRadius8),
+                        BorderRadius.circular(AppDimensions.radiusControl),
                   )
                 : null,
             child: child,
@@ -400,7 +402,7 @@ class SocialBuilderComponents {
             elevation: elevation ?? AppDimensions.elevationLow,
             borderRadius:
                 borderRadius ??
-                BorderRadius.circular(AppDimensions.borderRadius8),
+                BorderRadius.circular(AppDimensions.radiusControl),
             child: semanticLabel == null
                 ? inkwell
                 : Semantics(
@@ -465,7 +467,10 @@ class SocialBuilderComponents {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const LoadingIndicator(),
+          SizedBox(
+            width: PlateLineMessage.maxWidth / 2,
+            child: PlateLine(semanticLabel: text),
+          ),
           if (text != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             Text(

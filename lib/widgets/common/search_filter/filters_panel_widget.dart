@@ -5,10 +5,14 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
 /// Animated filters panel with all filter groups
 class FiltersPanelWidget extends StatelessWidget {
@@ -80,7 +84,7 @@ class FiltersPanelWidget extends StatelessWidget {
     final maxFilterHeight = screenHeight * 0.5; // Max 50% of screen height
 
     return AnimatedSize(
-      duration: AppDimensions.animationDurationMedium,
+      duration: AppMotion.micro.respectingMotion(context),
       curve: Curves.easeInOut,
       child: showFilters
           ? DecoratedBox(
@@ -150,8 +154,8 @@ class FiltersPanelWidget extends StatelessWidget {
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
                               onPressed: onManageFoodPreferences,
-                              icon: const Icon(
-                                Icons.tune,
+                              icon: const ButleryIcon(
+                                ButleryIcons.filter,
                                 size: AppDimensions.iconSizeAction,
                               ),
                               label: Text(
@@ -179,8 +183,8 @@ class FiltersPanelWidget extends StatelessWidget {
                         Center(
                           child: TextButton.icon(
                             onPressed: onClearAllFilters,
-                            icon: const Icon(
-                              Icons.clear_all,
+                            icon: const ButleryIcon(
+                              ButleryIcons.listX,
                               size: AppDimensions.iconSizeAction,
                             ),
                             label: Text(

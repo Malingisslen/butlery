@@ -19,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -58,13 +59,13 @@ void main() {
             controller: TextEditingController(),
             labelText: 'Titel',
             hintText: 'Skriv ett namn',
-            prefixIcon: Icons.label_outline,
+            prefixIcon: ButleryIcons.tag,
           ),
         ),
       );
       expect(find.text('Titel'), findsOneWidget);
       expect(find.text('Skriv ett namn'), findsOneWidget);
-      expect(find.byIcon(Icons.label_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.tag), findsOneWidget);
     });
 
     testWidgets('controller seeds initial text', (tester) async {
@@ -293,7 +294,7 @@ void main() {
         ),
       );
       expect(find.text('Namn'), findsOneWidget);
-      expect(find.byIcon(Icons.label_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.tag), findsOneWidget);
     });
 
     testWidgets('custom labelText + prefixIcon overrides defaults', (
@@ -307,13 +308,13 @@ void main() {
               context: ctx,
               controller: TextEditingController(),
               labelText: 'Gruppnamn',
-              prefixIcon: Icons.group,
+              prefixIcon: ButleryIcons.users,
             ),
           ),
         ),
       );
       expect(find.text('Gruppnamn'), findsOneWidget);
-      expect(find.byIcon(Icons.group), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.users), findsOneWidget);
     });
 
     testWidgets('maxLength=50 by default', (tester) async {
@@ -351,7 +352,7 @@ void main() {
       );
       expect(find.text('Beskrivning'), findsOneWidget);
       expect(find.text('Valfri beskrivning...'), findsOneWidget);
-      expect(find.byIcon(Icons.description_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.file), findsOneWidget);
     });
 
     testWidgets('description is optional → empty validates true', (
@@ -408,7 +409,7 @@ void main() {
       );
       expect(find.text('Antal'), findsOneWidget);
       expect(find.text('Ange antal...'), findsOneWidget);
-      expect(find.byIcon(Icons.numbers), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
     });
 
     testWidgets('keyboard is decimal-numeric and the separator is a comma', (
@@ -570,7 +571,7 @@ void main() {
       );
       expect(find.text('E-post'), findsOneWidget);
       expect(find.text('din@email.se'), findsOneWidget);
-      expect(find.byIcon(Icons.email_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.mail), findsOneWidget);
     });
 
     testWidgets('keyboardType is emailAddress', (tester) async {
@@ -681,7 +682,7 @@ void main() {
       );
       expect(find.text('URL'), findsOneWidget);
       expect(find.text('https://exempel.se'), findsOneWidget);
-      expect(find.byIcon(Icons.link), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.link), findsOneWidget);
     });
 
     testWidgets('invalid URL content → "Ogiltig URL"', (tester) async {
@@ -757,7 +758,7 @@ void main() {
         ),
       );
       expect(find.text('Lösenord'), findsOneWidget);
-      expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
     });
 
     testWidgets('empty → "Lösenord krävs"', (tester) async {
@@ -821,7 +822,7 @@ void main() {
       );
       expect(find.text('Sök'), findsOneWidget);
       expect(find.text('Skriv för att söka...'), findsOneWidget);
-      expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.search), findsOneWidget);
       // No validation → always valid even when empty.
       expect(formKey.currentState!.validate(), isTrue);
     });
@@ -864,7 +865,7 @@ void main() {
         ),
       );
       expect(find.text('Telefonnummer'), findsOneWidget);
-      expect(find.byIcon(Icons.phone_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.smartphone), findsOneWidget);
       expect(
         formKey.currentState!.validate(),
         isTrue,

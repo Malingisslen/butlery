@@ -80,10 +80,11 @@ class HttpContentFetcher {
 
   /// Fetches HTML content from URL with timeout and size limit.
   ///
-  /// Returns the decoded HTML string, or `null` on failure.
+  /// Returns the decoded page, or the HTTP status that refused it, or neither
+  /// when the request never got an answer.
   /// Throws [HttpFetchException] with a user-facing message when the
   /// response exceeds the 5 MB size limit.
-  Future<String?> fetchHtmlWithTimeout(String url) async {
+  Future<HtmlFetch> fetchHtml(String url) async {
     try {
       final uri = Uri.parse(url);
 
@@ -91,14 +92,14 @@ class HttpContentFetcher {
         AppLogger.warning(
           'HttpContentFetcher: Blocked non-HTTP scheme: ${uri.scheme}',
         );
-        return null;
+        return const HtmlFetch.unreached();
       }
 
       if (isBlockedHost(uri.host)) {
         AppLogger.warning(
           'HttpContentFetcher: Blocked request to private/internal host: ${uri.host}',
         );
-        return null;
+        return const HtmlFetch.unreached();
       }
 
       // DNS rebinding protection: resolve hostname and check resolved IPs
@@ -110,7 +111,7 @@ class HttpContentFetcher {
               'HttpContentFetcher: DNS resolved to blocked IP '
               '${addr.address} for host ${uri.host}',
             );
-            return null;
+            return const HtmlFetch.unreached();
           }
         }
       } catch (e) {
@@ -118,7 +119,7 @@ class HttpContentFetcher {
         AppLogger.warning(
           'HttpContentFetcher: DNS resolution failed for ${uri.host}: $e',
         );
-        return null;
+        return const HtmlFetch.unreached();
       }
 
       // BUT-427: when the caller didn't inject a client, build a pinned one.
@@ -145,7 +146,7 @@ class HttpContentFetcher {
             .timeout(_fetchTimeout);
 
         if (streamedResponse.statusCode != 200) {
-          return null;
+          return HtmlFetch.status(streamedResponse.statusCode);
         }
 
         // Check Content-Length header first for early rejection
@@ -166,7 +167,7 @@ class HttpContentFetcher {
           streamedResponse.headers['content-type'],
           bytes,
         );
-        return _decodeBytes(bytes, charset);
+        return HtmlFetch.ok(_decodeBytes(bytes, charset));
       } finally {
         if (shouldCloseClient) {
           client.close();
@@ -178,9 +179,14 @@ class HttpContentFetcher {
       AppLogger.warning(
         'HttpContentFetcher: Failed to fetch HTML from $url: $e',
       );
-      return null;
+      return const HtmlFetch.unreached();
     }
   }
+
+  /// The page body on a 200, null on anything else. Callers that need to
+  /// know WHY a page could not be read use [fetchHtml].
+  Future<String?> fetchHtmlWithTimeout(String url) async =>
+      (await fetchHtml(url)).html;
 
   /// Reads bytes from a stream, aborting if the total exceeds [_maxResponseBytes].
   Future<Uint8List> _readBytesWithLimit(http.ByteStream stream) async {
@@ -358,4 +364,19 @@ class HttpFetchException implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// The outcome of one page fetch: the body, or why there is none.
+class HtmlFetch {
+  /// The decoded page on a 200; null otherwise.
+  final String? html;
+
+  /// The HTTP status when the server answered with something other than 200.
+  final int? statusCode;
+
+  const HtmlFetch.ok(String this.html) : statusCode = null;
+  const HtmlFetch.status(int this.statusCode) : html = null;
+
+  /// Blocked before sending, DNS failure, timeout or connection error.
+  const HtmlFetch.unreached() : html = null, statusCode = null;
 }

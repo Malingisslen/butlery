@@ -6,11 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
@@ -90,28 +93,32 @@ void main() {
       bool allowMultipleCategories = true,
       String? title,
       String? subtitle,
+      ThemeData? theme,
     }) {
       return createLocalizedTestApp(
         wrapInScaffold: false,
-        child: Scaffold(
-          body: MultiProvider(
-            providers: [
-              Provider<UnifiedFriendsService>.value(
-                value: mockFriendsService,
-              ),
-              ChangeNotifierProvider<FriendsViewModel>.value(
-                value: mockFriendsViewModel,
-              ),
-            ],
-            child: SizedBox(
-              height: 600,
-              child: SingleChildScrollView(
-                child: FriendCategoryManager(
-                  selectedFriendIds: selectedFriendIds,
-                  onSelectionChanged: onSelectionChanged ?? (_) {},
-                  allowMultipleCategories: allowMultipleCategories,
-                  title: title,
-                  subtitle: subtitle,
+        child: Theme(
+          data: theme ?? AppTheme.lightTheme,
+          child: Scaffold(
+            body: MultiProvider(
+              providers: [
+                Provider<UnifiedFriendsService>.value(
+                  value: mockFriendsService,
+                ),
+                ChangeNotifierProvider<FriendsViewModel>.value(
+                  value: mockFriendsViewModel,
+                ),
+              ],
+              child: SizedBox(
+                height: 600,
+                child: SingleChildScrollView(
+                  child: FriendCategoryManager(
+                    selectedFriendIds: selectedFriendIds,
+                    onSelectionChanged: onSelectionChanged ?? (_) {},
+                    allowMultipleCategories: allowMultipleCategories,
+                    title: title,
+                    subtitle: subtitle,
+                  ),
                 ),
               ),
             ),
@@ -119,6 +126,14 @@ void main() {
         ),
       );
     }
+
+    BoxDecoration decorationAround(WidgetTester tester, Finder of) => tester
+        .widgetList<Container>(
+          find.ancestor(of: of, matching: find.byType(Container)),
+        )
+        .map((c) => c.decoration)
+        .whereType<BoxDecoration>()
+        .firstWhere((d) => d.color != null);
 
     group('Loading States', () {
       testWidgets('shows loading indicator when services are loading', (
@@ -130,7 +145,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('shows loading when only categories service loading', (
@@ -145,7 +160,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
 
       testWidgets('shows loading when only friends VM loading', (
@@ -160,7 +175,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(PlateLine), findsOneWidget);
       });
     });
 
@@ -179,6 +194,48 @@ void main() {
 
         expect(find.text('Test error message'), findsOneWidget);
       });
+
+      // B83-2 = A: an error notice is the surface.tint.danger fill with no
+      // border (it is #2F4437 in dark, where the text carries the kind), and
+      // its text is text.danger.onRaised, which keeps AA on that tint.
+      for (final (name, theme, tint, textColor) in [
+        (
+          'light',
+          AppTheme.lightTheme,
+          const Color(0xFFF2DDD6),
+          const Color(0xFF9C3B23),
+        ),
+        (
+          'dark',
+          AppTheme.darkTheme,
+          const Color(0xFF2F4437),
+          const Color(0xFFE5A08A),
+        ),
+      ]) {
+        testWidgets('$name: the error box is surface.tint.danger, no border', (
+          WidgetTester tester,
+        ) async {
+          mockFriendsService.setFriendsState(
+            isLoading: false,
+            error: 'Test error message',
+          );
+          mockFriendsViewModel.setFriendsState(isLoading: false, friends: []);
+
+          await tester.pumpWidget(createTestWidget(theme: theme));
+          await tester.pump();
+
+          final box = decorationAround(
+            tester,
+            find.text('Test error message'),
+          );
+          expect(box.color, tint);
+          expect(box.border, isNull);
+          expect(
+            tester.widget<Text>(find.text('Test error message')).style?.color,
+            textColor,
+          );
+        });
+      }
     });
 
     group('Empty States', () {
@@ -194,7 +251,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.people_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
 
       testWidgets('shows categories section only when friends are empty', (
@@ -267,7 +324,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.category_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget);
       });
     });
 
@@ -307,7 +364,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.people_outline), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
     });
 
@@ -334,6 +391,17 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(capturedSelection, containsAll(['user1', 'user2']));
+        // BUT-2155: the chosen chip sits on surface.raised, so its label is
+        // ink, not the theme's paper label for the ink fill.
+        final label = DefaultTextStyle.of(
+          tester.element(
+            find.descendant(
+              of: find.widgetWithText(FilterChip, 'Familjen'),
+              matching: find.text('Familjen'),
+            ),
+          ),
+        ).style;
+        expect(label.color, AppTheme.lightTheme.colorScheme.onSurface);
       });
 
       testWidgets('deselects category on second tap', (
@@ -527,9 +595,53 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.byIcon(Icons.group), findsOneWidget);
-        expect(find.byIcon(Icons.clear), findsOneWidget);
+        // The summary's group glyph and the list's people glyph are both the
+        // Butlery users glyph (P7-U08), so the summary adds a second one.
+        expect(find.byIcon(ButleryIcons.users), findsNWidgets(2));
+        expect(find.byIcon(ButleryIcons.x), findsOneWidget);
       });
+
+      // BUT-2183: surface.raised fill and a border.subtle edge, not the old
+      // 10 % / 30 % tints of onSurface.
+      for (final (name, theme, raised, edge) in [
+        (
+          'light',
+          AppTheme.lightTheme,
+          const Color(0xFFE6EAD9),
+          const Color(0xFFCCD1C2),
+        ),
+        (
+          'dark',
+          AppTheme.darkTheme,
+          const Color(0xFF2F4437),
+          const Color(0x2EF5F4ED),
+        ),
+      ]) {
+        testWidgets('$name: the summary is surface.raised with border.subtle', (
+          WidgetTester tester,
+        ) async {
+          mockFriendsService.setFriendsState(
+            isLoading: false,
+            categoriesList: [],
+          );
+          mockFriendsViewModel.setFriendsState(
+            isLoading: false,
+            friends: testFriends,
+          );
+
+          await tester.pumpWidget(
+            createTestWidget(
+              selectedFriendIds: ['user1', 'user2'],
+              theme: theme,
+            ),
+          );
+          await tester.pump();
+
+          final box = decorationAround(tester, find.byIcon(ButleryIcons.x));
+          expect(box.color, raised);
+          expect((box.border! as Border).top.color, edge);
+        });
+      }
 
       testWidgets('hides summary when no friends selected', (
         WidgetTester tester,
@@ -546,7 +658,8 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.group), findsNothing);
+        // Only the list's people glyph; no summary glyph (see above).
+        expect(find.byIcon(ButleryIcons.users), findsOneWidget);
       });
 
       testWidgets('clear button resets all selections', (
@@ -571,8 +684,8 @@ void main() {
         );
         await tester.pump();
 
-        // Tap the clear button (TextButton.icon with Icons.clear)
-        await tester.tap(find.byIcon(Icons.clear));
+        // Tap the clear button (TextButton.icon with ButleryIcons.x)
+        await tester.tap(find.byIcon(ButleryIcons.x));
         await tester.pump();
 
         expect(capturedSelection, isEmpty);

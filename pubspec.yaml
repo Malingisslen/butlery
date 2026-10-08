@@ -21,6 +21,7 @@ dependencies:
 
   # ==================== FIREBASE & BACKEND ====================
   firebase_core: ^4.7.0        # Updated for CVE-2025-0838 fix
+  firebase_core_web: ^3.9.0    # Local test mode wires the Auth emulator through its service registry (lib/core/bootstrap/emulator/auth_emulator_web.dart)
   firebase_auth: ^6.4.0        # Updated for security patches
   cloud_firestore: ^6.3.0      # Updated for CVE-2024-7254 fix
   firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
@@ -162,6 +163,10 @@ dev_dependencies:
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
   sembast: ^3.8.5+2
+  # sqflite: test/widget/views/recipe_detail/fullscreen_image_failed_test.dart
+  # sets its database factory (already a transitive dependency via
+  # flutter_cache_manager).
+  sqflite: ^2.4.2
 
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).
@@ -180,26 +185,41 @@ flutter:
     - assets/legal/
     - assets/data/
     - assets/illustrations/
-    - assets/illustrations/arta/
     - assets/seasonal/
+    # B96-2: the locked logo lockup SVGs (light + dark), vendored
+    # byte-identical from the design system. ButleryLockup embeds the same
+    # text; test/widget/common/brand/butlery_lockup_test.dart checks both.
+    - assets/brand/
+    # P7-U08: the Butlery icon family masters and their inventory, copied
+    # byte-identical from the design system (B-02). ButleryIcons embeds the
+    # same text; test/widget/common/icons/butlery_icons_test.dart checks both.
+    - assets/icons/
+    # OFL 1.1 condition 2: the notices and licence must reach whoever gets the
+    # font. The binaries are bundled through `fonts:` below; these texts are
+    # read by LicensesView (Settings → About Butlery → Licences).
+    - assets/fonts/OFL-1.1.txt
+    - assets/fonts/THIRD_PARTY_NOTICES.txt
 
-  # UI Redesign Fonts
-  # - JosefinSans: Headers, navigation (geometric, elegant, vintage feel)
-  # - SpaceGrotesk: Body text (clean, readable sans-serif)
+  # Canonical design-system font (design freeze 04f7f59, Butlery Sans 0.626).
+  # ButlerySans is the single family: headers and body both use it, with
+  # weight and size carrying the hierarchy. See FONT-VERSION.txt in the design
+  # system. Licence: SIL OFL 1.1 — assets/fonts/OFL-1.1.txt and
+  # assets/fonts/THIRD_PARTY_NOTICES.txt ship with the binaries. The two legacy
+  # families and their licences were retired in package 7: nothing drew with
+  # them.
   fonts:
-    - family: JosefinSans
+    - family: ButlerySans
       fonts:
-        - asset: assets/fonts/JosefinSans-Regular.ttf
-        - asset: assets/fonts/JosefinSans-SemiBold.ttf
+        - asset: assets/fonts/ButlerySans-0.626-Regular.ttf
+        - asset: assets/fonts/ButlerySans-0.626-Italic.ttf
+          style: italic
+        - asset: assets/fonts/ButlerySans-0.626-Semibold.ttf
           weight: 600
-        - asset: assets/fonts/JosefinSans-Bold.ttf
-          weight: 700
-    - family: SpaceGrotesk
-      fonts:
-        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
-        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/SpaceGrotesk-SemiBold.ttf
+        - asset: assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf
           weight: 600
-        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
+          style: italic
+        - asset: assets/fonts/ButlerySans-0.626-Bold.ttf
           weight: 700
+        - asset: assets/fonts/ButlerySans-0.626-BoldItalic.ttf
+          weight: 700
+          style: italic

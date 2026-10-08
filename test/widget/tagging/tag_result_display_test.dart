@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
@@ -45,7 +46,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Degraded warning uses warning_amber icon
-      expect(find.byIcon(Icons.warning_amber), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
     });
 
     testWidgets(
@@ -67,7 +68,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Retag banner has an update icon
-        expect(find.byIcon(Icons.update), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.refreshCw), findsOneWidget);
 
         // Find and tap the update button
         final updateButton = find.byType(TextButton);
@@ -91,7 +92,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Draft warning uses info_outline icon
-      expect(find.byIcon(Icons.info_outline), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.info), findsAtLeastNWidgets(1));
     });
 
     testWidgets('showCoverage: false hides coverage section', (tester) async {
@@ -110,7 +111,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // No analytics icon (coverage section header)
-      expect(find.byIcon(Icons.analytics_outlined), findsNothing);
+      expect(find.byIcon(ButleryIcons.barChart), findsNothing);
     });
 
     testWidgets('coverage section visible when showCoverage: true', (
@@ -130,7 +131,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.analytics_outlined), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.barChart), findsOneWidget);
       expect(find.text('80%'), findsOneWidget);
     });
 
@@ -156,10 +157,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Chevron indicates tappable
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.chevronRight), findsOneWidget);
 
       // Tap the unknown ingredients row
-      await tester.tap(find.byIcon(Icons.warning_amber_rounded));
+      await tester.tap(find.byIcon(ButleryIcons.triangleAlert));
       expect(tapped, isTrue);
     });
 
@@ -185,7 +186,7 @@ void main() {
 
       // Only gluten badge should be shown (mjölk and ägg filtered out)
       // AllergenStatusBadge renders check_circle_outline for FREE
-      expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     });
 
     // BUT-1895 item 3. Dropping UNKNOWN from the detail view is a decided call
@@ -246,7 +247,7 @@ void main() {
             'without this control the UNKNOWN case above would pass against a '
             'row that had stopped drawing anything',
       );
-      expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     });
 
     testWidgets('AllergenDisclaimer always renders', (tester) async {

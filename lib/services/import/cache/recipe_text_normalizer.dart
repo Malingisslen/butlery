@@ -1,17 +1,14 @@
 /// Shared recipe text normalization primitives.
 ///
 /// Extracted verbatim from [ContentFingerprint] (plan decision 3 / condition
-/// C2) so that BOTH the live GlobalRecipeCache fingerprint and the new
-/// CanonicalPoolKey build on one normalization core. This file contains ONLY
-/// the base (cache-compatible) logic — the pooled-ratings "strengthened"
+/// C2) so that [ContentFingerprint] and CanonicalPoolKey build on one
+/// normalization core. This file contains ONLY the base logic — the
+/// pooled-ratings "strengthened"
 /// transforms (diacritic folding, OCR digit repair, hashtag stripping) live on
-/// the CanonicalPoolKey path alone and must NEVER be added here, or they would
-/// silently change the persisted cache fingerprint (see
-/// content_fingerprint_golden_test.dart, which fails on any such drift).
+/// the CanonicalPoolKey path alone and must NEVER be added here.
 ///
 /// Behavior-preserving extraction: the constants, regexes, and method bodies
-/// are moved unchanged. Do not "improve" them here without treating it as a
-/// cache-invalidating change.
+/// are moved unchanged.
 library;
 
 import 'package:butlery/utils/text/swedish_word_boundary.dart';
@@ -119,8 +116,7 @@ class RecipeTextNormalizer {
   static final leadingNumbersRe = RegExp(r'^\s*\d+[\s,./]*\d*\s*');
   // ASCII `\b` here is assessed and deliberate (BUT-1713): no member of
   // [approximateWords] starts or ends with å/ä/ö, so neither the missing- nor
-  // the phantom-boundary failure can fire, and re-bounding it would move the
-  // persisted fingerprint a second time for no behaviour change.
+  // the phantom-boundary failure can fire.
   static final approximateWordsRe = RegExp(
     '\\b(${approximateWords.join('|')})\\b',
   );

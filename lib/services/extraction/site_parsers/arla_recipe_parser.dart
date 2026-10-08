@@ -9,7 +9,6 @@
 /// - Dairy product recommendations
 /// - Equipment recommendations
 
-import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
@@ -25,10 +24,11 @@ class ArlaRecipeParser extends RecipeSiteParser {
   String get siteName => 'Arla';
 
   @override
-  Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
+  Map<String, dynamic> enhanceRecipe(
+    Map<String, dynamic> recipe,
+    Document doc,
+  ) {
     try {
-      final doc = html_parser.parse(html);
-
       final difficulty = _extractArlaDifficulty(doc);
       if (difficulty != null) {
         recipe['difficulty'] = difficulty;
@@ -144,10 +144,8 @@ class ArlaRecipeParser extends RecipeSiteParser {
   }
 
   @override
-  Map<String, dynamic>? extractWithCssSelectors(String html) {
+  Map<String, dynamic>? extractWithCssSelectors(Document doc) {
     try {
-      final doc = html_parser.parse(html);
-
       // Arla.se uses various CSS classes/selectors for recipe content
       final title = _extractTitle(doc);
       final description = _extractDescription(doc);
@@ -199,32 +197,10 @@ class ArlaRecipeParser extends RecipeSiteParser {
           .toList();
     }
 
-    // Clean instruction formatting
     if (recipe['recipeInstructions'] is List) {
-      // Flatten HowToSection first — its steps sit in `itemListElement`, and
-      // the filter below keeps only maps carrying a top-level `text`, so
-      // without this every step on such a page is dropped (BUT-2020).
-      final instructions = flattenRecipeInstructions(
-        recipe['recipeInstructions'],
-      );
-      recipe['recipeInstructions'] = instructions
-          .map((inst) {
-            if (inst is String) {
-              return cleanSwedishText(inst);
-            } else if (inst is Map && inst['text'] != null) {
-              return {
-                ...inst,
-                'text': cleanSwedishText(inst['text'].toString()),
-              };
-            }
-            return inst;
-          })
-          .where(
-            (inst) => inst is String
-                ? inst.isNotEmpty
-                : inst is Map && inst['text'] != null,
-          )
-          .toList();
+      recipe['recipeInstructions'] = recipeInstructionTexts(
+        recipe['recipeInstructions'] as List,
+      ).map(cleanSwedishText).where((step) => step.isNotEmpty).toList();
     }
 
     return recipe;
@@ -302,14 +278,36 @@ class ArlaRecipeParser extends RecipeSiteParser {
       }
     }
 
+    if (ingredients.isEmpty) ingredients.addAll(_extractIngredientTable(doc));
     return ingredients;
   }
 
-  List<Map<String, String>> _extractInstructions(Document doc) {
-    final instructions = <Map<String, String>>[];
+  /// BUT-2020: arla.se lists ingredients as table rows, the name in a `<th>`
+  /// and the amount in the `<td>` after it. The page carries the table once
+  /// per layout, so only the first wrap is read.
+  List<String> _extractIngredientTable(Document doc) {
+    final wrap = doc.querySelector('.c-recipe__ingredients-inner-wrap');
+    final rows = (wrap ?? doc.documentElement)?.querySelectorAll(
+      '.c-recipe__ingredients-group tr',
+    );
+    final ingredients = <String>[];
+    for (final row in rows ?? const <Element>[]) {
+      final name = (row.querySelector('th')?.text.trim()).orEmpty();
+      if (name.isEmpty) continue;
+      final amount = (row.querySelector('td')?.text.trim()).orEmpty();
+      ingredients.add(
+        cleanSwedishText(amount.isEmpty ? name : '$amount $name'),
+      );
+    }
+    return ingredients;
+  }
+
+  List<String> _extractInstructions(Document doc) {
+    final instructions = <String>[];
 
     final selectors = [
       '.recipe-steps li',
+      '.c-recipe__instructions-step',
       '.instructions ol li',
       '.recipe-instructions li',
       '.arla-instructions li',
@@ -319,17 +317,9 @@ class ArlaRecipeParser extends RecipeSiteParser {
     for (final selector in selectors) {
       final elements = doc.querySelectorAll(selector);
       if (elements.isNotEmpty) {
-        int stepNumber = 1;
         for (final element in elements) {
           final text = element.text.trim();
-          if (text.isNotEmpty) {
-            instructions.add({
-              '@type': 'HowToStep',
-              'text': cleanSwedishText(text),
-              'position': stepNumber.toString(),
-            });
-            stepNumber++;
-          }
+          if (text.isNotEmpty) instructions.add(cleanSwedishText(text));
         }
 
         // If we found instructions with this selector, stop

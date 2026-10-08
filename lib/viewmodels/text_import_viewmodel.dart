@@ -16,13 +16,6 @@
 /// textImportViewModel.updateRecipePortions(4);
 /// textImportViewModel.addIngredientToRecipe('1 msk socker');
 /// textImportViewModel.addInstructionToRecipe('3. Servera med sylt och grädde');
-/// // Complete import workflow
-/// final importSuccess = await textImportViewModel.importAndSave();
-/// if (importSuccess) {
-///   // Recipe successfully imported and saved
-/// } else {
-///   // Handle error: textImportViewModel.error
-/// }
 /// // Text analysis and suggestions
 /// final suggestions = textImportViewModel.getInputSuggestions();
 /// for (final suggestion in suggestions) {
@@ -46,6 +39,8 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 
 /// Comprehensive text import ViewModel providing advanced text-to-recipe conversion through ImportManager coordination.
 /// Specializes in text-based recipe importing from various sources including social media, OCR, manual input, and copied content.
@@ -111,9 +106,9 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     _parsedRecipes.clear();
 
     // BUT-960 + BUT-1040: drive isLoading/isParsing manually for the whole
-    // Cloud Function round-trip — the social-media view binds its spinner and
+    // parse — the social-media view binds its spinner and
     // its double-tap guard to `isParsing` (== isLoading), so the parse MUST
-    // flip it true the way the old parseTextToRecipe/executeAsync path did.
+    // flip it true.
     // A bare executeAsyncVoid would also work for the loading state, but it
     // collapses every thrown message to a generic error, losing the distinct
     // 60s-timeout copy this finding requires — so we manage state by hand and
@@ -127,9 +122,9 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       // paste to one block, so the single-recipe path is behaviourally
       // unchanged — parsedRecipe still drives every existing consumer.
       //
-      // BUT-960: parse is a Cloud Function round-trip; a 60s client timeout
+      // BUT-960: a 60s client timeout
       // ensures a server-side hang surfaces errorImportTimeout instead of an
-      // endless spinner (mirrors parseTextToRecipe).
+      // endless spinner.
       final result = await importManager
           .autoParseMulti(inputText.trim())
           .timeout(
@@ -140,13 +135,17 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       final parsed = result.successfulRecipes;
 
       if (parsed.isEmpty) {
-        setError(AppLocale.current.errorImportFailed);
+        final denied = result.results
+            .map((r) => r.rateLimitDenied)
+            .nonNulls
+            .firstOrNull;
+        setError(
+          denied?.swedishMessage ?? AppLocale.current.errorImportFailed,
+        );
         return false;
       }
 
-      // Preserve the prior source-URL attribution: the old single-recipe path
-      // applied `sourceUrl` to the parsed recipe, so carry it across every
-      // recipe in the batch here too.
+      // Preserve the prior source-URL attribution.
       final url = sourceUrl;
       final recipes = url == null
           ? parsed
@@ -159,6 +158,11 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       // Multiple → still seed parsedRecipe with the first so single-recipe
       // getters/consumers stay non-null, but the view routes to the picker.
       setParsedRecipe(recipes.first);
+      // BUT-2280: a heirloom scan from the photo screen belongs to the one
+      // recipe parsed from it; the multi-recipe picker saves no scan.
+      if (recipes.length == 1) {
+        ServiceLocator.tryGet<HeirloomBridge>()?.bindTo(recipes.first.id);
+      }
       return true;
     } catch (e) {
       // The timeout throws its own localized copy; everything else collapses to
@@ -173,29 +177,6 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     } finally {
       setLoading(false);
     }
-  }
-
-  /// Completes comprehensive import workflow with text parsing, validation, and recipe saving.
-  /// Returns true if complete import process succeeds, false if any step fails.
-  /// Performs complete text import workflow including text validation, parsing,
-  /// recipe validation, and saving with comprehensive error handling and state management.
-  /// **Complete Import Process:**
-  /// 1. Text input validation and parsing viability checks
-  /// 2. Text-to-recipe parsing through ImportManager
-  /// 3. Recipe data validation ensuring completeness
-  /// 4. Recipe saving to collection with error handling
-  /// **Usage Example:**
-  /// ```dart
-  /// textImportViewModel.updateInputText('Recipe content...');
-  /// final importSuccess = await textImportViewModel.importAndSave();
-  /// if (importSuccess) {
-  ///   // Recipe successfully imported and saved
-  /// } else {
-  ///   // Handle error: textImportViewModel.error
-  /// }
-  /// ```
-  Future<bool> importAndSave() async {
-    return await completeImport();
   }
 
   /// BUT-1040: save the recipes the user ticked in the multi-recipe picker.

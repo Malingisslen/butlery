@@ -28,6 +28,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
@@ -111,7 +113,7 @@ void main() {
       await tester.pump();
 
       // Find the close icon inside the chip and tap it.
-      final closeIcon = find.byIcon(Icons.close);
+      final closeIcon = find.byIcon(ButleryIcons.x);
       expect(closeIcon, findsOneWidget);
       await tester.tap(closeIcon);
       await tester.pump();
@@ -170,6 +172,27 @@ void main() {
 
       expect(find.text('Relaterade recept'), findsOneWidget);
       expect(find.text('Pastasås'), findsOneWidget);
+    });
+  });
+
+  group('RelatedRecipesSection placeholder', () {
+    testWidgets('a photo-less thumbnail draws the vegetable at the shared '
+        'placeholder opacity', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesSection(
+            related: [_recipe(id: 'r2', title: 'Pastasås')],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        tester
+            .widget<VegetableIllustration>(find.byType(VegetableIllustration))
+            .opacity,
+        0.8,
+      );
     });
   });
 

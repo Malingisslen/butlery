@@ -6,6 +6,8 @@ import 'package:butlery/models/admin/metrics/explanations.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// A small "i" button that teaches one metric: tapping it opens a dialog with
 /// the metric's what / how / why (from the [explanations] registry). The
@@ -18,7 +20,7 @@ class AdminMetricInfoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return IconButton(
-      icon: const Icon(Icons.info_outline),
+      icon: const ButleryIcon(ButleryIcons.info),
       iconSize: 18,
       visualDensity: VisualDensity.compact,
       color: cs.outline,

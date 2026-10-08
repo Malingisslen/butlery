@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Dialog shown when user hits a rate limit during import.
 ///
@@ -49,9 +52,9 @@ class RateLimitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: Icon(
+      icon: ButleryIcon(
         _getIconForLimitType(rateLimitResult.limitType),
-        color: context.butleryColors.warning,
+        color: context.modeColors.warning,
         size: AppDimensions.iconSizeXxl,
       ),
       title: Text(_getTitleForLimitType(context, rateLimitResult.limitType)),
@@ -103,19 +106,17 @@ class RateLimitDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: context.butleryColors.warning.withValues(
-          alpha: AppDimensions.opacityVeryLight,
-        ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: context.modeColors.surfaceTintWarning,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.timer_outlined,
-            color: context.butleryColors.warning,
+          ButleryIcon(
+            ButleryIcons.clock,
+            color: AppModeColors.textWarning(Theme.of(context).brightness),
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               timeText,
@@ -136,7 +137,7 @@ class RateLimitDialog extends StatelessWidget {
     if (_isLlmLimit(rateLimitResult.limitType) && onTryWithoutAi != null) {
       actions.add(
         _ActionTile(
-          icon: Icons.auto_fix_off_outlined,
+          icon: ButleryIcons.file,
           title: context.l10n.dialogImportWithoutAi,
           subtitle: context.l10n.dialogUsesSimpleExtraction,
           onTap: () {
@@ -151,7 +152,7 @@ class RateLimitDialog extends StatelessWidget {
     if (onManualImport != null) {
       actions.add(
         _ActionTile(
-          icon: Icons.edit_outlined,
+          icon: ButleryIcons.pencil,
           title: context.l10n.dialogManualImport,
           subtitle: context.l10n.dialogMarkIngredientsYourself,
           onTap: () {
@@ -175,7 +176,7 @@ class RateLimitDialog extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         ...actions,
       ],
     );
@@ -192,15 +193,15 @@ class RateLimitDialog extends StatelessWidget {
     switch (type) {
       case LimitType.perMinute:
       case LimitType.perHour:
-        return Icons.speed_outlined;
+        return ButleryIcons.zap;
       case LimitType.perDay:
-        return Icons.today_outlined;
+        return ButleryIcons.calendar;
       case LimitType.llmDaily:
       case LimitType.llmMonthly:
-        return Icons.smart_toy_outlined;
+        return ButleryIcons.sparkles;
       case LimitType.costDaily:
       case LimitType.costMonthly:
-        return Icons.attach_money_outlined;
+        return ButleryIcons.barChart;
     }
   }
 
@@ -241,45 +242,48 @@ class _ActionTile extends StatelessWidget {
     return Semantics(
       label: title,
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingM),
-          decoration: BoxDecoration(
-            border: Border.all(color: cs.outlineVariant),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: cs.primary,
-                size: AppDimensions.iconSizeL,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.bodyBold,
-                    ),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              border: Border.all(color: cs.outlineVariant),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            ),
+            child: Row(
+              children: [
+                ButleryIcon(
+                  icon,
+                  color: cs.onSurface,
+                  size: AppDimensions.iconSizeL,
                 ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: cs.onSurfaceVariant,
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingM),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.bodyBold,
+                      ),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ButleryIcon(
+                  ButleryIcons.chevronRight,
+                  color: cs.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),

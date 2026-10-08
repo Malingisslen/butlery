@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import '../../../infrastructure/helpers/ink_fill.dart';
 
 void main() {
   setUp(() async {
@@ -82,11 +85,11 @@ void main() {
 
         // Assert
         // UI Redesign: restaurant_menu icon removed per mockup
-        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+        expect(find.byIcon(ButleryIcons.utensils), findsNothing);
         expect(find.text('Portioner:'), findsOneWidget);
         expect(find.text('$originalPortions'), findsOneWidget);
-        expect(find.byIcon(Icons.remove), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.minus), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('does not render ingredients (handled by caller)', (
@@ -146,7 +149,7 @@ void main() {
 
         // Step 1: Verify text and icon exist (we know these work)
         expect(find.text('Konvertera amerikanska enheter'), findsOneWidget);
-        expect(find.byIcon(Icons.language), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.globe), findsOneWidget);
 
         // Step 2: Check if the condition is working by tapping the text
         await tester.tap(find.text('Konvertera amerikanska enheter'));
@@ -212,7 +215,7 @@ void main() {
         );
 
         // Tap add button
-        await tester.tap(find.byIcon(Icons.add));
+        await tester.tap(find.byIcon(ButleryIcons.plus));
         await tester.pump();
 
         // Assert
@@ -235,7 +238,7 @@ void main() {
         );
 
         // Tap remove button
-        await tester.tap(find.byIcon(Icons.remove));
+        await tester.tap(find.byIcon(ButleryIcons.minus));
         await tester.pump();
 
         // Assert
@@ -255,7 +258,7 @@ void main() {
         );
 
         // Assert - Production uses InkWell with Icon, not IconButton
-        final removeIcon = find.byIcon(Icons.remove);
+        final removeIcon = find.byIcon(ButleryIcons.minus);
         expect(removeIcon, findsOneWidget);
 
         // Find the InkWell containing the remove icon
@@ -282,7 +285,7 @@ void main() {
         );
 
         // Assert - Production uses InkWell with Icon, not IconButton
-        final addIcon = find.byIcon(Icons.add);
+        final addIcon = find.byIcon(ButleryIcons.plus);
         expect(addIcon, findsOneWidget);
 
         // Find the InkWell containing the add icon
@@ -427,18 +430,31 @@ void main() {
         expect(find.text('Skalat från 4 till 2 portioner'), findsOneWidget);
       });
 
-      testWidgets('shows animated scale changes', (WidgetTester tester) async {
-        // This tests that the animation parameter is properly used
+      // BUT-2205: the button's own fill used to sit above the ink layer, so
+      // a pressed button showed nothing.
+      testWidgets('a pressed portion button shows the step on raised', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createTestWidget(
-            currentPortions: originalPortions,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
         );
-
-        // The widget should accept and use the animation
-        expect(find.byType(Container), findsAtLeastNWidgets(1));
+        final plus = find.byIcon(ButleryIcons.plus);
+        final brightness = Theme.of(tester.element(plus)).brightness;
+        expect(pressIsCovered(tester, plus), isFalse);
+        expect(borderIsAbovePress(tester, plus), isTrue);
+        final gesture = await holdPress(tester, plus);
+        expect(
+          paintsInkFill(
+            tester,
+            plus,
+            ModeColors.of(brightness).pressedOnRaised,
+          ),
+          isTrue,
+        );
+        await gesture.cancel();
       });
     });
 
@@ -456,8 +472,8 @@ void main() {
 
         // Assert - controls are rendered (Column with header)
         expect(find.text('Portioner:'), findsOneWidget);
-        expect(find.byIcon(Icons.remove), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.minus), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
       testWidgets('maintains proper spacing between elements', (
@@ -530,7 +546,7 @@ void main() {
 
         // Assert - Should not crash
         // UI Redesign: restaurant_menu icon removed per mockup
-        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+        expect(find.byIcon(ButleryIcons.utensils), findsNothing);
       });
 
       testWidgets('handles very large portion numbers', (
@@ -640,7 +656,7 @@ void main() {
 
         // Rapidly tap add button
         for (int i = 0; i < 5; i++) {
-          await tester.tap(find.byIcon(Icons.add));
+          await tester.tap(find.byIcon(ButleryIcons.plus));
           await tester.pump(const Duration(milliseconds: 50));
         }
 

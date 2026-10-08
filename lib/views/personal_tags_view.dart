@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -18,10 +19,14 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
+import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Sort order for personal tags.
 enum TagSortOrder { byName, byUsage, byRuleCount }
@@ -151,7 +156,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               child: Consumer<PersonalTagViewModel>(
                 builder: (context, viewModel, _) {
                   if (viewModel.isLoading && !viewModel.hasTags) {
-                    return StateWidget.loading();
+                    return StateWidget.loading(
+                      message: context.l10n.loadingPersonalTags,
+                    );
                   }
 
                   if (viewModel.hasError) {
@@ -177,16 +184,23 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.of(context).maybePop(),
-        tooltip: context.l10n.commonBack,
-      ),
-      title: Text(context.l10n.personalTagsViewTitle),
+    final tagCount = context.watch<PersonalTagViewModel>().tags.length;
+    // A subpage (Komponentark v1:71-78; B-45).
+    return ButleryTopBar.undersida(
+      title: context.l10n.personalTagsViewTitle,
       actions: [
+        // P5-U31: "Välj" in the view's own bar, from two tags (B-46;
+        // produktregler.md:870-874). Long-press stays as a shortcut.
+        if (ButlerySelectButton.shownFor(tagCount))
+          ButlerySelectButton(
+            key: const ValueKey('personal-tags-select-enter'),
+            semanticLabel: context.l10n.selectionEnterTags,
+            onPressed: context
+                .read<PersonalTagSelectionManager>()
+                .startSelection,
+          ),
         IconButton(
-          icon: const Icon(Icons.sync),
+          icon: const ButleryIcon(ButleryIcons.refreshCw),
           tooltip: context.l10n.personalTagApplyRulesToAll,
           onPressed: () => PersonalTagDialogs.showRetagDialog(context),
         ),
@@ -207,23 +221,34 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         .whereType<PersonalTag>()
         .toList();
 
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.close),
+    // Multi-select keeps the bar and changes its content: "Avbryt" on the
+    // left instead of an X, the count in tabular figures (produktregler.md
+    // 17.1 :870, :873; Skarmar v12 etapp 9 #flervalingang, "Flerval — slå
+    // samman taggar"). The text is the bar's paper foreground on ink.
+    return ButleryTopBar.undersida(
+      leading: TextButton(
+        key: const ValueKey('personal-tags-selection-cancel'),
+        style: TextButton.styleFrom(
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        ),
         onPressed: selection.exitSelection,
-        tooltip: context.l10n.commonCancel,
+        child: Text(context.l10n.commonCancel),
       ),
-      title: Text(context.l10n.personalTagSelectedCount(count)),
+      // "{n} valda" in tabular figures (produktregler.md:876).
+      title: context.l10n.bulkSelectedCount(count),
+      titleStyle: const TextStyle(
+        fontFeatures: [FontFeature.tabularFigures()],
+      ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.merge),
+          icon: const ButleryIcon(ButleryIcons.merge),
           tooltip: context.l10n.personalTagMergeAction,
           onPressed: count >= 2
               ? () => PersonalTagDialogs.showMergeDialog(context, selectedTags)
               : null,
         ),
         IconButton(
-          icon: const Icon(Icons.delete_outline),
+          icon: const ButleryIcon(ButleryIcons.trash2),
           tooltip: context.l10n.commonDelete,
           onPressed: count >= 1
               ? () => PersonalTagDialogs.showBulkDeleteDialog(
@@ -237,76 +262,85 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   Widget _buildSortMenu(BuildContext context) {
-    return PopupMenuButton<TagSortOrder>(
-      icon: const Icon(Icons.sort),
-      tooltip: context.l10n.commonSort,
-      onSelected: (order) => setState(() {
-        _sortOrder = order;
-        _invalidateSortCache();
-      }),
-      itemBuilder: (context) => TagSortOrder.values.map((order) {
-        final label = switch (order) {
-          TagSortOrder.byName => context.l10n.personalTagSortByName,
-          TagSortOrder.byUsage => context.l10n.personalTagSortByUsage,
-          TagSortOrder.byRuleCount => context.l10n.personalTagSortByRuleCount,
-        };
-        return PopupMenuItem(
-          value: order,
-          child: Row(
-            children: [
-              if (order == _sortOrder)
-                const Icon(Icons.check, size: AppDimensions.iconSize18)
-              else
-                const SizedBox(width: AppDimensions.iconSize18),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(label),
-            ],
-          ),
-        );
-      }).toList(),
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<TagSortOrder>(
+        icon: const ButleryIcon(ButleryIcons.arrowUpDown),
+        tooltip: context.l10n.commonSort,
+        onSelected: (order) => setState(() {
+          _sortOrder = order;
+          _invalidateSortCache();
+        }),
+        itemBuilder: (context) => TagSortOrder.values.map((order) {
+          final label = switch (order) {
+            TagSortOrder.byName => context.l10n.personalTagSortByName,
+            TagSortOrder.byUsage => context.l10n.personalTagSortByUsage,
+            TagSortOrder.byRuleCount => context.l10n.personalTagSortByRuleCount,
+          };
+          return PopupMenuItem(
+            value: order,
+            child: Row(
+              children: [
+                if (order == _sortOrder)
+                  const ButleryIcon(
+                    ButleryIcons.check,
+                    size: AppDimensions.iconSize18,
+                  )
+                else
+                  const SizedBox(width: AppDimensions.iconSize18),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(label),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _buildAddMenu(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.add),
-      tooltip: context.l10n.commonCreate,
-      onSelected: (value) {
-        // Defer to next frame so PopupMenu fully dismisses before dialog opens
-        // Fixes BUG-025 (RenderBox assertion) and BUG-022 (Provider lifecycle)
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!context.mounted) return;
-          if (value == 'tag') {
-            PersonalTagDialogs.showCreateTagDialog(context);
-          } else if (value == 'group') {
-            PersonalTagDialogs.showCreateGroupDialog(context);
-          }
-        });
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'tag',
-          child: ListTile(
-            leading: const Icon(Icons.label_outline),
-            title: Text(context.l10n.personalTagCreateTag),
-            contentPadding: EdgeInsets.zero,
+    return PressFill(
+      surface: PressSurface.raised,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.plus),
+        tooltip: context.l10n.commonCreate,
+        onSelected: (value) {
+          // Defer to next frame so PopupMenu fully dismisses before dialog opens
+          // Fixes BUG-025 (RenderBox assertion) and BUG-022 (Provider lifecycle)
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            if (value == 'tag') {
+              PersonalTagDialogs.showCreateTagDialog(context);
+            } else if (value == 'group') {
+              PersonalTagDialogs.showCreateGroupDialog(context);
+            }
+          });
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'tag',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.tag),
+              title: Text(context.l10n.personalTagCreateTag),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-        ),
-        PopupMenuItem(
-          value: 'group',
-          child: ListTile(
-            leading: const Icon(Icons.folder_outlined),
-            title: Text(context.l10n.personalTagCreateGroup),
-            contentPadding: EdgeInsets.zero,
+          PopupMenuItem(
+            value: 'group',
+            child: ListTile(
+              leading: const ButleryIcon(ButleryIcons.folder),
+              title: Text(context.l10n.personalTagCreateGroup),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
     return StateWidget.empty(
-      icon: Icons.label_outline,
+      icon: ButleryIcons.tag,
       title: context.l10n.personalTagEmptyTitle,
       subtitle: context.l10n.personalTagEmptySubtitle,
       actionLabel: context.l10n.personalTagCreateTag,
@@ -340,7 +374,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             },
             child: Builder(
               builder: (context) {
+                final partial = _buildPartialDelete(context, viewModel);
                 final items = <Widget>[
+                  ?partial,
                   if (ungroupedTags.isNotEmpty)
                     PersonalTagSection(
                       title: context.l10n.personalTagSectionTags,
@@ -378,6 +414,82 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// P5-U33: a bulk delete where only some tags went (produktregler.md:
+  /// 905-909; the shared surface of Skarmar v12 etapp 9 :390-393). It says
+  /// how many of how many went, names the tags that went, names each tag
+  /// that is still there with its reason, and those stay selected. "Klart"
+  /// leaves selection mode.
+  ///
+  /// Interpretations (recorded; no drawing shows the tag surface):
+  /// - The box sits above the tags, not below the rows as #flergrupp draws
+  ///   it for members: a tag list can run long, and below it the outcome
+  ///   would land out of sight.
+  /// - "Försök igen" is the way on. #flergrupp's first action fixes the
+  ///   member's cause ("Ändra Saras roll"); a tag delete that was not saved
+  ///   has no cause to fix, only the attempt to repeat. It asks again for
+  ///   the tags selected now, not for the ids the outcome remembers.
+  Widget? _buildPartialDelete(
+    BuildContext context,
+    PersonalTagViewModel viewModel,
+  ) {
+    final selection = context.watch<PersonalTagSelectionManager>();
+    final result = selection.partialDelete;
+    if (result == null) return null;
+    final l = context.l10n;
+    final remaining = result.failedIds
+        .map(viewModel.getTagById)
+        .whereType<PersonalTag>()
+        .toList(growable: false);
+    final selectedNow = selection.selectedTagIds
+        .map(viewModel.getTagById)
+        .whereType<PersonalTag>()
+        .toList(growable: false);
+    final went = l.personalTagBulkDeletePartialDeleted(
+      PartialOutcome.joinNames(
+        selection.partialDeletedNames,
+        l.partialOutcomeListAnd,
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.spacingL,
+        0,
+        AppDimensions.spacingL,
+        AppDimensions.spacingL,
+      ),
+      child: PartialOutcome(
+        key: const ValueKey('personal-tags-partial-outcome'),
+        title: l.personalTagBulkDeletePartialTitle(
+          result.deletedIds.length,
+          result.deletedIds.length + result.failedIds.length,
+        ),
+        message: '$went ${l.personalTagBulkDeletePartialMessage}',
+        items: [
+          for (final tag in remaining)
+            PartialOutcomeItem(
+              id: tag.id,
+              label: tag.name,
+              reason: l.personalTagBulkDeleteNotSaved,
+            ),
+        ],
+        actions: [
+          if (selectedNow.isNotEmpty)
+            TextButton(
+              key: const ValueKey('personal-tags-partial-retry'),
+              onPressed: () =>
+                  PersonalTagDialogs.showBulkDeleteDialog(context, selectedNow),
+              child: Text(l.commonRetry),
+            ),
+          TextButton(
+            key: const ValueKey('personal-tags-partial-done'),
+            onPressed: selection.exitSelection,
+            child: Text(l.partialOutcomeDone),
+          ),
+        ],
       ),
     );
   }

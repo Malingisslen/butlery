@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/router/shared_import_route.dart';
 
 // Deferred imports for extraction views
-import 'package:butlery/views/import_via_url_view.dart' deferred as import_url;
 import 'package:butlery/views/smart_import_view.dart' deferred as smart_import;
 import 'package:butlery/views/photo_import_view.dart' deferred as photo_import;
 import 'package:butlery/views/voice_import_view.dart' deferred as voice_import;
@@ -13,7 +13,6 @@ import 'package:butlery/views/importera_fran_arkiv_view.dart'
 
 /// Deferred module for extraction/import related views
 /// This module defers loading of:
-/// - ImportViaUrlView
 /// - SmartImportView
 /// - PhotoImportView
 /// - FileImportView
@@ -26,7 +25,6 @@ class ExtractionDeferredModule implements DeferredModule {
 
   @override
   Set<String> get handledRoutes => {
-    Routes.importViaUrl,
     Routes.smartImport,
     Routes.photoImport,
     Routes.voiceImport,
@@ -41,7 +39,6 @@ class ExtractionDeferredModule implements DeferredModule {
     // Load all extraction view libraries in parallel
     try {
       await Future.wait([
-        import_url.loadLibrary(),
         smart_import.loadLibrary(),
         photo_import.loadLibrary(),
         voice_import.loadLibrary(),
@@ -60,16 +57,14 @@ class ExtractionDeferredModule implements DeferredModule {
   @override
   Widget buildRoute(String routeName, RouteSettings settings) {
     switch (routeName) {
-      case Routes.importViaUrl:
-        return import_url.ImportViaUrlView();
-
       case Routes.smartImport:
-        // A String argument is a URL shared into the app (web-share) to prefill.
-        return smart_import.SmartImportView(
-          initialUrl: settings.arguments is String
-              ? settings.arguments as String
-              : null,
-        );
+        final arguments = settings.arguments;
+        return switch (arguments) {
+          SmartImportRouteArgs(:final url, :final autoStart) =>
+            smart_import.SmartImportView(initialUrl: url, autoStart: autoStart),
+          String() => smart_import.SmartImportView(initialUrl: arguments),
+          _ => smart_import.SmartImportView(),
+        };
 
       case Routes.photoImport:
         // BUT-941: a List<String> argument is photo paths shared into the app

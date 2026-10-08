@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 
 /// BUT-406: Widget-level tests. We drive a real [StepTimerService] and
@@ -57,6 +59,27 @@ void main() {
     },
   );
 
+  testWidgets(
+    'the digits are the stat role with tabular figures (R7-3 = C)',
+    (tester) async {
+      final service = StepTimerService();
+
+      await tester.pumpWidget(
+        harness(service, initialDuration: const Duration(minutes: 3)),
+      );
+      await tester.pump();
+
+      final style = tester.widget<Text>(find.text('03:00')).style!;
+      expect(style.fontSize, AppTextStyles.statNumber.fontSize);
+      expect(style.fontSize, 38);
+      expect(style.fontWeight, AppTextStyles.statNumber.fontWeight);
+      expect(style.fontFeatures, contains(const FontFeature.tabularFigures()));
+
+      service.reset();
+      await service.dispose();
+    },
+  );
+
   testWidgets('running → paused shows "Återuppta" label', (tester) async {
     final service = StepTimerService();
 
@@ -102,6 +125,59 @@ void main() {
     // The pulse animation runs forever (reverse-repeat). Reset the service
     // (stops the ticker) then replace the widget tree with an empty scaffold
     // so the AnimationController disposes cleanly.
+    service.reset();
+    await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+    await service.dispose();
+  });
+
+  testWidgets('expired: the pulse loops at AppMotion.pulseHalf each way', (
+    tester,
+  ) async {
+    final service = StepTimerService();
+
+    await tester.pumpWidget(
+      harness(service, initialDuration: const Duration(seconds: 1)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump();
+
+    final pulse = tester
+        .widgetList<AnimatedBuilder>(find.byType(AnimatedBuilder))
+        .map((b) => b.animation)
+        .whereType<AnimationController>()
+        .singleWhere((c) => c.duration == AppMotion.pulseHalf);
+    expect(pulse.duration, AppMotion.pulseHalf);
+    expect(pulse.isAnimating, isTrue);
+
+    service.reset();
+    await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+    await service.dispose();
+  });
+
+  testWidgets('expired with reduced motion: tint is static, no pulse loop', (
+    tester,
+  ) async {
+    final service = StepTimerService();
+
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(disableAnimations: true),
+        child: harness(service, initialDuration: const Duration(seconds: 1)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump();
+
+    final pulse = tester
+        .widgetList<AnimatedBuilder>(find.byType(AnimatedBuilder))
+        .map((b) => b.animation)
+        .whereType<AnimationController>()
+        .singleWhere((c) => c.duration == AppMotion.pulseHalf);
+    expect(pulse.isAnimating, isFalse);
+    expect(pulse.value, 1.0);
+
     service.reset();
     await tester.pumpWidget(const MaterialApp(home: Scaffold()));
     await service.dispose();

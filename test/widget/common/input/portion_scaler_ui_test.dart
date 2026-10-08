@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
+
+import '../../../infrastructure/helpers/widget_test_app.dart';
 
 class _Host extends StatefulWidget {
   const _Host({
@@ -105,8 +109,8 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.add), findsOneWidget);
-      expect(find.byIcon(Icons.remove), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.minus), findsOneWidget);
     });
 
     testWidgets('tap + invokes onUpdatePortions with currentPortions+1', (
@@ -124,7 +128,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(ButleryIcons.plus));
       expect(calls, [5]);
     });
 
@@ -143,7 +147,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.remove));
+      await tester.tap(find.byIcon(ButleryIcons.minus));
       expect(calls, [3]);
     });
 
@@ -164,7 +168,7 @@ void main() {
         ),
       );
       // Tap does nothing because onPressed is null
-      await tester.tap(find.byIcon(Icons.remove));
+      await tester.tap(find.byIcon(ButleryIcons.minus));
       expect(calls, isEmpty);
     });
 
@@ -184,7 +188,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(ButleryIcons.plus));
       expect(calls, isEmpty);
     });
   });
@@ -204,8 +208,8 @@ void main() {
           ),
         );
         // Banner uses calculate or language icon — neither should be present
-        expect(find.byIcon(Icons.calculate), findsNothing);
-        expect(find.byIcon(Icons.language), findsNothing);
+        expect(find.byIcon(ButleryIcons.hash), findsNothing);
+        expect(find.byIcon(ButleryIcons.globe), findsNothing);
       },
     );
 
@@ -222,7 +226,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.calculate), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
     });
 
     testWidgets('shows language icon when converting to Swedish', (
@@ -238,7 +242,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.language), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.globe), findsAtLeastNWidgets(1));
     });
 
     testWidgets(
@@ -256,7 +260,7 @@ void main() {
         );
         // Status condition is (scaled || convertToSwedish) — false here.
         // Toggle is rendered (hasAmericanUnits=true) → language icon appears.
-        expect(find.byIcon(Icons.calculate), findsNothing);
+        expect(find.byIcon(ButleryIcons.hash), findsNothing);
       },
     );
   });
@@ -308,7 +312,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     });
 
     testWidgets('toggle shows language icon when convertToSwedish=false', (
@@ -324,7 +328,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.language), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.globe), findsAtLeastNWidgets(1));
     });
 
     testWidgets('tap toggle invokes onToggleUnitConversion exactly once', (
@@ -347,6 +351,106 @@ void main() {
     });
   });
 
+  group('PortionScalerUI — header at 320 dp and 200 % text (BUT-2192)', () {
+    testWidgets('portion controls stay on screen and tappable', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final calls = <int>[];
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2.0)),
+              // The mount recipe_detail_content gives the scaler: a padded,
+              // start-aligned Column holding the coloured band.
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      key: const ValueKey('band'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingL,
+                      ),
+                      color: Colors.grey,
+                      child: _Host(
+                        currentPortions: 4,
+                        originalPortions: 4,
+                        convertToSwedish: false,
+                        hasAmericanUnits: false,
+                        onUpdatePortions: calls.add,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Portioner:'), findsOneWidget);
+      expect(find.text('4'), findsOneWidget);
+      for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
+        expect(
+          tester.getRect(find.byIcon(icon)).right,
+          lessThanOrEqualTo(320 - 2 * AppDimensions.paddingL),
+        );
+      }
+
+      await tester.tap(find.byIcon(ButleryIcons.plus));
+      expect(calls, [5]);
+    });
+
+    testWidgets('the band behind the scaler spans the full width', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  key: const ValueKey('band'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingL,
+                  ),
+                  color: Colors.grey,
+                  child: const _Host(
+                    currentPortions: 4,
+                    originalPortions: 4,
+                    convertToSwedish: false,
+                    hasAmericanUnits: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Portioner:'), findsOneWidget);
+      expect(
+        tester.getSize(find.byKey(const ValueKey('band'))).width,
+        320 - 2 * AppDimensions.paddingL,
+      );
+    });
+  });
+
   group('PortionScalerUI — layout integration', () {
     testWidgets('all three sections render when scaled + convert + AU=true', (
       tester,
@@ -364,7 +468,7 @@ void main() {
       // Header portion text
       expect(find.text('6'), findsOneWidget);
       // Status banner (language icon)
-      expect(find.byIcon(Icons.language), findsAtLeastNWidgets(1));
+      expect(find.byIcon(ButleryIcons.globe), findsAtLeastNWidgets(1));
       // Toggle button
       expect(
         find.byWidgetPredicate((w) => w is OutlinedButton),

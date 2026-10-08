@@ -30,6 +30,7 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_message_stream.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -279,12 +280,12 @@ void main() {
     );
   });
 
-  /// The notice's OWN dismiss icon. A bare `find.byIcon(Icons.close)` also
+  /// The notice's OWN dismiss icon. A bare `find.byIcon(ButleryIcons.x)` also
   /// matches the error snackbar's own leading ICON, so it cannot answer "did the
   /// control come back" in the very case that raises the question.
   final dismissIcon = find.descendant(
     of: find.byType(SystemMessageWidget),
-    matching: find.byIcon(Icons.close),
+    matching: find.byIcon(ButleryIcons.x),
   );
 
   // BUT-1904: the same incremental-update path, one field along. The duplicate

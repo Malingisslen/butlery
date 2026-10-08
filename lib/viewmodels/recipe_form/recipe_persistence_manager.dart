@@ -4,13 +4,18 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/offline_image_handoff.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart';
@@ -27,11 +32,18 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   final RecipeFormState _state;
   final RecipeImageManager _imageManager;
-  final RecipeCollaborativeManager _collaborativeManager;
   final RecipePermissionManager _permissionManager;
   final AnalyticsService? _analyticsService;
   final RecipeEditAnalyticsEmitter _editEmitter;
+  final HeirloomUploader? _heirloomUploader;
   final _uuid = const Uuid();
+
+  /// BUT-2280: the heirloom scan handed to this form by the photo import.
+  /// Kept until a save lands, so a failed save can be retried with it.
+  HeirloomDraft? pendingHeirloom;
+
+  /// The images this form last saved, which the device copy then holds.
+  List<String>? _imagesLastSaved;
 
   bool _isSaveInProgress = false;
   String? _currentSaveOperationId;
@@ -50,14 +62,14 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     required UnifiedRecipeService recipeService,
     required RecipeFormState state,
     required RecipeImageManager imageManager,
-    required RecipeCollaborativeManager collaborativeManager,
     required RecipePermissionManager permissionManager,
     AnalyticsService? analyticsService,
     RecipeEditAnalyticsEmitter? editEmitter,
+    HeirloomUploader? heirloomUploader,
   }) : _recipeService = recipeService,
+       _heirloomUploader = heirloomUploader,
        _state = state,
        _imageManager = imageManager,
-       _collaborativeManager = collaborativeManager,
        _permissionManager = permissionManager,
        _analyticsService =
            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
@@ -67,7 +79,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
   /// Saves recipe with atomic coordination, preventing concurrent saves and ensuring image upload completion.
   Future<Recipe?> saveRecipe({
-    required bool isCollaborative,
     required void Function() onNotify,
   }) async {
     _isFirstRecipe = false;
@@ -113,6 +124,17 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         await Future.delayed(const Duration(milliseconds: 50));
         return true;
       });
+      // The loop above also ends when the form closes during the wait. Since
+      // the first keystroke now writes a draft at once (P6-U08a, D-02), an
+      // auto-save is usually in flight when Spara is tapped, so closing the
+      // form here is an ordinary path: stop quietly instead of validating and
+      // setting an error on a disposed RecipeFormState (BUT-1667).
+      if (_disposed) {
+        AppLogger.warning(
+          '⚠️ Save operation prevented - Manager disposed while waiting for auto-save',
+        );
+        return null;
+      }
     }
 
     if (!_state.isValid) {
@@ -134,6 +156,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     _state.setSaving(true);
     _state.clearError();
 
+    var imageTooLarge = false;
     try {
       final result = await safeExecute<Recipe>(
         () async {
@@ -167,6 +190,10 @@ class RecipePersistenceManager with ErrorHandlingMixin {
               if (_imageManager.pendingImages.isNotEmpty) {
                 throw Exception('Image upload incomplete - cannot save recipe');
               }
+              if (_imageManager.hasTooLargeImage) {
+                imageTooLarge = true;
+                throw Exception('Image too large - cannot save recipe');
+              }
 
               AppLogger.info(
                 '✅ All images uploaded successfully, proceeding with recipe save',
@@ -183,7 +210,28 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             );
           }
 
-          final validImageUrls = _imageManager.validImageUrls;
+          final heirloomDraft = pendingHeirloom;
+          final heirloom = heirloomDraft == null
+              ? null
+              : await _uploadHeirloom(heirloomDraft, recipeId);
+
+          final handoff = OfflineImageHandoff(
+            _imageManager,
+            ServiceLocator.tryGet<OfflineService>(),
+          );
+          final images = _state.isEditing
+              ? await handoff.keepQueuedImages(
+                  recipeId,
+                  _recipeService.currentUserId,
+                  formHad: _imagesLastSaved ?? _state.originalRecipe!.imageUrls,
+                  imageUrls: _imageManager.validImageUrls,
+                  thumbnailUrl: _imageManager.firstThumbnailUrl,
+                )
+              : (
+                  imageUrls: _imageManager.validImageUrls,
+                  thumbnailUrl: _imageManager.firstThumbnailUrl,
+                );
+          final validImageUrls = images.imageUrls;
           AppLogger.info(
             '📝 Creating recipe with ${validImageUrls.length} validated image URLs',
           );
@@ -191,7 +239,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           final recipe = _state.createRecipe(
             recipeId: recipeId,
             imageUrls: validImageUrls,
-            thumbnailUrl: _imageManager.firstThumbnailUrl,
+            thumbnailUrl: images.thumbnailUrl,
+            heirloom: heirloom,
           );
 
           Recipe savedRecipe;
@@ -219,6 +268,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             }
           }
 
+          pendingHeirloom = null;
+          _imagesLastSaved = validImageUrls;
+
           if (validImageUrls.isNotEmpty) {
             _analyticsService?.recipe.logRecipeImageUploaded(
               recipeId: recipeId,
@@ -226,6 +278,12 @@ class RecipePersistenceManager with ErrorHandlingMixin {
               uploadSource: 'form',
             );
           }
+
+          await handoff.queueFor(
+            recipeId,
+            _recipeService.currentUserId,
+            formAlive: !_disposed,
+          );
 
           if (_disposed) {
             AppLogger.warning(
@@ -243,17 +301,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           // in Storage but the save is preserved.
           await _imageManager.commitPendingStorageDeletes();
 
-          if (isCollaborative && !_disposed) {
-            try {
-              await _collaborativeManager.updateRecipeInFirebase(savedRecipe);
-              AppLogger.info(
-                '🔄 Collaborative state updated for recipe: ${savedRecipe.id}',
-              );
-            } catch (e) {
-              AppLogger.error('❌ Failed to update collaborative state: $e');
-            }
-          }
-
           return savedRecipe;
         },
         operationName: 'Save Recipe',
@@ -262,13 +309,21 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
       if (result == null) {
         if (!_disposed) {
-          _state.setError(AppLocale.current.errorCouldNotSaveRecipe);
+          _state.setError(
+            imageTooLarge
+                ? AppLocale.current.imageUploadTooLarge(
+                    '${UploadConstants.maxStorageFileBytes ~/ (1024 * 1024)}',
+                  )
+                : AppLocale.current.errorCouldNotSaveRecipe,
+          );
         }
       } else {
         if (!_disposed) {
           // BUT-1138: await the draft cleanup so the delete completes
           // before any follow-up scheduled save can race against it.
-          await _state.clearCurrentDraft();
+          // BUT-2161: the recipe is saved; a failed cleanup never turns
+          // that into a failure.
+          await _clearDraftAfterSave();
           AppLogger.info(
             '✅ Save operation completed successfully: ${result.id}',
           );
@@ -298,6 +353,41 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       }
 
       AppLogger.info('🔓 Atomic save operation completed and lock released');
+    }
+  }
+
+  /// Throws when the scan cannot be stored, so the save fails and the user
+  /// can retry instead of getting the recipe without the scan they added.
+  Future<HeirloomMetadata> _uploadHeirloom(
+    HeirloomDraft draft,
+    String recipeId,
+  ) async {
+    final uploader =
+        _heirloomUploader ?? ServiceLocator.get<HeirloomUploader>();
+    final heirloom = await uploader.upload(draft, recipeId);
+    if (heirloom == null) {
+      throw Exception('Heirloom upload failed for $recipeId');
+    }
+    return heirloom;
+  }
+
+  /// BUT-2161: clears the draft once the recipe is written. The write has
+  /// landed, so a cleanup that throws (a SharedPreferences failure on a real
+  /// device) is logged and left: reporting "Kunde inte spara recept" for a
+  /// recipe that exists invites "Försök igen" and a duplicate. The draft left
+  /// behind is removed at the next clean save or expires after its 30 days
+  /// (produktregler.md:170, D-01).
+  Future<void> _clearDraftAfterSave() async {
+    try {
+      await _state.clearCurrentDraft();
+    } catch (e, st) {
+      AppLogger.error(
+        'Recipe saved, but its draft could not be cleared; it expires '
+        'after 30 days',
+        e,
+        null,
+        st,
+      );
     }
   }
 
@@ -343,7 +433,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       } else {
         if (!_disposed) {
           // BUT-1138: await draft cleanup — same race as the save path.
-          await _state.clearCurrentDraft();
+          await _clearDraftAfterSave();
         }
       }
 
@@ -361,8 +451,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
   }
 
-  /// Deletes recipe with collaborative cleanup and permission validation.
-  Future<bool> deleteRecipe({required bool isCollaborative}) async {
+  /// Deletes recipe with permission validation.
+  Future<bool> deleteRecipe() async {
     if (_state.originalRecipe == null) {
       _state.setError(AppLocale.current.errorNoRecipeToDelete);
       return false;
@@ -378,10 +468,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     final result = await safeExecute<bool>(
       () async {
         await _recipeService.deleteRecipe(_state.originalRecipe!.id);
-
-        if (isCollaborative) {
-          await _collaborativeManager.leaveCollaborativeMode();
-        }
 
         await _imageManager.clearAllImages();
         AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');

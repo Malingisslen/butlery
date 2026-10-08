@@ -14,6 +14,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Recipe social action handler
 /// Handles social features: sharing to friends/groups, comments, and user profile management.
@@ -29,15 +30,19 @@ class RecipeSocialHandler {
     // Fetch available friends and groups
     List<UserProfile> availableFriends = [];
     try {
+      // A dialog opened before the list has loaded would say there are no
+      // friends.
+      if (!friendsService.isInitialized) await friendsService.initialize();
       availableFriends = friendsService.friends;
     } catch (_) {
       // Silently continue with empty friends list
     }
 
+    if (!context.mounted) return;
     final availableGroups = friendsService.categoriesList;
 
-    await showDialog(
-      context: context,
+    await showUniversalShareSheet(
+      context,
       builder: (context) => ChangeNotifierProvider.value(
         value: shareViewModel,
         child: UniversalShareDialog.recipe(
@@ -64,9 +69,9 @@ class RecipeSocialHandler {
     final currentUserId = authService.currentUserId;
 
     if (currentUserId == null) {
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialMustBeLoggedInToComment,
+        what: context.l10n.socialMustBeLoggedInToComment,
       );
       return;
     }
@@ -76,9 +81,9 @@ class RecipeSocialHandler {
       final userProfile = await userService.getUserProfile(currentUserId);
       if (userProfile == null) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.socialCouldNotFetchUserData,
+            what: context.l10n.socialCouldNotFetchUserData,
           );
         }
         return;
@@ -108,7 +113,10 @@ class RecipeSocialHandler {
       );
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, context.l10n.socialCouldNotPostComment);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.socialCouldNotPostComment,
+      );
     }
   }
 
@@ -136,9 +144,9 @@ class RecipeSocialHandler {
       SnackBarUtils.showSuccess(context, context.l10n.socialUserProfileCreated);
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(
+      SnackBarUtils.showFailure(
         context,
-        context.l10n.socialCouldNotCreateProfile,
+        what: context.l10n.socialCouldNotCreateProfile,
       );
     }
   }

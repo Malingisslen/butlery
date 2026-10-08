@@ -430,6 +430,7 @@ class TaggingService extends BaseService {
                 socialData: recipe.socialData,
                 realtimeData: recipe.realtimeData,
                 offlineData: recipe.offlineData,
+                rev: recipe.rev,
               );
               await saveRecipe(updatedRecipe);
               return true;

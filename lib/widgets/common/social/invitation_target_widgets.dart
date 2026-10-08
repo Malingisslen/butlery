@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_helpers.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class InvitationTargetWidgets {
   /// Build invitation target display
@@ -18,7 +21,7 @@ class InvitationTargetWidgets {
     return Card(
       child: ListTile(
         leading: showTypeIcon
-            ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+            ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
             : null,
         title: Text(target.displayName),
         subtitle: showStatus ? Text(target.type.name) : null,
@@ -39,7 +42,7 @@ class InvitationTargetWidgets {
     return Card(
       child: ListTile(
         leading: showTypeIcon
-            ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+            ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
             : null,
         title: Text(target.displayName),
         subtitle: showStatus ? Text(target.type.name) : null,
@@ -55,12 +58,15 @@ class InvitationTargetWidgets {
     bool showTypeIcon = true,
     VoidCallback? onTap,
   }) {
-    return ActionChip(
-      avatar: showTypeIcon
-          ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
-          : null,
-      label: Text(target.displayName),
-      onPressed: onTap,
+    return PressFill(
+      surface: PressSurface.base,
+      child: ActionChip(
+        avatar: showTypeIcon
+            ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
+            : null,
+        label: Text(target.displayName),
+        onPressed: onTap,
+      ),
     );
   }
 
@@ -74,7 +80,7 @@ class InvitationTargetWidgets {
   }) {
     return ListTile(
       leading: showTypeIcon
-          ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+          ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
           : null,
       title: Text(target.displayName),
       subtitle: showStatus ? Text(target.type.name) : null,
@@ -90,7 +96,7 @@ class InvitationTargetWidgets {
   }) {
     return Chip(
       avatar: showTypeIcon
-          ? Icon(SocialHelpers.getInvitationTargetTypeIcon(target))
+          ? ButleryIcon(SocialHelpers.getInvitationTargetTypeIcon(target))
           : null,
       label: Text(target.displayName),
     );
@@ -201,13 +207,13 @@ class InvitationTargetWidgets {
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hint ?? context.l10n.commonSearch,
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const ButleryIcon(ButleryIcons.search),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.spacingS,
+          vertical: AppDimensions.space4,
         ),
       ),
     );
@@ -223,13 +229,18 @@ class InvitationTargetWidgets {
     return Padding(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
       child: Wrap(
-        spacing: AppDimensions.spacingS,
+        spacing: AppDimensions.space4,
         children: availableTypes
             .map(
-              (type) => FilterChip(
-                label: Text(type),
-                selected: selectedTypes.contains(type),
-                onSelected: (_) => onTypeToggled(type),
+              (type) => PressFill(
+                surface: selectedTypes.contains(type)
+                    ? PressSurface.ink
+                    : PressSurface.base,
+                child: FilterChip(
+                  label: Text(type),
+                  selected: selectedTypes.contains(type),
+                  onSelected: (_) => onTypeToggled(type),
+                ),
               ),
             )
             .toList(),

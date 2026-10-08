@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -27,9 +27,10 @@ import 'package:butlery/views/fran_sociala_medier_view.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/veckomeny_view.dart' as vecko;
-import 'package:butlery/views/receive_share_view.dart';
 
 // Shell layout (IndexedStack for tab state preservation)
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
@@ -59,14 +60,20 @@ import 'package:butlery/views/legal/community_guidelines_view.dart';
 
 // Settings — moderation
 import 'package:butlery/views/settings/my_reports_view.dart';
+import 'package:butlery/views/settings/about_butlery_view.dart';
+import 'package:butlery/views/settings/licenses_view.dart';
 
 // Help
 import 'package:butlery/views/faq_view.dart';
+
+// The offline queue (P4-U19)
+import 'package:butlery/views/sync/sync_queue_view.dart';
 
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/router/recipe_detail_route_args.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// Centralized application router managing navigation and route generation for Butlery.
 /// This class implements a comprehensive routing system that handles all navigation
@@ -164,7 +171,7 @@ class AppRouter {
       switch (routeName) {
         case Routes.home:
           return _buildRoute(
-            LayoutScaffolds.mainMenu(initialIndex: 0),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.homeTab),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -231,10 +238,8 @@ class AppRouter {
           double? ocrConfidence;
 
           if (arguments is String) {
-            // Legacy plain-text argument (pre-BUT-928 callers)
             initialText = arguments;
           } else if (arguments is Map<String, dynamic>) {
-            // Map arguments from URL import / photo-OCR handoff
             initialText = arguments['text'] as String?;
             sourceUrl = arguments['sourceUrl'] as String?;
             // BUT-928: overall OCR confidence from the photo-import preview.
@@ -280,20 +285,6 @@ class AppRouter {
             Routes.getAnimationType(routeName),
           );
 
-        case Routes.receiveShare:
-          final shareData = settings.arguments as Map<String, dynamic>?;
-          if (shareData == null) {
-            return _errorRoute('Share data missing');
-          }
-          return _buildRoute(
-            ReceiveShareView(
-              content: (shareData['content'] as String?).orEmpty(),
-              type: shareData['type'] as String? ?? 'text',
-            ),
-            settings,
-            Routes.getAnimationType(routeName),
-          );
-
         case Routes.weeklyMenu:
           final menu = settings.arguments as SharedMenu?;
           if (menu != null) {
@@ -304,7 +295,7 @@ class AppRouter {
             );
           }
           return _buildRoute(
-            LayoutScaffolds.mainMenu(initialIndex: 1),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.menuTab),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -322,9 +313,29 @@ class AppRouter {
 
         case Routes.shoppingList:
           return _buildRoute(
-            LayoutScaffolds.mainMenu(initialIndex: 2),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.shoppingTab),
             settings,
             Routes.getAnimationType(routeName),
+          );
+
+        case Routes.more:
+          // PQ-17: Mer is the shell's fourth tab.
+          return _buildRoute(
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.moreTab),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
+
+        case Routes.syncQueue:
+          return _buildRoute(
+            // The Mer row names where Back leads ("Tillbaka till Mer").
+            SyncQueueView(
+              backTo: settings.arguments is String
+                  ? settings.arguments as String
+                  : null,
+            ),
+            settings,
+            RouteAnimationType.slideFromRight,
           );
 
         case Routes.cookingMode:
@@ -334,17 +345,25 @@ class AppRouter {
           final cookingArgs = settings.arguments;
           Recipe? recipe;
           int? presentServings;
+          var copyInsteadOfEdit = false;
           if (cookingArgs is Recipe) {
             recipe = cookingArgs;
           } else if (cookingArgs is Map<String, dynamic>) {
             recipe = cookingArgs['recipe'] as Recipe?;
             presentServings = cookingArgs['presentServings'] as int?;
+            // Q6-05 = C: from recipe detail, someone else's recipe.
+            copyInsteadOfEdit =
+                cookingArgs['copyInsteadOfEdit'] as bool? ?? false;
           }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for cooking mode');
           }
           return _buildRoute(
-            CookingModeView(recipe: recipe, presentServings: presentServings),
+            CookingModeView(
+              recipe: recipe,
+              presentServings: presentServings,
+              copyInsteadOfEdit: copyInsteadOfEdit,
+            ),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -454,6 +473,20 @@ class AppRouter {
             RouteAnimationType.slideFromRight,
           );
 
+        case Routes.settingsAbout:
+          return _buildRoute(
+            const AboutButleryView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsLicenses:
+          return _buildRoute(
+            const LicensesView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
         case Routes.faq:
           return _buildRoute(
             const FaqView(),
@@ -516,7 +549,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             return FadeTransition(opacity: animation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: AppMotion.standard,
         );
 
       case RouteAnimationType.slideFromBottom:
@@ -527,7 +560,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
-            const curve = Curves.easeInOut;
+            const curve = AppMotion.curve;
             final tween = Tween(
               begin: begin,
               end: end,
@@ -535,7 +568,7 @@ class AppRouter {
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 400),
+          transitionDuration: AppMotion.standard,
         );
 
       case RouteAnimationType.slideFromRight:
@@ -546,7 +579,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
-            const curve = Curves.easeInOut;
+            const curve = AppMotion.curve;
             final tween = Tween(
               begin: begin,
               end: end,
@@ -554,7 +587,7 @@ class AppRouter {
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: AppMotion.standard,
         );
 
       case RouteAnimationType.scale:
@@ -565,7 +598,7 @@ class AppRouter {
             if (!AnimationUtils.shouldAnimate(context)) return child;
             const begin = 0.0;
             const end = 1.0;
-            const curve = Curves.elasticOut;
+            const curve = AppMotion.curve;
             final tween = Tween(
               begin: begin,
               end: end,
@@ -573,28 +606,29 @@ class AppRouter {
             final scaleAnimation = animation.drive(tween);
             return ScaleTransition(scale: scaleAnimation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 600),
+          transitionDuration: AppMotion.standard,
         );
     }
   }
 
   /// Create error route with scale animation
   static Route<dynamic> _errorRoute([String? message]) {
+    if (message != null) AppLogger.warning(message);
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
-        appBar: AdaptiveAppBar(title: context.l10n.errorTitle),
+        appBar: ButleryTopBar.undersida(title: context.l10n.errorTitle),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              ButleryIcon(
+                ButleryIcons.triangleAlert,
                 size: AppDimensions.iconSizeXl,
                 color: Theme.of(context).colorScheme.error,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
-                message ?? 'Sidan kunde inte hittas',
+                context.l10n.errorPageNotFound,
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -602,7 +636,7 @@ class AppRouter {
               ElevatedButton(
                 onPressed: () =>
                     Navigator.of(context).pushReplacementNamed(Routes.home),
-                child: const Text('Tillbaka till start'),
+                child: Text(context.l10n.errorBackToStart),
               ),
             ],
           ),
@@ -611,7 +645,7 @@ class AppRouter {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = 0.0;
         const end = 1.0;
-        const curve = Curves.elasticOut;
+        const curve = AppMotion.curve;
         final tween = Tween(
           begin: begin,
           end: end,
@@ -619,7 +653,7 @@ class AppRouter {
         final scaleAnimation = animation.drive(tween);
         return ScaleTransition(scale: scaleAnimation, child: child);
       },
-      transitionDuration: const Duration(milliseconds: 600),
+      transitionDuration: AppMotion.standard,
     );
   }
 

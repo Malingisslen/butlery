@@ -21,7 +21,7 @@
 /// - `showShareConfirmation`: collapses long recipient lists to
 ///   "name1, name2 och N till" via `shareRecipientsMore`.
 /// - `showSuccessDialog` / `showWarningDialog` / `showErrorDialog`:
-///   render with the localized `commonOk` button, dismiss on tap,
+///   render with the localized `commonClose` button ("Stäng"), dismiss on tap,
 ///   future resolves once the user acknowledges.
 ///
 /// Production bug surface notes (do NOT fix here):
@@ -37,7 +37,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 
@@ -257,6 +257,33 @@ void main() {
       // No warning section should be present — only the standard
       // confirm message + the static irreversibility footnote.
       expect(find.text('OBS: detta är farligt'), findsNothing);
+      expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
+    });
+
+    /// Proves: with no item name (the cook-snap photo) no body line ends in
+    /// an empty '""?' (BUT-2164).
+    testWidgets('an empty itemName draws no quoted name', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
+              context: ctx,
+              itemName: '',
+              itemType: 'foto',
+            ),
+            onResult: (_) {},
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('""'),
+        ),
+        findsNothing,
+      );
       expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
     });
   });
@@ -840,11 +867,11 @@ void main() {
 
   group('showSuccessDialog / showWarningDialog / showErrorDialog', () {
     /// Proves: the success info dialog renders title, message, the
-    /// localized OK button, and uses the butlery success color on the
+    /// localized Stäng button (never OK; content-style-guide.md:77), and uses the butlery success color on the
     /// button background — captured from the live extension rather than
     /// hardcoded so a theme tweak doesn't break the test.
     testWidgets(
-      'success dialog renders content + localized OK + butleryColors.success button',
+      'success dialog renders content + Stäng + modeColors.success button',
       (tester) async {
         late Color expectedColor;
         var resolved = false;
@@ -852,7 +879,7 @@ void main() {
           _wrap(
             Builder(
               builder: (rootCtx) {
-                expectedColor = rootCtx.butleryColors.success;
+                expectedColor = rootCtx.modeColors.success;
                 return _triggerButton<void>(
                   openDialog: (ctx) async {
                     await CommonDialogActions.showSuccessDialog(
@@ -874,22 +901,22 @@ void main() {
         expect(find.text('Det funkade'), findsOneWidget);
 
         final FilledButton btn = tester.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'OK'),
+          find.widgetWithText(FilledButton, 'Stäng'),
         );
         final bg = btn.style!.backgroundColor!.resolve({});
         expect(bg, expectedColor);
 
         // Acknowledge to make sure the future resolves (caller commonly
         // `await`s and continues afterwards).
-        await tester.tap(find.widgetWithText(FilledButton, 'OK'));
+        await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
         await tester.pumpAndSettle();
         expect(resolved, isTrue);
       },
     );
 
-    /// Proves: the warning dialog uses butleryColors.warning. Same shape
+    /// Proves: the warning dialog uses modeColors.warning. Same shape
     /// as the success test, swapping the colour invariant.
-    testWidgets('warning dialog uses butleryColors.warning on the button', (
+    testWidgets('warning dialog uses modeColors.warning on the button', (
       tester,
     ) async {
       late Color expectedColor;
@@ -897,7 +924,7 @@ void main() {
         _wrap(
           Builder(
             builder: (rootCtx) {
-              expectedColor = rootCtx.butleryColors.warning;
+              expectedColor = rootCtx.modeColors.warning;
               return _triggerButton<void>(
                 openDialog: (ctx) async {
                   await CommonDialogActions.showWarningDialog(
@@ -916,19 +943,19 @@ void main() {
       await tester.pumpAndSettle();
 
       final FilledButton btn = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'OK'),
+        find.widgetWithText(FilledButton, 'Stäng'),
       );
       final bg = btn.style!.backgroundColor!.resolve({});
       expect(bg, expectedColor);
 
       // Tear down the open dialog so the test framework doesn't complain
       // about a still-mounted modal route.
-      await tester.tap(find.widgetWithText(FilledButton, 'OK'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
       await tester.pumpAndSettle();
     });
 
     /// Proves: the error dialog uses the theme's `colorScheme.error`
-    /// (NOT butleryColors.warning — these are intentionally different
+    /// (NOT modeColors.warning — these are intentionally different
     /// channels in the design system).
     testWidgets('error dialog uses colorScheme.error on the button', (
       tester,
@@ -957,19 +984,19 @@ void main() {
       await tester.pumpAndSettle();
 
       final FilledButton btn = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'OK'),
+        find.widgetWithText(FilledButton, 'Stäng'),
       );
       final bg = btn.style!.backgroundColor!.resolve({});
       expect(bg, expectedColor);
 
-      await tester.tap(find.widgetWithText(FilledButton, 'OK'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
       await tester.pumpAndSettle();
     });
 
-    /// Proves: tapping OK dismisses the info dialog — info dialogs are
+    /// Proves: tapping Stäng dismisses the info dialog — info dialogs are
     /// the only way for an info-modal caller to continue (no barrier-
     /// cancel for these, since they don't take a `bool?`).
-    testWidgets('OK tap dismisses the info dialog and resolves the await', (
+    testWidgets('Stäng tap dismisses the info dialog and resolves the await', (
       tester,
     ) async {
       var resolved = false;
@@ -991,7 +1018,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(resolved, isFalse, reason: 'await should still be pending');
 
-      await tester.tap(find.widgetWithText(FilledButton, 'OK'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
       await tester.pumpAndSettle();
       expect(resolved, isTrue);
       expect(find.byType(AlertDialog), findsNothing);

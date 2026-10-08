@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Renders the "Relaterade recept" block in the recipe detail view.
 ///
@@ -84,7 +85,7 @@ class _RelatedSection extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         SizedBox(
           height: _thumbnailSize + AppDimensions.spacingMd,
           child: ListView.separated(
@@ -123,59 +124,64 @@ class _RelatedThumbnail extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yRelatedRecipeThumbnail(recipe.title),
       button: true,
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(
-          context,
-          Routes.recipeDetail,
-          arguments: recipe,
-        ),
-        child: SizedBox(
-          width: _thumbnailSize,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image or illustration
-              Container(
-                width: _thumbnailSize,
-                height: _thumbnailSize - AppDimensions.spacingXl,
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest,
-                  border: Border.all(color: cs.outlineVariant),
-                ),
-                child: url != null
-                    ? SimpleImageWidget(
-                        imageUrl: url,
-                        fit: BoxFit.cover,
-                        config: ImageConfig.thumbnail(
-                          heroTag: ImageConfig.recipeHeroTag(recipe.id),
-                        ),
-                      )
-                    : Center(
-                        child: VegetableIllustration(
-                          type: VegetableIllustration.randomForRecipe(
-                            recipe.id,
-                          ),
-                          size:
-                              (_thumbnailSize - AppDimensions.spacingXl) * 0.65,
-                          opacity: 0.8,
-                        ),
-                      ),
-              ),
-              // Title below
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  top: AppDimensions.spacingXxs,
-                ),
-                child: Text(
-                  recipe.title,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: cs.onSurface,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(
+            context,
+            Routes.recipeDetail,
+            arguments: recipe,
+          ),
+          child: SizedBox(
+            width: _thumbnailSize,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image or illustration
+                Container(
+                  width: _thumbnailSize,
+                  height: _thumbnailSize - AppDimensions.spacingXl,
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerHighest,
+                    border: Border.all(color: cs.outlineVariant),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  child: url != null
+                      ? SimpleImageWidget(
+                          imageUrl: url,
+                          fit: BoxFit.cover,
+                          config: ImageConfig.thumbnail(
+                            heroTag: ImageConfig.recipeHeroTag(recipe.id),
+                          ),
+                        )
+                      : Center(
+                          child: VegetableIllustration(
+                            type: VegetableIllustration.randomForRecipe(
+                              recipe.id,
+                            ),
+                            size:
+                                (_thumbnailSize - AppDimensions.spacingXl) *
+                                0.65,
+                            opacity:
+                                VegetableIllustration.recipePlaceholderOpacity,
+                          ),
+                        ),
                 ),
-              ),
-            ],
+                // Title below
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    top: AppDimensions.space4,
+                  ),
+                  child: Text(
+                    recipe.title,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

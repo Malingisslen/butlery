@@ -1,7 +1,7 @@
 /// BUT-1358: pin that ShoppingListCard mounts a HoverableCard ancestor whose
 /// rest decoration reproduces the previous Material(elevation: 4) appearance
-/// (surface fill + square corners + an elevation shadow) and whose hover
-/// variant only deepens that shadow.
+/// (surface fill + an elevation shadow) and whose hover
+/// variant deepens that shadow.
 ///
 /// Intent: BUT-1358 replaced the elevated Material with a HoverableCard so the
 /// card gains a web/desktop hover affordance without changing its rest look.
@@ -44,6 +44,16 @@ UnifiedShoppingList _list() => UnifiedShoppingList(
   type: ListType.personal,
 );
 
+/// Paints an ink highlight in [color]: any drawRRect whose paint is exactly
+/// it. `paints..rrect` would stop at the first, transparent, rrect the
+/// enclosing Material draws.
+PaintPattern paintsRaisedHighlight(Color color) => paints
+  ..something(
+    (Symbol method, List<dynamic> arguments) =>
+        method == #drawRRect &&
+        (arguments[1] as Paint).color.toARGB32() == color.toARGB32(),
+  );
+
 void main() {
   group('ShoppingListCard mounts HoverableCard (BUT-1358)', () {
     testWidgets('renders a HoverableCard ancestor', (tester) async {
@@ -62,7 +72,7 @@ void main() {
       );
     });
 
-    testWidgets('rest decoration uses surface fill + square corners + shadow', (
+    testWidgets('rest decoration uses surface fill + shadow', (
       tester,
     ) async {
       late ColorScheme cs;
@@ -92,7 +102,7 @@ void main() {
       );
       expect(
         rest.borderRadius,
-        BorderRadius.circular(AppDimensions.borderRadiusM),
+        BorderRadius.circular(AppDimensions.radiusCard),
       );
       expect(
         rest.boxShadow,
@@ -101,34 +111,53 @@ void main() {
       );
     });
 
-    testWidgets('hover variant keeps fill + corners, only deepens shadow', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          ShoppingListCard(shoppingList: _list(), onTap: () {}),
-        ),
-      );
+    testWidgets(
+      'hover variant fills to surface.raised, keeps corners, deepens shadow '
+      '(B83-1 = A, BUT-2183)',
+      (tester) async {
+        late ColorScheme cs;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return ShoppingListCard(shoppingList: _list(), onTap: () {});
+              },
+            ),
+          ),
+        );
 
-      final hoverable = tester.widget<HoverableCard>(
-        find.descendant(
-          of: find.byType(ShoppingListCard),
-          matching: find.byType(HoverableCard),
-        ),
-      );
+        final hoverable = tester.widget<HoverableCard>(
+          find.descendant(
+            of: find.byType(ShoppingListCard),
+            matching: find.byType(HoverableCard),
+          ),
+        );
 
-      final rest = hoverable.restDecoration as BoxDecoration;
-      final hover = hoverable.hoverDecoration as BoxDecoration;
+        final rest = hoverable.restDecoration as BoxDecoration;
+        final hover = hoverable.hoverDecoration as BoxDecoration;
 
-      expect(hover.color, equals(rest.color));
-      expect(hover.borderRadius, equals(rest.borderRadius));
-      expect(hover.boxShadow, isNotNull);
-      expect(
-        hover.boxShadow,
-        isNot(equals(rest.boxShadow)),
-        reason: 'Hover must deepen the shadow beyond the rest elevation.',
-      );
-    });
+        expect(
+          hover.color,
+          cs.surfaceContainerHighest,
+          reason:
+              'Pressed/hover on rows, cards and icon buttons fills to '
+              'surface.raised.',
+        );
+        expect(
+          rest.color,
+          cs.surface,
+          reason: 'Rest keeps the plain surface fill.',
+        );
+        expect(hover.borderRadius, equals(rest.borderRadius));
+        expect(hover.boxShadow, isNotNull);
+        expect(
+          hover.boxShadow,
+          isNot(equals(rest.boxShadow)),
+          reason: 'Hover must deepen the shadow beyond the rest elevation.',
+        );
+      },
+    );
 
     testWidgets('non-tappable card defers the cursor', (tester) async {
       MouseCursor cursorOf() {
@@ -165,5 +194,50 @@ void main() {
         reason: 'A card with no onTap should not imply clickability.',
       );
     });
+
+    testWidgets(
+      'pressing the card paints surface.raised as the ink highlight, '
+      'not the default rust/grey tint (B83-1 = A, BUT-2183)',
+      (tester) async {
+        late ColorScheme cs;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return ShoppingListCard(shoppingList: _list(), onTap: () {});
+              },
+            ),
+          ),
+        );
+
+        final ink = tester.renderObject(
+          find
+              .ancestor(
+                of: find.descendant(
+                  of: find.byType(ShoppingListCard),
+                  matching: find.byType(InkWell),
+                ),
+                matching: find.byType(Material),
+              )
+              .first,
+        );
+        expect(ink, isNot(paintsRaisedHighlight(cs.surfaceContainerHighest)));
+
+        final gesture = await tester.startGesture(
+          tester.getCenter(find.byType(InkWell).first),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(
+          ink,
+          paintsRaisedHighlight(cs.surfaceContainerHighest),
+          reason: 'Pressed on a card fills to surface.raised.',
+        );
+
+        await gesture.up();
+        await tester.pumpAndSettle();
+      },
+    );
   });
 }

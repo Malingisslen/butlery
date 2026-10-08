@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Connection status widgets for collaborative content
 class CollaborativeConnectionWidgets {
@@ -21,17 +21,15 @@ class CollaborativeConnectionWidgets {
         final cs = Theme.of(context).colorScheme;
 
         if (isOnline) {
-          final successColor = context.butleryColors.success;
+          final modeColors = context.modeColors;
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: successColor.withValues(
-                alpha: AppDimensions.opacityVeryLight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+              color: modeColors.surfaceTintSuccess,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -40,7 +38,7 @@ class CollaborativeConnectionWidgets {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: successColor,
+                    color: modeColors.success,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -48,7 +46,7 @@ class CollaborativeConnectionWidgets {
                 Text(
                   context.l10n.collaborativeOnline,
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: successColor,
+                    color: modeColors.onSuccessContainer,
                   ),
                 ),
               ],
@@ -61,12 +59,7 @@ class CollaborativeConnectionWidgets {
           width: double.infinity,
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
-            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
-            border: Border.all(
-              color: cs.error.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
-            ),
+            color: context.modeColors.surfaceTintDanger,
           ),
           child: Row(
             children: [
@@ -77,7 +70,7 @@ class CollaborativeConnectionWidgets {
                     fontSize: AppDimensions.iconSizeM.toDouble(),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.space4),
               ],
               Expanded(
                 child: Column(
@@ -87,13 +80,13 @@ class CollaborativeConnectionWidgets {
                     Text(
                       context.l10n.collaborativeOffline,
                       style: AppTextStyles.bodyLargeBold.copyWith(
-                        color: cs.error,
+                        color: cs.onErrorContainer,
                       ),
                     ),
                     Text(
                       statusText,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.error,
+                        color: cs.onErrorContainer,
                       ),
                     ),
                   ],
@@ -105,7 +98,7 @@ class CollaborativeConnectionWidgets {
                   child: Text(
                     context.l10n.commonRetry,
                     style: AppTextStyles.buttonTextStyle.copyWith(
-                      color: cs.error,
+                      color: cs.onErrorContainer,
                     ),
                   ),
                 ),
@@ -131,7 +124,7 @@ class CollaborativeConnectionWidgets {
           height: size,
           decoration: BoxDecoration(
             color: isOnline
-                ? (onlineColor ?? context.butleryColors.success)
+                ? (onlineColor ?? context.modeColors.success)
                 : (offlineColor ?? cs.error),
             shape: BoxShape.circle,
           ),

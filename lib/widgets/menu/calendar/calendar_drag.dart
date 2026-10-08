@@ -17,6 +17,10 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 
 const double _kDragFeedbackWidth = 110;
 
+/// How faint the cell looks where it was picked up, while its copy is being
+/// dragged.
+const double kCalendarDragGhostOpacity = 0.3;
+
 /// Sealed payload type for drag-and-drop in the calendar.
 /// `MovePayload` carries an existing entry being relocated; `OverflowPayload`
 /// carries a recipe being assigned from the overflow tray.
@@ -47,14 +51,14 @@ Widget wrapAsDraggable({
   final cs = Theme.of(context).colorScheme;
   final feedback = Material(
     elevation: 4,
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     child: Container(
       width: _kDragFeedbackWidth,
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(color: cs.primary),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        border: Border.all(color: cs.onSurface),
       ),
       child: Text(
         label.toLowerCase(),
@@ -68,7 +72,7 @@ Widget wrapAsDraggable({
     ),
   );
   final ghost = Opacity(
-    opacity: AppDimensions.opacityMediumLight,
+    opacity: kCalendarDragGhostOpacity,
     child: child,
   );
 

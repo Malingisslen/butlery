@@ -1,8 +1,8 @@
 // lib/services/parsing/recipe_text_heuristic.dart
 
 /// BUT-1037: cheap, deterministic "does this pasted text look like a recipe?"
-/// gate used to avoid spending a paid LLM call on clearly-non-recipe content
-/// (a news article, a chat snippet, gibberish).
+/// gate for clearly-non-recipe content (a news article, a chat snippet,
+/// gibberish).
 ///
 /// Pure + side-effect-free — no LLM, no network. Signals are measurement units
 /// and cooking verbs in Swedish and English. The unit list is deliberately
@@ -43,9 +43,9 @@ class RecipeTextHeuristic {
     caseSensitive: false,
   );
 
-  /// Returns true when [text] has enough recipe signal to be worth an LLM
-  /// parse: at least one measurement AND one cooking verb, OR ≥3 total signal
-  /// hits (covers an ingredient-only paste with several amounts but no verbs).
+  /// Returns true when [text] has enough recipe signal: at least one
+  /// measurement AND one cooking verb, OR ≥3 total signal hits (covers an
+  /// ingredient-only paste with several amounts but no verbs).
   static bool looksLikeRecipe(String text) {
     if (text.trim().length < 10) return false;
     final measures = _measure.allMatches(text).length;

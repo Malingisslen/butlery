@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Drives the "vem åt?" (who's eating) picker shown when a recipe is marked as
 /// cooked. Loads the household roster and pre-selects attendees using the
@@ -51,7 +52,7 @@ class WhoIsEatingViewModel extends BaseViewModel {
   /// Presence flow (BUT-1611): pass an explicit [seedMemberIds] (that meal
   /// slot's current selection; empty list = nobody, null-argument absent =
   /// everyone) and set [allowCreateHousehold] to false so opening the weekly
-  /// menu never CREATES a household — it uses the read-only `getForUser` path
+  /// menu never CREATES a household — it uses the read-only `getActiveForUser` path
   /// the menu already relies on, and renders nothing for a solo/absent account.
   Future<void> load({
     List<String>? seedMemberIds,
@@ -67,12 +68,12 @@ class WhoIsEatingViewModel extends BaseViewModel {
       if (allowCreateHousehold) {
         householdId = (await _householdRepository.ensureForUser(uid)).id;
       } else {
-        final households = await _householdRepository.getForUser(uid);
-        if (households.isEmpty) {
+        final household = await _householdRepository.getActiveForUser(uid);
+        if (household == null) {
           _roster = const [];
           return; // solo / no household — caller keeps the feature invisible
         }
-        householdId = households.first.id;
+        householdId = household.id;
       }
       _roster = await _rosterService.getRoster(householdId);
       final rosterIds = _roster.map((m) => m.memberId).toSet();
@@ -93,7 +94,7 @@ class WhoIsEatingViewModel extends BaseViewModel {
       _selected
         ..clear()
         ..addAll(seed);
-    }, errorPrefix: 'Kunde inte ladda hushållet');
+    }, errorPrefix: AppLocale.current.householdLoadFailed);
   }
 
   void toggle(String memberId) {

@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/models/media_permission_notice.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/widgets/recipe/upload_choice_dialog.dart'
     as upload_dialog;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
@@ -69,6 +71,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   bool _isUploadingImage = false;
   String? _imageUploadError;
+  MediaPermissionNotice? _permissionNotice;
 
   // Random instance for temporary recipe ID generation
   static final Random _random = Random.secure();
@@ -94,6 +97,17 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       setError: _setImageUploadError,
       checkCompletionEvents: _checkAndTriggerCompletionEvents,
     );
+  }
+
+  /// What the last pick's camera or photo-library answer leaves to explain
+  /// in the editor (flow 07). Null when there is nothing to say.
+  MediaPermissionNotice? get permissionNotice => _permissionNotice;
+
+  void _notePermission(ImageSource source, OsPermissionOutcome outcome) {
+    final notice = MediaPermissionNotice.after(source, outcome);
+    if (notice == _permissionNotice) return;
+    _permissionNotice = notice;
+    _safeNotifyListeners(immediate: true);
   }
 
   /// Combined list of all images for UI display
@@ -146,6 +160,31 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     return pending;
   }
+
+  /// BUT-2162: the images whose upload failed for the network; the offline
+  /// queue can send them instead of the form.
+  List<File> get networkFailedImages => [
+    for (final status in _imageStates.values)
+      if (status.file != null &&
+          status.state == ImageUploadState.failed &&
+          status.errorType == ImageUploadErrorType.network)
+        status.file!,
+  ];
+
+  /// Removes [files] from the form once the offline queue holds them.
+  void releaseToOfflineQueue(List<File> files) {
+    if (files.isEmpty) return;
+    final paths = {for (final f in files) f.path};
+    _imageStates.removeWhere((key, _) => paths.contains(key));
+    notifyListeners();
+  }
+
+  /// Whether an image failed because it is larger than the server accepts.
+  bool get hasTooLargeImage => _imageStates.values.any(
+    (s) =>
+        s.state == ImageUploadState.failed &&
+        s.error == StorageUploadException.tooLargeCode,
+  );
 
   /// Get uploaded URLs for recipe persistence
   List<String> get uploadedImageUrls => validImageUrls;
@@ -317,18 +356,19 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         context,
       );
 
-      if (imageSource != null) {
-        final pickedFile = await _imagePickerService.pickImage(
+      if (imageSource != null && context.mounted) {
+        final outcome = await _imagePickerService.pickImageWithOutcome(
           imageSource,
+          rationale: mediaRationalePrompt(context),
           enableCrop: true,
         );
-
+        _notePermission(imageSource, outcome.permission);
+        final pickedFile = outcome.file;
         if (pickedFile != null) {
           final xFile = XFile(pickedFile.path);
           await _processImagePickerResult(xFile, recipeId: recipeId);
-        } else {
-          _setImageUploadError(AppLocale.current.errorGeneric);
         }
+        // A cancelled pick is no error (content-style-guide.md:94).
       }
     } catch (e) {
       AppLogger.error('Image picker error: $e');
@@ -337,9 +377,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Pick single image from camera directly (no dialog)
+  /// [askAgain] is "Fråga igen" on the notice: the user asked for the
+  /// system prompt, so our explanation is not repeated
+  /// (produktregler.md:683). The same holds for the gallery picks below.
   Future<void> pickImageFromCamera(
     BuildContext context, {
     String? recipeId,
+    bool askAgain = false,
   }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -350,17 +394,18 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile = await _imagePickerService.pickImage(
+      final outcome = await _imagePickerService.pickImageWithOutcome(
         ImageSource.camera,
+        rationale: askAgain ? null : mediaRationalePrompt(context),
         enableCrop: true,
       );
-
+      _notePermission(ImageSource.camera, outcome.permission);
+      final pickedFile = outcome.file;
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
-      } else {
-        _setImageUploadError(AppLocale.current.errorGeneric);
       }
+      // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
       AppLogger.error('Camera picker error: $e');
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -373,6 +418,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickImageFromGallery(
     BuildContext context, {
     String? recipeId,
+    bool askAgain = false,
   }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -383,17 +429,18 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile = await _imagePickerService.pickImage(
+      final outcome = await _imagePickerService.pickImageWithOutcome(
         ImageSource.gallery,
+        rationale: askAgain ? null : mediaRationalePrompt(context),
         enableCrop: true,
       );
-
+      _notePermission(ImageSource.gallery, outcome.permission);
+      final pickedFile = outcome.file;
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
-      } else {
-        _setImageUploadError(AppLocale.current.errorGeneric);
       }
+      // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
       AppLogger.error('Gallery picker error: $e');
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -406,6 +453,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickMultipleImagesFromGallery(
     BuildContext context, {
     String? recipeId,
+    bool askAgain = false,
   }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -416,14 +464,16 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFiles = await _imagePickerService.pickMultipleImages();
-
+      final outcome = await _imagePickerService.pickMultipleImagesWithOutcome(
+        rationale: askAgain ? null : mediaRationalePrompt(context),
+      );
+      _notePermission(ImageSource.gallery, outcome.permission);
+      final pickedFiles = outcome.files;
       if (pickedFiles.isNotEmpty) {
         final xFiles = pickedFiles.map((file) => XFile(file.path)).toList();
         await _processImagePickerResult(xFiles, recipeId: recipeId);
-      } else {
-        _setImageUploadError(AppLocale.current.errorGeneric);
       }
+      // A cancelled pick is no error (content-style-guide.md:94).
     } catch (e) {
       AppLogger.error('Multiple image picker error: $e');
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -1101,7 +1151,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final fileSize = await imageFile.length();
       const maxSizeInBytes = UploadConstants.maxPreCompressionBytes;
       if (fileSize > maxSizeInBytes) {
-        _setImageUploadError(AppLocale.current.errorGeneric);
+        _setImageUploadError(
+          AppLocale.current.imageUploadTooLarge(
+            '${maxSizeInBytes ~/ (1024 * 1024)}',
+          ),
+        );
         return false;
       }
 

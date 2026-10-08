@@ -1,13 +1,17 @@
 /// Collaborative shopping view with real-time shared list management.
-
 // lib/views/social/collaborative_shopping_view.dart
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:butlery/widgets/realtime/conflict_banner.dart';
+import 'package:flutter/services.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -48,8 +52,46 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   void initState() {
     super.initState();
     _vm = _createViewModel();
+    _vm.addListener(_onViewModelChanged);
     _actions = _createActions();
   }
+
+  /// P6-U05: what the user had typed but not added when the role on this
+  /// list dropped to read-only. Kept on screen until they close it, so the
+  /// text is never lost to a timeout or cut off (produktregler.md:108).
+  String? _unaddedText;
+
+  /// P6-U05 (flows-roles-budget.md:83, :132): the role on this list dropped
+  /// to read-only while it was open. The add field is gone at once (it is
+  /// drawn only while the user can edit); a short snackbar says why, with
+  /// "Stäng" (content-style-guide.md:97, :108). An item typed but not added
+  /// is not written to the list; it stays in a notice in the view, with
+  /// "Kopiera texten", until the user closes it ("osparat erbjuds som
+  /// kopia", flows-roles-budget.md:83).
+  void _onViewModelChanged() {
+    if (!_vm.consumeEditAccessLost()) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final typed = _newItemController.text.trim();
+      if (typed.isNotEmpty) {
+        setState(() => _unaddedText = typed);
+        _newItemController.clear();
+      }
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.roleLoweredShoppingList,
+      );
+    });
+  }
+
+  void _copyUnaddedText() {
+    final typed = _unaddedText;
+    if (typed == null) return;
+    unawaited(Clipboard.setData(ClipboardData(text: typed)));
+    SnackBarUtils.showSuccess(context, context.l10n.roleLoweredTextCopied);
+  }
+
+  void _closeUnaddedText() => setState(() => _unaddedText = null);
 
   @override
   void didUpdateWidget(CollaborativeShoppingView oldWidget) {
@@ -59,10 +101,13 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     // element) the VM must follow — it is constructed around a single listId.
     if (oldWidget.listId != widget.listId) {
       final oldVm = _vm;
+      oldVm.removeListener(_onViewModelChanged);
       setState(() {
         _vm = _createViewModel();
+        _vm.addListener(_onViewModelChanged);
         _actions = _createActions();
         _newItemController.clear();
+        _unaddedText = null;
       });
       // Safe before the rebuild swaps providers: ChangeNotifier.removeListener
       // is explicitly allowed after dispose.
@@ -72,6 +117,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
   @override
   void dispose() {
+    _vm.removeListener(_onViewModelChanged);
     _vm.dispose();
     _newItemController.dispose();
     super.dispose();
@@ -101,6 +147,9 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       child: _CollaborativeShoppingViewContent(
         actions: _actions,
         onToggleItem: _toggleItem,
+        unaddedText: _unaddedText,
+        onCopyUnaddedText: _copyUnaddedText,
+        onCloseUnaddedText: _closeUnaddedText,
       ),
     );
   }
@@ -149,7 +198,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   void _showFailureReason() {
     final reason = _vm.consumeItemOperationError() ?? _vm.error;
     if (reason == null || reason.isEmpty) return;
-    SnackBarUtils.showError(context, reason);
+    SnackBarUtils.showFailure(context, what: reason);
   }
 
   void _shareList() {
@@ -165,10 +214,16 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 class _CollaborativeShoppingViewContent extends StatelessWidget {
   final CollaborativeShoppingActions actions;
   final ValueChanged<String> onToggleItem;
+  final String? unaddedText;
+  final VoidCallback onCopyUnaddedText;
+  final VoidCallback onCloseUnaddedText;
 
   const _CollaborativeShoppingViewContent({
     required this.actions,
     required this.onToggleItem,
+    required this.unaddedText,
+    required this.onCopyUnaddedText,
+    required this.onCloseUnaddedText,
   });
 
   @override
@@ -192,9 +247,6 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
             child: Column(
               children: [
                 LayoutComponents.offlineIndicator(),
-                // BUT-1162: surface silent collaborative-edit conflict
-                // resolutions on this shared list (drop-in; idle-collapses).
-                ConflictBanner(filterDocId: viewModel.listId),
                 Expanded(child: _buildBody(context, viewModel)),
               ],
             ),
@@ -229,8 +281,8 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.shopping_cart_outlined,
+            ButleryIcon(
+              ButleryIcons.shoppingCart,
               size: AppDimensions.iconSizeXl,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -248,7 +300,7 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXl),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back),
+              icon: const ButleryIcon(ButleryIcons.arrowLeft),
               label: Text(context.l10n.commonBack),
             ),
           ],
@@ -261,10 +313,23 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
     BuildContext context,
     CollaborativeShoppingViewModel viewModel,
   ) {
+    final updatedByNotice = viewModel.updatedByNotice;
     return Column(
       children: [
         CollaborativeShoppingHeader(viewModel: viewModel),
+        if (updatedByNotice != null)
+          _UpdatedByNotice(
+            key: const ValueKey('collaborativeShopping.updatedByNotice'),
+            text: updatedByNotice,
+            onDismiss: viewModel.dismissUpdatedByNotice,
+          ),
         actions.buildAddItemSection(context),
+        if (unaddedText != null)
+          _UnaddedTextNotice(
+            text: unaddedText!,
+            onCopy: onCopyUnaddedText,
+            onClose: onCloseUnaddedText,
+          ),
         Expanded(
           child: CollaborativeShoppingItems(
             viewModel: viewModel,
@@ -272,6 +337,149 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// P6-U05: the item a user had typed but not added when their role on the
+/// list dropped to read-only, kept in the view until they close it.
+///
+/// A notice box like [_UpdatedByNotice]: surface.tint.warning fill, no
+/// border, the control radius, text.body (B83-2e).
+/// The typed text is body text, so it is never cut off
+/// (content-style-guide.md) and can be selected as well as copied.
+class _UnaddedTextNotice extends StatelessWidget {
+  const _UnaddedTextNotice({
+    required this.text,
+    required this.onCopy,
+    required this.onClose,
+  });
+
+  final String text;
+  final VoidCallback onCopy;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final body = AppModeColors.textBody(Theme.of(context).brightness);
+    return Padding(
+      key: const ValueKey('collaborativeShopping.unaddedText'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingS,
+      ),
+      child: Material(
+        color: context.modeColors.surfaceTintWarning,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.space12,
+            AppDimensions.paddingS,
+            AppDimensions.spacingXs,
+            AppDimensions.spacingXs,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l.roleLoweredShoppingUnsaved,
+                style: AppTextStyles.captionBase.copyWith(color: body),
+              ),
+              const SizedBox(height: AppDimensions.spacingXs),
+              SelectableText(
+                text,
+                style: AppTextStyles.bodyMedium.copyWith(color: body),
+              ),
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Wrap(
+                  children: [
+                    TextButton(
+                      onPressed: onCopy,
+                      child: Text(l.roleLoweredCopyText),
+                    ),
+                    TextButton(
+                      onPressed: onClose,
+                      child: Text(l.commonClose),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — shown in
+/// the header when someone else updates this shared list while it is open.
+///
+/// A notice box, not the danger-coloured [ConflictBanner]: surface.tint.warning
+/// fill, no border, the 8 px control radius, no icon, text.body (B83-2d). Sits between the header's
+/// participant/activity row and "Lägg till vara" — the widget position in
+/// [_CollaborativeShoppingViewContent._buildListContent] draws it there.
+class _UpdatedByNotice extends StatelessWidget {
+  const _UpdatedByNotice({
+    super.key,
+    required this.text,
+    required this.onDismiss,
+  });
+
+  final String text;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final body = AppModeColors.textBody(Theme.of(context).brightness);
+    // Keyed on the text so a screen reader announces each distinct notice
+    // once (a rebuild of the same text, or the same notice reappearing
+    // unchanged, stays silent) — same pattern as ConflictBanner.
+    return KeyedSubtree(
+      key: ValueKey(text),
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        child: Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.spacingXs,
+          ),
+          decoration: BoxDecoration(
+            color: context.modeColors.surfaceTintWarning,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingM,
+                    vertical: AppDimensions.paddingS,
+                  ),
+                  child: Text(
+                    text,
+                    style: AppTextStyles.captionBase.copyWith(color: body),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
+                child: IconButton(
+                  tooltip: context.l10n.a11yShoppingListUpdatedByDismiss,
+                  icon: const ButleryIcon(ButleryIcons.x),
+                  onPressed: onDismiss,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

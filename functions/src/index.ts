@@ -104,6 +104,11 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 // layer (BUT-424 tampering-detection invariant); this callable runs under
 // Admin SDK to satisfy the user's right to access their own actor history.
 export { exportAuditLogs } from "./exports/audit-logs";
+// BUT-2142 (E1): Art. 15 for the backup codes — counts, never hashes.
+export { exportMfaRecoveryData } from "./exports/mfa-recovery-data";
+// BUT-1747: shared shopping data the client SDK cannot read — lists the user
+// has left and `shared_content` item rows.
+export { exportSharedResidue } from "./exports/shared-residue";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
@@ -140,7 +145,6 @@ export { ensureCategoryChat } from "./groups/ensure-category-chat";
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 
 // Cleanup Functions - Scheduled
-export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
 export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
 export { purgeExpiredAuditLogs } from "./audit_logs/purge-expired";
 export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
@@ -163,6 +167,14 @@ export { requestAccountDeletion } from "./account/request-account-deletion";
 // of `birthYear` + the `ageCompliant` custom claim that gates the UGC paths.
 export { verifySignupAge } from "./account/verify-signup-age";
 
+// P6-U09: backup codes for two-step verification. Hashes only, server-only
+// collection; recovery proves the password server-side before any code.
+export {
+  generateMfaBackupCodes,
+  recoverWithMfaBackupCode,
+  clearMfaBackupCodes,
+} from "./account/mfa-backup-codes";
+
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 
@@ -171,6 +183,22 @@ export { onProfileUpdated } from "./social/on-profile-updated";
 // tightened to owner-only — closing a hole where a stranger could insert
 // themselves into a victim's friends list and read private cook_snaps.
 export { acceptFriendRequest } from "./social/accept-friend-request";
+
+// BUT-2265: joining a group. The group rules admit only the owner and existing
+// members, so an invitee's own write was always refused.
+export { acceptGroupInvitation } from "./social/accept-group-invitation";
+
+// BUT-2270: a group's invitations in one call. The client's one-per-10-seconds
+// limit on social requests dropped every invitation after the first.
+export { sendGroupInvitations } from "./social/send-group-invitations";
+// BUT-2264: exact-address friend search without publishing the address.
+export { findUserByEmail } from "./social/find-user-by-email";
+
+// BUT-2267: a member of a group marked as household joins the shared
+// household, and the trigger removes anyone the group no longer holds, with
+// their allergen share. Household membership is written only here.
+export { joinGroupHousehold } from "./family/join-group-household";
+export { onHouseholdGroupWritten } from "./family/on-household-group-written";
 
 // BUT-1629: the only path by which a minor can become searchable. The rules
 // hard-deny (BUT-1626) blocks every CLIENT write of isSearchable:true for a
@@ -182,6 +210,10 @@ export { setProfileSearchability } from "./social/set-profile-searchability";
 // person it constrains. Every writer is the Admin SDK; the rules deny every
 // client write to it.
 export { syncBlockMirror } from "./social/sync-block-mirror";
+
+// BUT-2169: a block hides what the two people shared with each other, both
+// directions, and an unblock brings it back.
+export { holdSharesOnBlock } from "./social/hold-shares-on-block";
 
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";

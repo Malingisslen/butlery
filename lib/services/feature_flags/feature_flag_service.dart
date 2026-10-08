@@ -104,14 +104,7 @@ class FeatureFlagService {
     // firestore.rules block, the consent_granted/consent_revoked audit pair
     // (DPIA R5), and the erasure and access wiring — cascade step,
     // probeResidualData leg, reset-user-data entry and GDPR export section.
-    // What is still missing before this may be flipped is (a) the atomic
-    // settings+share write, without which a shared list silently lags its
-    // owner's edits (DPIA R4), (b) deleting a share when a member leaves or is
-    // removed from a household (DPIA R7; no code adds or removes a member yet),
-    // (c) a way to put a second account holder in a household at all, and
-    // (d) Annex B in the shipping privacy policy. This list is the launch
-    // checklist, so keep it exhaustive rather than naming the interesting items.
-    'enable_household_allergen_sharing': false,
+    'enable_household_allergen_sharing': true,
     // Decides WHICH of the on-device recognizer's two strings the parser sees —
     // the one built from its measured lines, or ML Kit's own assembly — AND
     // whether the page geometry travels with it. The page model is always

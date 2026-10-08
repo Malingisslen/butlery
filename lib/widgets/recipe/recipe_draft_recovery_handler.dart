@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -42,12 +41,18 @@ class RecipeDraftRecoveryHandler {
       );
 
       if (context.mounted) {
+        var discard = false;
         final selectedDraftId = await context.showDraftRecovery(
           availableDrafts,
+          onDiscardAll: () => discard = true,
         );
 
         if (selectedDraftId != null && context.mounted) {
           await restoreDraft(context, selectedDraftId);
+        } else if (discard && context.mounted) {
+          discardDrafts(context, [
+            for (final draft in availableDrafts) draft.draftId,
+          ]);
         } else {
           AppLogger.info('[$_logTag] User chose to start fresh');
         }
@@ -56,6 +61,18 @@ class RecipeDraftRecoveryHandler {
       AppLogger.error('[$_logTag] Error checking for drafts: $e');
       // Don't show error to user - draft recovery is optional functionality
     }
+  }
+
+  /// Deletes [draftIds] once the undo window has closed without Ångra;
+  /// Ångra keeps them, and the question comes back on the next opening.
+  static void discardDrafts(BuildContext context, List<String> draftIds) {
+    final viewModel = context.read<RecipeFormViewModel>();
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.draftsDiscarded(draftIds.length),
+      onUndo: () => AppLogger.info('[$_logTag] Discard undone'),
+      onCommit: () => viewModel.discardDrafts(draftIds),
+    );
   }
 
   /// Restore draft with user feedback.
@@ -75,7 +92,7 @@ class RecipeDraftRecoveryHandler {
           final formData = viewModel.serializeCurrentFormData();
           final fieldCount = countRestoredFields(formData);
 
-          UtilityComponents.showSuccessSnackbar(
+          SnackBarUtils.showSuccess(
             context,
             context.l10n.draftRestoredWithCount(fieldCount),
           );
@@ -84,9 +101,9 @@ class RecipeDraftRecoveryHandler {
             '[$_logTag] Draft restored successfully - $fieldCount fields loaded',
           );
         } else {
-          UtilityComponents.showErrorSnackbar(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.draftCouldNotRestore,
+            what: context.l10n.draftCouldNotRestore,
           );
 
           AppLogger.error('[$_logTag] Failed to restore draft: $draftId');
@@ -96,9 +113,9 @@ class RecipeDraftRecoveryHandler {
       AppLogger.error('[$_logTag] Error restoring draft: $e');
 
       if (context.mounted) {
-        UtilityComponents.showErrorSnackbar(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.draftCouldNotRestore,
+          what: context.l10n.draftCouldNotRestore,
         );
       }
     }

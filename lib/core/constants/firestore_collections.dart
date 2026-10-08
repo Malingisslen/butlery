@@ -28,7 +28,7 @@ abstract final class FirestoreCollections {
   static const String deletionAuditLogs = 'deletion_audit_logs';
   static const String feedback = 'feedback';
   static const String presence = 'presence';
-  static const String realtimeRecipes = 'realtime_recipes';
+  static const String realtimeResources = 'realtime_resources';
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';
   static const String recipeSocialStats = 'recipe_social_stats';
@@ -95,7 +95,6 @@ abstract final class FirestoreCollections {
 
   static const String shoppingListTemplates = 'shopping_list_templates';
   static const String categoryOverrides = 'category_overrides';
-  static const String globalRecipeCache = 'globalRecipeCache';
 
   // ── User subcollections (under users/{userId}/) ──
 
@@ -135,6 +134,13 @@ abstract final class FirestoreCollections {
   // `firebase_acquisition_repository.dart`), which the guard resolves too.
   static const String userOnboarding = 'onboarding';
   static const String userAcquisition = 'acquisition';
+  // P5-U26b: a user's own versions that another person's save overwrote,
+  // kept 30 days behind "Återställ" (produktregler.md:109). Owner-only.
+  static const String overwrittenVersions = 'overwritten_versions';
+  // P5-U27b: a change to someone else's shared recipe, kept 7 days as a
+  // suggestion the owner accepts or dismisses (produktregler.md:103, :241).
+  // Top-level: the suggester and the owner both read it.
+  static const String recipeSuggestions = 'recipe_suggestions';
   static const String userSharedMenus = 'user_shared_menus';
   static const String userSharedShoppingLists = 'user_shared_shopping_lists';
   static const String categoryPreferences = 'category_preferences';

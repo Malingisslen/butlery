@@ -1,7 +1,7 @@
 /// Selection-mode AppBar extracted from `mina_recept_view.dart` per
 /// BUT-441. Active when the user is in bulk-selection mode; provides
 /// close, select-all, and bulk-delete actions. Bulk-delete confirmation
-/// + undo SnackBar live here (5-7s window via `commonUndo`).
+/// + undo SnackBar live here (`SnackBarUtils.showUndoDeferred`).
 library;
 
 import 'package:flutter/material.dart';
@@ -22,106 +22,276 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
-/// Builds the selection-mode AppBar. Returned as a `PreferredSizeWidget`
+/// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
 /// so the parent Scaffold can drop it straight in.
+///
+/// The same root bar as the list, with other content: "Toppfältet byter
+/// innehåll, inte höjd. I flervalsläget ersätter räknaren titeln och
+/// *Avbryt* ersätter tillbakapilen" (produktregler.md:873; Skarmar v12 etapp
+/// 9 #flervalingang). [secondaryLine] is the list's own count line, kept so
+/// the bar keeps its height. The counter is `{n} valda` in tabular figures
+/// (produktregler.md:876).
 PreferredSizeWidget buildMinaReceptSelectionAppBar(
+  BuildContext context,
+  RecipeListViewModel viewModel, {
+  String? secondaryLine,
+}) {
+  return ButleryTopBar.rot(
+    title: context.l10n.bulkSelectedCount(viewModel.selectedCount),
+    titleStyle: const TextStyle(
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+    secondaryLine: secondaryLine,
+    secondaryLineIsLive: false,
+    leading: buildMinaReceptSelectionCancel(context, viewModel),
+    actions: buildMinaReceptSelectionActions(context, viewModel),
+  );
+}
+
+/// "Avbryt", which leaves selection mode (produktregler.md:873). Shared by
+/// the selection bar and Hem's library header row (Q6-16 = B).
+Widget buildMinaReceptSelectionCancel(
   BuildContext context,
   RecipeListViewModel viewModel,
 ) {
   final cs = Theme.of(context).colorScheme;
-  return AppBar(
-    backgroundColor: cs.primaryContainer,
-    leading: IconButton(
-      icon: const Icon(Icons.close),
-      onPressed: viewModel.clearSelection,
-      tooltip: context.l10n.bulkCancelSelection,
-    ),
-    title: Text(
-      context.l10n.bulkSelectedCount(viewModel.selectedCount),
-      style: AppTextStyles.titleMedium,
-    ),
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.select_all),
-        tooltip: context.l10n.bulkSelectAll,
-        onPressed: viewModel.selectAll,
+  // text.primary on surface.base in both modes (ink #24382C light, paper
+  // #F5F4ED dark; app_colors.dart:295, :331). The theme's text-button
+  // colour is cs.primary, which is ink in the dark scheme too.
+  return TextButton(
+    key: const ValueKey('mina-recept-selection-cancel'),
+    style: TextButton.styleFrom(
+      foregroundColor: cs.onSurface,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingSm,
       ),
-      // BUT-933: bulk-share. BUT-1012 added bulk-tag below.
+    ),
+    onPressed: viewModel.clearSelection,
+    child: Text(context.l10n.commonCancel),
+  );
+}
+
+/// The selection mode's actions. Shared by the selection bar and Hem's
+/// library header row (Q6-16 = B).
+List<Widget> buildMinaReceptSelectionActions(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) {
+  // Interpretation: #flerbar is drawn at 412 dp. Below 360 dp the counter,
+  // Avbryt and three actions plus the kebab do not fit one row, so share
+  // moves to the top of the kebab ("högst tre", produktregler.md:886).
+  final narrow = MediaQuery.sizeOf(context).width < _narrowBar;
+  // #flerbar (Skarmar v12 etapp 9) and produktregler.md:886-889: at most
+  // three actions in the bar, ordered by how often they are used and how
+  // hard they are to undo (add to menu, tag, share), the rest in a kebab
+  // (select all, export, delete). Six 48 dp actions do not fit a phone.
+  return [
+    // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
+    // then loop selected recipes into chosen slot (single-slot
+    // distributes day-by-day; multi-slot stacks).
+    IconButton(
+      key: const ValueKey('mina-recept-bulk-add-to-menu'),
+      icon: const ButleryIcon(ButleryIcons.calendar),
+      tooltip: context.l10n.bulkAddToMenu,
+      onPressed: viewModel.selectedCount == 0
+          ? null
+          : () => _openBulkAddToMenu(context, viewModel),
+    ),
+    // BUT-1012: bulk-tag.
+    IconButton(
+      key: const ValueKey('mina-recept-bulk-tag'),
+      icon: const ButleryIcon(ButleryIcons.tag),
+      tooltip: context.l10n.bulkTag,
+      onPressed: viewModel.selectedCount == 0
+          ? null
+          : () => _openBulkTagPicker(context, viewModel),
+    ),
+    // BUT-933: bulk-share.
+    if (!narrow)
       IconButton(
-        icon: const Icon(Icons.share_outlined),
+        key: const ValueKey('mina-recept-bulk-share'),
+        icon: const ButleryIcon(ButleryIcons.share2),
         tooltip: context.l10n.bulkShare,
         onPressed: viewModel.selectedCount == 0
             ? null
             : () => _openBulkShareDialog(context, viewModel),
       ),
-      IconButton(
-        icon: const Icon(Icons.local_offer_outlined),
-        tooltip: context.l10n.bulkTag,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkTagPicker(context, viewModel),
-      ),
-      // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
-      // then loop selected recipes into chosen slot (single-slot
-      // distributes day-by-day; multi-slot stacks).
-      IconButton(
-        icon: const Icon(Icons.calendar_month_outlined),
-        tooltip: context.l10n.bulkAddToMenu,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkAddToMenu(context, viewModel),
-      ),
-      // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
-      IconButton(
-        icon: const Icon(Icons.ios_share),
-        tooltip: context.l10n.bulkExport,
-        onPressed: viewModel.selectedCount == 0
-            ? null
-            : () => _openBulkExport(context, viewModel),
-      ),
-      IconButton(
-        icon: const Icon(Icons.delete_outline),
-        tooltip: context.l10n.bulkDelete,
-        onPressed: () async {
-          final count = viewModel.selectedCount;
-          final confirmed = await CommonDialogActions.showDeleteConfirmation(
-            context: context,
-            itemName: '$count recept',
-            itemType: 'recept',
-            warningMessage: context.l10n.bulkDeleteConfirmMessage,
-            icon: Icons.delete_sweep,
-          );
-          if (confirmed == true) {
-            viewModel.deleteSelected();
-            viewModel.clearSelection();
-            if (context.mounted) {
-              SnackBarUtils.showSuccessWithAction(
-                context,
-                context.l10n.bulkDeleteSuccess(count),
-                actionLabel: context.l10n.commonUndo,
-                onAction: () => viewModel.undoBulkDelete(),
-                duration: const Duration(seconds: 7),
-              );
-            }
+    _BulkMoreMenu(viewModel: viewModel, withShare: narrow),
+  ];
+}
+
+/// "Välj" for the recipe list's own top bar (B-46; produktregler.md:870-874;
+/// Skarmar v12 etapp 9 #flervalingang, data-a11y-name "Välj recept").
+///
+/// Returns the action to put among the bar's actions, or nothing when the
+/// list has fewer than two recipes.
+///
+/// [foregroundColor] when it stands outside a top bar (Hem's library header
+/// row, Q6-16 = B): a bar gives its actions their colour, a row does not.
+List<Widget> buildMinaReceptSelectEntry(
+  BuildContext context,
+  RecipeListViewModel viewModel, {
+  Color? foregroundColor,
+}) {
+  if (!ButlerySelectButton.shownFor(viewModel.recipes.length)) {
+    return const [];
+  }
+  return [
+    ButlerySelectButton(
+      key: const ValueKey('mina-recept-select-enter'),
+      semanticLabel: context.l10n.selectionEnterRecipes,
+      foregroundColor: foregroundColor,
+      onPressed: viewModel.startSelection,
+    ),
+  ];
+}
+
+/// Below this width share leaves the bar for the kebab.
+const double _narrowBar = 360;
+
+enum _BulkMoreAction { share, selectAll, export, delete }
+
+/// The kebab of #flerbar: select all, export, and delete last, alone,
+/// behind a line and in text.danger (produktregler.md:888; Skarmar v12
+/// etapp 9 #flerbar). Actions that need a selection are off at zero with
+/// the name still readable (produktregler.md:876).
+class _BulkMoreMenu extends StatelessWidget {
+  const _BulkMoreMenu({required this.viewModel, required this.withShare});
+
+  final RecipeListViewModel viewModel;
+  final bool withShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final hasSelection = viewModel.selectedCount > 0;
+    // Off at zero with the name readable, in the disabled role rather than
+    // the menu's faded default (produktregler.md:876; tokens.json:71-74,
+    // :198): text.disabled.onRaised, #788477 light and #93A48D dark.
+    final disabled = TextStyle(
+      color: AppModeColors.textDisabled(cs.brightness),
+    );
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<_BulkMoreAction>(
+        key: const ValueKey('mina-recept-bulk-more'),
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        tooltip: context.l10n.bulkMoreActions,
+        onSelected: (action) {
+          switch (action) {
+            case _BulkMoreAction.share:
+              _openBulkShareDialog(context, viewModel);
+            case _BulkMoreAction.selectAll:
+              // A toggle that can untick.
+              if (viewModel.allSelected) {
+                viewModel.deselectAll();
+              } else {
+                viewModel.selectAll();
+              }
+            case _BulkMoreAction.export:
+              _openBulkExport(context, viewModel);
+            case _BulkMoreAction.delete:
+              _confirmBulkDelete(context, viewModel);
           }
         },
+        itemBuilder: (menuContext) {
+          final allSelected = viewModel.allSelected;
+          return [
+            if (withShare)
+              PopupMenuItem(
+                value: _BulkMoreAction.share,
+                enabled: hasSelection,
+                child: Text(
+                  menuContext.l10n.bulkShare,
+                  style: hasSelection ? null : disabled,
+                ),
+              ),
+            // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
+            // every recipe is ticked it unticks them. Interpretation: the second
+            // label is not drawn, so it takes the app's "Avmarkera alla".
+            PopupMenuItem(
+              key: const ValueKey('mina-recept-bulk-select-all'),
+              value: _BulkMoreAction.selectAll,
+              child: Text(
+                allSelected
+                    ? menuContext.l10n.commonDeselectAll
+                    : menuContext.l10n.selectionSelectAllCount(
+                        viewModel.recipes.length,
+                      ),
+                style: const TextStyle(
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+            // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+            PopupMenuItem(
+              value: _BulkMoreAction.export,
+              enabled: hasSelection,
+              child: Text(
+                menuContext.l10n.bulkExport,
+                style: hasSelection ? null : disabled,
+              ),
+            ),
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              key: const ValueKey('mina-recept-bulk-delete'),
+              value: _BulkMoreAction.delete,
+              enabled: hasSelection,
+              child: Text(
+                menuContext.l10n.bulkDelete,
+                // text.danger on the menu's surface.base: cs.error is the
+                // generated semantic.text.danger, #9C3B23 light and #DE9078
+                // dark.
+                style: hasSelection ? TextStyle(color: cs.error) : disabled,
+              ),
+            ),
+          ];
+        },
       ),
-    ],
+    );
+  }
+}
+
+Future<void> _confirmBulkDelete(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) async {
+  final count = viewModel.selectedCount;
+  final confirmed = await CommonDialogActions.showDeleteConfirmation(
+    context: context,
+    itemName: '$count recept',
+    itemType: 'recept',
+    warningMessage: context.l10n.bulkDeleteConfirmMessage,
+    icon: ButleryIcons.trash2,
   );
+  if (confirmed == true && context.mounted) {
+    final batch = viewModel.deleteSelected();
+    viewModel.clearSelection();
+    // Commits when the snackbar closes, never under a live Ångra.
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.bulkDeleteSuccess(count),
+      onUndo: () => viewModel.undoBulkDelete(),
+      onCommit: () => viewModel.commitDeletes(batch),
+    );
+  }
 }
 
 /// BUT-933: open the bulk-share dialog with the selected recipes.
-/// `UniversalShareDialog.bulkShare` already accepts a list — no Cloud
-/// Function changes needed. Friends + groups are fetched best-effort
-/// matching `recipe_social_handler.showSocialShareDialog`.
 Future<void> _openBulkShareDialog(
   BuildContext context,
   RecipeListViewModel viewModel,
@@ -132,22 +302,32 @@ Future<void> _openBulkShareDialog(
   final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
   final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
-  List<UserProfile> availableFriends = const [];
+  final List<UserProfile> availableFriends;
   try {
+    if (!friendsService.isInitialized) await friendsService.initialize();
     availableFriends = friendsService.friends;
-  } catch (_) {
-    // Silently continue with empty friends list.
+  } catch (e) {
+    // An empty list would open a sheet that says there is nobody to share
+    // with, which is not what happened.
+    AppLogger.error('Bulk share could not load friends', e);
+    if (context.mounted) {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.bulkShareFriendsLoadFailed,
+        preserved: context.l10n.bulkShareSelectionKept,
+      );
+    }
+    return;
   }
   final List<FriendCategory> availableGroups = friendsService.categoriesList;
 
   if (!context.mounted) return;
-  await showDialog<void>(
-    context: context,
+  await showUniversalShareSheet(
+    context,
     builder: (dialogContext) => ChangeNotifierProvider.value(
       value: shareViewModel,
-      child: UniversalShareDialog.bulkShare(
-        contentItems: recipes,
-        primaryContentType: ShareContentType.recipe,
+      child: UniversalShareDialog.recipes(
+        recipes: recipes,
         viewModel: shareViewModel,
         availableFriends: availableFriends,
         availableGroups: availableGroups,
@@ -255,7 +435,8 @@ Future<void> _runBulkAddToMenu(
   } catch (e) {
     AppLogger.error('Bulk add-to-menu failed', e);
     if (!context.mounted) return;
-    SnackBarUtils.showError(context, e.toString());
+    // What failed, never the exception (content-style-guide.md:95).
+    SnackBarUtils.showFailure(context, what: context.l10n.bulkAddToMenuFailed);
   }
 }
 
@@ -276,13 +457,13 @@ Future<void> _openBulkExport(
       child: Wrap(
         children: [
           ListTile(
-            leading: const Icon(Icons.copy),
+            leading: const ButleryIcon(ButleryIcons.copy),
             title: Text(sheetContext.l10n.bulkExportCopyClipboard),
             onTap: () =>
                 Navigator.of(sheetContext).pop(_ExportChoice.clipboard),
           ),
           ListTile(
-            leading: const Icon(Icons.ios_share),
+            leading: const ButleryIcon(ButleryIcons.share2),
             title: Text(sheetContext.l10n.bulkExportShareFile),
             onTap: () =>
                 Navigator.of(sheetContext).pop(_ExportChoice.shareFile),
@@ -318,7 +499,8 @@ Future<void> _openBulkExport(
   } catch (e) {
     AppLogger.error('Bulk export failed', e);
     if (!context.mounted) return;
-    SnackBarUtils.showError(context, e.toString());
+    // What failed, never the exception (content-style-guide.md:95).
+    SnackBarUtils.showFailure(context, what: context.l10n.bulkExportFailed);
   }
 }
 
@@ -398,12 +580,14 @@ Future<void> _openBulkTagPicker(
     SnackBarUtils.showInfo(context, context.l10n.bulkTagAllAlreadyTagged);
     return;
   }
-  SnackBarUtils.showSuccessWithAction(
+  // Interpretation, not settled: applying a tag is not in the
+  // produktregler.md:129-136 table. It is neither `add` nor `delete`, and it
+  // sits closer to `assign` (class 3, no friction). The undo is kept as it was
+  // until the class is decided.
+  SnackBarUtils.showUndo(
     context,
     context.l10n.bulkTagSuccess(modified),
-    actionLabel: context.l10n.commonUndo,
-    onAction: () => viewModel.undoBulkApplyPersonalTag(),
-    duration: const Duration(seconds: 7),
+    onUndo: () => viewModel.undoBulkApplyPersonalTag(),
   );
 }
 
@@ -458,7 +642,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusM),
+              top: Radius.circular(AppDimensions.radiusCard),
             ),
           ),
           child: Column(
@@ -470,7 +654,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius2,
+                    AppDimensions.radiusKnob,
                   ),
                 ),
               ),
@@ -478,7 +662,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 child: Row(
                   children: [
-                    const Icon(Icons.local_offer_outlined),
+                    const ButleryIcon(ButleryIcons.tag),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
@@ -511,7 +695,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.label_outline, size: 64),
+              const ButleryIcon(ButleryIcons.tag, size: 64),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 context.l10n.bulkTagNoTagsAvailable,
@@ -520,7 +704,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
               const SizedBox(height: AppDimensions.spacingLg),
               FilledButton.icon(
                 onPressed: _navigateToManageTags,
-                icon: const Icon(Icons.add),
+                icon: const ButleryIcon(ButleryIcons.plus),
                 label: Text(context.l10n.taggingCreateTag),
               ),
             ],
@@ -537,9 +721,12 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           runSpacing: AppDimensions.spacingSm,
           children: tags
               .map(
-                (tag) => ActionChip(
-                  label: Text(tag.name),
-                  onPressed: () => _selectTag(tag),
+                (tag) => PressFill(
+                  surface: PressSurface.base,
+                  child: ActionChip(
+                    label: Text(tag.name),
+                    onPressed: () => _selectTag(tag),
+                  ),
                 ),
               )
               .toList(),
@@ -548,7 +735,10 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
-            icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
+            icon: const ButleryIcon(
+              ButleryIcons.settings,
+              size: AppDimensions.iconSize18,
+            ),
             label: Text(context.l10n.taggingManageTags),
           ),
         ),

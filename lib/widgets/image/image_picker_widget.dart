@@ -1,6 +1,7 @@
 // lib/widgets/image/image_picker_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,11 +9,14 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'dart:io';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
 // Re-export removed - image_source_picker.dart was dead code
@@ -97,9 +101,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 widget.config.maxImages,
               ),
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurface.withValues(
-                  alpha: AppDimensions.opacityDark,
-                ),
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -118,9 +120,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
+          color: cs.outlineVariant,
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -139,10 +139,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_isLoading) ...[
-                    LoadingIndicator(
-                      size: 32,
-                      strokeWidth: 2,
-                      color: cs.primary,
+                    SizedBox(
+                      width: AppDimensions.iconSizeXl * 2,
+                      child: PlateLine(
+                        semanticLabel: context.l10n.imageSelectingImages,
+                      ),
                     ),
                     const SizedBox(
                       height:
@@ -151,9 +152,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     Text(
                       context.l10n.imageSelectingImages,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityDark,
-                        ),
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ] else ...[
@@ -161,14 +160,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: cs.primary.withValues(
-                          alpha: AppDimensions.opacityVeryLight,
-                        ),
+                        color: cs.surface,
                       ),
-                      child: Icon(
-                        Icons.add_photo_alternate_outlined,
+                      child: ButleryIcon(
+                        ButleryIcons.camera,
                         size: AppDimensions.iconSizeXl,
-                        color: cs.primary,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(
@@ -189,9 +186,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                             )
                           : context.l10n.imageTapToSelectOne,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface.withValues(
-                          alpha: AppDimensions.opacityDark,
-                        ),
+                        color: cs.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -244,15 +239,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         // Image container
         DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-            border: Border.all(
-              color: cs.outlineVariant.withValues(
-                alpha: AppDimensions.opacityLight,
-              ),
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: imagePath.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: imagePath,
@@ -260,14 +251,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    placeholder: (context, url) => ColoredBox(
-                      color: cs.surfaceContainerHighest,
-                      child: const Center(child: LoadingIndicator()),
-                    ),
+                    // A still plate while the image loads, never a spinner (P4-U07).
+                    placeholder: (context, url) =>
+                        ColoredBox(color: cs.surfaceContainerHighest),
                     errorWidget: (context, url, error) => ColoredBox(
                       color: cs.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.error_outline,
+                      child: ButleryIcon(
+                        ButleryIcons.triangleAlert,
                         color: cs.error,
                       ),
                     ),
@@ -280,8 +270,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     height: double.infinity,
                     errorBuilder: (context, error, stackTrace) => ColoredBox(
                       color: cs.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.error_outline,
+                      child: ButleryIcon(
+                        ButleryIcons.triangleAlert,
                         color: cs.error,
                       ),
                     ),
@@ -308,8 +298,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: 1,
                   ),
                 ),
-                child: Icon(
-                  Icons.close,
+                child: ButleryIcon(
+                  ButleryIcons.x,
                   size: AppDimensions.iconSizeS,
                   color: cs.surfaceContainerHighest,
                 ),
@@ -324,18 +314,16 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           left: AppDimensions.spacingXs,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingTight,
-              vertical: AppDimensions.spacingXxs,
+              horizontal: AppDimensions.space4,
+              vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withValues(
-                alpha: AppDimensions.opacityExtraDark,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              color: context.modeColors.overlayPaperCard,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Text(
               '${index + 1}',
-              style: AppTextStyles.textXsBold,
+              style: AppTextStyles.textXsBold.copyWith(color: cs.primary),
             ),
           ),
         ),
@@ -359,14 +347,24 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
       List<File> results = [];
 
-      if (widget.allowMultiple) {
-        final multipleResults = await imagePickerService.pickMultipleImages();
-        results = multipleResults;
-      } else {
-        final result = await imagePickerService.pickImage(ImageSource.gallery);
-        if (result != null) {
-          results = [result];
-        }
+      // Flow 07: our explanation before the system prompt, and a word on a
+      // permanent no or a device block (produktregler.md:680-687).
+      final rationale = mediaRationalePrompt(context);
+      final outcome = widget.allowMultiple
+          ? await imagePickerService.pickMultipleImagesWithOutcome(
+              rationale: rationale,
+            )
+          : await imagePickerService.pickImageWithOutcome(
+              ImageSource.gallery,
+              rationale: rationale,
+            );
+      results = outcome.files;
+      if (outcome.blockedByPermission && mounted) {
+        explainMediaPermission(
+          context,
+          outcome.permission,
+          ImageSource.gallery,
+        );
       }
 
       if (results.isNotEmpty) {
@@ -386,11 +384,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       AppLogger.error('Failed to pick images: $e');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.imageFailedToSelect(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.imageSelectFailed,
         );
       }
     } finally {

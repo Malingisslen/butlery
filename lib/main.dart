@@ -18,10 +18,12 @@ import 'package:get_it/get_it.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
+import 'package:butlery/core/bootstrap/emulator_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
 
 // DI modules + bootstrap stages (shared with admin_main.dart)
@@ -85,30 +87,50 @@ Future<void> main() async {
         // daily dev work is unaffected. See docs/operations/cert-pin-rotation.md.
         CertPinConfig.assertReleaseModeSafety();
 
+        if (EmulatorBootstrap.enabled) EmulatorBootstrap.prepare();
         // Initialize Firebase with configuration from compile-time --dart-define
         await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
+          options: EmulatorBootstrap.enabled
+              ? EmulatorBootstrap.options(
+                  DefaultFirebaseOptions.currentPlatform,
+                )
+              : DefaultFirebaseOptions.currentPlatform,
+        );
+        if (EmulatorBootstrap.enabled) await EmulatorBootstrap.configure();
+
+        // BUT-2292: the SDK retries a failing upload for 10 minutes, and the
+        // offline upload queue holds the sync lock for that whole time, so
+        // recipe edits and "Försök synka nu" wait behind one image on a
+        // network without internet. A minute is enough for a flaky network;
+        // after that the queue's own backoff takes over.
+        FirebaseStorage.instance.setMaxUploadRetryTime(
+          const Duration(minutes: 1),
         );
 
         // Must run before any DI module instantiates FirestoreRepository.
-        await FirestoreBootstrap.configure();
+        await FirestoreBootstrap.configure(
+          connect: EmulatorBootstrap.enabled
+              ? EmulatorBootstrap.connectFirestore
+              : null,
+        );
 
         // Default Crashlytics to disabled until consent is verified (GDPR)
         // App Check can proceed immediately (security, not analytics)
         await Future.wait([
           if (!kIsWeb)
             FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
-          FirebaseAppCheck.instance.activate(
-            providerWeb: ReCaptchaV3Provider(
-              '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+          if (!EmulatorBootstrap.enabled)
+            FirebaseAppCheck.instance.activate(
+              providerWeb: ReCaptchaV3Provider(
+                '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+              ),
+              providerAndroid: kDebugMode
+                  ? const AndroidDebugProvider()
+                  : const AndroidPlayIntegrityProvider(),
+              providerApple: kDebugMode
+                  ? const AppleDebugProvider()
+                  : const AppleAppAttestWithDeviceCheckFallbackProvider(),
             ),
-            providerAndroid: kDebugMode
-                ? const AndroidDebugProvider()
-                : const AndroidPlayIntegrityProvider(),
-            providerApple: kDebugMode
-                ? const AppleDebugProvider()
-                : const AppleAppAttestWithDeviceCheckFallbackProvider(),
-          ),
         ]);
 
         // Set up native error handlers (after Crashlytics available)

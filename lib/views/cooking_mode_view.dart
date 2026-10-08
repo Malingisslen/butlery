@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -14,6 +17,7 @@ import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/voice/tts_service.dart';
@@ -24,7 +28,8 @@ import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
@@ -35,9 +40,152 @@ import 'package:butlery/widgets/cooking/voice_heard_chip.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 
-/// Full-screen landscape cooking mode with ingredients left, instructions right.
-/// Keeps screen awake and forces landscape orientation while active.
+/// How cooking mode was left, returned to the recipe detail view that
+/// pushed it.
+///
+/// - [finished]: the user tapped "Klart" on the last step. The detail view
+///   counts the recipe as cooked (flows-roles-budget.md:72).
+/// - [editRecipe]: "Skriv stegen" from a recipe without steps.
+/// - [saveCopy]: "Spara min kopia" from someone else's recipe without steps
+///   (Q6-05 = C): the user's own copy, never an edit of theirs.
+/// - [toShoppingList]: "Till inköpslistan" from a recipe without steps
+///   (produktregler.md:1227; Skarmar v12 etapp 11 #lgbutan).
+enum CookingModeExit { finished, editRecipe, saveCopy, toShoppingList }
+
+/// The device effects a cooking session has. Injectable so the session
+/// rules can be proven without platform channels.
+abstract class CookingSessionEffects {
+  void lockLandscape();
+  void releaseOrientation();
+  void keepScreenAwake({required bool on});
+  void edgeToEdge();
+}
+
+/// Production effects: SystemChrome and the wakelock.
+class DefaultCookingSessionEffects implements CookingSessionEffects {
+  const DefaultCookingSessionEffects();
+
+  @override
+  void lockLandscape() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
+
+  @override
+  void releaseOrientation() {
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+  }
+
+  @override
+  void keepScreenAwake({required bool on}) {
+    if (on) {
+      WakelockPlus.enable();
+    } else {
+      WakelockPlus.disable();
+    }
+  }
+
+  @override
+  void edgeToEdge() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+}
+
+/// Rotation is forced only under 768 px on the shortest side; above that the
+/// view follows the device (produktregler.md:1199).
+const double cookingLandscapeLockBelow = 768;
+
+/// True when a screen of [size] gets forced landscape in cooking mode.
+bool cookingForcesLandscape(Size size) =>
+    size.shortestSide < cookingLandscapeLockBelow;
+
+/// The start and end of a cooking session, kept apart from the widget so the
+/// rules are testable.
+///
+/// A recipe without steps is not a session: no forced rotation, no kept-awake
+/// screen and no "lagar just nu" signal (produktregler.md:1227). The screen
+/// is kept awake only while the view lives (produktregler.md:1201).
+class CookingSessionLifecycle {
+  CookingSessionLifecycle({required this.vm, required this.effects});
+
+  final CookingModeViewModel vm;
+  final CookingSessionEffects effects;
+
+  bool _started = false;
+  bool _active = false;
+  bool _lockedOrientation = false;
+
+  /// Starts the session once, for a screen of [screen] size.
+  void start(Size screen) {
+    if (_started) return;
+    _started = true;
+    if (!vm.hasSteps) return;
+    _active = true;
+    if (cookingForcesLandscape(screen)) {
+      effects.lockLandscape();
+      _lockedOrientation = true;
+    }
+    effects.keepScreenAwake(on: true);
+    effects.edgeToEdge();
+    // BUT-408: broadcast "lagar just nu" to friend groups. Fire-and-forget
+    // — the VM swallows errors so a failed broadcast never blocks the cook.
+    vm.onEnter();
+  }
+
+  /// Ends the session and gives the device back.
+  void end() {
+    if (!_active) return;
+    _active = false;
+    // BUT-408: clear the broadcast. onExit() reads no VM state that dispose
+    // clears, so the ordering is about signalling intent.
+    vm.onExit();
+    if (_lockedOrientation) effects.releaseOrientation();
+    effects.keepScreenAwake(on: false);
+    effects.edgeToEdge();
+  }
+}
+
+/// Asks before leaving once more than one step is done
+/// (flows-roles-budget.md:71). Returns true when the user may leave.
+Future<bool> confirmCookingExit(
+  BuildContext context,
+  CookingModeViewModel vm,
+) async {
+  if (!vm.needsExitConfirmation) return true;
+  final l10n = context.l10n;
+  final leave = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l10n.cookingExitConfirmTitle),
+      content: Text(
+        l10n.cookingExitConfirmBody(vm.currentStepIndex + 1, vm.totalSteps),
+      ),
+      actions: [
+        TextButton(
+          key: const ValueKey('cooking-exit-stay'),
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.cookingExitConfirmStay),
+        ),
+        TextButton(
+          key: const ValueKey('cooking-exit-leave'),
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(l10n.cookingExitConfirmLeave),
+        ),
+      ],
+    ),
+  );
+  return leave ?? false;
+}
+
+/// Full-screen cooking mode with ingredients left, instructions right.
+/// Keeps the screen awake while it lives, and forces landscape on screens
+/// under 768 px (produktregler.md:1199-1201).
 class CookingModeView extends StatefulWidget {
   final Recipe recipe;
 
@@ -46,10 +194,20 @@ class CookingModeView extends StatefulWidget {
   /// every other entry point (→ household default).
   final int? presentServings;
 
+  /// Device effects; production uses [DefaultCookingSessionEffects].
+  final CookingSessionEffects effects;
+
+  /// Q6-05 = C (produktbeslut 2026-09-27): the recipe is not the user's to
+  /// edit, so the empty state offers "Spara min kopia" instead of "Skriv
+  /// stegen". Decided by recipe detail, which knows who owns the recipe.
+  final bool copyInsteadOfEdit;
+
   const CookingModeView({
     super.key,
     required this.recipe,
     this.presentServings,
+    this.copyInsteadOfEdit = false,
+    this.effects = const DefaultCookingSessionEffects(),
   });
 
   @override
@@ -60,10 +218,16 @@ class _CookingModeViewState extends State<CookingModeView> {
   // Hoisted out of build() so initState/dispose can wire the BUT-408
   // session broadcast lifecycle alongside wakelock/orientation setup.
   late final CookingModeViewModel _vm;
+  late final CookingSessionLifecycle _lifecycle;
 
   // Köksbutlern (tasks/koksbutlern-plan.md, Batch D): the voice layer's
-  // state machine, scoped to this cooking session exactly like `_vm`.
-  late final CookingVoiceController _voiceController;
+  // state machine, scoped to this cooking session exactly like `_vm`. Null
+  // for a recipe without steps, which is not a cooking session.
+  CookingVoiceController? _voiceController;
+
+  // The timer notice is shown once per session: a notice repeated at every
+  // timer has not accepted the answer (produktregler.md:1221-1224 spirit).
+  bool _timerNoticeShown = false;
 
   @override
   void initState() {
@@ -72,17 +236,8 @@ class _CookingModeViewState extends State<CookingModeView> {
       recipe: widget.recipe,
       presentServings: widget.presentServings,
     );
-    // Force landscape and keep screen awake
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-    WakelockPlus.enable();
-    // Hide system UI for immersive cooking experience
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    // BUT-408: broadcast "lagar just nu" to friend groups. Fire-and-forget
-    // — the VM swallows errors so a failed broadcast never blocks the cook.
-    _vm.onEnter();
+    _lifecycle = CookingSessionLifecycle(vm: _vm, effects: widget.effects);
+    if (!_vm.hasSteps) return;
 
     _voiceController = CookingVoiceController(
       voiceCapture: ServiceLocator.get<VoiceCaptureService>(),
@@ -90,32 +245,65 @@ class _CookingModeViewState extends State<CookingModeView> {
       timers: ServiceLocator.get<StepTimerService>(),
       cookingVm: _vm,
       substitutions: ServiceLocator.get<SubstitutionSuggestionService>(),
+      beforeTimerStart: _warnBeforeTimer,
     );
     // TtsService.init() is idempotent-safe (re-probes Swedish-voice
     // availability); the controller notifies when it resolves, so the
     // app-bar toggle reveals through its own ListenableBuilder — a
     // setState here couldn't reach it past the const content subtree.
-    _voiceController.init();
+    _voiceController!.init();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Needs the screen size, so it runs here rather than in initState; the
+    // lifecycle starts only once.
+    _lifecycle.start(MediaQuery.sizeOf(context));
+  }
+
+  /// The notice before a timer starts without notification permission
+  /// (P6-U07 mechanism; flows-roles-budget.md:70). Shared by the timer sheet
+  /// and the voice command.
+  Future<void> _warnBeforeTimer() async {
+    if (_timerNoticeShown || !mounted) return;
+    final service = ServiceLocator.tryGet<NotificationPermissionService>();
+    if (service == null) return;
+    final shown = await service.warnBeforeTimerIfNeeded(context);
+    if (shown) _timerNoticeShown = true;
   }
 
   @override
   void dispose() {
-    // BUT-408: clear broadcast BEFORE disposing the VM. onExit() reads no
-    // VM state, so the ordering is purely about signalling intent.
-    _vm.onExit();
+    _lifecycle.end();
     // The voice controller reads the VM during teardown of an in-flight
     // capture — dispose it before the VM it depends on.
-    _voiceController.dispose();
+    _voiceController?.dispose();
     _vm.dispose();
-    // Restore all orientations and screen sleep
-    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-    WakelockPlus.disable();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // A recipe with no steps would render a broken "Steg 1 av 0" cooking
+    // UI — show the drawn empty state with a way on instead.
+    final voiceController = _voiceController;
+    if (!_vm.hasSteps || voiceController == null) {
+      return CookingNoStepsState(
+        hasIngredients: widget.recipe.ingredients.any(
+          (line) => line.trim().isNotEmpty,
+        ),
+        copyInsteadOfEdit: widget.copyInsteadOfEdit,
+        onWriteSteps: () => Navigator.of(context).pop(
+          widget.copyInsteadOfEdit
+              ? CookingModeExit.saveCopy
+              : CookingModeExit.editRecipe,
+        ),
+        onToShoppingList: () =>
+            Navigator.of(context).pop(CookingModeExit.toShoppingList),
+        onClose: () => Navigator.of(context).pop(),
+      );
+    }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CookingModeViewModel>.value(value: _vm),
@@ -123,10 +311,182 @@ class _CookingModeViewState extends State<CookingModeView> {
         // Listenable and provider's debug assert rejects it otherwise
         // (debugCheckInvalidValueType — crashes every debug build).
         ChangeNotifierProvider<CookingVoiceController>.value(
-          value: _voiceController,
+          value: voiceController,
+        ),
+        Provider<CookingTimerGate?>.value(
+          value: CookingTimerGate(_warnBeforeTimer),
         ),
       ],
       child: const _CookingModeContent(),
+    );
+  }
+}
+
+/// The notice gate the timer sheet awaits before it starts a timer.
+class CookingTimerGate {
+  const CookingTimerGate(this.beforeStart);
+
+  final Future<void> Function() beforeStart;
+}
+
+/// A recipe without steps, as drawn in Skarmar v12 etapp 11 #lgbutan: a
+/// title, a line saying what is missing, "Skriv stegen" and — when there are
+/// ingredients — "Till inköpslistan" (produktregler.md:1227).
+///
+/// On someone else's recipe the first action is "Spara min kopia" in the
+/// same place and style (Q6-05 = C, produktbeslut 2026-09-27), and the line
+/// says the steps are written in the copy: the recipe itself is never the
+/// user's to edit (produktregler.md:241).
+///
+/// Colours on the cooking base (ink #24382C light / #17251D dark, paper text
+/// on both): "Skriv stegen" is paper filled with ink text (cs.onPrimary /
+/// cs.primary, the same in both modes), "Till inköpslistan" is outlined in
+/// sage #93A48D (delivered as the dark text.disabled member) with paper text.
+class CookingNoStepsState extends StatelessWidget {
+  const CookingNoStepsState({
+    super.key,
+    required this.hasIngredients,
+    this.copyInsteadOfEdit = false,
+    required this.onWriteSteps,
+    required this.onToShoppingList,
+    required this.onClose,
+  });
+
+  final bool hasIngredients;
+
+  /// Q6-05 = C: "Spara min kopia" in place of "Skriv stegen".
+  final bool copyInsteadOfEdit;
+
+  /// Called by the first action, whichever it is named.
+  final VoidCallback onWriteSteps;
+  final VoidCallback onToShoppingList;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final sage = AppModeColors.textDisabled(Brightness.dark);
+    return Scaffold(
+      backgroundColor: _cookingBase(cs),
+      body: FocusRingSurface(
+        brightness: Brightness.dark,
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                  child: ColoredBox(
+                    color: cs.onPrimary,
+                    child: TappableWrapper(
+                      onTap: onClose,
+                      semanticLabel: l10n.a11yCookingModeClose,
+                      child: ButleryIcon(
+                        ButleryIcons.x,
+                        color: cs.primary,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppDimensions.spacingXl),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ExcludeSemantics(
+                          child: ButleryIcon(
+                            ButleryIcons.utensils,
+                            color: cs.onPrimary,
+                            size: AppDimensions.iconSizeDisplay,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingMd),
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            l10n.cookingNoStepsTitle,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.headlineSmall.copyWith(
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingSm),
+                        Text(
+                          switch ((copyInsteadOfEdit, hasIngredients)) {
+                            (true, true) => l10n.cookingNoStepsBodyOthers,
+                            (true, false) =>
+                              l10n.cookingNoStepsBodyOthersNoIngredients,
+                            (false, true) => l10n.cookingNoStepsBody,
+                            (false, false) =>
+                              l10n.cookingNoStepsBodyNoIngredients,
+                          },
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: cs.onPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingLg),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: AppDimensions.spacingSm,
+                          runSpacing: AppDimensions.spacingSm,
+                          children: [
+                            FilledButton(
+                              key: ValueKey(
+                                copyInsteadOfEdit
+                                    ? 'cooking-no-steps-save-copy'
+                                    : 'cooking-no-steps-write',
+                              ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: cs.onPrimary,
+                                foregroundColor: cs.primary,
+                                minimumSize: const Size(
+                                  AppDimensions.minTouchTarget,
+                                  AppDimensions.minTouchTarget,
+                                ),
+                              ),
+                              onPressed: onWriteSteps,
+                              child: Text(
+                                copyInsteadOfEdit
+                                    ? l10n.cookingNoStepsSaveCopy
+                                    : l10n.cookingNoStepsWrite,
+                              ),
+                            ),
+                            if (hasIngredients)
+                              OutlinedButton(
+                                key: const ValueKey(
+                                  'cooking-no-steps-shopping',
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: cs.onPrimary,
+                                  side: BorderSide(color: sage, width: 1.5),
+                                  minimumSize: const Size(
+                                    AppDimensions.minTouchTarget,
+                                    AppDimensions.minTouchTarget,
+                                  ),
+                                ),
+                                onPressed: onToShoppingList,
+                                child: Text(l10n.cookingNoStepsShopping),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -140,108 +500,82 @@ class _CookingModeContent extends StatelessWidget {
     final vm = context.watch<CookingModeViewModel>();
     final voiceController = context.watch<CookingVoiceController>();
 
-    // A recipe with no steps would render a broken "Step 1 of 0" cooking UI —
-    // show a clear empty state with a way out instead.
-    if (vm.instructions.isEmpty) {
-      return Scaffold(
-        backgroundColor: cs.primary,
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingXl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.no_meals,
-                    color: cs.onPrimary,
-                    size: AppDimensions.iconSizeDisplay,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  Text(
-                    context.l10n.cookingModeNoInstructions,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: cs.onPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  TextButton(
-                    // Matches the top-bar close — cooking mode is always pushed.
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      context.l10n.commonClose,
-                      style: TextStyle(color: cs.onPrimary),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: cs.primary,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // BUT-1360: cooking offline is the marquee scenario — surface a
-            // slim top strip so the cook knows edits/substitutions won't sync.
-            // Self-hides (SizedBox.shrink) when online, so the split layout is
-            // untouched with a connection.
-            LayoutComponents.offlineIndicator(),
-            _buildTopBar(context, vm, voiceController),
-            Expanded(
-              child: Stack(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    // Cooking mode stands on surface.ink in light mode and on dark-bg
+    // #17251D in dark mode (_cookingBase), so every focus ring in it is paper
+    // (tokens.json:155-160; Komponentark v1:657).
+    // Back and close ask first once more than one step is done
+    // (flows-roles-budget.md:71); before that they leave at once.
+    return PopScope<Object?>(
+      canPop: !vm.needsExitConfirmation,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (await confirmCookingExit(context, vm)) navigator.pop();
+      },
+      child: Scaffold(
+        backgroundColor: _cookingBase(cs),
+        body: FocusRingSurface(
+          brightness: Brightness.dark,
+          child: SafeArea(
+            child: Column(
+              children: [
+                // BUT-1360: cooking offline is the marquee scenario — surface a
+                // slim top strip so the cook knows edits/substitutions won't sync.
+                // Self-hides (SizedBox.shrink) when online, so the split layout is
+                // untouched with a connection.
+                LayoutComponents.offlineIndicator(),
+                _buildTopBar(context, vm, voiceController),
+                Expanded(
+                  child: Stack(
                     children: [
-                      // Left panel: ingredients (~35%)
-                      Expanded(
-                        flex: 35,
-                        child: _IngredientsPanel(vm: vm),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Left panel: ingredients (~35%)
+                          Expanded(
+                            flex: 35,
+                            child: _IngredientsPanel(vm: vm),
+                          ),
+                          // Vertical divider
+                          Container(
+                            width: 1,
+                            color: cs.onPrimary.withValues(alpha: _onInkLine),
+                          ),
+                          // Right panel: instructions (~65%)
+                          Expanded(
+                            flex: 65,
+                            child: _InstructionsPanel(vm: vm),
+                          ),
+                        ],
                       ),
-                      // Vertical divider
-                      Container(
-                        width: 1,
-                        color: cs.surface.withValues(alpha: 0.2),
-                      ),
-                      // Right panel: instructions (~65%)
-                      Expanded(
-                        flex: 65,
-                        child: _InstructionsPanel(vm: vm),
+                      // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
+                      // heard-chip overlay the instructions panel, bottom-right.
+                      Positioned(
+                        right: AppDimensions.spacingMd,
+                        // Clear the _StepNavigation bar (~56 px row + padding):
+                        // the next-step arrow lives in this exact corner and must
+                        // stay tappable under the overlay (review finding #1).
+                        bottom: 72,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            VoiceHeardChip(controller: voiceController),
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            VoiceAssistButton(
+                              controller: voiceController,
+                              onEnsurePermission: () =>
+                                  _ensureVoicePermission(context),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
-                  // heard-chip overlay the instructions panel, bottom-right.
-                  Positioned(
-                    right: AppDimensions.spacingMd,
-                    // Clear the _StepNavigation bar (~56 px row + padding):
-                    // the next-step arrow lives in this exact corner and must
-                    // stay tappable under the overlay (review finding #1).
-                    bottom: 72,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        VoiceHeardChip(controller: voiceController),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        VoiceAssistButton(
-                          controller: voiceController,
-                          onEnsurePermission: () =>
-                              _ensureVoicePermission(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -291,11 +625,9 @@ class _CookingModeContent extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: cs.primary,
+        color: _cookingBase(cs),
         border: Border(
-          bottom: BorderSide(
-            color: cs.surface.withValues(alpha: 0.2),
-          ),
+          bottom: BorderSide(color: cs.onPrimary.withValues(alpha: _onInkLine)),
         ),
       ),
       child: Row(
@@ -303,7 +635,7 @@ class _CookingModeContent extends StatelessWidget {
           // Recipe title
           Expanded(
             child: Text(
-              vm.title.toLowerCase(),
+              vm.title,
               style: AppTextStyles.headerTitle.copyWith(
                 color: cs.onPrimary,
                 letterSpacing: 1,
@@ -318,8 +650,11 @@ class _CookingModeContent extends StatelessWidget {
           _buildSpeakerToggle(context, voiceController),
           const SizedBox(width: AppDimensions.spacingXs),
           // Font size toggle
+          // Paper plates on ink: onPrimary is paper #F5F4ED in both
+          // schemes, where surface would turn dark in dark mode and swallow
+          // the ink glyph.
           ColoredBox(
-            color: cs.surface,
+            color: cs.onPrimary,
             child: TappableWrapper(
               onTap: () => vm.cycleFontScale(),
               semanticLabel: context.l10n.a11yCookingModeFontScale,
@@ -337,14 +672,15 @@ class _CookingModeContent extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppDimensions.spacingXs),
-          // Close button
+          // Mönster 4 · Modal (Komponentark v1:57, :91-97): cooking mode
+          // closes with X and never shows a back arrow beside it.
           ColoredBox(
-            color: cs.surface,
+            color: cs.onPrimary,
             child: TappableWrapper(
-              onTap: () => Navigator.pop(context),
+              onTap: () => Navigator.maybePop(context),
               semanticLabel: context.l10n.a11yCookingModeClose,
-              child: Icon(
-                Icons.close,
+              child: ButleryIcon(
+                ButleryIcons.x,
                 color: cs.primary,
                 size: AppDimensions.iconSizeM,
               ),
@@ -369,8 +705,10 @@ class _CookingModeContent extends StatelessWidget {
         if (!voiceController.ttsAvailable) return const SizedBox.shrink();
         final muted = voiceController.muted;
         return IconButton(
-          icon: Icon(
-            muted ? Icons.volume_off : Icons.volume_up,
+          icon: ButleryIcon(
+            // One glyph for both states until design draws the second one
+            // (P7-U08 open question); the tooltip/label carries the state.
+            ButleryIcons.volume,
             color: cs.onPrimary,
           ),
           tooltip: muted
@@ -394,7 +732,7 @@ class _IngredientsPanel extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return ColoredBox(
-      color: cs.primary,
+      color: _cookingBase(cs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -402,14 +740,21 @@ class _IngredientsPanel extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.5),
+              color: _cookingBase(cs),
               border: Border(
                 bottom: BorderSide(
-                  color: cs.surface.withValues(alpha: 0.15),
+                  color: cs.onPrimary.withValues(alpha: _onInkLine),
                 ),
               ),
             ),
-            child: Row(
+            // On a portrait tablet the panel is 35 % of about 800 px, too
+            // narrow for label and stepper on one line (produktregler.md:1199
+            // no longer forces landscape there), so the stepper wraps under
+            // the label instead of overflowing.
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppDimensions.spacingMd,
+              runSpacing: AppDimensions.spacingSm,
               children: [
                 Text(
                   context.l10n.cookingModePortions,
@@ -418,34 +763,38 @@ class _IngredientsPanel extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingMd),
-                _buildPortionButton(
-                  context,
-                  icon: Icons.remove,
-                  onPressed:
-                      vm.currentPortions > CookingModeViewModel.minPortions
-                      ? () => vm.updatePortions(vm.currentPortions - 1)
-                      : null,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                  ),
-                  child: Text(
-                    '${vm.currentPortions}',
-                    style: AppTextStyles.groupTitle.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: cs.onPrimary,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildPortionButton(
+                      context,
+                      icon: ButleryIcons.minus,
+                      onPressed:
+                          vm.currentPortions > CookingModeViewModel.minPortions
+                          ? () => vm.updatePortions(vm.currentPortions - 1)
+                          : null,
                     ),
-                  ),
-                ),
-                _buildPortionButton(
-                  context,
-                  icon: Icons.add,
-                  onPressed:
-                      vm.currentPortions < CookingModeViewModel.maxPortions
-                      ? () => vm.updatePortions(vm.currentPortions + 1)
-                      : null,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingL,
+                      ),
+                      child: Text(
+                        '${vm.currentPortions}',
+                        style: AppTextStyles.groupTitle.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onPrimary,
+                        ),
+                      ),
+                    ),
+                    _buildPortionButton(
+                      context,
+                      icon: ButleryIcons.plus,
+                      onPressed:
+                          vm.currentPortions < CookingModeViewModel.maxPortions
+                          ? () => vm.updatePortions(vm.currentPortions + 1)
+                          : null,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -468,7 +817,7 @@ class _IngredientsPanel extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(
                         top: AppDimensions.spacingMd,
-                        bottom: AppDimensions.spacingTight,
+                        bottom: AppDimensions.space4,
                       ),
                       child: Text(
                         row.label.toUpperCase(),
@@ -488,39 +837,47 @@ class _IngredientsPanel extends StatelessWidget {
                   // BUT-948 exception: long-press activates substitutions
                   // (feature affordance), not multi-select.
                   child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onLongPress: () => _showSubstitutionSheet(
                       context,
                       vm,
                       line.ingredientIndex,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingTight,
+                    // BUT-2194: a row is a control (long press), so it is at
+                    // least 48 dp tall (tokens.json touchTarget).
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: AppDimensions.minTouchTarget,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            margin: const EdgeInsetsDirectional.only(
-                              top: 8,
-                              end: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cs.onPrimary,
-                              shape: BoxShape.rectangle,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              line.text,
-                              style: AppTextStyles.bodyLarge.copyWith(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.space4,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              margin: const EdgeInsetsDirectional.only(
+                                top: 8,
+                                end: 12,
+                              ),
+                              decoration: BoxDecoration(
                                 color: cs.onPrimary,
+                                shape: BoxShape.rectangle,
                               ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                line.text,
+                                style: AppTextStyles.bodyLarge.copyWith(
+                                  color: cs.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -583,30 +940,13 @@ class _IngredientsPanel extends StatelessWidget {
       return;
     }
 
-    // Persisting the swap can fail (offline / Firestore error). Without
-    // feedback the user believes the substitution was applied mid-cook when it
-    // wasn't, so confirm success and surface failure for a retry.
-    try {
-      await recipeService.updateIngredient(
-        vm.recipe.id,
-        index,
-        chosen.name,
-      );
-      if (!context.mounted) return;
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.cookingModeSubstitutionApplied),
-        ),
-      );
-    } catch (e) {
-      AppLogger.error('Cooking-mode ingredient substitution failed', e);
-      if (!context.mounted) return;
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.cookingModeSubstitutionFailed),
-        ),
-      );
-    }
+    await persistCookingSubstitution(
+      context,
+      recipeService,
+      recipeId: vm.recipe.id,
+      index: index,
+      name: chosen.name,
+    );
   }
 
   Widget _buildPortionButton(
@@ -616,7 +956,7 @@ class _IngredientsPanel extends StatelessWidget {
   }) {
     final cs = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null;
-    final label = icon == Icons.remove
+    final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
     return Semantics(
@@ -625,26 +965,27 @@ class _IngredientsPanel extends StatelessWidget {
       enabled: isEnabled,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          child: Container(
-            width: AppDimensions.minTouchTarget,
-            height: AppDimensions.minTouchTarget,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isEnabled
-                    ? cs.onPrimary
-                    : cs.onPrimary.withValues(alpha: 0.3),
-                width: 2,
+        child: PressFill(
+          surface: Theme.of(context).brightness == Brightness.dark
+              ? PressSurface.base
+              : PressSurface.ink,
+          child: InkWell(
+            onTap: onPressed,
+            child: Container(
+              width: AppDimensions.minTouchTarget,
+              height: AppDimensions.minTouchTarget,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: isEnabled ? cs.onPrimary : _disabledOnInk,
+                  width: 2,
+                ),
               ),
-            ),
-            child: Icon(
-              icon,
-              size: AppDimensions.iconSizeL,
-              color: isEnabled
-                  ? cs.onPrimary
-                  : cs.onPrimary.withValues(alpha: 0.3),
+              child: ButleryIcon(
+                icon,
+                size: AppDimensions.iconSizeL,
+                color: isEnabled ? cs.onPrimary : _disabledOnInk,
+              ),
             ),
           ),
         ),
@@ -704,7 +1045,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
         Scrollable.ensureVisible(
           stepContext,
           alignment: 0.3,
-          duration: AppDimensions.animationDurationCommon,
+          duration: AppMotion.standard.respectingMotion(context),
           curve: Curves.easeInOut,
         );
       }
@@ -731,7 +1072,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
     final cs = Theme.of(context).colorScheme;
-    final starGold = context.butleryColors.starGold;
+    // The notification notice comes before the timer starts (P6-U07).
+    final gate = Provider.of<CookingTimerGate?>(context, listen: false);
     // BUT-1242: one timer per step so several can run at once.
     final timerId = 'step-$stepIndex';
 
@@ -743,13 +1085,17 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
         service: service,
         timerId: timerId,
         initialDuration: duration,
+        beforeStart: gate?.beforeStart,
         sourcePhrase: parsed != null ? instruction : null,
         onExpired: () {
           HapticFeedback.mediumImpact();
+          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
+          // v1:745-750). The messenger is captured before the sheet, so
+          // this builds SnackBarUtils' content directly.
           messenger?.showSnackBar(
             SnackBar(
-              content: Text(l10n.timerExpired),
-              backgroundColor: starGold,
+              content: InkSnackBar(message: l10n.timerExpired),
+              padding: InkSnackBar.padding,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -763,7 +1109,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final cs = Theme.of(context).colorScheme;
 
     return ColoredBox(
-      color: cs.primary.withValues(alpha: 0.8),
+      color: _cookingBase(cs),
       child: Column(
         children: [
           // BUT-1242: overview of all concurrently-running step timers.
@@ -775,7 +1121,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
           // BUT-1199: first-use hint for the long-press-step → timer gesture.
           SwipeHintBanner(
             seenKey: SwipeHintBanner.cookingStepSeenKey,
-            icon: Icons.touch_app,
+            icon: ButleryIcons.hand,
             message: context.l10n.cookingStepHintText,
           ),
           Expanded(
@@ -801,97 +1147,105 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                         padding: const EdgeInsets.only(
                           bottom: AppDimensions.spacingLg,
                         ),
-                        child: Opacity(
-                          // 0.6 (was 0.4): inactive steps stay legible for the
-                          // cook glancing at upcoming steps (WCAG contrast).
-                          opacity: isActive ? 1.0 : 0.6,
-                          child: Container(
-                            decoration: isActive
-                                ? BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: cs.surface,
-                                        width: 3,
-                                      ),
+                        // Every step's text is paper at full strength, as
+                        // drawn in Skarmar v12 del 1 #laga (:277-288): the
+                        // current step is marked by the paper left border
+                        // and the paper plate, the others by the 0.6 plate
+                        // (tokens.json:47-51 onInk). Never a faded step:
+                        // opacity is never a state (tokens.json:41).
+                        child: Container(
+                          decoration: isActive
+                              ? BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: cs.onPrimary,
+                                      width: 3,
                                     ),
-                                  )
-                                : null,
-                            padding: isActive
-                                ? const EdgeInsetsDirectional.only(
-                                    start: AppDimensions.spacingSm,
-                                  )
-                                : null,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: AppDimensions.minTouchTarget,
-                                  height: AppDimensions.minTouchTarget,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isActive
-                                        ? cs.surface
-                                        : cs.surface.withValues(alpha: 0.6),
                                   ),
-                                  child: Text(
-                                    '$stepNumber',
-                                    style: AppTextStyles.contentTitle.copyWith(
-                                      color: cs.primary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize:
-                                          AppTextStyles.contentTitle.fontSize! *
-                                          vm.fontScale,
-                                    ),
+                                )
+                              : null,
+                          padding: isActive
+                              ? const EdgeInsetsDirectional.only(
+                                  start: AppDimensions.spacingSm,
+                                )
+                              : null,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: AppDimensions.minTouchTarget,
+                                height: AppDimensions.minTouchTarget,
+                                alignment: Alignment.center,
+                                // As drawn in Skarmar v12 del 1 #laga: the
+                                // current step is a paper plate, the others
+                                // paper at 0.6, an allowed on-ink ladder
+                                // step (tokens.json:40-53 onInk). The digit
+                                // is the base colour on both, so it reads
+                                // on the 0.6 plate in dark mode too.
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? cs.onPrimary
+                                      : cs.onPrimary.withValues(
+                                          alpha: _onInkStepPlate,
+                                        ),
+                                ),
+                                child: Text(
+                                  '$stepNumber',
+                                  style: AppTextStyles.contentTitle.copyWith(
+                                    color: _cookingBase(cs),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize:
+                                        AppTextStyles.contentTitle.fontSize! *
+                                        vm.fontScale,
                                   ),
                                 ),
-                                const SizedBox(width: AppDimensions.spacingMd),
-                                Expanded(
-                                  child: Semantics(
-                                    label: context.l10n
-                                        .a11yCookingStepLongPressTimer(
-                                          stepNumber,
-                                        ),
-                                    button: true,
-                                    child: GestureDetector(
-                                      // BUT-406: long-press opens a step timer
-                                      // sheet, pre-filled with the duration
-                                      // parsed from this instruction (5 min
-                                      // default fallback).
-                                      // BUT-948 exception: long-press activates
-                                      // the step timer (feature affordance),
-                                      // not multi-select.
-                                      onLongPress: () => _openStepTimer(
+                              ),
+                              const SizedBox(width: AppDimensions.spacingMd),
+                              Expanded(
+                                child: Semantics(
+                                  label: context.l10n
+                                      .a11yCookingStepLongPressTimer(
+                                        stepNumber,
+                                      ),
+                                  button: true,
+                                  child: GestureDetector(
+                                    // BUT-406: long-press opens a step timer
+                                    // sheet, pre-filled with the duration
+                                    // parsed from this instruction (5 min
+                                    // default fallback).
+                                    // BUT-948 exception: long-press activates
+                                    // the step timer (feature affordance),
+                                    // not multi-select.
+                                    onLongPress: () => _openStepTimer(
+                                      context,
+                                      index,
+                                      instruction,
+                                    ),
+                                    // BUT-604: the duration phrase renders
+                                    // as an inline tappable chip — visible
+                                    // affordance for the same timer sheet.
+                                    child: InlineTimerText(
+                                      text: instruction,
+                                      onTimerTap: (_) => _openStepTimer(
                                         context,
                                         index,
                                         instruction,
                                       ),
-                                      // BUT-604: the duration phrase renders
-                                      // as an inline tappable chip — visible
-                                      // affordance for the same timer sheet.
-                                      child: InlineTimerText(
-                                        text: instruction,
-                                        onTimerTap: (_) => _openStepTimer(
-                                          context,
-                                          index,
-                                          instruction,
-                                        ),
-                                        chipColor: cs.onPrimary,
-                                        style: AppTextStyles.titleLarge
-                                            .copyWith(
-                                              color: cs.onPrimary,
-                                              height: 1.7,
-                                              fontSize:
-                                                  AppTextStyles
-                                                      .titleLarge
-                                                      .fontSize! *
-                                                  vm.fontScale,
-                                            ),
+                                      chipColor: cs.onPrimary,
+                                      chipFill:
+                                          AppModeColors.surfaceRaisedOnInk(),
+                                      style: AppTextStyles.titleLarge.copyWith(
+                                        color: cs.onPrimary,
+                                        height: 1.7,
+                                        fontSize:
+                                            AppTextStyles.titleLarge.fontSize! *
+                                            vm.fontScale,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -901,36 +1255,56 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
               },
             ),
           ),
-          _StepNavigation(vm: vm),
+          CookingStepNavigation(
+            vm: vm,
+            onFinish: () => Navigator.of(context).pop(CookingModeExit.finished),
+          ),
         ],
       ),
     );
   }
 }
 
-class _StepNavigation extends StatelessWidget {
+/// The step row at the foot of the instructions: previous step, the step
+/// counter and the view's one saffron action, "Nästa steg".
+///
+/// Public so its states can be proven without the whole view, which locks
+/// the orientation and the screen in initState.
+class CookingStepNavigation extends StatelessWidget {
   final CookingModeViewModel vm;
 
-  const _StepNavigation({required this.vm});
+  /// "Klart" on the last step: returns to the recipe, which counts it as
+  /// cooked (flows-roles-budget.md:72). Null keeps the last step's action
+  /// disabled.
+  final VoidCallback? onFinish;
+
+  const CookingStepNavigation({required this.vm, this.onFinish, super.key});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // The view's one saffron action: "Nästa steg", or "Klart" on the last
+    // step — one slot, one style.
+    final heroStyle = ComponentThemes.heroButtonStyle(cs).copyWith(
+      minimumSize: const WidgetStatePropertyAll(
+        Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
-      color: cs.primary,
+      color: _cookingBase(cs),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _NavButton(
-            icon: Icons.arrow_back,
+            icon: ButleryIcons.arrowLeft,
             label: context.l10n.cookingModePreviousStep,
             onPressed: vm.hasPreviousStep ? vm.previousStep : null,
           ),
+          const SizedBox(width: AppDimensions.spacingSm),
           Text(
             context.l10n.cookingModeStepOf(
               vm.currentStepIndex + 1,
@@ -938,10 +1312,38 @@ class _StepNavigation extends StatelessWidget {
             ),
             style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
           ),
-          _NavButton(
-            icon: Icons.arrow_forward,
-            label: context.l10n.cookingModeNextStep,
-            onPressed: vm.hasNextStep ? vm.nextStep : null,
+          const SizedBox(width: AppDimensions.spacingSm),
+          // The view's one saffron action (Komponentark v1 mönster 4;
+          // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
+          // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
+          // del 1 #lagastaende and #lagamorkt), with the arrow after the
+          // label. The finite minimum keeps it layoutable inside a Row.
+          Expanded(
+            child: vm.isOnLastStep && onFinish != null
+                ? FilledButton.icon(
+                    key: const ValueKey('cooking-mode-finish'),
+                    iconAlignment: IconAlignment.end,
+                    style: heroStyle,
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      onFinish!();
+                    },
+                    icon: const ButleryIcon(ButleryIcons.check),
+                    label: Text(context.l10n.cookingDone),
+                  )
+                : FilledButton.icon(
+                    key: const ValueKey('cooking-mode-next-step'),
+                    iconAlignment: IconAlignment.end,
+                    style: heroStyle,
+                    onPressed: vm.hasNextStep
+                        ? () {
+                            HapticFeedback.lightImpact();
+                            vm.nextStep();
+                          }
+                        : null,
+                    icon: const ButleryIcon(ButleryIcons.arrowRight),
+                    label: Text(context.l10n.cookingModeNextStep),
+                  ),
           ),
         ],
       ),
@@ -974,13 +1376,86 @@ class _NavButton extends StatelessWidget {
           : null,
       enabled: enabled,
       semanticLabel: label,
-      child: Icon(
+      child: ButleryIcon(
         icon,
-        color: enabled
-            ? cs.onPrimary
-            : cs.onPrimary.withValues(alpha: AppDimensions.opacityLight),
+        color: enabled ? cs.onPrimary : _disabledOnInk,
         size: AppDimensions.iconSizeL,
       ),
     );
   }
+}
+
+/// Decorative lines on surface.ink: paper at the ladder's lowest on-ink
+/// step (tokens.json:40-53 opacityLadder.onInk 0.18). A divider, never a
+/// state.
+const double _onInkLine = 0.18;
+
+/// The cooking-mode base. Light mode: surface.ink #24382C (cs.primary).
+/// Dark mode: dark-bg #17251D (cs.surface), "så skärmen inte lyser i ett
+/// släckt kök" (Skarmar v12 del 1 #lagamorkt). Paper (cs.onPrimary) reads
+/// on both.
+Color _cookingBase(ColorScheme cs) =>
+    cs.brightness == Brightness.dark ? cs.surface : cs.primary;
+
+/// The plate behind a step number that is not current: paper at 0.6 on the
+/// base, as drawn in Skarmar v12 del 1 #laga (tokens.json:40-53 onInk).
+const double _onInkStepPlate = 0.6;
+
+/// A disabled control on the cooking-mode base, in both modes:
+/// text.disabled.onInk #93A48D, never paper at an opacity. It measures 4.73:1
+/// on ink #24382C (light base) and 5.9:1 on
+/// #17251D (dark base), above the 4.5:1 the P4-U06 test plan asks for and the
+/// 3:1 disabled floor (tokens.json contrastPolicy).
+final Color _disabledOnInk = AppModeColors.textDisabledOnInk();
+
+/// Persisting the swap can fail (offline / Firestore error). Without
+/// feedback the user believes the substitution was applied mid-cook when it
+/// wasn't, so confirm success and surface failure for a retry.
+///
+/// P5-U09: the failure is the three-part failure snackbar
+/// (content-style-guide.md:87-97): the swap was not saved, the recipe is
+/// unchanged, and Försök igen saves the same swap again. The service reports
+/// most failures by returning false rather than throwing
+/// (personal_recipe_module.dart), so
+/// false is a failure too.
+@visibleForTesting
+Future<void> persistCookingSubstitution(
+  BuildContext context,
+  UnifiedRecipeService recipeService, {
+  required String recipeId,
+  required int index,
+  required String name,
+}) async {
+  var saved = false;
+  try {
+    saved = await recipeService.updateIngredient(recipeId, index, name);
+  } catch (e) {
+    AppLogger.error('Cooking-mode ingredient substitution failed', e);
+  }
+  if (!context.mounted) return;
+  // A failure stays until tapped; the new outcome replaces it rather than
+  // queueing behind it, so a later success is not hidden by a stale error.
+  ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+  if (saved) {
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.cookingModeSubstitutionApplied),
+      ),
+    );
+    return;
+  }
+  SnackBarUtils.showFailure(
+    context,
+    what: context.l10n.cookingModeSubstitutionFailed,
+    preserved: context.l10n.cookingModeRecipeUnchanged,
+    action: FailureAction.retry(
+      () => persistCookingSubstitution(
+        context,
+        recipeService,
+        recipeId: recipeId,
+        index: index,
+        name: name,
+      ),
+    ),
+  );
 }

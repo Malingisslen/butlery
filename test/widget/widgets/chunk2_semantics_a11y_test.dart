@@ -13,9 +13,11 @@ import 'package:butlery/widgets/menu/menu_vote_card.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
+import 'package:butlery/theme/app_theme.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../infrastructure/helpers/ink_fill.dart';
 
 void main() {
   setUpAll(() async {
@@ -100,6 +102,39 @@ void main() {
       );
       handle.dispose();
     });
+
+    // BUT-2205: the option's own fill used to sit above the ink layer, so a
+    // pressed option showed nothing.
+    for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+      testWidgets('menu_vote_card — a pressed option shows surface.raised '
+          '(${theme.brightness.name})', (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: MenuVoteCard(
+                vote: buildVote(),
+                currentUserId: 'me',
+                onVote: (_) {},
+              ),
+            ),
+          ),
+        );
+        final option = find.text('Pannkakor');
+        expect(pressIsCovered(tester, option), isFalse);
+        expect(borderIsAbovePress(tester, option), isTrue);
+        final gesture = await holdPress(tester, option);
+        expect(
+          paintsInkFill(
+            tester,
+            option,
+            theme.colorScheme.surfaceContainerHighest,
+          ),
+          isTrue,
+        );
+        await gesture.cancel();
+      });
+    }
 
     testWidgets('menu_vote_card — selected option exposes selected label', (
       tester,

@@ -6,10 +6,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Draft metadata for managing saved drafts
@@ -20,12 +22,19 @@ class DraftMetadata {
   final String title;
   final int fieldCount; // Number of filled fields for content assessment
 
+  /// The account that wrote the draft, or null for a draft written before
+  /// drafts carried an owner. Drafts live on the device, not on the account
+  /// (produktregler.md:169), and an automatic sign-out keeps them (PQ-12 = A),
+  /// so a draft is only offered to the account that wrote it.
+  final String? ownerId;
+
   const DraftMetadata({
     required this.draftId,
     required this.createdAt,
     required this.lastModifiedAt,
     required this.title,
     required this.fieldCount,
+    this.ownerId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -34,6 +43,7 @@ class DraftMetadata {
     'lastModifiedAt': lastModifiedAt.toIso8601String(),
     'title': title,
     'fieldCount': fieldCount,
+    'ownerId': ?ownerId,
   };
 
   factory DraftMetadata.fromJson(Map<String, dynamic> json) => DraftMetadata(
@@ -45,10 +55,25 @@ class DraftMetadata {
     ),
     title: (json['title'] as String?).orEmpty(),
     fieldCount: (json['fieldCount'] as int?).orZero(),
+    ownerId: json['ownerId'] as String?,
   );
 
-  /// Check if draft is recent (within last 24 hours)
-  bool get isRecent => clock.now().difference(lastModifiedAt).inHours < 24;
+  /// When the draft stops being resumable: 30 days after the last change
+  /// (ux-beslut.json D-01; produktregler.md:170).
+  DateTime get expiresAt =>
+      lastModifiedAt.add(RecipeFormAutoSaveManager.draftLifetime);
+
+  /// How long the draft is still kept. The list says this rather than when
+  /// the draft was written (Skarmar v12 etapp 4 #editorutkastval).
+  Duration get timeLeft {
+    final left = expiresAt.difference(clock.now());
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  /// Whether the draft is still within its lifetime.
+  bool get isRecent =>
+      clock.now().difference(lastModifiedAt) <
+      RecipeFormAutoSaveManager.draftLifetime;
 
   /// Get human-readable time since last modification
   String get timeAgo => ContextualTimeFormatter.compact(lastModifiedAt);
@@ -56,13 +81,90 @@ class DraftMetadata {
 
 /// Intelligent auto-save manager for recipe forms with draft persistence and recovery
 class RecipeFormAutoSaveManager extends ChangeNotifier {
+  /// [ownerIdProvider] names the signed-in account; it defaults to
+  /// [AuthService.currentUserId].
+  RecipeFormAutoSaveManager({String? Function()? ownerIdProvider})
+    : _ownerIdProvider = ownerIdProvider ?? _signedInUserId;
+
   static const String _draftsKey = 'recipe_drafts_metadata';
   static const String _draftPrefix = 'recipe_draft_';
+
+  /// Later saves are debounced; the FIRST one is not (see [scheduleAutoSave]).
   static const Duration _autoSaveDelay = Duration(seconds: 3);
   static const Duration _quickAutoSaveDelay = Duration(seconds: 1);
-  static const int _minFieldsForAutoSave =
-      2; // Minimum fields to consider worth saving
-  static const int _maxDrafts = 5; // Maximum number of drafts to keep
+
+  /// One filled field is enough: "Utkastet persisteras från det första
+  /// tecken användaren skriver. Ingen tidsgräns och inget krav på ifyllda
+  /// fält får fördröja den första persisteringen" (ux-beslut.json D-02).
+  static const int _minFieldsForAutoSave = 1;
+
+  /// Five slots per account (produktregler.md:790; D-01 changed only the
+  /// lifetime).
+  static const int maxDrafts = 5;
+
+  /// "Ett påbörjat recept är återupptagbart i 30 dagar sedan senaste
+  /// ändring" (ux-beslut.json D-01, superseding the 24 h of
+  /// produktregler.md:790).
+  static const Duration draftLifetime = Duration(days: 30);
+
+  final String? Function() _ownerIdProvider;
+
+  static String? _signedInUserId() {
+    try {
+      if (!ServiceLocator.isRegistered<AuthService>()) return null;
+      return ServiceLocator.get<AuthService>().currentUserId;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Deletes the recipe drafts of the account that signs out, and the
+  /// ownerless drafts written before drafts carried an owner (those were
+  /// offered to that account, see [getAvailableDrafts]). Another account's
+  /// drafts on the same device stay: it may have kept them through its own
+  /// automatic sign-out (PQ-12 = A).
+  ///
+  /// Called on an explicit sign-out only (produktregler.md:171; PQ-12 = A in
+  /// produktbeslut-2026-09-23.json: an automatic sign-out keeps drafts).
+  /// Best-effort: logs and never throws, so a sign-out cannot fail on it.
+  static Future<void> clearDraftsFor(String? ownerId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_draftsKey);
+      final all = raw == null
+          ? const <DraftMetadata>[]
+          : (jsonDecode(raw) as List)
+                .map(
+                  (json) =>
+                      DraftMetadata.fromJson(json as Map<String, dynamic>),
+                )
+                .toList();
+      final kept = all
+          .where((m) => m.ownerId != null && m.ownerId != ownerId)
+          .toList();
+      final keptKeys = {for (final m in kept) '$_draftPrefix${m.draftId}'};
+      // A draft body without an index entry is offered to nobody and has
+      // no known owner; it goes like an ownerless draft.
+      final gone = prefs
+          .getKeys()
+          .where((k) => k.startsWith(_draftPrefix) && !keptKeys.contains(k))
+          .toList();
+      for (final key in gone) {
+        await prefs.remove(key);
+      }
+      if (kept.isEmpty) {
+        await prefs.remove(_draftsKey);
+      } else {
+        await prefs.setString(
+          _draftsKey,
+          jsonEncode(kept.map((m) => m.toJson()).toList()),
+        );
+      }
+      AppLogger.info('AUTO_SAVE: ${gone.length} drafts deleted at sign-out');
+    } catch (e) {
+      AppLogger.warning('AUTO_SAVE: could not delete drafts: $e');
+    }
+  }
 
   Timer? _autoSaveTimer;
   Timer? _feedbackTimer;
@@ -73,6 +175,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   DateTime? _lastAutoSaveTime;
   bool _isTemplate = false; // Track if this is a template-based form
   Completer<void>? _metadataWriteLock;
+  bool _hasSaveFailed = false;
+  int _failurePeriod = 0;
 
   // Auto-save state for UI feedback
   bool get isAutoSaving => _isAutoSaving;
@@ -80,6 +184,15 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       _lastAutoSaveTime != null &&
       clock.now().difference(_lastAutoSaveTime!).inSeconds < 10;
   String? get currentDraftId => _currentDraftId;
+
+  /// Whether the latest draft write failed. The editor shows a warning
+  /// triangle instead of the cloud while this holds (BUT-2224 = A).
+  bool get hasAutoSaveFailed => _hasSaveFailed;
+
+  /// Counts failure periods: it grows when a period starts, not on every
+  /// failed write, so the editor can show its failure snackbar once per
+  /// period (BUT-2224 = A).
+  int get autoSaveFailurePeriod => _failurePeriod;
 
   /// BUT-1136 test seam: lets tests assert that a pending debounce timer
   /// survives a `scheduleAutoSave(..., skipIfBusy: true)` call while a
@@ -130,6 +243,13 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
     _autoSaveTimer?.cancel();
 
+    // D-02: the first persistence is never delayed. Until a draft exists the
+    // edit is written at once; after that, saves are debounced as before.
+    if (_currentDraftId == null && !_isAutoSaving) {
+      unawaited(_performAutoSave(formData));
+      return;
+    }
+
     // Use quick save for critical changes (title, description)
     final delay = isQuickSave ? _quickAutoSaveDelay : _autoSaveDelay;
 
@@ -173,6 +293,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
         lastModifiedAt: now,
         title: _extractTitle(formData),
         fieldCount: _countFilledFields(formData),
+        ownerId: _ownerIdProvider(),
       );
 
       // Save draft data and metadata
@@ -180,6 +301,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       await _saveDraftMetadata(metadata);
 
       _lastAutoSaveTime = now;
+      _hasSaveFailed = false;
 
       // Show subtle user feedback (once per session)
       if (!_hasShownAutoSaveNotice) {
@@ -192,7 +314,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       );
     } catch (e) {
       AppLogger.error('🔄 AUTO_SAVE: Failed to save draft: $e');
-      // Don't show error to user for auto-save failures - it's background operation
+      if (!_hasSaveFailed) {
+        _hasSaveFailed = true;
+        _failurePeriod++;
+      }
     } finally {
       _isAutoSaving = false;
       if (!_isDisposed) notifyListeners();
@@ -334,12 +459,20 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       existingMetadata.sort(
         (a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt),
       );
-      if (existingMetadata.length > _maxDrafts) {
-        final draftsToRemove = existingMetadata.sublist(_maxDrafts);
-        for (final draft in draftsToRemove) {
-          await _deleteDraft(draft.draftId);
+      // Five slots per account: a new draft pushes out the same account's
+      // oldest, never another account's.
+      final sameOwner = existingMetadata
+          .where((m) => m.ownerId == metadata.ownerId)
+          .toList();
+      if (sameOwner.length > maxDrafts) {
+        final removeIds = sameOwner
+            .sublist(maxDrafts)
+            .map((m) => m.draftId)
+            .toSet();
+        for (final id in removeIds) {
+          await _deleteDraft(id);
         }
-        existingMetadata.removeRange(_maxDrafts, existingMetadata.length);
+        existingMetadata.removeWhere((m) => removeIds.contains(m.draftId));
       }
 
       final metadataJson = jsonEncode(
@@ -391,10 +524,17 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   }
 
   /// Get available drafts for recovery
+  ///
+  /// Only the signed-in account's drafts within their lifetime, newest
+  /// first. A draft without an owner predates owners and is offered as
+  /// before.
   Future<List<DraftMetadata>> getAvailableDrafts() async {
     final metadata = await _loadAllDraftMetadata();
-    // Return recent drafts sorted by modification time
-    return metadata.where((m) => m.isRecent).toList()
+    final owner = _ownerIdProvider();
+    return metadata
+        .where((m) => m.isRecent)
+        .where((m) => m.ownerId == null || m.ownerId == owner)
+        .toList()
       ..sort((a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt));
   }
 
@@ -430,6 +570,9 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// delete was still in flight — and if the delete completed AFTER the
   /// new metadata index write, the fresh entry got clobbered.
   Future<void> clearCurrentDraft() async {
+    // The recipe itself is saved, so a failed draft no longer matters, even
+    // when the broken storage makes the delete below throw too.
+    _hasSaveFailed = false;
     if (_currentDraftId != null) {
       final idToDelete = _currentDraftId!;
       await deleteDraft(idToDelete);
@@ -480,7 +623,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
   /// Show user feedback about auto-save status (to be called from UI)
   static void showAutoSaveNotice(BuildContext context) {
-    UtilityComponents.showSuccessSnackbar(
+    SnackBarUtils.showSuccess(
       context,
       AppLocale.current.autoSaveEnabled,
     );

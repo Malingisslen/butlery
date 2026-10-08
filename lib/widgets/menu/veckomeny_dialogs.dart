@@ -2,14 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -17,6 +16,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Dialog helpers for the Veckomeny (weekly menu) view.
 /// Extracts dialog logic from the main view for better separation of concerns.
@@ -71,13 +71,15 @@ class VeckomenyDialogs {
 
     List<UserProfile> availableFriends = [];
     try {
+      if (!friendsService.isInitialized) await friendsService.initialize();
       availableFriends = friendsService.friends;
     } catch (e) {
       AppLogger.warning('Kunde inte hämta vänner: $e');
     }
+    if (!context.mounted) return;
 
-    showDialog(
-      context: context,
+    showUniversalShareSheet(
+      context,
       builder: (context) => UniversalShareDialog.menu(
         menu: menuViewModel.menu,
         menuName: menuName,
@@ -125,7 +127,7 @@ class VeckomenyDialogs {
           ActionButtons.primaryButton(
             context,
             label: context.l10n.commonShare,
-            icon: Icons.share,
+            icon: ButleryIcons.share2,
             onPressed: () {
               final name = nameController.text.trim();
               if (name.isNotEmpty) {
@@ -138,29 +140,6 @@ class VeckomenyDialogs {
     );
 
     return result;
-  }
-
-  /// Shows shopping list selector for creating shopping list from menu.
-  static Future<void> showShoppingListSelector(
-    BuildContext context, {
-    required MenuViewModel viewModel,
-  }) async {
-    if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      SnackBarUtils.showWarning(
-        context,
-        context.l10n.menuCreateBeforeShoppingList,
-      );
-      return;
-    }
-
-    await InputComponents.showListSelector(
-      context,
-      menu: viewModel.menu,
-      onListSelected: () {
-        Navigator.pop(context);
-        Navigator.pushNamed(context, Routes.shoppingList);
-      },
-    );
   }
 
   /// Shows exit confirmation dialog.

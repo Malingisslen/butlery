@@ -112,13 +112,12 @@ class RealtimeMenuData {
     return null;
   }
 
-  /// Serialize for Firestore
+  /// Serialize for Firestore. Dishes are stored as menu dishes (BUT-2214).
   Map<String, dynamic> serializeContent() {
-    // Serialize menuSnapshot for Firestore
     final menuData = <String, List<Map<String, dynamic>>>{};
     for (final entry in menuSnapshot.entries) {
       menuData[entry.key] = entry.value
-          .map((recipe) => recipe.toFirestore())
+          .map((recipe) => recipe.toMenuDish())
           .toList();
     }
 

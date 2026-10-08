@@ -110,4 +110,24 @@ void main() {
       reason: 'the toast has to describe the week the user can already see',
     );
   });
+
+  // P5-U15 review: a failed placement's Försök igen overwrites the week
+  // again. The first confirmation covered the week as it was then; the user
+  // may have changed it since (the rollback is skipped when they moved on),
+  // or an empty week may have been filled. So the retry goes through the
+  // overwrite check and never skips it. No test mounts VeckomenyView, so
+  // the retry's arguments are asserted against the source.
+  test('a failed placement retries through the overwrite confirmation', () {
+    final retry = RegExp(
+      r'onRetry: \(\) => unawaited\( ?_applyGeneratedToCalendar\(([^)]*)\)',
+    ).firstMatch(source);
+    expect(retry, isNotNull, reason: 'the retry moved; move this lint');
+    expect(
+      retry!.group(1),
+      isNot(contains('skipConfirm')),
+      reason:
+          'a retry that skips the confirmation can wipe entries the '
+          'user added after the failed placement without asking',
+    );
+  });
 }

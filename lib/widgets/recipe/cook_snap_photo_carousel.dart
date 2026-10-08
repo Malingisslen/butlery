@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Renders a cook snap's photos as a swipeable, fixed-height carousel.
 ///
@@ -115,7 +117,7 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
         placeholder: (_, __) => ColoredBox(color: cs.surfaceContainerHighest),
         errorWidget: (_, __, ___) => ColoredBox(
           color: cs.surfaceContainerHighest,
-          child: Icon(Icons.broken_image, color: cs.onSurfaceVariant),
+          child: ButleryIcon(ButleryIcons.imageOff, color: cs.onSurfaceVariant),
         ),
       ),
     );
@@ -130,6 +132,8 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
   }
 }
 
+/// Page counter drawn as a translucent paper tile (overlay.paperCard) with
+/// ink text (B83-3).
 class _CounterBadge extends StatelessWidget {
   const _CounterBadge({required this.current, required this.total});
 
@@ -143,11 +147,11 @@ class _CounterBadge extends StatelessWidget {
         horizontal: AppDimensions.spacingXs,
         vertical: 2,
       ),
-      color: Colors.black.withValues(alpha: 0.6),
+      color: context.modeColors.overlayPaperCard,
       child: Text(
         context.l10n.cookSnapPhotoCounter(current, total),
         style: AppTextStyles.labelSmall.copyWith(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -200,12 +204,11 @@ class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
                     imageUrl: url,
                     cacheKey: FirebaseUrlUtils.stableCacheKey(url),
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => const Center(
-                      child: LoadingIndicator(size: 24, strokeWidth: 2),
-                    ),
+                    // A still plate while the image loads, never a spinner (P4-U05).
+                    placeholder: (_, __) => const SizedBox.shrink(),
                     errorWidget: (_, __, ___) => const Center(
-                      child: Icon(
-                        Icons.broken_image,
+                      child: ButleryIcon(
+                        ButleryIcons.imageOff,
                         color: Colors.white,
                         size: 48,
                       ),
@@ -221,7 +224,7 @@ class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
             child: SafeArea(
               child: IconButton(
                 tooltip: context.l10n.a11yCloseImageViewer,
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: const ButleryIcon(ButleryIcons.x, color: Colors.white),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),

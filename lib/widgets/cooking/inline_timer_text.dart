@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/utils/duration_parser.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 class InlineTimerText extends StatelessWidget {
   /// The full instruction line.
@@ -27,12 +29,17 @@ class InlineTimerText extends StatelessWidget {
   /// Chip foreground/border color; defaults to the surrounding text color.
   final Color? chipColor;
 
+  /// Chip fill; defaults to the theme's raised surface. Pass the on-ink raised
+  /// surface when the line sits on the ink base.
+  final Color? chipFill;
+
   const InlineTimerText({
     super.key,
     required this.text,
     required this.onTimerTap,
     this.style,
     this.chipColor,
+    this.chipFill,
   });
 
   @override
@@ -64,24 +71,22 @@ class InlineTimerText extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingXs,
-                    vertical: AppDimensions.spacingXxs,
+                    vertical: AppDimensions.space4,
                   ),
                   decoration: BoxDecoration(
                     // Square design language — no border radius.
                     border: Border.all(color: accent),
-                    color: accent.withValues(
-                      alpha: AppDimensions.opacityExtraVeryLight,
-                    ),
+                    color: chipFill ?? cs.surfaceContainerHighest,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.timer_outlined,
+                      ButleryIcon(
+                        ButleryIcons.clock,
                         size: AppDimensions.iconSizeS,
                         color: accent,
                       ),
-                      const SizedBox(width: AppDimensions.spacingXxs),
+                      const SizedBox(width: AppDimensions.space4),
                       Text(
                         phrase,
                         style: (style ?? const TextStyle()).copyWith(

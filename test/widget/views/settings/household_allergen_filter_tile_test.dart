@@ -15,12 +15,18 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/models/diner_profile.dart';
+import 'package:butlery/models/household.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -28,13 +34,30 @@ class _MockUserService extends Mock implements UserService {}
 
 class _MockHouseholdService extends Mock implements HouseholdService {}
 
-UserProfile _profile({required bool useHousehold}) => UserProfile(
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockDinerProfileRepository extends Mock
+    implements DinerProfileRepository {}
+
+class _MockPermissionService extends Mock implements PermissionService {}
+
+/// The dialog subtracts what the MENU filters by for the owner alone
+/// (`HouseholdService.ownMenuPreferences`), read from the profile: declared
+/// [prefs] as is, none with the settings read done = nothing, none with the
+/// read failed = the common-allergen floor.
+UserProfile _profile({
+  required bool useHousehold,
+  UserAllergenPreferences? prefs,
+  bool settingsMerged = true,
+}) => UserProfile(
   uid: 'u1',
   displayName: 'Test',
   email: 't@example.com',
   joinedAt: DateTime(2024, 1, 1),
   lastActiveAt: DateTime(2024, 1, 1),
   useHouseholdAllergens: useHousehold,
+  allergenPreferences: prefs,
+  settingsMerged: settingsMerged,
 );
 
 void main() {
@@ -139,16 +162,16 @@ void main() {
         final icon = tester.widget<Icon>(
           find.descendant(
             of: find.byType(SwitchListTile),
-            matching: find.byIcon(Icons.warning_amber),
+            matching: find.byIcon(ButleryIcons.triangleAlert),
           ),
         );
-        expect(icon.color, ButleryColors.light.warning);
+        expect(icon.color, ModeColors.light.warning);
         final subtitle = tester.widget<Text>(
           find.text(sv.householdAllergenFilterSubtitleOff),
         );
         expect(
           subtitle.style?.color,
-          ButleryColors.light.onWarningContainer,
+          ModeColors.light.onWarningContainer,
         );
       },
     );
@@ -210,21 +233,204 @@ void main() {
     );
 
     testWidgets(
+      'the warning names a diner profile\'s allergen (a child has no account, '
+      'so the account union never saw it)',
+      (tester) async {
+        when(() => household.hasHousehold).thenReturn(true);
+        when(
+          () => userService.currentUserProfile,
+        ).thenReturn(_profile(useHousehold: true));
+
+        final householdRepo = _MockHouseholdRepository();
+        final dinerRepo = _MockDinerProfileRepository();
+        final permission = _MockPermissionService();
+        when(() => permission.currentUserId).thenReturn('u1');
+        when(() => householdRepo.getActiveForUser('u1')).thenAnswer(
+          (_) async => Household(
+            id: 'hh1',
+            name: Household.defaultName,
+            members: const [],
+            createdBy: 'u1',
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+          ),
+        );
+        when(() => dinerRepo.getByHousehold('hh1')).thenAnswer(
+          (_) async => [
+            DinerProfile(
+              id: 'kid',
+              householdId: 'hh1',
+              name: 'Testbarn',
+              ageBand: DinerAgeBand.child,
+              allergenPreferences: const UserAllergenPreferences(
+                trackedAllergens: {'fisk'},
+                trackedDietary: {},
+              ),
+              createdBy: 'u1',
+            ),
+          ],
+        );
+        final getIt = GetIt.instance;
+        getIt.registerSingleton<HouseholdRepository>(householdRepo);
+        getIt.registerSingleton<DinerProfileRepository>(dinerRepo);
+        getIt.registerSingleton<PermissionService>(permission);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('fisk'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'a diner profile read that FAILS names no allergen and says the list '
+      'may be partial, instead of naming the safety floor as the family\'s',
+      (tester) async {
+        when(() => household.hasHousehold).thenReturn(true);
+        when(
+          () => userService.currentUserProfile,
+        ).thenReturn(_profile(useHousehold: true));
+
+        final householdRepo = _MockHouseholdRepository();
+        final dinerRepo = _MockDinerProfileRepository();
+        final permission = _MockPermissionService();
+        when(() => permission.currentUserId).thenReturn('u1');
+        when(() => householdRepo.getActiveForUser('u1')).thenAnswer(
+          (_) async => Household(
+            id: 'hh1',
+            name: Household.defaultName,
+            members: const [],
+            createdBy: 'u1',
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+          ),
+        );
+        when(
+          () => dinerRepo.getByHousehold('hh1'),
+        ).thenThrow(Exception('down'));
+        final getIt = GetIt.instance;
+        getIt.registerSingleton<HouseholdRepository>(householdRepo);
+        getIt.registerSingleton<DinerProfileRepository>(dinerRepo);
+        getIt.registerSingleton<PermissionService>(permission);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(sv.householdAllergenRosterIncomplete),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'an owner whose settings read FAILED is floor-protected alone, so a '
+      'floor allergen is NOT named as newly exposed',
+      (tester) async {
+        when(() => household.hasHousehold).thenReturn(true);
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(useHousehold: true, settingsMerged: false),
+        );
+        when(
+          () => userService.allergenPreferences,
+        ).thenReturn(UserAllergenPreferences.defaults);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'an owner whose settings were read and hold nothing is NOT protected '
+      'alone, so a floor allergen IS named — even though the getter would '
+      'claim the owner tracks it',
+      (tester) async {
+        when(() => household.hasHousehold).thenReturn(true);
+        // Production shape: profile read and empty, getter substituting the
+        // defaults. The two sources disagree on gluten, so a dialog reading
+        // the getter would wrongly subtract it and show the generic body.
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(useHousehold: true, settingsMerged: true),
+        );
+        when(
+          () => userService.allergenPreferences,
+        ).thenReturn(UserAllergenPreferences.defaults);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
       'the warning names only NEWLY-exposed allergens, not the owner\'s own',
       (tester) async {
         // Owner already tracks gluten (stays filtered after opt-out); the
         // household adds laktos. Only laktos becomes newly exposed, so the
         // warning must name laktos and NOT gluten.
         when(() => household.hasHousehold).thenReturn(true);
+        const ownerGluten = UserAllergenPreferences(
+          trackedAllergens: {'gluten'},
+          trackedDietary: {},
+        );
         when(
           () => userService.currentUserProfile,
-        ).thenReturn(_profile(useHousehold: true));
-        when(() => userService.allergenPreferences).thenReturn(
-          const UserAllergenPreferences(
-            trackedAllergens: {'gluten'},
-            trackedDietary: {},
-          ),
-        );
+        ).thenReturn(_profile(useHousehold: true, prefs: ownerGluten));
+        when(() => userService.allergenPreferences).thenReturn(ownerGluten);
         when(() => household.aggregateAllergenPreferences()).thenAnswer(
           (_) async => const HouseholdAllergenAggregate.complete(
             UserAllergenPreferences(

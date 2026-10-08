@@ -74,6 +74,11 @@
       {
         "matcher": "",
         "hooks": [
+                    {
+            "type": "command",
+            "command": "bash -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || echo .)\"; exec bash .claude/hooks/cloud-flutter-setup.sh'",
+            "timeout": 600
+          },
           {
             "type": "command",
             "command": "bash -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || echo .)\"; exec bash .claude/hooks/setup-morning-brief.sh'"
@@ -81,6 +86,10 @@
           {
             "type": "command",
             "command": "bash -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || echo .)\"; exec bash .claude/hooks/monitors/auto-analyze-monitor.sh'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || echo .)\"; exec bash .claude/hooks/review-trial.sh session-start'"
           }
         ]
       }
@@ -159,6 +168,17 @@
           {
             "type": "command",
             "command": "bash -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || echo .)\"; exec bash .claude/hooks/post-edit-dispatch.sh'"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'cd \"$(git rev-parse --show-toplevel 2>/dev/null || echo .)\"; exec bash .claude/hooks/review-trial.sh'"
           }
         ]
       }

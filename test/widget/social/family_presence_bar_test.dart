@@ -15,9 +15,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 UserProfile profile(String uid, {String? avatarUrl}) => UserProfile(
   uid: uid,
@@ -47,8 +48,8 @@ Widget wrap(Widget child, {bool disableAnimations = false}) {
   );
 }
 
-/// The online dot. Post-BUT-902 the indicator is a filled `Icons.circle`
-/// rendered in `ButleryColors.success` (= forestGreen under the light theme),
+/// The online dot. Post-BUT-902 the indicator is a filled `ButleryIcons.dot`
+/// rendered in `ModeColors.success` (= forestGreen under the light theme),
 /// wrapped in a Semantics(label: "Online"). The outer Container's colour
 /// changed from a forestGreen fill to `surfaceContainerHighest` (ring
 /// background), so the previous BoxDecoration-by-colour heuristic no longer
@@ -56,7 +57,9 @@ Widget wrap(Widget child, {bool disableAnimations = false}) {
 Finder findOnlineDot() {
   return find.byWidgetPredicate(
     (w) =>
-        w is Icon && w.icon == Icons.circle && w.color == AppColors.forestGreen,
+        w is Icon &&
+        w.icon == ButleryIcons.dot &&
+        w.color == ModeColors.light.success,
   );
 }
 

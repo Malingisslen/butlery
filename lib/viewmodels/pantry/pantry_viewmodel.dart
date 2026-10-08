@@ -1,6 +1,9 @@
 /// ViewModel for the "Skafferiet" (pantry) feature.
 library;
 
+import 'package:clock/clock.dart';
+
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -62,7 +65,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
       () async {
         _items = await _pantryService.getAll(userId);
       },
-      errorPrefix: 'Kunde inte ladda skafferiet',
+      errorPrefix: AppLocale.current.pantryLoadFailed,
     );
   }
 
@@ -90,7 +93,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         );
         _items = [..._items, added];
       },
-      errorPrefix: 'Kunde inte lägga till i skafferiet',
+      errorPrefix: AppLocale.current.pantryAddFailed,
     );
   }
 
@@ -118,7 +121,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         );
         _items = [..._items, added];
       },
-      errorPrefix: 'Kunde inte lägga till i skafferiet',
+      errorPrefix: AppLocale.current.pantryAddFailed,
     );
   }
 
@@ -131,7 +134,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         await _pantryService.removeItem(userId, itemId);
         _items.removeWhere((i) => i.id == itemId);
       },
-      errorPrefix: 'Kunde inte ta bort objektet',
+      errorPrefix: AppLocale.current.pantryRemoveItemFailed,
     );
   }
 
@@ -148,7 +151,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         final restored = await _pantryService.restoreItem(userId, item);
         _items = [..._items, restored];
       },
-      errorPrefix: 'Kunde inte återställa objektet',
+      errorPrefix: AppLocale.current.pantryRestoreItemFailed,
     );
   }
 
@@ -170,7 +173,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         // caller holding a pre-delete snapshot of `items` is never mutated.
         _items = _items.where((i) => !ids.contains(i.id)).toList();
       },
-      errorPrefix: 'Kunde inte ta bort objekten',
+      errorPrefix: AppLocale.current.pantryRemoveItemsFailed,
     );
   }
 
@@ -188,7 +191,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         }
         _items = [..._items, ...restored];
       },
-      errorPrefix: 'Kunde inte återställa objekten',
+      errorPrefix: AppLocale.current.pantryRestoreItemsFailed,
     );
   }
 
@@ -198,13 +201,77 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
 
     await executeAsyncVoid(
       () async {
-        await _pantryService.updateItem(userId, item);
         final idx = _items.indexWhere((i) => i.id == item.id);
+        final previous = idx >= 0 ? _items[idx] : null;
+        // Only what the user changed is written (produktregler.md:105).
+        final kept = await _pantryService.updateItem(
+          userId,
+          item,
+          previous: previous,
+        );
         if (idx >= 0) {
-          _items = [..._items]..[idx] = item;
+          // A missing amount never replaces a known one (produktregler.md:148),
+          // so the row keeps showing it, as the stored item does.
+          final keepsQuantity = item.quantity == null && previous != null;
+          _items = [..._items]
+            ..[idx] = item.copyWith(
+              quantity: keepsQuantity ? previous.quantity : null,
+              updatedAt: clock.now(),
+              updatedBy: userId,
+              previous: kept,
+            );
         }
       },
-      errorPrefix: 'Kunde inte uppdatera objektet',
+      errorPrefix: AppLocale.current.pantryItemUpdateFailed,
+    );
+  }
+
+  /// Återställ in the edit sheet (BUT-2140): swaps [item] with its previous
+  /// version. Returns the item as it now is, which the snackbar's Ångra
+  /// passes back here to swap again; null when the restore failed.
+  Future<PantryItem?> restorePrevious(PantryItem item) async {
+    final userId = _currentUserId();
+    if (userId == null) return null;
+
+    PantryItem? restored;
+    await executeAsyncVoid(
+      () async {
+        final now = await _pantryService.restorePrevious(userId, item);
+        final idx = _items.indexWhere((i) => i.id == item.id);
+        if (idx >= 0) _items = [..._items]..[idx] = now;
+        restored = now;
+      },
+      errorPrefix: AppLocale.current.pantryRestorePreviousFailed,
+    );
+    return restored;
+  }
+
+  /// Changes a known amount by [delta], sent as a relative change
+  /// (produktregler.md:146). An item without an amount is left as it is.
+  Future<void> adjustQuantity(PantryItem item, double delta) async {
+    final userId = _currentUserId();
+    if (userId == null) return;
+
+    await executeAsyncVoid(
+      () async {
+        final written = await _pantryService.adjustQuantity(
+          userId,
+          item,
+          delta,
+        );
+        if (!written) return;
+        final idx = _items.indexWhere((i) => i.id == item.id);
+        if (idx >= 0) {
+          final current = _items[idx];
+          _items = [..._items]
+            ..[idx] = current.copyWith(
+              quantity: (current.quantity ?? 0) + delta,
+              updatedAt: clock.now(),
+              updatedBy: userId,
+            );
+        }
+      },
+      errorPrefix: AppLocale.current.pantryItemUpdateFailed,
     );
   }
 

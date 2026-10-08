@@ -47,11 +47,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app_prov;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 
+import '../../../helpers/user_profile_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -826,6 +828,62 @@ void main() {
         } finally {
           overrideService.dispose();
         }
+      });
+    });
+
+    group('BUT-2271: a menu shared to a group names the group', () {
+      late UnifiedMenuService sharingService;
+
+      setUp(() {
+        final auth = FakeAuthRepository()
+          ..setAuthState(
+            user: FakeUser(uid: 'user-1', displayName: 'Anna'),
+            userId: 'user-1',
+            isAuthenticated: true,
+          );
+        final users = MockUserService();
+        when(
+          () => users.currentUserProfile,
+        ).thenReturn(testUserProfile(uid: 'user-1', displayName: 'Anna'));
+        sharingService = UnifiedMenuService(
+          firestoreRepository: firestoreRepo,
+          sharedMenuRepository: FirebaseSharedMenuRepository(
+            firestore: fakeFirestore,
+            authRepository: auth,
+          ),
+          userService: users,
+        );
+      });
+
+      tearDown(() => sharingService.dispose());
+
+      Future<Map<String, dynamic>> onlySharedRow() async {
+        final rows = await fakeFirestore.collection('shared_content').get();
+        return rows.docs.single.data();
+      }
+
+      test('shareMenuWithFriends writes groupIds on the shared row', () async {
+        final ok = await sharingService.shareMenuWithFriends(
+          menuTitle: 'Veckomeny',
+          menuSnapshot: const <String, List<Recipe>>{},
+          friendIds: const ['friend-1'],
+          groupIds: const ['grp-1'],
+        );
+
+        expect(ok, isTrue);
+        expect((await onlySharedRow())['groupIds'], ['grp-1']);
+      });
+
+      test('createMenuInvitation writes groupIds on the shared row', () async {
+        final id = await sharingService.createMenuInvitation(
+          menuTitle: 'Veckomeny',
+          menuSnapshot: const <String, List<Recipe>>{},
+          inviteeUserIds: const ['friend-1'],
+          groupIds: const ['grp-1'],
+        );
+
+        expect(id, isNotNull);
+        expect((await onlySharedRow())['groupIds'], ['grp-1']);
       });
     });
 

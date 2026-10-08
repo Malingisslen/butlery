@@ -200,6 +200,30 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     }
   }
 
+  /// Shares each of [recipes] on its own: the share backend takes one recipe
+  /// at a time (BUT-2152). Returns the recipes that were not shared, in
+  /// order, so a retry can send only those.
+  Future<List<Recipe>> shareRecipes({
+    required List<Recipe> recipes,
+    required List<String> friendUserIds,
+    List<String>? groupIds,
+    String? message,
+    bool allowCollaboration = false,
+  }) async {
+    final notShared = <Recipe>[];
+    for (final recipe in recipes) {
+      final shared = await shareRecipe(
+        recipe: recipe,
+        friendUserIds: friendUserIds,
+        groupIds: groupIds,
+        message: message,
+        allowCollaboration: allowCollaboration,
+      );
+      if (!shared) notShared.add(recipe);
+    }
+    return notShared;
+  }
+
   /// Share a menu with selected friends and groups using UnifiedMenuService invitation system
   Future<bool> shareMenu({
     required Map<String, List<Recipe>> menu,
@@ -226,23 +250,10 @@ class UniversalShareDialogViewModel extends ChangeNotifier
       // Use provided menu name or generate from menu content
       final menuTitle = menuName ?? _generateMenuTitle(menu);
 
-      // Collect all recipient user IDs (friends + resolved group members)
-      final allRecipientIds = <String>{...friendUserIds};
-
-      // Resolve group members to user IDs
-      if (groupIds != null && groupIds.isNotEmpty) {
-        for (final groupId in groupIds) {
-          final group = friendsService.getCategoryByIdInternal(groupId);
-          if (group != null) {
-            allRecipientIds.addAll(group.friendUserIds);
-            AppLogger.info(
-              '📋 Resolved group "${group.name}" to ${group.friendUserIds.length} members',
-            );
-          } else {
-            AppLogger.warning('⚠️ Group $groupId not found');
-          }
-        }
-      }
+      final allRecipientIds = {
+        ...friendUserIds,
+        ..._groupMemberIds(friendsService, groupIds),
+      };
 
       if (allRecipientIds.isEmpty) {
         _setError(AppLocale.current.errorNoRecipientsFound);
@@ -264,6 +275,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         friendIds: allRecipientIds.toList(),
         message: message,
         allowCollaboration: allowCollaboration,
+        groupIds: groupIds,
       );
 
       if (success) {
@@ -286,6 +298,15 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     }
   }
 
+  /// The members of [groupIds], without the sharer.
+  Set<String> _groupMemberIds(
+    UnifiedFriendsService friendsService,
+    List<String>? groupIds,
+  ) => {
+    for (final groupId in groupIds ?? const <String>[])
+      ...?friendsService.getCategoryByIdInternal(groupId)?.friendUserIds,
+  }..remove(friendsService.currentUserId);
+
   /// Share a shopping list with selected friends and groups
   Future<bool> shareShoppingList({
     required UnifiedShoppingList shoppingList,
@@ -299,10 +320,17 @@ class UniversalShareDialogViewModel extends ChangeNotifier
       return false;
     }
 
+    // BUT-2271: a group's members are recipients too; groups used to be
+    // dropped here, so a list shared only with a group reached nobody.
+    final recipientIds = {
+      ...friendUserIds,
+      ..._groupMemberIds(ServiceLocator.get<UnifiedFriendsService>(), groupIds),
+    }.toList();
+
     // PHASE 2: Validate sharing targets and filter existing collaborators
     final validationResult = _validateSharingTargets(
       shoppingList,
-      friendUserIds,
+      recipientIds,
     );
     if (!validationResult.canProceed) {
       _setError(validationResult.errorMessage);
@@ -312,7 +340,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     // Use filtered friends list (exclude existing collaborators)
     final filteredFriendUserIds = validationResult.newFriendIds.isNotEmpty
         ? validationResult.newFriendIds
-        : friendUserIds;
+        : recipientIds;
 
     _setSharing(true);
     _clearError();
@@ -348,6 +376,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
           filteredFriendUserIds,
           message ?? AppLocale.current.shareDefaultShoppingListMessage,
           _shoppingService,
+          groupIds: groupIds,
         );
 
         if (success) {
@@ -365,17 +394,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier
           filteredFriendUserIds,
           message ?? AppLocale.current.shareDefaultShoppingListMessage,
           _shoppingService,
+          groupIds: groupIds,
         );
-
-        // Share to groups if any selected
-        // Group copy-sharing is not yet implemented.
-        // Friend sharing works; group support deferred.
-        if (groupIds != null && groupIds.isNotEmpty) {
-          AppLogger.warning(
-            '⚠️ COPY MODE: Group sharing not yet implemented for copy mode',
-          );
-          // For now, just log this - group sharing would need similar invitation system
-        }
 
         if (success) {
           AppLogger.success(

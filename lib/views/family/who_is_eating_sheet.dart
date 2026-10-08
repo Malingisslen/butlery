@@ -4,10 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Outcome of the who's-eating picker.
 ///
@@ -71,7 +74,7 @@ Future<WhoAteResult?> showWhoIsEatingSheet(
     config: _PickerConfig(
       title: l10n.whoAteTitle,
       subtitle: recipeTitle,
-      subtitleIcon: Icons.restaurant_outlined,
+      subtitleIcon: ButleryIcons.utensils,
       confirmLabel: l10n.whoAteConfirm,
       skipLabel: l10n.whoAteSkip,
     ),
@@ -97,7 +100,7 @@ Future<WhoAteResult?> showWhoIsHomeSheet(
     config: _PickerConfig(
       title: l10n.menuPresenceSheetTitle,
       subtitle: slotLabel,
-      subtitleIcon: Icons.home_outlined,
+      subtitleIcon: ButleryIcons.house,
       confirmLabel: (_) => l10n.menuPresenceThisMeal,
       wholeDayLabel: l10n.menuPresenceWholeDay,
       allowEmpty: true,
@@ -177,12 +180,12 @@ class _WhoIsEatingSheet extends StatelessWidget {
             ),
             Text(
               config.title,
-              style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
+              style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             ),
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(config.subtitleIcon, size: 15, color: cs.secondary),
+                ButleryIcon(config.subtitleIcon, size: 15, color: cs.secondary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -190,7 +193,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.secondary,
+                      color: context.modeColors.textAccent,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -223,12 +226,12 @@ class _WhoIsEatingSheet extends StatelessWidget {
                         WhoAteResult.attended(vm.selectedMemberIds),
                       )
                     : null,
-                icon: const Icon(Icons.how_to_reg, size: 18),
+                icon: const ButleryIcon(ButleryIcons.circleCheck, size: 18),
                 label: Text(config.confirmLabel(vm.selectedCount)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: cs.primary,
-                  foregroundColor: cs.surface,
+                  foregroundColor: cs.onPrimary,
                 ),
               ),
             ),
@@ -248,8 +251,8 @@ class _WhoIsEatingSheet extends StatelessWidget {
                       : null,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(44),
-                    foregroundColor: cs.primary,
-                    side: BorderSide(color: cs.primary),
+                    foregroundColor: cs.onSurface,
+                    side: BorderSide(color: cs.onSurface),
                   ),
                   child: Text(config.wholeDayLabel!),
                 ),
@@ -264,7 +267,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                       Navigator.pop(context, const WhoAteResult.skipped()),
                   style: TextButton.styleFrom(
                     minimumSize: const Size.fromHeight(40),
-                    foregroundColor: cs.outline,
+                    foregroundColor: cs.onSurfaceVariant,
                   ),
                   child: Text(config.skipLabel!),
                 ),
@@ -306,54 +309,69 @@ class _DinerToggleRow extends StatelessWidget {
       button: true,
       toggled: selected,
       label: context.l10n.a11yToggleDiner(member.displayName),
-      child: InkWell(
-        onTap: onTap,
-        child: Opacity(
-          opacity: selected ? 1.0 : 0.5,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              border: Border(
-                left: BorderSide(
-                  color: selected ? cs.primary : cs.outlineVariant,
-                  width: 4,
-                ),
-                bottom: BorderSide(
-                  color: selected ? AppColors.rustLight : cs.outlineVariant,
-                  width: 3,
-                ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: selected ? PressSurface.raised : PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            // Who eats is a chosen state: surface.selected with the real
+            // text.primary left border, never a faded row.
+            // An unchosen row keeps full text.
+            child: Ink(
+              decoration: BoxDecoration(
+                color: selected ? cs.surfaceContainerHighest : cs.surface,
               ),
-            ),
-            child: Row(
-              children: [
-                FamilyAvatar(
-                  name: member.displayName,
-                  color: parseAvatarColor(member.avatarColor),
-                  size: 40,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        member.displayName,
-                        style: AppTextStyles.titleSmall,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        _tag(context),
-                        style: AppTextStyles.captionText.copyWith(
-                          color: cs.outline,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: selected ? cs.onSurface : cs.outlineVariant,
+                      width: 4,
+                    ),
+                    bottom: BorderSide(
+                      color: selected
+                          ? context.modeColors.recipeCardBottomBorder
+                          : cs.outlineVariant,
+                      width: 3,
+                    ),
                   ),
                 ),
-                _CheckBox(selected: selected),
-              ],
+                child: Row(
+                  children: [
+                    FamilyAvatar(
+                      name: member.displayName,
+                      color: parseAvatarColor(context, member.avatarColor),
+                      size: 40,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            member.displayName,
+                            style: AppTextStyles.titleSmall,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _tag(context),
+                            style: AppTextStyles.captionText.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _CheckBox(selected: selected),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -380,7 +398,7 @@ class _CheckBox extends StatelessWidget {
         ),
       ),
       child: selected
-          ? const Icon(Icons.check, size: 18, color: Colors.white)
+          ? ButleryIcon(ButleryIcons.check, size: 18, color: cs.onPrimary)
           : null,
     );
   }

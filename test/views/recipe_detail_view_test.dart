@@ -34,9 +34,12 @@ import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -44,6 +47,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -246,8 +250,8 @@ void main() {
         await pumpDetailView(tester);
 
         expect(tester.takeException(), isNull);
-        // Title section renders the title lowercased (design rule).
-        expect(find.text('köttbullar med gräddsås'), findsOneWidget);
+        // P4-U05: the title under the hero is shown as written.
+        expect(find.text('Köttbullar med Gräddsås'), findsOneWidget);
         expect(favoriteButton(), findsOneWidget);
       },
     );
@@ -332,7 +336,9 @@ void main() {
       Future<void> startAddSnapFlow(WidgetTester tester) async {
         await pumpDetailView(tester);
 
-        final addButton = find.byIcon(Icons.add_a_photo);
+        final addButton = find.byTooltip(
+          l10nOf(tester).cookSnapAddTooltip,
+        );
         await tester.ensureVisible(addButton);
         await tester.pump();
         await tester.tap(addButton);
@@ -584,7 +590,7 @@ void main() {
 
           final plusButton = find.descendant(
             of: find.byType(PortionScaler),
-            matching: find.byIcon(Icons.add),
+            matching: find.byIcon(ButleryIcons.plus),
           );
           await tester.ensureVisible(plusButton);
           await tester.pump();
@@ -623,6 +629,103 @@ void main() {
     },
   );
 
+  // Q6-08 = A (produktbeslut 2026-09-27): the menu per role,
+  // produktregler.md:244-252. A member of someone else's shared recipe sees
+  // "Föreslå ändring" where the owner sees Redigera (:247), and no row that
+  // writes the recipe (Radera is the owner's alone, :252). The role comes
+  // from the recipe's owner id and member map, never from the screen.
+  group('RecipeDetailView — the menu follows who you are (Q6-08)', () {
+    const owner = 'friend-owner-456';
+
+    void seed(Recipe r) {
+      recipe = r;
+      recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
+    }
+
+    Recipe othersRecipe({required bool shareWithMe}) => RecipeFactory.build(
+      id: 'recipe-shared-q608',
+      title: 'Olles pannkakor',
+      createdBy: owner,
+      ingredients: ['3 dl mjöl', '6 dl mjölk', '3 ägg'],
+      instructions: ['Vispa smeten.', 'Stek tunna pannkakor.'],
+      socialData: RecipeSocialData(
+        ownerId: owner,
+        memberPermissions: shareWithMe
+            ? const {_testUserId: ResourcePermission.editor}
+            : const {'someone-else': ResourcePermission.editor},
+      ),
+    );
+
+    Future<void> openMenu(WidgetTester tester) async {
+      final previousOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
+          return;
+        }
+        previousOnError?.call(details);
+      };
+      try {
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      } finally {
+        FlutterError.onError = previousOnError;
+      }
+    }
+
+    testWidgets('the owner edits', (tester) async {
+      await pumpDetailView(tester);
+      await openMenu(tester);
+      final l10n = l10nOf(tester);
+      expect(find.text(l10n.recipeEdit), findsOneWidget);
+      expect(find.text(l10n.recipeSuggestChange), findsNothing);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-delete')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a member suggests a change instead, and cannot delete', (
+      tester,
+    ) async {
+      seed(othersRecipe(shareWithMe: true));
+      await pumpDetailView(tester);
+      await openMenu(tester);
+      final l10n = l10nOf(tester);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-suggest-change')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.recipeSuggestChange), findsOneWidget);
+      expect(find.text(l10n.recipeEdit), findsNothing);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-edit')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-delete')),
+        findsNothing,
+      );
+      expect(find.text(l10n.recipeUpdateTags), findsNothing);
+      expect(find.text(l10n.recipeEditTags), findsNothing);
+    });
+
+    testWidgets('someone the recipe is not shared with gets neither', (
+      tester,
+    ) async {
+      seed(othersRecipe(shareWithMe: false));
+      await pumpDetailView(tester);
+      await openMenu(tester);
+      final l10n = l10nOf(tester);
+      expect(find.text(l10n.recipeEdit), findsNothing);
+      expect(find.text(l10n.recipeSuggestChange), findsNothing);
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-delete')),
+        findsNothing,
+      );
+    });
+  });
+
   group('RecipeDetailView — re-extract from source (BUT-1205)', () {
     // A parseable Swedish payload: TextImportStrategy is fully hermetic (no DI,
     // no network), so a textPaste-type re-extract runs end to end in the widget
@@ -645,6 +748,16 @@ Gör så här:
 4. Mixa slätt, rör i grädden och servera.''';
 
     final originalCreatedAt = DateTime(2024, 1, 2, 9, 30);
+
+    // BUT-2279: the re-extract runs through ImportManager; give it the real
+    // text strategy so the payload is parsed end to end.
+    setUp(() {
+      TestServiceLocator.registerMock<ImportManager>(
+        ImportManager.withStrategies(MockPersonalRecipeOperations(), [
+          TextImportStrategy(),
+        ]),
+      );
+    });
 
     /// Rebuilds the outer-setUp recipe with a [SourceArtefact] of [type]
     /// captured [age] ago, an explicit createdAt, and deliberately sparse
@@ -691,7 +804,7 @@ Gör så här:
         previousOnError?.call(details);
       };
       try {
-        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         final l10n = l10nOf(tester);
@@ -885,9 +998,9 @@ Gör så här:
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 300));
 
-          // Title is rendered lowercased by the detail view (design rule).
+          // P4-U05: the title is shown as written.
           expect(
-            find.text('stale title'),
+            find.text('Stale Title'),
             findsOneWidget,
             reason: 'a failed write must leave the original title visible',
           );

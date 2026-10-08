@@ -15,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -220,12 +222,18 @@ void main() {
 
         // Assert
         expect(result, true);
-        verify(
+        // The profile is created on createUser's sign-in, before
+        // updateDisplayName, so the name must be held first.
+        verifyInOrder([
+          () => mockAuthRepository.holdRegistrationDisplayName(
+            email: 'newuser@example.com',
+            displayName: 'New User',
+          ),
           () => mockAuthRepository.createUser(
             'newuser@example.com',
             'securePassword123',
           ),
-        ).called(1);
+        ]);
         verify(
           () => mockAuthRepository.updateDisplayName(
             any(),
@@ -275,6 +283,47 @@ void main() {
       });
     });
 
+    // PQ-12 = A (fas2/produktbeslut-2026-09-23.json): the week tray is a
+    // device draft (produktregler.md:164-172). It goes when the user logs
+    // out herself, and survives an automatic logout.
+    group('week tray at logout', () {
+      final trayKey = WeeklyMenuOverflowTrayStore.keyFor('u1');
+
+      setUp(() {
+        SharedPreferences.setMockInitialValues({
+          trayKey: '{"kept":true}',
+          'unrelated_key': 'stays',
+        });
+        when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
+      });
+
+      test('rensas vid manuell utloggning, inte vid automatisk', () async {
+        await authService.logoutDueToInactivity();
+        var prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNotNull);
+
+        await authService.forceSignOut();
+        prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNotNull);
+
+        await authService.signOut();
+        prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNull);
+        expect(prefs.getString('unrelated_key'), 'stays');
+      });
+
+      test('a refused sign-out keeps the tray', () async {
+        when(
+          () => mockAuthRepository.signOut(),
+        ).thenThrow(Exception('offline'));
+
+        await authService.signOut();
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(trayKey), isNotNull);
+      });
+    });
+
     group('Password Reset', () {
       test('should send password reset email', () async {
         // Arrange
@@ -294,8 +343,7 @@ void main() {
         ).called(1);
       });
 
-      test('should handle password reset errors', () async {
-        // Arrange
+      test('an unknown address gets the same answer as a known one', () async {
         when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenAnswer(
           (_) async => throw FirebaseAuthException(
             code: 'user-not-found',
@@ -303,14 +351,12 @@ void main() {
           ),
         );
 
-        // Act
         final result = await authService.sendPasswordResetEmail(
           'unknown@example.com',
         );
 
-        // Assert
-        expect(result, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
+        expect(result, true);
+        expect(authService.errorMessage, isNull);
       });
     });
 
@@ -1275,19 +1321,20 @@ void main() {
         // Arrange - First error
         when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenThrow(
           FirebaseAuthException(
-            code: 'user-not-found',
-            message: 'User not found',
+            code: 'user-disabled',
+            message: 'User disabled',
           ),
         );
 
         // Act
         final result1 = await authService.sendPasswordResetEmail(
-          'unknown@example.com',
+          'disabled@example.com',
         );
 
         // Assert
         expect(result1, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
+        final firstError = authService.errorMessage;
+        expect(firstError, contains('inaktiverats'));
 
         // Arrange - Second error during recovery attempt
         when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenThrow(
@@ -1305,10 +1352,7 @@ void main() {
         // Assert - Should update to new error
         expect(result2, false);
         expect(authService.errorMessage, contains('Nätverksfel'));
-        expect(
-          authService.errorMessage,
-          isNot(contains('Fel email eller lösenord')),
-        );
+        expect(authService.errorMessage, isNot(firstError));
       });
     });
 

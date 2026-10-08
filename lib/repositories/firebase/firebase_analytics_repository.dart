@@ -46,12 +46,13 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
 
   /// Keys that must be dropped entirely — unbounded free text → unbounded PII.
   /// `search_query` is replaced with `search_query_len_bucket` downstream.
-  /// `error_message` is kept (already truncated to 100 chars + platform-origin,
-  /// not user-typed) for aggregated diagnostics.
+  /// `error_message` is dropped too (BUT-2281): exception text can carry URLs
+  /// and ids.
   static const Set<String> _piiDropKeys = {
     'search_query',
     'comment_text',
     'note',
+    'error_message',
   };
 
   /// SharedPreferences key for the per-install PII hashing salt.
@@ -140,10 +141,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }) async {
     try {
       final sanitized = await _sanitize(parameters);
-      await _analytics.logEvent(
-        name: name,
-        parameters: sanitized,
-      );
+      await _analytics.logEvent(name: name, parameters: sanitized);
     } catch (e) {
       AppLogger.error('Analytics event logging failed: $e');
     }
@@ -297,48 +295,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logExtractionError({
-    required String url,
-    required String platform,
-    required String error,
-    String? errorType,
-    String imageFormat = 'unknown',
-  }) async {
-    final String category = AnalyticsBuckets.categorizeError(error);
-
-    await logEvent(
-      name: AnalyticsEvents.extractionError,
-      parameters: {
-        'platform': platform,
-        'error_category': category,
-        'error_type': errorType ?? 'unknown',
-        'error_message': error.substring(
-          0,
-          error.length > 100 ? 100 : error.length,
-        ),
-        'url_domain': Uri.tryParse(url)?.host ?? 'invalid_url',
-        'image_format': imageFormat,
-      },
-    );
-
-    AppLogger.info('📊 Extraction error logged: $platform - $category');
-  }
-
-  @override
-  Future<void> logManualCopyFallback({
-    required String platform,
-    String? reason,
-  }) async {
-    await logEvent(
-      name: AnalyticsEvents.manualCopyFallback,
-      parameters: {
-        'platform': platform,
-        'reason': ?reason,
-      },
-    );
-  }
-
-  @override
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
@@ -357,14 +313,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logRecipeShared({
-    required String method,
-  }) async {
+  Future<void> logRecipeShared({required String method}) async {
     await logEvent(
       name: AnalyticsEvents.recipeShared,
-      parameters: {
-        'method': method,
-      },
+      parameters: {'method': method},
     );
   }
 
@@ -398,10 +350,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }) async {
     await logEvent(
       name: AnalyticsEvents.menuGenerated,
-      parameters: {
-        'recipe_count': recipeCount,
-        'method': method,
-      },
+      parameters: {'recipe_count': recipeCount, 'method': method},
     );
   }
 

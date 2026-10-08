@@ -369,12 +369,29 @@ void main() {
       test('should pluralize compound ingredients without units', () {
         expect(
           SwedishPluralization.pluralize('stor lök', 2.0),
-          equals('storar lök'),
+          equals('stora lökar'),
         );
         expect(
           SwedishPluralization.pluralize('grön paprika', 3.0),
-          equals('grönar paprika'),
+          equals('gröna paprikor'),
         );
+        expect(
+          SwedishPluralization.pluralize('burk tomatsås', 2.0),
+          equals('burkar tomatsås'),
+        );
+      });
+
+      test('leaves a compound with an unknown noun as written', () {
+        // Seen when a starter recipe was scaled to 6 portions.
+        expect(
+          SwedishPluralization.pluralize('vita fiskfiléer', 6.0),
+          equals('vita fiskfiléer'),
+        );
+        expect(
+          SwedishPluralization.pluralize('olja till fritering', 1.5),
+          equals('olja till fritering'),
+        );
+        expect(SwedishPluralization.pluralize('salt', 1.5), equals('salt'));
       });
 
       test('should apply regular pluralization rules', () {

@@ -19,12 +19,22 @@ class HeadingWordLists {
   /// `isInstructionHeader` (a loose `contains` check with other callers) to
   /// avoid changing multi-recipe splitting behaviour.
   static const genericBlockMarkers = {
+    ...ingredientBlockMarkers,
+    ...instructionBlockMarkers,
+  };
+
+  /// The [genericBlockMarkers] that open the ingredient block.
+  static const ingredientBlockMarkers = {
     'ingrediens',
     'ingredienser',
     'ingredienserna',
     'du behöver',
     'detta behövs',
     'det här behöver du',
+  };
+
+  /// The [genericBlockMarkers] that open the instructions.
+  static const instructionBlockMarkers = {
     'gör så här',
     'så gör du',
     'instruktion',
@@ -43,9 +53,7 @@ class HeadingWordLists {
   ///
   /// Deliberately gluten-only, not all fourteen EU allergens: this is the set
   /// where the "heading" reading is implausible (no Swedish recipe groups its
-  /// components under "Råg:") while the miss is a coeliac-relevant one. Dairy,
-  /// egg and nut words keep the colon-wins contract for now — widening the set
-  /// is a separate, evidenced decision, not a sprint-time reflex.
+  /// components under "Råg:") while the miss is a coeliac-relevant one.
   static const bareGlutenWords = {
     'mjöl',
     'vete',

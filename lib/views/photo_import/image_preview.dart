@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/content_cards/image_preview_card.dart';
 import 'package:butlery/widgets/common/buttons/overlay_button.dart';
@@ -36,7 +37,7 @@ class ImagePreview extends StatelessWidget {
         context: context,
         height: adaptiveHeight,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Stack(
             children: [
               Image.memory(
@@ -46,8 +47,8 @@ class ImagePreview extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               Positioned(
-                top: AppDimensions.spacingS,
-                right: AppDimensions.spacingS,
+                top: AppDimensions.space4,
+                right: AppDimensions.space4,
                 child: OverlayButton.remove(
                   onPressed: () => _handleRemove(context),
                   tooltip: context.l10n.importRemoveImage,
@@ -64,7 +65,7 @@ class ImagePreview extends StatelessWidget {
       child: StateWidget.empty(
         title: context.l10n.importNoImageSelected,
         subtitle: context.l10n.importTapButtonToSelect,
-        icon: Icons.add_photo_alternate,
+        icon: ButleryIcons.camera,
       ),
     );
   }

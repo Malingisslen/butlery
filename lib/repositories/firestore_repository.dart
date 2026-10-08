@@ -102,11 +102,14 @@ class FirestoreRepository {
     return ref.get();
   }
 
+  /// Merges by default. [merge] false replaces the whole document, so a
+  /// nested key the stored version has and [data] lacks is dropped.
   Future<void> setDocument(
     DocumentReference<Map<String, dynamic>> ref,
-    Map<String, dynamic> data,
-  ) {
-    return ref.set(data, SetOptions(merge: true));
+    Map<String, dynamic> data, {
+    bool merge = true,
+  }) {
+    return ref.set(data, SetOptions(merge: merge));
   }
 
   Future<void> deleteDocument(DocumentReference<Map<String, dynamic>> ref) {

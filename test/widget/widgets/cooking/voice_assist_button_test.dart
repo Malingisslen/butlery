@@ -20,9 +20,11 @@ import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
+import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/cooking/voice_assist_button.dart';
 import 'package:butlery/widgets/cooking/voice_heard_chip.dart';
 
@@ -163,7 +165,7 @@ void main() {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(buttonApp(onEnsurePermission: () async => true));
 
-    expect(find.byIcon(Icons.mic_none), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.mic), findsOneWidget);
     expect(find.bySemanticsLabel('Tala med köksbutlern'), findsOneWidget);
 
     handle.dispose();
@@ -182,7 +184,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.mic_none));
+      await tester.tap(find.byIcon(ButleryIcons.mic));
       await tester.pump();
 
       expect(permissionCalls, 1);
@@ -196,31 +198,59 @@ void main() {
     (tester) async {
       await tester.pumpWidget(buttonApp(onEnsurePermission: () async => true));
 
-      await tester.tap(find.byIcon(Icons.mic_none));
+      await tester.tap(find.byIcon(ButleryIcons.mic));
       // A single pump is deliberate: the listening pulse animation repeats
       // indefinitely, so pumpAndSettle() would never return while it runs.
       await tester.pump();
 
       expect(controller.state, VoiceAssistState.listening);
-      expect(find.byIcon(Icons.stop), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.stop), findsOneWidget);
       expect(find.text('Säg ett kommando…'), findsOneWidget);
     },
   );
 
-  testWidgets('transcribing shows the shared LoadingIndicator', (
+  testWidgets('listening pulses on the shared 1200 ms loop (R7-4 = B)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buttonApp(onEnsurePermission: () async => true));
+    await tester.tap(find.byIcon(ButleryIcons.mic));
+    await tester.pump();
+
+    double scale() => tester
+        .widget<ScaleTransition>(
+          find.ancestor(
+            of: find.byIcon(ButleryIcons.stop),
+            matching: find.byType(ScaleTransition),
+          ),
+        )
+        .scale
+        .value;
+
+    // One loop is AppMotion.pulse: full at half, back at the start
+    // (produktbeslut R8-9 = A).
+    expect(scale(), closeTo(0.88, 0.005));
+    await tester.pump(AppMotion.pulse ~/ 2);
+    expect(scale(), closeTo(1.0, 0.005));
+    await tester.pump(AppMotion.pulse ~/ 2);
+    expect(scale(), closeTo(0.88, 0.005));
+  });
+
+  testWidgets('transcribing shows the plate line, not a spinner (P4-U06)', (
     tester,
   ) async {
     await tester.pumpWidget(buttonApp(onEnsurePermission: () async => true));
 
-    await tester.tap(find.byIcon(Icons.mic_none)); // idle -> listening
+    await tester.tap(find.byIcon(ButleryIcons.mic)); // idle -> listening
     await tester.pump();
 
     capture.holdNext = true;
-    await tester.tap(find.byIcon(Icons.stop)); // listening -> transcribing
+    await tester.tap(
+      find.byIcon(ButleryIcons.stop),
+    ); // listening -> transcribing
     await tester.pump();
 
     expect(controller.state, VoiceAssistState.transcribing);
-    expect(find.byType(LoadingIndicator), findsOneWidget);
+    expect(find.byType(PlateLine), findsOneWidget);
 
     // Resolve so the pending Future doesn't leak into the next test.
     capture.releaseHeld(null);
@@ -249,9 +279,9 @@ void main() {
       expect(find.textContaining('Hörde:'), findsNothing);
 
       capture.transcriptQueue.add('Blubb.');
-      await tester.tap(find.byIcon(Icons.mic_none)); // idle -> listening
+      await tester.tap(find.byIcon(ButleryIcons.mic)); // idle -> listening
       await tester.pump();
-      await tester.tap(find.byIcon(Icons.stop)); // listening -> resolve
+      await tester.tap(find.byIcon(ButleryIcons.stop)); // listening -> resolve
       // The miss cycle speaks a short message then settles back to idle;
       // no repeating animation is active once listening has ended.
       await tester.pumpAndSettle();

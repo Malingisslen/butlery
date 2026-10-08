@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Text field for adding new items to a list.
 class AddItemField extends StatefulWidget {
@@ -47,20 +49,18 @@ class _AddItemFieldState extends State<AddItemField> {
         hintText: widget.hintText,
         border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withValues(
-              alpha: AppDimensions.opacityHalf,
-            ),
+            color: theme.colorScheme.outlineVariant,
             style: BorderStyle.solid,
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingMs,
+          vertical: AppDimensions.space8,
         ),
         suffixIcon: IconButton(
-          icon: Icon(
-            Icons.add_circle,
-            color: theme.colorScheme.primary,
+          icon: ButleryIcon(
+            ButleryIcons.plus,
+            color: theme.colorScheme.onSurface,
           ),
           onPressed: _add,
           tooltip: context.l10n.commonAdd,

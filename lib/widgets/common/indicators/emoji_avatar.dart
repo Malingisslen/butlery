@@ -39,10 +39,8 @@ class EmojiAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             backgroundColor ??
-            Theme.of(context).colorScheme.primary.withValues(
-              alpha: AppDimensions.opacityVeryLight,
-            ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Center(
         child: Text(

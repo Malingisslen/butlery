@@ -9,6 +9,11 @@ class TextImportNormalizer {
   // HIGH-10: Use Private Use Area characters for markers to avoid collision
   // with any possible user input (PUA characters are guaranteed not in normal text)
   static const _decimalMarker = '\uE000'; // PUA char for decimal protection
+  // Stands in for a blank line while the splitters run, so the paragraph
+  // break the writer typed survives the line-break collapse at the end. A
+  // colon-less heading ("Ostsås") is told apart from a quantity-less
+  // ingredient row by whether it opens a paragraph.
+  static const _paragraphMarker = '\uE002';
   static const _abbreviationMarker =
       '\uE001'; // PUA char for abbreviation protection
 
@@ -93,11 +98,13 @@ class TextImportNormalizer {
       (m) => '${m.group(1)}\n${m.group(2)}',
     );
 
-    // Pattern 2: Split before Swedish recipe section headers
+    // Pattern 2: Split before Swedish recipe section headers that run straight
+    // on from the previous word. Only a CAPITALISED header counts: matched
+    // case-insensitively this tore "sojasås" into "soja"/"sås" and "fisksås"
+    // into "fisk"/"sås", and the import gate recorded both rows as dropped.
     result = result.replaceAllMapped(
       RegExp(
-        r'([a-zåäö])(sås|såsen|biffen|övrigt|marinaden|gräddsåsen|till servering|kycklingen|fisken|köttet|grönsakerna|woka ihop|servera)',
-        caseSensitive: false,
+        r'([a-zåäö])(Sås|Såsen|Biffen|Övrigt|Marinaden|Gräddsåsen|Till servering|Kycklingen|Fisken|Köttet|Grönsakerna|Woka ihop|Servera)',
       ),
       (m) => '${m.group(1)}\n${m.group(2)}\n',
     );
@@ -109,8 +116,10 @@ class TextImportNormalizer {
     );
 
     // Pattern 3b: Split AFTER "X portioner" when followed by uppercase (section header)
+    // Case-sensitive on the capital: matched case-insensitively, `portioner?`
+    // backtracked and "2 portioner" became "2 portione" + "r".
     result = result.replaceAllMapped(
-      RegExp(r'(\d+\s*portioner?)\s*([A-ZÅÄÖ])', caseSensitive: false),
+      RegExp(r'(\d+\s*[Pp]ortioner?)\s*([A-ZÅÄÖ])'),
       (m) => '${m.group(1)}\n${m.group(2)}',
     );
 
@@ -164,7 +173,10 @@ class TextImportNormalizer {
   /// Main preprocessing entry point.
   /// Combines all normalization steps for recipe text.
   static String preprocessText(String input) {
-    String processed = input;
+    String processed = input.replaceAll(
+      RegExp(r'\n[ \t]*\n(?:[ \t]*\n)*'),
+      '\n$_paragraphMarker\n',
+    );
 
     // Stage 1: Smart sentence splitting with decimal protection
     processed = smartSentenceSplit(processed);
@@ -236,10 +248,13 @@ class TextImportNormalizer {
       (match) => '${match.group(0)}\n',
     );
 
-    // Add line breaks before common instruction words
+    // Add line breaks before common instruction words. Word-bounded: unbounded,
+    // "skär" fired inside "solroskärnor" and "add" inside "graddsas", and the
+    // fragment after the cut scored as an instruction, which ended the
+    // ingredient block and dropped the quantity-less rows beneath it.
     processed = processed.replaceAllMapped(
-      RegExp(
-        r'(Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör|Start by|Preheat|Cook|Fry|Mix|Pour|Add|Cut|Serve|Heat|Stir)',
+      SwedishWordBoundary.boundedRegExp(
+        r'Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör|Start by|Preheat|Cook|Fry|Mix|Pour|Add|Cut|Serve|Heat|Stir',
         caseSensitive: false,
       ),
       (match) => '\n${match.group(0)}',
@@ -251,8 +266,10 @@ class TextImportNormalizer {
       (match) => '${match.group(1)} ${match.group(2)}',
     );
 
-    // Normalize line breaks
+    // Collapse the splitters' line breaks; only a typed paragraph break
+    // comes back as a blank line.
     processed = processed.replaceAll(RegExp(r'\n+'), '\n');
+    processed = processed.replaceAll('$_paragraphMarker\n', '\n');
 
     return processed.trim();
   }

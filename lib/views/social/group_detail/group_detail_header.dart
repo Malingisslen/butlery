@@ -3,10 +3,14 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/groups/group_household_join_tile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 /// GroupDetailHeader - Group header component
 /// Displays group information, avatar, and basic details.
@@ -39,7 +43,11 @@ class GroupDetailHeader {
                       header: true,
                       child: Text(
                         group.name,
-                        style: AppTextStyles.sectionHeader,
+                        style: AppTextStyles.sectionHeader.copyWith(
+                          color: AppModeColors.textBody(
+                            Theme.of(context).brightness,
+                          ),
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -64,26 +72,26 @@ class GroupDetailHeader {
 
           // Group details
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingS),
+            padding: const EdgeInsets.all(AppDimensions.space4),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
+                    ButleryIcon(
+                      ButleryIcons.info,
                       size: AppDimensions.iconSizeM,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       context.l10n.groupInformation,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -93,19 +101,19 @@ class GroupDetailHeader {
                   context,
                   context.l10n.groupCreated,
                   _formatDate(context, group.createdAt),
-                  Icons.calendar_today,
+                  ButleryIcons.calendar,
                 ),
                 _buildDetailRow(
                   context,
                   context.l10n.groupUpdatedDate,
                   _formatDate(context, group.updatedAt),
-                  Icons.update,
+                  ButleryIcons.clock,
                 ),
                 _buildDetailRow(
                   context,
                   context.l10n.groupMembers,
                   context.l10n.groupMemberCount(group.friendCount),
-                  Icons.people,
+                  ButleryIcons.users,
                 ),
               ],
             ),
@@ -127,16 +135,20 @@ class GroupDetailHeader {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              secondary: Icon(
-                Icons.home,
+              secondary: ButleryIcon(
+                ButleryIcons.house,
                 color: isHousehold
-                    ? Theme.of(context).colorScheme.primary
+                    ? Theme.of(context).colorScheme.onSurface
                     : Theme.of(context).colorScheme.onSurfaceVariant,
                 size: AppDimensions.iconSizeL,
               ),
               contentPadding: EdgeInsets.zero,
             ),
           ],
+
+          // BUT-2267: a non-owner member joins the household. Hides itself
+          // for everyone it does not apply to.
+          GroupHouseholdJoinTile(group: group),
         ],
       ),
     );
@@ -152,7 +164,7 @@ class GroupDetailHeader {
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          Icon(
+          ButleryIcon(
             icon,
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -1,0 +1,48 @@
+{
+  "form": "deg, fyllning och pensling som komponenter",
+  "title": "Kanelbullar",
+  "steps": 6,
+  "ingredients": [
+    {
+      "key": "jäst"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "mjölk",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "vetemjöl",
+      "allergen": "gluten"
+    },
+    {
+      "key": "smör",
+      "allergen": "mjölk"
+    },
+    {
+      "key": "socker"
+    },
+    {
+      "key": "kanel"
+    },
+    {
+      "key": "ägg",
+      "allergen": "ägg"
+    },
+    {
+      "key": "pärlsocker"
+    }
+  ],
+  "headings": [
+    "Deg",
+    "Fyllning",
+    "Pensling",
+    "Gör så här"
+  ]
+}

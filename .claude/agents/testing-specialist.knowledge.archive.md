@@ -39986,3 +39986,218 @@ struck from the function's own doc. Checked rather than assumed: they are differ
 census consumes the KEYS, which do descend from that one read, so "descends from" is true where
 "needs the source" was false. A strike in one place does not automatically condemn the similar
 sentence elsewhere — read it against the code, not against the strike.
+
+### 2026-09-28 — BUT-2164 review: a plural l10n key pinned on its `=1` arm only [review, l10n-plural]
+Chip label moved from `'${recipeCookedToday} ($cookCount)'` to plural key `recipeCookedCount`
+(`=1{Lagat 1 gång} other{Lagat {count} gånger}`). The flow test starts from a factory recipe
+(cookCount 0, `RecipeFactory.build` has no cookCount param), cooks once, and asserts
+`find.text('Lagat 1 gång')`: that kills the revert, but the `other` arm (the drawn "Lagat N
+gånger" wording, and what every recipe cooked twice or more shows) is typed by no suite, and
+`recipeCookedCount(1)` in place of `recipeCookedCount(cookCount)` stays green because 0→1
+collapses the count onto the literal. Fixture that closes both: seed core.cookCount 2, assert
+"Lagat 2 gånger", cook, assert "Lagat 3 gånger". Filed Medium (non-blocking). No chapter edit:
+the widgets-ui "which new ARB strings a suite types VERBATIM" bullet already finds it, and that
+chapter sat at 19,951/20,000 chars.
+
+### 2026-09-29 — BUT-2181 scrim barrier: a shrink-only findings list compares CODES, not details [review, widgets-ui]
+Diff: NavigationThemes.dialogTheme barrierColor + bottomSheetTheme modalBarrierColor = cs.scrim;
+six COLOUR_FILL entries struck from test/views/design_states/known_state_findings.dart.
+visual_only_53_test compares the SET of violation CODES per row against the listed codes; the
+KnownFinding.what detail is never compared. So a row whose code stays listed for a second
+reason (inköpslista::LOADING keeps COLOUR_FILL for DecoratedBox #1A...) is NOT a discriminator
+for the fix even though its detail string was edited. The pins are the rows where the code
+disappears entirely: dialog-sheet::DEFAULT/LOADING (showDialog -> dialog barrier) and
+skafferi::DEFAULT (showModalBottomSheet -> modal sheet barrier), one per edited line. Settled
+analytically (HEAD listed #8A000000 on those rows = measured black54); no lib/ probe, to keep
+ledger bytes clean. Residual: the rule accepts ANY allowed palette colour, so a repoint to
+another scheme slot stays green — Low, non-blocking. Also ran a11y_matrix (dialog-sheet,
+skafferi rows) since textContrastGuideline reads pixels under the barrier: green. No chapter
+edit: widgets-ui sat at 19,951/20,000 chars.
+
+### 2026-09-29 — BUT-2189 add-members cold start: a non-replaying stream stub hid an init collision [trigger: real bug caught]
+Review of AddMembersToGroupViewModel following UnifiedFriendsService.stateStream. The service's
+stateStream is `BehaviorSubject<FriendsServiceState>.seeded(const FriendsStateLoading())`; the new
+cold-start tests stubbed it with a plain StreamController (no replay). Scratch probe
+(_zz_probe_test.dart, deleted) with a real seeded BehaviorSubject, group not yet loaded, service
+loading: printed `hasError=true error=Gruppen hittades inte isLoading=true` right after
+construction. Mechanism: replay event arrives one microtask after listen(), while the
+constructor's executeNamedOperation('initializeData') is still active; the handler re-ran
+_initializeData, executeNamedOperation threw StateError('already in progress'), and
+_initializeData's catch mapped it to errorGroupNotFound. Masked in the UI only because the view
+checks isLoading before hasError. The coordinator fixed it in parallel (handler notifies and
+returns while the service is loading; both cold tests switched to a seeded BehaviorSubject).
+Separately: dispose()'s subscription cancel had no pin; a probe pair (dispose vs no dispose,
+single-subscription controller, hasListener) went green/red as expected, snippet handed over.
+
+### 2026-09-29 — BUT-2192 account security headings: matrix host never renders the MFA section [coverage-review]
+Commit-gate review of AccountSecurityView wrapping four section headings in Expanded. The a11y
+matrix (profil-inställningar::DEFAULT, 18 cases, green; 8 OVERFLOW entries removed from
+known_a11y_findings.dart, ceiling 190 -> 182) pins the password, email and legal headings. The
+host `_securityAuth` stubs `hasMfaEnabled` false, so `_buildMfaSection` never mounts there, and
+account_security_mfa_row_test pumps at the default 800x600 x1.0. Measured with a deleted scratch
+probe (hasMfa true, 320 dp, x2.0): heading "Tvåfaktorsautentisering" intrinsic width 1002.8 vs
+row 288.0; with the fix no exception. So the one heading most likely to overflow (longest,
+single word) had its Expanded revertible with every suite green. Filed High.
+Chapter cap trim, retired verbatim from the widgets-ui busy-state bullet: "See the 2026-09-07
+archive entries (BUT friend-requests spinner) for the per-host figures and the superseded
+wordings."
+
+### 2026-09-29 — BUT-2194 swipe hint dismiss tap target: guideline blind at the screen edge
+Trigger: new pattern (review of lib/widgets/common/swipe_hint_banner.dart dropping
+`visualDensity: VisualDensity.compact`). Added a direct test to
+test/widget/common/swipe_hint_banner_test.dart ("the dismiss control meets the 48 dp tap
+target (BUT-2194)", `meetsGuideline(androidTapTargetGuideline)` + co-assert the x icon).
+Instrument probe (scratch test, deleted): a compact IconButton as the last child of a bare Row
+in createLocalizedTestApp (flush top-right) -> `androidTapTargetGuideline.evaluate` passed=true
+at size 40x40. Same Row wrapped in Padding(all: 24): compact passed=false (40x40), standard
+passed=true (48x48). Revert probe: HEAD copy of swipe_hint_banner.dart (compact restored) ->
+exactly the new test [E], 6 others green; restored, cmp identical, 7/7 green.
+The a11y matrix (matlagningsläge, vänner-grupp) also kills the revert, but only on the keys
+where the banner was the sole TAP_TARGET violator (DEFAULT x2.0, OFFLINE 360 x1.0); the x1.0/x1.5
+keys stay listed for other controls, so the banner is masked there.
+Chapter cap trim, retired verbatim from widgets-ui:
+"- A page-size guard is only testable on a TALL surface (`tester.view.physicalSize = Size(800,14000)`,
+  dpr 1.0) — a short surface auto-scrolls and hides item 0."
+"- A `didChangeDependencies` retry on a widget that renders `SizedBox.shrink()` on failure is DEAD —
+  the early return happens before any `Theme.of`, so only a REMOUNT recovers."
+
+### 2026-09-30 — BUT-2195 smart import: view-copy probe for the a11y matrix [review, technique]
+Gate review of `excludeFromSemantics: true` on SmartImportView's full-page unfocus GestureDetector,
+covered by a11y_matrix_test's TAP_LABEL (labeledTapTargetGuideline) with 20 import-av-recept keys
+removed from shrink-only known_a11y_findings.dart (ceiling 174 -> 154, 154 entries counted).
+Non-vacuity settled with NO lib/ write: copied lib/views/smart_import_view.dart to
+test/views/design_states/hosts/_zz_probe_smart_import_view.dart minus the one line (count==1
+asserted), repointed task_hosts.dart's import to the copy, ran the matrix filtered on
+"import-av-recept": exactly the 20 removed keys went [E] with TAP_LABEL on SemanticsNode#4
+(rect top 56.0 = the body under the app bar), run twice, OFFLINE (heirloom host) stayed green.
+Restored: deleted the copy, task_hosts.dart from `git show :path` then `git checkout --` (it was
+clean at HEAD; the copy-back left a stat-only M). Rerun green, +22.
+Principle merged into the core card's probe ladder step (3).
+
+### 2026-09-30 — BUT-2195 add-members friend row: one control, selected state, invitation status [review, new-pattern]
+Round: `add_members_to_group_view.dart` gave each friend's `SelectionCard` `isSelected` +
+`semanticLabel`. Coverage offered was only the a11y matrix's TAP_LABEL (18 known entries removed);
+the matrix fixture never selects or sends, so `isSelected` and the label were unpinned there.
+Measured on the intermediate bytes (Checkbox in ExcludeSemantics, ListTile not excluded) with a
+state-harness probe: the friend row produced more than one node containing the name — the
+ListTile's own node ("Profilbild för Anna Lindqvist\nAnna Lindqvist", tap, no button/selected)
+beside the card's. Final bytes (ListTile in ExcludeSemantics, label `name` or `name, <status>`):
+getSemantics on the card = one node, label "Anna Lindqvist", button, tap, selected toggles with
+both a card tap and a Checkbox tap.
+Wrote test/views/social/add_members_to_group_view_test.dart (reuses StateEnvironment + stateApp).
+Test-side replica probes (probe ladder step 3), each red: (A) previous two-node shape -> both
+tests red on "one node announces" length; (B) label drops status -> 'Anna Lindqvist' vs
+'Anna Lindqvist, Misslyckades'; (C) `isSelected:` deleted -> isSelected Tristate.isFalse.
+Chapter: retired verbatim to make room under the 20,000 cap —
+"- **A dropdown widened to keep an off-vocabulary value needs FOUR fixtures**: off-list-untouched;
+  pick-something-then-pick-back (only killer of keying the list off current vs stored selection);
+  empty-stored; literal vocabulary pin (BUT-1858)."
+Added the labeledTapTargetGuideline split-node bullet.
+
+### 2026-09-30 — BUT-2195 twin: CreateGroupConversationView friend card semantics [trigger: new pattern]
+
+Wrote test/views/messaging/create_group_conversation_view_test.dart (twin of add_members_to_group_view_test.dart). Measured semantics tree: after a friend is selected the selected-members Chip forms a node labelled "Profilbild för Anna Lindqvist\nAnna Lindqvist", so the twin's "exactly one node whose label contains the name" helper FAILS here after the tap for a harness reason, not a product one. Scoped the helper to TAP nodes and kept an all-nodes count before the first tap only. The same dump showed the Chip delete button as a tap node with NO label (Info, pre-existing, not in the diff). Red probes on a test/-side copy of the view, each run twice, both runs identical: HEAD shape (no semanticLabel, no ExcludeSemantics) -> both tests red, label "Profilbild för Anna Lindqvist\n..."; always-append-email -> only the no-email test red ("Cecilia Berg, "); ExcludeSemantics->Semantics -> both red (trailing "\n" concatenation). Chapter bullet on labeledTapTargetGuideline merged in place, not appended.
+
+### 2026-09-30 — BUT-2192 portion header: Row→Wrap overflow fix, then full-width band [trigger: new pattern]
+
+Commit-gate review of lib/widgets/common/input/portion_scaler_ui.dart `_buildHeader` Row→Wrap. Added to test/widget/common/input/portion_scaler_ui_test.dart group "header at 320 dp and 200 % text (BUT-2192)": (1) controls on screen + tappable at 320 dp / TextScaler 2.0 in AppTheme.lightTheme with recipe_detail_content's mount (Padding all paddingL > start Column > Container h paddingL); (2) after the integration reviewer found the bare Wrap shrank recipe detail's portion band and the lib file became SizedBox(width: double.infinity, child: Wrap), a band-width test (band width == 320 - 2*paddingL). Red probes on test/-side copies, run twice each: HEAD Row copy -> test 1 red "RenderFlex overflowed by 197 pixels" (test 2 also red, via a 40 px overflow at 1.0 under the test font, not via its width assertion); bare-Wrap copy -> only test 2 red, Expected 288.0 Actual 174.5. Chapter bullet on overflow probes extended in place. Chapter was at 20,020 chars (over cap) before this edit; retired verbatim below to make room:
+
+- A COPY test stopping at the confirmation dialog pins the words, not the branch.
+  `MaterialApp(routes:{...})` never reads `settings.arguments` — push through `onGenerateRoute`.
+- **A control that DISABLES ITSELF after one tap makes every later negative-tap assertion in the same
+  test unfailable** — order the negative tap FIRST and assert zero (BUT-1904).
+
+### 2026-09-30 — BUT-2192 review: menu prompt heading overflow test [trigger: review]
+
+Reviewed test/widget/widgets/menu/menu_prompt_input_test.dart (320 dp, text scale clamped to 2.0, createLocalizedTestApp so AppTheme.lightTheme, Scaffold body, no scroll ancestor). Analytic grading, no probe: on the revert mutant the right-edge `lessThanOrEqualTo` line is ENTAILED by `takeException(), isNull` above it (fail-fast), but it independently kills overflow-HIDING mutants that raise no RenderFlex error (OverflowBox / horizontal scroll around the Row). Neither assertion kills a `maxLines: 1` + ellipsis or a `softWrap: false` mutant inside the Flexible — the paragraph's size is clamped to the Flexible's width, so the library doc's "wraps" is unpinned. Suggested pin: `final p = tester.renderObject<RenderParagraph>(heading); expect(p.size.height, greaterThan(p.getMaxIntrinsicHeight(double.infinity)));` (height at infinite width = one line; theme-independent). Not added to the chapter: widgets-ui chapter already measures 20020 bytes.
+
+### 2026-09-30 — BUT-2192 authoring: auth header wordmark at 320 dp / 200 % text [trigger: new-pattern]
+
+Wrote test/widget/views/auth/auth_view_header_text_scale_test.dart for the `Flexible` + `FittedBox(scaleDown)` wordmark fix in `_buildGreenHeader`. First draft asserted `expect(tester.takeException(), isNull)` over the whole AuthView and went RED WITH the fix: `A RenderFlex overflowed by 362 pixels on the right`, error-causing widget `Row:file:///C:/Butlery/butlery/lib/views/auth_view.dart:672:16` — the `_buildFooter` legal-links Row ("Villkor · Integritetspolicy", labelMedium), constraints `0<=w<=320`. Found by a scratch probe capturing every FlutterErrorDetails (only that one error). The a11y matrix (real font) never named that Row, so treated as a test-font artefact, reported, not fixed. Scoped instead: collect `FlutterError.onError` into a list during pump (restored in `finally`), take `describeIdentity(tester.renderObject<RenderFlex>(find.ancestor(of: find.text('butlery'), matching: find.byType(Row)).first))`, assert no collected error's `toString()` contains it. Plus rect inside 0..320, `RenderParagraph.size.height == getMaxIntrinsicHeight(double.infinity)` (one line — kills a Flexible-without-FittedBox wrap mutant, which the overflow check cannot), and on-screen rect width < paragraph width (scale happened). Red run with the fix stashed + `.dart_tool/flutter_build` cleared: `Expected: empty` / `A RenderFlex overflowed by 295 pixels on the right` / `Row:file:///C:/Butlery/butlery/lib/views/auth_view.dart:136:11` / reason `the broccoli + wordmark Row must not overflow`. Green after pop + cache clear. Note `describeIdentity` needs `package:flutter/foundation.dart`; material.dart does not export it.
+Correction, same day: the 'kills a Flexible-without-FittedBox wrap mutant' clause above is REASONED, not probed. No mutant of that shape was run.
+
+### 2026-09-30 — BUT-2201 gate review: a11y registry key outlives the element it was filed for [trigger: new-pattern]
+
+The a11y matrix compares CODE SETS per case (`found.difference(known)` / `known.difference(found)` on `v.code`), so one registry key (`inköpslista::DEFAULT::light::360::1.0::TEXT_CONTRAST`) stands for every element failing that check in that case. BUT-2201 removed the "Sortera kategorier" button the key was filed for; the dark twin went stale and was removed, the light one stayed green-matched. `test_results/design-states-a11y.json` showed the survivor now measures the root-bar subtitle node "Veckans inköp · 1 av 5 klara", a different element, still keyed BUT-2201 (a ticket whose registry title names the removed button). Principle candidate for widgets-ui (chapter at 20,062 chars, over cap, not added): when a round removes some of a view's registry entries, read the results JSON for each SURVIVING entry under the same ticket and confirm it still names that ticket's element. A code-set match cannot tell you.
+
+Same review: the ticket moved "Sortera kategorier"/"Avmarkera alla" into ShoppingAppBar.buildHeaderActions as OPTIONAL callbacks. The new menu suite injects its own closures, and the only UnifiedShoppingView mount (design_states shopping_hosts) never opens `shopping-root-more`, so deleting the view's `onSortCategories:`/`onUncheckAll:` lines hides both actions from the app while every suite stays green. This is the BUT-1904 callback-seam shape again, in a MOVE rather than a new feature. Filed blocking. Also noted: DropdownButton.itemHeight non-null wraps the CLOSED button's selected item in SizedBox(height: itemHeight) (flutter dropdown.dart, the `innerItemsWidget` IndexedStack), so `itemHeight: null` is reachable by a closed-selector overflow test; the matrix DEFAULT host is a personal list, so the Row→Wrap in `_buildListDropdownItem` holds one Text there and is unpinned.
+
+### 2026-09-30 — BUT-2201 authoring: the two gate-requested tests, both red under their mutants [trigger: new-pattern]
+
+Wrote `test/widget/views/unified_shopping/unified_shopping_view_menu_test.dart` (real UnifiedShoppingView + real UnifiedShoppingViewModel over MockUnifiedShoppingService, via the public `StateEnvironment.setUp` / `stateApp` / `setStateSurface` from `test/views/design_states/state_harness.dart`; the host's private `_shopping` was replicated locally, host file untouched) and a 320 dp / 2.0 case in `shopping_list_header_test.dart`. Probe `onUncheckAll: null` in the view: red twice, `Found 0 widgets with text "Avmarkera alla"`. Probe `Wrap(`→`Row(` in `_buildListDropdownItem`: red twice, `A RenderFlex overflowed by 358 pixels on the right.` on the scoped layout-error list.
+
+Pattern: to scope an overflow assertion to a line whose container TYPE is the thing under test (Row vs Wrap), take `tester.renderObject(find.text(<child>)).parent` and match its `describeIdentity` in the collected FlutterError list. A `find.ancestor(matching: find.byType(Row))` finder, as the auth header test uses, would silently scope to a DIFFERENT flex once the subject becomes a Wrap (and vice versa under the revert). Principle candidate for widgets-ui; not added because that chapter is at 20,178 chars, already over its 20,000 cap. Measured: under Ahem at 2.0 the Wrap got only 102 dp and each Text wrapped internally, no layout error anywhere in the header, so no unrelated-overflow filtering was needed here. Not probed: `onSortCategories: null` (the same test's `findsOneWidget` on "Sortera kategorier" should catch it, but that is analytic, not measured).
+
+### 2026-10-05 — felkartan punkt 2/3 review: two unit tables touched, two left untouched, and an identity-on-fixture strip [trigger: review-gap]
+
+Diff added kruka/krukor/bunt/buntar/knippen to `UnitDefinitions.standaloneUnits` and kruka/bunt to `kSwedishUnits` + `kMaxAmountByUnit`; added `RecipeSectionDetector.isGenericBlockMarker` and wired it into `SchemaOrgTier._splitHeadings` (drop + `current = null`) and `SiteConfigTier._parseIngredients` (two `where` filters plus `.map(bareGlutenIngredientLabel(t) ?? t)`).
+
+Measured: `grep -rln 'kSwedishUnits\|kMaxAmountByUnit' test/` → no files. `llm_tier_test.dart` has an unknown-unit drop group (BUT-516, fixtures `glass`/`mug`) and an above-ceiling `kg` case, but no fixture names the new units, so deleting `'kruka'` from `kSwedishUnits` leaves every suite green while the LLM tier drops "1 kruka koriander" outright. `grep "Mjöl:\|Mjol:\|mjöl:" test/unit/services/parsing/tiers/` → nothing; every site_config fixture line is a measured row, a block marker, a colon group heading or `salt`, so the new strip map is the identity on all of them and deletable-green. Schema_org's group-clear IS pinned: fixture `["Ingredienser","Deg:","5 dl vetemjol","Ingredienser:","25 g jast"]` asserts sections `['Deg', null]`, which a `continue`-without-clear mutant turns into `['Deg','Deg']`.
+
+Also noted: `_subHeadingUnitGuard`'s own comment asks for new `kSwedishUnits` entries to be mirrored; kruka/bunt were not, so a digit-free "kruka basilika:" is still colon-wins → heading. Production omission, handed to the parent as Low.
+
+Comment claim verified rather than taken: text_import_strategy_test's "the instruction-word split used to fire inside 'stekning'" — `git show 5580ad3^:lib/services/import/parsers/text_import_normalizer.dart` line 239-245 shows the unbounded, case-insensitive alternation containing `Stek`; #432 bounded it. The test pins an already-shipped fix (no production change in this diff touches the strategy).
+
+### 2026-10-05 — felkartan punkt 2/3 re-review: both blocks closed; one conjunct of the new guard stays deletable-green [trigger: re-review]
+
+Round two added: site_config `['Mjöl:', '2 dl socker'] → ['Mjöl', '2 dl socker']` (kills deleting the strip map); llm_tier `kruka`/`bunt` kept beside a dropped `glass` with an EXACT list, `21 kruka` → failed confidence (kills deleting `kMaxAmountByUnit['kruka']`, which would fall back to 10000), `containsAll(kMaxAmountByUnit.keys)`; `knippen` in the unit loop; `Kruka basilika:`/`Bunt persilja:` → null (kills un-mirroring `_subHeadingUnitGuard`); schema_org kill-switch-off `['Ingredienser','Deg:','2 dl gradde'] → ['Deg:','2 dl gradde']` (kills reverting `entries` to `rawLines`).
+
+Residual, the guards-chapter shape "existence pinned, conditions not": `isGenericBlockMarker` gained a digit guard AND a unit-token guard; the three new negatives all carry a digit, so the unit conjunct alone is deletable-green. The fixture that would kill it is digit-free and starts with an ingredient-header phrase, e.g. `'Du behöver en burk krossade tomater'` (isIngredientHeader true, length under the +30 bound). Reported as Low, not blocking. 394 tests green over the seven suites; analyze clean.
+
+### 2026-10-05 — meal-type default sweep: nine default literals, zero reachable; the twin writer (dialog items) pinned by nothing [trigger: review]
+
+Change: every `mealType = 'Lunch'` default parameter → `'Middag'` (nine sites), realtime `?? 'Middag'`, and the two English writers (assisted-import dropdown items + `_inferMealType`) moved to the form's Swedish vocabulary. Caller asked whether seven unpinned defaults need tests.
+
+Measured with a caller table (grep `\.(createRecipe|createPersonalRecipe|createCollaborativeRecipe)\(` across `lib/`, then whether each call passes `mealType`): every production caller of the nine passes the argument explicitly (file_import_viewmodel:82, onboarding_viewmodel:441, backup_service:233, personal_recipe_crud:43, unified_recipe_service:738, unified_recipe_viewmodel:120/151, personal_recipe_viewmodel:48, social_recipe_viewmodel:165), and `UnifiedRecipeService.createCollaborativeRecipe` (:776) accepts `mealType` and DROPS it — the coordinator has no such parameter and `social_recipe_creation_service.dart:82` stamps `'Middag'` itself. So no default literal is reachable from the app; the only pins that can exist are test-side callers omitting it (unified_recipe_viewmodel_test:214 does) and the realtime `??` (realtime_recipe_utils_test:189 does). Verdict: the seven owe nothing; said so instead of adding tests.
+
+Non-vacuity of the new llm "vocabulary" test (`RecipeFormState.mealTypes contains(_inferMealType(...))`): over `_inferMealType` its kill set is a strict subset of the per-tag exact-literal tests' — the author's probe (default back to `'dinner'` → 3 red) reddens the per-tag default test too and shows nothing unique. Its ONLY unique kill set is a mutation of `RecipeFormState.mealTypes` itself (renaming/removing `'Mellanmål'` etc.), i.e. it is a cross-copy drift guard between the LLM writer and the form's list. Legitimate, but grade it as that, not as a pin on the service.
+
+The gap: `grep -rln 'AssistedImportDialog\|importMealDinner' test/` → only a doc-comment hit in smart_import_viewmodel_test. The dialog's five item values (the second English writer this change exists to fix) are read by no test; reverting any one to `'dinner'` is green everywhere, and the `initialValue`/items coupling (`DropdownButtonFormField` asserts in its constructor on every build) is pinned on the VM side only. Lane predicted, not run — no Flutter SDK on the review host: pump `AssistedImportDialog` via `createLocalizedTestApp`, `tester.element(find.byType(TextLineSelector)).read<AssistedImportViewModel>()`, drive `setIngredientSelection/nextStep/setInstructionSelection/nextStep`, then assert `takeException() isNull`, items contain `vm.mealType`, `RecipeFormState.mealTypes containsAll(items)`.
+
+Also: `MenuService` (`menu_service.dart:512`) matches `r.mealType.toLowerCase() == slot.mealType.toLowerCase()` — case-folded, so the new comments' "matches exactly" overstates by one word; `'dinner'` ≠ `'middag'` holds, so the motive is right. `meal_slot_mapper.dart` maps `'dinner'` → middag but only for CALENDAR slot placement of generator output, not recipe selection — read which matcher a motive sentence is about before grading it.
+
+### 2026-10-05 — meal-type sweep re-review: dialog pin landed; its first pump caught an unbuildable footer [trigger: re-review, test caught a real bug]
+
+`test/widget/widgets/import/assisted_import_dialog_meal_type_test.dart` opens `AssistedImportDialog` through `showDialog`, reads the VM off the `TextLineSelector` element, drives to the review step, and asserts `takeException() isNull`, items `contains(vm.mealType)`, `RecipeFormState.mealTypes containsAll(items)`. Coordinator's probes: one item back to `'snack'` → red on `containsAll`; VM default back to `'dinner'` → red through `takeException` (the DropdownButton "exactly one item" assert). Both directions of the two-constant coupling now pinned.
+
+The first pump of that never-pumped surface failed with "BoxConstraints forces an infinite width": `button_themes.dart:185/212/247` give Filled/Text/Outlined `minimumSize: Size(double.infinity, minTouchTarget)` and `ImportDialogFooter` put them in a `Row` with a `Spacer`. Fix: a `static const _fitLabel = ButtonStyle(minimumSize: WidgetStatePropertyAll(Size(0, minTouchTarget)))` on the four footer buttons (same shape as `hem_section.dart:326`). Pinned by the new test's `takeException` line, which was red before the fix. Residual, not this change: ten other widgets host Filled/Text buttons beside a `Spacer()` (grep `Spacer()` ∩ `FilledButton|TextButton` under lib/widgets: group_dialog_components, image_gallery_widget, menu_load_dialog, invitation_actions, invitation_selectors, blocked_users_section, menu_recipe_selection_dialog, group_recipe_sharing_dialog, friend_recipe_sharing_dialog, tag_editor_dialog) — each is either already styled or the same latent crash; a ticket, graded by pumping each once.
+
+Verdict flipped to pass. The "matches exactly" wording (menu_service compares lowercased) left standing as Info.
+
+### 2026-10-05 — Huvudrätt→Middag review: coverage records no DA for `return` lines; label branch settled by a replica probe [trigger: review]
+
+Staged diff: `_guessMealType` returned 'Huvudrätt' from the `typ: huvudrätt` label branch and
+the inline `contains('huvudrätt')` branch; both now return 'Middag', which is ALSO the method's
+fallback. Two table rows added ('Typ: Huvudrätt\nKöttbullar', 'Huvudrätt - Lasagne' → 'Middag').
+The rows pin the FORWARD direction only (the old value must not come back); deleting either branch
+stays green by construction, because the default now coincides — the guards chapter's dead-code
+rule. The caller's own revert probe on the inline branch reddened 'Huvudrätt - Lasagne'; the label
+branch was unprobed, and its row would be green through the inline branch even if preprocessing
+had broken the `Typ: Huvudrätt` label.
+
+Coverage read on the table test (`--coverage`, awk on `text_import_strategy.dart`): DA records exist
+for every CONDITION line (1083, 1084, 1087, 1090, 1095, 1098, 1101, 1104, 1107, 1110, 1113, 1118,
+1121, 1122, 1123, 1124, 1127) and for NONE of the `return '<literal>';` lines (1091, 1099, 1102,
+1105, 1111, 1114, 1119, 1125, 1128, 1134). So the DA on the `if` says the row reached the condition,
+not that it took the branch. The DA counts are also not loop counts (1123 is reached by three rows,
+records 1) — treat them as reached/not-reached only.
+
+Settled with a test-side replica (`test/unit/services/import/_zz_probe_test.dart`, deleted after):
+ran each fixture through `strategy.normalizeText` + `TextImportNormalizer.preprocessText` and asked
+the label regex directly. Label row's preprocessed text: `Typ: Huvudrätt\nKöttbullar\nIngredienser\n:\n2 dl mjölk\nInstruktioner\n:\nVispa.`
+(the `Ingredienser:` colon is split onto its own line, the `Typ: Huvudrätt` label is NOT) — regex
+matches, so reverting line 1099 to 'Huvudrätt' would redden the row. Inline row: label regex does
+not match, `contains('huvudrätt')` does, and no earlier inline word (frukost, fralla, lunch, middag)
+is present — sole discriminator for line 1123. `git status --porcelain` clean of the probe afterwards.
+
+Also this round: the index moved mid-review (two more staged files appeared between my first
+`--name-only` and the porcelain check — a comment strike in
+`test/widget/views/recipe_form_meal_type_dropdown_test.dart` and one sentence in
+`docs/onboarding/workflow-map.html`); re-listed and read the Dart one, then the index moved a
+THIRD time (a stale clause I was about to file as Info was struck by the coordinator, and a test
+renamed) — each move re-read with `Read`, because the ledger pins bytes. Core card was at 14,992
+chars, so the `RecipeFactory.build`-has-no-`tagResult` principle moved verbatim to the
+parsing-tagging-menu chapter to make room for the return-line coverage principle.
+
+### 2026-10-08 — BUT-1937: falsely green extraction and unified-recipe suites
+Wired an authenticated `AuthRepository` into the production `ServiceLocator` in `extraction_manager_test`, `social_media_extractor_test` and `unified_recipe_service_test`; all three stayed green. Probe on `session handoff`: with the registration removed, `stopRealtimeEditing` returned false (expected true), so the added assertion discriminates. The other three realtime tests still assert `anyOf(isTrue,isFalse)`: `unified_recipe_service.dart:459` constructs `RealtimeRecipeOperations` with no `realtimeSyncService`, so `startRealtimeEditing` returns false regardless.

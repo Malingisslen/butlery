@@ -1,54 +1,117 @@
 // lib/services/offline/offline_sync_manager.dart
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:math';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
-import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/retry_helper.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/offline/queue_retry_policy.dart';
+import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/queued_recipe_send.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
+import 'package:butlery/services/offline/offline_user_storage.dart';
+import 'package:butlery/services/offline/queued_image_uploader.dart';
+import 'package:butlery/services/offline/upload_queue_processor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 
 /// Handles sync operations for offline service
 /// Now uses Drift database instead of Hive
 class OfflineSyncManager {
-  final RecipeDao _recipeDao;
+  final AppDatabase _database;
   final SyncQueueDao _syncQueueDao;
-  final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
 
   bool _isSyncing = false;
+  bool _disposed = false;
   final VoidCallback? _onSyncStateChanged;
 
   /// H9: Callback to retag a recipe when connectivity is restored.
   /// Injected from OfflineService to avoid circular dependency with TaggingService.
-  final Future<void> Function(String recipeId)? _onTagRecipe;
+  final Future<void> Function(String recipeId, String userId)? _onTagRecipe;
+
+  /// Sends recipe entries (BUT-2162). Told the id of each recipe whose
+  /// write or deletion has just left the queue, so the screen can take the
+  /// server's copy: the cache keeps the device's copy while the queue holds
+  /// a write. Told of each queued edit the server's newer version stopped
+  /// (BUT-2213).
+  final QueuedRecipeSend _recipes;
+
+  /// How long one send may take. A Firestore write only completes when the
+  /// server confirms it, so on a network without internet it would hold the
+  /// pass for good; a timeout is a transient failure and is retried.
+  final Duration sendTimeout;
 
   /// Async lock to prevent concurrent sync operations.
   /// Uses a Completer-based mutex pattern for thread-safe sync.
   Completer<void>? _syncLock;
 
+  /// Whether the device is online now, read when a retry timer fires. Null
+  /// reads as online.
+  final bool Function()? _isOnlineNow;
+
+  /// The jitter source (queueRetryDelay).
+  final Random? _random;
+
+  /// The next scheduled pass, for the earliest retry time in the queue.
+  Timer? _retryTimer;
+
+  /// How many entries the last pass saved on the server.
+  int _lastPassSent = 0;
+
+  /// Puts recipe writes on the server. Until one is attached, recipe
+  /// entries wait in the queue untouched; tagging entries still run.
+  QueuedRecipeWriter? recipeWriter;
+
+  /// Sends the upload queue in the same passes (BUT-2162). Built from
+  /// [uploadImage] unless given.
+  final UploadQueueProcessor? uploads;
+
   OfflineSyncManager({
     required AppDatabase database,
-    required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
     VoidCallback? onSyncStateChanged,
-    Future<void> Function(String recipeId)? onTagRecipe,
-  }) : _recipeDao = database.recipeDao,
+    Future<void> Function(String recipeId, String userId)? onTagRecipe,
+    void Function(String recipeId)? onRecipeSent,
+    RecipeConflictCallback? onRecipeConflict,
+    bool Function()? isOnlineNow,
+    Random? random,
+    this.recipeWriter,
+    this.sendTimeout = const Duration(seconds: 30),
+    QueuedImageUploader? uploadImage,
+    OfflineUserStorage? userStorage,
+    UploadQueueProcessor? uploads,
+  }) : uploads =
+           uploads ??
+           (uploadImage == null
+               ? null
+               : UploadQueueProcessor(
+                   database: database,
+                   storage:
+                       userStorage ?? OfflineUserStorage(database: database),
+                   upload: uploadImage,
+                   random: random,
+                 )),
+       _database = database,
+       _isOnlineNow = isOnlineNow,
+       _random = random,
        _syncQueueDao = database.syncQueueDao,
-       _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
        _onSyncStateChanged = onSyncStateChanged,
-       _onTagRecipe = onTagRecipe;
+       _onTagRecipe = onTagRecipe,
+       _recipes = QueuedRecipeSend(
+         recipeDao: database.recipeDao,
+         syncQueueDao: database.syncQueueDao,
+         sendTimeout: sendTimeout,
+         onRecipeSent: onRecipeSent,
+         onRecipeConflict: onRecipeConflict,
+       );
 
   // Getters
   bool get isSyncing => _isSyncing;
@@ -56,185 +119,96 @@ class OfflineSyncManager {
   Future<bool> get hasQueuedChanges async {
     final userId = _authRepository.currentUserId;
     if (userId == null) return false;
-    return await _syncQueueDao.hasPending(userId);
+    return _hasWork(userId);
   }
 
   Future<int> get queuedChangesCount async {
     final userId = _authRepository.currentUserId;
     if (userId == null) return 0;
-    return await _syncQueueDao.countPending(userId);
+    return await _syncQueueDao.countPending(userId) +
+        await _database.uploadQueueDao.countPendingUploads(userId);
   }
 
-  /// Sync pending changes without circular dependencies.
+  Future<bool> _hasWork(String userId) async =>
+      await _syncQueueDao.hasPending(userId) ||
+      (await uploads?.hasPending(userId) ?? false);
+
+  /// Sends the queue: one pass over the user's entries, oldest first.
+  ///
+  /// The rules are produktregler.md:186-189 (queue_retry_policy.dart): an
+  /// entry waits for its dependencies and for earlier entries to the same
+  /// entity; a failed attempt is retried on the schedule 2 s → 4 s → 8 s →
+  /// 30 s → 2 min → 10 min with jitter, for at most 24 h from the first
+  /// failure; an error the server will always give again (4xx other than
+  /// 408/429) makes the entry and everything that depends on it a permanent
+  /// failure that waits for the user. Nothing is deleted without the
+  /// server's confirmation (produktregler.md:192).
+  ///
+  /// Coming back online runs a pass, but an entry whose retry time has not
+  /// come is left for its timer: "Ingen omförsöksstorm vid återkommande
+  /// nät" (produktregler.md:188). [force] ("Försök synka nu") ignores the
+  /// retry times, never the order or the dependencies.
+  ///
   /// Uses an async lock to prevent concurrent sync operations.
-  Future<void> syncPendingChanges({required bool isOnline}) async {
+  Future<void> syncPendingChanges({
+    required bool isOnline,
+    bool force = false,
+  }) async {
     final userId = _authRepository.currentUserId;
     if (userId == null) {
       AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
       return;
     }
 
-    final hasPending = await _syncQueueDao.hasPending(userId);
-    if (!isOnline || !hasPending) return;
+    if (!isOnline || !await _hasWork(userId)) return;
 
-    // Acquire async lock - if another sync is in progress, wait for it
+    // Acquire async lock - if another sync is in progress, wait for it.
+    // A loop, because several callers can wait on the same pass: only the
+    // first to wake takes the lock, the others wait for its pass in turn.
     if (_syncLock != null) {
       AppLogger.debug('🔄 SYNC: Waiting for ongoing sync to complete...');
-      await _syncLock!.future;
+      while (_syncLock != null) {
+        await _syncLock!.future;
+      }
+      if (_disposed) return;
       // After waiting, check if we still need to sync
-      final stillHasPending = await _syncQueueDao.hasPending(userId);
-      if (!stillHasPending) {
+      if (!await _hasWork(userId) || _syncLock != null) {
         AppLogger.debug('🔄 SYNC: No pending changes after wait, skipping');
         return;
       }
     }
 
+    if (_disposed) return;
+
     // Create new lock - this atomically prevents new sync operations
     _syncLock = Completer<void>();
     _isSyncing = true;
+    _retryTimer?.cancel();
+    _retryTimer = null;
     _onSyncStateChanged?.call();
 
-    final pendingCount = await _syncQueueDao.countPending(userId);
-    AppLogger.info(
-      '🔄 Synkroniserar $pendingCount väntande ändringar...',
-    );
-
     try {
-      final userRecipesRef = _firestoreRepository.userRecipesCollection(userId);
-
-      final pendingItems = await _syncQueueDao.getPendingForUser(userId);
-      int successCount = 0;
-      int failureCount = 0;
-      final List<String> failedRecipes = [];
-
-      for (final item in pendingItems) {
-        Recipe? recipe;
-        try {
-          // H9: Handle tag operations separately
-          if (item.operation == SyncOperation.tag.name) {
-            if (_onTagRecipe != null) {
-              AppLogger.info(
-                '🏷️ Processing pending tagging for: ${item.recipeId}',
-              );
-              await _onTagRecipe(item.recipeId);
-              await _syncQueueDao.dequeue(item.id);
-              successCount++;
-              AppLogger.success('✅ Tagging completed for: ${item.recipeId}');
-            } else {
-              AppLogger.warning(
-                '⚠️ Tag callback not configured, skipping: ${item.recipeId}',
-              );
-              await _syncQueueDao.dequeue(item.id);
-            }
-            continue;
-          }
-
-          // Get recipe from Drift
-          final offlineRecipe = await _recipeDao.getRecipe(
-            item.recipeId,
-            userId,
-          );
-
-          if (offlineRecipe != null) {
-            final json =
-                jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
-            recipe = Recipe.fromJson(json);
-
-            if (offlineRecipe.needsSync) {
-              AppLogger.info('📤 Synkar recept: ${recipe.id}');
-
-              // Use retry logic for Firebase operations
-              await RetryHelper.retryFirebaseOperation(() async {
-                // BUT-1819: this write goes STRAIGHT at `/users/{uid}/recipes`
-                // and never touches `FirebaseRecipeRepository`, so that class's
-                // `toFirestore` override — the sanitization chokepoint for this
-                // collection — does not run. Sanitize here or a recipe created
-                // offline syncs with its raw title, description and sourceUrl,
-                // which is the path most likely to be carrying unreviewed
-                // imported text.
-                //
-                // Deliberately NOT routed through the repository instead:
-                // `update()` reads the doc first (a read per synced recipe),
-                // enforces ownership and runs `_enforceShareCap`, which throws
-                // inside this retry loop; and an offline-CREATED recipe has no
-                // document yet, so `update()` would throw outright. The
-                // create-or-update `setDocument` is the right primitive here.
-                await _firestoreRepository.setDocument(
-                  userRecipesRef.doc(recipe!.id),
-                  sanitizeRecipeText(recipe).toFirestore(),
-                );
-              });
-
-              // Sync succeeded - mark as synced in Drift
-              await _recipeDao.markSynced(item.recipeId, userId);
-
-              // Remove from sync queue
-              await _syncQueueDao.dequeue(item.id);
-              successCount++;
-              AppLogger.success('✅ Synkade recept: ${recipe.id}');
-            } else {
-              // Recipe no longer needs sync - remove from queue
-              await _syncQueueDao.dequeue(item.id);
-              AppLogger.info(
-                '✅ Recept ${item.recipeId} behöver inte synkas längre',
-              );
-            }
-          } else {
-            // Recipe doesn't exist - remove from queue
-            await _syncQueueDao.dequeue(item.id);
-            AppLogger.info('🗑️ Tog bort invalid sync entry: ${item.recipeId}');
-          }
-        } catch (e) {
-          failureCount++;
-          final recipeTitle = recipe?.title ?? item.recipeId;
-          failedRecipes.add('$recipeTitle: ${e.toString()}');
-          AppLogger.error('❌ Fel vid synk av ${item.recipeId}: $e');
-
-          // Record failure in sync queue
-          await _syncQueueDao.recordFailure(item.id, e.toString());
-
-          // Robust error handling: Continue with next recipe
-          continue;
-        }
+      final now = clock.now();
+      var sent = await _sendSyncEntries(userId, now, force);
+      // A create sent above lets its images go up, and an image that went
+      // up queues its address as an edit of the recipe, sent here.
+      final uploaded = await uploads?.runPass(
+        userId,
+        now: now,
+        isCurrentUser: () => _authRepository.currentUserId == userId,
+        force: force,
+      );
+      if (uploaded != null && uploaded > 0) {
+        // The edits sent here were queued during this pass, so only the
+        // uploads count towards what the pass started with.
+        sent += uploaded;
+        await _sendSyncEntries(userId, now, force);
       }
 
-      // Detailed reporting
-      if (successCount > 0) {
-        AppLogger.success('🎉 Synkade $successCount recept framgångsrikt!');
-      }
+      _lastPassSent = sent;
+      if (sent > 0) AppLogger.success('🎉 Synkade $sent ändringar');
 
-      if (failureCount > 0) {
-        AppLogger.warning('⚠️ $failureCount recept kunde inte synkas:');
-        for (final failure in failedRecipes.take(3)) {
-          AppLogger.warning('  • $failure');
-        }
-        if (failedRecipes.length > 3) {
-          AppLogger.warning('  • ... och ${failedRecipes.length - 3} till');
-        }
-      }
-
-      // Smart retry: If all failed, use exponential backoff
-      if (successCount == 0 && failureCount > 0) {
-        AppLogger.info(
-          '⏰ Alla sync-försök misslyckades, använder exponential backoff...',
-        );
-
-        // Use exponential backoff for retry attempts
-        RetryHelper.retryWithBackoff(
-          () async {
-            final stillHasPending = await _syncQueueDao.hasPending(userId);
-            if (isOnline && stillHasPending) {
-              AppLogger.info('🔄 Retry-försök startar...');
-              await syncPendingChanges(isOnline: isOnline);
-            }
-          },
-          maxRetries: 3,
-          shouldRetry: (error) {
-            // Retry on any error - sync state will be checked inside the operation
-            return true;
-          },
-        );
-      }
+      await _scheduleNextAttempt(userId);
     } catch (e) {
       AppLogger.error('❌ Kritiskt fel vid synkronisering: $e');
 
@@ -250,6 +224,172 @@ class OfflineSyncManager {
       _onSyncStateChanged?.call();
     }
   }
+
+  /// One walk over the sync queue; returns how many entries reached the
+  /// server.
+  Future<int> _sendSyncEntries(
+    String userId,
+    DateTime now,
+    bool force,
+  ) async {
+    final pendingItems = await _syncQueueDao.getPendingForUser(userId);
+    final ids = await _database.queuedOpIds(userId);
+    final waiting = {...ids.waiting};
+    final failed = {...ids.failed};
+    final blockedEntities = <String>{};
+    int successCount = 0;
+    int failureCount = 0;
+
+    for (final item in pendingItems) {
+      final entityKey = '${item.entityType}:${item.recipeId}';
+      final decision = decideQueueEntry(
+        QueueEntryState(
+          opId: item.opId,
+          entityKey: entityKey,
+          dependsOn: SyncQueueDao.dependsOnOf(item),
+          nextAttemptAt: item.nextAttemptAt,
+        ),
+        now: now,
+        waiting: waiting,
+        failed: failed,
+        blockedEntities: blockedEntities,
+        force: force,
+      );
+      switch (decision) {
+        case QueueEntryDecision.dependencyFailed:
+          // "aldrig halvvägs" (produktregler.md:187).
+          _moveToFailed(
+            await _database.markChainPermanentlyFailed(
+              userId,
+              item.opId,
+              reason: QueuedChangeReason.dependencyFailed.code,
+            ),
+            waiting,
+            failed,
+          );
+          continue;
+        case QueueEntryDecision.waits:
+        case QueueEntryDecision.backoff:
+          blockedEntities.add(entityKey);
+          continue;
+        case QueueEntryDecision.send:
+          if (recipeWriter == null &&
+              item.operation != SyncOperation.tag.name) {
+            blockedEntities.add(entityKey);
+            continue;
+          }
+      }
+
+      // A pass belongs to the user it started for; the repository writes
+      // as whoever is signed in now.
+      if (_authRepository.currentUserId != userId) break;
+
+      try {
+        if (await _send(item, userId)) successCount++;
+        waiting.remove(item.opId);
+      } catch (e) {
+        failureCount++;
+        AppLogger.error(
+          '❌ Fel vid synk av ${item.recipeId}: ${queueErrorCode(e)}',
+        );
+        final permanent = permanentFailureReason(e);
+        final firstFailedAt = item.firstFailedAt ?? now;
+        if (permanent != null || queueRetriesExhausted(firstFailedAt, now)) {
+          final reason = permanent ?? QueuedChangeReason.retriesExhausted;
+          _moveToFailed(
+            await _database.markChainPermanentlyFailed(
+              userId,
+              item.opId,
+              reason: QueuedChangeReason.dependencyFailed.code,
+              rootReason: reason.code,
+            ),
+            waiting,
+            failed,
+          );
+        } else {
+          final failures = item.retryCount + 1;
+          await _syncQueueDao.scheduleRetry(
+            item.id,
+            retryCount: failures,
+            nextAttemptAt: now.add(
+              queueRetryDelay(failures, random: _random),
+            ),
+            firstFailedAt: firstFailedAt,
+            errorCode: queueErrorCode(e),
+          );
+          blockedEntities.add(entityKey);
+        }
+      }
+    }
+
+    if (failureCount > 0) {
+      AppLogger.warning('⚠️ $failureCount ändringar kunde inte synkas');
+    }
+    return successCount;
+  }
+
+  static void _moveToFailed(
+    Set<String> marked,
+    Set<String> waiting,
+    Set<String> failed,
+  ) {
+    waiting.removeAll(marked);
+    failed.addAll(marked);
+  }
+
+  /// Sends one entry and removes it from the queue once the server has
+  /// answered. Returns whether the server saved it. Throws when the attempt
+  /// failed; the entry is then untouched.
+  Future<bool> _send(SyncQueueEntry item, String userId) async {
+    // H9: Handle tag operations separately
+    if (item.operation == SyncOperation.tag.name) {
+      if (_onTagRecipe != null) {
+        AppLogger.info('🏷️ Processing pending tagging for: ${item.recipeId}');
+        await _onTagRecipe(item.recipeId, userId).timeout(sendTimeout);
+        AppLogger.success('✅ Tagging completed for: ${item.recipeId}');
+      } else {
+        AppLogger.warning(
+          '⚠️ Tag callback not configured, skipping: ${item.recipeId}',
+        );
+      }
+      await _syncQueueDao.dequeue(item.id);
+      return true;
+    }
+
+    return _recipes.send(item, userId, recipeWriter!);
+  }
+
+  /// Starts a timer for the earliest retry time among the entries still
+  /// waiting, so the queue sends them when their time comes
+  /// (produktregler.md:188). When the timer fires offline it does nothing;
+  /// coming back online starts a pass.
+  Future<void> _scheduleNextAttempt(String userId) async {
+    final remaining = await _syncQueueDao.getPendingForUser(userId);
+    final now = clock.now();
+    DateTime? earliest;
+    for (final entry in remaining) {
+      final next = entry.nextAttemptAt;
+      if (next == null) continue;
+      if (earliest == null || next.isBefore(earliest)) earliest = next;
+    }
+    final upload = await uploads?.earliestRetry(userId);
+    if (upload != null && (earliest == null || upload.isBefore(earliest))) {
+      earliest = upload;
+    }
+    if (earliest == null) return;
+    var delay = earliest.difference(now);
+    if (delay.isNegative) delay = Duration.zero;
+    _retryTimer?.cancel();
+    _retryTimer = Timer(delay, () {
+      _retryTimer = null;
+      final online = _isOnlineNow?.call() ?? true;
+      if (online) unawaited(syncPendingChanges(isOnline: online));
+    });
+  }
+
+  /// Whether a pass is scheduled for the next retry time.
+  @visibleForTesting
+  bool get hasScheduledRetry => _retryTimer?.isActive ?? false;
 
   /// Manual synchronization with user feedback
   Future<SyncResult> syncNow({required bool isOnline}) async {
@@ -281,8 +421,7 @@ class OfflineSyncManager {
       );
     }
 
-    final hasPending = await _syncQueueDao.hasPending(userId);
-    if (!hasPending) {
+    if (!await _hasWork(userId)) {
       AppLogger.info('✅ Inga ändringar att synkronisera');
       return SyncResult(
         success: true,
@@ -292,59 +431,23 @@ class OfflineSyncManager {
     }
 
     AppLogger.info('🔄 Manuell synkronisering startad...');
-    final itemsToSync = await _syncQueueDao.countPending(userId);
+    _lastPassSent = 0;
+    final itemsToSync = await queuedChangesCount;
 
-    await syncPendingChanges(isOnline: isOnline);
+    await syncPendingChanges(isOnline: isOnline, force: true);
 
-    final remainingItems = await _syncQueueDao.countPending(userId);
-    final syncedItems = itemsToSync - remainingItems;
-
-    if (remainingItems == 0) {
-      return SyncResult(
-        success: true,
-        message: l.syncAllSynced(syncedItems),
-        isRetry: false,
-      );
-    } else if (syncedItems > 0) {
-      return SyncResult(
-        success: true,
-        message: l.syncPartialSuccess(syncedItems, itemsToSync, remainingItems),
-        isRetry: remainingItems > 0,
-      );
-    } else {
-      return SyncResult(
-        success: false,
-        message: l.syncFailedRetryLater,
-        isRetry: true,
-      );
-    }
-  }
-
-  /// Get failed operations for diagnostic purposes
-  /// [maxRetries] - Operations with retry count above this are considered failed
-  Future<List<SyncQueueEntry>> getFailedOperations({int maxRetries = 3}) async {
-    final userId = _authRepository.currentUserId;
-    if (userId == null) return [];
-    return await _syncQueueDao.getFailedOperations(userId, maxRetries);
-  }
-
-  /// Queue a tagging operation for when connectivity is restored.
-  ///
-  /// Used for recipes saved offline that need tags generated.
-  /// The recipe will be tagged when the device goes back online.
-  Future<void> queueTagging({
-    required String userId,
-    required String recipeId,
-  }) async {
-    await _syncQueueDao.enqueue(
-      userId: userId,
-      recipeId: recipeId,
-      operation: SyncOperation.tag,
+    // What reached the server, counted in the pass: an entry that became a
+    // permanent failure also leaves the pending count, but was not saved.
+    return SyncResult.ofManualPass(
+      synced: min(_lastPassSent, itemsToSync),
+      total: itemsToSync,
     );
-    AppLogger.debug('📋 Queued tagging operation for recipe: $recipeId');
   }
 
   void dispose() {
+    _disposed = true;
+    _retryTimer?.cancel();
+    _retryTimer = null;
     if (_syncLock != null && !_syncLock!.isCompleted) {
       _syncLock!.complete();
     }

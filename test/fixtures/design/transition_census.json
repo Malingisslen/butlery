@@ -1,0 +1,1597 @@
+{
+  "$om": "P8-U03: census of the 81 REQUIRED flow transitions in test/fixtures/design/block288-overgangar.json. TESTED means a test drives the transition through the real view, viewmodel or service, with fakes only at the service, clock and permission edges, and the transition's canonical outcome is met. PARTIAL means the transition is built and reachable and its tests drive it, but its defining canonical outcome is not met today; known_gap names what fails, the Linear ticket and, where there is one, the test that pins today's behaviour. PARTIAL does not count as done. BUILT_NOT_REACHABLE means it is built (and often tested) but a user cannot reach it; it does not count as done (Q8-08). MISSING means it is not built. RESTING means Malin has put the requirement to rest; it names the decision and its ticket and does not count as a known failure. Every entry that is not TESTED names a BUT-#### Linear ticket and a reason (for PARTIAL, in known_gap). Checked by test/views/flows/flow_transition_coverage_test.dart.",
+  "TRANSITION_SET_HASH": "51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e",
+  "entries": [
+    {
+      "id": "TR::FLOW::01::genererar::0-recept-placerade",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/veckomeny_view_flow01_test.dart",
+      "test_name": "says what stopped it and offers two ways on",
+      "tests": [
+        {
+          "file": "test/views/veckomeny_view_flow01_test.dart",
+          "name": "says what stopped it and offers two ways on",
+          "group": "TR::FLOW::01::genererar::0-recept-placerade"
+        },
+        {
+          "file": "test/unit/viewmodels/menu_viewmodel_test.dart",
+          "name": "an empty result is the no-match outcome, never an error",
+          "group": "TR::FLOW::01::genererar::0-recept-placerade"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: the view part and the viewmodel outcome."
+    },
+    {
+      "id": "TR::FLOW::01::genererar::1-n-begärt-antal-recept-placerade",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/widget/views/veckomeny_partial_and_conflict_test.dart",
+      "test_name": "says n av m and names what is missing ($mode)",
+      "tests": [
+        {
+          "file": "test/widget/views/veckomeny_partial_and_conflict_test.dart",
+          "name": "says n av m and names what is missing ($mode)"
+        },
+        {
+          "file": "test/unit/viewmodels/menu_viewmodel_test.dart",
+          "name": "2 of 5 asked is partial and names the short meal type"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: \"Vi hittade n av m rätter\" in both modes, counted in recipes."
+    },
+    {
+      "id": "TR::FLOW::01::genererar::6-10-s",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/widget/widgets/menu/veckomeny_generating_overlay_test.dart",
+      "test_name": "after 6 s the status says it takes longer, in the same panel (TR::FLOW::01::genererar::6-10-s)",
+      "tests": [
+        {
+          "file": "test/widget/widgets/menu/veckomeny_generating_overlay_test.dart",
+          "name": "after 6 s the status says it takes longer, in the same panel (TR::FLOW::01::genererar::6-10-s)"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test, fake time: nothing at 5.9 s, the text at 6.1 s, same panel (D-03 keeps this)."
+    },
+    {
+      "id": "TR::FLOW::01::genererar::alla-dagar-klara",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/menu_viewmodel_test.dart",
+      "test_name": "everything asked for is not partial",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/menu_viewmodel_test.dart",
+          "name": "everything asked for is not partial"
+        },
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "an empty week: Generera plans the week in the same view, without asking first",
+          "group": "TR::FLOW::01::tom-vecka::generera"
+        }
+      ],
+      "ticket": null,
+      "reason": "The complete result is its own outcome (no partial line) and is shown as the result in the view."
+    },
+    {
+      "id": "TR::FLOW::01::genererar::offline",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "the connection goes during the planning: nothing is placed, the saved week stays, and the view says it stopped",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "the connection goes during the planning: nothing is placed, the saved week stays, and the view says it stopped",
+          "group": "TR::FLOW::01::genererar::offline"
+        },
+        {
+          "file": "test/views/veckomeny_view_flow01_test.dart",
+          "name": "offline, Generera is off and says why; a tap starts nothing ($mode)",
+          "group": "TR::FLOW::01::genererar::offline"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test for the connection going away during the planning; the existing test covers Generera while offline."
+    },
+    {
+      "id": "TR::FLOW::01::placering::kvitto-7-s-andra",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "the automatic placement shows a receipt with Ändra, and Ändra opens the manual placement on an empty week",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "the automatic placement shows a receipt with Ändra, and Ändra opens the manual placement on an empty week",
+          "group": "TR::FLOW::01::placering::kvitto-7-s-andra"
+        },
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "the receipt leaves by itself after 7 s",
+          "group": "TR::FLOW::01::placering::kvitto-7-s-andra"
+        }
+      ],
+      "ticket": null,
+      "reason": "New tests: the receipt with Ändra, Ändra opens manual placement with an empty working week, and the receipt leaves by itself after 7 s (UndoSnackBar.showReceipt, on the undo window)."
+    },
+    {
+      "id": "TR::FLOW::01::resultat::placera-i-veckan",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "the result is not in the week; it offers the two ways, and the automatic one writes the week",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "the result is not in the week; it offers the two ways, and the automatic one writes the week",
+          "group": "TR::FLOW::01::resultat::placera-i-veckan"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test (D-04): nothing is written until the user places; both ways are offered; no undo on the result."
+    },
+    {
+      "id": "TR::FLOW::01::tom-vecka::generera",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "an empty week: Generera plans the week in the same view, without asking first",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "an empty week: Generera plans the week in the same view, without asking first",
+          "group": "TR::FLOW::01::tom-vecka::generera"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test on the real VeckomenyView."
+    },
+    {
+      "id": "TR::FLOW::01::vecka-med-rätter::generera",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "a week with dishes asks before anything is computed; Avbryt leaves the week, Fortsätt plans",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "a week with dishes asks before anything is computed; Avbryt leaves the week, Fortsätt plans",
+          "group": "TR::FLOW::01::vecka-med-rätter::generera"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test: the overwrite question comes before the generator is called."
+    },
+    {
+      "id": "TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar",
+      "flow": "01",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "a week saved on another device shows the conflict snackbar and Behåll min keeps mine",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "a week saved on another device shows the conflict snackbar and Behåll min keeps mine",
+          "group": "TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar"
+        },
+        {
+          "file": "test/widget/realtime/conflict_snackbar_test.dart",
+          "name": "a lost week edit shows \"{namn} sparade veckan\" + Behåll min"
+        },
+        {
+          "file": "test/widget/views/veckomeny_partial_and_conflict_test.dart",
+          "name": "someone else saving the week shows \"{namn} sparade veckan\""
+        }
+      ],
+      "ticket": "BUT-2215",
+      "reason": "New test: each week save names the revision it was built on and firestore.rules checks it against the stored one, so a save built on a stale copy is refused and the week menu shows the 30 s notice with Behåll min. The other saver is the owner on another device (Malin, A1, 2026-10-08); a shared household week is not built yet."
+    },
+    {
+      "id": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",
+      "flow": "02",
+      "status": "TESTED",
+      "test_file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+      "test_name": "another device added a row and ran its own merge: every row stays, menuItemIds keeps theirs and ours, and the change is reported",
+      "tests": [
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "another device added a row and ran its own merge: every row stays, menuItemIds keeps theirs and ours, and the change is reported",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "nothing changed elsewhere: no change is reported",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ersätt listan carries over a tick the other device made on a recipe row",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ersätt listan does not bring back a recipe row the other device deleted, and Ångra has nothing of it to restore",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "offline: the rows are queued from memory, nothing is reported, and menuItemIds is extended with arrayUnion, not overwritten",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "writes of this device still waiting to sync are not reported as another device's change",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ångra after a change elsewhere takes off only our rows and our ids",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
+          "name": "a change made on another device reaches the receipt, which takes its removed rows from the server for Ångra",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/widget/views/veckomeny_shopping_merge_receipt_test.dart",
+          "name": "a change on another device is named in the receipt, and Ångra is still offered",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        }
+      ],
+      "ticket": null,
+      "reason": "BUT-2140, 2026-10-08, with the plan's defaults A1/B1/C1. A1: the other writer is the same account on another device, on the personal week list. The merge writes per operation against the server's copy (arrayUnion on menuItemIds, a transaction only for Ersätt listan), so nothing another device wrote is overwritten, and the receipt says the list had been changed on another device, with Ångra (C1). B1: offline, Ersätt listan replaces from the copy in memory, an accepted deviation."
+    },
+    {
+      "id": "TR::FLOW::02::merge-ark::ersätt-listan-på",
+      "flow": "02",
+      "status": "TESTED",
+      "test_file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
+      "test_name": "replaces only the rows that came from recipes, keeps your own, and Ångra puts the old recipe rows back",
+      "tests": [
+        {
+          "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
+          "name": "replaces only the rows that came from recipes, keeps your own, and Ångra puts the old recipe rows back",
+          "group": "TR::FLOW::02::merge-ark::ersätt-listan-på"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::02::merge-ark::lägg-till-n-varor",
+      "flow": "02",
+      "status": "TESTED",
+      "test_file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
+      "test_name": "adds the rows next to every row already on the week list, and Ångra takes back exactly those rows",
+      "tests": [
+        {
+          "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
+          "name": "adds the rows next to every row already on the week list, and Ångra takes back exactly those rows",
+          "group": "TR::FLOW::02::merge-ark::lägg-till-n-varor"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::02::veckomeny::till-inköpslistan",
+      "flow": "02",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_02_transitions_test.dart",
+      "test_name": "Till inköpslista on the week menu opens the merge sheet, and nothing is written before it is answered",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_02_transitions_test.dart",
+          "name": "Till inköpslista on the week menu opens the merge sheet, and nothing is written before it is answered",
+          "group": "TR::FLOW::02::veckomeny::till-inköpslistan"
+        },
+        {
+          "file": "test/widget/menu/shopping_merge_sheet_test.dart",
+          "name": "summary first: the line, the three figures, Ersätt off (TR::FLOW::02::veckomeny::till-inköpslistan)"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test for the tap on the real view; the existing test pins the sheet."
+    },
+    {
+      "id": "TR::FLOW::03::foto-ocr::otolkad-text",
+      "flow": "03",
+      "status": "MISSING",
+      "test_file": "test/widget/recipe/parse_confidence_review_test.dart",
+      "test_name": "a failed line is shown empty and marked, and one tap shows the raw line",
+      "tests": [
+        {
+          "file": "test/widget/recipe/parse_confidence_review_test.dart",
+          "name": "a failed line is shown empty and marked, and one tap shows the raw line"
+        }
+      ],
+      "ticket": "BUT-2158",
+      "reason": "The review can show a failed line empty and marked (tested), but the photo/OCR path never feeds it: OCR gives one confidence per page, and photo, text and voice imports are filtered out of the review (recipe_form_viewmodel.dart)."
+    },
+    {
+      "id": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
+      "flow": "03",
+      "status": "PARTIAL",
+      "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+      "test_name": "each low or failed row waits until it is confirmed",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "each low or failed row waits until it is confirmed",
+          "group": "P6-U03 import review gates Spara"
+        },
+        {
+          "file": "test/widget/recipe/parse_confidence_review_test.dart",
+          "name": "a low row carries Stämmer; confirming reports that row"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer.",
+      "known_gap": {
+        "ticket": "BUT-2158",
+        "reason": "The gate only runs for multi-step parses (URL import today); photo, text and voice imports skip the review."
+      }
+    },
+    {
+      "id": "TR::FLOW::03::granska::receptet-finns-redan",
+      "flow": "03",
+      "status": "TESTED",
+      "test_file": "test/unit/views/smart_import/import_result_handler_callsite_test.dart",
+      "test_name": "checkForDuplicates shows the duplicate merge sheet for a content match above the 0.6 gate and returns true when user picks saveAsNew",
+      "tests": [
+        {
+          "file": "test/unit/views/smart_import/import_result_handler_callsite_test.dart",
+          "name": "checkForDuplicates shows the duplicate merge sheet for a content match above the 0.6 gate and returns true when user picks saveAsNew"
+        },
+        {
+          "file": "test/unit/views/smart_import/import_result_handler_callsite_test.dart",
+          "name": "a source-URL match opens the sheet even when the content is dissimilar, and the score it shows is clamped to the exact-match floor"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: the duplicate sheet opens and Spara som nytt continues. Interpretation: the drawn \"Öppna befintligt\" is the sheet's \"Behåll befintligt\", which opens the existing recipe (lib/views/smart_import/import_result_handler.dart:132-139); that branch has no test of its own."
+    },
+    {
+      "id": "TR::FLOW::03::hämtar::betalvägg",
+      "flow": "03",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_error_journey_test.dart",
+      "test_name": "platformBlocked: says \"Sidan kräver inloggning\" and offers pasting the text first, which fills the field from the clipboard",
+      "tests": [
+        {
+          "file": "test/views/smart_import_error_journey_test.dart",
+          "name": "platformBlocked: says \"Sidan kräver inloggning\" and offers pasting the text first, which fills the field from the clipboard"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a 403 says the page requires login"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a page that is only a login form says it requires login"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a login wall with a quantity line fails as a login wall, not as help"
+        }
+      ],
+      "ticket": null,
+      "reason": "A login wall on the Smart import screen says \"Sidan kräver inloggning\" and offers \"Klistra in texten själv\" first, which fills the field from the clipboard."
+    },
+    {
+      "id": "TR::FLOW::03::hämtar::ok",
+      "flow": "03",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_link_journey_test.dart",
+      "test_name": "paste URL → fetch+parse → the recipe opens in the editor",
+      "tests": [
+        {
+          "file": "test/views/smart_import_link_journey_test.dart",
+          "name": "paste URL → fetch+parse → the recipe opens in the editor"
+        }
+      ],
+      "ticket": null,
+      "reason": "the fetched recipe opens for review."
+    },
+    {
+      "id": "TR::FLOW::03::hämtar::privat-trasig-länk",
+      "flow": "03",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_error_journey_test.dart",
+      "test_name": "urlNotAccessible: says \"Länken kunde inte läsas\" and offers pasting the text first, which fills the field from the clipboard",
+      "tests": [
+        {
+          "file": "test/views/smart_import_error_journey_test.dart",
+          "name": "urlNotAccessible: says \"Länken kunde inte läsas\" and offers pasting the text first, which fills the field from the clipboard"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a broken link (404) says the link could not be read"
+        }
+      ],
+      "ticket": null,
+      "reason": "A link that could not be read says \"Länken kunde inte läsas\" on the Smart import screen and offers \"Klistra in texten själv\" first, which fills the field from the clipboard."
+    },
+    {
+      "id": "TR::FLOW::03::hämtar::sidan-har-inget-recept",
+      "flow": "03",
+      "status": "TESTED",
+      "test_file": "test/views/smart_import_error_journey_test.dart",
+      "test_name": "noRecipeContent: says \"Vi hittade inget recept på sidan\" and offers writing it first, which opens the editor",
+      "tests": [
+        {
+          "file": "test/views/smart_import_error_journey_test.dart",
+          "name": "noRecipeContent: says \"Vi hittade inget recept på sidan\" and offers writing it first, which opens the editor"
+        },
+        {
+          "file": "test/unit/services/import/import_failure_cause_test.dart",
+          "name": "a readable page without a recipe says no recipe was found"
+        }
+      ],
+      "ticket": null,
+      "reason": "A page without a recipe says \"Vi hittade inget recept på sidan\" on the Smart import screen and offers \"Skriv själv\" first, which opens the editor."
+    },
+    {
+      "id": "TR::FLOW::03::länkfält::importera",
+      "flow": "03",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
+      "test_name": "trims input, passes onProgress, returns ImportSucceeded(recipe)",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
+          "name": "trims input, passes onProgress, returns ImportSucceeded(recipe)"
+        },
+        {
+          "file": "test/unit/viewmodels/smart_import_viewmodel_test.dart",
+          "name": "progress callback drives phase transitions in order"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: Importera starts the fetch phase."
+    },
+    {
+      "id": "TR::FLOW::04::avslutat::klart",
+      "flow": "04",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_04_transitions_test.dart",
+      "test_name": "Klart returns to the recipe and counts it as cooked once",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_04_transitions_test.dart",
+          "name": "Klart returns to the recipe and counts it as cooked once",
+          "group": "TR::FLOW::04::avslutat::klart"
+        },
+        {
+          "file": "test/views/flows/flow_04_transitions_test.dart",
+          "name": "the chip counts up as Lagat N gånger",
+          "group": "TR::FLOW::04::avslutat::klart"
+        },
+        {
+          "file": "test/views/cooking_mode_flow04_test.dart",
+          "name": "the last step carries Klart, which returns finished"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test for what the recipe does with Klart; the existing test proves Klart returns finished."
+    },
+    {
+      "id": "TR::FLOW::04::receptdetalj::börja-laga",
+      "flow": "04",
+      "status": "TESTED",
+      "test_file": "test/views/cooking_mode_flow04_test.dart",
+      "test_name": "a phone (shortest side 400) is forced to landscape",
+      "tests": [
+        {
+          "file": "test/views/cooking_mode_flow04_test.dart",
+          "name": "a phone (shortest side 400) is forced to landscape"
+        },
+        {
+          "file": "test/views/cooking_mode_journey_test.dart",
+          "name": "both panels render with ingredients and instructions from the recipe"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: the session keeps the screen awake (\"awake\") and opens on step 1."
+    },
+    {
+      "id": "TR::FLOW::04::steg-n::app-i-bakgrunden",
+      "flow": "04",
+      "status": "TESTED",
+      "test_file": "test/unit/services/cooking/step_timer_service_test.dart",
+      "test_name": "background-restore: resuming after long gap reconciles remaining",
+      "tests": [
+        {
+          "file": "test/unit/services/cooking/step_timer_service_test.dart",
+          "name": "background-restore: resuming after long gap reconciles remaining"
+        },
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "the timer sheet awaits the notice before startTimer is called"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: timers keep running, and a missing notification permission is said before the timer starts."
+    },
+    {
+      "id": "TR::FLOW::04::steg-n::bakåt-stäng",
+      "flow": "04",
+      "status": "TESTED",
+      "test_file": "test/views/cooking_mode_flow04_test.dart",
+      "test_name": "back on step 3 asks; Fortsätt laga keeps the step, Avsluta leaves",
+      "tests": [
+        {
+          "file": "test/views/cooking_mode_flow04_test.dart",
+          "name": "back on step 3 asks; Fortsätt laga keeps the step, Avsluta leaves"
+        },
+        {
+          "file": "test/views/cooking_mode_flow04_test.dart",
+          "name": "back on step 2 leaves at once"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::04::steg-n::rotation",
+      "flow": "04",
+      "status": "TESTED",
+      "test_file": "test/views/cooking_mode_flow04_test.dart",
+      "test_name": "a rotation keeps the step and the running timer",
+      "tests": [
+        {
+          "file": "test/views/cooking_mode_flow04_test.dart",
+          "name": "a rotation keeps the step and the running timer"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test. The design marks this UNVERIFIABLE in drawings; the rule is still REQUIRED."
+    },
+    {
+      "id": "TR::FLOW::04::steg-n::timer-startad",
+      "flow": "04",
+      "status": "TESTED",
+      "test_file": "test/unit/services/cooking/step_timer_service_test.dart",
+      "test_name": "startTimer schedules a notification with the remaining + label",
+      "tests": [
+        {
+          "file": "test/unit/services/cooking/step_timer_service_test.dart",
+          "name": "startTimer schedules a notification with the remaining + label"
+        },
+        {
+          "file": "test/unit/services/cooking/step_timer_service_test.dart",
+          "name": "two labelled timers count down independently"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: a notification named after the step, several timers at once."
+    },
+    {
+      "id": "TR::FLOW::05::deep-link::länken-återkallad-eller-utgången",
+      "flow": "05",
+      "status": "TESTED",
+      "test_file": "test/views/permission_downgrade_flow05_test.dart",
+      "test_name": "the notice carries Stäng (content-style-guide.md:97)",
+      "tests": [
+        {
+          "file": "test/views/permission_downgrade_flow05_test.dart",
+          "name": "the notice carries Stäng (content-style-guide.md:97)",
+          "group": "revoked or expired link (PQ-13 = A)"
+        },
+        {
+          "file": "test/unit/core/bootstrap/deep_link_handler_test.dart",
+          "name": "a link 1 minute past 7 days is expired"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests. PQ-13 = A: the notice says who to ask and carries Stäng; the \"Begär ny\" button is BUT-2143."
+    },
+    {
+      "id": "TR::FLOW::05::deep-link::redan-medlem",
+      "flow": "05",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_05_transitions_test.dart",
+      "test_name": "a link to a recipe already shared with me opens the recipe at once, with no view in between",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_05_transitions_test.dart",
+          "name": "a link to a recipe already shared with me opens the recipe at once, with no view in between",
+          "group": "TR::FLOW::05::deep-link::redan-medlem"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test on the real DeepLinkHandler."
+    },
+    {
+      "id": "TR::FLOW::05::deep-link::utloggad",
+      "flow": "05",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_05_transitions_test.dart",
+      "test_name": "a link opened while signed out waits, and after the sign-in it goes to the link's target",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_05_transitions_test.dart",
+          "name": "a link opened while signed out waits, and after the sign-in it goes to the link's target",
+          "group": "TR::FLOW::05::deep-link::utloggad"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test: the link is kept while signed out and opened once after the sign-in."
+    },
+    {
+      "id": "TR::FLOW::05::grupp::ägaren-lämnar",
+      "flow": "05",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/social_group_detail_viewmodel_test.dart",
+      "test_name": "returns transfer required for owner with other members",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/social_group_detail_viewmodel_test.dart",
+          "name": "returns transfer required for owner with other members",
+          "group": "checkLeaveGroupRequirements"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test: the owner of a group with members must hand over ownership first (group_detail_view.dart:362-381)."
+    },
+    {
+      "id": "TR::FLOW::05::medlem::behörighet-sänks-till-endast-läsa",
+      "flow": "05",
+      "status": "TESTED",
+      "test_file": "test/views/permission_downgrade_flow05_test.dart",
+      "test_name": "unsaved edits: the editor explains, offers them as a copy, saves the copy to my own library and writes nothing to the shared recipe",
+      "tests": [
+        {
+          "file": "test/views/permission_downgrade_flow05_test.dart",
+          "name": "unsaved edits: the editor explains, offers them as a copy, saves the copy to my own library and writes nothing to the shared recipe"
+        },
+        {
+          "file": "test/views/permission_downgrade_flow05_test.dart",
+          "name": "nothing unsaved: the editor closes at once and says why, with no copy offer"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::05::person::blockerad",
+      "flow": "05",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/shared_content/shared_recipe_viewmodel_test.dart",
+      "test_name": "excludes content from blocked users (read at load time)",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/shared_content/shared_recipe_viewmodel_test.dart",
+          "name": "excludes content from blocked users (read at load time)"
+        },
+        {
+          "file": "test/unit/viewmodels/shared_content/shared_menu_viewmodel_test.dart",
+          "name": "excludes content from blocked users (read at load time)"
+        },
+        {
+          "file": "test/unit/viewmodels/shared_content/shared_shopping_viewmodel_test.dart",
+          "name": "blocked-user content IS filtered out (BUT-1085 / BUT-1069 regression)"
+        },
+        {
+          "file": "functions/src/__tests__/hold-shares-on-block.test.ts",
+          "name": "a block takes the blocked person off the blocker's recipe share and its recipe"
+        },
+        {
+          "file": "functions/src/__tests__/hold-shares-on-block.test.ts",
+          "name": "the other direction: what the blocked person shared is taken off the blocker too"
+        },
+        {
+          "file": "functions/src/__tests__/hold-shares-on-block.test.ts",
+          "name": "an unblock puts back the inbox entry, the member row and the recipe permission"
+        },
+        {
+          "file": "functions/src/__tests__/shared-content-block-rules.test.ts",
+          "name": "update: the sharer cannot put a held person back in the recipient list"
+        },
+        {
+          "file": "test/unit/services/social/blocking/blocked_user_filter_test.dart",
+          "name": "drops both the person I blocked and the person who blocked me"
+        }
+      ],
+      "ticket": null,
+      "reason": "Both directions (BUT-2169): a block takes each person off what the other shared, history is kept and comes back on unblock, and a new share skips anyone on either side of a block."
+    },
+    {
+      "id": "TR::FLOW::06::aterstall::satt-nytt",
+      "flow": "06",
+      "status": "MISSING",
+      "test_file": null,
+      "test_name": null,
+      "tests": [],
+      "ticket": "BUT-2170",
+      "reason": "The reset link opens Firebase's own page. The app has no view for setting the new password: no confirmPasswordReset or verifyPasswordResetCode in lib/."
+    },
+    {
+      "id": "TR::FLOW::06::byt-epost::galler-vid-oppnad-lank",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/services/auth_service_test.dart",
+      "test_name": "returns true on success",
+      "tests": [
+        {
+          "file": "test/unit/services/auth_service_test.dart",
+          "name": "returns true on success",
+          "group": "changeEmail"
+        },
+        {
+          "file": "test/unit/viewmodels/account_security_viewmodel_test.dart",
+          "name": "should reauthenticate before changing email"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: the change goes through verifyBeforeUpdateEmail, so the new address applies only once the link to it is opened (Firebase applies it; the app never writes the address)."
+    },
+    {
+      "id": "TR::FLOW::06::byt-epost::omverifiering-bada",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/widget/views/settings/account_security_email_change_test.dart",
+      "test_name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication",
+      "tests": [
+        {
+          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication"
+        },
+        {
+          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "name": "a refused reauthentication never asks for the change"
+        }
+      ],
+      "ticket": null,
+      "reason": "BUT-2171 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): Firebase's flow is kept and the requirement changed. Only the new address confirms (verifyBeforeUpdateEmail after reauthentication); the current address is told once the change applies and can undo it. Kontosäkerhet says so before the change is asked for."
+    },
+    {
+      "id": "TR::FLOW::06::export::tre-felorsaker",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/account/data_export_viewmodel_test.dart",
+      "test_name": "each cause is told apart",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/account/data_export_viewmodel_test.dart",
+          "name": "each cause is told apart",
+          "group": "P6-U06 export causes and memory"
+        },
+        {
+          "file": "test/unit/viewmodels/account/data_export_viewmodel_test.dart",
+          "name": "a failed export keeps no partial file and names its cause"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::06::export::vy-lamnas",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/account/data_export_viewmodel_test.dart",
+      "test_name": "the file is cleared when the view model is disposed",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/account/data_export_viewmodel_test.dart",
+          "name": "the file is cleared when the view model is disposed",
+          "group": "P6-U06 export causes and memory"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::06::glomt-losenord::aterstall",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/services/auth_service_test.dart",
+      "test_name": "should send password reset email",
+      "tests": [
+        {
+          "file": "test/unit/services/auth_service_test.dart",
+          "name": "should send password reset email",
+          "group": "Password Reset"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test: the address gets a reset link."
+    },
+    {
+      "id": "TR::FLOW::06::losenord-epost::kraver-nuvarande-losenord",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/account_security_viewmodel_test.dart",
+      "test_name": "should reauthenticate before changing password",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/account_security_viewmodel_test.dart",
+          "name": "should reauthenticate before changing password"
+        },
+        {
+          "file": "test/unit/viewmodels/account_security_viewmodel_test.dart",
+          "name": "should return false when current password is empty"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::06::mfa::aterstallning-engangskoder",
+      "flow": "06",
+      "status": "BUILT_NOT_REACHABLE",
+      "test_file": "test/widget/auth/mfa_challenge_test.dart",
+      "test_name": "a backup code signs in again and reports the reset",
+      "tests": [
+        {
+          "file": "test/widget/auth/mfa_challenge_test.dart",
+          "name": "a backup code signs in again and reports the reset"
+        }
+      ],
+      "ticket": "BUT-2142",
+      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+    },
+    {
+      "id": "TR::FLOW::06::mfa::automatisk-verifiering",
+      "flow": "06",
+      "status": "BUILT_NOT_REACHABLE",
+      "test_file": "test/widget/auth/mfa_challenge_test.dart",
+      "test_name": "automatic verification mid-typing signs in without an error",
+      "tests": [
+        {
+          "file": "test/widget/auth/mfa_challenge_test.dart",
+          "name": "automatic verification mid-typing signs in without an error"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "automatic verification mid-entry shows no error and MFA on",
+          "group": "enabling two-step verification"
+        }
+      ],
+      "ticket": "BUT-2142",
+      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+    },
+    {
+      "id": "TR::FLOW::06::mfa::ominloggning-kravs",
+      "flow": "06",
+      "status": "BUILT_NOT_REACHABLE",
+      "test_file": "test/widget/views/settings/mfa_settings_view_test.dart",
+      "test_name": "an invalid country code blocks before re-authentication",
+      "tests": [
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "an invalid country code blocks before re-authentication",
+          "group": "enabling two-step verification"
+        }
+      ],
+      "ticket": "BUT-2142",
+      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+    },
+    {
+      "id": "TR::FLOW::06::mfa::paslagning-kraver-reservkoder",
+      "flow": "06",
+      "status": "BUILT_NOT_REACHABLE",
+      "test_file": "test/widget/auth/mfa_challenge_test.dart",
+      "test_name": "all ten codes are shown and Fortsätt waits for the tick",
+      "tests": [
+        {
+          "file": "test/widget/auth/mfa_challenge_test.dart",
+          "name": "all ten codes are shown and Fortsätt waits for the tick"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "codes are made and acknowledged before the number is sent, and 070 123 45 67 goes out as +46701234567",
+          "group": "enabling two-step verification"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "cancelling the codes enrolls nothing and discards them",
+          "group": "enabling two-step verification"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "leaving the screen on the code step discards the codes",
+          "group": "enabling two-step verification"
+        }
+      ],
+      "ticket": "BUT-2142",
+      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+    },
+    {
+      "id": "TR::FLOW::06::mfa::utmaning-maskerad-ledtrad",
+      "flow": "06",
+      "status": "BUILT_NOT_REACHABLE",
+      "test_file": "test/widget/auth/mfa_challenge_test.dart",
+      "test_name": "shows the masked hint, one code field and 60 seconds",
+      "tests": [
+        {
+          "file": "test/widget/auth/mfa_challenge_test.dart",
+          "name": "shows the masked hint, one code field and 60 seconds"
+        }
+      ],
+      "ticket": "BUT-2142",
+      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+    },
+    {
+      "id": "TR::FLOW::06::radera-konto::delvis",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/widget/profile/account_deletion_flow06_test.dart",
+      "test_name": "a partial deletion shows the audit id and never a retry",
+      "tests": [
+        {
+          "file": "test/widget/profile/account_deletion_flow06_test.dart",
+          "name": "a partial deletion shows the audit id and never a retry"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::06::radera-konto::kaskad-vantan",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/widget/profile/account_deletion_flow06_test.dart",
+      "test_name": "the waiting state cannot be cancelled and is no spinner",
+      "tests": [
+        {
+          "file": "test/widget/profile/account_deletion_flow06_test.dart",
+          "name": "the waiting state cannot be cancelled and is no spinner"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::06::radera-konto::klart",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/widget/profile/account_deletion_flow06_test.dart",
+      "test_name": "the typed reason reaches the deletion request",
+      "tests": [
+        {
+          "file": "test/widget/profile/account_deletion_flow06_test.dart",
+          "name": "the typed reason reaches the deletion request",
+          "group": "the reason comes first"
+        },
+        {
+          "file": "test/views/account_deletion_journey_test.dart",
+          "name": "confirming with correct phrase calls deletion service, removes user doc, fires deletion callback"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: a complete deletion ends signed out on the sign-in screen."
+    },
+    {
+      "id": "TR::FLOW::06::radera-konto::reautentisering",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/widget/profile/account_deletion_flow06_test.dart",
+      "test_name": "re-authentication is a step and the request is made again",
+      "tests": [
+        {
+          "file": "test/widget/profile/account_deletion_flow06_test.dart",
+          "name": "re-authentication is a step and the request is made again"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::06::radera-konto::skal-och-losenord",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/widget/profile/account_deletion_flow06_test.dart",
+      "test_name": "the typed reason reaches the deletion request",
+      "tests": [
+        {
+          "file": "test/widget/profile/account_deletion_flow06_test.dart",
+          "name": "the typed reason reaches the deletion request",
+          "group": "the reason comes first"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test: the reason is asked in the first dialog, before the password step."
+    },
+    {
+      "id": "TR::FLOW::06::samtycke::fornyelse",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/account/consent_renewal_test.dart",
+      "test_name": "shows the change lines, the old version and three answers",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/account/consent_renewal_test.dart",
+          "name": "shows the change lines, the old version and three answers"
+        },
+        {
+          "file": "test/unit/viewmodels/account/consent_renewal_test.dart",
+          "name": "lists what changed since the accepted version"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::06::session::utgang",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/services/session_timeout_service_test.dart",
+      "test_name": "the return path goes to the same account only, once",
+      "tests": [
+        {
+          "file": "test/unit/services/session_timeout_service_test.dart",
+          "name": "the return path goes to the same account only, once",
+          "group": "session end: queue untouched, notice, return path"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::06::skapa-konto::verifiera-epost",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/unit/services/auth_service_test.dart",
+      "test_name": "should successfully register new user",
+      "tests": [
+        {
+          "file": "test/unit/services/auth_service_test.dart",
+          "name": "should successfully register new user",
+          "group": "User Registration"
+        },
+        {
+          "file": "test/widget/views/auth/email_verification_view_test.dart",
+          "name": "shows title and email address in unverified state"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: registering sends the verification mail, and the view asks the user to open it. The routing in AuthWrapper (lib/app/auth/auth_wrapper.dart:147-163) is not driven by a test."
+    },
+    {
+      "id": "TR::FLOW::06::verifiera-epost::klart",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_06_transitions_test.dart",
+      "test_name": "the opened link is seen at the next 5 s poll, and the view says the address is verified ($mode)",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_06_transitions_test.dart",
+          "name": "the opened link is seen at the next 5 s poll, and the view says the address is verified ($mode)",
+          "group": "TR::FLOW::06::verifiera-epost::klart"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test, fake time, light and dark."
+    },
+    {
+      "id": "TR::FLOW::06::verifieringslank::utgangen",
+      "flow": "06",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_06_transitions_test.dart",
+      "test_name": "Skicka igen sends a new link, and no second one is sent inside the 60 s wait",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_06_transitions_test.dart",
+          "name": "Skicka igen sends a new link, and no second one is sent inside the 60 s wait",
+          "group": "TR::FLOW::06::verifieringslank::utgangen"
+        },
+        {
+          "file": "test/views/flows/flow_06_transitions_test.dart",
+          "name": "the wait is shown under the button, not in its name, and the button comes back after the 60 s",
+          "group": "TR::FLOW::06::verifieringslank::utgangen"
+        }
+      ],
+      "ticket": "BUT-2172",
+      "reason": "New test: a new link can be asked for."
+    },
+    {
+      "id": "TR::FLOW::07::first-ask::forklaring-fore-systemdialog",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "Android 13+ never asked: our explanation, then the OS prompt; a yes starts the timer with no notice",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "Android 13+ never asked: our explanation, then the OS prompt; a yes starts the timer with no notice"
+        },
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "a no becomes a notice and no picker opens"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "library permanent no: Öppna inställningar, and write it yourself",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "library permanent no: Öppna inställningar, and write it yourself",
+          "group": "PhotoPermissionNoticeCard"
+        },
+        {
+          "file": "test/widget/recipe/recipe_image_permission_notice_test.dart",
+          "name": "library no: Fråga igen asks the library, and no fallback"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test (photo import). Recipe images and comments offer no \"Skriv själv\": Malin decided (BUT-2160, decision A, 2026-10-07) that photo import is where writing the recipe yourself is offered."
+    },
+    {
+      "id": "TR::FLOW::07::kamera-utan-behorighet::galleri",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "camera no: Fråga igen, and the library as the way on",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "camera no: Fråga igen, and the library as the way on",
+          "group": "PhotoPermissionNoticeCard"
+        },
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "a refused camera on add-page: the library fallback keeps the pages already taken and adds to them"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::07::nekad::funktionen-kvar",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "camera no: Fråga igen, and the library as the way on",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "camera no: Fråga igen, and the library as the way on",
+          "group": "PhotoPermissionNoticeCard"
+        },
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "Fråga igen asks the same source again, without our explanation"
+        },
+        {
+          "file": "test/widget/recipe/recipe_image_permission_notice_test.dart",
+          "name": "camera no: Fråga igen asks the camera again, and the library is the way on"
+        },
+        {
+          "file": "test/widget/recipe/recipe_image_permission_notice_test.dart",
+          "name": "Fråga igen asks without our explanation; a first ask has it"
+        },
+        {
+          "file": "test/widget/recipe/comment_form_widget_test.dart",
+          "name": "a no: Fråga igen asks again without our explanation",
+          "group": "photo library permission"
+        },
+        {
+          "file": "test/widget/recipe/comment_form_widget_test.dart",
+          "name": "limited: Välj fler bilder, and the picked image stays",
+          "group": "photo library permission"
+        }
+      ],
+      "ticket": null,
+      "reason": "Photo import, recipe images and the comment form each keep the function after a no and offer \"Fråga igen\", which asks without our explanation; limited access offers \"Välj fler bilder\" (BUT-2160)."
+    },
+    {
+      "id": "TR::FLOW::07::notiser-avstangda-i-systemet::rad-overst",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/widget/views/settings/notification_preferences_view_test.dart",
+      "test_name": "notifications off in the phone: top row, switches visible but inactive",
+      "tests": [
+        {
+          "file": "test/widget/views/settings/notification_preferences_view_test.dart",
+          "name": "notifications off in the phone: top row, switches visible but inactive"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::07::notiser-utan-behorighet::timers-bara-i-appen",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "notifications permanently off: the notice shows, and says timers stay in the app",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "notifications permanently off: the notice shows, and says timers stay in the app",
+          "group": "timer notice before the timer starts"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::07::permanent-nekad::oppna-installningar",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "library permanent no: Öppna inställningar, and write it yourself",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "library permanent no: Öppna inställningar, and write it yourself",
+          "group": "PhotoPermissionNoticeCard"
+        },
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "Öppna inställningar goes to the phone settings"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::07::sparrad-av-systemet::ingen-knapp",
+      "flow": "07",
+      "status": "TESTED",
+      "test_file": "test/views/permission_flow07_test.dart",
+      "test_name": "blocked by the device: no button to fix it",
+      "tests": [
+        {
+          "file": "test/views/permission_flow07_test.dart",
+          "name": "blocked by the device: no button to fix it",
+          "group": "PhotoPermissionNoticeCard"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test."
+    },
+    {
+      "id": "TR::FLOW::08::ko::beroendekedja-misslyckas",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "when the recipe is refused for good, its later edit and its image fail with it and are never sent",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "when the recipe is refused for good, its later edit and its image fail with it and are never sent",
+          "group": "TR::FLOW::08::ko::beroendekedja-misslyckas"
+        },
+        {
+          "file": "test/unit/services/offline/dependency_chain_test.dart",
+          "name": "when the dependency fails for good, the whole chain is marked and the dependent is never sent"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey: a recipe create refused for good takes its queued edit and its queued image with it; all three wait under \"Väntar på dig\" and none is sent."
+    },
+    {
+      "id": "TR::FLOW::08::ko::koindikator-i-toppfaltet",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "the counter stays away while the queue drains by itself, shows when a write is refused, and goes when the user has dealt with it",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "the counter stays away while the queue drains by itself, shows when a write is refused, and goes when the user has dealt with it",
+          "group": "TR::FLOW::08::ko::koindikator-i-toppfaltet"
+        },
+        {
+          "file": "test/widget/common/sync/sync_queue_indicator_test.dart",
+          "name": "the counter comes and goes with the queue"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey: the real top bar shows no counter while the queue drains by itself, a saffron 1 when the server refuses a write, and nothing again after Spara som kopia is sent."
+    },
+    {
+      "id": "TR::FLOW::08::ko::omforsok-backoff",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "a write the network drops is tried again on the schedule, not before; the screen says when",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "a write the network drops is tried again on the schedule, not before; the screen says when",
+          "group": "TR::FLOW::08::ko::omforsok-backoff"
+        },
+        {
+          "file": "test/unit/services/offline/backoff_schedule_test.dart",
+          "name": "is the six steps of produktregler.md:188, in order"
+        },
+        {
+          "file": "test/unit/services/offline/backoff_schedule_test.dart",
+          "name": "before its time the entry is not sent again, even when the network comes back; at its time it is, and the next step is 4 s"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey: a recipe write the network drops is retried at 2 s then 4 s, a reconnect before its time sends nothing, and the view says \"nästa försök om N s\"."
+    },
+    {
+      "id": "TR::FLOW::08::ko::permanent-fel",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "a refused write waits for the user with its cause, is not sent again by itself, and \"Spara som kopia\" saves it as a new recipe",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "a refused write waits for the user with its cause, is not sent again by itself, and \"Spara som kopia\" saves it as a new recipe",
+          "group": "TR::FLOW::08::ko::permanent-fel"
+        },
+        {
+          "file": "test/unit/services/offline/permanent_error_test.dart",
+          "name": "a refused write goes to \"Väntar på dig\" with its cause, is kept, and is never sent again by itself"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey: a refused recipe write lands under \"Väntar på dig\" with its cause, is never sent again by itself, and Spara som kopia sends it as a new recipe titled \"(kopia)\"."
+    },
+    {
+      "id": "TR::FLOW::08::ko::toms::konfliktbanner",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_conflict_banner_test.dart",
+      "test_name": "a queued recipe edit that meets a newer server version shows the conflict banner when the queue empties, and Behåll min sends mine",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_conflict_banner_test.dart",
+          "name": "a queued recipe edit that meets a newer server version shows the conflict banner when the queue empties, and Behåll min sends mine",
+          "group": "TR::FLOW::08::ko::toms::konfliktbanner"
+        },
+        {
+          "file": "test/unit/services/realtime/conflict_release_gate_test.dart",
+          "name": "a notice raised while the queue waits is held, then shown when it empties, in order"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey (BUT-2213): a queued recipe edit built on an older revision is not written, the device takes the server's recipe, the banner says the recipe was changed on another device once the queue empties, and Behåll min version sends the user's version on the server's revision."
+    },
+    {
+      "id": "TR::FLOW::08::kovy::vantar-pa-synk",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "\"Väntar på synk\" lists what the user wrote offline, with count, what and age, and is empty once it is sent",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "\"Väntar på synk\" lists what the user wrote offline, with count, what and age, and is empty once it is sent",
+          "group": "TR::FLOW::08::kovy::vantar-pa-synk"
+        },
+        {
+          "file": "test/widget/views/sync/sync_queue_view_test.dart",
+          "name": "permanent failures first, then the queue, with count, what and age"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey: recipes written through the recipe module offline fill \"Väntar på synk\" with count, what and age; on reconnect the view reads \"Allt är sparat\"."
+    },
+    {
+      "id": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
+      "flow": "08",
+      "status": "RESTING",
+      "test_file": null,
+      "test_name": null,
+      "tests": [],
+      "ticket": "BUT-2163",
+      "reason": "BUT-2163 = A (Malin, 2026-10-07; Butlery design system fas2/produktbeslut-2026-10-07.json): the requirement rests until the app has a download the user starts. Today it has none, and it cannot read free disk space.",
+      "decision": "fas2/produktbeslut-2026-10-07.json BUT-2163"
+    },
+    {
+      "id": "TR::FLOW::08::online::offline",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/widget/common/layout/status_indicators_simplified_test.dart",
+      "test_name": "announces once per transition, never on rebuild",
+      "tests": [
+        {
+          "file": "test/widget/common/layout/status_indicators_simplified_test.dart",
+          "name": "announces once per transition, never on rebuild",
+          "group": "OfflineIndicator transitions"
+        },
+        {
+          "file": "test/widget/common/layout/status_indicators_simplified_test.dart",
+          "name": "${brightness.name}: surface.tint.warning without a border, text.warning glyph, text.primary title"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: the banner (never a dialog) with the wifi-off glyph, in both modes."
+    },
+    {
+      "id": "TR::FLOW::08::skrivning::koas",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "a recipe created and edited offline stays on the phone, is queued in order and is not sent",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "a recipe created and edited offline stays on the phone, is queued in order and is not sent",
+          "group": "TR::FLOW::08::skrivning::koas"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey from PersonalRecipeModule: offline, create, edit and delete wait in the queue in the order made; nothing reaches the server."
+    },
+    {
+      "id": "TR::FLOW::08::stale-data::tidsstampel",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/widget/views/hem/hem_section_test.dart",
+      "test_name": "the plan carries when it was fetched ($mode)",
+      "tests": [
+        {
+          "file": "test/widget/views/hem/hem_section_test.dart",
+          "name": "the plan carries when it was fetched ($mode)",
+          "group": "offline (#hemoffline)"
+        },
+        {
+          "file": "test/unit/viewmodels/hem/hem_viewmodel_test.dart",
+          "name": "a plan read offline carries no fetch time of its own"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests: offline, Hem's plan carries \"Planen hämtades 07:12\" (HemFetchedAtLine), the one place the spec draws it (Skarmar v12 del 4, #hemoffline); a plan read offline gets no fetch time of its own."
+    },
+    {
+      "id": "TR::FLOW::08::utkast::aterupptagning",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/widget/import/photo_import_draft_restore_test.dart",
+      "test_name": "accept → restoreDraft() called, discard NOT called",
+      "tests": [
+        {
+          "file": "test/widget/import/photo_import_draft_restore_test.dart",
+          "name": "accept → restoreDraft() called, discard NOT called"
+        },
+        {
+          "file": "test/widget/common/dialogs/draft_recovery_dialog_test.dart",
+          "name": "tapping \"Återställ\" pops with the FIRST draft id"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "the next opening asks, and Återställ restores that draft",
+          "group": "TR::FLOW::08::utkast::aterupptagning"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "Börja om closes the question and keeps the draft",
+          "group": "TR::FLOW::08::utkast::aterupptagning"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md:848 says a button names its goal and Fortsätt is not one."
+    },
+    {
+      "id": "TR::FLOW::08::utkast::avbryt-behaller",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_transitions_test.dart",
+      "test_name": "leaving the editor without saving keeps the draft, and the next opening offers it with what was written",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "leaving the editor without saving keeps the draft, and the next opening offers it with what was written",
+          "group": "TR::FLOW::08::utkast::avbryt-behaller"
+        }
+      ],
+      "ticket": null,
+      "reason": "New test on the real auto-save manager."
+    },
+    {
+      "id": "TR::FLOW::08::utkast::livstid-utgangen",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+      "test_name": "hides drafts older than 30 days, sorts newest first",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+          "name": "hides drafts older than 30 days, sorts newest first"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+          "name": "purges stale drafts from payload AND metadata"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests (D-01: 30 days since the last change)."
+    },
+    {
+      "id": "TR::FLOW::08::utkast::skapas",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+      "test_name": "the first character is persisted without waiting",
+      "tests": [
+        {
+          "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+          "name": "the first character is persisted without waiting"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing test (D-02)."
+    },
+    {
+      "id": "TR::FLOW::08::utkast::slang-raderar",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/widget/import/photo_import_draft_restore_test.dart",
+      "test_name": "decline (\"Börja om\") → discardPersistedDraft() called, restore NOT called",
+      "tests": [
+        {
+          "file": "test/widget/import/photo_import_draft_restore_test.dart",
+          "name": "decline (\"Börja om\") → discardPersistedDraft() called, restore NOT called"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+          "name": "removes both the payload entry and the metadata entry"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "Släng deletes the draft once the undo window has closed",
+          "group": "TR::FLOW::08::utkast::slang-raderar"
+        },
+        {
+          "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
+          "name": "Ångra after Släng keeps the draft",
+          "group": "TR::FLOW::08::utkast::slang-raderar"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft."
+    },
+    {
+      "id": "TR::FLOW::08::utkast::utloggning-raderar",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/unit/services/session_timeout_service_test.dart",
+      "test_name": "\"Logga ut nu\" is user_requested: queue kept, drafts go",
+      "tests": [
+        {
+          "file": "test/unit/services/session_timeout_service_test.dart",
+          "name": "\"Logga ut nu\" is user_requested: queue kept, drafts go"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
+          "name": "clearDraftsFor removes the account's drafts and the index"
+        }
+      ],
+      "ticket": null,
+      "reason": "Existing tests."
+    },
+    {
+      "id": "TR::FLOW::08::utloggning-med-ko::blockeras",
+      "flow": "08",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_08_offline_queue_test.dart",
+      "test_name": "signing out with writes in the queue is blocked and says what is lost; once the queue is sent it asks the ordinary question",
+      "tests": [
+        {
+          "file": "test/views/flows/flow_08_offline_queue_test.dart",
+          "name": "signing out with writes in the queue is blocked and says what is lost; once the queue is sent it asks the ordinary question",
+          "group": "TR::FLOW::08::utloggning-med-ko::blockeras"
+        },
+        {
+          "file": "test/widget/profile/logout_with_queue_test.dart",
+          "name": "a sign-out with 3 pending changes is blocked and explained"
+        }
+      ],
+      "ticket": null,
+      "reason": "New journey: with a recipe write and an image in the queue the real sign-out dialog blocks and counts both; Vänta på synk signs nobody out; after the queue is sent the ordinary question is asked."
+    }
+  ]
+}

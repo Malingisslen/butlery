@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/member_count_badge.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 void main() {
   group('MemberCountBadge Widget Tests', () {
@@ -185,7 +186,10 @@ void main() {
         );
 
         final text = tester.widget<Text>(find.text('+3'));
-        expect(text.style?.fontWeight, equals(FontWeight.w500));
+        expect(
+          text.style?.fontWeight,
+          equals(AppTextStyles.bodySmall.fontWeight),
+        );
       });
     });
 
@@ -545,7 +549,10 @@ void main() {
 
         final text = tester.widget<Text>(find.text('+5'));
         // The widget uses AppTextStyles.bodySmall.copyWith, not theme's bodySmall directly
-        expect(text.style?.fontWeight, equals(FontWeight.w500));
+        expect(
+          text.style?.fontWeight,
+          equals(AppTextStyles.bodySmall.fontWeight),
+        );
       });
 
       testWidgets('should maintain visibility with transparent background', (

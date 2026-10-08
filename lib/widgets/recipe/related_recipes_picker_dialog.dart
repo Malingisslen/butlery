@@ -10,6 +10,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -111,7 +113,7 @@ class _RelatedRecipesPickerDialogState
 
   Widget _buildContent(BuildContext context, RecipeListViewModel vm) {
     if (vm.isLoading) {
-      return StateWidget.loading(message: context.l10n.commonLoading);
+      return StateWidget.loading(message: context.l10n.loadingRecipes);
     }
     if (vm.hasError) {
       return StateWidget.error(
@@ -214,7 +216,7 @@ class _RecipePickerItem extends StatelessWidget {
       ),
       subtitle: Text(
         recipe.mealType,
-        style: AppTextStyles.metadataEmphasized.copyWith(color: cs.primary),
+        style: AppTextStyles.metadataEmphasized.copyWith(color: cs.onSurface),
       ),
       trailing: Checkbox(
         value: isSelected,
@@ -249,10 +251,10 @@ class _RecipePickerItem extends StatelessWidget {
     return Container(
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
-      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-      child: Icon(
-        Icons.restaurant_menu,
-        color: cs.primary,
+      color: cs.surfaceContainerHighest,
+      child: ButleryIcon(
+        ButleryIcons.utensils,
+        color: cs.onSurface,
         size: AppDimensions.iconSizeAction,
       ),
     );

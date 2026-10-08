@@ -16,9 +16,6 @@ class Routes {
   /// from Swedish (laggTill) to English (BUT-967).
   static const String addRecipe = '/laggTill';
 
-  /// URL import route
-  static const String importViaUrl = '/importViaUrl';
-
   /// Photo import route
   static const String photoImport = '/photoImport';
 
@@ -49,9 +46,6 @@ class Routes {
   /// Recipe editing route. URL value kept (BUT-967).
   static const String editRecipe = '/redigeraRecept';
 
-  /// Shared recipe reception route
-  static const String receiveShare = '/receiveShare';
-
   /// Weekly menu route. URL value kept (BUT-967).
   static const String weeklyMenu = '/veckomeny';
 
@@ -60,6 +54,14 @@ class Routes {
 
   /// Unified shopping list route. URL value kept (BUT-967).
   static const String shoppingList = '/inkopslista';
+
+  /// The Mer destination, the shell's fourth tab (PQ-17; Skarmar v12 del 2
+  /// #mer).
+  static const String more = '/mer';
+
+  /// "Väntar på synk", the user's view of the offline queue
+  /// (produktregler.md:190; P4-U19).
+  static const String syncQueue = '/vantar-pa-synk';
 
   // Social routes
   static const String profileEdit = '/profile/edit';
@@ -98,6 +100,8 @@ class Routes {
   static const String collectionStats = '/settings/collection-stats';
   static const String moderatorReview = '/admin/moderation';
   static const String myReports = '/settings/my-reports';
+  static const String settingsAbout = '/settings/about';
+  static const String settingsLicenses = '/settings/about/licenses';
 
   // Legal routes
   static const String termsOfService = '/legal/terms';
@@ -116,7 +120,6 @@ class Routes {
   /// Routes requiring authentication
   static const Set<String> authenticatedRoutes = {
     addRecipe,
-    importViaUrl,
     photoImport,
     voiceImport,
     quickCapture,
@@ -127,10 +130,11 @@ class Routes {
     fileImport,
     recipeDetail,
     editRecipe,
-    receiveShare,
     weeklyMenu,
     realtimeMenu,
     shoppingList,
+    more,
+    syncQueue,
     ingredientSearch,
     profileEdit,
     friends,
@@ -160,7 +164,6 @@ class Routes {
 
   /// Routes using slide-from-bottom animation
   static const Set<String> bottomSlideRoutes = {
-    importViaUrl,
     photoImport,
     voiceImport,
     quickCapture,
@@ -169,7 +172,6 @@ class Routes {
     importFromArchive,
     smartImport,
     fileImport,
-    receiveShare,
   };
 
   /// Routes using slide-from-right animation
@@ -203,12 +205,16 @@ class Routes {
     settingsAccountSecurity,
     collectionStats,
     moderatorReview,
+    settingsAbout,
+    settingsLicenses,
     faq,
+    syncQueue,
   };
 
   /// Routes using fade animation
   static const Set<String> fadeRoutes = {
     home,
+    more,
     auth,
     onboarding,
   };
@@ -254,7 +260,6 @@ class Routes {
 
     // Recipe management
     addRecipe,
-    importViaUrl,
     photoImport,
     voiceImport,
     quickCapture,
@@ -265,12 +270,15 @@ class Routes {
     fileImport,
     recipeDetail,
     editRecipe,
-    receiveShare,
 
     // Menu & Shopping
     weeklyMenu,
     realtimeMenu,
     shoppingList,
+
+    // Mer and the offline queue (PQ-17, P4-U19)
+    more,
+    syncQueue,
 
     // Cooking
     cookingMode,
@@ -308,6 +316,8 @@ class Routes {
     settingsAccountSecurity,
     collectionStats,
     moderatorReview,
+    settingsAbout,
+    settingsLicenses,
 
     // Legal
     termsOfService,
@@ -335,7 +345,6 @@ class Routes {
     buffer.writeln('\nRECIPE ROUTES:');
     for (final route in [
       addRecipe,
-      importViaUrl,
       photoImport,
       voiceImport,
       quickCapture,
@@ -344,7 +353,6 @@ class Routes {
       importFromArchive,
       recipeDetail,
       editRecipe,
-      receiveShare,
     ]) {
       buffer.writeln('  $route');
     }

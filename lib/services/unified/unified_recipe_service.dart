@@ -17,6 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -29,7 +30,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/unified/recipe_relations_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
-import 'package:butlery/services/unified/modules/realtime_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -37,8 +37,7 @@ import 'package:butlery/services/storage_service.dart';
 // Legacy feature interfaces (for backward compatibility)
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
-import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
-import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/helpers/social_operations_initializer.dart';
@@ -62,15 +61,15 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 /// // Social sharing
 /// await service.social.shareRecipe(recipeId: recipe.id, userIds: [...]);
 ///
-/// // Real-time collaboration
-/// service.realtime.watchRecipe(recipe.id).listen((updated) => ...);
+/// // Samarbete toggle (personal <-> shared recipe)
+/// await service.collaboration.enableCollaborativeEditing(recipe.id, memberIds);
 /// ```
 ///
 /// Delegates to specialized modules (PersonalRecipeModule, SocialRecipeModule,
-/// RealtimeRecipeModule, RecipeCacheModule) with backward-compatible legacy interfaces.
+/// RecipeCacheModule) with backward-compatible legacy interfaces.
 class UnifiedRecipeService
     with ErrorHandlingMixin, FirebaseServiceMixin
-    implements NotificationParent, PersonalRecipeDelegate {
+    implements PersonalRecipeDelegate {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
   final RecipeRepository? _recipeRepository;
@@ -88,14 +87,13 @@ class UnifiedRecipeService
   // Focused modules
   late final PersonalRecipeModule _personalModule;
   late final SocialRecipeModule _socialModule;
-  late final RealtimeRecipeModule _realtimeModule;
   late final RecipeCacheModule _cacheModule;
   bool _modulesInitialized = false;
 
   // Legacy feature interfaces (maintained for backward compatibility)
   late final PersonalRecipeOperations personal;
   late final SocialRecipeOperations social;
-  late final RealtimeRecipeOperations realtime;
+  late final CollaborationManagementModule collaboration;
 
   // Explicit initialization tracking (replaces try-catch pattern)
   bool _socialInitialized = false;
@@ -202,6 +200,8 @@ class UnifiedRecipeService
 
   // Auth state subscription (stored to prevent garbage collection)
   StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<String>? _queueSentSubscription;
+  StreamSubscription<String>? _queueDroppedSubscription;
 
   /// CRIT-7: Stream controller for tagging failure notifications.
   /// UI can listen to this stream to show snackbars when tagging fails.
@@ -327,6 +327,10 @@ class UnifiedRecipeService
       onTaggingFailed: (recipeTitle) {
         _taggingFailureController.add(recipeTitle);
       },
+      getOfflineQueue: ServiceLocator.tryGet<OfflineService>,
+    );
+    ServiceLocator.tryGet<OfflineService>()?.attachRecipeWriter(
+      LazyQueuedRecipeWriter(_getServiceAdapter),
     );
 
     _socialModule = SocialRecipeModule(
@@ -339,18 +343,7 @@ class UnifiedRecipeService
       saveRecipe: saveRecipeForSocialModule,
     );
 
-    _realtimeModule = RealtimeRecipeModule(
-      firestore: _firestore,
-      getCacheHelper: () => _cacheHelper,
-      getCurrentUserId: () => currentUserId,
-      getCurrentUserDisplayName: () => currentUserDisplayName,
-      setError: _setError,
-      notifyListeners: notifyListeners,
-      getRecipe: (String id) async => getRecipeById(id),
-    );
-
     _cacheModule = RecipeCacheModule(
-      firestore: _firestore,
       cacheHelper: _cacheHelper,
       getCurrentUserId: () => currentUserId,
       setError: _setError,
@@ -358,14 +351,24 @@ class UnifiedRecipeService
       // BUG-003: On web, cache is stubbed so we update _recipes directly
       onRecipeUpdated: kIsWeb ? _handleDirectRecipeUpdate : null,
       onRecipeRemoved: kIsWeb ? _handleDirectRecipeRemoval : null,
+      hasUnsentWrite: (recipeId) async {
+        final userId = currentUserId;
+        final queue = ServiceLocator.tryGet<OfflineService>();
+        if (userId == null || queue == null) return false;
+        return queue.hasUnsentRecipeWrite(recipeId, userId);
+      },
+      readRecipe: (recipeId) => _getRecipeRepository().read(recipeId),
     );
+    unawaited(_queueSentSubscription?.cancel());
+    _queueSentSubscription = ServiceLocator.tryGet<OfflineService>()
+        ?.recipesSent
+        .listen(_cacheModule.refreshAfterQueueSend);
+    unawaited(_queueDroppedSubscription?.cancel());
+    _queueDroppedSubscription = ServiceLocator.tryGet<OfflineService>()
+        ?.recipesDropped
+        .listen(_cacheModule.dropDiscardedRecipe);
 
-    _contentOps = RecipeContentOperations(
-      personalModule: _personalModule,
-      realtimeModule: _realtimeModule,
-      isInRealtimeSession: (recipeId) =>
-          _realtimeModule.isInRealtimeEditingSession(recipeId),
-    );
+    _contentOps = RecipeContentOperations(personalModule: _personalModule);
 
     _authHandler = RecipeAuthStateHandler(
       cacheModule: _cacheModule,
@@ -434,12 +437,8 @@ class UnifiedRecipeService
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
     personal = PersonalRecipeOperations(this);
-    realtime = RealtimeRecipeOperations(
-      getCurrentUserId: _userIdGetter,
-      getCurrentUserDisplayName: _displayNameGetter,
+    collaboration = CollaborationManagementModule(
       getRecipes: _recipesGetter,
-      notificationParent: this,
-      updateRecipeContent: updateRecipeContent,
       createCollaborativeRecipe: createCollaborativeRecipe,
       createPersonalRecipe: createPersonalRecipe,
       deleteRecipe: deleteRecipe,
@@ -529,9 +528,7 @@ class UnifiedRecipeService
   bool get hasError => _error != null;
   String? get lastError => _error; // Legacy property
 
-  @override
   String? get currentUserId => _authRepository.currentUserId;
-  @override
   String? get currentUserDisplayName =>
       _authRepository.currentUser?.displayName ?? 'Du';
   bool get isSyncing {
@@ -729,7 +726,7 @@ class UnifiedRecipeService
     List<String> ingredients = const [],
     List<String> instructions = const [],
     List<String> imageUrls = const [],
-    String mealType = 'Lunch',
+    String mealType = 'Middag',
     int? portions,
     int? timeMinutes,
     double? rating,
@@ -748,6 +745,10 @@ class UnifiedRecipeService
     personalTagIds: personalTagIds,
     sourceUrl: sourceUrl,
   );
+
+  @override
+  Future<String?> createRecipeFrom(Recipe draft) async =>
+      _personalCrud.createPersonalRecipeFrom(draft);
 
   @override
   Future<void> saveRecipeRaw(Recipe recipe) async =>
@@ -776,7 +777,7 @@ class UnifiedRecipeService
     List<String> ingredients = const [],
     List<String> instructions = const [],
     List<String> imageUrls = const [],
-    String mealType = 'Lunch',
+    String mealType = 'Middag',
     int? portions,
     int? timeMinutes,
     double? rating,
@@ -836,25 +837,6 @@ class UnifiedRecipeService
       userId,
       permission,
     );
-  }
-
-  Future<bool> startRealtimeEditing(String recipeId) async {
-    return await _realtimeModule.startRealtimeEditing(recipeId);
-  }
-
-  Future<bool> stopRealtimeEditing(String recipeId) async {
-    return await _realtimeModule.stopRealtimeEditing(recipeId);
-  }
-
-  Future<bool> makeRealtimeEdit(
-    String recipeId,
-    Map<String, dynamic> changes,
-  ) async {
-    return await _realtimeModule.makeRealtimeEdit(recipeId, changes);
-  }
-
-  bool isInRealtimeEditingSession(String recipeId) {
-    return _realtimeModule.isInRealtimeEditingSession(recipeId);
   }
 
   @override
@@ -1126,9 +1108,6 @@ class UnifiedRecipeService
       'cacheStatus': _areModulesInitialized()
           ? _cacheModule.getSyncStatus()
           : 'not initialized',
-      'realtimeStatus': _areModulesInitialized()
-          ? _realtimeModule.getRealtimeStatus()
-          : 'not initialized',
     };
   }
 
@@ -1157,9 +1136,7 @@ class UnifiedRecipeService
     _serviceAdapter = null;
 
     if (_areModulesInitialized()) {
-      _personalModule.cancelPendingRetries();
       _cacheModule.dispose();
-      _realtimeModule.dispose();
       _modulesInitialized = false;
     }
 
@@ -1169,14 +1146,14 @@ class UnifiedRecipeService
 
   void dispose() {
     _authSubscription?.cancel();
+    _queueSentSubscription?.cancel();
+    _queueDroppedSubscription?.cancel();
     _socialRetryTimer?.cancel();
     _taggingFailureController.close();
     _stateSubject.close();
 
     if (_areModulesInitialized()) {
-      _personalModule.cancelPendingRetries();
       _cacheModule.dispose();
-      _realtimeModule.dispose();
     }
   }
 }

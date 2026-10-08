@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
@@ -30,17 +32,15 @@ class ShareDialogActions {
     return Material(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
-        bottomRight: Radius.circular(AppDimensions.borderRadiusM),
+        bottomLeft: Radius.circular(AppDimensions.radiusControl),
+        bottomRight: Radius.circular(AppDimensions.radiusControl),
       ),
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).colorScheme.outline.withValues(
-                alpha: AppDimensions.opacityMediumLight,
-              ),
+              color: Theme.of(context).colorScheme.outlineVariant,
             ),
           ),
         ),
@@ -93,7 +93,7 @@ class ShareDialogActions {
         case ShareContentType.shoppingList:
           return context.l10n.shareShoppingListTitle;
         case ShareContentType.personalTag:
-          return 'Dela tagg';
+          return context.l10n.shareTag;
       }
     }
   }
@@ -104,25 +104,22 @@ class ShareDialogActions {
     String contentTypeName,
   ) {
     if (selectedCount == 0) {
-      final warningColor = context.butleryColors.warning;
+      final warningColor = AppModeColors.textWarning(
+        Theme.of(context).brightness,
+      );
       return Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.spacingS,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
-          color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          border: Border.all(
-            color: warningColor.withValues(
-              alpha: AppDimensions.opacityMediumLight,
-            ),
-          ),
+          color: context.modeColors.surfaceTintWarning,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.info_outline,
+            ButleryIcon(
+              ButleryIcons.info,
               size: AppDimensions.iconSizeS,
               color: warningColor,
             ),
@@ -140,25 +137,20 @@ class ShareDialogActions {
       );
     }
 
-    final successColor = context.butleryColors.success;
+    final successColor = context.modeColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
-        color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: successColor.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        color: context.modeColors.surfaceTintSuccess,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle_outline,
+          ButleryIcon(
+            ButleryIcons.circleCheck,
             size: AppDimensions.iconSizeS,
             color: successColor,
           ),

@@ -1,13 +1,18 @@
 // Rewritten: local pure-Mocks for UnifiedFriendsService and sub-operations
 // to avoid centralized concrete @override conflicts with when().
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
@@ -94,6 +99,10 @@ void main() {
     when(() => mockFriendsService.invitations).thenReturn(mockInvitations);
     when(() => mockFriendsService.currentUserId).thenReturn('current-user');
     when(() => mockFriendsService.hasError).thenReturn(false);
+    when(() => mockFriendsService.isLoading).thenReturn(false);
+    when(
+      () => mockFriendsService.stateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(() => mockFriendsService.error).thenReturn(null);
     when(() => mockFriendsService.refresh()).thenAnswer((_) async {});
 
@@ -115,12 +124,16 @@ void main() {
       () => mockInvitations.getSentInvitations(),
     ).thenReturn(testInvitations);
     when(
-      () => mockInvitations.sendGroupInvitationToUser(
-        userId: any(named: 'userId'),
+      () => mockInvitations.sendGroupInvitations(
+        userIds: any(named: 'userIds'),
         groupId: any(named: 'groupId'),
         customMessage: any(named: 'customMessage'),
       ),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer(
+      (inv) async => {
+        for (final id in inv.namedArguments[#userIds] as List<String>) id: true,
+      },
+    );
 
     viewModel = AddMembersToGroupViewModel(
       userService: MockUserService(),
@@ -194,8 +207,31 @@ void main() {
 
       expect(vm.hasError, isTrue);
       expect(vm.groupName, equals('Grupp'));
+      // P5-U17: the cause, not "Ett fel uppstod" (content-style-guide.md:95).
+      expect(vm.error, AppLocale.current.errorGroupNotFound);
       vm.dispose();
     });
+
+    test(
+      'a failed friends load names it, not a generic error (P5-U17)',
+      () async {
+        when(
+          () => mockManagement.getAllFriends(),
+        ).thenThrow(Exception('unavailable'));
+        final vm = AddMembersToGroupViewModel(
+          userService: MockUserService(),
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
+          groupId: testGroupId,
+          friendsService: mockFriendsService,
+        );
+        await Future.delayed(Duration.zero);
+
+        expect(vm.error, AppLocale.current.groupAddMembersLoadFailed);
+        expect(vm.error, isNot(AppLocale.current.errorGeneric));
+        vm.dispose();
+      },
+    );
   });
 
   group('Friend Selection', () {
@@ -298,21 +334,44 @@ void main() {
       );
 
       expect(result, isTrue);
-      verify(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: 'friend-1',
+      // BUT-2270: one call for everyone. One call per friend tripped the
+      // database's one-request-per-10-s limit after the first.
+      final captured = verify(
+        () => mockInvitations.sendGroupInvitations(
+          userIds: captureAny(named: 'userIds'),
           groupId: testGroupId,
           customMessage: 'Välkommen!',
         ),
-      ).called(1);
-      verify(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: 'friend-2',
-          groupId: testGroupId,
-          customMessage: 'Välkommen!',
-        ),
-      ).called(1);
+      ).captured;
+      expect(captured, hasLength(1));
+      expect(captured.single, unorderedEquals(['friend-1', 'friend-2']));
+      expect(viewModel.sentCount, 2);
     });
+
+    test(
+      'some invitations failing says how many, and keeps the rest',
+      () async {
+        when(
+          () => mockInvitations.sendGroupInvitations(
+            userIds: any(named: 'userIds'),
+            groupId: any(named: 'groupId'),
+            customMessage: any(named: 'customMessage'),
+          ),
+        ).thenAnswer((_) async => {'friend-1': true, 'friend-2': false});
+        viewModel.toggleFriendSelection('friend-1');
+        viewModel.toggleFriendSelection('friend-2');
+
+        final result = await viewModel.sendInvitations();
+
+        expect(result, isTrue);
+        expect(viewModel.sentCount, 1);
+        expect(viewModel.getInvitationStatusForUser('friend-2'), 'failed');
+        expect(
+          viewModel.invitationError,
+          AppLocale.current.groupInvitationsPartlyFailed(1, 2),
+        );
+      },
+    );
 
     test('should clear selections after success', () async {
       viewModel.toggleFriendSelection('friend-1');
@@ -329,12 +388,12 @@ void main() {
 
     test('should handle invitation failure', () async {
       when(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => mockInvitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
-      ).thenAnswer((_) async => false);
+      ).thenAnswer((_) async => {'friend-1': false});
 
       viewModel.toggleFriendSelection('friend-1');
       final result = await viewModel.sendInvitations();
@@ -361,8 +420,8 @@ void main() {
       final result = await viewModel.sendInvitations();
       expect(result, isFalse);
       verifyNever(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => mockInvitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
@@ -371,8 +430,8 @@ void main() {
 
     test('should handle service exception', () async {
       when(
-        () => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
+        () => mockInvitations.sendGroupInvitations(
+          userIds: any(named: 'userIds'),
           groupId: any(named: 'groupId'),
           customMessage: any(named: 'customMessage'),
         ),
@@ -383,6 +442,120 @@ void main() {
 
       expect(result, isFalse);
       expect(viewModel.invitationError, isNotNull);
+    });
+  });
+
+  group('cold start (BUT-2189)', () {
+    test(
+      'loads while the friends service loads, then lists the friends',
+      () async {
+        // Seeded like the real service's stateStream, which replays its
+        // current state to every new listener.
+        final states = BehaviorSubject<FriendsServiceState>.seeded(
+          const FriendsStateLoading(),
+        );
+        addTearDown(states.close);
+        var serviceLoading = true;
+        var friends = <UserProfile>[];
+        when(
+          () => mockFriendsService.isLoading,
+        ).thenAnswer((_) => serviceLoading);
+        when(
+          () => mockFriendsService.stateStream,
+        ).thenAnswer((_) => states.stream);
+        when(() => mockManagement.getAllFriends()).thenAnswer((_) => friends);
+
+        final coldViewModel = AddMembersToGroupViewModel(
+          userService: MockUserService(),
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
+          groupId: testGroupId,
+          friendsService: mockFriendsService,
+        );
+        addTearDown(coldViewModel.dispose);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(coldViewModel.isLoading, isTrue);
+        expect(coldViewModel.showEmptyState, isFalse);
+
+        serviceLoading = false;
+        friends = testFriends;
+        states.add(FriendsStateData(friends: testFriends));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(coldViewModel.isLoading, isFalse);
+        expect(coldViewModel.availableFriends, isNotEmpty);
+      },
+    );
+  });
+
+  group('dispose (BUT-2189)', () {
+    test('stops following the friends service once disposed', () async {
+      // A single-subscription controller, so hasListener reflects this one
+      // subscription.
+      final states = StreamController<FriendsServiceState>();
+      addTearDown(states.close);
+      when(
+        () => mockFriendsService.stateStream,
+      ).thenAnswer((_) => states.stream);
+
+      final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
+        groupId: testGroupId,
+        friendsService: mockFriendsService,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(states.hasListener, isTrue);
+
+      vm.dispose();
+
+      expect(states.hasListener, isFalse);
+    });
+  });
+
+  group('cold start before the groups have loaded (BUT-2189)', () {
+    test('waits instead of saying the group is not found', () async {
+      // Seeded like the real service's stateStream, which replays its
+      // current state to every new listener.
+      final states = BehaviorSubject<FriendsServiceState>.seeded(
+        const FriendsStateLoading(),
+      );
+      addTearDown(states.close);
+      var serviceLoading = true;
+      FriendCategory? group;
+      when(
+        () => mockFriendsService.isLoading,
+      ).thenAnswer((_) => serviceLoading);
+      when(
+        () => mockFriendsService.stateStream,
+      ).thenAnswer((_) => states.stream);
+      when(
+        () => mockCategories.getCategoryById(testGroupId),
+      ).thenAnswer((_) => group);
+
+      final coldViewModel = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
+        groupId: testGroupId,
+        friendsService: mockFriendsService,
+      );
+      addTearDown(coldViewModel.dispose);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(coldViewModel.isLoading, isTrue);
+      expect(coldViewModel.hasError, isFalse);
+
+      serviceLoading = false;
+      group = testGroup;
+      states.add(FriendsStateData(friends: testFriends));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(coldViewModel.hasError, isFalse);
+      expect(coldViewModel.group, testGroup);
+      expect(coldViewModel.availableFriends, isNotEmpty);
     });
   });
 

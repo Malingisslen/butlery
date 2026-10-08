@@ -25,6 +25,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -35,6 +38,7 @@ import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
@@ -58,6 +62,10 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
 
 const _testUserId = 'test-user-123';
 const _friendUserId = 'friend-user-456';
+
+class _MockPantryService extends Mock implements PantryService {}
+
+class _MockAuthRepository extends Mock implements AuthRepository {}
 
 // Minimal mock for SocialRecipeService: only acceptRecipeShareRequest needed.
 class _MockSocialRecipeService extends Mock implements SocialRecipeService {}
@@ -148,7 +156,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget localize(Widget home) {
+  Widget localize(Widget home, {ThemeData? theme}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -158,19 +166,23 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.lightTheme,
+      theme: theme ?? AppTheme.lightTheme,
       home: home,
     );
   }
 
-  Future<void> pumpView(WidgetTester tester, Widget view) async {
+  Future<void> pumpView(
+    WidgetTester tester,
+    Widget view, {
+    ThemeData? theme,
+  }) async {
     tester.view.physicalSize = const Size(420, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
     });
-    await tester.pumpWidget(localize(view));
+    await tester.pumpWidget(localize(view, theme: theme));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
   }
@@ -316,6 +328,309 @@ void main() {
         findsOneWidget,
         reason: 'Favorite toggle must be visible when readOnly:false',
       );
+    });
+  });
+
+  // P4-U05: the media hero (Komponentark v1:81-89) and the view's one
+  // saffron action (Grafisk manual v6:219; Skarmar v12 del 1 'Receptdetalj',
+  // etapp 11 'Receptet brett — någon annans').
+  group('RecipeDetailView — media hero and action bar (P4-U05)', () {
+    List<String> heroLabels(WidgetTester tester, Brightness b) => tester
+        .widgetList<FilledButton>(find.byType(FilledButton))
+        .where(
+          (button) =>
+              button.style?.backgroundColor?.resolve(const {}) ==
+              AppModeColors.actionPrimary(b),
+        )
+        .map((button) => (button.child! as Text).data!)
+        .toList();
+
+    for (final (mode, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('own recipe: Börja laga is the one saffron action ($mode)', (
+        tester,
+      ) async {
+        await pumpView(
+          tester,
+          RecipeDetailView(recipe: ownedRecipe),
+          theme: theme,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(heroLabels(tester, theme.brightness), ['Börja laga']);
+        expect(
+          find.widgetWithText(FilledButton, 'Lägg i inköpslistan'),
+          findsOneWidget,
+        );
+        expect(find.byType(FloatingActionButton), findsNothing);
+        // Icon buttons stand in paper rings on the photo.
+        expect(
+          find.byKey(const ValueKey('recipe-detail-paper-ring')),
+          findsWidgets,
+        );
+        // No spinner anywhere on the page.
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      });
+
+      testWidgets("a friend's recipe: Spara till mitt kök is the one "
+          'saffron action ($mode)', (tester) async {
+        await pumpView(
+          tester,
+          RecipeDetailView(recipe: friendRecipe, readOnly: true),
+          theme: theme,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(heroLabels(tester, theme.brightness), ['Spara till mitt kök']);
+        expect(
+          find.widgetWithText(FilledButton, 'Börja laga'),
+          findsOneWidget,
+        );
+      });
+    }
+
+    // Q4-02 = A (produktbeslut 2026-09-24): on a friend's recipe "Börja
+    // laga" is the ink button. Dark: no fill, a 1.5 px paper outline, as
+    // the own recipe's ink button ('Receptdetalj — mörkt läge'), since ink
+    // on #17251D does not read as a button. The shopping list is a
+    // paper-ring button on the photo.
+    testWidgets("a friend's recipe: Börja laga is ink in light mode", (
+      tester,
+    ) async {
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-start-cooking')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, AppTheme.lightTheme.colorScheme.primary);
+      expect(find.byTooltip('Lägg i inköpslistan'), findsOneWidget);
+    });
+
+    testWidgets("a friend's recipe: Börja laga is a paper outline in dark "
+        'mode', (tester) async {
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+        theme: AppTheme.darkTheme,
+      );
+      final paper = AppTheme.darkTheme.colorScheme.onSurface;
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-start-cooking')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, Colors.transparent);
+      final shape = material.shape! as OutlinedBorder;
+      expect(shape.side.color, paper);
+      expect(shape.side.width, 1.5);
+    });
+
+    // Q4-03 = A (produktbeslut 2026-09-24): the button counts what the
+    // pantry does not cover (content-style-guide.md:76).
+    testWidgets('the shopping-list action counts against the pantry', (
+      tester,
+    ) async {
+      final pantry = _MockPantryService();
+      final auth = _MockAuthRepository();
+      when(() => auth.currentUserId).thenReturn(_testUserId);
+      when(() => pantry.watchAll(_testUserId)).thenAnswer(
+        (_) => Stream.value([
+          PantryItem(
+            id: 'p-agg',
+            ingredientName: 'ägg',
+            quantity: 10,
+            unit: '',
+            location: PantryLocation.fridge,
+            addedAt: DateTime(2026, 1, 1),
+          ),
+        ]),
+      );
+      TestServiceLocator.registerMock<PantryService>(pantry);
+      TestServiceLocator.registerMock<AuthRepository>(auth);
+
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      await tester.pump();
+
+      expect(
+        find.widgetWithText(FilledButton, 'Lägg 2 varor i inköpslistan'),
+        findsOneWidget,
+      );
+    });
+
+    // Q6-09 = C (produktbeslut 2026-09-27b): when the pantry covers every
+    // ingredient, the button is replaced by the text "Allt finns hemma".
+    void pantryCovering(List<String> names) {
+      final pantry = _MockPantryService();
+      final auth = _MockAuthRepository();
+      when(() => auth.currentUserId).thenReturn(_testUserId);
+      when(() => pantry.watchAll(_testUserId)).thenAnswer(
+        (_) => Stream.value([
+          for (final name in names)
+            PantryItem(
+              id: 'p-$name',
+              ingredientName: name,
+              quantity: 10,
+              unit: '',
+              location: PantryLocation.pantry,
+              addedAt: DateTime(2026, 1, 1),
+            ),
+        ]),
+      );
+      TestServiceLocator.registerMock<PantryService>(pantry);
+      TestServiceLocator.registerMock<AuthRepository>(auth);
+    }
+
+    for (final (mode, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('Q6-09: everything at home replaces the button with text '
+          '($mode)', (tester) async {
+        pantryCovering(['mjöl', 'mjölk', 'ägg']);
+        final semantics = tester.ensureSemantics();
+
+        await pumpView(
+          tester,
+          RecipeDetailView(recipe: ownedRecipe),
+          theme: theme,
+        );
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        final note = find.byKey(
+          const ValueKey('test-recipe-detail-all-at-home'),
+        );
+        expect(note, findsOneWidget);
+        expect(tester.widget<Text>(note).data, 'Allt finns hemma');
+        // text.secondary in both modes (tokens.json:62-65).
+        expect(
+          tester.widget<Text>(note).style?.color,
+          theme.colorScheme.onSurfaceVariant,
+        );
+        expect(
+          find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          findsNothing,
+        );
+        expect(
+          find.ancestor(of: note, matching: find.byType(ButtonStyleButton)),
+          findsNothing,
+        );
+        expect(
+          tester.getSemantics(note).flagsCollection.isButton,
+          isFalse,
+          reason: 'not focusable as a button',
+        );
+        semantics.dispose();
+      });
+    }
+
+    testWidgets("Q6-09: on a friend's recipe the photo's shopping button is "
+        'left out', (tester) async {
+      pantryCovering(['pasta', 'tomatsås', 'ost']);
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+        findsNothing,
+        reason: 'no live button named as a status',
+      );
+      expect(find.byTooltip('Allt finns hemma'), findsNothing);
+      expect(find.byTooltip('Lägg i inköpslistan'), findsNothing);
+    });
+
+    // Skarmar v12 del 1 'Receptdetalj' draws the shopping-list action with
+    // an ink fill; 'Receptdetalj — mörkt läge' draws it with no fill, a
+    // 1.5 px paper outline and paper text.
+    testWidgets('the shopping-list action is ink in light mode', (
+      tester,
+    ) async {
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+      final button = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+      );
+      expect(button.style, isNull, reason: 'the theme ink fill');
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, AppTheme.lightTheme.colorScheme.primary);
+    });
+
+    testWidgets('the shopping-list action is a paper outline in dark mode', (
+      tester,
+    ) async {
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe),
+        theme: AppTheme.darkTheme,
+      );
+      final paper = AppTheme.darkTheme.colorScheme.onSurface;
+      expect(paper, const Color(0xFFF5F4ED));
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, Colors.transparent);
+      final shape = material.shape! as OutlinedBorder;
+      expect(shape.side.color, paper);
+      expect(shape.side.width, 1.5);
+      final label = tester.widget<DefaultTextStyle>(
+        find
+            .ancestor(
+              of: find.text('Lägg i inköpslistan'),
+              matching: find.byType(DefaultTextStyle),
+            )
+            .first,
+      );
+      expect(label.style.color, paper);
+    });
+
+    testWidgets('the title stands under the hero, never on the image', (
+      tester,
+    ) async {
+      await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
+
+      final bar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+      expect(bar.title, isA<SizedBox>());
+      expect(
+        find.descendant(
+          of: find.byType(SliverAppBar),
+          matching: find.text('Ägda Pannkakor'),
+        ),
+        findsNothing,
+      );
+      expect(find.text('Ägda Pannkakor'), findsWidgets);
+    });
+
+    testWidgets('the back button is named after where it goes', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe, backTo: 'Mina recept'),
+      );
+
+      expect(
+        find.bySemanticsLabel(RegExp('Tillbaka till Mina recept')),
+        findsWidgets,
+      );
+      handle.dispose();
     });
   });
 }

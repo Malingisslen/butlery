@@ -339,6 +339,12 @@ class RealtimeRecipe extends RealtimeResource {
   // isOwner is correctly implemented in the base class RealtimeResource
   // It checks the ownerId field, not the participants map
 
+  /// Own recipe or someone else's shared recipe (produktregler.md:102-103).
+  /// Ownership comes from [ownerId], never from the participants map.
+  @override
+  ConflictEntity conflictEntityFor(String userId) =>
+      isOwner(userId) ? ConflictEntity.recipeOwn : ConflictEntity.recipeShared;
+
   @override
   Map<String, dynamic> serializeContent() {
     return RecipeSerialization.serializeRealtimeContent(recipe);

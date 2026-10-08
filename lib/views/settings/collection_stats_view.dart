@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -53,9 +55,8 @@ class _CollectionStatsContent extends StatelessWidget {
     final insights = vm.recipeInsights;
 
     return Scaffold(
-      appBar: AdaptiveAppBar(
+      appBar: ButleryTopBar.undersida(
         title: context.l10n.statsMyStatistics,
-        centerTitle: true,
       ),
       backgroundColor: cs.surface,
       body: SafeArea(
@@ -132,16 +133,16 @@ class _HeroBanner extends StatelessWidget {
     Widget card(IconData icon, int value, String label) => Expanded(
       child: Column(
         children: [
-          Icon(icon, color: cs.surface, size: AppDimensions.iconSizeM),
+          ButleryIcon(icon, color: cs.onPrimary, size: AppDimensions.iconSizeM),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '$value',
-            style: AppTextStyles.headlineBold.copyWith(color: cs.surface),
+            style: AppTextStyles.headlineBold.copyWith(color: cs.onPrimary),
           ),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: cs.surface.withValues(alpha: 0.8),
+              color: cs.onPrimary.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -156,10 +157,10 @@ class _HeroBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
+              card(ButleryIcons.bookOpen, totalRecipes, l10n.statsTotalRecipes),
               const SizedBox(width: AppDimensions.spacingMd),
               card(
-                AdaptiveIcons.favouriteFilled,
+                ButleryIcons.favourite,
                 favorites,
                 l10n.statsFavorites,
               ),
@@ -169,12 +170,12 @@ class _HeroBanner extends StatelessWidget {
           Row(
             children: [
               card(
-                Icons.local_fire_department,
+                ButleryIcons.utensils,
                 recentlyCooked,
                 l10n.statsRecentlyCooked,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
-              card(Icons.camera_alt, withImages, l10n.statsWithImages),
+              card(ButleryIcons.camera, withImages, l10n.statsWithImages),
             ],
           ),
         ],
@@ -197,7 +198,9 @@ class _SectionHeader extends StatelessWidget {
       ),
       child: Text(
         title.toUpperCase(),
-        style: AppTextStyles.sectionLabel,
+        style: AppTextStyles.sectionLabel.copyWith(
+          color: context.modeColors.onWarningContainer,
+        ),
       ),
     );
   }
@@ -284,7 +287,7 @@ class _MealTypeChart extends StatelessWidget {
                     Container(
                       width: barWidth,
                       height: AppDimensions.spacingMd + AppDimensions.spacingXs,
-                      color: cs.primary.withValues(alpha: 0.8),
+                      color: cs.onSurface.withValues(alpha: 0.8),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(
@@ -388,7 +391,7 @@ class _CompletenessSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final l10n = context.l10n;
     final segmentColors = <Color>[
       cs.error,
@@ -470,18 +473,21 @@ class _CompletenessSection extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingSm),
         itemBuilder: (context, index) {
           final recipe = incompleteRecipes[index];
-          return ActionChip(
-            label: Text(
-              recipe.title,
-              style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
-            ),
-            backgroundColor: cs.errorContainer,
-            side: BorderSide.none,
-            shape: const RoundedRectangleBorder(),
-            onPressed: () => Navigator.pushNamed(
-              context,
-              Routes.editRecipe,
-              arguments: recipe,
+          return PressFill(
+            surface: PressSurface.raised,
+            child: ActionChip(
+              label: Text(
+                recipe.title,
+                style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
+              ),
+              backgroundColor: cs.errorContainer,
+              side: BorderSide.none,
+              shape: const RoundedRectangleBorder(),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                Routes.editRecipe,
+                arguments: recipe,
+              ),
             ),
           );
         },

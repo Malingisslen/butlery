@@ -1,68 +1,22 @@
 /// Household service for aggregating allergen preferences across household members.
 
-// lib/services/household_service.dart
-
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/models/household_allergen_aggregate.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
-import 'package:butlery/repositories/interfaces/household_repository.dart';
-import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 
-/// The household's aggregated allergen preferences PLUS how complete the
-/// roster was when they were built (BUT-1663).
-///
-/// A degraded aggregate is value-identical to a healthy one, so any caller
-/// that tells the user something about "the household" — the opt-out safety
-/// dialog, the menu-pool telemetry — has to be able to tell them apart.
-class HouseholdAllergenAggregate {
-  /// Every member resolved; [preferences] describes the household exactly.
-  const HouseholdAllergenAggregate.complete(this.preferences)
-    : unresolvedMemberIds = const [],
-      missingMemberIds = const [],
-      isRosterComplete = true;
-
-  /// Every member accounted for, but some ids point at profiles that are not
-  /// there (deleted account, stale roster entry). The union is exact for the
-  /// members who exist, so the roster counts as COMPLETE — an absent person
-  /// cannot be protected, and treating them as unknown-forever would hold the
-  /// household in a safety crouch it can never leave (BUT-1663).
-  const HouseholdAllergenAggregate.completeWithMissing({
-    required this.preferences,
-    required this.missingMemberIds,
-  }) : unresolvedMemberIds = const [],
-       isRosterComplete = true;
-
-  /// At least one member could not be read. [preferences] is the union of the
-  /// members that DID resolve, widened with the common-allergen safety floor,
-  /// so it is a superset of what is known — never a substitute for it.
-  const HouseholdAllergenAggregate.degraded({
-    required this.preferences,
-    this.unresolvedMemberIds = const [],
-    this.missingMemberIds = const [],
-  }) : isRosterComplete = false;
-
-  final UserAllergenPreferences preferences;
-
-  /// Member ids whose profile read FAILED on this pass — transient, so the
-  /// aggregate fails safe. Empty on the whole-aggregation-failed path, where
-  /// no individual member is to blame.
-  final List<String> unresolvedMemberIds;
-
-  /// BUT-1663: member ids whose profile document does not exist. Distinct from
-  /// [unresolvedMemberIds]: this is a roster-hygiene problem, not an unknown
-  /// allergen, so it does NOT degrade filtering.
-  final List<String> missingMemberIds;
-
-  final bool isRosterComplete;
-}
+export 'package:butlery/models/household_allergen_aggregate.dart';
 
 /// Aggregates allergen preferences across household members for menu planning.
 class HouseholdService extends BaseService {
@@ -100,13 +54,30 @@ class HouseholdService extends BaseService {
   bool get hasHousehold => getHousehold() != null;
 
   /// All member IDs in the household (including owner).
-  List<String> getHouseholdMemberIds() {
-    final household = getHousehold();
-    if (household == null) {
+  List<String> getHouseholdMemberIds() => _memberIdsOf(getHousehold());
+
+  List<String> _memberIdsOf(FriendCategory? group) {
+    if (group == null) {
       final userId = ServiceLocator.get<UserService>().currentUserProfile?.uid;
       return userId != null ? [userId] : [];
     }
-    return household.allMemberIds;
+    return group.allMemberIds;
+  }
+
+  /// The group the active household belongs to (BUT-2267), when this device
+  /// has it loaded. It is the roster whose shares that household holds, so
+  /// aggregating over any other household-marked group would pair one group's
+  /// members with another household's shares.
+  FriendCategory? _linkedGroup(Household? household) {
+    if (household == null || !household.isLinkedToGroup) return null;
+    for (final c in _friendsService.categories.categoriesList) {
+      if (c.id == household.sourceGroupId &&
+          c.ownerId == household.sourceGroupOwnerId &&
+          c.isHousehold) {
+        return c;
+      }
+    }
+    return null;
   }
 
   /// Aggregate allergen preferences across all household members.
@@ -146,7 +117,10 @@ class HouseholdService extends BaseService {
     Set<String> memberIds,
   ) async {
     final result = await executeServiceOperation(
-      () => _resolveMembers(memberIds.toList()),
+      () => _resolveMembers(
+        memberIds.toList(),
+        ActiveHousehold.resolve(serviceName),
+      ),
       operationName: 'aggregateAllergenPreferencesFor',
     );
     if (result != null) return result;
@@ -156,6 +130,19 @@ class HouseholdService extends BaseService {
       serviceName,
     );
     return HouseholdAllergenAggregate.degraded(preferences: _floorOnly);
+  }
+
+  /// What the MENU filters by for the signed-in user alone (BUT-2085,
+  /// BUT-1694) — read by the generator AND the opt-out dialog that names what
+  /// it stops protecting, so the two cannot drift. Not
+  /// [UserService.allergenPreferences], which substitutes `defaults`, diets
+  /// included, for an untouched screen; untouched means "no allergies"
+  /// (BUT-1663) only when the settings were read, else the floor applies.
+  static UserAllergenPreferences ownMenuPreferences(UserProfile? profile) {
+    final declared = profile?.allergenPreferences;
+    if (declared != null) return declared;
+    if (profile?.settingsMerged ?? false) return UserAllergenPreferences.none;
+    return _floorOnly;
   }
 
   /// [base] widened with the common-allergen floor and the UNKNOWN escape
@@ -175,7 +162,7 @@ class HouseholdService extends BaseService {
   /// hatch shut so only recipes proven free get through. Kept in one place —
   /// it is the most safety-critical value in this file and two copies would
   /// drift.
-  UserAllergenPreferences get _floorOnly => _buildPreferences(
+  static UserAllergenPreferences get _floorOnly => _buildPreferences(
     allergens: _allergenSafetyFloor,
     dietary: const {},
     includeUnknown: false,
@@ -190,47 +177,27 @@ class HouseholdService extends BaseService {
   /// the same as "nobody shared": treating a failed read as an empty result
   /// would drop every real declaration and quietly hand those members the floor
   /// while reporting the roster as healthy — the exact
-  /// unreadable-looks-like-a-declaration bug BUT-1663 exists to prevent.
-  Future<Map<String, HouseholdAllergenShare>?> _sharedListsByMember() async {
-    // A flag service that is not there is IGNORANCE — we cannot tell whether
-    // the feature is on — and must not be spelled the same way as a switch we
-    // read and found off.
-    final flags = ServiceLocator.tryGet<FeatureFlagService>();
-    if (flags == null) return null;
-
-    if (!flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing)) {
-      // Off is KNOWLEDGE, not ignorance: this is an empty result rather than
-      // an unknown one, and it must not degrade the roster.
-      return const {};
-    }
-
+  /// unreadable-looks-like-a-declaration bug BUT-1663 exists to prevent. A
+  /// household too large for the share read to answer is one of these
+  /// (`HouseholdTooLargeForSharesException`): its members get the floor.
+  Future<Map<String, HouseholdAllergenShare>?> _sharedListsByMember(
+    Future<ActiveHousehold> activeHousehold,
+  ) async {
+    final active = await activeHousehold;
+    if (!active.known) return null;
+    if (!active.sharingOn) return const {};
+    // Shares are scoped to the SYMMETRIC `households/{id}` roster, not to the
+    // owner-scoped FriendCategory household this service aggregates over —
+    // the two are different concepts and a category id passed here would
+    // match nothing and silently return no shares (ADR-0005 D1).
+    final household = active.household;
+    if (household == null) return const {};
     final shareRepository =
         ServiceLocator.tryGet<HouseholdAllergenShareRepository>();
-    final householdRepository = ServiceLocator.tryGet<HouseholdRepository>();
-    // The PERMISSION handle, not `currentUserProfile`: `getForUser` refuses a
-    // caller that is not the named user, so this is an auth check, and the two
-    // handles disagreeing during an auth transition would read as "no
-    // household" — the footgun this file warns about further down.
-    final userId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
-    if (shareRepository == null ||
-        householdRepository == null ||
-        userId == null) {
-      return null;
-    }
+    if (shareRepository == null) return null;
 
     try {
-      // Shares are scoped to the SYMMETRIC `households/{id}` roster, not to the
-      // owner-scoped FriendCategory household this service aggregates over —
-      // the two are different concepts and a category id passed here would
-      // match nothing and silently return no shares (ADR-0005 D1).
-      final households = await householdRepository.getForUser(userId);
-      if (households.isEmpty) return const {};
-      // `.first` over an unordered query: a user normally has 0 or 1. Picking
-      // the wrong one would read as "nobody shared" and keep the floor, which
-      // is the safe direction, but it is a silent one — so it is stated rather
-      // than assumed impossible.
-
-      final shares = await shareRepository.getByHousehold(households.first.id);
+      final shares = await shareRepository.getByHousehold(household.id);
       // `isValidConsent` is the model's contract for "may this count as a
       // declaration at all". getByHousehold already filters on it; re-checked
       // here because this service holds the INTERFACE, whose other reads do not
@@ -249,17 +216,44 @@ class HouseholdService extends BaseService {
     }
   }
 
-  Future<HouseholdAllergenAggregate> _aggregatePreferences() {
+  Future<HouseholdAllergenAggregate> _aggregatePreferences() async {
+    final active = ActiveHousehold.resolve(serviceName);
+    final resolved = await active;
+    final household = resolved.household;
+    // The group linked to the household whose shares are read. When that
+    // group is not in this device's category list, the household's own roster
+    // stands in; with no link, the first household-marked group.
+    final linked = _linkedGroup(household);
+    final selfId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    // A union, never a replacement: the user's own household and their own
+    // household-marked groups stay in when the active household is one they
+    // joined. Shares are still read from the active household only; a union
+    // can only widen what the menu filters.
+    final memberIds = <String>{
+      ...(linked == null && household != null && household.isLinkedToGroup
+          ? household.memberUserIds
+          : _memberIdsOf(linked ?? getHousehold())),
+      for (final own in resolved.ownHouseholds) ...own.memberUserIds,
+      for (final c in _friendsService.categories.categoriesList)
+        if (c.isHousehold && selfId != null && c.ownerId == selfId)
+          ...c.allMemberIds,
+    };
     // BUT-1663: `allMemberIds` is `[ownerId, ...friendUserIds]` and
     // `migrateOwnersAsMembers()` appends the owner INTO `friendUserIds` on
     // every login, so the owner arrives twice for any migrated household.
     // Dedupe before counting: the duplicate would list the same id twice in
     // the unresolved report.
-    return _resolveMembers(getHouseholdMemberIds().toSet().toList());
+    final aggregate = await _resolveMembers(memberIds.toList(), active);
+    if (!resolved.readFailed || !aggregate.isRosterComplete) return aggregate;
+    return HouseholdAllergenAggregate.degraded(
+      preferences: widenWithSafetyFloor(aggregate.preferences),
+      missingMemberIds: aggregate.missingMemberIds,
+    );
   }
 
   Future<HouseholdAllergenAggregate> _resolveMembers(
     List<String> memberIds,
+    Future<ActiveHousehold> activeHousehold,
   ) async {
     // This check exists because removing the old
     // single-member early return made "no members" fall through to an empty
@@ -294,7 +288,7 @@ class HouseholdService extends BaseService {
     // Started before the lookups rather than after them: it depends on none of
     // them, and awaiting it afterwards would put its round trips in front of a
     // user-visible wait for no reason.
-    final sharesFuture = _sharedListsByMember();
+    final sharesFuture = _sharedListsByMember(activeHousehold);
     final lookups = await Future.wait(
       memberIds.map(_userService.lookupUserProfile),
     );
@@ -346,10 +340,7 @@ class HouseholdService extends BaseService {
         // because of a failure, so both fail safe.
         //
         // A share still CONTRIBUTES (`applyShare()` below) but does not
-        // cancel the degradation: until
-        // the settings edit and the share move in one atomic write (DPIA R4,
-        // not built), a share can lag behind the list its owner has already
-        // changed, so it is evidence, not proof that this member is known.
+        // cancel the degradation.
         case ProfileLookupStatus.unavailable ||
             ProfileLookupStatus.foundSettingsUnavailable:
           applyShare();

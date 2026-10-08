@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -19,7 +22,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
     });
 
     testWidgets('does not render once the seen flag is set', (tester) async {
@@ -29,7 +32,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsNothing);
+      expect(find.byIcon(ButleryIcons.hand), findsNothing);
     });
 
     testWidgets('dismiss hides the banner and persists the seen flag', (
@@ -38,15 +41,88 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.swipe), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsNothing);
+      expect(find.byIcon(ButleryIcons.hand), findsNothing);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(SwipeHintBanner.recipeSwipeSeenKey), isTrue);
     });
+
+    testWidgets('the dismiss control meets the 48 dp tap target (BUT-2194)', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+
+      // A banner that rendered nothing would pass the guideline vacuously.
+      expect(find.byIcon(ButleryIcons.x), findsOneWidget);
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      handle.dispose();
+    });
+  });
+
+  group('SwipeHintBanner — B83-2 = A status box', () {
+    for (final (name, theme, tint, textColor, iconColor) in [
+      (
+        'light',
+        AppTheme.lightTheme,
+        const Color(0xFFF0EEE2),
+        const Color(0xFF37453A),
+        const Color(0xFF24382C),
+      ),
+      (
+        'dark',
+        AppTheme.darkTheme,
+        const Color(0xFF2F4437),
+        const Color(0xFFF5F4ED),
+        const Color(0xFFF5F4ED),
+      ),
+    ]) {
+      testWidgets('$name: surface.tint.warning fill, no border', (
+        tester,
+      ) async {
+        SharedPreferences.setMockInitialValues({});
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(data: theme, child: const SwipeHintBanner()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final box = tester.widget<Container>(
+          find
+              .ancestor(
+                of: find.byIcon(ButleryIcons.hand),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        final decoration = box.decoration! as BoxDecoration;
+        expect(decoration.color, tint);
+        expect(decoration.border, isNull);
+        // B83-2c: the control radius.
+        expect(
+          decoration.borderRadius,
+          BorderRadius.circular(AppDimensions.radiusControl),
+        );
+        expect(
+          tester.widget<Icon>(find.byIcon(ButleryIcons.hand)).color,
+          iconColor,
+        );
+        final text = tester.widget<Text>(
+          find.descendant(
+            of: find.byType(SwipeHintBanner),
+            matching: find.byType(Text),
+          ),
+        );
+        expect(text.style!.color, textColor);
+      });
+    }
   });
 
   group('SwipeHintBanner — parameterized per gesture (BUT-1199)', () {
@@ -56,14 +132,14 @@ void main() {
         createLocalizedTestApp(
           child: const SwipeHintBanner(
             seenKey: SwipeHintBanner.cookingStepSeenKey,
-            icon: Icons.touch_app,
+            icon: ButleryIcons.hand,
             message: 'Long-press a step',
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.touch_app), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
       expect(find.text('Long-press a step'), findsOneWidget);
     });
 
@@ -83,7 +159,7 @@ void main() {
               SwipeHintBanner(), // recipe default — seen, must stay hidden
               SwipeHintBanner(
                 seenKey: SwipeHintBanner.cookingStepSeenKey,
-                icon: Icons.touch_app,
+                icon: ButleryIcons.hand,
                 message: 'Long-press a step',
               ),
             ],
@@ -92,8 +168,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.swipe), findsNothing);
-      expect(find.byIcon(Icons.touch_app), findsOneWidget);
+      // One hand on screen: the cooking hint's. The recipe hint shows the
+      // same glyph, so a second hand would mean it ignored its seen flag.
+      expect(find.text('Long-press a step'), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
     });
 
     testWidgets('dismiss persists its own key only', (tester) async {
@@ -102,14 +180,14 @@ void main() {
         createLocalizedTestApp(
           child: const SwipeHintBanner(
             seenKey: SwipeHintBanner.shoppingClaimSeenKey,
-            icon: Icons.swipe,
+            icon: ButleryIcons.hand,
             message: 'Swipe to claim',
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pumpAndSettle();
 
       final prefs = await SharedPreferences.getInstance();

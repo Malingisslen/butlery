@@ -24,9 +24,8 @@
 ///    - JSON-LD recipe HTML → Tier 2 (schema.org) success with the right
 ///      `extraction_method` and recipe content carried through.
 ///    - Long unstructured HTML (no detectable ingredients/instructions) →
-///      Tier 7 (user-assistance) result with `tier: 7` in metadata (BUT-1077:
-///      quality gate added so prose-only pages fall through to user-assist
-///      rather than becoming a low-quality Tier 5 success). NOT a hard failure.
+///      a `noRecipeContent` failure, never a low-quality Tier 5 success
+///      (BUT-1077, BUT-2237).
 ///    - HTML with detectable recipe structure (ingredients OR instructions) →
 ///      Tier 5 success with `extraction_method=html_text_parse`.
 ///    - Tiny HTML body → hard failure carrying `html_fetched=true,
@@ -50,11 +49,10 @@
 ///   - Tier 3/4 web-scraper paths (WebScraper requires `flutter_inappwebview`
 ///     platform code; the existing
 ///     `test/unit/services/extraction/web_scraper_test.dart` covers it).
-///   - ParseEventLogger side effects (Firebase Functions — covered by its
-///     own unit test).
 ///   - ParsedRecipeCache.store (requires production DI registration).
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -63,21 +61,31 @@ import 'package:http/testing.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
+import 'package:butlery/services/import/import_event.dart';
+import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
+import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 /// Records every `parseFromUrl` call so the single-escalation contract
 /// (BUT-1476) and the below-threshold fall-through (BUT-1650) can be asserted.
@@ -125,7 +133,7 @@ String _jsonLdRecipeHtml({
 ''';
 }
 
-/// Long, recipe-free prose — must reach Tier 7 (user assistance).
+/// Long, recipe-free prose.
 String _unstructuredHtml() {
   return '''
 <!doctype html>
@@ -316,35 +324,24 @@ void main() {
         reason:
             'Tier 2 uses the schema.org extractor when Tier 1 is unavailable',
       );
+      expect(result.metadata?['successfulTier'], 'StructuredExtraction');
     });
 
     /// BUT-1077: pure prose (no ingredients, no instructions detectable) must
     /// NOT produce a Tier 5 success — that would present a garbage recipe to
-    /// the user. The quality gate in `_tryHtmlTextParse` checks that
-    /// `TextImportStrategy` found at least one ingredient OR instruction;
-    /// pure blog prose has neither, so Tier 5 returns null and we fall
-    /// through to Tier 7 (user-assisted import).
-    ///
-    /// This pins the chosen product-intent contract: prose-only pages →
-    /// user-assistance, NOT a low-quality success-with-warnings.
-    test('unstructured prose HTML (no recipe structure) → Tier 7 '
-        'user-assistance, NOT a Tier 5 low-quality success', () async {
+    /// the user. BUT-2237: with no ingredient line to finish by hand, Tier 7
+    /// declines too, and the import fails with the cause "no recipe".
+    test('unstructured prose HTML (no recipe structure) → noRecipeContent '
+        'failure, NOT a Tier 5 low-quality success', () async {
       final strategy = _strategyWith(
         (req) async => _htmlResponse(_unstructuredHtml()),
       );
 
       final result = await strategy.import('http://8.8.8.8/blog');
 
-      expect(
-        result.needsAssistance,
-        isTrue,
-        reason:
-            'BUT-1077: prose with no ingredients/instructions must fall '
-            'through to Tier 7 (user-assisted), not be presented as a recipe',
-      );
       expect(result.isSuccess, isFalse);
-      expect(result.extractedText, isNotNull);
-      expect(result.metadata?['tier'], 7);
+      expect(result.needsAssistance, isFalse);
+      expect(result.errorCode, ImportErrorCode.noRecipeContent);
     });
 
     /// BUT-1077: Tier 5 quality gate passes when there IS actual recipe
@@ -399,6 +396,7 @@ void main() {
         'html_text_parse',
       );
       expect(result.metadata?['tier'], 5);
+      expect(result.metadata?['successfulTier'], 'HtmlTextParse');
       expect(
         result.warnings,
         contains('Extracted from HTML text - quality may vary'),
@@ -641,17 +639,13 @@ void main() {
 
     /// JSON-LD that ISN'T a Recipe (e.g. @type=Article) must NOT trigger
     /// the schema.org tier — the extractor returns null and we fall
-    /// through. The body has only prose (no ingredients/instructions), so
-    /// BUT-1077's quality gate in Tier 5 kicks in and falls through to
-    /// Tier 7 (user-assisted import).
+    /// through.
     ///
     /// This is the key invariant: a non-Recipe JSON-LD type must not be
     /// claimed as a structured-data extraction. Otherwise we'd present
-    /// news articles as recipes with high confidence. Tier 7 (user-
-    /// assistance) is the correct result — better than a low-quality
-    /// success-with-warnings.
+    /// news articles as recipes with high confidence.
     test('JSON-LD @type=Article does NOT trigger Tier 2; pure prose page '
-        'reaches Tier 7 (user-assisted) — never claims schema.org', () async {
+        'fails as noRecipeContent — never claims schema.org', () async {
       const html = '''
 <!doctype html>
 <html><head><script type="application/ld+json">
@@ -678,19 +672,10 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
             'doing so would mark news articles as high-confidence recipes',
       );
 
-      // BUT-1077: pure prose → Tier 5 quality gate fails (no ingredients,
-      // no instructions) → falls through to Tier 7 (user-assistance).
-      // Tier 7 is a clearer signal to the user than a low-quality success.
-      expect(
-        result.needsAssistance,
-        isTrue,
-        reason:
-            'BUT-1077: article page with no recipe structure must reach '
-            'Tier 7 (user-assistance), not be presented as a recipe',
-      );
+      // BUT-1077 / BUT-2237: pure prose → no tier claims it, and the
+      // failure names the cause.
       expect(result.isSuccess, isFalse);
-      expect(result.extractedText, isNotNull);
-      expect(result.metadata?['tier'], 7);
+      expect(result.errorCode, ImportErrorCode.noRecipeContent);
     });
 
     /// BUT-1070 companion: when Tier 5 DOES fire on a page with non-Recipe
@@ -868,12 +853,11 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       },
     );
 
-    /// Positive/negative pairing: a prose page falls through to Tier 7
-    /// (user-assistance) with no produced recipe, so there is no `url`-tagged
-    /// anchor to retrieve. Pins that the capture rides on a produced recipe,
-    /// not on every import attempt.
+    /// Positive/negative pairing: a prose page produces no recipe, so there
+    /// is no `url`-tagged anchor to retrieve. Pins that the capture rides on
+    /// a produced recipe, not on every import attempt.
     test(
-      'prose page reaching Tier 7 produces no url-tagged snapshot',
+      'prose page without a recipe produces no url-tagged snapshot',
       () async {
         final strategy = _strategyWith(
           (req) async => _htmlResponse(_unstructuredHtml()),
@@ -881,7 +865,7 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
 
         final result = await strategy.import('http://8.8.8.8/blog');
 
-        expect(result.needsAssistance, isTrue);
+        expect(result.isSuccess, isFalse);
         expect(result.recipe, isNull);
       },
     );
@@ -1292,6 +1276,71 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       ).thenAnswer((_) async => build());
     }
 
+    /// BUT-2238: the import's one parse event reads Tier 1's detail off the
+    /// result, so the strategy must carry it there.
+    test(
+      'a Tier 1 recipe carries its tier, attempts and parser version',
+      () async {
+        final good = parseWithQuality(aboveThreshold: true);
+        stubParse(
+          () => ParseResult.success(
+            good.recipe!,
+            totalTime: Duration.zero,
+            unknownDomain: true,
+            tierResults: [
+              TierResult.failure(
+                tierName: 'SchemaOrg',
+                duration: Duration.zero,
+                reason: TierFailureReason.noData,
+              ),
+              const TierResult(
+                tierName: 'SiteConfig',
+                success: true,
+                quality: 0.4,
+                duration: Duration.zero,
+              ),
+              TierResult(
+                tierName: 'RuleBased',
+                success: true,
+                quality: 0.85,
+                duration: const Duration(milliseconds: 7),
+              ),
+            ],
+          ),
+        );
+
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(_unstructuredHtml()),
+        );
+        final result = await strategy.import('http://8.8.8.8/recipe');
+
+        expect(result.metadata?['extraction_method'], 'enhanced_parser');
+        expect(result.metadata?['successfulTier'], 'RuleBased');
+        expect(result.metadata?['parserVersion'], parserVersion);
+        expect(result.metadata?['unknownDomain'], isTrue);
+        expect(result.metadata?['tierAttempts'], [
+          {
+            'tier': 'SchemaOrg',
+            'success': false,
+            'quality': 0.0,
+            'durationMs': 0,
+          },
+          {
+            'tier': 'SiteConfig',
+            'success': true,
+            'quality': 0.4,
+            'durationMs': 0,
+          },
+          {
+            'tier': 'RuleBased',
+            'success': true,
+            'quality': 0.85,
+            'durationMs': 7,
+          },
+        ]);
+      },
+    );
+
     /// BUT-1476: the enhanced parser must ALWAYS be invoked with `useLlm:false`
     /// so it can never fire its own Gemini tier — the Tier 6 LlmExtractionFallback
     /// is the single escalation owner. If a refactor flips this back to true (the
@@ -1400,4 +1449,240 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(result.recipe!.core.title, 'Rough Dish');
     });
   });
+
+  // -----------------------------------------------------------------------
+  // BUT-2239: Tier 6 reads the page text, at most once, and reports its cost
+  // -----------------------------------------------------------------------
+  group('Tier 6 AI fallback (BUT-2239)', () {
+    late _CountingLlm llm;
+
+    setUp(() {
+      llm = _CountingLlm();
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<LlmEnhancementService>()) {
+        getIt.unregister<LlmEnhancementService>();
+      }
+      getIt.registerSingleton<LlmEnhancementService>(llm);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<LlmEnhancementService>()) {
+        getIt.unregister<LlmEnhancementService>();
+      }
+      app_provider.ServiceLocator.reset();
+    });
+
+    test('reads the stripped text, cut to what the server accepts', () async {
+      final prose = 'Det var en vacker dag i parken. ' * 8000;
+      final page = _unstructuredHtml().replaceFirst(
+        '</article>',
+        '<p>$prose</p></article>',
+      );
+      expect(page.length, greaterThan(245000), reason: 'the premise');
+
+      final strategy = _strategyWith((req) async => _htmlResponse(page));
+      await strategy.import('http://8.8.8.8/blog');
+
+      expect(llm.seen, hasLength(1));
+      expect(llm.seen.single.length, LlmExtractionFallback.maxInputChars);
+      expect(llm.seen.single, isNot(contains('<')));
+    });
+
+    test('"utan AI" makes no call', () async {
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+      await strategy.import('http://8.8.8.8/blog', options: {'skipLlm': true});
+
+      expect(llm.seen, isEmpty);
+    });
+
+    test('a call that found nothing still reports its cost', () async {
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+      final result = await strategy.import('http://8.8.8.8/blog');
+
+      expect(llm.seen, hasLength(1), reason: 'the premise: the call ran');
+      expect(result.isSuccess, isFalse);
+      expect(result.metadata?['usedLlm'], isTrue);
+      expect(result.metadata?['llmCost'], 0.0012);
+    });
+
+    test(
+      'the held rough parse carries the cost of the call before it',
+      () async {
+        final parser = _MockRecipeParserService();
+        GetIt.instance.registerSingleton<RecipeParserService>(parser);
+        addTearDown(() => GetIt.instance.unregister<RecipeParserService>());
+        when(
+          () => parser.parseFromUrl(
+            url: any(named: 'url'),
+            htmlContent: any(named: 'htmlContent'),
+            qualityThreshold: any(named: 'qualityThreshold'),
+            useCache: any(named: 'useCache'),
+            useLlm: any(named: 'useLlm'),
+          ),
+        ).thenAnswer(
+          (_) async => ParseResult.success(
+            ParsedRecipe(
+              title: FieldResult.success('Rough Dish'),
+              portions: FieldResult.failed('no'),
+              ingredients: FieldResult.success(<ParsedIngredient>[
+                const ParsedIngredient(
+                  name: 'mjöl',
+                  originalLine: '2 dl mjöl',
+                  quantity: '2',
+                  unit: 'dl',
+                  confidence: ParseConfidence.high,
+                ),
+              ]),
+              instructions: FieldResult.failed('no'),
+              totalTime: FieldResult.failed('no'),
+              metadata: ParseMetadata(
+                source: ImportSource.url,
+                tierResults: const [],
+                totalParseTime: Duration.zero,
+                parserVersion: 'test',
+                timestamp: DateTime(2026, 1, 1),
+              ),
+            ),
+            totalTime: Duration.zero,
+          ),
+        );
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(_unstructuredHtml()),
+        );
+
+        final result = await strategy.import('http://8.8.8.8/blog');
+
+        expect(result.isSuccess, isTrue, reason: 'the premise: the floor');
+        expect(llm.seen, hasLength(1), reason: 'the premise: the call ran');
+        expect(result.metadata?['usedLlm'], isTrue);
+        expect(result.metadata?['llmCost'], 0.0012);
+      },
+    );
+
+    test("a link import makes one call with the app's strategy list", () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+      getIt.registerSingleton<http.Client>(
+        MockClient((req) async => _htmlResponse(_unstructuredHtml())),
+      );
+      addTearDown(() {
+        if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+      });
+
+      final spy = _SpyParseEventLogger();
+      await ImportManager(
+        _MockPersonalRecipeOperations(),
+        eventLogger: spy,
+      ).autoImport('http://8.8.8.8/blog');
+
+      expect(llm.seen, hasLength(1));
+      expect(spy.events, hasLength(1));
+      expect(spy.events.single.usedLlm, isTrue);
+      expect(spy.events.single.estimatedCostUsd, 0.0012);
+    });
+
+    test('a TikTok caption that needs a screenshot is still one call, and '
+        'the import keeps its cost', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      final getIt = GetIt.instance;
+      final client = MockClient(
+        (req) async =>
+            req.url.host == 'www.tiktok.com' && req.url.path == '/oembed'
+            ? http.Response(
+                jsonEncode({'title': 'Kvällsmat!'}),
+                200,
+                headers: {'content-type': 'application/json'},
+              )
+            : _htmlResponse(_unstructuredHtml()),
+      );
+      if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+      getIt.registerSingleton<http.Client>(client);
+      getIt.registerSingleton<TikTokPipeline>(
+        TikTokPipeline(llmService: llm, client: client),
+      );
+      addTearDown(() {
+        if (getIt.isRegistered<http.Client>()) getIt.unregister<http.Client>();
+        if (getIt.isRegistered<TikTokPipeline>()) {
+          getIt.unregister<TikTokPipeline>();
+        }
+      });
+
+      final spy = _SpyParseEventLogger();
+      await ImportManager(
+        _MockPersonalRecipeOperations(),
+        eventLogger: spy,
+      ).autoImport('https://www.tiktok.com/@kock/video/123');
+
+      expect(
+        llm.transcripts,
+        hasLength(1),
+        reason: 'the premise: TikTok asked',
+      );
+      expect(
+        llm.seen,
+        isEmpty,
+        reason: 'the link fallback asks no second time',
+      );
+      expect(spy.events.single.usedLlm, isTrue);
+      expect(spy.events.single.estimatedCostUsd, 0.0012);
+    });
+  });
 }
+
+/// Answers every page with a paid failure and records what it was sent.
+class _CountingLlm extends Fake implements LlmEnhancementService {
+  final List<String> seen = [];
+
+  @override
+  Future<bool> isAvailable() async => true;
+
+  final List<String> transcripts = [];
+
+  @override
+  Future<ImportResultV2> extractFromTranscript(
+    String transcript,
+    String videoUrl, {
+    String? videoTitle,
+  }) async {
+    transcripts.add(transcript);
+    return ImportNeedsAssistance(
+      extractedText: transcript,
+      message: 'nej',
+      partialData: const {'usedLlm': true, 'llmCost': 0.0012},
+    );
+  }
+
+  @override
+  Future<ImportResultV2> extractFromPageText(
+    String pageText,
+    String url, {
+    int currentTier = 3,
+  }) async {
+    seen.add(pageText);
+    return const ImportFailure(
+      message: 'nej',
+      errorCode: ImportErrorCode.parsingFailed,
+      llmCost: 0.0012,
+    );
+  }
+}
+
+class _SpyParseEventLogger extends ParseEventLogger {
+  final List<ImportEvent> events = [];
+
+  @override
+  void log(ImportEvent event) => events.add(event);
+}
+
+class _MockPersonalRecipeOperations extends Mock
+    implements PersonalRecipeOperations {}

@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -45,16 +47,16 @@ void main() {
     testWidgets('renders title with sync icon', (tester) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
-      expect(find.byIcon(Icons.sync), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.refreshCw), findsOneWidget);
       // Cleanup: complete the future so the dialog drains
       completer.complete(0);
       await tester.pumpAndSettle();
     });
 
-    testWidgets('shows linear progress indicator', (tester) async {
+    testWidgets('shows the plate line, never a sliding bar', (tester) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(find.byType(PlateLine), findsOneWidget);
       completer.complete(0);
       await tester.pumpAndSettle();
     });
@@ -76,20 +78,18 @@ void main() {
   });
 
   group('RetagProgressDialog — progress updates', () {
-    testWidgets('LinearProgressIndicator is indeterminate when total=0', (
+    testWidgets('the plate line is indeterminate when total=0', (
       tester,
     ) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
-      final lpi = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
-      );
-      expect(lpi.value, isNull);
+      final line = tester.widget<PlateLine>(find.byType(PlateLine));
+      expect(line.value, isNull);
       completer.complete(0);
       await tester.pumpAndSettle();
     });
 
-    testWidgets('LinearProgressIndicator value updates as progress reports', (
+    testWidgets('the plate line value updates as progress reports', (
       tester,
     ) async {
       final completer = Completer<int>();
@@ -103,10 +103,8 @@ void main() {
       );
       captured!(3, 10);
       await tester.pump();
-      final lpi = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
-      );
-      expect(lpi.value, closeTo(0.3, 0.001));
+      final line = tester.widget<PlateLine>(find.byType(PlateLine));
+      expect(line.value, closeTo(0.3, 0.001));
       completer.complete(3);
       await tester.pumpAndSettle();
     });
@@ -137,10 +135,13 @@ void main() {
       await tester.pumpAndSettle();
       // Dialog still visible
       expect(find.byType(AlertDialog), findsOneWidget);
-      // Error message
-      expect(find.textContaining('retag failed'), findsOneWidget);
-      // No LinearProgressIndicator (error path replaces it)
-      expect(find.byType(LinearProgressIndicator), findsNothing);
+      // What did not happen, never the exception's text (P7-B2,
+      // content-style-guide.md:95).
+      expect(find.text('Omtaggningen kunde inte slutföras.'), findsOneWidget);
+      expect(find.textContaining('retag failed'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      // No plate line (error path replaces it)
+      expect(find.byType(PlateLine), findsNothing);
     });
 
     testWidgets('error close button pops the dialog', (tester) async {

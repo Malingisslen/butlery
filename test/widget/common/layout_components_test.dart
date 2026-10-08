@@ -11,9 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/responsive/responsive_builder.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// Plain MaterialApp wrapper for widgets that don't touch `context.l10n`.
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -320,89 +322,21 @@ void main() {
   });
 
   // ---------------------------------------------------------------------
-  // responsiveListGrid — list on mobile, grid on tablet/desktop.
+  // AdaptiveNavigationScaffold — the shell's scaffold (the LayoutComponents
+  // wrappers had no app callers and were removed in package 7).
   // ---------------------------------------------------------------------
-  group('LayoutComponents.responsiveListGrid', () {
-    testWidgets('renders ListView at mobile width', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        400,
-        LayoutComponents.responsiveListGrid<String>(
-          items: const ['x', 'y'],
-          itemBuilder: (context, item) => Text('item-$item'),
-        ),
-      );
-      // Mobile path uses a ListView (separated).
-      expect(find.byType(ListView), findsOneWidget);
-      expect(find.text('item-x'), findsOneWidget);
-      expect(find.text('item-y'), findsOneWidget);
-    });
-
-    testWidgets('renders GridView at tablet width', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        800,
-        LayoutComponents.responsiveListGrid<String>(
-          items: const ['x', 'y'],
-          itemBuilder: (context, item) => Text('item-$item'),
-        ),
-      );
-      expect(find.byType(GridView), findsOneWidget);
-      expect(find.text('item-x'), findsOneWidget);
-    });
-
-    testWidgets('forwards tabletColumns override at tablet width', (
-      tester,
-    ) async {
-      await _pumpAtWidth(
-        tester,
-        800,
-        LayoutComponents.responsiveListGrid<int>(
-          items: const [1, 2, 3, 4],
-          itemBuilder: (context, item) => Text('n=$item'),
-          tabletColumns: 4,
-        ),
-      );
-      final grid = tester.widget<GridView>(find.byType(GridView));
-      final delegate =
-          grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-      expect(delegate.crossAxisCount, 4);
-    });
-
-    testWidgets('itemBuilder is invoked for each item on mobile', (
-      tester,
-    ) async {
-      final builtFor = <String>[];
-      await _pumpAtWidth(
-        tester,
-        400,
-        LayoutComponents.responsiveListGrid<String>(
-          items: const ['alpha', 'beta'],
-          itemBuilder: (context, item) {
-            builtFor.add(item);
-            return Text('row-$item');
-          },
-        ),
-      );
-      expect(builtFor, containsAll(['alpha', 'beta']));
-    });
-  });
-
-  // ---------------------------------------------------------------------
-  // adaptiveNavigation — facade returns AdaptiveNavigationScaffold.
-  // ---------------------------------------------------------------------
-  group('LayoutComponents.adaptiveNavigation', () {
+  group('AdaptiveNavigationScaffold', () {
     final navItems = [
       const AdaptiveNavigationItem(
         label: 'Home',
         icon: Icons.home_outlined,
-        activeIcon: Icons.home,
+        activeIcon: ButleryIcons.house,
         route: '/',
       ),
       const AdaptiveNavigationItem(
         label: 'Profile',
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
+        icon: ButleryIcons.user,
+        activeIcon: ButleryIcons.user,
         route: '/profile',
       ),
     ];
@@ -411,7 +345,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const Text('body-content'),
@@ -426,7 +360,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
@@ -437,18 +371,21 @@ void main() {
       expect(find.byType(NavigationRail), findsNothing);
     });
 
-    testWidgets('tablet width renders NavigationRail', (tester) async {
+    testWidgets('tablet width renders our rail (produktregler.md:1054)', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         800,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
         ),
         withL10n: true,
       );
-      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(ButleryNavigationRail), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
       expect(find.byType(ButleryBottomNavigation), findsNothing);
     });
 
@@ -459,7 +396,7 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
@@ -480,14 +417,14 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
           floatingActionButton: FloatingActionButton(
             key: fabKey,
             onPressed: () {},
-            child: const Icon(Icons.add),
+            child: const ButleryIcon(ButleryIcons.plus),
           ),
         ),
         withL10n: true,
@@ -495,32 +432,31 @@ void main() {
       expect(find.byKey(fabKey), findsOneWidget);
     });
 
-    testWidgets('title renders an AppBar with the title text', (tester) async {
+    testWidgets('no appBar draws no bar (the bare title AppBar is gone)', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
-          title: 'Min titel',
         ),
         withL10n: true,
       );
-      expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('Min titel'), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
     });
 
-    testWidgets('custom appBar wins over title', (tester) async {
+    testWidgets('a custom appBar is drawn', (tester) async {
       const customKey = Key('custom-appbar');
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
-          title: 'should-not-render',
           appBar: AppBar(
             key: customKey,
             title: const Text('custom-title'),
@@ -530,37 +466,35 @@ void main() {
       );
       expect(find.byKey(customKey), findsOneWidget);
       expect(find.text('custom-title'), findsOneWidget);
-      expect(find.text('should-not-render'), findsNothing);
     });
 
-    testWidgets('extendedRailOnDesktop=false keeps rail compact at desktop', (
+    testWidgets('desktop width keeps the same rail (produktregler.md:1054)', (
       tester,
     ) async {
       await _pumpAtWidth(
         tester,
         1400,
-        LayoutComponents.adaptiveNavigation(
+        AdaptiveNavigationScaffold(
           currentIndex: 0,
           items: navItems,
           body: const SizedBox.shrink(),
-          extendedRailOnDesktop: false,
         ),
         withL10n: true,
       );
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(rail.extended, isFalse);
+      expect(find.byType(ButleryNavigationRail), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
     });
   });
 
   // ---------------------------------------------------------------------
-  // butleryAdaptiveNavigation — convenience wrapper with predefined nav items.
+  // ButleryAdaptiveNavigation — the predefined nav items.
   // ---------------------------------------------------------------------
-  group('LayoutComponents.butleryAdaptiveNavigation', () {
+  group('ButleryAdaptiveNavigation', () {
     testWidgets('renders the ButleryAdaptiveNavigation widget', (tester) async {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.butleryAdaptiveNavigation(
+        ButleryAdaptiveNavigation(
           currentIndex: 0,
           body: const Text('butlery-body'),
         ),
@@ -576,13 +510,13 @@ void main() {
       await _pumpAtWidth(
         tester,
         400,
-        LayoutComponents.butleryAdaptiveNavigation(
+        ButleryAdaptiveNavigation(
           currentIndex: 0,
           body: const SizedBox.shrink(),
         ),
         withL10n: true,
       );
-      // 4 bottom nav items, each with a `test-nav-<route>` ValueKey on the
+      // 4 bottom nav items (Hem · Meny · Inköp · Mer), each with a `test-nav-<route>` ValueKey on the
       // inner InkWell (mobile path).
       expect(find.byKey(const ValueKey('test-nav-/')), findsOneWidget);
       expect(find.byKey(const ValueKey('test-nav-/veckomeny')), findsOneWidget);
@@ -590,207 +524,9 @@ void main() {
         find.byKey(const ValueKey('test-nav-/inkopslista')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('test-nav-/laggTill')), findsOneWidget);
-    });
-
-    testWidgets('forwards title to underlying scaffold AppBar', (tester) async {
-      await _pumpAtWidth(
-        tester,
-        400,
-        LayoutComponents.butleryAdaptiveNavigation(
-          currentIndex: 0,
-          body: const SizedBox.shrink(),
-          title: 'Mina recept',
-        ),
-        withL10n: true,
-      );
-      expect(find.text('Mina recept'), findsOneWidget);
-    });
-  });
-
-  // ---------------------------------------------------------------------
-  // recipeUploadButtonGrid — 6 main buttons + 1 archive (2-2-2-1 layout).
-  // ---------------------------------------------------------------------
-  group('LayoutComponents.recipeUploadButtonGrid', () {
-    List<Map<String, dynamic>> makeButtons(
-      int n, {
-      VoidCallback? onPressedAt0,
-    }) {
-      return List.generate(n, (i) {
-        return {
-          'label': 'btn-$i',
-          'icon': Icons.add,
-          'onPressed': (i == 0 && onPressedAt0 != null) ? onPressedAt0 : () {},
-        };
-      });
-    }
-
-    Map<String, dynamic> archive({VoidCallback? onPressed}) {
-      return {
-        'label': 'arkiv',
-        'icon': Icons.archive,
-        'onPressed': onPressed ?? () {},
-      };
-    }
-
-    testWidgets('renders all 6 button labels + archive label', (tester) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        400,
-        _ContextCapture((ctx) => captured = ctx),
-        withL10n: true,
-      );
-      await tester.pumpWidget(
-        _wrapWithL10n(
-          Column(
-            children: [
-              LayoutComponents.recipeUploadButtonGrid(
-                captured,
-                buttons: makeButtons(6),
-                archiveButton: archive(),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      for (var i = 0; i < 6; i++) {
-        expect(find.text('btn-$i'), findsOneWidget);
-      }
-      expect(find.text('arkiv'), findsOneWidget);
-    });
-
-    testWidgets('throws ArgumentError when fewer than 6 buttons are supplied', (
-      tester,
-    ) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        400,
-        _ContextCapture((ctx) => captured = ctx),
-        withL10n: true,
-      );
-      expect(
-        () => LayoutComponents.recipeUploadButtonGrid(
-          captured,
-          buttons: makeButtons(5),
-          archiveButton: archive(),
-        ),
-        throwsArgumentError,
-      );
-    });
-
-    testWidgets('throws ArgumentError when more than 6 buttons are supplied', (
-      tester,
-    ) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        400,
-        _ContextCapture((ctx) => captured = ctx),
-        withL10n: true,
-      );
-      expect(
-        () => LayoutComponents.recipeUploadButtonGrid(
-          captured,
-          buttons: makeButtons(7),
-          archiveButton: archive(),
-        ),
-        throwsArgumentError,
-      );
-    });
-
-    testWidgets('tapping the first button invokes its onPressed', (
-      tester,
-    ) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        400,
-        _ContextCapture((ctx) => captured = ctx),
-        withL10n: true,
-      );
-      var fired = 0;
-      await tester.pumpWidget(
-        _wrapWithL10n(
-          Column(
-            children: [
-              LayoutComponents.recipeUploadButtonGrid(
-                captured,
-                buttons: makeButtons(6, onPressedAt0: () => fired++),
-                archiveButton: archive(),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      // Tapping by visible label is more stable than reaching into the inner
-      // square button structure (UtilityComponents may add Semantics/InkWell
-      // wrappers we don't want to depend on).
-      await tester.tap(find.text('btn-0'), warnIfMissed: false);
-      await tester.pump();
-      expect(fired, 1);
-    });
-
-    testWidgets('tapping the archive button invokes its onPressed', (
-      tester,
-    ) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        400,
-        _ContextCapture((ctx) => captured = ctx),
-        withL10n: true,
-      );
-      var fired = 0;
-      await tester.pumpWidget(
-        _wrapWithL10n(
-          Column(
-            children: [
-              LayoutComponents.recipeUploadButtonGrid(
-                captured,
-                buttons: makeButtons(6),
-                archiveButton: archive(onPressed: () => fired++),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('arkiv'), warnIfMissed: false);
-      await tester.pump();
-      expect(fired, 1);
-    });
-
-    testWidgets('wraps its contents in an Expanded for parent Column/Row use', (
-      tester,
-    ) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        400,
-        _ContextCapture((ctx) => captured = ctx),
-        withL10n: true,
-      );
-      await tester.pumpWidget(
-        _wrapWithL10n(
-          Column(
-            children: [
-              LayoutComponents.recipeUploadButtonGrid(
-                captured,
-                buttons: makeButtons(6),
-                archiveButton: archive(),
-              ),
-            ],
-          ),
-        ),
-      );
-      // The facade returns `Expanded(child: LayoutBuilder(...))`. At least one
-      // Expanded should be present at the top of the subtree.
-      expect(find.byType(Expanded), findsWidgets);
-      expect(find.byType(LayoutBuilder), findsWidgets);
+      expect(find.byKey(const ValueKey('test-nav-/mer')), findsOneWidget);
+      // PQ-17: "Lägg till" is no longer a destination.
+      expect(find.byKey(const ValueKey('test-nav-/laggTill')), findsNothing);
     });
   });
 
@@ -823,8 +559,7 @@ void main() {
     }, skip: true);
 
     testWidgets('simpleLayout — covered by view-level tests', (tester) async {
-      // SKIP: ButleryHeader requires localizations + ServiceLocator-backed
-      // ButleryColors theme extension.
+      // SKIP: requires localizations and ServiceLocator-backed services.
     }, skip: true);
 
     testWidgets('profileMenu — covered by profile widget tests', (
@@ -844,7 +579,9 @@ void main() {
     testWidgets('offlineIndicator — covered by status indicator tests', (
       tester,
     ) async {
-      // SKIP: needs OfflineService registered in ServiceLocator.
+      // SKIP: needs OfflineService registered in ServiceLocator. The banner
+      // (anatomy, pendingCount, onTap, announcements) is covered in
+      // test/widget/common/layout/status_indicators_simplified_test.dart.
     }, skip: true);
 
     testWidgets('offlineStatusIcon — covered by status indicator tests', (

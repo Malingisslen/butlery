@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
@@ -6,7 +9,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
@@ -97,7 +100,7 @@ class TagResultDisplay extends StatelessWidget {
 
         const SizedBox(height: AppDimensions.spacingL),
         const Padding(
-          padding: EdgeInsets.only(top: AppDimensions.spacingS),
+          padding: EdgeInsets.only(top: AppDimensions.space4),
           child: AllergenDisclaimer(),
         ),
       ],
@@ -121,8 +124,8 @@ class TagResultDisplay extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: AppDimensions.spacingS,
-      runSpacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: [
         // Allergen badges
         ...allergens.map((allergen) {
@@ -214,26 +217,21 @@ class TagResultDisplay extends StatelessWidget {
 
   Widget _buildRetagIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final warningColor = context.butleryColors.warning;
+    final warningColor = AppModeColors.textWarning(cs.brightness);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(
-          color: warningColor.withValues(
-            alpha: AppDimensions.opacityMediumLight,
-          ),
-        ),
+        color: context.modeColors.surfaceTintWarning,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.update,
+          ButleryIcon(
+            ButleryIcons.refreshCw,
             color: warningColor,
             size: AppDimensions.iconSize18,
           ),
-          const SizedBox(width: AppDimensions.spacingS),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               context.l10n.tagResultOutdated,
@@ -255,7 +253,7 @@ class TagResultDisplay extends StatelessWidget {
               child: Text(
                 context.l10n.commonUpdate,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.primary,
+                  color: cs.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -267,15 +265,15 @@ class TagResultDisplay extends StatelessWidget {
 
   Widget _buildDraftWarning(BuildContext context) {
     return InlineWarning(
-      icon: Icons.info_outline,
-      color: context.butleryColors.warning,
+      icon: ButleryIcons.info,
+      color: context.modeColors.warning,
       text: context.l10n.ingredientDataUnverified,
     );
   }
 
   Widget _buildDegradedWarning(BuildContext context) {
     return InlineWarning(
-      icon: Icons.warning_amber,
+      icon: ButleryIcons.triangleAlert,
       color: Theme.of(context).colorScheme.error,
       text: context.l10n.taggingDegradedWarning,
     );
@@ -291,14 +289,14 @@ class TagResultDisplay extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.analytics_outlined,
-              color: cs.primary,
+            ButleryIcon(
+              ButleryIcons.barChart,
+              color: cs.onSurface,
               size: compact
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,
             ),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.tagResultCoverage,
               style: compact
@@ -307,20 +305,16 @@ class TagResultDisplay extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusS,
-                ),
-                child: LinearProgressIndicator(
-                  value: tagResult.coverage,
-                  backgroundColor: cs.outlineVariant,
-                  color: _getCoverageColor(context),
-                  minHeight: 8,
-                ),
+              // Coverage as the determinate plate line (Komponentark v1:305;
+              // B-18). The percentage beside it keeps its status colour, so
+              // colour is never the only signal; the line is not read out
+              // on its own.
+              child: ExcludeSemantics(
+                child: PlateLine(value: tagResult.coverage),
               ),
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -333,7 +327,7 @@ class TagResultDisplay extends StatelessWidget {
           ],
         ),
         if (hasUnknowns) ...[
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.space4),
           Semantics(
             label: context.l10n.tagResultUnknownIngredientsA11y(
               tagResult.unknownIngredients.length,
@@ -343,10 +337,10 @@ class TagResultDisplay extends StatelessWidget {
               onTap: onUnknownIngredientsTap,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
+                  ButleryIcon(
+                    ButleryIcons.triangleAlert,
                     size: AppDimensions.iconSizeS,
-                    color: context.butleryColors.warning,
+                    color: context.modeColors.warning,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Expanded(
@@ -355,15 +349,15 @@ class TagResultDisplay extends StatelessWidget {
                         tagResult.unknownIngredients.length,
                       ),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: context.butleryColors.warning,
+                        color: context.modeColors.warning,
                       ),
                     ),
                   ),
                   if (onUnknownIngredientsTap != null)
-                    Icon(
-                      Icons.chevron_right,
+                    ButleryIcon(
+                      ButleryIcons.chevronRight,
                       size: AppDimensions.iconSize18,
-                      color: context.butleryColors.warning,
+                      color: context.modeColors.warning,
                     ),
                 ],
               ),
@@ -379,8 +373,8 @@ class TagResultDisplay extends StatelessWidget {
     // generously: 80%+ is green, 40%+ amber, rust-red only for genuinely
     // incomplete coverage. Previously 80–99% showed as amber and anything
     // below 80% rendered rust-red — a nearly-full red bar misleads.
-    if (tagResult.coverage >= 0.8) return context.butleryColors.success;
-    if (tagResult.coverage >= 0.4) return context.butleryColors.warning;
+    if (tagResult.coverage >= 0.8) return context.modeColors.success;
+    if (tagResult.coverage >= 0.4) return context.modeColors.warning;
     return Theme.of(context).colorScheme.error;
   }
 
@@ -588,8 +582,8 @@ class AllergenDisclaimer extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.info_outline,
+        ButleryIcon(
+          ButleryIcons.info,
           size: AppDimensions.iconSize14,
           color: cs.onSurfaceVariant,
         ),

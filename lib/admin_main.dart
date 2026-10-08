@@ -29,6 +29,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/admin/admin_shell.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 Future<void> main() async {
@@ -80,7 +82,7 @@ class AdminApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Butlery Admin',
-      theme: AppTheme.lightThemeWith(null),
+      theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -127,7 +129,11 @@ class _AdminRootState extends State<_AdminRoot> {
           stream: _reportService.watchIsAdmin(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Scaffold(body: StateWidget.loading());
+              return Scaffold(
+                body: StateWidget.loading(
+                  message: context.l10n.loadingAdminAccess,
+                ),
+              );
             }
             if (snapshot.data ?? false) {
               return const AdminShell();
@@ -186,7 +192,10 @@ class _AdminLoginScreenState extends State<_AdminLoginScreen> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 360),
             child: Column(
@@ -257,11 +266,14 @@ class _AdminNotAuthorized extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.lock_outline, size: 64, color: cs.outline),
+              ButleryIcon(ButleryIcons.lock, size: 64, color: cs.outline),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 context.l10n.adminNotAuthorized,
@@ -294,7 +306,12 @@ class _AdminBootError extends StatelessWidget {
       home: Scaffold(
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            // Above MaterialApp there is no MediaQuery yet, so this uses
+            // the 360-430 dp layout margin directly.
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.layoutMargin,
+              vertical: AppDimensions.space16,
+            ),
             child: Text('Adminpanelen kunde inte starta:\n$message'),
           ),
         ),

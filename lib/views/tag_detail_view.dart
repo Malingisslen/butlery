@@ -20,14 +20,18 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Full-screen view for viewing and editing a single personal tag.
 class TagDetailView extends StatelessWidget {
@@ -98,7 +102,10 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     final newName = _nameController.text.trim();
 
     if (newName.isEmpty) {
-      SnackBarUtils.showError(context, context.l10n.tagDetailNameRequired);
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.tagDetailNameRequired,
+      );
       return;
     }
 
@@ -112,7 +119,10 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.tagDetailCouldNotUpdate);
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.tagDetailCouldNotUpdate,
+        );
       }
     }
   }
@@ -124,27 +134,19 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         final tag = viewModel.getTagById(widget.tagId);
 
         if (viewModel.isLoading && tag == null) {
+          // A subpage (Komponentark v1:71-78); the plate line says what it
+          // fetches (produktregler.md:163).
           return Scaffold(
-            appBar: AdaptiveAppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).maybePop(),
-                tooltip: context.l10n.commonBack,
-              ),
-              title: context.l10n.commonLoading,
+            appBar: ButleryTopBar.undersida(
+              title: context.l10n.tagDetailDefaultTitle,
             ),
-            body: StateWidget.loading(),
+            body: StateWidget.loading(message: context.l10n.loadingTag),
           );
         }
 
         if (tag == null) {
           return Scaffold(
-            appBar: AdaptiveAppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).maybePop(),
-                tooltip: context.l10n.commonBack,
-              ),
+            appBar: ButleryTopBar.undersida(
               title: context.l10n.tagDetailDefaultTitle,
             ),
             body: StateWidget.error(
@@ -169,15 +171,21 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context, PersonalTag tag) {
     if (_isEditMode) {
-      return AdaptiveAppBar(
+      // Editing: the X replaces the back arrow, never both (Komponentark
+      // v1:57).
+      return ButleryTopBar.undersida(
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const ButleryIcon(ButleryIcons.x),
           onPressed: _cancelEditMode,
           tooltip: context.l10n.commonClose,
         ),
         title: context.l10n.tagDetailEditTitle,
         actions: [
+          // The bar's paper foreground on its ink (Komponentark v1:73).
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () => _saveChanges(context, tag),
             child: Text(context.l10n.commonSave),
           ),
@@ -185,54 +193,55 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
     }
 
-    return AdaptiveAppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.of(context).maybePop(),
-        tooltip: context.l10n.commonBack,
-      ),
+    return ButleryTopBar.undersida(
       title: tag.name,
       // BUT-964/BUT-1357 exception: this is a detail view, not a list surface,
       // so its primary actions (edit/share/add-rule) intentionally stay in the
       // app bar rather than moving to a FAB. Do NOT add a FAB here.
       actions: [
         IconButton(
-          icon: const Icon(Icons.share),
+          icon: const ButleryIcon(ButleryIcons.share2),
           tooltip: context.l10n.commonShare,
           onPressed: () => _shareTag(context, tag),
         ),
         IconButton(
-          icon: const Icon(Icons.edit),
+          icon: const ButleryIcon(ButleryIcons.pencil),
           tooltip: context.l10n.commonEdit,
           onPressed: () => _enterEditMode(tag),
         ),
-        PopupMenuButton<String>(
-          onSelected: (value) => _handleMenuAction(context, value, tag),
-          itemBuilder: (menuContext) => [
-            PopupMenuItem(
-              value: 'apply_rules',
-              child: ListTile(
-                leading: const Icon(Icons.play_arrow),
-                title: Text(context.l10n.tagDetailApplyRules),
-                subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: ListTile(
-                leading: Icon(
-                  Icons.delete,
-                  color: Theme.of(context).colorScheme.error,
+        PressFill(
+          surface: PressSurface.raised,
+          child: PopupMenuButton<String>(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            onSelected: (value) => _handleMenuAction(context, value, tag),
+            itemBuilder: (menuContext) => [
+              PopupMenuItem(
+                value: 'apply_rules',
+                child: ListTile(
+                  leading: const ButleryIcon(ButleryIcons.playOutline),
+                  title: Text(context.l10n.tagDetailApplyRules),
+                  subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                title: Text(
-                  context.l10n.commonDelete,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                contentPadding: EdgeInsets.zero,
               ),
-            ),
-          ],
+              PopupMenuItem(
+                value: 'delete',
+                child: ListTile(
+                  leading: ButleryIcon(
+                    ButleryIcons.trash2,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    context.l10n.commonDelete,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -325,6 +334,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
   Future<void> _shareTag(BuildContext context, PersonalTag tag) async {
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      if (!friendsService.isInitialized) await friendsService.initialize();
+      if (!context.mounted) return;
       final friends = friendsService.friends;
       final groups = friendsService.categoriesList;
 
@@ -335,8 +346,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
       if (!context.mounted) return;
 
-      await showDialog(
-        context: context,
+      await showUniversalShareSheet(
+        context,
         builder: (dialogContext) => UniversalShareDialog.personalTag(
           tagId: tag.id,
           tagName: tag.name,
@@ -347,7 +358,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.tagShareError);
+        SnackBarUtils.showFailure(context, what: context.l10n.tagShareError);
       }
     }
   }
@@ -363,9 +374,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotCreateRule,
+            what: context.l10n.tagDetailCouldNotCreateRule,
           );
         }
       }
@@ -387,9 +398,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotUpdateRule,
+            what: context.l10n.tagDetailCouldNotUpdateRule,
           );
         }
       }
@@ -422,9 +433,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       await viewModel.toggleRuleEnabled(tag.id, rule.id);
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.tagDetailCouldNotChangeRuleStatus,
+          what: context.l10n.tagDetailCouldNotChangeRuleStatus,
         );
       }
     }
@@ -465,9 +476,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotDeleteRule,
+            what: context.l10n.tagDetailCouldNotDeleteRule,
           );
         }
       }
@@ -494,13 +505,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        content: Row(
-          children: [
-            const LoadingIndicator.small(),
-            const SizedBox(width: AppDimensions.spacingMd),
-            Text(context.l10n.tagDetailApplyingRules),
-          ],
-        ),
+        // The plate line with its text, never a spinner (produktregler.md
+        // :163, :304; beslutslogg B-18).
+        content: PlateLineMessage(message: context.l10n.tagDetailApplyingRules),
       ),
     );
 
@@ -510,17 +517,15 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       if (context.mounted) {
         Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result.hasChanges
-                  ? context.l10n.tagDetailRulesAppliedSuccess(
-                      result.tagsApplied,
-                      result.recipesModified,
-                    )
-                  : context.l10n.tagDetailNoRecipesMatched,
-            ),
-          ),
+        // The ink snackbar (PQ-09 = A).
+        SnackBarUtils.showSuccess(
+          context,
+          result.hasChanges
+              ? context.l10n.tagDetailRulesAppliedSuccess(
+                  result.tagsApplied,
+                  result.recipesModified,
+                )
+              : context.l10n.tagDetailNoRecipesMatched,
         );
       }
     } catch (e, stackTrace) {
@@ -532,9 +537,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
       if (context.mounted) {
         Navigator.pop(context);
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.tagDetailCouldNotApplyRules,
+          what: context.l10n.tagDetailCouldNotApplyRules,
         );
       }
     }
@@ -580,9 +585,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(
+          SnackBarUtils.showFailure(
             context,
-            context.l10n.tagDetailCouldNotDelete,
+            what: context.l10n.tagDetailCouldNotDelete,
           );
         }
       }

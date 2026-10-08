@@ -18,7 +18,11 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
 ///
@@ -48,7 +52,9 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     _surfaceEditNotice(vm);
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.groupName)),
+      // A subpage (Komponentark v1:71-78): the group's week is opened from
+      // the group chat, so the back arrow returns there.
+      appBar: ButleryTopBar.undersida(title: widget.groupName),
       body: SafeArea(child: _body(context, vm)),
     );
   }
@@ -74,7 +80,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
           onRetry: () => unawaited(vm.undoLastRemoval()),
         );
       } else {
-        SnackBarUtils.showError(context, text);
+        SnackBarUtils.showFailure(context, what: text);
       }
       vm.clearEditNotice();
     });
@@ -93,6 +99,9 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
       // "Försök igen", so sharing it printed the phrase twice.
       case GroupMenuEditProblem.undoFailed:
         return context.l10n.groupMenuUndoFailed;
+      // P6-U05: why the edit controls just went away.
+      case GroupMenuEditProblem.roleLowered:
+        return context.l10n.roleLoweredGroupMenu;
       case GroupMenuEditProblem.none:
         // Filtered out by the caller; never rendered.
         return '';
@@ -116,7 +125,8 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     }
 
     if (vm.isLoading) {
-      return StateWidget.loading(message: context.l10n.loadingGeneric);
+      // The plate line says what it fetches (produktregler.md:163, :304).
+      return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
 
     return Column(
@@ -128,7 +138,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         Padding(
           padding: const EdgeInsetsDirectional.only(
             start: AppDimensions.spacingM,
-            top: AppDimensions.spacingS,
+            top: AppDimensions.space4,
           ),
           child: Text(
             _weekLabel(context, vm.weekStart),
@@ -163,7 +173,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     return StateWidget.empty(
       title: context.l10n.groupMenuEmptyTitle,
       subtitle: context.l10n.groupMenuEmptyBody,
-      icon: Icons.how_to_vote_outlined,
+      icon: ButleryIcons.vote,
       actionLabel: widget.onStartPoll == null
           ? null
           : context.l10n.groupMenuEmptyAction,
@@ -199,12 +209,10 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
       SnackBarUtils.showSuccess(context, context.l10n.groupMenuDishRemoved);
       return;
     }
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       context.l10n.groupMenuDishRemoved,
-      actionLabel: context.l10n.commonUndo,
-      onAction: () => unawaited(vm.undoLastRemoval()),
-      duration: const Duration(seconds: 7),
+      onUndo: () => unawaited(vm.undoLastRemoval()),
     );
   }
 
@@ -250,7 +258,7 @@ class _FaceRow extends StatelessWidget {
           if (rest > 0)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingS,
+                end: AppDimensions.space4,
               ),
               child: _Face(initials: '+$rest'),
             ),
@@ -324,7 +332,9 @@ class _DayRow extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
+          // border.subtle (outlineVariant), never a faded divider
+          // (tokens.json:40-53 opacityLadder).
+          top: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
       ),
       padding: const EdgeInsets.symmetric(
@@ -382,7 +392,10 @@ class _DayRow extends StatelessWidget {
                             ),
                             if (vm.canEdit)
                               IconButton(
-                                icon: const Icon(Icons.close, size: 18),
+                                icon: const ButleryIcon(
+                                  ButleryIcons.x,
+                                  size: 18,
+                                ),
                                 tooltip: MaterialLocalizations.of(
                                   context,
                                 ).deleteButtonTooltip,
@@ -447,18 +460,21 @@ Widget _provenance(
   return Semantics(
     label: context.l10n.a11yShowVoters,
     button: true,
-    child: InkWell(
-      onTap: () => _showVoters(context, vm, entry),
-      // The visible row is one line of `bodySmall`, well under the minimum
-      // touch target. Not wrapped in `TappableWrapper`: its `Center` would
-      // re-centre the row in a layout that is deliberately left-aligned. A
-      // control that is hard to hit shows no names, and the Art. 15 decision
-      // to export other members' voter uids rests on the app showing them.
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minHeight: AppDimensions.minTouchTarget,
+    child: PressFill(
+      surface: PressSurface.base,
+      child: InkWell(
+        onTap: () => _showVoters(context, vm, entry),
+        // The visible row is one line of `bodySmall`, well under the minimum
+        // touch target. Not wrapped in `TappableWrapper`: its `Center` would
+        // re-centre the row in a layout that is deliberately left-aligned. A
+        // control that is hard to hit shows no names, and the Art. 15 decision
+        // to export other members' voter uids rests on the app showing them.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
+          child: Align(alignment: Alignment.centerLeft, child: label),
         ),
-        child: Align(alignment: Alignment.centerLeft, child: label),
       ),
     ),
   );
@@ -503,7 +519,7 @@ void _showVoters(
                   final name = vm.displayNameFor(voter);
                   return ListTile(
                     key: ValueKey(voter),
-                    leading: const Icon(Icons.how_to_vote_outlined),
+                    leading: const ButleryIcon(ButleryIcons.vote),
                     // A uid is never rendered, here either — and a blank display
                     // name falls back the same way the face row does.
                     title: Text(
@@ -534,7 +550,7 @@ class _WeekArrows extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       // Both halves are Expanded so the labels ellipsize instead of forcing the
@@ -546,7 +562,7 @@ class _WeekArrows extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: vm.goToPreviousWeek,
-                icon: const Icon(Icons.chevron_left),
+                icon: const ButleryIcon(ButleryIcons.chevronLeft),
                 label: Text(
                   context.l10n.groupMenuWeekShort(
                     IsoWeekUtils.isoWeekNumber(previous),
@@ -574,7 +590,7 @@ class _WeekArrows extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Icon(Icons.chevron_right),
+                    const ButleryIcon(ButleryIcons.chevronRight),
                   ],
                 ),
               ),

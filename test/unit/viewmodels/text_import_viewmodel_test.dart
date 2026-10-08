@@ -1,11 +1,16 @@
+import 'dart:typed_data';
+
 import 'package:fake_async/fake_async.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
-import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
@@ -33,19 +38,14 @@ BatchImportResult _singleResult(Recipe recipe) => BatchImportResult(
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager with setImportManagerState() method
-// - MockTextImportStrategy with enhanced stubbing support
 
 void main() {
   group('TextImportViewModel', () {
     late TextImportViewModel viewModel;
     late MockImportManager mockImportManager;
-    late MockTextImportStrategy mockTextStrategy; // Centralized mock
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      // BUT-1181: bridge the production ServiceLocator so saveImportedRecipe()'s
-      // ServiceLocator.get<HeirloomBridge>() resolves (DIContainer wraps the
-      // shared GetIt where TestServiceLocator registers HeirloomBridge).
       prod_locator.ServiceLocator.initialize(DIContainer());
       registerFallbackValue(RecipeFactory.build());
     });
@@ -55,26 +55,6 @@ void main() {
 
       // Create centralized mocks
       mockImportManager = MockImportManager();
-      mockTextStrategy = MockTextImportStrategy();
-
-      // Configure default mock result for text parsing using mocktail stubbing
-      when(
-        () => mockTextStrategy.import(any(), options: any(named: 'options')),
-      ).thenAnswer(
-        (_) async => ImportResult.success(
-          RecipeFactory.build(
-            title: 'Parsed Recipe',
-            description: 'Recipe parsed from text',
-            ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
-            instructions: ['Vispa ihop', 'Stek i pannan'],
-          ),
-        ),
-      );
-
-      // Configure ImportManager using centralized setImportManagerState()
-      mockImportManager.setImportManagerState(
-        textImportStrategy: mockTextStrategy,
-      );
 
       // Configure autoImport for text strategy approach
       when(
@@ -123,9 +103,7 @@ void main() {
       );
 
       // Create viewModel
-      viewModel = TextImportViewModel(
-        importManager: mockImportManager,
-      );
+      viewModel = TextImportViewModel(importManager: mockImportManager);
     });
 
     tearDown(() async {
@@ -300,13 +278,63 @@ void main() {
         expect(viewModel.error, contains('Import misslyckades'));
       });
 
+      test('a refused import limit says so, not "import failed"', () async {
+        const denied = RateLimitDenied(
+          message: 'limit',
+          retryAfter: Duration(minutes: 5),
+          limitType: LimitType.perHour,
+          suggestedAction: FallbackAction.retryLater,
+        );
+        viewModel.updateInputText('Some text');
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => BatchImportResult(
+            results: [ImportManagerResult.rateLimit(denied)],
+            successfulRecipes: const [],
+            errors: const ['limit'],
+            totalProcessed: 0,
+            successCount: 0,
+            failureCount: 1,
+          ),
+        );
+
+        expect(await viewModel.parseText(), isFalse);
+        expect(viewModel.error, denied.swedishMessage);
+      });
+
+      test('a failed re-parse keeps the edited recipe (BUT-924)', () async {
+        viewModel.updateInputText('Recipe text');
+        expect(await viewModel.parseText(), isTrue);
+        // ignore: invalid_use_of_protected_member
+        viewModel.setParsedRecipe(
+          viewModel.parsedRecipe!.copyWith(title: 'User-edited title'),
+        );
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(Exception('Parsing failed'));
+
+        expect(await viewModel.parseText(), isFalse);
+
+        expect(viewModel.parsedRecipe?.title, 'User-edited title');
+        expect(viewModel.error, contains('Import misslyckades'));
+      });
+
       test(
         'parseText drives isParsing during the parse (BUT-960 spinner)',
         () async {
           // Intent: the social-media view binds the parse button's spinner and
           // its double-tap guard to `viewModel.isParsing` (fran_sociala_medier_
           // view lines 335/338). parseText must flip isParsing (== isLoading)
-          // true for the whole Cloud Function round-trip so the "Tolkar..."
+          // true so the "Tolkar..."
           // spinner shows and a second tap is blocked mid-parse — then back to
           // false on completion.
           viewModel.updateInputText('Recipe text');
@@ -419,72 +447,6 @@ void main() {
         expect(viewModel.hasParsedRecipe, isFalse);
         expect(viewModel.parsedRecipe, isNull);
         expect(notificationCount, greaterThan(0));
-      });
-    });
-
-    group('Import and Save', () {
-      test('should complete import workflow successfully', () async {
-        // Arrange
-        viewModel.updateInputText('Recipe text');
-
-        // Act
-        final result = await viewModel.importAndSave();
-
-        // Assert
-        expect(result, isTrue);
-        expect(viewModel.hasParsedRecipe, isTrue);
-        expect(viewModel.error, isNull);
-        // Verify through ImportManager - internal strategy calls can't be verified
-        verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-      });
-
-      test('should handle save failure', () async {
-        // Arrange
-        viewModel.updateInputText('Recipe text');
-        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
-          (_) async => ImportManagerResult.failure(
-            'Failed to save',
-            strategy: 'text',
-          ),
-        );
-
-        // Act
-        final result = await viewModel.importAndSave();
-
-        // Assert
-        expect(result, isFalse);
-      });
-
-      test('should not save without valid input', () async {
-        // Arrange
-        viewModel.updateInputText('');
-
-        // Act
-        final result = await viewModel.importAndSave();
-
-        // Assert
-        expect(result, isFalse);
-        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
-      });
-
-      test('should handle import error', () async {
-        // Arrange
-        viewModel.updateInputText('Recipe text');
-        // importAndSave() still routes through completeImport → performImport →
-        // strategy.import (the single-recipe path), NOT autoParseMulti, so the
-        // strategy is the seam to fault-inject here.
-        when(
-          () => mockTextStrategy.import(any(), options: any(named: 'options')),
-        ).thenThrow(Exception('Import failed'));
-
-        // Act — executeAsync rethrows after setting error
-        try {
-          await viewModel.importAndSave();
-        } catch (_) {}
-
-        // Assert
-        expect(viewModel.hasError, isTrue);
-        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
       });
     });
 
@@ -652,6 +614,48 @@ void main() {
 
         expect(viewModel.parsedRecipes, hasLength(1));
         expect(viewModel.hasMultipleParsedRecipes, isFalse);
+      });
+    });
+
+    group('BUT-2280: heirloom scan binding', () {
+      final draft = HeirloomDraft(imageBytes: Uint8List.fromList([1, 2]));
+
+      test('a single parsed recipe gets the pending scan', () async {
+        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+        viewModel.updateInputText('Pannkakor\n2 ägg\nVispa och stek.');
+
+        expect(await viewModel.parseText(), isTrue);
+
+        expect(bridge.takeFor(viewModel.parsedRecipe!.id), same(draft));
+      });
+
+      test('a multi-recipe parse binds the scan to none of them', () async {
+        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => BatchImportResult(
+            results: const [],
+            successfulRecipes: [
+              RecipeFactory.build(id: 'r1', title: 'Pannkakor'),
+              RecipeFactory.build(id: 'r2', title: 'Våfflor'),
+            ],
+            errors: const [],
+            totalProcessed: 2,
+            successCount: 2,
+            failureCount: 0,
+          ),
+        );
+        viewModel.updateInputText('Pannkakor\n---\nVåfflor');
+
+        expect(await viewModel.parseText(), isTrue);
+
+        expect(bridge.takeFor('r1'), isNull);
+        expect(bridge.takeFor('r2'), isNull);
       });
     });
 
@@ -905,10 +909,7 @@ Grädda i våffeljärn tills gyllene.''';
         expect(suggestions.length, equals(1));
         expect(
           suggestions[0],
-          anyOf(
-            contains('ser bra ut'),
-            contains('portion'),
-          ),
+          anyOf(contains('ser bra ut'), contains('portion')),
         );
       });
     });
@@ -919,7 +920,7 @@ Grädda i våffeljärn tills gyllene.''';
         viewModel.updateInputText('Recipe text');
         await viewModel.parseText();
 
-        // Act - validateImportData is part of complete import workflow
+        // Act
         final hasRecipe = viewModel.hasParsedRecipe;
 
         // Assert
@@ -1047,7 +1048,7 @@ Grädda i våffeljärn tills gyllene.''';
         await viewModel.parseText();
         viewModel.clearInput();
         viewModel.updateInputText('Third recipe');
-        await viewModel.importAndSave();
+        await viewModel.parseText();
 
         // Assert
         expect(viewModel.inputText, equals('Third recipe'));

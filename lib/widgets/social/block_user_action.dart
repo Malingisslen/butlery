@@ -35,9 +35,6 @@ class BlockUserAction {
               '${l10n.socialBlockUserStaysInGroup}'
         : l10n.socialBlockUserMessage(displayName);
 
-    // `customContent` rather than the shared body: that body appends the item
-    // name and a question mark AFTER the message, which would land past the
-    // sentence saying the friendship does not come back.
     final confirmed =
         await DestructiveConfirmationDialog.show(
           context,
@@ -67,7 +64,7 @@ class BlockUserAction {
           l10n.socialUserBlockedCleanupIncomplete(displayName),
         );
       case BlockOutcome.failed:
-        SnackBarUtils.showError(context, l10n.socialCouldNotBlockUser);
+        SnackBarUtils.showFailure(context, what: l10n.socialCouldNotBlockUser);
     }
     return outcome.blockLanded;
   }

@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 
 /// Result of import manager operation
@@ -38,6 +39,10 @@ class ImportManagerResult {
   /// the error string.
   final RateLimitDenied? rateLimitDenied;
 
+  /// The failing strategy's own cause, carried unchanged from its
+  /// [ImportResult.errorCode] so the screen can pick its text by code.
+  final ImportErrorCode? errorCode;
+
   ImportManagerResult.success(
     this.recipe, {
     this.strategy,
@@ -45,6 +50,7 @@ class ImportManagerResult {
     this.metadata,
   }) : isSuccess = true,
        errorMessage = null,
+       errorCode = null,
        availableStrategies = null,
        needsAssistance = false,
        extractedText = null,
@@ -60,8 +66,9 @@ class ImportManagerResult {
     this.warnings,
     this.recipe,
     this.availableStrategies,
+    this.metadata,
+    this.errorCode,
   }) : isSuccess = false,
-       metadata = null,
        needsAssistance = false,
        extractedText = null,
        suggestedTitle = null,
@@ -83,6 +90,7 @@ class ImportManagerResult {
        needsAssistance = true,
        recipe = null,
        errorMessage = null,
+       errorCode = null,
        warnings = null,
        availableStrategies = null,
        rateLimitDenied = null;
@@ -105,7 +113,33 @@ class ImportManagerResult {
       thumbnailUrl = null,
       sourceUrl = null,
       likelyIngredientLines = null,
+      errorCode = ImportErrorCode.rateLimited,
       rateLimitDenied = details;
+
+  ImportManagerResult._withMetadata(
+    ImportManagerResult r,
+    Map<String, dynamic> this.metadata,
+  ) : isSuccess = r.isSuccess,
+      recipe = r.recipe,
+      errorMessage = r.errorMessage,
+      strategy = r.strategy,
+      warnings = r.warnings,
+      availableStrategies = r.availableStrategies,
+      needsAssistance = r.needsAssistance,
+      extractedText = r.extractedText,
+      suggestedTitle = r.suggestedTitle,
+      thumbnailUrl = r.thumbnailUrl,
+      sourceUrl = r.sourceUrl,
+      likelyIngredientLines = r.likelyIngredientLines,
+      rateLimitDenied = r.rateLimitDenied,
+      errorCode = r.errorCode;
+
+  /// This result, carrying a model call an earlier strategy of the same
+  /// import made (BUT-2239). A result with a call of its own keeps that one.
+  ImportManagerResult withLlmUse(Map<String, dynamic> llmUse) =>
+      llmUse.isEmpty || metadata?['usedLlm'] == true
+      ? this
+      : ImportManagerResult._withMetadata(this, {...?metadata, ...llmUse});
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
@@ -137,6 +171,26 @@ class BatchImportResult {
       totalProcessed > 0 ? successCount / totalProcessed : 0.0;
   bool get hasErrors => errors.isNotEmpty;
   bool get allSuccessful => successCount == totalProcessed;
+}
+
+/// What [ImportManager.importFile] gives the batch preview.
+class FileImportResult {
+  final List<Recipe> recipes;
+  final RateLimitDenied? rateLimitDenied;
+  final bool cancelled;
+
+  const FileImportResult(this.recipes)
+    : rateLimitDenied = null,
+      cancelled = false;
+
+  const FileImportResult.cancelled()
+    : recipes = const [],
+      rateLimitDenied = null,
+      cancelled = true;
+
+  const FileImportResult.rateLimit(RateLimitDenied this.rateLimitDenied)
+    : recipes = const [],
+      cancelled = false;
 }
 
 /// Import suggestion with confidence rating

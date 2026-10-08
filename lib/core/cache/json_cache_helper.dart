@@ -57,7 +57,7 @@ class JsonCacheHelper {
 
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
       AppLogger.debug(
-        'Loaded JSON from cache: $key from ${boxBaseName}_$_userId',
+        'Loaded JSON from cache: $key from ${boxBaseName}_${_userId.maskedUserId}',
       );
       return data;
     } catch (e) {
@@ -80,7 +80,7 @@ class JsonCacheHelper {
       );
 
       AppLogger.debug(
-        'Saved JSON list to cache: $key (${dataList.length} items) in ${boxBaseName}_$_userId',
+        'Saved JSON list to cache: $key (${dataList.length} items) in ${boxBaseName}_${_userId.maskedUserId}',
       );
       return true;
     } catch (e) {
@@ -100,7 +100,7 @@ class JsonCacheHelper {
       final dataList = jsonDecode(jsonString) as List;
       final result = dataList.cast<Map<String, dynamic>>();
       AppLogger.debug(
-        'Loaded JSON list from cache: $key (${result.length} items) from ${boxBaseName}_$_userId',
+        'Loaded JSON list from cache: $key (${result.length} items) from ${boxBaseName}_${_userId.maskedUserId}',
       );
       return result;
     } catch (e) {
@@ -196,7 +196,7 @@ class JsonCacheHelper {
       successCount = jsonBatch.length;
 
       AppLogger.info(
-        'Batch saved $successCount JSON items to ${boxBaseName}_$_userId',
+        'Batch saved $successCount JSON items to ${boxBaseName}_${_userId.maskedUserId}',
       );
     } catch (e) {
       AppLogger.error('Failed to batch save JSON items: $e');
@@ -224,7 +224,7 @@ class JsonCacheHelper {
       }
 
       AppLogger.debug(
-        'Batch loaded ${result.length}/${keys.length} JSON items from ${boxBaseName}_$_userId',
+        'Batch loaded ${result.length}/${keys.length} JSON items from ${boxBaseName}_${_userId.maskedUserId}',
       );
     } catch (e) {
       AppLogger.error('Failed to batch load JSON items: $e');

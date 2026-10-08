@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Types of vegetable illustrations available.
 enum VegetableType {
@@ -80,6 +82,9 @@ class VegetableIllustration extends StatelessWidget {
   /// Opacity of the illustration (0.0 to 1.0).
   final double opacity;
 
+  /// Opacity every no-photo recipe placeholder draws the illustration at.
+  static const double recipePlaceholderOpacity = 0.8;
+
   /// Filename per vegetable type. Mirrors the `_fallbackColors` idiom in
   /// this file — cheaper to read and keep in sync than a 12-case switch.
   static const _assetPaths = {
@@ -121,7 +126,7 @@ class VegetableIllustration extends StatelessWidget {
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           // Fallback to a simple icon if image fails to load
-          return Icon(
+          return ButleryIcon(
             _getFallbackIcon(type),
             size: size * 0.6,
             color: _getFallbackColor(type),
@@ -134,25 +139,25 @@ class VegetableIllustration extends StatelessWidget {
   IconData _getFallbackIcon(VegetableType type) {
     switch (type) {
       case VegetableType.broccoli:
-        return Icons.eco;
+        return ButleryIcons.leaf;
       case VegetableType.mushroom:
-        return Icons.search_off;
+        return ButleryIcons.searchOff;
       case VegetableType.peaPod:
-        return Icons.calendar_today;
+        return ButleryIcons.calendar;
       case VegetableType.carrot:
-        return Icons.shopping_cart;
+        return ButleryIcons.shoppingCart;
       case VegetableType.redOnion:
-        return Icons.error_outline;
+        return ButleryIcons.triangleAlert;
       case VegetableType.asparagus:
       case VegetableType.rhubarb:
       case VegetableType.cabbage:
-        return Icons.grass;
+        return ButleryIcons.leaf;
       case VegetableType.berry:
       case VegetableType.citrus:
-        return Icons.circle;
+        return ButleryIcons.circle;
       case VegetableType.pumpkin:
       case VegetableType.beetroot:
-        return Icons.eco;
+        return ButleryIcons.leaf;
     }
   }
 
@@ -211,7 +216,7 @@ class HeaderGhostIllustration extends StatelessWidget {
             // Identity modulate (white = preserve source colors); not
             // theme-dependent — modulating with anything else would tint.
             colorFilter: const ColorFilter.mode(
-              Color(0xFFFFFFFF),
+              Colors.white,
               BlendMode.modulate,
             ),
             child: Image.asset(

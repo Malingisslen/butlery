@@ -8,12 +8,17 @@
 ///
 /// Mocking strategy: inject a low-threshold `CircuitBreaker` and a fake
 /// `FirebaseFunctions` whose underlying `HttpsCallable` throws on every
-/// invocation. We use `Fake` from `mocktail` rather than re-implementing
+/// invocation. We use `Fake` rather than re-implementing
 /// the abstract Firebase types from scratch — the only methods exercised
 /// are `httpsCallable(name)` → `call(payload)`.
 library;
 
+// FirebaseFunctionsException's constructor is @protected; the BUT-2243 cases
+// need the real type, because `LlmService` routes it through its own catch.
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:butlery/core/circuit_breaker.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
@@ -32,10 +37,7 @@ class _FakeRateLimiter extends Fake implements ImportRateLimiter {
       );
 
   @override
-  Future<void> recordUsage(
-    ImportOperation operation, {
-    double? llmCost,
-  }) async {}
+  Future<void> recordUsage(ImportOperation operation) async {}
 }
 
 class _FakeConsentService extends Fake implements ConsentService {
@@ -51,11 +53,22 @@ class _CountingHttpsCallable extends Fake implements HttpsCallable {
     Object? parameters,
   ]) async {
     callCount++;
-    // Use a generic Exception (not FirebaseFunctionsException — its
-    // constructor is @protected so test code can't instantiate it directly).
-    // The CB increments on either branch of the LlmService catch handler;
-    // the test only cares that failures count, not which branch.
+    // Use a generic Exception.
     throw Exception('simulated Gemini outage');
+  }
+}
+
+/// Throws the given [FirebaseFunctionsException] on every call, counting them.
+class _ThrowingHttpsCallable extends _CountingHttpsCallable {
+  _ThrowingHttpsCallable(this.error);
+  final FirebaseFunctionsException error;
+
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    callCount++;
+    throw error;
   }
 }
 
@@ -112,6 +125,82 @@ void main() {
         expect(response.estimatedCost, 0.0);
       },
     );
+
+    // BUT-2243: the server's per-user AI cost ceiling is a healthy backend
+    // saying no. Counted as an outage, a user over their ceiling would open
+    // the shared breaker after three tries and then be told the service is
+    // down instead of that their AI help is used up.
+    group('the AI cost ceiling (BUT-2243)', () {
+      LlmService serviceThrowing(
+        _CountingHttpsCallable callable,
+        CircuitBreaker breaker,
+      ) => LlmService(
+        rateLimiter: _FakeRateLimiter(),
+        consentService: _FakeConsentService(),
+        functions: _FakeFunctions(callable),
+        backendBreaker: breaker,
+      );
+
+      test('repeated cost-ceiling denials do not open the breaker', () async {
+        final callable = _ThrowingHttpsCallable(
+          FirebaseFunctionsException(
+            code: 'resource-exhausted',
+            message: 'Du har använt dagens AI-hjälp.',
+            details: const {'reason': 'llm_cost_day'},
+          ),
+        );
+        final breaker = CircuitBreaker(
+          failureThreshold: 3,
+          resetTime: const Duration(seconds: 60),
+        );
+        final service = serviceThrowing(callable, breaker);
+
+        for (var i = 0; i < 4; i++) {
+          await expectLater(
+            () => service.structureRecipe(text: 'a' * 50),
+            throwsA(
+              isA<LlmException>()
+                  .having((e) => e.code, 'code', LlmException.costCeilingCode)
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    AppLocale.current.llmCostCeilingDay,
+                  ),
+            ),
+          );
+        }
+
+        expect(callable.callCount, 4, reason: 'every call reached the server');
+        expect(breaker.failureCount, 0);
+        expect(breaker.isOpen, isFalse);
+      });
+
+      // The control: the same catch still counts any other Firebase error.
+      // The BUT-589 case above throws a plain Exception, which takes the
+      // OTHER catch, so without this nothing pins this branch's count.
+      test('another FirebaseFunctionsException still opens it', () async {
+        final callable = _ThrowingHttpsCallable(
+          FirebaseFunctionsException(code: 'unavailable', message: 'down'),
+        );
+        final breaker = CircuitBreaker(
+          failureThreshold: 3,
+          resetTime: const Duration(seconds: 60),
+        );
+        final service = serviceThrowing(callable, breaker);
+
+        for (var i = 0; i < 3; i++) {
+          await expectLater(
+            () => service.structureRecipe(text: 'a' * 50),
+            throwsA(isA<LlmException>()),
+          );
+        }
+
+        expect(breaker.isOpen, isTrue);
+        final response = await service.structureRecipe(text: 'a' * 50);
+        expect(callable.callCount, 3);
+        expect(response.success, isFalse);
+      });
+    });
 
     test(
       'successful call closes the breaker after a recorded success',

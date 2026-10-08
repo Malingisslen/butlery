@@ -16,18 +16,22 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 const double _kSlotMinHeight = 80;
 
-/// Brand-specific muted decorative icon color for assigned-slot icons.
-/// Mapping to `onSurfaceVariant` would shift hue from green to neutral
-/// grey. BUT-572 follow-up: candidate for `ButleryColors.iconMuted`.
-const Color _kSlotIconColor = AppColors.greenMuted;
+/// The assigned-slot icons: text.secondary, #5B6959 light and #A9B2A0 dark
+/// (tokens.json semantic text.secondary; onSurfaceVariant in both schemes).
+Color _slotIconColor(BuildContext context) =>
+    Theme.of(context).colorScheme.onSurfaceVariant;
 
 /// Shared border pattern for assigned lunch/middag/övrigt cells.
 Border _accentedBorder(BuildContext context, Color left) {
@@ -43,11 +47,7 @@ Border _accentedBorder(BuildContext context, Color left) {
 /// Small-caps slot label used at the top of every cell.
 Text _slotLabel(String text, Color color) => Text(
   text.toUpperCase(),
-  style: AppTextStyles.labelSmall.copyWith(
-    fontSize: 8,
-    letterSpacing: 1,
-    color: color,
-  ),
+  style: AppTextStyles.overline.copyWith(color: color),
 );
 
 /// Callback fired when an empty slot is tapped — orchestrator owns the
@@ -167,7 +167,7 @@ class _DayHeader extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: isToday ? cs.primary : cs.secondary,
+            color: isToday ? cs.onSurface : cs.secondary,
             width: 3,
           ),
         ),
@@ -189,7 +189,8 @@ class _DayHeader extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingSm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              color: cs.primary.withValues(alpha: 0.12),
+              // surface.raised, never a tint (tokens.json:40-53).
+              color: cs.primaryContainer,
               child: Text(
                 context.l10n.weeklyMenuTodayBadge,
                 style: AppTextStyles.labelSmall.copyWith(
@@ -242,6 +243,8 @@ class _SingleSlotCell extends StatelessWidget {
             presentServings: _presentServings(),
             // BUT-1241: "NY" badge on entries from the latest generation.
             showNewBadge: vm.isRecentlyPlaced(entry.id),
+            // P5-U23: the order the automatic placement followed.
+            placementOrder: vm.placementOrderOf(entry.id),
             // BUT-1043: in multi-select mode, tap toggles selection.
             selectionMode: vm.selectionMode,
             isSelected: vm.isSelected(entry.id),
@@ -316,6 +319,13 @@ class _SlotPresenceRow extends StatelessWidget {
 
   static const int _maxFaces = 4;
 
+  /// The presence row's label: 10.5/700 with no tracking (tokens.json
+  /// controls.calendarPresenceRow labelSize 10.5, labelWeight 700). Built
+  /// from overline for the size and weight, without overline's category
+  /// tracking, which widened the texts past the 52 dp cell.
+  static TextStyle _label(Color color) =>
+      AppTextStyles.overline.copyWith(letterSpacing: 0, color: color);
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -330,63 +340,78 @@ class _SlotPresenceRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticsLabel,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(
-              bottom: BorderSide(color: cs.outlineVariant),
-              left: BorderSide(color: cs.outlineVariant),
-              right: BorderSide(color: cs.outlineVariant),
+      child: Material(
+        type: MaterialType.transparency,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: cs.outlineVariant),
+                    left: BorderSide(color: cs.outlineVariant),
+                    right: BorderSide(color: cs.outlineVariant),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    if (present.isEmpty)
+                      Expanded(
+                        child: Text(
+                          context.l10n.menuPresenceNobody,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: _label(cs.onSurfaceVariant),
+                        ),
+                      )
+                    else
+                      for (var i = 0; i < shown.length; i++)
+                        Padding(
+                          padding: EdgeInsetsDirectional.only(
+                            start: i == 0 ? 0 : 2,
+                          ),
+                          child: FamilyAvatar(
+                            name: shown[i].displayName,
+                            color: parseAvatarColor(
+                              context,
+                              shown[i].avatarColor,
+                            ),
+                            size: 16,
+                          ),
+                        ),
+                    if (overflow > 0)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 3),
+                        child: Text(
+                          '+$overflow',
+                          style: _label(cs.onSurfaceVariant),
+                        ),
+                      ),
+                    if (present.isNotEmpty)
+                      Expanded(
+                        child: Text(
+                          context.l10n.menuPresencePortions(present.length),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: _label(context.modeColors.textAccent),
+                        ),
+                      ),
+                    ButleryIcon(
+                      ButleryIcons.chevronDown,
+                      size: 12,
+                      color: cs.outline,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              if (present.isEmpty)
-                Text(
-                  context.l10n.menuPresenceNobody,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    color: cs.outline,
-                    fontWeight: FontWeight.w600,
-                  ),
-                )
-              else
-                for (var i = 0; i < shown.length; i++)
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(start: i == 0 ? 0 : 2),
-                    child: FamilyAvatar(
-                      name: shown[i].displayName,
-                      color: parseAvatarColor(shown[i].avatarColor),
-                      size: 16,
-                    ),
-                  ),
-              if (overflow > 0)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 3),
-                  child: Text(
-                    '+$overflow',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontSize: 9,
-                      color: cs.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              const Spacer(),
-              if (present.isNotEmpty)
-                Text(
-                  context.l10n.menuPresencePortions(present.length),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    color: cs.secondary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              Icon(Icons.expand_more, size: 12, color: cs.outline),
-            ],
           ),
         ),
       ),
@@ -419,7 +444,7 @@ class _EmptySlot extends StatelessWidget {
         onTap: () => onTap(day, slot),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: const EdgeInsets.all(AppDimensions.spacing6),
+          padding: const EdgeInsets.all(AppDimensions.space4),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             border: Border.all(color: Theme.of(context).dividerColor),
@@ -434,13 +459,13 @@ class _EmptySlot extends StatelessWidget {
                   Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const Center(
+              // border.subtle (outlineVariant): #CCD1C2 light, the token's
+              // dark value in dark mode.
+              Center(
                 child: Text(
                   '+',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: AppColors.creamDarker,
-                    fontWeight: FontWeight.w300,
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                 ),
               ),
@@ -456,6 +481,9 @@ class _AssignedSlot extends StatelessWidget {
   final WeeklyMenuPlanEntry entry;
   final RecipeNavCallback onTap;
   final bool showNewBadge;
+
+  /// P5-U23: 1-based order of the automatic placement, or null.
+  final int? placementOrder;
 
   /// BUT-1613: members home for this meal, forwarded into the recipe tap so
   /// cooking mode opens pre-scaled. Null → cooking mode's household default.
@@ -474,6 +502,7 @@ class _AssignedSlot extends StatelessWidget {
     required this.onToggleSelection,
     this.presentServings,
     this.showNewBadge = false,
+    this.placementOrder,
     this.selectionMode = false,
     this.isSelected = false,
   });
@@ -481,11 +510,15 @@ class _AssignedSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final accent = isSelected ? cs.secondary : cs.primary;
+    final accent = isSelected ? cs.secondary : cs.onSurface;
+    final order = placementOrder;
     final cell = Semantics(
       label: selectionMode
           ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
           : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      value: order == null
+          ? null
+          : context.l10n.a11yWeeklyMenuPlacementOrder(order),
       button: true,
       selected: selectionMode ? isSelected : null,
       child: GestureDetector(
@@ -497,7 +530,7 @@ class _AssignedSlot extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             color: isSelected
-                ? cs.secondaryContainer.withValues(alpha: 0.4)
+                ? cs.primaryContainer
                 : Theme.of(context).cardColor,
             border: _accentedBorder(context, accent),
           ),
@@ -507,13 +540,14 @@ class _AssignedSlot extends StatelessWidget {
               Row(
                 children: [
                   if (selectionMode)
-                    Icon(
+                    ButleryIcon(
                       isSelected
-                          ? Icons.check_box
-                          : Icons.check_box_outline_blank,
+                          ? ButleryIcons.checkSquare
+                          : ButleryIcons.square,
                       size: 14,
                       color: cs.secondary,
                     ),
+                  if (order != null) _PlacementOrderNumber(order: order),
                   Expanded(
                     child: _slotLabel(
                       entry.slot.displayLabel,
@@ -528,19 +562,17 @@ class _AssignedSlot extends StatelessWidget {
                 height: 28,
                 color: cs.surface,
                 alignment: Alignment.center,
-                child: const Icon(
-                  Icons.restaurant_outlined,
+                child: ButleryIcon(
+                  ButleryIcons.utensils,
                   size: 18,
-                  color: _kSlotIconColor,
+                  color: _slotIconColor(context),
                 ),
               ),
               const SizedBox(height: 4),
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.15,
                   ),
@@ -599,13 +631,17 @@ class _OvrigtCell extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _slotLabel(MealSlot.ovrigt.displayLabel, cs.secondary),
+                _slotLabel(
+                  MealSlot.ovrigt.displayLabel,
+                  context.modeColors.onWarningContainer,
+                ),
                 const SizedBox(height: 2),
                 for (final entry in entries) ...[
                   _OvrigtEntry(
                     entry: entry,
                     onTap: onTapRecipe,
                     showNewBadge: vm.isRecentlyPlaced(entry.id),
+                    placementOrder: vm.placementOrderOf(entry.id),
                     selectionMode: vm.selectionMode,
                     isSelected: vm.isSelected(entry.id),
                     onToggleSelection: vm.toggleSelection,
@@ -627,10 +663,8 @@ class _OvrigtCell extends StatelessWidget {
                       child: Text(
                         context.l10n.weeklyMenuOvrigtAddMore,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 9,
-                          color: cs.secondary,
-                          fontWeight: FontWeight.w600,
+                        style: AppTextStyles.overline.copyWith(
+                          color: context.modeColors.onWarningContainer,
                         ),
                       ),
                     ),
@@ -654,6 +688,9 @@ class _OvrigtEntry extends StatelessWidget {
   final RecipeNavCallback onTap;
   final bool showNewBadge;
 
+  /// P5-U23: 1-based order of the automatic placement, or null.
+  final int? placementOrder;
+
   // BUT-1043: see _AssignedSlot — in selection mode tap toggles selection
   // and the chip shows a checkbox; drag is suppressed.
   final bool selectionMode;
@@ -665,6 +702,7 @@ class _OvrigtEntry extends StatelessWidget {
     required this.onTap,
     required this.onToggleSelection,
     this.showNewBadge = false,
+    this.placementOrder,
     this.selectionMode = false,
     this.isSelected = false,
   });
@@ -672,10 +710,14 @@ class _OvrigtEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final order = placementOrder;
     final chip = Semantics(
       label: selectionMode
           ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
           : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      value: order == null
+          ? null
+          : context.l10n.a11yWeeklyMenuPlacementOrder(order),
       button: true,
       selected: selectionMode ? isSelected : null,
       child: GestureDetector(
@@ -684,9 +726,7 @@ class _OvrigtEntry extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
           decoration: BoxDecoration(
-            color: isSelected
-                ? cs.secondaryContainer.withValues(alpha: 0.4)
-                : cs.surface,
+            color: isSelected ? cs.primaryContainer : cs.surface,
             border: Border(
               left: BorderSide(color: cs.secondary, width: 2),
             ),
@@ -696,10 +736,8 @@ class _OvrigtEntry extends StatelessWidget {
               if (selectionMode)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 3),
-                  child: Icon(
-                    isSelected
-                        ? Icons.check_box
-                        : Icons.check_box_outline_blank,
+                  child: ButleryIcon(
+                    isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
                     size: 12,
                     color: cs.secondary,
                   ),
@@ -710,20 +748,19 @@ class _OvrigtEntry extends StatelessWidget {
                   height: 16,
                   color: cs.surfaceContainerHighest,
                   alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.cake_outlined,
+                  child: ButleryIcon(
+                    ButleryIcons.utensils,
                     size: 11,
-                    color: _kSlotIconColor,
+                    color: _slotIconColor(context),
                   ),
                 ),
                 const SizedBox(width: 3),
               ],
+              if (order != null) _PlacementOrderNumber(order: order),
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.calendarCell.copyWith(
                     color: cs.onSurface,
                     height: 1.1,
                   ),
@@ -742,6 +779,37 @@ class _OvrigtEntry extends StatelessWidget {
       context: context,
       payload: MovePayload(entry),
       child: chip,
+    );
+  }
+}
+
+/// P5-U23: the placement order as a number in the cell (produktregler.md:1126
+/// "Placeringsordningen visas som siffror i rutorna"; :890 "ordningen visas i
+/// rutnätet"). Drawn in Skarmar v12 etapp 11 breda vyer:249-254 as 10.5/700
+/// with 1 px tracking in the warning text colour. Read here as the overline
+/// role (10.5/700) in text.accent.onRaised (`onSecondaryContainer`: #8A5212
+/// light, #DCA968 dark), which holds on paper and on surface.raised in both
+/// modes (tokens.json text.link note). The number is announced through the
+/// cell's semantics value, so it is excluded here.
+class _PlacementOrderNumber extends StatelessWidget {
+  const _PlacementOrderNumber({required this.order});
+
+  final int order;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(end: 3),
+        child: Text(
+          '$order',
+          key: ValueKey('placement-order-$order'),
+          style: AppTextStyles.overline.copyWith(
+            letterSpacing: 1,
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
+          ),
+        ),
+      ),
     );
   }
 }

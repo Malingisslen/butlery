@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -158,9 +161,8 @@ void main() {
       () {
         final bulkContent = [testRecipe, testRecipe];
 
-        final dialog = UniversalShareDialog.bulkShare(
-          contentItems: bulkContent,
-          primaryContentType: ShareContentType.recipe,
+        final dialog = UniversalShareDialog.recipes(
+          recipes: bulkContent,
           viewModel: mockViewModel,
           availableFriends: testFriends,
         );
@@ -288,6 +290,201 @@ void main() {
       ).thenAnswer((_) async => true);
     });
 
+    testWidgets('a share that throws stays in the dialog as an inline error: '
+        'what, what is kept, no exception text (P7-B2)', (tester) async {
+      when(
+        () => mockViewModel.shareRecipe(
+          recipe: any(named: 'recipe'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenThrow(Exception('permission-denied: raw backend text'));
+      tester.view.physicalSize = const Size(900, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: UniversalShareDialog.recipe(
+            recipe: testRecipe,
+            viewModel: mockViewModel,
+            availableFriends: testFriends,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(UniversalShareDialog)),
+      );
+
+      await tester.ensureVisible(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.shareRecipeTitle).last);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.text(l10n.shareCouldNotComplete), findsOneWidget);
+      expect(find.text(l10n.errorPreservedForm), findsOneWidget);
+      expect(find.textContaining('raw backend'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    group('several recipes (BUT-2152)', () {
+      late Recipe pancakes;
+      late Recipe soup;
+
+      setUp(() {
+        pancakes = RecipeFactory.build(id: 'recipe_a', title: 'Pannkakor');
+        soup = RecipeFactory.build(id: 'recipe_b', title: 'Linssoppa');
+      });
+
+      Future<AppLocalizations> openSheet(WidgetTester tester) async {
+        tester.view.physicalSize = const Size(900, 1400);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => showUniversalShareSheet(
+                  context,
+                  builder: (_) => UniversalShareDialog.recipes(
+                    recipes: [pancakes, soup],
+                    viewModel: mockViewModel,
+                    availableFriends: testFriends,
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+        return AppLocalizations.of(
+          tester.element(find.byType(UniversalShareDialog)),
+        );
+      }
+
+      Future<void> pickErikAndShare(
+        WidgetTester tester,
+        AppLocalizations l10n,
+      ) async {
+        await tester.ensureVisible(find.text('Erik Eriksson').first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Erik Eriksson').first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n.shareRecipeTitle).last);
+        await tester.pumpAndSettle();
+      }
+
+      void stubShareRecipes(List<Recipe> Function(List<Recipe>) notShared) {
+        when(
+          () => mockViewModel.shareRecipes(
+            recipes: any(named: 'recipes'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenAnswer(
+          (invocation) async => notShared(
+            invocation.namedArguments[#recipes] as List<Recipe>,
+          ),
+        );
+      }
+
+      List<Recipe> sentRecipes() =>
+          verify(
+                () => mockViewModel.shareRecipes(
+                  recipes: captureAny(named: 'recipes'),
+                  friendUserIds: any(named: 'friendUserIds'),
+                  groupIds: any(named: 'groupIds'),
+                  message: any(named: 'message'),
+                  allowCollaboration: any(named: 'allowCollaboration'),
+                ),
+              ).captured.last
+              as List<Recipe>;
+
+      testWidgets('the sheet draws and names every recipe it shares', (
+        tester,
+      ) async {
+        await openSheet(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Pannkakor, Linssoppa'), findsOneWidget);
+      });
+
+      testWidgets('a full share sends both recipes and closes the sheet', (
+        tester,
+      ) async {
+        stubShareRecipes((_) => const []);
+        final l10n = await openSheet(tester);
+
+        await pickErikAndShare(tester, l10n);
+
+        expect(sentRecipes().map((r) => r.id), ['recipe_a', 'recipe_b']);
+        expect(find.byType(UniversalShareDialog), findsNothing);
+        verifyNever(
+          () => mockViewModel.shareRecipe(
+            recipe: any(named: 'recipe'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        );
+      });
+
+      testWidgets('a partial failure keeps the sheet and the recipient, names '
+          'the recipe that failed, and Dela retries only that one', (
+        tester,
+      ) async {
+        stubShareRecipes(
+          (recipes) => recipes.where((r) => r.id == 'recipe_b').toList(),
+        );
+        final l10n = await openSheet(tester);
+
+        await pickErikAndShare(tester, l10n);
+
+        expect(find.byType(UniversalShareDialog), findsOneWidget);
+        expect(find.byType(InlineError), findsOneWidget);
+        expect(
+          find.text(l10n.shareRecipesNotShared(1, 'Linssoppa')),
+          findsOneWidget,
+        );
+        expect(find.text(l10n.shareRecipesRetryOnlyFailed), findsOneWidget);
+        expect(find.text('Linssoppa'), findsOneWidget);
+
+        stubShareRecipes((_) => const []);
+        await tester.tap(find.text(l10n.shareRecipeTitle).last);
+        await tester.pumpAndSettle();
+
+        final rounds = verify(
+          () => mockViewModel.shareRecipes(
+            recipes: captureAny(named: 'recipes'),
+            friendUserIds: captureAny(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).captured;
+        expect(rounds, hasLength(4));
+        expect((rounds[0] as List<Recipe>).map((r) => r.id), [
+          'recipe_a',
+          'recipe_b',
+        ]);
+        expect((rounds[2] as List<Recipe>).map((r) => r.id), ['recipe_b']);
+        expect(rounds[3], ['friend_1']);
+        expect(find.byType(UniversalShareDialog), findsNothing);
+      });
+    });
+
     group('Essential Structure Tests - Gold Standard', () {
       testWidgets('should render dialog structure correctly', (tester) async {
         await tester.pumpWidget(
@@ -300,7 +497,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(find.byType(Column), findsWidgets);
         expect(tester.takeException(), isNull);
       });
@@ -331,7 +527,6 @@ void main() {
             createLocalizedTestApp(child: dialog),
           );
 
-          expect(find.byType(Dialog), findsOneWidget);
           expect(tester.takeException(), isNull);
         }
       });
@@ -349,7 +544,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     });
@@ -368,7 +562,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
@@ -385,7 +578,6 @@ void main() {
           ),
         );
 
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
@@ -424,7 +616,6 @@ void main() {
         );
 
         expect(find.text('Hej! Prova denna underbara ratt!'), findsWidgets);
-        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     });

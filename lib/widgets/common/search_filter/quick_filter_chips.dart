@@ -6,9 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/theme/app_motion.dart';
 
 /// Quick filter chip data model.
 class QuickFilterOption {
@@ -75,12 +80,12 @@ class QuickFilterChips extends StatelessWidget {
     QuickFilterOption(
       id: RecipeFilters.filterPantry,
       label: context.l10n.filterWithMyIngredients,
-      icon: Icons.kitchen_outlined,
+      icon: ButleryIcons.refrigerator,
     ),
     QuickFilterOption(
       id: RecipeFilters.filterIngredientSearch,
       label: context.l10n.ingredientSearchChip,
-      icon: Icons.search_outlined,
+      icon: ButleryIcons.search,
     ),
   ];
 
@@ -97,7 +102,7 @@ class QuickFilterChips extends StatelessWidget {
       return QuickFilterOption(
         id: mapping[key]!,
         label: label,
-        icon: Icons.check_circle_outline,
+        icon: ButleryIcons.circleCheck,
       );
     }).toList();
   }
@@ -111,7 +116,7 @@ class QuickFilterChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        vertical: AppDimensions.space4,
       ),
       child: Row(
         children: [
@@ -160,7 +165,7 @@ class QuickFilterChips extends StatelessWidget {
 }
 
 /// Individual quick filter chip with selection state.
-class _QuickChip extends StatelessWidget {
+class _QuickChip extends StatefulWidget {
   const _QuickChip({
     required this.label,
     required this.isSelected,
@@ -174,59 +179,89 @@ class _QuickChip extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
+  State<_QuickChip> createState() => _QuickChipState();
+}
+
+class _QuickChipState extends State<_QuickChip> {
+  bool _pressed = false;
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
+    final label = widget.label;
+    final icon = widget.icon;
+    final isSelected = widget.isSelected;
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.transparent,
-      child: Semantics(
-        label: isSelected
-            ? context.l10n.a11yQuickFilterSelected(label)
-            : context.l10n.a11yQuickFilter(label),
-        button: true,
-        selected: isSelected,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-          child: AnimatedContainer(
-            duration: AnimationUtils.getDuration(
-              context,
-              AppDimensions.animationDurationFast,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected ? cs.primary : cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-              border: Border.all(
-                color: isSelected ? cs.primary : cs.outlineVariant,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    size: AppDimensions.iconSizeS,
-                    color: isSelected
-                        ? cs.surfaceContainerHighest
-                        : cs.onSurfaceVariant,
+    // The InkWell covers the 48 dp grip, wider than the pill, so the pill
+    // itself takes the pressed fill of its surface and the grip paints none.
+    final rest = isSelected ? cs.primary : cs.surfaceContainerHighest;
+    final fill = _pressed || _hovered
+        ? PressFill.fillFor(
+            context,
+            isSelected ? PressSurface.ink : PressSurface.raised,
+          )
+        : rest;
+    // The shared grip (Grafisk manual v6:381): the InkWell fills a 48 dp box
+    // around the visible chip, and the focus ring goes around that box.
+    return ButleryControlFocus(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+      child: Material(
+        color: Colors.transparent,
+        child: Semantics(
+          label: isSelected
+              ? context.l10n.a11yQuickFilterSelected(label)
+              : context.l10n.a11yQuickFilter(label),
+          button: true,
+          selected: isSelected,
+          child: InkWell(
+            onTap: widget.onTap,
+            onHighlightChanged: (value) => setState(() => _pressed = value),
+            onHover: (value) => setState(() => _hovered = value),
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+            child: ButleryControlFocus.box(
+              child: AnimatedContainer(
+                duration: AnimationUtils.getDuration(
+                  context,
+                  AppMotion.micro,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.spacingSm,
+                ),
+                decoration: BoxDecoration(
+                  color: fill,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusPill,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                ],
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected
-                        ? cs.surfaceContainerHighest
-                        : cs.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  border: Border.all(
+                    color: isSelected ? cs.onSurface : cs.outlineVariant,
+                    width: 1.5,
                   ),
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      ButleryIcon(
+                        icon,
+                        size: AppDimensions.iconSizeS,
+                        color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                    ],
+                    Text(
+                      label,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: isSelected ? cs.onPrimary : cs.onSurface,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

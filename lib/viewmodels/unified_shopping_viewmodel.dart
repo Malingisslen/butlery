@@ -16,6 +16,7 @@
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
 import 'dart:async';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -32,6 +33,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
 class UnifiedShoppingViewModel extends BaseViewModel {
@@ -305,8 +307,37 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     int priority = 3,
     String source = 'manual',
   }) async {
+    final id = await addItemWithId(
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      source: source,
+    );
+    return id != null;
+  }
+
+  /// [addItem] that returns the new row's id, or null when nothing was
+  /// added.
+  ///
+  /// Add is class 1 with a 7 s "Ångra" (produktregler.md:131). The undo
+  /// removes the row by this id, never by its name or position, so it takes
+  /// away exactly what was added, on a personal list and a shared one.
+  Future<String?> addItemWithId({
+    required String name,
+    required double amount,
+    String unit = '',
+    String category = ShoppingCategory.other,
+    String? note,
+    double? estimatedPrice,
+    int priority = 3,
+    String source = 'manual',
+  }) async {
     if (ValidationUtils.isNullOrWhitespace(name)) {
-      return false;
+      return null;
     }
 
     // Permission check before modifying list
@@ -316,11 +347,11 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
     if (!canEditActiveList) {
       AppLogger.error('PERMISSION DENIED - User cannot edit active list');
-      return false;
+      return null;
     }
 
     try {
-      final result = await _shoppingService.addItemToActiveList(
+      final id = await _shoppingService.addItemToActiveListWithId(
         name: name.trim(),
         amount: amount,
         unit: unit,
@@ -330,7 +361,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         priority: priority,
       );
 
-      if (result) {
+      if (id != null) {
         AppLogger.success('Successfully added item "${name.trim()}" to list');
         if (activeList != null) {
           _analytics?.shopping.logShoppingListItemAdded(
@@ -342,10 +373,10 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         AppLogger.error('Failed to add item "${name.trim()}" to list');
       }
 
-      return result;
+      return id;
     } catch (e) {
       AppLogger.error('Exception while adding item: $e');
-      return false;
+      return null;
     }
   }
 
@@ -491,6 +522,21 @@ class UnifiedShoppingViewModel extends BaseViewModel {
       note: item.note,
       priority: item.priority,
     );
+  }
+
+  /// BUT-2140: puts a row removed in the last 30 days back on the active list.
+  Future<bool> restoreRemovedRow(ShoppingRowSnapshot entry) async {
+    final listId = activeList?.id;
+    if (listId == null || !canEditActiveList) return false;
+    return _shoppingService.restoreRemovedRow(listId, entry);
+  }
+
+  /// BUT-2140: swaps a row on the active list back to its earlier version.
+  /// Swapping twice is the undo.
+  Future<bool> restoreChangedRow(String itemId) async {
+    final listId = activeList?.id;
+    if (listId == null || !canEditActiveList) return false;
+    return _shoppingService.restoreChangedRow(listId, itemId);
   }
 
   /// BUT-948: bulk delete for multi-select. Removes every id sequentially;
@@ -658,7 +704,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   bool get canEditActiveList {
     if (activeList == null || currentUserId == null) {
       AppLogger.warning(
-        'canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId',
+        'canEditActiveList - activeList: ${activeList?.name}, currentUserId: ${currentUserId.maskedUserId}',
       );
       return false;
     }
@@ -667,7 +713,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     final canEdit = permissionService.canEditShoppingList(activeList!.id);
 
     AppLogger.info(
-      'Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit',
+      'Permission check - List: ${activeList!.name} (${activeList!.type}), User: ${currentUserId.maskedUserId}, CanEdit: $canEdit',
     );
 
     return canEdit;

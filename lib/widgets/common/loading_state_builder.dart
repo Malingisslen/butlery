@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
 /// This widget wraps the existing StateWidget with a convenient builder pattern
@@ -47,7 +48,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 ///   error: viewModel.error,
 ///   data: viewModel.menuData,
 ///   builder: (context, data) => MenuView(data: data),
-///   loadingMessage: 'Genererar meny...',
+///   loadingMessage: context.l10n.menuGeneratingOverlay,
 /// )
 /// ```
 class LoadingStateBuilder<T> extends StatelessWidget {
@@ -72,8 +73,9 @@ class LoadingStateBuilder<T> extends StatelessWidget {
   /// Custom empty state widget builder
   final Widget Function(BuildContext context)? emptyBuilder;
 
-  /// Loading message to display
-  final String? loadingMessage;
+  /// What is being fetched, shown under the plate line (produktregler.md
+  /// §6.6, :302-304). Required: a loading state never shows without it.
+  final String loadingMessage;
 
   /// Loading variant to use (spinner, skeleton, etc.)
   final LoadingVariant loadingVariant;
@@ -120,8 +122,8 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     this.loadingBuilder,
     this.errorBuilder,
     this.emptyBuilder,
-    this.loadingMessage,
-    this.loadingVariant = LoadingVariant.spinner,
+    required this.loadingMessage,
+    this.loadingVariant = LoadingVariant.plateLine,
     this.emptyState,
     this.emptyTitle,
     this.emptySubtitle,
@@ -179,7 +181,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
       return StateWidget.empty(
         title: emptyTitle ?? context.l10n.loadingNoContent,
         subtitle: emptySubtitle,
-        icon: emptyIcon ?? Icons.inbox_outlined,
+        icon: emptyIcon ?? ButleryIcons.inbox,
         actionLabel: emptyActionLabel,
         onAction: onEmptyAction,
       );
@@ -198,7 +200,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     return StateWidget.empty(
       title: emptyTitle ?? context.l10n.loadingNoContent,
       subtitle: emptySubtitle,
-      icon: emptyIcon ?? Icons.inbox_outlined,
+      icon: emptyIcon ?? ButleryIcons.inbox,
       actionLabel: emptyActionLabel,
       onAction: onEmptyAction,
     );
@@ -293,7 +295,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
           builder: (context) => StateWidget.empty(
             title: emptyTitle ?? context.l10n.loadingNoContent,
             subtitle: emptySubtitle,
-            icon: emptyIcon ?? Icons.inbox_outlined,
+            icon: emptyIcon ?? ButleryIcons.inbox,
             actionLabel: emptyActionLabel,
             onAction: onEmptyAction,
           ),
@@ -309,8 +311,8 @@ extension LoadingStateBuilderExtensions on Widget {
     required bool isLoading,
     String? error,
     T? data,
-    String? loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.spinner,
+    required String loadingMessage,
+    LoadingVariant loadingVariant = LoadingVariant.plateLine,
     EmptyStateVariant? emptyState,
     VoidCallback? onRetry,
     VoidCallback? onEmptyAction,
@@ -337,8 +339,8 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? items,
     required Widget Function(BuildContext context, List<T> items) builder,
-    String? loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.spinner,
+    required String loadingMessage,
+    LoadingVariant loadingVariant = LoadingVariant.plateLine,
     EmptyStateVariant? emptyState,
     String? emptyTitle,
     String? emptySubtitle,
@@ -370,7 +372,7 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? recipes,
     required Widget Function(BuildContext context, List<T> recipes) builder,
-    String? loadingMessage,
+    required String loadingMessage,
     LoadingVariant loadingVariant = LoadingVariant.skeletonRecipeList,
     VoidCallback? onAddRecipe,
     VoidCallback? onErrorRetry,
@@ -396,8 +398,8 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? friends,
     required Widget Function(BuildContext context, List<T> friends) builder,
-    String? loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.spinner,
+    required String loadingMessage,
+    LoadingVariant loadingVariant = LoadingVariant.plateLine,
     VoidCallback? onAddFriend,
     VoidCallback? onErrorRetry,
     String? emptyActionLabel,
@@ -422,8 +424,8 @@ class LoadingStateBuilderUtils {
     String? error,
     T? menuData,
     required Widget Function(BuildContext context, T data) builder,
-    String? loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.spinner,
+    required String loadingMessage,
+    LoadingVariant loadingVariant = LoadingVariant.plateLine,
     VoidCallback? onGenerateMenu,
     VoidCallback? onErrorRetry,
     String? emptyActionLabel,
@@ -448,8 +450,8 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? items,
     required Widget Function(BuildContext context, List<T> items) builder,
-    String? loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.spinner,
+    required String loadingMessage,
+    LoadingVariant loadingVariant = LoadingVariant.plateLine,
     VoidCallback? onCreateMenu,
     VoidCallback? onErrorRetry,
     String? emptyActionLabel,

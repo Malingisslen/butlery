@@ -9,14 +9,6 @@
 /// returns true whenever it is null. So the branch that discarded the
 /// sanitization ran on every create that actually happens. A fixture that
 /// pre-populated the field would take the other branch and prove nothing.
-/// (Two copy factories DO carry the field forward. `recipe_factory.dart:340`
-/// has no PRODUCTION caller at all — its own test suite pins it, including a
-/// case written for that exact line. `realtime_recipe.dart:527` HAS callers —
-/// `recipe_content_operations.dart:427` ← `realtime_recipe_service.dart:405` —
-/// on a chain that is dead at the top. Neither reaches a live create. An
-/// earlier version of this parenthetical said "both are uncalled" and claimed
-/// the production comment agreed; the production comment says the opposite and
-/// warns against exactly that reading. Keep the two in step.)
 ///
 /// Most assertions read the stored DOCUMENT, because that is what the next
 /// reader sees. The one exception is deliberate and named as such: `create

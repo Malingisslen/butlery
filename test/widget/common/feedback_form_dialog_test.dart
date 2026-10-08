@@ -19,11 +19,13 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/feedback_form_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -132,7 +134,7 @@ void main() {
       );
     });
 
-    testWidgets('close (X) icon button is visible in the AppBar', (
+    testWidgets('close (X) icon button is visible in the top bar', (
       tester,
     ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
@@ -140,8 +142,8 @@ void main() {
 
       expect(
         find.descendant(
-          of: find.byType(AppBar),
-          matching: find.byIcon(Icons.close),
+          of: find.byType(ButleryTopBar),
+          matching: find.byIcon(ButleryIcons.x),
         ),
         findsOneWidget,
       );
@@ -210,7 +212,7 @@ void main() {
         expect(find.text('Skärmavbild'), findsOneWidget);
         expect(find.byType(Image), findsOneWidget);
 
-        // Remove screenshot IconButton with tooltip — two Icons.close exist
+        // Remove screenshot IconButton with tooltip — two ButleryIcons.x exist
         // (AppBar leading + screenshot remove) so we scope by tooltip.
         expect(
           find.byTooltip('Ta bort skärmavbild'),

@@ -74,6 +74,7 @@ lessons that only matter while writing or running tests.
 - En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet … kör kontrollen på det RETURNERADE värdet efter varje omskrivning (BUT-1819, 2026-09-15)
 - Commit-gate coverage is recorded PER RUN with the verdict that run ended on … budget ONE full-file-list pass per gate ending on a pass verdict (BUT-1693, 2026-09-16)
 - A JUSTIFICATION is a claim about the code path you did NOT open … open Y's source before the sentence exists (BUT-1954, 2026-09-16)
+- En statisk sida i ett befintligt hosting-mål publicerar ALLT målet bär — mät vad målet publicerar och vem som når det; olanserat innehåll får en egen sajt med egen grind, och statiska filer behöver ingen build (BUT-890, 2026-10-05)
 
 ## UI/UX
 
@@ -85,6 +86,7 @@ lessons that only matter while writing or running tests.
 - Dart RegExp `\b` is ASCII-only — bound Swedish tokens with explicit lookarounds
 - Firestore `sum()`/`average()` with a filter on a DIFFERENT field needs a COMPOSITE index
 - A FAILED_PRECONDITION's `create_composite` token base64url-decodes to Firestore's OWN index spec
+- Ett värde som fångas för en identitet och läses över ett auth-byte nycklas till identiteten (e-post/uid), aldrig rensas på händelser — och en kapplöpningsrättelse är oprövad tills den körts i riktiga appen (2026-10-05)
 - A boundary/heuristic/attribution bug usually has a TWIN CLASS — grep sibling classes by NAME (not path) (BUT-1691, BUT-1697)
 - A harness picking between two on-disk shapes for the same fact must choose on the property that decides TRUTH (2026-08-05, [Workflow])
 - A wrong-path Firestore read is a bug CLASS … Grep the CONSTANT for every reader AND writer (BUT-1724)
@@ -128,3 +130,5 @@ lessons that only matter while writing or running tests.
 - Ett upprepat UTFALL är inte en mekanism: öppna hooken/skriptet innan du skriver ned VARFÖR, annars bekräftar varje lyckad körning vanan och ingenting testar förklaringen (2026-09-20)
 - En strykning måste mäta BÅDA satserna i meningen den skär i — den flaggade satsen är inte automatiskt den falska, och sessionens egen utdata har ofta redan mätt det; samma mening fel två gånger = radera hela påståendet (BUT-1890, 2026-09-20)
 - Backticks (och `$(…)`, `&&`, `;`) i en heredoc-KROPP parsas av commit-grinden som ett muterande steg före commiten, oavsett om anropet är en riktig commit — skriv texten till en fil och kör med `-F <fil>` som ensamt anrop (2026-09-20)
+- En RÄTTELSE mäts om innan den medges: den ärver auktoritet av att komma sist och kullkastade här något tre granskare bekräftat, fast det var rättelsen som var fel — en förekomstkontroll är ordningsblind, så ett avgränsarPAR kräver att stängaren söks FRÅN öppnarens position; och granskare som ärvt samma brief mäter briefen, inte koden (BUT-2033, 2026-09-21)
+- En utforskares fil:rad för ett matrisfynd är en gissning — läs fyndets egen mätning (SemanticsNode-rekt/tooltip i resultat-JSON:en, `BoxConstraints` ur felet) innan koden ändras (BUT-2194, BUT-2190, 2026-09-30)

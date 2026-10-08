@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 
@@ -253,6 +254,193 @@ void main() {
         await tester.pump(const Duration(seconds: 5));
 
         expect(result, isTrue);
+      },
+    );
+  });
+
+  // P6-U08a (produktregler.md:832, § 16.2): two modes. With changes waiting,
+  // the changes are named and "Logga ut nu" leads to the manual sign-out's
+  // confirmation (#utloggningko); only its destructive choice signs out.
+  group('queue mode', () {
+    const pending = PendingChanges(recipeChanges: 2, imageUploads: 1);
+
+    Widget queueTrigger({
+      VoidCallback? onExtendSession,
+      VoidCallback? onLogoutNow,
+      Future<void> Function()? onDiscardAndLogout,
+      void Function(bool?)? onResult,
+    }) {
+      return Builder(
+        builder: (ctx) => ElevatedButton(
+          onPressed: () async {
+            final result = await SessionTimeoutWarningDialog.show(
+              context: ctx,
+              remainingSeconds: 30,
+              pendingChanges: pending,
+              onExtendSession: onExtendSession ?? () {},
+              onLogoutNow: onLogoutNow ?? () {},
+              onDiscardAndLogout: onDiscardAndLogout,
+            );
+            onResult?.call(result);
+          },
+          child: const Text('Show'),
+        ),
+      );
+    }
+
+    testWidgets('names the waiting changes', (tester) async {
+      await tester.pumpWidget(_wrap(queueTrigger()));
+      await _openDialog(tester);
+
+      expect(find.text('3 ändringar har inte sparats än:'), findsOneWidget);
+      expect(find.text('Recept · 2 ändringar'), findsOneWidget);
+      expect(find.text('Bilder · 1 väntar på uppladdning'), findsOneWidget);
+
+      await _drainTimers(tester, 31);
+    });
+
+    testWidgets('empty queue: Logga ut nu signs out at once', (tester) async {
+      var loggedOut = 0;
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton(remainingSeconds: 30, onLogoutNow: () => loggedOut++),
+        ),
+      );
+      await _openDialog(tester);
+      await tester.tap(find.byKey(const ValueKey('sessionTimeout.logoutNow')));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(loggedOut, 1);
+      expect(
+        find.byKey(const ValueKey('signOut.pendingChanges')),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+      'Logga ut nu asks first; Vänta på synk keeps the session',
+      (tester) async {
+        var loggedOut = 0;
+        var discarded = 0;
+        var extended = 0;
+        bool? result;
+        await tester.pumpWidget(
+          _wrap(
+            queueTrigger(
+              onLogoutNow: () => loggedOut++,
+              onExtendSession: () => extended++,
+              onDiscardAndLogout: () async => discarded++,
+              onResult: (r) => result = r,
+            ),
+          ),
+        );
+        await _openDialog(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('sessionTimeout.logoutNow')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(
+          find.byKey(const ValueKey('signOut.pendingChanges')),
+          findsOneWidget,
+        );
+        expect(find.text('3 ändringar har inte sparats'), findsOneWidget);
+
+        await tester.tap(
+          find.byKey(const ValueKey('signOut.pendingChanges.wait')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(loggedOut, 0, reason: 'never the direct sign-out in queue mode');
+        expect(discarded, 0, reason: 'waiting throws nothing away');
+        expect(extended, 1);
+        expect(result, isTrue);
+      },
+    );
+
+    testWidgets(
+      'the countdown running out under the confirmation closes both and '
+      'never extends the session',
+      (tester) async {
+        var loggedOut = 0;
+        var discarded = 0;
+        var extended = 0;
+        bool? result;
+        var resolved = false;
+        await tester.pumpWidget(
+          _wrap(
+            queueTrigger(
+              onLogoutNow: () => loggedOut++,
+              onExtendSession: () => extended++,
+              onDiscardAndLogout: () async => discarded++,
+              onResult: (r) {
+                result = r;
+                resolved = true;
+              },
+            ),
+          ),
+        );
+        await _openDialog(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('sessionTimeout.logoutNow')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(
+          find.byKey(const ValueKey('signOut.pendingChanges')),
+          findsOneWidget,
+        );
+
+        // Nobody answers; the 30 s run out with the confirmation on top.
+        await _drainTimers(tester, 31);
+
+        expect(extended, 0, reason: 'only a person may extend the session');
+        expect(discarded, 0, reason: 'the timeout never clears the queue');
+        expect(loggedOut, 0);
+        expect(resolved, isTrue);
+        expect(result, isFalse);
+        expect(
+          find.byKey(const ValueKey('signOut.pendingChanges')),
+          findsNothing,
+        );
+        expect(find.text('Session utgår snart'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Logga ut och släng ändringarna discards and signs out',
+      (tester) async {
+        var loggedOut = 0;
+        var discarded = 0;
+        bool? result;
+        await tester.pumpWidget(
+          _wrap(
+            queueTrigger(
+              onLogoutNow: () => loggedOut++,
+              onDiscardAndLogout: () async => discarded++,
+              onResult: (r) => result = r,
+            ),
+          ),
+        );
+        await _openDialog(tester);
+
+        await tester.tap(
+          find.byKey(const ValueKey('sessionTimeout.logoutNow')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(
+          find.byKey(const ValueKey('signOut.pendingChanges.discard')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(discarded, 1);
+        expect(loggedOut, 0);
+        expect(result, isFalse);
       },
     );
   });

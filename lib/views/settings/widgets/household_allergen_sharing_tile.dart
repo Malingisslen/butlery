@@ -25,8 +25,10 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: share your own allergen list with your household.
 ///
@@ -84,11 +86,22 @@ class _HouseholdAllergenSharingTileState
       final userId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
       if (households == null || shares == null || userId == null) return;
 
-      final mine = await households.getForUser(userId);
-      if (mine.isEmpty) return; // no household → the row stays hidden
-      final household = mine.first;
+      // The same household the menu reads shares from (BUT-2267).
+      final household = await households.getActiveForUser(userId);
+      if (household == null) return; // no household → the row stays hidden
       final householdId = household.id;
-      final own = await shares.getOwn(householdId);
+      HouseholdAllergenShare? own;
+      var corrupt = false;
+      try {
+        own = await shares.getOwn(householdId);
+      } on FormatException catch (e) {
+        // A row of their own whose body disagrees with its path. `getOwn`
+        // refuses it, rightly, but hiding the row would leave this member no
+        // way to withdraw it (DPIA R7, seventh gate). Shown ON: switching it
+        // off revokes by path, which a corrupt row does not stop.
+        AppLogger.warning('Own allergen share is unreadable: $e');
+        corrupt = true;
+      }
 
       // A household DOCUMENT is not somebody to share with. `ensureForUser`
       // creates a solo `households/{id}` the first time anyone opens Min
@@ -100,8 +113,8 @@ class _HouseholdAllergenSharingTileState
       // whose consent record is unusable comes back null; the replace branch
       // on grant handles that one, and a solo member can no longer reach it,
       // because the row is hidden for them.) This row is the only
-      // revoke path that exists — `shares.revoke` has no other caller and no
-      // Cloud Function does it — so hiding it from someone who HAS shared
+      // revoke path that exists — `shares.revoke` has no other caller — so
+      // hiding it from someone who HAS shared
       // would make taking a consent back impossible, which is precisely what
       // Art. 7(3) forbids and what this file's header promises. A roster can
       // shrink under a live share: the account-deletion cascade removes a
@@ -110,11 +123,15 @@ class _HouseholdAllergenSharingTileState
       // `toSet()` because a duplicated self row would otherwise re-open the
       // offer; the sibling FriendCategory roster has needed that dedupe
       // (BUT-1663).
-      if (own == null && household.memberUserIds.toSet().length < 2) return;
+      if (own == null &&
+          !corrupt &&
+          household.memberUserIds.toSet().length < 2) {
+        return;
+      }
       if (!mounted) return;
       setState(() {
         _householdId = householdId;
-        _isSharing = own != null;
+        _isSharing = own != null || corrupt;
       });
     } catch (e) {
       // Leaving the row hidden is the honest outcome: we cannot say whether
@@ -143,8 +160,8 @@ class _HouseholdAllergenSharingTileState
       context,
       title: l10n.householdAllergenShareConfirmTitle,
       message: l10n.householdAllergenShareConfirmBody,
-      titleIcon: Icons.lock_outline,
-      primaryActionIcon: Icons.lock_outline,
+      titleIcon: ButleryIcons.lock,
+      primaryActionIcon: ButleryIcons.lock,
       primaryActionText: l10n.householdAllergenShareConfirmAction,
       secondaryActionText: l10n.commonCancel,
     );
@@ -207,9 +224,9 @@ class _HouseholdAllergenSharingTileState
         // truthful to share. Refuse rather than invent — an empty share would
         // read downstream as "I have no allergies" and take away the floor they
         // have today.
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.householdAllergenShareSettingsUnread,
+          what: context.l10n.householdAllergenShareSettingsUnread,
         );
         return;
       }
@@ -222,18 +239,19 @@ class _HouseholdAllergenSharingTileState
       // timestamp and the mirror timestamp disagreeing about the same act.
       HouseholdAllergenShare buildShare() {
         final now = clock.now();
+        // A member who entered nothing shares an EMPTY list, not the
+        // defaults: `UserAllergenPreferences.defaults` names four allergens,
+        // and its `includeUnknownInMenu` therefore reads false. Sharing that
+        // would impose a caution they never chose — and because the household
+        // AND-folds this field, one such share strips every unverified recipe
+        // from everyone's menu.
+        final shared = prefs ?? UserAllergenPreferences.none;
         return HouseholdAllergenShare(
           householdId: householdId,
           userId: userId,
-          trackedAllergens: prefs?.trackedAllergens ?? const {},
-          trackedDietary: prefs?.trackedDietary ?? const {},
-          // NOT `?? false`: a member who entered nothing runs on the class
-          // default, which is TRUE. Sharing false would impose a caution they
-          // never chose — and because the household AND-folds this field, one
-          // such share strips every unverified recipe from everyone's menu.
-          includeUnknownInMenu:
-              prefs?.includeUnknownInMenu ??
-              UserAllergenPreferences.defaults.includeUnknownInMenu,
+          trackedAllergens: shared.trackedAllergens,
+          trackedDietary: shared.trackedDietary,
+          includeUnknownInMenu: shared.includeUnknownInMenu,
           consentGranted: true,
           consentVersion: HouseholdAllergenShare.currentConsentVersion,
           consentGrantedAt: now,
@@ -262,9 +280,9 @@ class _HouseholdAllergenSharingTileState
     } catch (e) {
       AppLogger.warning('Could not share the allergen list: $e');
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.householdAllergenShareFailed,
+          what: context.l10n.householdAllergenShareFailed,
         );
       }
     } finally {
@@ -289,9 +307,9 @@ class _HouseholdAllergenSharingTileState
     } catch (e) {
       AppLogger.warning('Could not stop sharing the allergen list: $e');
       if (mounted) {
-        SnackBarUtils.showError(
+        SnackBarUtils.showFailure(
           context,
-          context.l10n.householdAllergenShareFailed,
+          what: context.l10n.householdAllergenShareFailed,
         );
       }
     } finally {
@@ -313,9 +331,9 @@ class _HouseholdAllergenSharingTileState
     final l10n = context.l10n;
 
     return SwitchListTile(
-      secondary: Icon(
-        Icons.lock_outline,
-        color: sharing ? cs.onSurfaceVariant : context.butleryColors.warning,
+      secondary: ButleryIcon(
+        ButleryIcons.lock,
+        color: sharing ? cs.onSurfaceVariant : context.modeColors.warning,
       ),
       title: Text(
         l10n.householdAllergenShareTitle,

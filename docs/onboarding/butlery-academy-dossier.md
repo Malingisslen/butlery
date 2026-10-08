@@ -511,7 +511,7 @@ Tänk på appen som en fabrikslinje med två axlar:
 **Vertikal axel (din egen pipeline):** import → samling → meny → inköp → laga.
 **Horisontell axel (socialt):** vänner/grupper → dela recept & menyer → realtids-kollaborativa listor/menyer → meddelanden.
 
-**Import-tratten → samling:** sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. `lagg_till_recept_view` erbjuder 4 (smartImport, manuell, foto, arkiv); `smart_import` absorberar själv URL + text + sociala medier; `receive_share_view` är en OS-nivå-ingång; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.
+**Import-tratten → samling:** sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. `lagg_till_recept_view` erbjuder 4 (smartImport, manuell, foto, arkiv); `smart_import` absorberar själv URL + text + sociala medier; delade foton från OS-delningsmenyn går till fotoimporten; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.
 
 **Recept → meny → inköp-pipelinen (kärnvärdesslingan):** ett recept i samlingen kan läggas till veckomenyn. Menyns dialog (`showShoppingListSelector`) genererar en inköpslista från alla menyns ingredienser och navigerar till inköpsfliken. Alternativt genererar ett enskilt recepts detaljsida en inköpslista direkt. Båda trattas in i `UnifiedShoppingViewModel.addItemsToList`.
 
@@ -620,7 +620,7 @@ for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
 - `whereIn`/`in`/`arrayContainsAny` är cappade till 30 ids — fana ut, inte en jätte-query.
 - User settings (allergener, FCM-token, notisprefs, locale) bor i `users/{uid}/settings/preferences`, INTE på `public_profiles`-doc:et — för vem som helst inloggad kan läsa publika profiler.
 - Cache-first-läsningar är OK för visning men INTE för permission-checks eller pre-update-validering — de behöver färsk serverdata.
-- Inte varje repository extendar basklassen — `firestore_repository.dart`, `site_config_repository.dart`, `collaborative_recipe_repository.dart` är sanktionerade undantag, var och en med en daterad `BUT-###`-kommentar. Kopiera inte bypassen utan motsvarande motivering.
+- Inte varje repository extendar basklassen — `firestore_repository.dart`, `site_config_repository.dart` är sanktionerade undantag, var och en med en daterad `BUT-###`-kommentar. Kopiera inte bypassen utan motsvarande motivering.
 - `batchDeleteDocs` har ett partial-write-kontrakt: failar chunk N+1 är de N första redan committade. Kör om är säkert (idempotent).
 
 ### Prova nu

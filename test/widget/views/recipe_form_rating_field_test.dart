@@ -23,7 +23,6 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -76,7 +75,6 @@ void main() {
       TestServiceLocator.registerMock<PersonalTagService>(mockTagService);
       TestServiceLocator.registerMock<OfflineService>(
         OfflineService(
-          firestoreRepository: TestServiceLocator.get<FirestoreRepository>(),
           authRepository: TestServiceLocator.get<AuthRepository>(),
         ),
       );
@@ -101,6 +99,9 @@ void main() {
       ingredients: const ['Mjöl', 'Socker'],
       instructions: const ['Blanda', 'Grädda'],
       rating: rating,
+      // Q6-08: someone else's recipe opens in suggestion mode, which has no
+      // rating field. The signed-in user owns this one.
+      createdBy: 'test-user-123',
     );
 
     Future<void> pumpForm(WidgetTester tester, {Recipe? initialRecipe}) async {

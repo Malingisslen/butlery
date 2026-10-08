@@ -9,11 +9,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -57,6 +60,78 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    // P5-U31 / P5-U32: the section lives in a settings view with no top bar
+    // of its own, so its header row carries "Välj" (Skarmar v12 etapp 9
+    // #flervalingang), and Avbryt in the same place.
+    final enter = find.byKey(const ValueKey('blocked-users-select-enter'));
+    final cancel = find.byKey(
+      const ValueKey('blocked-users-selection-cancel'),
+    );
+
+    testWidgets('Välj shows in the header row once the list is open', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(child: const BlockedUsersSection()),
+      );
+      await tester.pumpAndSettle();
+      expect(enter, findsNothing);
+
+      await tester.tap(find.byType(InkWell).first);
+      await tester.pumpAndSettle();
+      expect(enter, findsOneWidget);
+      expect(find.bySemanticsLabel('Välj blockerade personer'), findsOneWidget);
+    });
+
+    testWidgets('Välj starts at zero with unblock off in the disabled role; '
+        'Avbryt takes its place and leaves', (tester) async {
+      await pumpExpanded(tester);
+
+      await tester.tap(enter);
+      await tester.pumpAndSettle();
+
+      expect(find.text('0 valda'), findsOneWidget);
+      expect(cancel, findsOneWidget);
+      expect(enter, findsNothing);
+      final unblock = find.ancestor(
+        of: find.byIcon(ButleryIcons.unlock),
+        matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+      );
+      expect(tester.widget<ButtonStyleButton>(unblock).onPressed, isNull);
+      final icon = tester.widget<CustomPaint>(
+        find.descendant(
+          of: find.byIcon(ButleryIcons.unlock),
+          matching: find.byType(CustomPaint),
+        ),
+      );
+      expect(
+        (icon.painter! as ButleryGlyphPainter).color,
+        AppModeColors.textDisabled(Brightness.light),
+      );
+      expect(
+        find.ancestor(of: unblock, matching: find.byType(Opacity)),
+        findsNothing,
+      );
+
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
+      expect(enter, findsOneWidget);
+    });
+
+    testWidgets('taking the last tick off leaves selection mode', (
+      tester,
+    ) async {
+      await pumpExpanded(tester);
+      await tester.longPress(find.text('u1'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('u1'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
+    });
+
     testWidgets('lists blocked users; no selection bar until long-press', (
       tester,
     ) async {
@@ -67,7 +142,23 @@ void main() {
       expect(find.text('u2'), findsOneWidget);
       expect(find.text('u3'), findsOneWidget);
       // Bulk action bar (lock_open) only appears in selection mode.
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
+    });
+
+    // BUT-2169: the list says what a block does to shares, since the blocked
+    // person sees their shares disappear too.
+    testWidgets('the open list explains that shares are hidden, not deleted', (
+      tester,
+    ) async {
+      await pumpExpanded(tester);
+
+      expect(
+        find.text(
+          'Recept, menyer och inköpslistor ni har skickat till varandra är '
+          'dolda för er båda så länge blockeringen gäller. Inget raderas.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('long-press enters selection mode and selects that tile', (
@@ -78,9 +169,15 @@ void main() {
       await tester.longPress(find.text('u1'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.lock_open), findsOneWidget); // bulk bar shown
-      expect(find.byIcon(Icons.check_box), findsOneWidget); // u1 selected
-      expect(find.byIcon(Icons.check_box_outline_blank), findsNWidgets(2));
+      expect(
+        find.byIcon(ButleryIcons.unlock),
+        findsOneWidget,
+      ); // bulk bar shown
+      expect(
+        find.byIcon(ButleryIcons.checkSquare),
+        findsOneWidget,
+      ); // u1 selected
+      expect(find.byIcon(ButleryIcons.square), findsNWidgets(2));
     });
 
     testWidgets('tap toggles additional tiles in selection mode', (
@@ -93,8 +190,8 @@ void main() {
       await tester.tap(find.text('u2'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_box), findsNWidgets(2));
-      expect(find.byIcon(Icons.check_box_outline_blank), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.checkSquare), findsNWidgets(2));
+      expect(find.byIcon(ButleryIcons.square), findsOneWidget);
     });
 
     testWidgets('cancel exits selection mode', (tester) async {
@@ -102,11 +199,14 @@ void main() {
       await tester.longPress(find.text('u1'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.close));
+      // P5-U31: Avbryt in the section's header row replaces the bar's X.
+      await tester.tap(
+        find.byKey(const ValueKey('blocked-users-selection-cancel')),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.lock_open), findsNothing);
-      expect(find.byIcon(Icons.check_box), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
+      expect(find.byIcon(ButleryIcons.checkSquare), findsNothing);
     });
 
     testWidgets(
@@ -116,7 +216,7 @@ void main() {
         await tester.longPress(find.text('u1'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.lock_open));
+        await tester.tap(find.byIcon(ButleryIcons.unlock));
         await tester.pumpAndSettle();
 
         expect(find.byType(AlertDialog), findsOneWidget);
@@ -135,7 +235,7 @@ void main() {
       await tester.tap(find.text('u2')); // 2 selected
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.lock_open));
+      await tester.tap(find.byIcon(ButleryIcons.unlock));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Avblockera')); // dialog confirm button
       await tester.pumpAndSettle();
@@ -143,7 +243,7 @@ void main() {
       // Mock returns full success (ids.length) → result branch, not partial.
       expect(find.text('2 användare avblockerade'), findsOneWidget);
       // Selection mode exited after the action.
-      expect(find.byIcon(Icons.lock_open), findsNothing);
+      expect(find.byIcon(ButleryIcons.unlock), findsNothing);
     });
   });
 }

@@ -1,7 +1,6 @@
 // lib/services/unified/modules/recipe_cache_module.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -54,8 +53,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// final stats = await cacheModule.getCacheStatistics();
 /// ```
 class RecipeCacheModule {
-  // Firebase instance for synchronization
-  final FirebaseFirestore? _firestore;
   final JsonCacheHelper _cacheHelper;
   final String? Function() _getCurrentUserId;
   final void Function(String) _setError;
@@ -66,6 +63,11 @@ class RecipeCacheModule {
 
   /// BUG-003: Callback for direct recipe removals (used on web where cache is stubbed)
   final void Function(String recipeId)? _onRecipeRemoved;
+
+  /// Whether the offline queue holds a write of the recipe the server has
+  /// not confirmed (BUT-2162).
+  final Future<bool> Function(String recipeId)? _hasUnsentWrite;
+  final Future<Recipe?> Function(String recipeId)? _readRecipe;
 
   /// Firestore sync metadata — whether local writes are pending server confirmation
   bool _hasPendingWrites = false;
@@ -91,14 +93,16 @@ class RecipeCacheModule {
   static const Duration _cacheCleanupInterval = Duration(hours: 24);
 
   RecipeCacheModule({
-    FirebaseFirestore? firestore,
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     required void Function() notifyListeners,
     void Function(Recipe recipe)? onRecipeUpdated,
     void Function(String recipeId)? onRecipeRemoved,
-  }) : _firestore = firestore,
+    Future<bool> Function(String recipeId)? hasUnsentWrite,
+    Future<Recipe?> Function(String recipeId)? readRecipe,
+  }) : _hasUnsentWrite = hasUnsentWrite,
+       _readRecipe = readRecipe,
        _cacheHelper = cacheHelper,
        _getCurrentUserId = getCurrentUserId,
        _setError = setError,
@@ -177,12 +181,6 @@ class RecipeCacheModule {
       return;
     }
 
-    final firestore = _firestore;
-    if (firestore == null) {
-      AppLogger.warning('Cannot start Firebase sync: No Firestore instance');
-      return;
-    }
-
     try {
       AppLogger.info('🔄 Starting Firebase sync...');
 
@@ -202,7 +200,6 @@ class RecipeCacheModule {
           _removeCachedRecipe(recipeId, source);
         },
         onSyncError: _handleSyncError,
-        firestore: firestore,
         onSyncStatusChanged: (hasPendingWrites, isFromCache) {
           if (_hasPendingWrites != hasPendingWrites ||
               _isFromCache != isFromCache) {
@@ -241,6 +238,14 @@ class RecipeCacheModule {
   /// Update cached recipe from Firebase change
   Future<void> _updateCachedRecipe(Recipe recipe, String source) async {
     try {
+      // BUT-2162: the offline queue holds a newer write of this recipe (or
+      // its deletion) than the server has, so the server's copy would undo
+      // the user's change on screen until the queue sends it.
+      if (await _hasUnsentWrite?.call(recipe.id) ?? false) {
+        AppLogger.debug('Recipe from $source kept local (unsent write)');
+        return;
+      }
+
       // Save to cache using CacheOperations
       await saveRecipeToCache(recipe);
 
@@ -259,6 +264,28 @@ class RecipeCacheModule {
       AppLogger.error('Error updating cached recipe: $e');
     }
   }
+
+  /// The queue has sent a write or deletion of the recipe. While it waited,
+  /// the screen took none of the server's copies of it, so the server's copy
+  /// is read once now. Nothing happens while another write of it waits.
+  Future<void> refreshAfterQueueSend(String recipeId) async {
+    final read = _readRecipe;
+    if (read == null) return;
+    try {
+      if (await _hasUnsentWrite?.call(recipeId) ?? false) return;
+      final recipe = await read(recipeId);
+      if (recipe == null) {
+        await _removeCachedRecipe(recipeId, 'offline queue');
+      } else {
+        await _updateCachedRecipe(recipe, 'offline queue');
+      }
+    } catch (e) {
+      AppLogger.warning('Could not refresh recipe after queue send: $e');
+    }
+  }
+
+  Future<void> dropDiscardedRecipe(String recipeId) =>
+      _removeCachedRecipe(recipeId, 'offline queue');
 
   /// Remove cached recipe from Firebase change
   Future<void> _removeCachedRecipe(String recipeId, String source) async {

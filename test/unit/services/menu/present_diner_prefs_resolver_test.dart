@@ -49,7 +49,7 @@ const _kid = 'm-kid';
 
 final Set<String> _floor = UserAllergenPreferences.defaults.trackedAllergens;
 
-HouseholdRosterMember _kidDiner({bool includeUnknownInMenu = true}) =>
+HouseholdRosterMember _kidDiner({bool? includeUnknownInMenu = true}) =>
     HouseholdRosterMember(
       memberId: _kid,
       type: HouseholdMemberType.profile,
@@ -105,17 +105,15 @@ void main() {
     when(() => perm.currentUserId).thenReturn(_self);
 
     final hhRepo = _MockHouseholdRepository();
-    when(() => hhRepo.getForUser(_self)).thenAnswer(
-      (_) async => [
-        Household(
-          id: 'hh1',
-          name: Household.defaultName,
-          members: const [],
-          createdBy: _self,
-          createdAt: DateTime(2026),
-          updatedAt: DateTime(2026),
-        ),
-      ],
+    when(() => hhRepo.getActiveForUser(_self)).thenAnswer(
+      (_) async => Household(
+        id: 'hh1',
+        name: Household.defaultName,
+        members: const [],
+        createdBy: _self,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
     );
 
     roster = _MockHouseholdRosterService();
@@ -183,6 +181,24 @@ void main() {
     expect(result.preferences.includeUnknownInMenu, isTrue);
     expect(result.isComplete, isTrue);
     verifyNever(() => userService.lookupUserProfile(any()));
+  });
+
+  test('a child saved by the family screen, which has no switch, closes the '
+      'UNKNOWN hatch through the derived default: an allergy means proven-free '
+      'only (Malin 2026-10-05), for children as for adults', () async {
+    useRoster([
+      HouseholdRosterMember.fromUser(userId: _self, displayName: 'Jag'),
+      _kidDiner(includeUnknownInMenu: null),
+    ]);
+
+    // The child alone, so nothing but the derived default can shut the hatch
+    // (the diner-only meal above reads TRUE with an explicit true).
+    final result = await const PresentDinerPrefsResolver().resolve([_kid]);
+
+    expect(result, isNotNull);
+    expect(result!.preferences.trackedAllergens, {'sesam'});
+    expect(result.preferences.includeUnknownInMenu, isFalse);
+    expect(result.isComplete, isTrue);
   });
 
   test('one cautious diner closes the UNKNOWN hatch for the whole '

@@ -25,8 +25,10 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/views/photo_import_view.dart';
+import 'package:butlery/widgets/common/layout/status_indicators.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/helpers/offline_banner_support.dart';
 
 /// Minimal fake exposing just the surface PhotoImportView reads when there's
 /// no image yet, plus a REAL isHandwritten field + setHandwritten so a tap on
@@ -95,6 +97,20 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   @override
   Future<PhotoImportDraft?> loadPersistedDraft() async => null;
 
+  // P6-U07 / Q4-04: the view wires the permission resolver and reads the
+  // permission notice and the pages waiting for "Läs av".
+  @override
+  PhotoPermissionResolver? permissionResolver;
+
+  @override
+  PhotoPermissionNotice? get permissionNotice => null;
+
+  @override
+  int get unreadPageCount => 0;
+
+  @override
+  bool get canReadPages => false;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -110,6 +126,7 @@ void main() {
     getIt.registerFactory<PhotoImportViewModel>(() => vm);
     app_provider.ServiceLocator.reset();
     app_provider.ServiceLocator.initialize(DIContainer());
+    ensureOfflineService();
   }
 
   tearDown(() async {
@@ -149,6 +166,17 @@ void main() {
     );
     expect(switchWidget.value, isFalse);
     expect(fakeVm.isHandwritten, isFalse);
+  });
+
+  // BUT-2182: the page itself carries the offline banner. The design-state
+  // host for this page builds its own copy of the layout, so it cannot see
+  // the page lose it.
+  testWidgets('the page carries the offline banner', (tester) async {
+    fakeVm = _FakePhotoImportViewModel();
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    expect(find.byType(OfflineIndicator), findsOneWidget);
   });
 
   testWidgets('flipping the toggle sets VM.isHandwritten true', (tester) async {

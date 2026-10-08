@@ -5,10 +5,12 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Swedish (localized) label for a coarse age band.
 String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
@@ -24,16 +26,14 @@ String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
   }
 }
 
-/// Parse a stored `#RRGGBB` hex into a [Color]; falls back to the brand green.
-Color parseAvatarColor(String? hex) {
+/// Parse a stored `#RRGGBB` hex into a [Color]; falls back to the theme's
+/// primary.
+Color parseAvatarColor(BuildContext context, String? hex) {
   if (hex != null && hex.startsWith('#') && hex.length == 7) {
     final value = int.tryParse(hex.substring(1), radix: 16);
-    if (value != null) return Color(0xFF000000 | value);
+    if (value != null) return Color(value).withAlpha(255);
   }
-  // Context-less helper: fall back to the brand forest-green literal
-  // (0xFF4A7C59, the value behind cs.primary) so callers in other files
-  // need no signature change.
-  return const Color(0xFF4A7C59);
+  return Theme.of(context).colorScheme.primary;
 }
 
 String _initials(String name) {
@@ -68,13 +68,13 @@ class FamilySectionHeader extends StatelessWidget {
           children: [
             Text(
               title,
-              style: AppTextStyles.titleSmall.copyWith(color: cs.primary),
+              style: AppTextStyles.titleSmall.copyWith(color: cs.onSurface),
             ),
             if (trailing != null)
               Text(
                 trailing!,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.outline,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
           ],
@@ -126,15 +126,15 @@ class _TagChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: emphasized ? context.butleryColors.heroPaleGreen : cs.surface,
+        color: emphasized ? context.modeColors.heroPaleGreen : cs.surface,
         border: Border.all(
-          color: emphasized ? cs.primary : cs.outlineVariant,
+          color: emphasized ? cs.onSurface : cs.outlineVariant,
         ),
       ),
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: emphasized ? cs.primary : cs.outline,
+          color: emphasized ? cs.onSurface : cs.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -184,15 +184,18 @@ class FamilyAccountRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          left: BorderSide(color: cs.primary, width: 4),
-          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.onSurface, width: 4),
+          bottom: BorderSide(
+            color: context.modeColors.recipeCardBottomBorder,
+            width: 3,
+          ),
         ),
       ),
       child: Row(
         children: [
           FamilyAvatar(
             name: member.displayName,
-            color: parseAvatarColor(member.avatarColor),
+            color: parseAvatarColor(context, member.avatarColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -240,51 +243,68 @@ class FamilyMemberRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: l10n.a11yEditFamilyMember,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: cs.surface,
-            border: Border(
-              left: BorderSide(color: cs.secondary, width: 4),
-              bottom: const BorderSide(color: AppColors.rustLight, width: 3),
-            ),
-          ),
-          child: Row(
-            children: [
-              FamilyAvatar(
-                name: profile.name,
-                color: parseAvatarColor(profile.avatarColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(profile.name, style: AppTextStyles.titleSmall),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        _TagChip(ageBandLabel(l10n, profile.ageBand)),
-                        if (allergens.isEmpty)
-                          _TagChip(l10n.familyNoAllergies)
-                        else
-                          for (final a in allergens)
-                            _AllergenBadge(
-                              AllergenPreferenceOptions.getAllergenLabel(a),
-                            ),
-                      ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: onTap,
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: cs.surface,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(color: cs.secondary, width: 4),
+                      bottom: BorderSide(
+                        color: context.modeColors.recipeCardBottomBorder,
+                        width: 3,
+                      ),
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      FamilyAvatar(
+                        name: profile.name,
+                        color: parseAvatarColor(context, profile.avatarColor),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(profile.name, style: AppTextStyles.titleSmall),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                _TagChip(ageBandLabel(l10n, profile.ageBand)),
+                                if (allergens.isEmpty)
+                                  _TagChip(l10n.familyNoAllergies)
+                                else
+                                  for (final a in allergens)
+                                    _AllergenBadge(
+                                      AllergenPreferenceOptions.getAllergenLabel(
+                                        a,
+                                      ),
+                                    ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
+                    ],
+                  ),
                 ),
               ),
-              Icon(Icons.chevron_right, color: cs.outline),
-            ],
+            ),
           ),
         ),
       ),

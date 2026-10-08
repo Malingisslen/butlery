@@ -97,25 +97,6 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logExtractionError({
-    required String url,
-    required String platform,
-    required String error,
-    String? errorType,
-    String imageFormat = 'unknown',
-  }) async {
-    // No-op: Analytics not supported
-  }
-
-  @override
-  Future<void> logManualCopyFallback({
-    required String platform,
-    String? reason,
-  }) async {
-    // No-op: Analytics not supported
-  }
-
-  @override
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
@@ -125,9 +106,7 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> logRecipeShared({
-    required String method,
-  }) async {
+  Future<void> logRecipeShared({required String method}) async {
     // No-op: Analytics not supported
   }
 

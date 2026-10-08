@@ -12,7 +12,9 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
+import 'package:butlery/core/router/shared_import_route.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
@@ -61,14 +63,10 @@ class DeepLinkHandler {
           _pendingDeepLink =
               'butlery://import?url=${Uri.encodeComponent(sharedUrl)}';
         } else if (sharedText != null && sharedText.isNotEmpty) {
-          // Text might contain a URL
-          final urlMatch = RegExp(
-            r'https?://[^\s<>"{}|\\^`\[\]]+',
-          ).firstMatch(sharedText);
-          if (urlMatch != null) {
-            _pendingDeepLink =
-                'butlery://import?url=${Uri.encodeComponent(urlMatch.group(0)!)}';
-          }
+          // BUT-2241: text without a link goes to the text import instead of
+          // being dropped; [_handleImportLink] decides which.
+          _pendingDeepLink =
+              'butlery://import?text=${Uri.encodeComponent(sharedText)}';
         } else if (uri.path.length > 1 || uri.queryParameters.isNotEmpty) {
           _pendingDeepLink = uri.toString();
         }
@@ -94,10 +92,12 @@ class DeepLinkHandler {
   /// This should be called once the app is fully initialized and has
   /// a valid navigation context available.
   Future<void> processPendingDeepLink(BuildContext context) async {
-    if (_pendingDeepLink != null) {
-      await processDeepLink(_pendingDeepLink!, context);
-      _pendingDeepLink = null;
-    }
+    final link = _pendingDeepLink;
+    if (link == null) return;
+    // Cleared before processing: a signed-out user's link is parked again
+    // inside processDeepLink and must survive until login.
+    _pendingDeepLink = null;
+    await processDeepLink(link, context);
   }
 
   /// Whether a `butlery://` custom-scheme URI should be dropped because its
@@ -149,14 +149,23 @@ class DeepLinkHandler {
   /// Surface a short Butler-voice notice when a deep link cannot be opened —
   /// either it has expired or the target content is gone/inaccessible (BUT-1587).
   /// Replaces this handler's previous silent-return convention for those two
-  /// user-facing dead ends. Uses [ScaffoldMessenger.maybeOf] so a missing
-  /// messenger ancestor degrades to the old silent behaviour instead of throwing.
-  void _showDeepLinkNotice(BuildContext context, String message) {
+  /// user-facing dead ends. A context without a messenger ancestor degrades to
+  /// the old silent behaviour instead of throwing.
+  ///
+  /// P6-U05: the notice is a failure snackbar whose only action is "Stäng"
+  /// (content-style-guide.md:97, Komponentark v1:750). PQ-13 = A (2026-09-23):
+  /// the app has no way to ask for a new link, and it never offers what it
+  /// cannot do (produktregler.md:535), so the text itself says who to ask.
+  /// The request button is BUT-2143.
+  @visibleForTesting
+  static void showDeepLinkNotice(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.maybeOf(
-      context,
-    )?.showSnackBar(SnackBar(content: Text(message)));
+    if (ScaffoldMessenger.maybeOf(context) == null) return;
+    SnackBarUtils.showFailure(context, what: message);
   }
+
+  void _showDeepLinkNotice(BuildContext context, String message) =>
+      showDeepLinkNotice(context, message);
 
   /// Process a deep link URL and navigate to the appropriate view.
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
@@ -314,6 +323,10 @@ class DeepLinkHandler {
         );
       } else {
         // Link is valid but the recipe is gone or not shared with this user.
+        // The read cannot tell the two apart, so the notice says only that
+        // the content is no longer available: "ask for a new link" would not
+        // help when the recipe is deleted (flows-roles-budget.md:80 covers a
+        // revoked or expired link, which is the expiry gate above).
         _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }
@@ -336,7 +349,8 @@ class DeepLinkHandler {
       if (menu != null) {
         Navigator.of(context).pushNamed(Routes.menuPreview, arguments: menu);
       } else {
-        // Link is valid but the shared menu is gone or no longer accessible.
+        // Link is valid but the shared menu is gone or no longer accessible;
+        // as for a recipe above, the read cannot tell which.
         _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }
@@ -389,16 +403,21 @@ class DeepLinkHandler {
     }
   }
 
-  /// Handle import link from web share target — navigate to add recipe with URL pre-filled.
+  /// Handle an import link. Any page can build one, so it only prefills and
+  /// never spends the user's imports by itself.
   void _handleImportLink(
     Map<String, String> params,
     BuildContext context,
   ) {
-    final url = params['url'];
-    if (url != null && url.isNotEmpty) {
-      // Land a shared URL on Smart Import (which prefills it), not the generic
-      // add-recipe hub that ignored the argument.
-      Navigator.of(context).pushNamed(Routes.smartImport, arguments: url);
+    final url = params['url'].orEmpty().trim();
+    final route = url.isNotEmpty
+        ? (
+            route: Routes.smartImport,
+            arguments: SmartImportRouteArgs(url, autoStart: false),
+          )
+        : routeForSharedText(params['text'].orEmpty(), autoStart: false);
+    if (route != null) {
+      Navigator.of(context).pushNamed(route.route, arguments: route.arguments);
     }
   }
 

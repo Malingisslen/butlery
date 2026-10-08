@@ -63,34 +63,27 @@ void normalizeTimestampPaths(Map<String, dynamic> row, List<String> paths) {
   }
 }
 
-/// Normalises every zone-less stamp a serialised RECIPE document carries,
-/// under [prefix] ('' for the document root, 'recipe' where a realtime
-/// document embeds a whole recipe).
+/// Normalises every zone-less stamp a serialised RECIPE document carries.
 ///
 /// These are the fields `RecipeSerialization.toFirestore` delegates to a
 /// `toJson()` rather than writing as a `Timestamp`. They are enumerated rather
 /// than discovered, so a field added to one of those `toJson()` methods is NOT
-/// covered until it is named here — and there is deliberately ONE list, because
-/// two sections embed this document at different depths.
+/// covered until it is named here — and there is deliberately ONE list.
 ///
 /// Both the `core.`-nested and the flat spelling are carried: the live writer
 /// nests, while `RecipeSerialization.fromMap` still reads a flat document as a
 /// legacy shape. A path whose parent is absent is skipped, so the spelling that
 /// does not apply costs nothing.
-void normalizeRecipeDocumentStamps(
-  Map<String, dynamic> row, {
-  String prefix = '',
-}) {
-  final p = prefix.isEmpty ? '' : '$prefix.';
+void normalizeRecipeDocumentStamps(Map<String, dynamic> row) {
   normalizeTimestampPaths(row, [
-    '${p}core.sourceArtefact.fetchedAt',
-    '${p}core.tagOverrides.lastEditedAt',
-    '${p}sourceArtefact.fetchedAt',
-    '${p}tagOverrides.lastEditedAt',
-    '${p}realtimeData.lastEditedAt',
+    'core.sourceArtefact.fetchedAt',
+    'core.tagOverrides.lastEditedAt',
+    'sourceArtefact.fetchedAt',
+    'tagOverrides.lastEditedAt',
+    'realtimeData.lastEditedAt',
   ]);
   // Keys are uids, so there is no leaf to name.
-  normalizeTimestampMapValues(row, '${p}realtimeData.lastSeenAt');
+  normalizeTimestampMapValues(row, 'realtimeData.lastSeenAt');
 }
 
 /// Normalises every VALUE of the map at [path], for a field whose keys are
@@ -363,6 +356,9 @@ class ExportPaginationHelper {
     'user_ingredients': 500,
     'user_onboarding': 50,
     'user_acquisition': 50,
+    // P5-U26b: overwritten versions live 30 days, so the cap is generous
+    // for a month of conflicts on the week and the user's own recipes.
+    'user_overwritten_versions': 200,
     // The `settings` collection, `preferences` INCLUDED — the query is not
     // filtered, so the section additionally reads that one document by id
     // (`exportUserPreferencesDocument`) and drops it from the page afterwards
@@ -383,6 +379,11 @@ class ExportPaginationHelper {
     // BUT-1693: a user holds at most one share per household. Different from
     // `defaultBatchSize` on purpose, so a deleted entry changes behaviour.
     'household_allergen_shares': 50,
+    // P5-U27b: recipe suggestions, one key per direction so a busy shared
+    // recipe's incoming suggestions cannot decide how many of the user's own
+    // are shown. They live 7 days, so 200 is far above a week's use.
+    'recipe_suggestions_made': 200,
+    'recipe_suggestions_received': 200,
   };
 
   /// Get export limit for content type

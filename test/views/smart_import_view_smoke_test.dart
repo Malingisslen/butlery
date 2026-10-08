@@ -32,12 +32,14 @@ class _MockImportManager extends Mock implements ImportManager {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Widget app() => MaterialApp(
+  late _MockImportManager importManager;
+
+  Widget app({SmartImportView view = const SmartImportView()}) => MaterialApp(
     theme: AppTheme.lightTheme,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     locale: const Locale('sv'),
-    home: const SmartImportView(),
+    home: view,
   );
 
   setUp(() async {
@@ -59,7 +61,12 @@ void main() {
     // `ServiceLocator.get<ImportManager>()` in its `create:` resolves the mock.
     await TestServiceLocator.initialize();
     prod_locator.ServiceLocator.initialize(DIContainer());
-    TestServiceLocator.registerMock<ImportManager>(_MockImportManager());
+    importManager = _MockImportManager();
+    when(
+      () =>
+          importManager.autoImport(any(), onProgress: any(named: 'onProgress')),
+    ).thenAnswer((_) async => ImportManagerResult.failure('nej'));
+    TestServiceLocator.registerMock<ImportManager>(importManager);
   });
 
   tearDown(() async {
@@ -79,5 +86,36 @@ void main() {
     // Swedish app-bar title rendered — proof the DI graph resolved.
     expect(find.byType(SmartImportView), findsOneWidget);
     expect(find.byType(TextField), findsWidgets);
+  });
+
+  // BUT-2241: a link with autoStart starts the import itself; the same
+  // link handed over only to prefill waits for the button.
+  const link = 'https://www.ica.se/recept/pannkakor-1/';
+
+  testWidgets('a shared link with autoStart imports without a tap', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app(view: const SmartImportView(initialUrl: link, autoStart: true)),
+    );
+    await tester.pumpAndSettle();
+
+    verify(
+      () =>
+          importManager.autoImport(link, onProgress: any(named: 'onProgress')),
+    ).called(1);
+  });
+
+  testWidgets('a prefilled link without autoStart waits for the button', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(view: const SmartImportView(initialUrl: link)));
+    await tester.pumpAndSettle();
+
+    verifyNever(
+      () =>
+          importManager.autoImport(any(), onProgress: any(named: 'onProgress')),
+    );
+    expect(find.text(link), findsOneWidget);
   });
 }

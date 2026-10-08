@@ -1,6 +1,8 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,7 +11,11 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -38,8 +44,10 @@ class CollaborativeShoppingActions extends BaseActionHandler
   });
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(viewModel.listTitle),
+    // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
+    // inköpslista'; Komponentark v1 §01 pattern 2).
+    return ButleryTopBar.undersida(
+      title: viewModel.listTitle,
       actions: [
         _buildShareAction(context),
         _buildMenuActions(context),
@@ -49,25 +57,28 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildShareAction(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.share),
+      icon: const ButleryIcon(ButleryIcons.share2),
       onPressed: onShare,
       tooltip: context.l10n.collaborativeShareList,
     );
   }
 
   Widget _buildMenuActions(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: onMenuAction,
-      tooltip: context.l10n.collaborativeMoreActions,
-      itemBuilder: (context) => [
-        if (viewModel.canEdit)
-          _buildPopupMenuItem(
-            value: 'clear_completed',
-            icon: Icons.clear_all,
-            label: context.l10n.collaborativeClearCompleted,
-          ),
-      ],
+    return PressFill(
+      surface: PressSurface.base,
+      child: PopupMenuButton<String>(
+        icon: const ButleryIcon(ButleryIcons.moreVertical),
+        onSelected: onMenuAction,
+        tooltip: context.l10n.collaborativeMoreActions,
+        itemBuilder: (context) => [
+          if (viewModel.canEdit)
+            _buildPopupMenuItem(
+              value: 'clear_completed',
+              icon: ButleryIcons.listX,
+              label: context.l10n.collaborativeClearCompleted,
+            ),
+        ],
+      ),
     );
   }
 
@@ -76,11 +87,11 @@ class CollaborativeShoppingActions extends BaseActionHandler
     required IconData icon,
     required String label,
   }) {
-    return PopupMenuItem(
+    return ButleryMenuItem(
       value: value,
       child: Row(
         children: [
-          Icon(icon),
+          ButleryIcon(icon),
           const SizedBox(width: AppDimensions.spacingM),
           Text(label),
         ],
@@ -127,9 +138,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(
-          alpha: AppDimensions.opacityHalf,
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -139,8 +148,8 @@ class CollaborativeShoppingActions extends BaseActionHandler
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.visibility,
+          ButleryIcon(
+            ButleryIcons.eye,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
@@ -158,15 +167,18 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildItemInput(BuildContext context) {
     return TextField(
+      style: fieldTextStyle(context, enabled: !viewModel.isAddingItem),
       controller: newItemController,
       decoration: InputDecoration(
         hintText: context.l10n.collaborativeAddItemHint,
+        // Adding: the plate line in the field's end, named for the screen
+        // reader (produktregler.md:163, B-18).
         suffixIcon: viewModel.isAddingItem
-            ? const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingS),
-                child: LoadingIndicator(
-                  size: AppDimensions.iconSizeS,
-                  strokeWidth: 2,
+            ? Padding(
+                padding: const EdgeInsets.all(AppDimensions.space4),
+                child: SizedBox(
+                  width: AppDimensions.iconSizeL,
+                  child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
                 ),
               )
             : null,
@@ -182,7 +194,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
   Widget _buildAddButton(BuildContext context) {
     return FilledButton.icon(
       onPressed: viewModel.isAddingItem ? null : onAddItem,
-      icon: Icon(viewModel.isAddingItem ? Icons.hourglass_empty : Icons.add),
+      icon: ButleryIcon(
+        viewModel.isAddingItem ? ButleryIcons.hourglass : ButleryIcons.plus,
+      ),
       label: Text(
         viewModel.isAddingItem
             ? context.l10n.collaborativeAdding
@@ -224,7 +238,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
         completedItems.length,
       ),
       confirmActionText: context.l10n.collaborativeClearAll,
-      confirmationIcon: Icons.clear_all,
+      confirmationIcon: ButleryIcons.listX,
       isDangerous: true,
       successMessage: context.l10n.collaborativeCompletedItemsCleared(
         completedItems.length,
@@ -259,7 +273,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
           ),
           const SizedBox(height: AppDimensions.spacingL),
           ListTile(
-            leading: const Icon(Icons.link),
+            leading: const ButleryIcon(ButleryIcons.link),
             title: Text(context.l10n.collaborativeCopyLink),
             subtitle: Text(context.l10n.collaborativeCopyLinkDescription),
             onTap: () {
@@ -268,7 +282,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             },
           ),
           ListTile(
-            leading: const Icon(Icons.message),
+            leading: const ButleryIcon(ButleryIcons.messageSquare),
             title: Text(context.l10n.collaborativeSendMessage),
             subtitle: Text(context.l10n.collaborativeSendMessageDescription),
             onTap: () {
@@ -277,7 +291,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             },
           ),
           ListTile(
-            leading: const Icon(Icons.email),
+            leading: const ButleryIcon(ButleryIcons.mail),
             title: Text(context.l10n.collaborativeSendEmail),
             subtitle: Text(context.l10n.collaborativeSendEmailDescription),
             onTap: () {
@@ -366,9 +380,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
   /// Get add button icon based on current state
   IconData getAddButtonIcon() {
     if (viewModel.isAddingItem) {
-      return Icons.hourglass_empty;
+      return ButleryIcons.hourglass;
     }
-    return Icons.add;
+    return ButleryIcons.plus;
   }
 
   /// Check if menu action is available

@@ -13,6 +13,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -48,10 +49,14 @@ class _MockIdTokenResult extends Mock implements IdTokenResult {}
 /// constant being retyped to another funnel's value, which the analytics registry
 /// lint cannot see either. If a copy edit reddens these tests, THAT IS THE POINT —
 /// update the literal here, do not reach for the getter.
+// P5-U03: a failed send says the typed text is still in the field
+// (content-style-guide.md:92), after what happened.
 const _clockAheadMessage =
     'Kunde inte skicka. Telefonens klocka ligger för långt fram — '
-    'kontrollera datum och tid i inställningarna.';
-const _genericMessage = 'Kunde inte skicka meddelandet.';
+    'kontrollera datum och tid i inställningarna. '
+    'Texten ligger kvar i fältet.';
+const _genericMessage =
+    'Kunde inte skicka meddelandet. Texten ligger kvar i fältet.';
 const _deniedEventName = 'message_send_denied_clock_ahead';
 
 /// BUT-1831: the snackbar's ACTION label, not part of either sentence.
@@ -113,7 +118,7 @@ void main() {
   Future<void> typeAndSend(WidgetTester tester) async {
     await tester.enterText(find.byType(TextField).first, 'hej hej');
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.send));
+    await tester.tap(find.byIcon(ButleryIcons.send));
   }
 
   FirebaseException denied() =>
@@ -274,7 +279,7 @@ void main() {
     //
     // The `attempts` assertion is what stops this test being all-negative. The
     // send IconButton is ALWAYS in the tree — only its `onPressed` is nulled
-    // when `isComposing` is false — so `find.byIcon(Icons.send)` never throws
+    // when `isComposing` is false — so `find.byIcon(ButleryIcons.send)` never throws
     // and a tap on the disabled button is a silent no-op. Every other
     // expectation below is satisfied by a send that never happened.
     var attempts = 0;

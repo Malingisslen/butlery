@@ -35,6 +35,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -46,9 +47,12 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -104,7 +108,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget localize(Widget home) {
+  Widget localize(Widget home, {ThemeData? theme}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -114,7 +118,7 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.lightTheme,
+      theme: theme ?? AppTheme.lightTheme,
       home: home,
     );
   }
@@ -785,5 +789,417 @@ void main() {
         );
       },
     );
+  });
+
+  // P6-U05 (flows-roles-budget.md:83, :132): the role on the list drops to
+  // read-only while it is open. The add field goes at once; a snackbar says
+  // why, and an item typed but not added is shown and can be copied, so it is
+  // not lost without a word. Nothing is written to the list.
+  group('CollaborativeShoppingView — role lowered while open (P6-U05)', () {
+    Future<FakePermissionService> openWithTyped(
+      WidgetTester tester,
+      String typed, {
+      ThemeData? theme,
+    }) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      final permissions =
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await tester.pumpWidget(
+        localize(
+          const CollaborativeShoppingView(listId: _testListId),
+          theme: theme,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      // The first live update: the user can edit.
+      shoppingService.emitState(ShoppingStateData(lists: [list]));
+      await tester.pump();
+      if (typed.isNotEmpty) {
+        await tester.enterText(find.byType(TextField), typed);
+        await tester.pump();
+      }
+      // The owner lowers the role; the next live update carries it.
+      permissions.setPermissionState(
+        currentUserId: 'test-user-123',
+        defaultHasPermission: false,
+      );
+      shoppingService.emitState(ShoppingStateData(lists: [list]));
+      await tester.pump();
+      // The notice is posted after the frame; let the snackbar slide in.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 750));
+      return permissions;
+    }
+
+    testWidgets('typed but not added: the notice shows it and offers a copy', (
+      tester,
+    ) async {
+      final copied = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied.add((call.arguments as Map)['text'] as String);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+
+      await openWithTyped(tester, 'Havregryn');
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+
+      final notice = find.byKey(
+        const ValueKey('collaborativeShopping.unaddedText'),
+      );
+      expect(find.text('Lägg till'), findsNothing);
+      // The snackbar is short and says why; the typed text is in a notice in
+      // the view, not in the snackbar, so it is never cut off.
+      expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
+      expect(notice, findsOneWidget);
+      expect(
+        find.descendant(
+          of: notice,
+          matching: find.text(l10n.roleLoweredShoppingUnsaved),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: notice, matching: find.text('Havregryn')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.descendant(
+          of: notice,
+          matching: find.text(l10n.roleLoweredCopyText),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(copied, ['Havregryn']);
+
+      // No timeout takes it away: it stays until the user closes it.
+      await tester.pump(const Duration(seconds: 30));
+      expect(notice, findsOneWidget);
+      await tester.tap(
+        find.descendant(of: notice, matching: find.text(l10n.commonClose)),
+      );
+      await tester.pump();
+      expect(notice, findsNothing);
+      verifyNever(
+        () => shoppingService.addItemToActiveList(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      );
+    });
+
+    // B83-2e: a notice box like the updated-by strip — surface.tint.warning
+    // fill, no border, the control radius.
+    for (final (name, theme, tint) in [
+      ('light', AppTheme.lightTheme, const Color(0xFFF0EEE2)),
+      ('dark', AppTheme.darkTheme, const Color(0xFF2F4437)),
+    ]) {
+      testWidgets(
+        '$name: a surface.tint.warning fill with no border (B83-2e)',
+        (
+          tester,
+        ) async {
+          await openWithTyped(tester, 'Havregryn', theme: theme);
+
+          final box = tester.widget<Material>(
+            find
+                .descendant(
+                  of: find.byKey(
+                    const ValueKey('collaborativeShopping.unaddedText'),
+                  ),
+                  matching: find.byType(Material),
+                )
+                .first,
+          );
+          expect(box.color, tint);
+          final shape = box.shape! as RoundedRectangleBorder;
+          expect(shape.side, BorderSide.none);
+          expect(
+            shape.borderRadius,
+            BorderRadius.circular(AppDimensions.radiusControl),
+          );
+        },
+      );
+    }
+
+    testWidgets('nothing typed: the notice says why, with Stäng', (
+      tester,
+    ) async {
+      await openWithTyped(tester, '');
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
+      expect(find.text(l10n.commonClose), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('collaborativeShopping.unaddedText')),
+        findsNothing,
+      );
+    });
+  });
+
+  // BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — read
+  // from lastActivityAt/lastActivityByUserId/lastActivityByDisplayName
+  // ([UnifiedShoppingList]), no new Firestore field.
+  group('CollaborativeShoppingView — updated-by notice (BUT-2187)', () {
+    final noticeKey = find.byKey(
+      const ValueKey('collaborativeShopping.updatedByNotice'),
+    );
+
+    Future<void> pumpFullView(WidgetTester tester, {ThemeData? theme}) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        localize(
+          const CollaborativeShoppingView(listId: _testListId),
+          theme: theme,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    testWidgets("shows the updater's name for another user's update", (
+      tester,
+    ) async {
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+      expect(noticeKey, findsNothing);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'u-other',
+              lastActivityByDisplayName: 'Anna',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(noticeKey, findsOneWidget);
+      expect(
+        find.text(l10n.shoppingListUpdatedByNotice('Anna')),
+        findsOneWidget,
+      );
+    });
+
+    // B83-2d: a notice box — surface.tint.warning fill, no border lines.
+    for (final (name, theme, tint) in [
+      ('light', AppTheme.lightTheme, const Color(0xFFF0EEE2)),
+      ('dark', AppTheme.darkTheme, const Color(0xFF2F4437)),
+    ]) {
+      testWidgets(
+        '$name: a surface.tint.warning fill with no border (B83-2d)',
+        (
+          tester,
+        ) async {
+          final list = listWith([item('Mjölk')]);
+          shoppingService.setShoppingState(lists: [list], isInitialized: true);
+          await pumpFullView(tester, theme: theme);
+
+          shoppingService.emitState(
+            ShoppingStateData(
+              lists: [
+                list.copyWith(
+                  lastActivityAt: DateTime(2026, 10, 1),
+                  lastActivityByUserId: 'u-other',
+                  lastActivityByDisplayName: 'Anna',
+                ),
+              ],
+            ),
+          );
+          await tester.pump();
+
+          expect(noticeKey, findsOneWidget);
+          final box = tester.widget<Container>(
+            find
+                .descendant(of: noticeKey, matching: find.byType(Container))
+                .first,
+          );
+          final decoration = box.decoration! as BoxDecoration;
+          expect(decoration.color, tint);
+          expect(decoration.border, isNull);
+          expect(
+            decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.radiusControl),
+          );
+        },
+      );
+    }
+
+    testWidgets("shows nothing for the signed-in user's own update", (
+      tester,
+    ) async {
+      // listWith's owner is 'test-user-123' — ViewTestHelpers' default
+      // signed-in user (matches the BUT-1722 view-only test above).
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'test-user-123',
+              lastActivityByDisplayName: 'Malin',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(noticeKey, findsNothing);
+    });
+
+    testWidgets('can be dismissed', (tester) async {
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'u-other',
+              lastActivityByDisplayName: 'Anna',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      expect(noticeKey, findsOneWidget);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      await tester.tap(find.byTooltip(l10n.a11yShoppingListUpdatedByDismiss));
+      await tester.pump();
+
+      expect(noticeKey, findsNothing);
+    });
+
+    testWidgets('uses the neutral fallback when the display name is missing', (
+      tester,
+    ) async {
+      final list = listWith([item('Mjölk')]);
+      shoppingService.setShoppingState(lists: [list], isInitialized: true);
+      await pumpFullView(tester);
+
+      shoppingService.emitState(
+        ShoppingStateData(
+          lists: [
+            list.copyWith(
+              lastActivityAt: DateTime.now(),
+              lastActivityByUserId: 'u-other',
+              lastActivityByDisplayName: '',
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(find.text(l10n.shoppingListUpdatedByUnknown), findsOneWidget);
+    });
+  });
+
+  // BUT-2183: the list header is surface.raised, so its status badge stands on
+  // surface.base with no border, and the text carries the status colour.
+  group('CollaborativeShoppingView — status badge (BUT-2183)', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      for (final done in [false, true]) {
+        testWidgets(
+          '$name, ${done ? 'completed' : 'in progress'}: base fill, no border, '
+          'the status text token',
+          (tester) async {
+            tester.view.physicalSize = const Size(420, 3000);
+            tester.view.devicePixelRatio = 1.0;
+            addTearDown(() {
+              tester.view.resetPhysicalSize();
+              tester.view.resetDevicePixelRatio();
+            });
+            shoppingService.setShoppingState(
+              lists: [
+                listWith([
+                  item('Mjölk', bought: done),
+                  item('Bröd', bought: true),
+                ]),
+              ],
+              isInitialized: true,
+            );
+            await tester.pumpWidget(
+              localize(
+                const CollaborativeShoppingView(listId: _testListId),
+                theme: theme,
+              ),
+            );
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 50));
+
+            final context = tester.element(
+              find.byType(CollaborativeShoppingView),
+            );
+            final l10n = AppLocalizations.of(context);
+            final badge = find.text(
+              done ? l10n.statusCompleted : l10n.statusInProgress,
+            );
+            expect(badge, findsOneWidget);
+            final box = tester.widget<Container>(
+              find.ancestor(of: badge, matching: find.byType(Container)).first,
+            );
+            final decoration = box.decoration! as BoxDecoration;
+            expect(decoration.color, theme.colorScheme.surface);
+            expect(decoration.border, isNull);
+            expect(
+              tester.widget<Text>(badge).style?.color,
+              done
+                  ? context.modeColors.success
+                  : AppModeColors.textWarning(theme.brightness),
+            );
+          },
+        );
+      }
+    }
   });
 }

@@ -1,13 +1,16 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/field_text_style.dart';
 
 /// Dialog for saving a menu with name, comment and social sharing
 /// This dialog allows users to save their generated menus with custom names,
@@ -88,15 +91,25 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: Text(context.l10n.commonCancel),
         ),
-        FilledButton(
-          onPressed: _isLoading ? null : _saveMenu,
-          child: _isLoading
-              ? LoadingIndicator(
-                  size: 20,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                )
-              : Text(context.l10n.commonSave),
+        // Busy keeps the button's shape and name, with the plate line along
+        // its bottom edge and "Sparar …" (Komponentark v1:365, :372;
+        // content-style-guide.md:63).
+        BusyButtonSemantics(
+          busy: _isLoading,
+          name: context.l10n.commonSave,
+          busyLabel: context.l10n.statusSaving,
+          child: FilledButton(
+            onPressed: _isLoading ? PlateLineButton.ignore : _saveMenu,
+            style: _isLoading
+                ? PlateLineButton.busyStyle(
+                    null,
+                    Theme.of(context).filledButtonTheme.style,
+                  )
+                : null,
+            child: Text(
+              _isLoading ? context.l10n.statusSaving : context.l10n.commonSave,
+            ),
+          ),
         ),
       ],
     );
@@ -106,10 +119,8 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withValues(
-          alpha: AppDimensions.opacityMediumLight,
-        ),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,12 +144,13 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildNameField() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isLoading),
       controller: _nameController,
       decoration: InputDecoration(
         labelText: context.l10n.menuNameLabel,
         hintText: context.l10n.menuNameHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.restaurant_menu),
+        prefixIcon: const ButleryIcon(ButleryIcons.utensils),
       ),
       validator: FormValidators.required(context.l10n.menuNameRequired),
       maxLength: 50,
@@ -148,12 +160,13 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildCommentField() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isLoading),
       controller: _commentController,
       decoration: InputDecoration(
         labelText: context.l10n.menuCommentLabel,
         hintText: context.l10n.menuCommentHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.comment),
+        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
       ),
       maxLines: 3,
       maxLength: 200,
@@ -194,7 +207,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           height: 150,
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
           child:
               widget.availableFriends == null ||
@@ -244,12 +257,13 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildShareMessage() {
     return TextFormField(
+      style: fieldTextStyle(context, enabled: !_isLoading),
       controller: _shareMessageController,
       decoration: InputDecoration(
         labelText: context.l10n.menuShareMessageLabel,
         hintText: context.l10n.menuShareMessageHint,
         border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.message),
+        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
       ),
       maxLines: 2,
       maxLength: 100,
@@ -280,20 +294,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         Navigator.pop(context);
         if (success) {
           final message = context.l10n.menuSavedSuccess(_nameController.text);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: context.butleryColors.success,
-            ),
-          );
+          SnackBarUtils.showSuccess(context, message);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                widget.viewModel.error ?? context.l10n.menuSaveFailed,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          SnackBarUtils.showFailure(
+            context,
+            what: widget.viewModel.error ?? context.l10n.menuSaveFailed,
           );
         }
       }
@@ -304,10 +309,10 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             _isLoading = false;
           });
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorSavingWithDetails(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.errorSavingWithDetails(
+            SnackBarUtils.userFriendlyMessage(context, e),
           ),
         );
       }

@@ -167,6 +167,22 @@
       ]
     },
     {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "sharedToUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "blockHeldUserIds", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
       "collectionGroup": "notification_delivery",
       "queryScope": "COLLECTION",
       "fields": [
@@ -220,6 +236,33 @@
       "fields": [
         { "fieldPath": "recipeId", "order": "ASCENDING" },
         { "fieldPath": "parentCommentId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recipe_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recipeId", "order": "ASCENDING" },
+        { "fieldPath": "recipeOwnerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recipe_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recipeId", "order": "ASCENDING" },
+        { "fieldPath": "sharedWithUserIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recipe_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recipeId", "order": "ASCENDING" },
+        { "fieldPath": "authorId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
     },
@@ -473,6 +516,15 @@
       ]
     },
     {
+      "collectionGroup": "recipes",
+      "fieldPath": "socialData.memberPermissions",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "friend_categories",
       "fieldPath": "friendUserIds",
       "indexes": [
@@ -594,6 +646,16 @@
       ]
     },
     {
+      "collectionGroup": "erasures_in_progress",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
       "collectionGroup": "dismissals",
       "fieldPath": "expireAt",
       "ttl": true,
@@ -605,16 +667,6 @@
     },
     {
       "collectionGroup": "engagements",
-      "fieldPath": "expireAt",
-      "ttl": true,
-      "indexes": [
-        { "order": "ASCENDING", "queryScope": "COLLECTION" },
-        { "order": "DESCENDING", "queryScope": "COLLECTION" },
-        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
-      ]
-    },
-    {
-      "collectionGroup": "globalRecipeCache",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": [
@@ -796,6 +848,36 @@
     {
       "collectionGroup": "report_history",
       "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
+      "collectionGroup": "overwritten_versions",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
+      "collectionGroup": "mfa_recovery_attempts",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
+      "collectionGroup": "recipe_suggestions",
+      "fieldPath": "expiresAt",
       "ttl": true,
       "indexes": [
         { "order": "ASCENDING", "queryScope": "COLLECTION" },

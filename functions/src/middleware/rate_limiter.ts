@@ -137,6 +137,29 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 10,
     refillIntervalMs: 60000,
   },
+  // BUT-2264. Each call answers whether one address is findable, so the
+  // daily cap is what limits trying a list of addresses.
+  findUserByEmail: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+    dailyLimit: 100,
+  },
+  // BUT-2270. One call carries up to 50 invitations, which the client path
+  // could only send one per 10 s.
+  sendGroupInvitations: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+    dailyLimit: 50,
+  },
+  // BUT-2267. Joining is idempotent and writes one household document, so a
+  // burst bucket without a daily cap.
+  joinGroupHousehold: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
   // BUT-1856. Same numbers as `createChatGroup` on purpose: this callable can
   // create a group and does so through `createChatGroupWithDeps`, bypassing the
   // create bucket entirely, so anything looser here would quietly raise the
@@ -146,6 +169,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 5,
     refillIntervalMs: 60000,
     dailyLimit: 50,
+  },
+
+  // BUT-1747 panel condition 1: five per hour, ten per day.
+  exportSharedResidue: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
   },
 
   // Notification Operations

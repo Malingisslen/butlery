@@ -2,8 +2,7 @@
  * Parse Event Logging - Server-side analytics for recipe parsing
  *
  * P1-4 Security: Tier attempts array is validated per-entry (max 10,
- * tier names checked against VALID_TIERS, values clamped). Client also
- * sends domain and unknownDomain flag for site coverage analytics.
+ * tier names checked against VALID_TIERS, values clamped).
  */
 
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
@@ -43,9 +42,39 @@ export function computeExpireAt(nowMs: number): admin.firestore.Timestamp {
 }
 
 /**
- * Valid import sources
+ * BUT-2238: an import writes ONE event, from the app's ImportManager. These
+ * lists mirror the Dart side (ImportChannel, ImportEvent.strategyIds and
+ * ImportErrorCode in lib/services/import/); import_event_vocabulary_test.dart
+ * reads this file and fails when the two drift.
  */
-const VALID_SOURCES = ["url", "text", "instagram", "tiktok", "youtube", "ocr"];
+export const VALID_CHANNELS = ["link", "text", "photo", "voice", "file"];
+export const VALID_STRATEGIES = [
+  "url",
+  "text",
+  "photo",
+  "voice",
+  "youtube",
+  "tiktok",
+  "instagram",
+  "archive",
+  "file",
+  "unknown",
+];
+export const VALID_OUTCOMES = ["recipe", "assistance", "failure"];
+export const VALID_ERROR_CODES = [
+  "unknown",
+  "network",
+  "rateLimited",
+  "llmQuotaExceeded",
+  "invalidUrl",
+  "urlNotAccessible",
+  "platformBlocked",
+  "noRecipeContent",
+  "ocrFailed",
+  "parsingFailed",
+  "saveFailed",
+  "cancelled",
+];
 
 /**
  * BUT-1646/BUT-1486: valid parsing tier names — the raw CamelCase Dart
@@ -128,15 +157,9 @@ export function validateDomain(domain: unknown): string | null {
   return hostnameRegex.test(normalized) ? normalized : null;
 }
 
-/**
- * Validate and normalize source type
- */
-function validateSource(source: unknown): string {
-  if (typeof source !== "string") {
-    return "unknown";
-  }
-  const normalized = source.toLowerCase().trim();
-  return VALID_SOURCES.includes(normalized) ? normalized : "unknown";
+/** The value when it is one of [allowed], else null. */
+function oneOf(value: unknown, allowed: readonly string[]): string | null {
+  return typeof value === "string" && allowed.includes(value) ? value : null;
 }
 
 /**
@@ -174,7 +197,10 @@ interface TierAttemptEntry {
  */
 interface ParseEventData {
   url?: string;
-  source?: string;
+  channel?: string;
+  strategy?: string;
+  outcome?: string;
+  errorCode?: string;
   success?: boolean;
   fromCache?: boolean;
   parseTimeMs?: number;
@@ -183,9 +209,72 @@ interface ParseEventData {
   successfulTier?: string;
   finalQuality?: number;
   usedLlm?: boolean;
-  totalCostSek?: number;
+  estimatedCostUsd?: number;
   tierAttempts?: TierAttemptEntry[];
   unknownDomain?: boolean;
+}
+
+/**
+ * BUT-2238: the client fields a parse event keeps, each validated or dropped.
+ * Exported as a test seam (log-parse-event-fields.test.ts), like
+ * validateDomain and computeExpireAt.
+ */
+export function sanitizeParseEvent(data: ParseEventData) {
+  const tierAttempts = Array.isArray(data.tierAttempts)
+    ? data.tierAttempts.slice(0, 10).map((entry: TierAttemptEntry) => ({
+        tier: typeof entry.tier === "string" && VALID_TIERS.includes(entry.tier) ? entry.tier : "unknown",
+        success: Boolean(entry.success),
+        quality: typeof entry.quality === "number" ? clamp(entry.quality, 0, 1) : 0,
+        durationMs: typeof entry.durationMs === "number" ? clamp(entry.durationMs, 0, 60000) : 0,
+      }))
+    : null;
+  const outcome = oneOf(data.outcome, VALID_OUTCOMES);
+  return {
+    url: sanitizeUrl(data.url),
+    // Validate the client-supplied domain (it becomes a site_configs doc ID).
+    // Fall back to the domain parsed from the URL, which new URL() already
+    // guarantees is a real hostname.
+    domain: validateDomain(data.domain) ?? extractDomain(data.url),
+    channel: oneOf(data.channel, VALID_CHANNELS),
+    strategy: oneOf(data.strategy, VALID_STRATEGIES),
+    outcome,
+    success: outcome === "recipe",
+    errorCode: outcome === "failure" ? oneOf(data.errorCode, VALID_ERROR_CODES) : null,
+    fromCache: Boolean(data.fromCache),
+    parseTimeMs: clamp(data.parseTimeMs, 0, 60000),
+    parserVersion: validateParserVersion(data.parserVersion),
+    successfulTier: typeof data.successfulTier === "string" && VALID_TIERS.includes(data.successfulTier) ? data.successfulTier : null,
+    finalQuality: typeof data.finalQuality === "number" ? clamp(data.finalQuality, 0, 1) : null,
+    usedLlm: typeof data.usedLlm === "boolean" ? data.usedLlm : null,
+    estimatedCostUsd: typeof data.estimatedCostUsd === "number" ? clamp(data.estimatedCostUsd, 0, 1) : null,
+    ...(tierAttempts ? { tierAttempts } : {}),
+    ...(data.unknownDomain === true ? { unknownDomain: true } : {}),
+  };
+}
+
+type SanitizedParseEvent = ReturnType<typeof sanitizeParseEvent>;
+
+/** An event must say where it came from: a link, or a channel. */
+export function isLoggable(fields: SanitizedParseEvent): boolean {
+  return Boolean(fields.url || fields.channel);
+}
+
+/** Strategies that answer a link without running the site's own parser. */
+const NOT_SITE_PARSERS = ["youtube", "tiktok", "instagram"];
+
+/**
+ * Whether an event moves the site_configs counters, which feed
+ * SiteConfig.isReliable and so the parser's quality bar for that domain. Only
+ * a live parse of a recipe site says anything about the site's selectors: a
+ * cache hit and the social pipelines do not.
+ */
+export function countsForSite(fields: SanitizedParseEvent): boolean {
+  return (
+    Boolean(fields.domain) &&
+    fields.channel === "link" &&
+    !fields.fromCache &&
+    !NOT_SITE_PARSERS.includes(fields.strategy ?? "")
+  );
 }
 
 /**
@@ -218,54 +307,28 @@ export const logParseEvent = onCall(
     // Rate limiting: 30 requests per minute, 10 refilled per minute
     await enforceRateLimit(userId, "logParseEvent");
 
-    // Validate required field
-    const sanitizedUrl = sanitizeUrl(data.url);
-    if (!sanitizedUrl && !data.source) {
+    const fields = sanitizeParseEvent(data);
+    if (!isLoggable(fields)) {
       throw new HttpsError(
         "invalid-argument",
-        "Either url or source must be provided"
+        "Either url or channel must be provided"
       );
     }
 
-    // Validate tier attempts array (max 10 entries, validated per-entry)
-    const tierAttempts = Array.isArray(data.tierAttempts)
-      ? data.tierAttempts.slice(0, 10).map((entry: TierAttemptEntry) => ({
-          tier: typeof entry.tier === "string" && VALID_TIERS.includes(entry.tier) ? entry.tier : "unknown",
-          success: Boolean(entry.success),
-          quality: typeof entry.quality === "number" ? clamp(entry.quality, 0, 1) : 0,
-          durationMs: typeof entry.durationMs === "number" ? clamp(entry.durationMs, 0, 60000) : 0,
-        }))
-      : null;
-
-    // P1-4: Accept validated scalars + validated tier attempts array
+    // P1-4: only validated client fields, plus server-owned ones
     const trustedFields = {
       userId,
-      url: sanitizedUrl,
-      // Validate the client-supplied domain (it becomes a site_configs doc ID
-      // below). Fall back to the domain parsed from the sanitized URL, which
-      // new URL() already guarantees is a real hostname.
-      domain: validateDomain(data.domain) ?? extractDomain(data.url),
-      source: validateSource(data.source),
-      success: Boolean(data.success),
-      fromCache: Boolean(data.fromCache),
-      parseTimeMs: clamp(data.parseTimeMs, 0, 60000),
-      parserVersion: validateParserVersion(data.parserVersion),
+      ...fields,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      successfulTier: typeof data.successfulTier === "string" && VALID_TIERS.includes(data.successfulTier) ? data.successfulTier : null,
-      finalQuality: typeof data.finalQuality === "number" ? clamp(data.finalQuality, 0, 1) : null,
-      usedLlm: typeof data.usedLlm === "boolean" ? data.usedLlm : null,
-      totalCostSek: typeof data.totalCostSek === "number" ? clamp(data.totalCostSek, 0, 10) : null,
       // BUT-1478: TTL field — see computeExpireAt/RETENTION_DAYS above.
       expireAt: computeExpireAt(Date.now()),
-      ...(tierAttempts ? { tierAttempts } : {}),
-      ...(data.unknownDomain === true ? { unknownDomain: true } : {}),
     };
 
     try {
       await getDb().collection("parse_events").add(trustedFields);
 
       // Update site_configs success/failure counts (server-side, replaces dead client writes)
-      if (trustedFields.domain) {
+      if (countsForSite(fields) && fields.domain) {
         const siteUpdate: Record<string, unknown> = trustedFields.success
           ? {
               successCount: admin.firestore.FieldValue.increment(1),
@@ -279,14 +342,14 @@ export const logParseEvent = onCall(
 
         await getDb()
           .collection("site_configs")
-          .doc(trustedFields.domain)
+          .doc(fields.domain)
           .set(siteUpdate, { merge: true });
       }
 
       logger.info("Parse event logged", {
         userId,
         domain: trustedFields.domain,
-        source: trustedFields.source,
+        channel: trustedFields.channel,
         success: trustedFields.success,
       });
 

@@ -24,7 +24,9 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
@@ -104,6 +106,24 @@ void main() {
     expect(
       find.byKey(const ValueKey('test-quick-capture-save')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('P4-U07: a subpage with one saffron save, named for its way '
+      'back', (tester) async {
+    // Komponentark v1:71-78; Skarmar v12 del 1 'Snabbspara'; Grafisk manual
+    // v6:219.
+    await openCapture(tester, _PopObserver());
+
+    final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+    expect(bar.pattern, ButleryTopBarPattern.undersida);
+    expect(find.byTooltip('Tillbaka till Lägg till recept'), findsOneWidget);
+    final save = tester.widget<FilledButton>(
+      find.byKey(const ValueKey('test-quick-capture-save')),
+    );
+    expect(
+      save.style!.backgroundColor!.resolve(const {}),
+      AppModeColors.actionPrimary(Brightness.light),
     );
   });
 

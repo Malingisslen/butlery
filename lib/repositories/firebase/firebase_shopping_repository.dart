@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
@@ -16,6 +17,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_repository_routing_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_repository_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_item_operations_module.dart';
+import 'package:butlery/repositories/firebase/modules/shopping_personal_merge_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_template_operations_module.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -57,6 +59,7 @@ class FirebaseShoppingRepository
   late final ShoppingRepositoryQueryModule _queryModule;
   late final ShoppingItemOperationsModule _itemOpsModule;
   late final ShoppingTemplateOperationsModule _templateOpsModule;
+  late final ShoppingPersonalMergeModule _mergeModule;
 
   FirebaseShoppingRepository({
     super.firestore,
@@ -115,6 +118,15 @@ class FirebaseShoppingRepository
           ServiceLocator.tryGet<UserService>()?.profileDisplayName,
     );
 
+    _mergeModule = ShoppingPersonalMergeModule(
+      firestore: firestore,
+      requireCurrentUserId: requireCurrentUserId,
+      getUserCollection: getUserCollection,
+      fromFirestore: fromFirestore,
+      validateOwnership: validateOwnership,
+      logPermissionCheck: logPermissionCheck,
+    );
+
     _templateOpsModule = ShoppingTemplateOperationsModule(
       firestore: firestore,
       authRepository: authRepository,
@@ -137,7 +149,10 @@ class FirebaseShoppingRepository
 
   @override
   Map<String, dynamic> toFirestore(UnifiedShoppingList entity) =>
-      entity.toFirestore();
+      // BUT-2140: this feeds the whole-list `update`. A copy held in memory
+      // since before a removal would write its older `recentlyRemoved` over
+      // the newer entries, so only the row paths ever write that field.
+      entity.toFirestore()..remove(UnifiedShoppingList.recentlyRemovedKey);
 
   @override
   String getId(UnifiedShoppingList entity) => entity.id;
@@ -373,12 +388,18 @@ class FirebaseShoppingRepository
   ) async => _itemOpsModule.addItemsBatch(listId, items);
 
   @override
-  Future<void> removeItem(String listId, String itemId) async =>
-      _itemOpsModule.removeItem(listId, itemId);
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async => _itemOpsModule.removeItem(listId, itemId, removed: removed);
 
   @override
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async =>
-      _itemOpsModule.updateItem(listId, item);
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async => _itemOpsModule.updateItem(listId, item, before: before);
 
   @override
   Future<void> updateItemsBatch(
@@ -387,8 +408,24 @@ class FirebaseShoppingRepository
   ) async => _itemOpsModule.updateItemsBatch(listId, items);
 
   @override
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async =>
-      _itemOpsModule.removeItemsBatch(listId, itemIds);
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async =>
+      _itemOpsModule.removeItemsBatch(listId, itemIds, removed: removed);
+
+  @override
+  Future<UnifiedShoppingItem?> restoreRemovedRow(
+    String listId,
+    ShoppingRowSnapshot entry,
+  ) => _itemOpsModule.restore.restoreRemovedRow(listId, entry);
+
+  @override
+  Future<UnifiedShoppingItem?> restoreChangedRow(
+    String listId,
+    String itemId,
+  ) => _itemOpsModule.restore.restoreChangedRow(listId, itemId);
 
   /// Create or update a personal list for the current user.
   /// Uses base class create/update methods for consistency.
@@ -400,6 +437,23 @@ class FirebaseShoppingRepository
       await create(list);
     }
   }
+
+  @override
+  Future<PersonalMergeResult> applyPersonalMerge(
+    UnifiedShoppingList base,
+    PersonalMergeRequest request,
+  ) => _mergeModule.applyPersonalMerge(base, request);
+
+  @override
+  Future<UnifiedShoppingList> undoPersonalMerge(
+    UnifiedShoppingList base, {
+    required List<String> addedIds,
+    required List<UnifiedShoppingItem> restore,
+  }) => _mergeModule.undoPersonalMerge(
+    base,
+    addedIds: addedIds,
+    restore: restore,
+  );
 
   @override
   Future<UnifiedShoppingList> mutateCollaborativeList(

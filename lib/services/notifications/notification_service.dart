@@ -27,6 +27,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart'
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/interfaces/device_repository.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Notification coordinator using modular architecture with 6 specialized managers.
 ///
@@ -162,7 +163,7 @@ class NotificationService extends BaseService {
         _initializeModules();
 
         AppLogger.info(
-          '🔔 Initializing NotificationService coordinator for user: $_userId',
+          '🔔 Initializing NotificationService coordinator for user: ${_userId.maskedUserId}',
         );
 
         // Initialize FCM service (consent-gated for permissions/token).
@@ -396,7 +397,7 @@ class NotificationService extends BaseService {
     await safeExecute(
       () async {
         AppLogger.info(
-          '🔔 Coordinator: Sending digest notification to user: $targetUserId',
+          '🔔 Coordinator: Sending digest notification to user: ${targetUserId.maskedUserId}',
         );
 
         // Check if user wants digest notifications
@@ -539,11 +540,13 @@ class NotificationService extends BaseService {
     String notificationId,
   ) async {
     try {
-      AppLogger.info('🔔 Sending FCM notification to: $targetUserId');
-
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'sendNotification',
+      AppLogger.info(
+        '🔔 Sending FCM notification to: ${targetUserId.maskedUserId}',
       );
+
+      final callable = FirebaseFunctions.instanceFor(
+        region: 'europe-west1',
+      ).httpsCallable('sendNotification');
 
       final result = await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -570,7 +573,9 @@ class NotificationService extends BaseService {
         );
       }
       if (successCount == 0 && failureCount == 0) {
-        AppLogger.info('ℹ️ No FCM tokens registered for user $targetUserId');
+        AppLogger.info(
+          'ℹ️ No FCM tokens registered for user ${targetUserId.maskedUserId}',
+        );
       }
     } catch (e) {
       AppLogger.error('❌ Failed to send FCM notification', e);
@@ -584,11 +589,13 @@ class NotificationService extends BaseService {
     Map<String, dynamic> data,
   ) async {
     try {
-      AppLogger.info('🔔 Sending silent FCM notification to: $targetUserId');
-
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'sendNotification',
+      AppLogger.info(
+        '🔔 Sending silent FCM notification to: ${targetUserId.maskedUserId}',
       );
+
+      final callable = FirebaseFunctions.instanceFor(
+        region: 'europe-west1',
+      ).httpsCallable('sendNotification');
 
       await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -596,7 +603,9 @@ class NotificationService extends BaseService {
         'silent': true,
       });
 
-      AppLogger.debug('✅ Silent FCM notification sent to: $targetUserId');
+      AppLogger.debug(
+        '✅ Silent FCM notification sent to: ${targetUserId.maskedUserId}',
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Silent notification failed (non-critical): $e');
     }

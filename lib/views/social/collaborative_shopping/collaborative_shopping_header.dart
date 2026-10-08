@@ -1,10 +1,13 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_header.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -63,7 +66,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final shoppers = viewModel.activeShoppers;
     return Wrap(
-      spacing: AppDimensions.spacingS,
+      spacing: AppDimensions.space4,
       runSpacing: AppDimensions.spacingXs,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -75,7 +78,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: cs.primary,
+                  color: cs.onSurface,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -100,7 +103,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Expanded(
           child: Text(
             viewModel.listTitle,
-            style: AppTextStyles.sectionHeader,
+            style: AppTextStyles.sectionHeader.copyWith(
+              color: AppModeColors.textBody(Theme.of(context).brightness),
+            ),
           ),
         ),
         _buildStatusBadge(context),
@@ -110,20 +115,17 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
   Widget _buildStatusBadge(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final color = viewModel.getStatusColor(cs, butlery);
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.surface,
         borderRadius: BorderRadius.zero,
-        border: Border.all(
-          color: color.withValues(alpha: AppDimensions.opacityMediumLight),
-        ),
       ),
       child: Text(
         viewModel.statusText,
@@ -148,7 +150,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildProgressSection(BuildContext context) {
     final progress = viewModel.completionPercentage / 100;
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.butleryColors;
+    final butlery = context.modeColors;
     final progressColor = viewModel.getProgressColor(cs, butlery);
 
     return Column(
@@ -187,17 +189,10 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     double progress,
     Color progressColor,
   ) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      child: LinearProgressIndicator(
-        value: progress,
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityLight),
-        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-        minHeight: 8,
-      ),
-    );
+    // The list's progress is the determinate plate line: progressIndicator
+    // on progressTrack, per mode (Komponentark v1:305; B-18). The count next
+    // to it carries the number, so the line is not read twice.
+    return ExcludeSemantics(child: PlateLine(value: progress));
   }
 
   Widget _buildMetadataSection(BuildContext context) {
@@ -216,8 +211,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.group,
+        ButleryIcon(
+          ButleryIcons.users,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
@@ -233,8 +228,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildActivitySummary(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          Icons.access_time,
+        ButleryIcon(
+          ButleryIcons.clock,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
