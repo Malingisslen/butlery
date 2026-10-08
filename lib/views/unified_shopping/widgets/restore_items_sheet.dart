@@ -20,8 +20,6 @@ class RestoreItemsSheet extends StatelessWidget {
 
   final UnifiedShoppingViewModel viewModel;
 
-  static const Duration undoDuration = Duration(seconds: 7);
-
   /// Opens the sheet; a tap on a line closes it and restores that line from
   /// [context], so the snackbar with Ångra is not hidden behind the sheet.
   static Future<void> show(
@@ -49,16 +47,13 @@ class RestoreItemsSheet extends StatelessWidget {
   ) async {
     final l = context.l10n;
     final message = l.shoppingRestoredRemoved(entry.name);
-    final undoLabel = l.commonUndo;
     final ok = await viewModel.restoreRemovedRow(entry);
     if (!context.mounted) return;
     if (!ok) return _fail(context, viewModel);
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       message,
-      actionLabel: undoLabel,
-      duration: undoDuration,
-      onAction: () async {
+      onUndo: () async {
         final undone = await viewModel.removeItem(entry.id);
         if (!undone && context.mounted) _fail(context, viewModel);
       },
@@ -72,16 +67,13 @@ class RestoreItemsSheet extends StatelessWidget {
   ) async {
     final l = context.l10n;
     final message = l.shoppingRestoredChanged(item.previous?.name ?? item.name);
-    final undoLabel = l.commonUndo;
     final ok = await viewModel.restoreChangedRow(item.id);
     if (!context.mounted) return;
     if (!ok) return _fail(context, viewModel);
-    SnackBarUtils.showSuccessWithAction(
+    SnackBarUtils.showUndo(
       context,
       message,
-      actionLabel: undoLabel,
-      duration: undoDuration,
-      onAction: () async {
+      onUndo: () async {
         final undone = await viewModel.restoreChangedRow(item.id);
         if (!undone && context.mounted) _fail(context, viewModel);
       },
