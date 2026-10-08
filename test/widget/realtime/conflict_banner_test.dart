@@ -44,6 +44,7 @@ ConflictEvent _event({
   String docId = 'doc-1',
   ConflictEntity entity = ConflictEntity.recipeOwn,
   String editor = 'Per',
+  ConflictOrigin origin = ConflictOrigin.realtime,
 }) => ConflictEvent(
   collectionPath: 'recipes',
   docId: docId,
@@ -52,6 +53,7 @@ ConflictEvent _event({
   chosenStrategy: ConflictResolutionStrategy.localWon,
   entity: entity,
   occurredAt: DateTime(2026, 5, 28),
+  origin: origin,
 );
 
 void main() {
@@ -349,5 +351,73 @@ void main() {
         expect(tester.widget<Text>(find.text(text)).style!.color, bodyText);
       });
     }
+  });
+
+  // BUT-2213 (TR::FLOW::08::ko::toms::konfliktbanner): a queued edit of the
+  // user's own recipe that met a newer server version.
+  group('a queue conflict', () {
+    testWidgets('says the recipe was changed on another device (B1)', (
+      tester,
+    ) async {
+      late String otherDevice;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              message = context.l10n.conflictBannerTitleRecipe;
+              otherDevice = context.l10n.conflictBannerBodyOtherDevice;
+              return const ConflictBanner();
+            },
+          ),
+        ),
+      );
+      conflicts.add(_event(origin: ConflictOrigin.queue));
+      await tester.pumpAndSettle();
+
+      expect(
+        otherDevice,
+        'Du ändrade receptet på en annan enhet. Din version finns kvar — '
+        'välj vilken som gäller.',
+      );
+      expect(find.text(message), findsOneWidget);
+      expect(find.text(otherDevice), findsOneWidget);
+    });
+
+    testWidgets('released before the recipe was opened shows when it '
+        'opens', (tester) async {
+      final pending = _event(docId: 'r1', origin: ConflictOrigin.queue);
+      when(() => service.pendingQueuedConflict('r1')).thenReturn(pending);
+
+      await tester.pumpWidget(harness(filterDocId: 'r1'));
+      await tester.pump();
+
+      expect(find.text(message), findsOneWidget);
+    });
+
+    testWidgets('closing it forgets the waiting notice', (tester) async {
+      final pending = _event(docId: 'r1', origin: ConflictOrigin.queue);
+      when(() => service.pendingQueuedConflict('r1')).thenReturn(pending);
+      await tester.pumpWidget(harness(filterDocId: 'r1'));
+      await tester.pump();
+
+      await tester.tap(find.byTooltip(dismissTooltip));
+      await tester.pump();
+
+      verify(() => service.clearQueuedConflict('r1')).called(1);
+      expect(find.text(message), findsNothing);
+    });
+
+    testWidgets('closing a live conflict leaves the queue notices alone', (
+      tester,
+    ) async {
+      await tester.pumpWidget(harness());
+      conflicts.add(_event());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip(dismissTooltip));
+      await tester.pump();
+
+      verifyNever(() => service.clearQueuedConflict(any()));
+    });
   });
 }

@@ -5698,3 +5698,33 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   "Removing other people's uids is a default awaiting Malin's answer." `exportSharedResidue`
   keeps the requester's uid and the list owner's uid on a left list's rows and removes every
   other uid and display name.
+
+## BUT-2213 — a queued recipe write compares the recipe's revision (2026-10-08)
+
+- **A repeat is recognised by its content, and recipes still carry no `opId` (BUT-2162 F3-2,
+  BUT-2213, 2026-10-08).** A queued update carries the revision (`rev`) its device copy was
+  built on. `RecipeRevisionOperations.writeAtRevision` reads the recipe in a transaction and
+  writes only on that revision. When the revision differs but the fields the update would
+  write equal the server's (`_sameContent`, both sides through `Recipe.toFirestore`), the
+  send counts as done and nothing is written, so an entry whose answer was lost and is sent
+  again is not a conflict. F3-2 stands: no `opId` field on recipes, no rules change.
+- **SUPERSEDES the last two sentences of the BUT-2151 recipe-resource entry (BUT-2213,
+  2026-10-08).** They read: "Opening the recipe type belongs to BUT-2213, together with its
+  writer and an id of the form `{ownerId}_{recipeId}`. Do not open the type 'for
+  completeness'." BUT-2213 did not open it. A queue conflict is built in memory as a
+  `RealtimeRecipe` for the banner and the comparison view, "Behåll min version" writes the
+  user's recipe through `UnifiedRecipeService.personal.updateUnifiedRecipe`, and Återställ on
+  a kept recipe version reads and writes the recipe document. `realtimeResourceShapeOk`
+  still admits `type == 'menu'` only. Do not open the type "for completeness".
+- **Saves from older app versions are missed conflicts, never false ones (BUT-2213,
+  2026-10-08).** An app version from before this change updates a recipe without touching
+  `rev`, so a queued edit built on the revision before that save is written over it, as
+  every queued edit was before. A document without `rev` is revision 0, and a device copy
+  queued before the update has no revision and is written without comparing.
+- **A queue conflict keeps the device's version even when the newer one is the user's own
+  (Malin, 2026-10-08, A1).** `QueuedRecipeConflicts._keep` stores the device's version as an
+  `OverwrittenVersion` (`recipeOwn`, type `recipe`) for 30 days whoever saved the server's
+  version. The realtime path, `RealtimeSyncService._keepOverwritten`, keeps nothing when
+  `winner.lastEditedBy == userId`. On the queue path the winner is, by the assumption that
+  only the owner edits their recipe, always the user's own other device. The asymmetry is the
+  decision; do not harmonise it.

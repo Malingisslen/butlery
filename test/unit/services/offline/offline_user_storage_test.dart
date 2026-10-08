@@ -81,6 +81,12 @@ void main() {
         () => mockSyncQueueDao.pendingCreateOpId(any(), any()),
       ).thenAnswer((_) async => null);
 
+      // No earlier copy of the recipe on the device (BUT-2213 reads its
+      // revision before saving).
+      when(
+        () => mockRecipeDao.getRecipe(any(), any()),
+      ).thenAnswer((_) async => null);
+
       // Create storage instance with mock database
       final uploadsRoot = await Directory.systemTemp.createTemp('uploads');
       addTearDown(() => uploadsRoot.delete(recursive: true));

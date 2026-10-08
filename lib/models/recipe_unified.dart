@@ -1411,6 +1411,12 @@ class Recipe {
   final RecipeRealtimeData? realtimeData;
   final RecipeOfflineData? offlineData;
 
+  /// BUT-2213: the server's revision of this recipe, the top-level `rev`
+  /// field. Only the repository writes it. A copy read from the server
+  /// always has one (an absent field reads as 0); a device copy saved before
+  /// revisions existed has none, and a queued write of it is not compared.
+  final int? rev;
+
   /// BUT-955: hard cap on per-recipe share count. At ~36 bytes per UUID the
   /// 1MB Firestore doc limit is reached around 27k shares; capping at 200
   /// leaves plenty of headroom for other fields. The 200 value tracks
@@ -1425,6 +1431,7 @@ class Recipe {
     this.socialData,
     this.realtimeData,
     this.offlineData,
+    this.rev,
   });
 
   // Convenience getters that delegate to core
@@ -1731,8 +1738,10 @@ class Recipe {
     Object? familyAverage = _sentinel,
     Object? familyRatingCount = _sentinel,
     DateTime? updatedAt,
+    Object? rev = _sentinel,
   }) {
     return Recipe(
+      rev: rev == _sentinel ? this.rev : rev as int?,
       core: core.copyWith(
         familyAverage: familyAverage,
         familyRatingCount: familyRatingCount,

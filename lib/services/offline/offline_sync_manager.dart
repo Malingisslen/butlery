@@ -1,22 +1,19 @@
 // lib/services/offline/offline_sync_manager.dart
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
-import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/queued_recipe_send.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
@@ -28,7 +25,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// Now uses Drift database instead of Hive
 class OfflineSyncManager {
   final AppDatabase _database;
-  final RecipeDao _recipeDao;
   final SyncQueueDao _syncQueueDao;
   final AuthRepository _authRepository;
 
@@ -40,10 +36,12 @@ class OfflineSyncManager {
   /// Injected from OfflineService to avoid circular dependency with TaggingService.
   final Future<void> Function(String recipeId, String userId)? _onTagRecipe;
 
-  /// Told the id of each recipe whose write or deletion has just left the
-  /// queue, so the screen can take the server's copy: the cache keeps the
-  /// device's copy while the queue holds a write (BUT-2162).
-  final void Function(String recipeId)? _onRecipeSent;
+  /// Sends recipe entries (BUT-2162). Told the id of each recipe whose
+  /// write or deletion has just left the queue, so the screen can take the
+  /// server's copy: the cache keeps the device's copy while the queue holds
+  /// a write. Told of each queued edit the server's newer version stopped
+  /// (BUT-2213).
+  final QueuedRecipeSend _recipes;
 
   /// How long one send may take. A Firestore write only completes when the
   /// server confirms it, so on a network without internet it would hold the
@@ -81,6 +79,7 @@ class OfflineSyncManager {
     VoidCallback? onSyncStateChanged,
     Future<void> Function(String recipeId, String userId)? onTagRecipe,
     void Function(String recipeId)? onRecipeSent,
+    RecipeConflictCallback? onRecipeConflict,
     bool Function()? isOnlineNow,
     Random? random,
     this.recipeWriter,
@@ -102,12 +101,17 @@ class OfflineSyncManager {
        _database = database,
        _isOnlineNow = isOnlineNow,
        _random = random,
-       _recipeDao = database.recipeDao,
        _syncQueueDao = database.syncQueueDao,
        _authRepository = authRepository,
        _onSyncStateChanged = onSyncStateChanged,
        _onTagRecipe = onTagRecipe,
-       _onRecipeSent = onRecipeSent;
+       _recipes = QueuedRecipeSend(
+         recipeDao: database.recipeDao,
+         syncQueueDao: database.syncQueueDao,
+         sendTimeout: sendTimeout,
+         onRecipeSent: onRecipeSent,
+         onRecipeConflict: onRecipeConflict,
+       );
 
   // Getters
   bool get isSyncing => _isSyncing;
@@ -281,9 +285,8 @@ class OfflineSyncManager {
       if (_authRepository.currentUserId != userId) break;
 
       try {
-        await _send(item, userId);
+        if (await _send(item, userId)) successCount++;
         waiting.remove(item.opId);
-        successCount++;
       } catch (e) {
         failureCount++;
         AppLogger.error(
@@ -334,9 +337,10 @@ class OfflineSyncManager {
     failed.addAll(marked);
   }
 
-  /// Sends one entry and removes it from the queue once the server has it.
-  /// Throws when the attempt failed; the entry is then untouched.
-  Future<void> _send(SyncQueueEntry item, String userId) async {
+  /// Sends one entry and removes it from the queue once the server has
+  /// answered. Returns whether the server saved it. Throws when the attempt
+  /// failed; the entry is then untouched.
+  Future<bool> _send(SyncQueueEntry item, String userId) async {
     // H9: Handle tag operations separately
     if (item.operation == SyncOperation.tag.name) {
       if (_onTagRecipe != null) {
@@ -349,60 +353,10 @@ class OfflineSyncManager {
         );
       }
       await _syncQueueDao.dequeue(item.id);
-      return;
+      return true;
     }
 
-    final writer = recipeWriter!;
-
-    if (item.operation == SyncOperation.delete.name) {
-      try {
-        await writer.delete(item.recipeId).timeout(sendTimeout);
-      } on ResourceNotFoundException {
-        // Already gone: a create that never reached the server, or an
-        // earlier attempt whose answer was lost.
-      }
-      await _syncQueueDao.dequeue(item.id);
-      _onRecipeSent?.call(item.recipeId);
-      AppLogger.success('✅ Raderade recept: ${item.recipeId}');
-      return;
-    }
-
-    // Get recipe from Drift
-    final offlineRecipe = await _recipeDao.getRecipe(item.recipeId, userId);
-    if (offlineRecipe == null) {
-      // The device copy is gone: the user deleted the recipe on the device,
-      // and its deletion is queued behind this entry.
-      await _syncQueueDao.dequeue(item.id);
-      AppLogger.info('🗑️ Tog bort invalid sync entry: ${item.recipeId}');
-      return;
-    }
-    if (!offlineRecipe.needsSync) {
-      await _syncQueueDao.dequeue(item.id);
-      AppLogger.info('✅ Recept ${item.recipeId} behöver inte synkas längre');
-      return;
-    }
-
-    final json = jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
-    final recipe = Recipe.fromJson(json);
-    AppLogger.info('📤 Synkar recept: ${recipe.id}');
-
-    // One attempt: the queue's own schedule is the backoff
-    // (produktregler.md:188), so a failure goes back to the queue at once.
-    if (item.operation == SyncOperation.create.name) {
-      await writer.create(recipe).timeout(sendTimeout);
-    } else {
-      await writer.update(recipe).timeout(sendTimeout);
-    }
-
-    // Sync succeeded - mark as synced in Drift, then leave the queue.
-    await _recipeDao.markSyncedIfUnchanged(
-      item.recipeId,
-      userId,
-      offlineRecipe.recipeJson,
-    );
-    await _syncQueueDao.dequeue(item.id);
-    _onRecipeSent?.call(item.recipeId);
-    AppLogger.success('✅ Synkade recept: ${recipe.id}');
+    return _recipes.send(item, userId, recipeWriter!);
   }
 
   /// Starts a timer for the earliest retry time among the entries still

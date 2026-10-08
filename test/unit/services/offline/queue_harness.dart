@@ -33,8 +33,13 @@ class HarnessWriter implements QueuedRecipeWriter {
   @override
   Future<void> create(Recipe recipe) => _write(recipe.id);
 
+  /// The server's revision after the write: one above the one it was
+  /// built on.
   @override
-  Future<void> update(Recipe recipe) => _write(recipe.id);
+  Future<int> update(Recipe recipe) async {
+    await _write(recipe.id);
+    return (recipe.rev ?? 0) + 1;
+  }
 
   @override
   Future<void> delete(String recipeId) async {

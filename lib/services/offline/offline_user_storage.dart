@@ -82,7 +82,9 @@ class OfflineUserStorage {
     bool queueTagging = true,
   }) async {
     try {
-      final recipeJson = jsonEncode(recipe.toJson());
+      final recipeJson = jsonEncode(
+        (await _withRevisionBase(recipe, userId, operation)).toJson(),
+      );
       final opId = const Uuid().v4();
       // An edit of a recipe whose create has not reached the server goes
       // down with that create if it fails for good (produktregler.md:187).
@@ -286,6 +288,41 @@ class OfflineUserStorage {
       return true;
     });
   }
+
+  /// [recipe] with the revision its queued write is built on (BUT-2213).
+  ///
+  /// A new recipe has none: the server has not seen it yet. An edit keeps
+  /// the higher of its own revision and the device copy's, so an edit built
+  /// on an older copy held in memory does not look like a conflict with the
+  /// device's own write that has just reached the server. The base is never
+  /// lowered.
+  Future<Recipe> _withRevisionBase(
+    Recipe recipe,
+    String userId,
+    SyncOperation operation,
+  ) async {
+    if (operation == SyncOperation.create) {
+      return recipe.rev == null ? recipe : _withRev(recipe, null);
+    }
+    final stored = await _recipeDao.getRecipe(recipe.id, userId);
+    if (stored == null) return recipe;
+    final storedRev = (jsonDecode(stored.recipeJson) as Map)['rev'];
+    if (storedRev is! int) return recipe;
+    final rev = recipe.rev;
+    if (rev != null && rev >= storedRev) return recipe;
+    return _withRev(recipe, storedRev);
+  }
+
+  /// [recipe] with [rev] and nothing else changed (copyWith would also move
+  /// `updatedAt`).
+  static Recipe _withRev(Recipe recipe, int? rev) => Recipe(
+    core: recipe.core,
+    type: recipe.type,
+    socialData: recipe.socialData,
+    realtimeData: recipe.realtimeData,
+    offlineData: recipe.offlineData,
+    rev: rev,
+  );
 
   /// Get specific offline recipe for user
   Future<Recipe?> getRecipeForUser(String recipeId, String userId) async {

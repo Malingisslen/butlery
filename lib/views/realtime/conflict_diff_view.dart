@@ -115,7 +115,14 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       // wins the NEXT conflict too — re-persisting the captured snapshot as-is
       // would write back its stale (losing) editCount and risk the same silent
       // loss on the next concurrent edit.
-      await svc.recoverLocalVersion(widget.event.localValue);
+      // BUT-2213: a queue conflict is the user's own recipe, which lives on
+      // the recipe document and not in realtime_resources (BUT-2151), so the
+      // device's version is queued again on the server's revision instead.
+      if (widget.event.origin == ConflictOrigin.queue) {
+        await svc.keepQueuedRecipe(widget.event);
+      } else {
+        await svc.recoverLocalVersion(widget.event.localValue);
+      }
       if (!mounted) return;
       Navigator.of(context).pop();
       SnackBarUtils.showSuccess(context, context.l10n.conflictDiffKeptToast);

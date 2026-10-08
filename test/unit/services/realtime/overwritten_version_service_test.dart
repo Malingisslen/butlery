@@ -328,33 +328,67 @@ void main() {
     });
   });
 
+  /// One conflict on the week menu `w1`: my save loses to Per's.
+  RealtimeMenu week(int editCount, DateTime at, String by, String title) {
+    final b = RealtimeMenuBuilder()
+        .withId('w1')
+        .withOwner(_owner, 'Jag')
+        .withParticipant(_editor, ResourcePermission.editor)
+        .withTitle(title)
+        .withEditCount(editCount)
+        .withLastEditedBy(by, by == _owner ? 'Jag' : 'Per');
+    b.createdAt = DateTime(2026, 3, 30);
+    b.lastEditedAt = at;
+    return b.build();
+  }
+
+  Future<void> seedMenu(RealtimeMenu m) =>
+      fake.collection('realtime_resources').doc(m.id).set(m.toFirestore());
+
+  Future<void> weekConflict() async {
+    final first = week(1, DateTime(2026, 4, 1, 11, 59), _owner, 'Min');
+    await seedMenu(first);
+    await sync.updateResource(first);
+    await seedMenu(week(9, DateTime(2026, 4, 1, 12, 0, 1), _editor, 'Pers'));
+    await sync.updateResource(
+      week(2, DateTime(2026, 4, 1, 11, 59, 30), _owner, 'Min'),
+    );
+  }
+
+  Future<OverwrittenVersion> keptWeek(
+    OverwrittenVersionService service,
+  ) async =>
+      (await service
+              .watch(entity: ConflictEntity.weekMenu, resourceId: 'w1')
+              .first)
+          .single;
+
+  // A realtime resource is restored through realtime_resources. Only live
+  // menus live there (BUT-2151); the user's own recipe is restored through
+  // the recipe (overwritten_recipe_restore_test.dart).
   group('restoring (OverwrittenVersionService)', () {
     test('restore makes my version live, undo puts theirs back, settle '
         'forgets the row', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
-        await conflict(sync, 'r1', remoteEditCount: 9);
+        await weekConflict();
         final service = OverwrittenVersionService(
           repository: store,
           syncService: sync,
         );
-        final versions = await service
-            .watch(entity: ConflictEntity.recipeOwn, resourceId: 'r1')
-            .first;
-        expect(versions, hasLength(1));
 
-        final receipt = await service.restore(versions.single);
-        var live = (await sync.fetchLatestResource<RealtimeRecipe>('r1'))!;
-        expect(live.title, 'Min');
+        final receipt = await service.restore(await keptWeek(service));
+        var live = (await sync.fetchLatestResource<RealtimeMenu>('w1'))!;
+        expect(live.menuTitle, 'Min');
         expect(
           live.editCount,
           greaterThan(9),
           reason: 'the restored version outranks the save that overwrote it',
         );
-        expect((receipt.replaced as RealtimeRecipe).title, 'Pers');
+        expect((receipt.replaced as RealtimeMenu).menuTitle, 'Pers');
 
         await service.undo(receipt);
-        live = (await sync.fetchLatestResource<RealtimeRecipe>('r1'))!;
-        expect(live.title, 'Pers');
+        live = (await sync.fetchLatestResource<RealtimeMenu>('w1'))!;
+        expect(live.menuTitle, 'Pers');
         expect(
           await keptRows(_owner),
           hasLength(1),
@@ -369,24 +403,20 @@ void main() {
     test('a resource that is gone is not recreated, and the version stays '
         'kept', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
-        await conflict(sync, 'r1', remoteEditCount: 9);
-        await fake.collection('realtime_resources').doc('r1').delete();
+        await weekConflict();
+        await fake.collection('realtime_resources').doc('w1').delete();
         final service = OverwrittenVersionService(
           repository: store,
           syncService: sync,
         );
-        final version =
-            (await service
-                    .watch(entity: ConflictEntity.recipeOwn, resourceId: 'r1')
-                    .first)
-                .single;
+        final version = await keptWeek(service);
 
         await expectLater(
           () => service.restore(version),
           throwsA(isA<OverwrittenVersionTargetMissing>()),
         );
         expect(
-          (await fake.collection('realtime_resources').doc('r1').get()).exists,
+          (await fake.collection('realtime_resources').doc('w1').get()).exists,
           isFalse,
         );
         expect(await keptRows(_owner), hasLength(1));
@@ -394,12 +424,12 @@ void main() {
     });
 
     test('restore and undo bring back the content only, never who the '
-        'recipe is shared with', () async {
+        'menu is shared with', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
-        await conflict(sync, 'r1', remoteEditCount: 9);
+        await weekConflict();
         // After the conflict the owner removes the editor and adds someone.
         // (A whole-document set: an update would merge the participants map.)
-        final ref = fake.collection('realtime_resources').doc('r1');
+        final ref = fake.collection('realtime_resources').doc('w1');
         await ref.set({
           ...(await ref.get()).data()!,
           'participants': {_owner: 'owner', 'new_user': 'editor'},
@@ -409,11 +439,7 @@ void main() {
           repository: store,
           syncService: sync,
         );
-        final version =
-            (await service
-                    .watch(entity: ConflictEntity.recipeOwn, resourceId: 'r1')
-                    .first)
-                .single;
+        final version = await keptWeek(service);
         expect(
           version.version['participantIds'],
           contains(_editor),
@@ -421,9 +447,7 @@ void main() {
         );
 
         Future<void> expectSharingKept() async {
-          final doc =
-              (await fake.collection('realtime_resources').doc('r1').get())
-                  .data()!;
+          final doc = (await ref.get()).data()!;
           expect(doc['participantIds'], [_owner, 'new_user']);
           expect(
             (doc['participants'] as Map).keys,
@@ -432,13 +456,13 @@ void main() {
         }
 
         final receipt = await service.restore(version);
-        final live = (await sync.fetchLatestResource<RealtimeRecipe>('r1'))!;
-        expect(live.title, 'Min');
+        final live = (await sync.fetchLatestResource<RealtimeMenu>('w1'))!;
+        expect(live.menuTitle, 'Min');
         await expectSharingKept();
 
         await service.undo(receipt);
         expect(
-          (await sync.fetchLatestResource<RealtimeRecipe>('r1'))!.title,
+          (await sync.fetchLatestResource<RealtimeMenu>('w1'))!.menuTitle,
           'Pers',
         );
         await expectSharingKept();
@@ -447,29 +471,22 @@ void main() {
 
     test('a resource that is no longer active is not brought back', () async {
       await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
-        await conflict(sync, 'r1', remoteEditCount: 9);
-        await fake.collection('realtime_resources').doc('r1').update({
-          'isActive': false,
-        });
+        await weekConflict();
+        final ref = fake.collection('realtime_resources').doc('w1');
+        await ref.update({'isActive': false});
         final service = OverwrittenVersionService(
           repository: store,
           syncService: sync,
         );
-        final version =
-            (await service
-                    .watch(entity: ConflictEntity.recipeOwn, resourceId: 'r1')
-                    .first)
-                .single;
+        final version = await keptWeek(service);
 
         await expectLater(
           () => service.restore(version),
           throwsA(isA<OverwrittenVersionTargetMissing>()),
         );
-        final doc =
-            (await fake.collection('realtime_resources').doc('r1').get())
-                .data()!;
+        final doc = (await ref.get()).data()!;
         expect(doc['isActive'], isFalse);
-        expect(doc['title'] ?? doc['name'], isNot('Min'));
+        expect(doc['menuTitle'], 'Pers');
         expect(await keptRows(_owner), hasLength(1));
       });
     });

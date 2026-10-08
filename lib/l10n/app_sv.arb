@@ -5810,6 +5810,10 @@
   "@conflictBannerBodyUnnamed": {
     "description": "P3-U08: conflict banner body when the other editor's name is unknown (Komponentark v1:755-758)."
   },
+  "conflictBannerBodyOtherDevice": "Du ändrade receptet på en annan enhet. Din version finns kvar — välj vilken som gäller.",
+  "@conflictBannerBodyOtherDevice": {
+    "description": "BUT-2213 (B1, Malin 2026-10-08): conflict banner body when a queued edit of the user's own recipe met a newer version saved from their other device."
+  },
   "conflictWeekSaved": "{name} sparade veckan",
   "@conflictWeekSaved": {
     "description": "P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).",

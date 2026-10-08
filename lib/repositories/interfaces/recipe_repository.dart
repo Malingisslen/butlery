@@ -7,6 +7,12 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Repository interface for recipe data operations.
 abstract class RecipeRepository extends Repository<Recipe>
     with StreamManagementMixin {
+  /// BUT-2213: saves [entity] only while the server's recipe is at revision
+  /// [expectedRev] (null: not compared), and returns the revision after the
+  /// save. Throws `RecipeRevisionConflictException` carrying the server's
+  /// recipe when it has moved on to other content.
+  Future<int> updateAtRevision(Recipe entity, {int? expectedRev});
+
   /// Stream of recipes for the specified user.
   ///
   /// Returns the most recent [pageSize] recipes ordered by `core.updatedAt` desc

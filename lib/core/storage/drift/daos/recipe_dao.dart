@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
@@ -70,6 +72,32 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
             lastSyncedAt: Value(clock.now()),
           ),
         );
+  }
+
+  /// BUT-2213: the server took a write built on revision [sentRev] and is now
+  /// at [newRev]. The device copy takes [newRev] while it is still built on
+  /// [sentRev], so its next queued write is compared against the right
+  /// revision; a copy that has moved on is left as it is.
+  Future<void> advanceRev(
+    String recipeId,
+    String userId, {
+    required int? sentRev,
+    required int newRev,
+  }) {
+    return transaction(() async {
+      final row = await getRecipe(recipeId, userId);
+      if (row == null) return;
+      final json = jsonDecode(row.recipeJson) as Map<String, dynamic>;
+      if (json['rev'] != sentRev) return;
+      json['rev'] = newRev;
+      await (update(offlineRecipes)..where(
+            (r) =>
+                r.id.equals(recipeId) &
+                r.userId.equals(userId) &
+                r.recipeJson.equals(row.recipeJson),
+          ))
+          .write(OfflineRecipesCompanion(recipeJson: Value(jsonEncode(json))));
+    });
   }
 
   /// Mark a recipe as synced

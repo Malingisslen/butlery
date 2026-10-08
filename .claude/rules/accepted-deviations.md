@@ -193,3 +193,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - SUPERSEDES "erasable, not exportable" in the BUT-1716 line: `shared_content/{id}/items` rows naming the requester, and every row under their own shares, are exported by `exportSharedResidue` (BUT-1747, 2026-10-07)
 - Another account can make the `shared_lists_left` section decline by creating shared lists whose `contributorUserIds` names the requester; the failure is reported in the section and the rest of the bundle ships (BUT-1747, 2026-10-07)
 - RESOLVED 2026-10-08 — Malin: other people's uids are removed from a left list's rows in `exportSharedResidue`; the requester's and the list owner's stay. Retires "a default awaiting Malin" in the BUT-1747 line (BUT-1747, 2026-10-08)
+- A queued recipe update is written only on the revision it was built on; a repeat whose fields equal the server's counts as done, so recipes still carry no `opId` (BUT-2162 F3-2, BUT-2213, 2026-10-08)
+- SUPERSEDES "until a writer exists (BUT-2213)" in the BUT-2151 line: BUT-2213 handles queue conflicts without a recipe resource; `realtime_resources` still admits menus only. Do not open the type "for completeness" (BUT-2213, 2026-10-08)
+- Older app versions update a recipe without bumping `rev`, so their saves are missed conflicts, never false ones (BUT-2213, 2026-10-08)
+- A queue conflict keeps the device's version 30 days even when the newer one is the user's own; the realtime path's `_keepOverwritten` keeps nothing then. Do not harmonise (A1, BUT-2213, Malin 2026-10-08)

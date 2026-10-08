@@ -47,6 +47,7 @@ import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/offline/sync_result.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -313,6 +314,12 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onRecipeSent: (recipeId) {
         if (!_recipeSent.isClosed) _recipeSent.add(recipeId);
       },
+      // BUT-2213: a queued edit the server's newer version stopped becomes
+      // the conflict banner, through the gate that holds it until the queue
+      // has emptied (produktregler.md:189).
+      onRecipeConflict: (local, remote) => ServiceLocator.tryGet<
+        RealtimeSyncService
+      >()?.announceQueuedRecipeConflict(local, remote),
       uploadImage: _uploadQueuedImage,
       userStorage: _userStorage,
       // A retry timer that fires offline waits for the reconnect pass.

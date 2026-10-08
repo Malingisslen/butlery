@@ -14,6 +14,7 @@ class RecipeSerialization {
       'socialData': recipe.socialData?.toJson(),
       'realtimeData': recipe.realtimeData?.toJson(),
       'offlineData': recipe.offlineData?.toJson(),
+      'rev': ?recipe.rev,
     };
   }
 
@@ -41,6 +42,8 @@ class RecipeSerialization {
               json['offlineData'] as Map<String, dynamic>,
             )
           : null,
+      // A device copy without one is a write whose base is not known.
+      rev: SerializationUtils.safeNullableInt(json, 'rev'),
     );
   }
 
@@ -85,6 +88,9 @@ class RecipeSerialization {
               data['realtimeData'] as Map<String, dynamic>,
             )
           : null,
+      // The server's own document: a recipe saved before revisions existed
+      // is revision 0.
+      rev: SerializationUtils.safeNullableInt(data, 'rev') ?? 0,
     );
   }
 

@@ -19,6 +19,7 @@ class OfflineSyncManager {
     VoidCallback? onSyncStateChanged,
     Future<void> Function(String recipeId, String userId)? onTagRecipe,
     void Function(String recipeId)? onRecipeSent,
+    RecipeConflictCallback? onRecipeConflict,
     QueuedImageUploader? uploadImage,
     OfflineUserStorage? userStorage,
     bool Function()? isOnlineNow,

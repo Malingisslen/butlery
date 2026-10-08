@@ -9,6 +9,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_query_operations.dart';
+import 'package:butlery/repositories/firebase/modules/recipe_revision_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_tag_operations.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -75,6 +76,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   late final RecipeTagOperations _tagOperations;
   late final RecipeGdprExportOperations _gdprExportOperations;
   late final RecipeQueryOperations _queryOperations;
+  late final RecipeRevisionOperations _revisions;
 
   FirebaseRecipeRepository({
     super.firestore,
@@ -100,6 +102,17 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     _queryOperations = RecipeQueryOperations(
       getCollectionForUser: getCollectionForUser,
       fromFirestore: fromFirestore,
+    );
+    _revisions = RecipeRevisionOperations(
+      firestore: firestore,
+      toFirestore: toFirestore,
+      checkOwner: (existing) => validateOwnership(
+        currentUserId: currentUserId,
+        resourceOwnerId: (existing.socialData?.ownerId ?? existing.createdBy)
+            .orEmpty(),
+        resourceType: 'recipe',
+        resourceId: existing.id,
+      ),
     );
   }
   @override
@@ -359,20 +372,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
           resourceId: entity.id,
         );
 
-        // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        Recipe recipeToSave = sanitizeRecipeText(entity);
-        if (IngredientProcessor.needsNormalization(recipeToSave)) {
-          final normalizedIngredients =
-              IngredientProcessor.normalizeIngredientsForRecipe(
-                recipeToSave.core.ingredients,
-              );
-
-          recipeToSave = recipeToSave.copyWith(
-            ingredientsNormalized: normalizedIngredients,
-          );
-        }
-
-        await super.update(recipeToSave);
+        final recipeToSave = RecipeRevisionOperations.prepare(entity);
+        await _checkUpdateAllowed(currentUser, recipeToSave);
+        // BUT-2213: a whole save raises the revision without reading it.
+        await getCollectionRef()
+            .doc(entity.id)
+            .update(_revisions.bumped(recipeToSave));
 
         // Add performance metrics
         trace.setMetric('ingredient_count', entity.core.ingredients.length);
@@ -390,6 +395,39 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         );
       },
     );
+  }
+
+  @override
+  Future<int> updateAtRevision(Recipe entity, {int? expectedRev}) =>
+      FirebasePerformanceService.traceOperation('recipe_update_at_rev', (
+        trace,
+      ) async {
+        final currentUser = requireCurrentUserId();
+        _enforceShareCap(entity);
+        final recipeToSave = RecipeRevisionOperations.prepare(entity);
+        await _checkUpdateAllowed(currentUser, recipeToSave);
+        return _revisions.writeAtRevision(
+          getCollectionRef().doc(entity.id),
+          recipeToSave,
+          expectedRev: expectedRev,
+        );
+      });
+
+  /// What `BaseFirebaseRepository.update` checks and audits before it writes.
+  Future<void> _checkUpdateAllowed(String userId, Recipe entity) async {
+    final allowed = await validateUpdatePermission(userId, entity.id, entity);
+    await logPermissionCheck(
+      userId: userId,
+      resource: 'Recipe/${entity.id}',
+      operation: 'update',
+      granted: allowed,
+      auditRepository: auditRepository,
+    );
+    if (!allowed) {
+      throw PermissionDeniedException(
+        'User $userId does not have permission to update Recipe ${entity.id}',
+      );
+    }
   }
 
   @override

@@ -170,6 +170,18 @@ class ConflictResolutionModule {
         ConflictEntity.recipeShared,
       );
 
+  /// BUT-2213: announces a queued edit of the user's own recipe that met a
+  /// newer server version. The server's version stayed and nothing was
+  /// written; [local] carries the device's version for the user to choose.
+  void announceQueuedRecipe<T extends RealtimeResource>(T local, T remote) =>
+      _emitConflict(
+        local,
+        remote,
+        ConflictResolutionStrategy.remoteWon,
+        ConflictEntity.recipeOwn,
+        origin: ConflictOrigin.queue,
+      );
+
   /// Hands one [ConflictEvent] to [onConflict]. A sink that throws is logged
   /// and contained here, so a broken listener can neither flip the resolver's
   /// choice nor cause a second emission from the error branch.
@@ -180,6 +192,7 @@ class ConflictResolutionModule {
     ConflictEntity entity, {
     String? suggestionId,
     bool suggestionReplaced = false,
+    ConflictOrigin origin = ConflictOrigin.realtime,
   }) {
     final sink = onConflict;
     if (sink == null) return;
@@ -195,6 +208,7 @@ class ConflictResolutionModule {
           occurredAt: clock.now(),
           suggestionId: suggestionId,
           suggestionReplaced: suggestionReplaced,
+          origin: origin,
         ),
       );
     } catch (e) {
