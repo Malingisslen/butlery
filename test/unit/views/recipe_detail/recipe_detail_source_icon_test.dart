@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-1041: the recipe-detail source link picks a platform-aware leading icon
 /// purely by sniffing the URL host — no sourceType enum / schema migration.
@@ -13,21 +13,21 @@ void main() {
         RecipeDetailSharedWidgets.sourceIcon(
           'https://www.youtube.com/watch?v=abc123',
         ),
-        Icons.play_circle_outline,
+        ButleryIcons.video,
       );
     });
 
     test('youtu.be short links map to the play icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://youtu.be/abc123'),
-        Icons.play_circle_outline,
+        ButleryIcons.video,
       );
     });
 
     test('YouTube subdomains (m.youtube.com) still map to the play icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://m.youtube.com/watch?v=x'),
-        Icons.play_circle_outline,
+        ButleryIcons.video,
       );
     });
 
@@ -36,21 +36,21 @@ void main() {
         RecipeDetailSharedWidgets.sourceIcon(
           'https://www.tiktok.com/@chef/video/123',
         ),
-        Icons.music_note,
+        ButleryIcons.video,
       );
     });
 
     test('TikTok share subdomains (vm.tiktok.com) map to the music icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://vm.tiktok.com/ABCDEF/'),
-        Icons.music_note,
+        ButleryIcons.video,
       );
     });
 
     test('generic web recipe sources map to the external-link icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://www.ica.se/recept/xyz'),
-        Icons.open_in_new,
+        ButleryIcons.externalLink,
       );
     });
 
@@ -58,7 +58,7 @@ void main() {
       // 'not a url' parses to a relative ref with an empty host → fallback.
       expect(
         RecipeDetailSharedWidgets.sourceIcon('not a url'),
-        Icons.open_in_new,
+        ButleryIcons.externalLink,
       );
     });
 
@@ -67,7 +67,7 @@ void main() {
       // is dead-defensive. This pins the user-visible result regardless.
       expect(
         RecipeDetailSharedWidgets.sourceIcon('https://YouTube.com/watch?v=x'),
-        Icons.play_circle_outline,
+        ButleryIcons.video,
       );
     });
   });

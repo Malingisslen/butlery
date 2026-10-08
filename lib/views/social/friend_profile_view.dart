@@ -260,7 +260,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                 ),
                               ),
                               icon: const ButleryIcon(
-                                Icons.folder_shared_outlined,
+                                ButleryIcons.folder,
                               ),
                               label: Text(
                                 context.l10n.sharedRecipesByFriendButton,

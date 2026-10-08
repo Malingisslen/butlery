@@ -376,7 +376,7 @@ class _ReviewEditStep extends StatelessWidget {
           // Instructions section
           EditableListHeader(
             title: context.l10n.recipeInstructions,
-            icon: Icons.format_list_numbered,
+            icon: ButleryIcons.list,
             count: viewModel.editedInstructions.length,
           ),
           const SizedBox(height: AppDimensions.spacingSm),

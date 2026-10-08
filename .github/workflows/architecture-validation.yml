@@ -108,8 +108,8 @@ jobs:
     # BUT-1213 (enforce half of BUT-944): keep the favourite/saved icon
     # convention from eroding. Raw Icons.favorite*/Icons.bookmark* in
     # lib/views|lib/widgets must route through the semantic aliases
-    # (ButleryIcons.favourite = heart; PendingGlyphs.savedTemplate = bookmark
-    # until design draws it, P7-U08). Star is intentionally not gated here —
+    # (ButleryIcons.favourite = heart; ButleryIcons.savedTemplate = bookmark,
+    # P7-U08). Star is intentionally not gated here —
     # it's overloaded (rating/sort/dietary/permission).
     - name: Forbid raw favourite/bookmark glyphs outside the semantic aliases
       run: bash tools/check_icon_convention.sh

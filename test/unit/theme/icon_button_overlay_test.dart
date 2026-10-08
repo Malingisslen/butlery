@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/button_themes.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 void main() {
   for (final t in [AppTheme.lightTheme, AppTheme.darkTheme]) {
@@ -96,7 +97,7 @@ void main() {
                 themed = Theme.of(context).iconButtonTheme;
                 return const IconButton(
                   onPressed: null,
-                  icon: Icon(Icons.star),
+                  icon: Icon(ButleryIcons.star),
                 );
               },
             ),

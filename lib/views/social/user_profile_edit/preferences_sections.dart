@@ -95,10 +95,10 @@ class ThemeSettingsSection extends StatelessWidget {
       (
         ThemeMode.system,
         context.l10n.profileThemeSystem,
-        Icons.settings_suggest,
+        ButleryIcons.settings,
       ),
-      (ThemeMode.light, context.l10n.profileThemeLight, Icons.light_mode),
-      (ThemeMode.dark, context.l10n.profileThemeDark, Icons.dark_mode),
+      (ThemeMode.light, context.l10n.profileThemeLight, ButleryIcons.sun),
+      (ThemeMode.dark, context.l10n.profileThemeDark, ButleryIcons.moon),
     ];
 
     return Column(

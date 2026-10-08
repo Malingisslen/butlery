@@ -330,7 +330,7 @@ void main() {
       const AdaptiveNavigationItem(
         label: 'Home',
         icon: Icons.home_outlined,
-        activeIcon: Icons.home,
+        activeIcon: ButleryIcons.house,
         route: '/',
       ),
       const AdaptiveNavigationItem(

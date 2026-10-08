@@ -242,10 +242,10 @@ void main() {
       // the mode's fill.
       final dark = theme.brightness == Brightness.dark;
       for (final (platform, glyph, brand) in [
-        (Platform.youtube, Icons.play_circle_outline, BrandColors.youtube),
+        (Platform.youtube, ButleryIcons.video, BrandColors.youtube),
         (
           Platform.tiktok,
-          Icons.music_note,
+          ButleryIcons.video,
           dark ? BrandColors.tiktok : BrandColors.tiktokText,
         ),
         (Platform.instagram, ButleryIcons.camera, BrandColors.instagram),
@@ -321,7 +321,7 @@ void main() {
         );
 
         expect(
-          _glyphColor(tester, find.byIcon(Icons.text_fields)),
+          _glyphColor(tester, find.byIcon(ButleryIcons.type)),
           AppModeColors.textDisabled(theme.brightness),
         );
       });
@@ -424,12 +424,12 @@ void main() {
 
         final decoration = _decorationAbove(
           tester,
-          find.byIcon(Icons.cancel_outlined),
+          find.byIcon(ButleryIcons.x),
         );
         expect(decoration.color, cs.surfaceContainerHighest);
         expect(decoration.border, isNull);
         expect(
-          _glyphColor(tester, find.byIcon(Icons.cancel_outlined)),
+          _glyphColor(tester, find.byIcon(ButleryIcons.x)),
           cs.onSurfaceVariant,
         );
       });
@@ -490,11 +490,14 @@ void main() {
           ),
         );
 
-        final decoration = _decorationAbove(tester, find.byIcon(Icons.update));
+        final decoration = _decorationAbove(
+          tester,
+          find.byIcon(ButleryIcons.refreshCw),
+        );
         expect(decoration.color, modeColors.surfaceTintWarning);
         expect(decoration.border, isNull);
         expect(
-          _glyphColor(tester, find.byIcon(Icons.update)),
+          _glyphColor(tester, find.byIcon(ButleryIcons.refreshCw)),
           AppModeColors.textWarning(theme.brightness),
         );
       });

@@ -175,13 +175,13 @@ final _cases = <String, _Case>{
         items: const [
           AdaptiveNavigationItem(
             icon: Icons.home_outlined,
-            activeIcon: Icons.home,
+            activeIcon: ButleryIcons.house,
             label: 'Hem',
             route: '/',
           ),
           AdaptiveNavigationItem(
             icon: Icons.menu_book_outlined,
-            activeIcon: Icons.menu_book,
+            activeIcon: ButleryIcons.bookOpen,
             label: 'Recept',
             route: '/recept',
           ),

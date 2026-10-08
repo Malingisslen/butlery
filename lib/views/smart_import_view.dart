@@ -414,7 +414,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         icon: ButleryIcon(
-          Icons.videocam_off,
+          ButleryIcons.triangleAlert,
           size: 48,
           color: theme.colorScheme.onSurface,
         ),

@@ -12,7 +12,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/icons/pending_glyphs.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -196,7 +195,7 @@ class ShoppingListHeader {
           final userPermission = list.memberPermissions[currentUserId];
 
           if (isOwner) {
-            sharingIcon = Icons.admin_panel_settings;
+            sharingIcon = ButleryIcons.crown;
             sharingColor = cs.onSurface;
             permissionText = context.l10n.shoppingPermissionOwner;
           } else {
@@ -213,7 +212,7 @@ class ShoppingListHeader {
                 permissionText = context.l10n.shoppingPermissionEdit;
                 break;
               case SharedListPermission.admin:
-                sharingIcon = Icons.admin_panel_settings;
+                sharingIcon = ButleryIcons.crown;
                 sharingColor = cs.onSurface;
                 permissionText = context.l10n.shoppingPermissionAdmin;
                 break;
@@ -230,7 +229,7 @@ class ShoppingListHeader {
         }
         break;
       case ListType.template:
-        sharingIcon = PendingGlyphs.savedTemplate;
+        sharingIcon = ButleryIcons.savedTemplate;
         sharingColor = cs.onSurfaceVariant;
         permissionText = context.l10n.shoppingPermissionTemplate;
         break;

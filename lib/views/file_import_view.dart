@@ -140,7 +140,7 @@ class _FileImportViewState extends State<FileImportView> {
                     UtilityComponents.primaryButton(
                       context,
                       label: context.l10n.importSelectFileAndImport,
-                      icon: Icons.file_upload,
+                      icon: ButleryIcons.download,
                       onPressed: _handleImport,
                     ),
 

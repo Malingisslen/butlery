@@ -101,7 +101,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               hintText: context.l10n.onboardingImportUrlTitle,
               prefixIcon: const ButleryIcon(ButleryIcons.link),
               suffixIcon: IconButton(
-                icon: const ButleryIcon(Icons.content_paste),
+                icon: const ButleryIcon(ButleryIcons.clipboard),
                 tooltip: context.l10n.commonPaste,
                 onPressed: () => _pasteFromClipboard(viewModel),
               ),

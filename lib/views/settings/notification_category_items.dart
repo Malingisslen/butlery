@@ -32,7 +32,7 @@ List<NotificationCategoryItem> buildNotificationCategoryItems(
   NotificationCategoryItem(
     category: NotificationCategory.collaboration,
     label: context.l10n.notificationCategoryCollaboration,
-    icon: Icons.group_work_outlined,
+    icon: ButleryIcons.users,
   ),
   NotificationCategoryItem(
     category: NotificationCategory.shopping,

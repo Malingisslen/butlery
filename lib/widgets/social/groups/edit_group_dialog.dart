@@ -178,7 +178,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         decoration: InputDecoration(
                           labelText: context.l10n.groupDescriptionLabel,
                           hintText: context.l10n.groupDescriptionHint,
-                          prefixIcon: const ButleryIcon(Icons.description),
+                          prefixIcon: const ButleryIcon(ButleryIcons.file),
                         ),
                         // BUT-517
                         validator: FormValidators.contentFilter(

@@ -353,7 +353,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         ..._enrolledFactors.map(
           (factor) => Card(
             child: ListTile(
-              leading: const ButleryIcon(Icons.phone_android),
+              leading: const ButleryIcon(ButleryIcons.smartphone),
               title: Text(factor.displayName ?? context.l10n.mfaPhone),
               subtitle: Text(
                 context.l10n.mfaRegistered(
@@ -401,7 +401,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               decoration: InputDecoration(
                 labelText: context.l10n.mfaPhoneNumber,
                 hintText: context.l10n.mfaPhoneHint,
-                prefixIcon: const ButleryIcon(Icons.phone),
+                prefixIcon: const ButleryIcon(ButleryIcons.smartphone),
                 border: const OutlineInputBorder(),
               ),
             ),

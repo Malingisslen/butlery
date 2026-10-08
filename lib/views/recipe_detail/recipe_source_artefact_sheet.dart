@@ -128,7 +128,7 @@ class _StaleSourceBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ButleryIcon(
-            Icons.history_outlined,
+            ButleryIcons.history,
             size: AppDimensions.iconSizeM,
             color: warning,
           ),

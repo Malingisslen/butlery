@@ -15,6 +15,7 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// SharedContentActions - Action methods for shared content
 /// Handles import, dismiss, and other actions for shared content.
@@ -353,7 +354,7 @@ class SharedContentActions {
       title: context.l10n.unshareRecipeTitle,
       message: context.l10n.unshareRecipeConfirm(sharedRecipe.recipeTitle),
       confirmText: context.l10n.unshareButton,
-      icon: Icons.link_off,
+      icon: ButleryIcons.x,
       isDangerous: true,
     );
 
@@ -395,7 +396,7 @@ class SharedContentActions {
       title: context.l10n.unshareMenuTitle,
       message: context.l10n.unshareMenuConfirm(sharedMenu.menuTitle),
       confirmText: context.l10n.unshareButton,
-      icon: Icons.link_off,
+      icon: ButleryIcons.x,
       isDangerous: true,
     );
 
@@ -428,7 +429,7 @@ class SharedContentActions {
         sharedShoppingList.listName,
       ),
       confirmText: context.l10n.unshareButton,
-      icon: Icons.link_off,
+      icon: ButleryIcons.x,
       isDangerous: true,
     );
 

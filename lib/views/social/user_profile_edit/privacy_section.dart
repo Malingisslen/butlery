@@ -80,7 +80,7 @@ class PrivacySettingsSection extends StatelessWidget {
                 subtitle: Text(context.l10n.profileShowOnlineStatusDescription),
                 value: viewModel.showOnlineStatus,
                 onChanged: viewModel.updateShowOnlineStatus,
-                secondary: const ButleryIcon(Icons.podcasts),
+                secondary: const ButleryIcon(ButleryIcons.eye),
               ),
               const Divider(height: 1),
               SwitchListTile(
@@ -88,7 +88,7 @@ class PrivacySettingsSection extends StatelessWidget {
                 subtitle: Text(context.l10n.privacyShareActivitySubtitle),
                 value: viewModel.shareActivityToFeed,
                 onChanged: viewModel.updateShareActivityToFeed,
-                secondary: const ButleryIcon(Icons.dynamic_feed),
+                secondary: const ButleryIcon(ButleryIcons.activity),
               ),
               // BUT-1220: per-event-type toggles sit under the master switch.
               // They only have effect while the master toggle is on, so we

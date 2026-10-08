@@ -208,7 +208,7 @@ void main() {
           ),
         );
         // Banner uses calculate or language icon — neither should be present
-        expect(find.byIcon(Icons.calculate), findsNothing);
+        expect(find.byIcon(ButleryIcons.hash), findsNothing);
         expect(find.byIcon(ButleryIcons.globe), findsNothing);
       },
     );
@@ -226,7 +226,7 @@ void main() {
           ),
         ),
       );
-      expect(find.byIcon(Icons.calculate), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
     });
 
     testWidgets('shows language icon when converting to Swedish', (
@@ -260,7 +260,7 @@ void main() {
         );
         // Status condition is (scaled || convertToSwedish) — false here.
         // Toggle is rendered (hasAmericanUnits=true) → language icon appears.
-        expect(find.byIcon(Icons.calculate), findsNothing);
+        expect(find.byIcon(ButleryIcons.hash), findsNothing);
       },
     );
   });

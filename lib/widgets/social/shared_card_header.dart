@@ -95,7 +95,7 @@ class SharedCardHeader extends StatelessWidget {
                 child: Row(
                   children: [
                     ButleryIcon(
-                      Icons.link_off,
+                      ButleryIcons.x,
                       size: AppDimensions.iconSizeM,
                       color: cs.error,
                     ),

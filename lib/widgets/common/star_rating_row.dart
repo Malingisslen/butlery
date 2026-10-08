@@ -42,7 +42,7 @@ class StarRatingRow extends StatelessWidget {
           isFilled
               ? ButleryIcons.star
               : isHalf
-              ? Icons.star_half
+              ? ButleryIcons.starHalf
               : ButleryIcons.starOutline,
           color: isFilled || isHalf ? starColor : cs.onSurfaceVariant,
           size: size,

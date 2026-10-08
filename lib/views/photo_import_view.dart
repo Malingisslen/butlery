@@ -481,7 +481,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                               style: AppTextStyles.bodySmall,
                             ),
                             secondary: ButleryIcon(
-                              Icons.draw_outlined,
+                              ButleryIcons.pencil,
                               color: cs.onSurface,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
@@ -731,7 +731,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                               label: context.l10n.importMultipleRecipesFound(
                                 viewModel.parsedRecipes.length,
                               ),
-                              icon: Icons.library_books,
+                              icon: ButleryIcons.list,
                               onPressed: () => _navigateToMultiRecipePicker(
                                 context,
                                 viewModel,
