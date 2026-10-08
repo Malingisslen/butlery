@@ -24,7 +24,8 @@ void main() {
         expect(
           RegExp('\\b$name:').hasMatch(ts),
           isTrue,
-          reason: '`$name:` is gone from the ledger write in llm_cost_ledger.ts',
+          reason:
+              '`$name:` is gone from the ledger write in llm_cost_ledger.ts',
         );
       });
 
