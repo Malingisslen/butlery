@@ -12105,6 +12105,7 @@
   "shoppingMergeReplaceAction": "{count, plural, =1{Replace with 1 item} other{Replace with {count} items}}",
   "shoppingMergeAdded": "{count, plural, =1{1 item was added to {list}.} other{{count} items were added to {list}.}}",
   "shoppingMergeReplaced": "{list} now has {count, plural, =1{1 item} other{{count} items}} from the week. Your own items are still there.",
+  "shoppingMergeConcurrentChange": "{count, plural, =1{The list had been changed on another device. Your item was added and nothing was overwritten.} other{The list had been changed on another device. Your {count} items were added and nothing was overwritten.}}",
   "shoppingMergeUndoFailed": "The undo could not be completed",
   "shoppingMergeUndoFailedKept": "The items are still on the list.",
   "shoppingMergeRowRecipes": "{count} recipes",

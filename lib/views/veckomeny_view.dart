@@ -468,14 +468,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // The list itself is the confirmation (BUT-900); the receipt rides on
     // the root messenger above it. SnackbarRouteObserver clears snackbars on
     // every push, so the receipt is shown after the push.
-    final l10n = context.l10n;
-    final message = receipt.replaced
-        ? l10n.shoppingMergeReplaced(receipt.itemCount, receipt.listName)
-        : l10n.shoppingMergeAdded(receipt.itemCount, receipt.listName);
     unawaited(Navigator.pushNamed(context, Routes.shoppingList));
-    SnackBarUtils.showUndo(
+    showShoppingMergeReceipt(
       context,
-      message,
+      receipt,
       onUndo: () => unawaited(_undoShoppingMerge(planVm, receipt)),
     );
   }
@@ -930,6 +926,24 @@ void showWeekPlacementFailure(
         : l10n.weekPlacementFailedMenuKept,
     action: FailureAction.retry(onRetry),
   );
+}
+
+/// P6-U02: the receipt after a merge, with Ångra. When the list had been
+/// changed on another device before the write, it says so and that nothing
+/// was overwritten (BUT-2140; flows-roles-budget.md:18, the user is always
+/// told about a conflict).
+void showShoppingMergeReceipt(
+  BuildContext context,
+  MenuShoppingMergeReceipt receipt, {
+  required VoidCallback onUndo,
+}) {
+  final l10n = context.l10n;
+  final message = receipt.concurrentChange
+      ? l10n.shoppingMergeConcurrentChange(receipt.itemCount)
+      : receipt.replaced
+      ? l10n.shoppingMergeReplaced(receipt.itemCount, receipt.listName)
+      : l10n.shoppingMergeAdded(receipt.itemCount, receipt.listName);
+  SnackBarUtils.showUndo(context, message, onUndo: onUndo);
 }
 
 /// P5-U16 (veckomeny ERROR): the week's shopping list could not be made.
