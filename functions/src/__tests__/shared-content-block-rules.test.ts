@@ -243,6 +243,9 @@ async function run(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  // Suites share one long-lived emulator; leftovers from an earlier run
+  // turn a create-only write into a denied update.
+  await env.clearFirestore();
   let failed = 0;
   for (const t of tests) {
     try {

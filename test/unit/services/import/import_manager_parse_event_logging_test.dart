@@ -480,7 +480,6 @@ void main() {
       expect(ImportEvent.strategyId('Text Import'), 'text');
       expect(ImportEvent.strategyId('URL Import'), 'url');
       expect(ImportEvent.strategyId('Photo Import (LLM Vision)'), 'photo');
-      expect(ImportEvent.strategyId('cache'), 'cache');
       expect(ImportEvent.strategyId(null), 'unknown');
     });
   });

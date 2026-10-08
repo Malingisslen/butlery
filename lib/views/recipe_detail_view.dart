@@ -442,7 +442,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
               ),
               // App bar with recipe title and actions
-              // UI Redesign: Hero buttons are solid cream squares with green icons
               // BUT-706: a SliverAppBar, because the hero image collapses
               // into the bar. One bar on both platforms (B-45).
               SliverAppBar(

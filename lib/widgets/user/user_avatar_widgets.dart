@@ -130,17 +130,7 @@ class UserAvatarWidgets {
                 child: Semantics(
                   label: context.l10n.a11yProfileImage(displayName),
                   button: true,
-                  // A photo scales while pressed (R8-4 = C); initials
-                  // keep the press the design session has not decided.
-                  child: (imageUrl != null && imageUrl.isNotEmpty)
-                      ? PressScale(onTap: onTap, child: avatarWidget)
-                      : PressUnchanged(
-                          child: InkWell(
-                            onTap: onTap,
-                            borderRadius: BorderRadius.zero,
-                            child: avatarWidget,
-                          ),
-                        ),
+                  child: PressScale(onTap: onTap, child: avatarWidget),
                 ),
               )
             // BUT-908: also label the non-tappable avatar so screen readers

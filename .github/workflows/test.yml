@@ -165,6 +165,12 @@ jobs:
         # scored against gold and held to its floors.json; prints its table
         # into the job summary.
         suite: [widget, views, golden, evaluation, import_gate]
+        # BUT-1676: small directories no lane ran, sharing one runner.
+        # tools/check_test_suite_coverage.sh fails on any test/ directory
+        # that is neither run here nor in tools/test_suite_allowlist.txt.
+        include:
+          - suite: small-dirs
+            paths: test/corpus test/infrastructure test/l10n test/scripts test/services test/smoke test/tools
     runs-on: ubuntu-latest
     # BUT-2001: widget took 16m30s on main run 37685482331, so 20 left the
     # same thin margin the unit shards ran out of.
@@ -187,8 +193,9 @@ jobs:
 
       - name: Run ${{ matrix.suite }} tests
         run: |
-          echo "Running test/${{ matrix.suite }}..."
-          flutter test test/${{ matrix.suite }} --concurrency=4 --reporter=expanded
+          paths="${{ matrix.paths || format('test/{0}', matrix.suite) }}"
+          echo "Running $paths..."
+          flutter test $paths --concurrency=4 --reporter=expanded
 
       - name: Upload test results
         if: failure()
