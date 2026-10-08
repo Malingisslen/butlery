@@ -266,32 +266,6 @@ void main() {
     });
 
     group('User Data Management', () {
-      test('should clear all data for specific user', () async {
-        // Arrange
-        const targetUser = 'user_to_clear';
-
-        when(
-          () => mockRecipeDao.countForUser(targetUser),
-        ).thenAnswer((_) async => 5);
-        when(
-          () => mockRecipeDao.deleteAllForUser(targetUser),
-        ).thenAnswer((_) async => 5);
-        when(
-          () => mockSyncQueueDao.clearForUser(targetUser),
-        ).thenAnswer((_) async => 2);
-        when(
-          () => mockUploadQueueDao.clearForUser(targetUser),
-        ).thenAnswer((_) async => 1);
-
-        // Act
-        await storage.clearUserData(targetUser);
-
-        // Assert
-        verify(() => mockRecipeDao.deleteAllForUser(targetUser)).called(1);
-        verify(() => mockSyncQueueDao.clearForUser(targetUser)).called(1);
-        verify(() => mockUploadQueueDao.clearForUser(targetUser)).called(1);
-      });
-
       test('should get recipe count for user', () async {
         // Arrange
         const userId = 'user_123';

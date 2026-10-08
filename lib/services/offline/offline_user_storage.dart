@@ -301,23 +301,29 @@ class OfflineUserStorage {
     }
   }
 
-  /// Clear data for specific user
+  /// Clear data for specific user.
+  ///
+  /// Throws when any part fails: "Logga ut och släng" must not report a
+  /// discard that left changes or image copies on the device.
   Future<void> clearUserData(String userId) async {
+    final count = await _recipeDao.countForUser(userId);
+    await _database.clearUserData(userId);
+    // The queue's copies of the user's images, "Försök mindre" copies too.
+    final uploads = Directory(p.join((await _uploadsRoot()).path, userId));
     try {
-      final count = await _recipeDao.countForUser(userId);
-      await _recipeDao.deleteAllForUser(userId);
-      await _syncQueueDao.clearForUser(userId);
-      await _uploadQueueDao.clearForUser(userId);
-      // The queue's copies of the user's images, "Försök mindre" copies too.
-      final uploads = Directory(p.join((await _uploadsRoot()).path, userId));
       if (await uploads.exists()) await uploads.delete(recursive: true);
-
-      AppLogger.success(
-        '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)',
+    } on FileSystemException catch (e) {
+      // The path names the uid, and callers hand the error to Crashlytics.
+      throw FileSystemException(
+        'Could not delete queued images',
+        '',
+        e.osError,
       );
-    } catch (e) {
-      AppLogger.error('❌ Error clearing user data: $e');
     }
+
+    AppLogger.success(
+      '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)',
+    );
   }
 
   /// Get count of offline recipes for user

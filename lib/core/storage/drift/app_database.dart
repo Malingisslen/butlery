@@ -326,8 +326,9 @@ SELECT id AS op_id, permanently_failed AS failed FROM upload_queue_entries
     await delete(uploadQueueEntries).go();
   }
 
-  /// Clear all data for a specific user
-  Future<void> clearUserData(String userId) async {
+  /// Clear all data for a specific user, all of it or none: a queue entry
+  /// left without its recipe row, or the reverse, is a half-thrown change.
+  Future<void> clearUserData(String userId) => transaction(() async {
     await (delete(offlineRecipes)..where((t) => t.userId.equals(userId))).go();
     await (delete(
       syncQueueEntries,
@@ -341,7 +342,7 @@ SELECT id AS op_id, permanently_failed AS failed FROM upload_queue_entries
     await (delete(
       uploadQueueEntries,
     )..where((t) => t.userId.equals(userId))).go();
-  }
+  });
 
   /// Get database statistics
   Future<Map<String, int>> getStats() async {

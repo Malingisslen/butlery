@@ -340,10 +340,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       onLogoutNow: () {
         _sessionTimeoutService?.forceLogout();
       },
-      onDiscardAndLogout: () async {
-        await guard.discardForCurrentUser();
+      onDiscardAndLogout: () => guard.discardAndEndSession(() async {
         await _sessionTimeoutService?.forceLogout();
-      },
+      }),
     );
   }
 
