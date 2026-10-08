@@ -8307,6 +8307,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get conflictWeekSavedUnnamed => 'Någon annan sparade veckan';
 
   @override
+  String get conflictWeekSavedElsewhere => 'Veckan sparades på en annan enhet';
+
+  @override
   String get conflictDiffTitle => 'Vad ändrades';
 
   @override

@@ -170,10 +170,15 @@
     {
       "id": "TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar",
       "flow": "01",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/widget/realtime/conflict_snackbar_test.dart",
-      "test_name": "a lost week edit shows \"{namn} sparade veckan\" + Behåll min",
+      "status": "TESTED",
+      "test_file": "test/views/flows/flow_01_transitions_test.dart",
+      "test_name": "a week saved on another device shows the conflict snackbar and Behåll min keeps mine",
       "tests": [
+        {
+          "file": "test/views/flows/flow_01_transitions_test.dart",
+          "name": "a week saved on another device shows the conflict snackbar and Behåll min keeps mine",
+          "group": "TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar"
+        },
         {
           "file": "test/widget/realtime/conflict_snackbar_test.dart",
           "name": "a lost week edit shows \"{namn} sparade veckan\" + Behåll min"
@@ -184,7 +189,7 @@
         }
       ],
       "ticket": "BUT-2215",
-      "reason": "The snackbar is built and tested, but the week plan (weekly_menu_plans) has no rev check and no realtime resource, so no conflict event is ever raised for the week in production."
+      "reason": "New test: each week save names the revision it was built on and firestore.rules checks it against the stored one, so a save built on a stale copy is refused and the week menu shows the 30 s notice with Behåll min. The other saver is the owner on another device (Malin, A1, 2026-10-08); a shared household week is not built yet."
     },
     {
       "id": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",

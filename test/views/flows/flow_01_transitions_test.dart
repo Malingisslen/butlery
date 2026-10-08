@@ -10,6 +10,9 @@
 ///   is not in the week; placing it is its own step, with two ways.
 /// - TR::FLOW::01::placering::kvitto-7-s-andra (D-04): after the automatic
 ///   placement a receipt with ÄNDRA, the flow's only way back.
+/// - TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar (D-04, BUT-2215):
+///   the week was saved on another device first; the 30 s notice with
+///   "Behåll min".
 ///
 /// The negative D-03 and D-04 assertions live here too: no long-wait state
 /// and no "Fortsätt i bakgrunden" however long the planning takes, and no
@@ -26,6 +29,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 
@@ -213,6 +217,100 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
         await tester.pumpAndSettle();
         expect(find.text(_sv.menuAutoPlacedToast(3)), findsNothing);
+      });
+    });
+  });
+
+  group('TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar', () {
+    testWidgets('a week saved on another device shows the conflict snackbar '
+        'and Behåll min keeps mine', (tester) async {
+      await runOnMonday(() async {
+        h.seedWeek(2);
+        await h.pump(tester);
+        await tester.pumpAndSettle();
+
+        // The other device saves the same week after this one read it.
+        final id = h.repository.plans.keys.single;
+        final read = h.repository.plans[id]!;
+        final other = read
+            .copyWith(
+              entries: [
+                ...read.entries,
+                WeeklyMenuPlanEntry.create(
+                  day: DayOfWeek.sun,
+                  slot: MealSlot.middag,
+                  recipeId: 'other-device',
+                  recipeTitle: 'Från den andra enheten',
+                ),
+              ],
+            )
+            .nextRevision();
+        h.repository.plans[id] = other;
+
+        await h.generate(tester, 'tre middagar');
+        await tester.pumpAndSettle();
+        // In the calendar, the confirmed generation places the week at once
+        // (veckomeny_view.dart _generateMenu).
+        await tester.tap(find.text(_sv.commonContinue));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(h.repository.saves, isEmpty, reason: 'the server kept its week');
+        expect(h.repository.plans[id], same(other));
+        expect(find.text(_sv.conflictWeekSavedElsewhere), findsOneWidget);
+        expect(
+          find.widgetWithText(SnackBarAction, _sv.conflictWeekKeepMine),
+          findsOneWidget,
+        );
+
+        await tester.pump(const Duration(seconds: 1));
+        await tester.tap(find.text(_sv.conflictWeekKeepMine));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        final kept = h.repository.plans[id]!;
+        expect(h.repository.saves, [kept]);
+        expect(kept.baseRevId, other.revId);
+        expect(kept.revId, isNot(other.revId));
+        expect(kept.createdAt, other.createdAt);
+        expect(kept.entries.map((e) => e.recipeId).toSet(), {
+          'dinner-1',
+          'dinner-2',
+          'dinner-3',
+        });
+      });
+    });
+
+    testWidgets('a recipe deleted on this device while the week is open '
+        'leaves the next edit without a conflict snackbar', (tester) async {
+      await runOnMonday(() async {
+        h.seedWeek(2);
+        await h.pump(tester);
+        await tester.pumpAndSettle();
+        final id = h.repository.plans.keys.single;
+
+        // Deleting a recipe scrubs it from every week through the service
+        // (personal_recipe_crud.dart), a new revision of this week.
+        expect(
+          await h.planService.removeRecipeFromAllPlans('saved-recipe-0'),
+          1,
+        );
+        await tester.pumpAndSettle();
+        final scrubbed = h.repository.plans[id]!;
+
+        await h.generate(tester, 'tre middagar');
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(_sv.commonContinue));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(find.text(_sv.conflictWeekSavedElsewhere), findsNothing);
+        final saved = h.repository.saves.single;
+        expect(saved.baseRevId, scrubbed.revId);
+        expect(
+          saved.entries.map((e) => e.recipeId),
+          isNot(contains('saved-recipe-0')),
+        );
       });
     });
   });

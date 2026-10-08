@@ -4,8 +4,9 @@
 library;
 
 import 'package:cloud_functions/cloud_functions.dart';
-// `UserMetadata` only — `User` would clash with the project's own models.
-import 'package:firebase_auth/firebase_auth.dart' show UserMetadata;
+// `User` would clash with the project's own models.
+import 'package:firebase_auth/firebase_auth.dart'
+    show MultiFactor, MultiFactorInfo, UserMetadata;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -125,12 +126,39 @@ class _EmptyHttpsCallable extends Fake implements HttpsCallable {
   }
 }
 
+/// BUT-2142: an account that has no backup codes.
+class _NoBackupCodesHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    return _EmptyHttpsCallableResult<T>(
+      <String, dynamic>{
+            'hasBackupCodes': false,
+            'createdAt': null,
+            'total': 0,
+            'unused': 0,
+            'algorithm': null,
+          }
+          as T,
+    );
+  }
+}
+
+HttpsCallable? _mfaCallableFor(String name) =>
+    name == 'exportMfaRecoveryData' ? _NoBackupCodesHttpsCallable() : null;
+
+class _NoFactorsMultiFactor extends Fake implements MultiFactor {
+  @override
+  Future<List<MultiFactorInfo>> getEnrolledFactors() async => const [];
+}
+
 class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {
   @override
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _EmptyHttpsCallable();
+  }) => _mfaCallableFor(name) ?? _EmptyHttpsCallable();
 }
 
 /// BUT-864: HttpsCallable stub that simulates a transient backend failure on
@@ -154,7 +182,7 @@ class _TransientFirebaseFunctions extends Fake implements FirebaseFunctions {
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _TransientHttpsCallable();
+  }) => _mfaCallableFor(name) ?? _TransientHttpsCallable();
 }
 
 /// BUT-865: HttpsCallable that succeeds on call #1 (returns one row + a
@@ -283,7 +311,7 @@ class _LeakyAuditLogFirebaseFunctions extends Fake
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _LeakyAuditLogHttpsCallable();
+  }) => _mfaCallableFor(name) ?? _LeakyAuditLogHttpsCallable();
 }
 
 /// BUT-1760: fails the `preferences` read with an exception whose text names
@@ -384,7 +412,7 @@ class _SuccessThenTransientFirebaseFunctions extends Fake
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) => _callable;
+  }) => _mfaCallableFor(name) ?? _callable;
 }
 
 void main() {
@@ -431,6 +459,7 @@ void main() {
         sharedResidueExportManager:
             sharedResidueExportManager ?? _sharedResidueOk(),
         complianceExportManager: ComplianceExportManager(
+          authRepository: mockAuthRepository,
           functions: _FakeFirebaseFunctions(),
           dataExportRepository: FirebaseDataExportRepository(
             firestore: fakeFirestore,
@@ -509,6 +538,7 @@ void main() {
       // `_exportUserProfile`.
       when(() => mockUser.emailVerified).thenReturn(true);
       when(() => mockUser.metadata).thenReturn(_FakeUserMetadata());
+      when(() => mockUser.multiFactor).thenReturn(_NoFactorsMultiFactor());
       mockAuthRepository.setAuthState(
         user: mockUser,
         userId: testUserId,
@@ -564,6 +594,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -1925,6 +1956,7 @@ void main() {
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
+              authRepository: mockAuthRepository,
               functions: _TransientFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
@@ -2028,6 +2060,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -2091,6 +2124,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -2178,6 +2212,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
@@ -2246,6 +2281,7 @@ void main() {
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
+              authRepository: mockAuthRepository,
               functions: _LeakyAuditLogFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
@@ -2332,6 +2368,7 @@ void main() {
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
             complianceExportManager: ComplianceExportManager(
+              authRepository: mockAuthRepository,
               functions: _FakeFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
@@ -2450,6 +2487,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           complianceExportManager: ComplianceExportManager(
+            authRepository: mockAuthRepository,
             functions: _SuccessThenTransientFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,

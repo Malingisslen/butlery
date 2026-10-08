@@ -13975,6 +13975,12 @@ abstract class AppLocalizations {
   /// **'Någon annan sparade veckan'**
   String get conflictWeekSavedUnnamed;
 
+  /// BUT-2215: week-menu conflict snackbar, 30 s, when the user's own other device saved the week first.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan sparades på en annan enhet'**
+  String get conflictWeekSavedElsewhere;
+
   /// BUT-1163: title of the conflict diff view.
   ///
   /// In sv, this message translates to:

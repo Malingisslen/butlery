@@ -363,8 +363,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // #tomvecka): "Veckomeny" with the week and the number of dishes on the
     // line under it, and the Lista/Kalender tabs under the bar.
     //
-    // P5-U26a: the week menu listens for "{namn} sparade veckan".
+    // P5-U26a: the week menu listens for "{namn} sparade veckan", and
+    // BUT-2215 for its own week saved on another device.
+    final planVm = context.read<WeeklyMenuPlanViewModel>();
     return VeckomenyConflictNotice(
+      weekConflicts: planVm.weekConflicts,
+      onKeepMine: planVm.keepMine,
       child: _buildScaffold(context, viewModel, weekNumber, menuItemCount),
     );
   }
@@ -863,10 +867,22 @@ class VeckomenyNoMatch extends StatelessWidget {
 /// user's edit lost); this widget only listens to
 /// [RealtimeSyncService.conflictStream] while the week menu is open. Without
 /// a registered sync service it listens to nothing.
+///
+/// BUT-2215: it also listens to [weekConflicts], the week menu viewmodel's
+/// refused saves of the user's own week, and shows
+/// [ConflictSnackBar.showWeekSavedElsewhere] with [onKeepMine] behind
+/// "Behåll min".
 class VeckomenyConflictNotice extends StatefulWidget {
-  const VeckomenyConflictNotice({super.key, required this.child});
+  const VeckomenyConflictNotice({
+    super.key,
+    required this.child,
+    this.weekConflicts,
+    this.onKeepMine,
+  });
 
   final Widget child;
+  final Stream<WeekConflict>? weekConflicts;
+  final Future<bool> Function(WeekConflict conflict)? onKeepMine;
 
   @override
   State<VeckomenyConflictNotice> createState() =>
@@ -875,6 +891,7 @@ class VeckomenyConflictNotice extends StatefulWidget {
 
 class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
   StreamSubscription<ConflictEvent>? _sub;
+  StreamSubscription<WeekConflict>? _weekSub;
 
   @override
   void initState() {
@@ -884,11 +901,20 @@ class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
       if (!mounted) return;
       ConflictSnackBar.showWeekSaved(context, event);
     });
+    _weekSub = widget.weekConflicts?.listen((conflict) {
+      final keep = widget.onKeepMine;
+      if (!mounted || keep == null) return;
+      ConflictSnackBar.showWeekSavedElsewhere(
+        context,
+        onKeepMine: () => keep(conflict),
+      );
+    });
   }
 
   @override
   void dispose() {
     _sub?.cancel();
+    _weekSub?.cancel();
     super.dispose();
   }
 

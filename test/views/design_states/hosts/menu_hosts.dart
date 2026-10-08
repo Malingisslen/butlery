@@ -30,7 +30,11 @@ import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../state_host.dart';
 
-class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
+class _MockPlanService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockMenuService extends Mock implements MenuService {}
 

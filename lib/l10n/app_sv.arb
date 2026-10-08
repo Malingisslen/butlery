@@ -5827,6 +5827,10 @@
   "@conflictWeekSavedUnnamed": {
     "description": "P3-U08: week-menu conflict snackbar when the other editor's name is unknown."
   },
+  "conflictWeekSavedElsewhere": "Veckan sparades på en annan enhet",
+  "@conflictWeekSavedElsewhere": {
+    "description": "BUT-2215: week-menu conflict snackbar, 30 s, when the user's own other device saved the week first."
+  },
   "conflictDiffTitle": "Vad ändrades",
   "@conflictDiffTitle": {
     "description": "BUT-1163: title of the conflict diff view."

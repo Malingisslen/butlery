@@ -199,4 +199,84 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(saved), findsOneWidget);
   });
+
+  group('BUT-2215: the week saved on another device', () {
+    late String elsewhere;
+    late int kept;
+
+    Widget elsewhereHarness({
+      Future<bool> Function()? onKeepMine,
+      bool accessibleNavigation = false,
+    }) {
+      return createLocalizedTestApp(
+        child: Builder(
+          builder: (outer) => MediaQuery(
+            data: MediaQuery.of(
+              outer,
+            ).copyWith(accessibleNavigation: accessibleNavigation),
+            child: Builder(
+              builder: (context) {
+                elsewhere = context.l10n.conflictWeekSavedElsewhere;
+                keepMine = context.l10n.conflictWeekKeepMine;
+                return TextButton(
+                  onPressed: () => ConflictSnackBar.showWeekSavedElsewhere(
+                    context,
+                    onKeepMine:
+                        onKeepMine ??
+                        () async {
+                          kept++;
+                          return true;
+                        },
+                  ),
+                  child: const Text('show'),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
+    setUp(() => kept = 0);
+
+    testWidgets('showWeekSavedElsewhere shows the new text with Behåll min for '
+        '30 s', (tester) async {
+      await tester.pumpWidget(elsewhereHarness());
+      await show(tester);
+
+      expect(elsewhere, 'Veckan sparades på en annan enhet');
+      expect(find.text(elsewhere), findsOneWidget);
+      expect(find.widgetWithText(SnackBarAction, keepMine), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 29900));
+      expect(find.text(elsewhere), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+      expect(find.text(elsewhere), findsNothing);
+    });
+
+    testWidgets('Behåll min calls the callback once', (tester) async {
+      await tester.pumpWidget(elsewhereHarness());
+      await show(tester);
+
+      await tester.tap(find.text(keepMine));
+      await tester.pumpAndSettle();
+
+      expect(kept, 1);
+      verifyNever(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      );
+    });
+
+    testWidgets('it stays until acted on under accessible navigation', (
+      tester,
+    ) async {
+      await tester.pumpWidget(elsewhereHarness(accessibleNavigation: true));
+      await show(tester);
+
+      await tester.pump(const Duration(seconds: 60));
+      await tester.pumpAndSettle();
+      expect(find.text(elsewhere), findsOneWidget);
+    });
+  });
 }

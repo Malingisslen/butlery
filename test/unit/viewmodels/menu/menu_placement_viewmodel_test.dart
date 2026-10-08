@@ -170,7 +170,7 @@ void main() {
     when(() => service.readWeek(any())).thenAnswer(
       (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: false),
     );
-    when(() => service.save(any())).thenAnswer((inv) async {
+    when(() => service.saveRevision(any())).thenAnswer((inv) async {
       savedPlans.add(inv.positionalArguments.first as WeeklyMenuPlan);
     });
     delegatePureMethods();
@@ -474,6 +474,32 @@ void main() {
       );
     });
 
+    test(
+      'saves and returns a revision built on the read week (BUT-2215)',
+      () async {
+        // The week menu adopts the returned plan and builds its next edit on
+        // it, so a plan without the saved revision would make that edit a
+        // false conflict.
+        final read = _plan().nextRevision();
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: read, readFailed: false),
+        );
+        final vm = buildVm();
+        await vm.init();
+        final readRevId = vm.plan!.revId;
+        expect(readRevId, isNotNull, reason: 'premise: the read week has one');
+        vm.placeSelectedAt(DayOfWeek.wed);
+
+        final result = await vm.confirm();
+
+        final saved = savedPlans.single;
+        expect(saved.baseRevId, readRevId);
+        expect(saved.revId, isNotNull);
+        expect(saved.revId, isNot(readRevId));
+        expect(result?.plan, same(saved));
+      },
+    );
+
     test('with zero placements returns null and never saves', () async {
       final vm = buildVm();
       await vm.init();
@@ -485,7 +511,7 @@ void main() {
     });
 
     test('returns null and surfaces the error when the save fails', () async {
-      when(() => service.save(any())).thenThrow(Exception('boom'));
+      when(() => service.saveRevision(any())).thenThrow(Exception('boom'));
       final vm = buildVm();
       await vm.init();
       vm.placeSelectedAt(DayOfWeek.wed);
