@@ -608,9 +608,9 @@ export async function probeResidualData(
   // matching deleter now clears, keeping the deleter a strict superset of the
   // probe:
   //   messages.senderId          — anonymized (or deleted with a 1:1 thread)
-  //   realtime_menus/recipes.ownerId       — deleted, subcollections included
-  //   realtime_menus/recipes.lastEditedBy  — anonymized
-  //   realtime_menus/recipes.participantIds — membership dropped on docs the
+  //   realtime_menus.ownerId       — deleted, subcollections included
+  //   realtime_menus.lastEditedBy  — anonymized
+  //   realtime_menus.participantIds — membership dropped on docs the
   //                                           user does not own
   //   conversations.participantIds — 1:1 deleted, group departed
   // The conversation ROSTER rows (`conversations/{id}/participants/{uid}`) are on
