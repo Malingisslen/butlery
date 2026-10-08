@@ -29,10 +29,10 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 |------|-------|--------|
 | `recipe_unified.dart` | 1780 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
 | `tag_result.dart` | 982 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
-| `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
+| `unified_shopping_list.dart` | 915 | Shopping list model — serialization, member permissions, sync status |
 | `conversation.dart` | 501 | Conversation model — serialization, participant and read-status tracking, plus the BUT-1838 history cut-off the list row and search filter both go through. Sat at exactly 500 until BUT-1854 (2026-09-11) made the cut-off's comparison shared with the Art. 15 export; that comparison was moved OUT to `history_cutoff.dart` rather than kept here, so what remains over the limit is the delegation and its import. Splitting further would separate `canReadMessageAt`, `historyQueryStartFor` and `joinedLaterAt` — three questions about one stamp that are only correct read together. |
 | `recipe_form_state.dart` | 992 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. |
-| `unified_shopping_item.dart` | 927 | Shopping item model — serialization, category, unit conversion |
+| `unified_shopping_item.dart` | 977 | Shopping item model — serialization, category, unit conversion |
 | `invitation_target.dart` | 652 | Invitation model — many invitation type variants |
 | `realtime_menu.dart` | 620 | Realtime menu model with collaboration operations |
 | `firebase_tag_config.dart` | 606 | Firebase-backed tag classification config data |

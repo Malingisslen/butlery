@@ -148,7 +148,10 @@ class FirebaseShoppingRepository
 
   @override
   Map<String, dynamic> toFirestore(UnifiedShoppingList entity) =>
-      entity.toFirestore();
+      // BUT-2140: this feeds the whole-list `update`. A copy held in memory
+      // since before a removal would write its older `recentlyRemoved` over
+      // the newer entries, so only the row paths ever write that field.
+      entity.toFirestore()..remove(UnifiedShoppingList.recentlyRemovedKey);
 
   @override
   String getId(UnifiedShoppingList entity) => entity.id;

@@ -274,7 +274,10 @@ class ShoppingOfflineWriteModule {
     required bool baseIsCached,
   }) async {
     const equality = DeepCollectionEquality();
-    final next = proposed.toFirestore();
+    // BUT-2140: only the row paths write `recentlyRemoved`; a stale copy's
+    // older array must not ride along on a rename and overwrite newer entries.
+    final next = proposed.toFirestore()
+      ..remove(UnifiedShoppingList.recentlyRemovedKey);
     final current = stored.toFirestore();
     final payload = <String, Object?>{};
 

@@ -63,6 +63,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 
 /// Language-neutral shopping category constants for Firestore storage.
 /// Display labels should use l10n: AppLocale.current.shoppingCat* or context.l10n.shoppingCat*
@@ -268,6 +269,12 @@ class UnifiedShoppingItem {
   /// Timestamp when the item was assigned. Null when unassigned.
   final DateTime? assignedAt;
 
+  /// The content this row had before its latest content edit, kept for the
+  /// 30-day restore (BUT-2140). Set by `RestorableRows.withPrevious`, never by
+  /// a check-off or a claim. Holds no names or user ids, see
+  /// [ShoppingRowSnapshot].
+  final ShoppingRowSnapshot? previous;
+
   /// Creates a new unified shopping item with comprehensive metadata and automatic ID generation.
   /// This constructor provides complete shopping item initialization with support for both basic
   /// personal shopping and collaborative shared shopping experiences. All collaborative metadata
@@ -312,6 +319,7 @@ class UnifiedShoppingItem {
     this.assignedToUserId,
     this.assignedToDisplayName,
     this.assignedAt,
+    this.previous,
   }) : id = id ?? const Uuid().v4();
 
   /// Factory constructors for simplified shopping item creation with specific use cases.
@@ -593,6 +601,37 @@ class UnifiedShoppingItem {
       assignedToUserId: assignedToUserId,
       assignedToDisplayName: assignedToDisplayName,
       assignedAt: assignedAt,
+      previous: previous,
+    );
+  }
+
+  /// This row with [snapshot] as its `previous`, and nothing else changed:
+  /// no timestamp is touched, because a history bookkeeping step is not an
+  /// edit by anyone.
+  UnifiedShoppingItem withPreviousSnapshot(ShoppingRowSnapshot? snapshot) {
+    return UnifiedShoppingItem(
+      id: id,
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      bought: bought,
+      addedByUserId: addedByUserId,
+      addedByDisplayName: addedByDisplayName,
+      addedAt: addedAt,
+      purchasedByUserId: purchasedByUserId,
+      purchasedByDisplayName: purchasedByDisplayName,
+      purchasedAt: purchasedAt,
+      lastModifiedByUserId: lastModifiedByUserId,
+      lastModifiedByDisplayName: lastModifiedByDisplayName,
+      lastModifiedAt: lastModifiedAt,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      assignedToUserId: assignedToUserId,
+      assignedToDisplayName: assignedToDisplayName,
+      assignedAt: assignedAt,
+      previous: snapshot,
     );
   }
 
@@ -628,6 +667,7 @@ class UnifiedShoppingItem {
       assignedToUserId: userId,
       assignedToDisplayName: displayName,
       assignedAt: now,
+      previous: previous,
     );
   }
 
@@ -662,6 +702,7 @@ class UnifiedShoppingItem {
       assignedToUserId: null,
       assignedToDisplayName: null,
       assignedAt: null,
+      previous: previous,
     );
   }
 
@@ -703,6 +744,7 @@ class UnifiedShoppingItem {
       assignedToUserId: assignedToUserId,
       assignedToDisplayName: assignedToDisplayName,
       assignedAt: assignedAt,
+      previous: previous,
     );
   }
 
@@ -735,6 +777,7 @@ class UnifiedShoppingItem {
       'assignedToUserId': assignedToUserId,
       'assignedToDisplayName': assignedToDisplayName,
       'assignedAt': assignedAt?.toIso8601String(),
+      'previous': previous?.toJson(),
     };
   }
 
@@ -769,6 +812,7 @@ class UnifiedShoppingItem {
       'assignedToUserId': assignedToUserId,
       'assignedToDisplayName': assignedToDisplayName,
       'assignedAt': assignedAt != null ? Timestamp.fromDate(assignedAt!) : null,
+      'previous': previous?.toFirestore(),
     };
   }
 
@@ -831,6 +875,11 @@ class UnifiedShoppingItem {
         'assignedToDisplayName',
       ),
       assignedAt: SerializationUtils.safeDateTime(json, 'assignedAt'),
+      previous: SerializationUtils.safeNestedObject(
+        json,
+        'previous',
+        ShoppingRowSnapshot.fromMap,
+      ),
     );
   }
 
@@ -894,6 +943,11 @@ class UnifiedShoppingItem {
         'assignedToDisplayName',
       ),
       assignedAt: SerializationUtils.safeDateTime(data, 'assignedAt'),
+      previous: SerializationUtils.safeNestedObject(
+        data,
+        'previous',
+        ShoppingRowSnapshot.fromMap,
+      ),
     );
   }
 

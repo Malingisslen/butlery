@@ -26,13 +26,12 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/content_time_labels.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
@@ -79,29 +78,6 @@ abstract final class RestoreOverwrittenVersion {
   /// Key of the row for the version with [id] in the picker.
   static Key pickerRowKey(String id) => ValueKey('restore-version-$id');
 
-  /// When [at] was, as content-style-guide.md:20-36 writes it.
-  static String whenLabel(AppLocalizations l, DateTime at, DateTime now) {
-    final local = at.toLocal();
-    final today = DateUtils.dateOnly(now.toLocal());
-    final day = DateUtils.dateOnly(local);
-    if (day == today) {
-      return l.overwrittenWhenToday(DateFormat.Hm(l.localeName).format(local));
-    }
-    if (day == today.subtract(const Duration(days: 1))) {
-      return l.overwrittenWhenYesterday;
-    }
-    return dateLabel(l, at, now);
-  }
-
-  /// A date as content-style-guide.md:25 writes it: "9 juli", with the year
-  /// only when it is not this year.
-  static String dateLabel(AppLocalizations l, DateTime at, DateTime now) {
-    final local = at.toLocal();
-    return local.year == now.toLocal().year
-        ? DateFormat.MMMMd(l.localeName).format(local)
-        : DateFormat.yMMMMd(l.localeName).format(local);
-  }
-
   /// Runs the flow for [versions] (newest first). Does nothing when there is
   /// nothing to restore or no service.
   static Future<void> start(
@@ -117,7 +93,7 @@ abstract final class RestoreOverwrittenVersion {
 
     final l = context.l10n;
     final now = clock.now();
-    final when = whenLabel(l, version.overwrittenAt, now);
+    final when = ContentTimeLabels.whenLabel(l, version.overwrittenAt, now);
     final isWeek = version.entity == ConflictEntity.weekMenu;
     final confirmed = await ConfirmationDialogs.showConfirmationDialog(
       context,
@@ -159,7 +135,7 @@ abstract final class RestoreOverwrittenVersion {
             ? l.overwrittenRestoreGoneWeek
             : l.overwrittenRestoreGoneRecipe,
         preserved: l.overwrittenKeptUntil(
-          dateLabel(l, version.expiresAt, clock.now()),
+          ContentTimeLabels.dateLabel(l, version.expiresAt, clock.now()),
         ),
         // A resource that no longer exists cannot take the version back, so
         // only a failure that can pass on a retry offers one.
@@ -229,17 +205,17 @@ abstract final class RestoreOverwrittenVersion {
                   key: pickerRowKey(v.id),
                   title: Text(
                     l.overwrittenVersionFrom(
-                      whenLabel(l, v.overwrittenAt, now),
+                      ContentTimeLabels.whenLabel(l, v.overwrittenAt, now),
                     ),
                   ),
                   subtitle: Text(
                     v.overwrittenByName.isEmpty
                         ? l.overwrittenVersionByUnnamed(
-                            dateLabel(l, v.expiresAt, now),
+                            ContentTimeLabels.dateLabel(l, v.expiresAt, now),
                           )
                         : l.overwrittenVersionBy(
                             v.overwrittenByName,
-                            dateLabel(l, v.expiresAt, now),
+                            ContentTimeLabels.dateLabel(l, v.expiresAt, now),
                           ),
                   ),
                   onTap: () => Navigator.of(dialogContext).pop(v),

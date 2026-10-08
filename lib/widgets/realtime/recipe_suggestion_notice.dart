@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/content_time_labels.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
@@ -29,7 +30,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/recipe_suggestion_view.dart';
-import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 
 class RecipeSuggestionNotice extends StatefulWidget {
   const RecipeSuggestionNotice({
@@ -128,7 +128,7 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
           ? l.recipeSuggestionFromOneUnnamed
           : l.recipeSuggestionFromOne(name);
     }
-    final until = RestoreOverwrittenVersion.dateLabel(
+    final until = ContentTimeLabels.dateLabel(
       l,
       newest.expiresAt,
       clock.now(),
