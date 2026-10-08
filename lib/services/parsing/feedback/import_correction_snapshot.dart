@@ -91,8 +91,7 @@ class ImportCorrectionSnapshot {
     List<ParseConfidence>? confidences,
   }) {
     final lines = recipe.ingredients;
-    final reviewed =
-        confidences != null && confidences.length == lines.length;
+    final reviewed = confidences != null && confidences.length == lines.length;
     final ingredients = [
       for (var i = 0; i < lines.length; i++)
         if (lines[i].trim().isNotEmpty)
@@ -172,7 +171,8 @@ class ImportCorrectionSnapshot {
     ];
     if (!unread.contains(true)) return null;
     return [
-      for (final u in unread) u ? ParseConfidence.failed : ParseConfidence.medium,
+      for (final u in unread)
+        u ? ParseConfidence.failed : ParseConfidence.medium,
     ];
   }
 }
