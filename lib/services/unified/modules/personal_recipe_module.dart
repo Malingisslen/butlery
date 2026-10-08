@@ -897,6 +897,7 @@ class PersonalRecipeModule {
           socialData: recipe.socialData,
           realtimeData: recipe.realtimeData,
           offlineData: recipe.offlineData,
+          rev: recipe.rev,
         );
       }
 
@@ -929,6 +930,7 @@ class PersonalRecipeModule {
       socialData: recipe.socialData,
       realtimeData: recipe.realtimeData,
       offlineData: recipe.offlineData,
+      rev: recipe.rev,
     );
   }
 

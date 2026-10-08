@@ -58,7 +58,11 @@ class QueuedRecipeConflicts {
     final userId = _currentUserId();
     final mine = asResource(local, userId);
     final theirs = asResource(remote, userId);
-    if (userId != null) await _keep(userId, mine, theirs);
+    // Who the recipe is shared with is not kept: a restore takes the
+    // sharing the recipe has then (OverwrittenVersionService).
+    if (userId != null) {
+      await _keep(userId, asResource(_withoutSharing(local), userId), theirs);
+    }
     _conflicts.announceQueuedRecipe<RealtimeRecipe>(mine, theirs);
   }
 
@@ -115,6 +119,14 @@ class QueuedRecipeConflicts {
       );
     }
   }
+
+  static Recipe _withoutSharing(Recipe recipe) => Recipe(
+    core: recipe.core,
+    type: recipe.type,
+    realtimeData: recipe.realtimeData,
+    offlineData: recipe.offlineData,
+    rev: recipe.rev,
+  );
 
   /// [recipe] in the shape the banner and the comparison view read, with
   /// who saved it last from its own `realtimeData`.

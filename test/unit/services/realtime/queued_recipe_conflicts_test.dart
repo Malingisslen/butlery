@@ -9,6 +9,7 @@
 import 'dart:async';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -157,6 +158,35 @@ void main() {
     );
     expect((row.version['recipe'] as Map)['core']['title'], 'Min ändring');
   });
+
+  test(
+    'the kept version does not keep who the recipe is shared with',
+    () async {
+      final local = _recipe('Min ändring', 2);
+      final shared = Recipe(
+        core: local.core,
+        type: local.type,
+        realtimeData: local.realtimeData,
+        socialData: const RecipeSocialData(
+          ownerId: _me,
+          memberPermissions: {
+            _me: ResourcePermission.owner,
+            'u2': ResourcePermission.viewer,
+          },
+        ),
+        rev: 2,
+      );
+
+      await sync.announceQueuedRecipeConflict(
+        shared,
+        _recipe('Från min andra enhet', 3),
+      );
+
+      final row = (await kept()).single.version['recipe'] as Map;
+      expect(row['socialData'], isNull);
+      expect((row['core'] as Map)['title'], 'Min ändring');
+    },
+  );
 
   test('"Behåll min version" saves my version through the recipe writer on '
       'the server\'s revision, and the notice is no longer waiting', () async {

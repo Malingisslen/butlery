@@ -78,18 +78,21 @@ class QueuedRecipeSend {
 
     // One attempt: the queue's own schedule is the backoff
     // (produktregler.md:188), so a failure goes back to the queue at once.
+    final created = item.operation == SyncOperation.create.name;
     final int newRev;
-    if (item.operation == SyncOperation.create.name) {
-      await writer.create(recipe).timeout(sendTimeout);
-      // A create writes no revision, which the server reads as 0.
-      newRev = 0;
-    } else {
-      try {
-        newRev = await writer.update(recipe).timeout(sendTimeout);
-      } on RecipeRevisionConflictException catch (conflict) {
-        await _takeServerVersion(item, userId, recipe, conflict.remote);
-        return false;
-      }
+    try {
+      newRev = created
+          ? await writer.create(recipe).timeout(sendTimeout)
+          : await writer.update(recipe).timeout(sendTimeout);
+    } on RecipeRevisionConflictException catch (conflict) {
+      await _takeServerVersion(
+        item,
+        userId,
+        offlineRecipe.recipeJson,
+        recipe,
+        conflict.remote,
+      );
+      return false;
     }
 
     // Sync succeeded - mark as synced in Drift, then leave the queue.
@@ -103,6 +106,7 @@ class QueuedRecipeSend {
       userId,
       sentRev: recipe.rev,
       newRev: newRev,
+      created: created,
     );
     await _syncQueueDao.dequeue(item.id);
     _onRecipeSent?.call(item.recipeId);
@@ -111,21 +115,29 @@ class QueuedRecipeSend {
   }
 
   /// A conflict is not a failure (produktregler.md:189): the entry leaves
-  /// the queue, the device keeps the server's recipe, and the device's
-  /// version goes to [_onRecipeConflict] for the user to choose.
+  /// the queue. While the device still holds [sentJson], the copy the entry
+  /// sent, it takes the server's recipe and the device's version goes to
+  /// [_onRecipeConflict] for the user to choose. A copy saved while the
+  /// write was on its way is newer than [local] and is left with its own
+  /// queue entry, which meets the same conflict and is handed on then.
   Future<void> _takeServerVersion(
     SyncQueueEntry item,
     String userId,
+    String sentJson,
     Recipe local,
     Recipe remote,
   ) async {
-    await _recipeDao.upsertRecipe(
-      id: item.recipeId,
-      userId: userId,
-      recipeJson: jsonEncode(remote.toJson()),
-      needsSync: false,
+    final replaced = await _recipeDao.replaceIfUnchanged(
+      item.recipeId,
+      userId,
+      sentJson: sentJson,
+      serverJson: jsonEncode(remote.toJson()),
     );
     await _syncQueueDao.dequeue(item.id);
+    if (!replaced) {
+      AppLogger.info('⚠️ Receptet ${item.recipeId} ändrades under sändningen');
+      return;
+    }
     _onRecipeSent?.call(item.recipeId);
     AppLogger.warning('⚠️ Receptet ${item.recipeId} ändrades på servern');
     try {

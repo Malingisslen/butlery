@@ -19,9 +19,10 @@ typedef RecipeConflictCallback = void Function(Recipe local, Recipe remote);
 /// `FirebaseRecipeRepository`, which sanitizes, normalizes and caps sharing
 /// for every write to the collection (BUT-1819, BUT-955).
 abstract interface class QueuedRecipeWriter {
-  /// Writes [recipe] as a new document. Sending it twice gives the same
-  /// document: the write replaces the whole recipe on its own id.
-  Future<void> create(Recipe recipe);
+  /// Writes [recipe] as a new document and returns its revision. Sending it
+  /// twice gives the same document; a second send that finds a later save
+  /// throws `RecipeRevisionConflictException` (BUT-2213).
+  Future<int> create(Recipe recipe);
 
   /// Writes [recipe] over the server's copy while the server is still at
   /// the revision [recipe] was built on ([Recipe.rev]; null is not
@@ -43,7 +44,7 @@ class LazyQueuedRecipeWriter implements QueuedRecipeWriter {
   final QueuedRecipeWriter Function() _resolve;
 
   @override
-  Future<void> create(Recipe recipe) => _resolve().create(recipe);
+  Future<int> create(Recipe recipe) => _resolve().create(recipe);
 
   @override
   Future<int> update(Recipe recipe) => _resolve().update(recipe);

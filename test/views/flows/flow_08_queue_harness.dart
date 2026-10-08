@@ -45,7 +45,10 @@ class RecordingWriter implements QueuedRecipeWriter {
   }
 
   @override
-  Future<void> create(Recipe recipe) => _write('create', recipe.id, recipe);
+  Future<int> create(Recipe recipe) async {
+    await _write('create', recipe.id, recipe);
+    return 0;
+  }
 
   /// The server's revision after the write: one above the one it was
   /// built on.

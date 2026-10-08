@@ -835,6 +835,7 @@ class RecipeListViewModel extends BaseViewModel {
         socialData: recipe.socialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
       try {
         await _recipeService.updateRecipe(updated);
@@ -870,6 +871,7 @@ class RecipeListViewModel extends BaseViewModel {
         socialData: recipe.socialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
       try {
         await _recipeService.updateRecipe(restored);

@@ -48,9 +48,7 @@ void main() {
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     repository = MockRecipeRepository();
-    when(() => repository.create(any())).thenAnswer(
-      (inv) async => inv.positionalArguments.first as Recipe,
-    );
+    when(() => repository.createOnce(any())).thenAnswer((_) async => 0);
     when(
       () => repository.updateAtRevision(
         any(),
@@ -98,7 +96,7 @@ void main() {
 
     await pass();
 
-    final sent = verify(() => repository.create(captureAny())).captured;
+    final sent = verify(() => repository.createOnce(captureAny())).captured;
     expect(sent.single, isA<Recipe>().having((r) => r.id, 'id', 'r1'));
     verifyNever(
       () => repository.updateAtRevision(
@@ -122,7 +120,7 @@ void main() {
 
       await pass();
 
-      final sent = verify(() => repository.create(captureAny())).captured;
+      final sent = verify(() => repository.createOnce(captureAny())).captured;
       expect((sent.single as Recipe).title, 'Tredje');
       verifyNever(
         () => repository.updateAtRevision(
@@ -214,7 +212,7 @@ void main() {
 
     await pass();
 
-    verifyNever(() => repository.create(any()));
+    verifyNever(() => repository.createOnce(any()));
     expect(await db.syncQueueDao.countPending(uid), 0);
     expect(await db.syncQueueDao.getPermanentFailures(uid), isEmpty);
   });
@@ -273,7 +271,7 @@ void main() {
     expect(SyncQueueDao.dependsOnOf(tagRow), [writeOp]);
 
     await pass();
-    verify(() => repository.create(any())).called(1);
+    verify(() => repository.createOnce(any())).called(1);
     expect(tagged, ['r1@$uid']);
   });
 

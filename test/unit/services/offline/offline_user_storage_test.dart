@@ -87,6 +87,12 @@ void main() {
         () => mockRecipeDao.getRecipe(any(), any()),
       ).thenAnswer((_) async => null);
 
+      // A save reads the device copy and writes it in one transaction
+      // (BUT-2213); the mock runs the body as the database would.
+      when(() => mockDatabase.transaction<String>(any())).thenAnswer(
+        (inv) => (inv.positionalArguments.first as Future<String> Function())(),
+      );
+
       // Create storage instance with mock database
       final uploadsRoot = await Directory.systemTemp.createTemp('uploads');
       addTearDown(() => uploadsRoot.delete(recursive: true));

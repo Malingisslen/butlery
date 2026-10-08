@@ -5716,11 +5716,31 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   user's recipe through `UnifiedRecipeService.personal.updateUnifiedRecipe`, and Återställ on
   a kept recipe version reads and writes the recipe document. `realtimeResourceShapeOk`
   still admits `type == 'menu'` only. Do not open the type "for completeness".
-- **Saves from older app versions are missed conflicts, never false ones (BUT-2213,
-  2026-10-08).** An app version from before this change updates a recipe without touching
-  `rev`, so a queued edit built on the revision before that save is written over it, as
-  every queued edit was before. A document without `rev` is revision 0, and a device copy
-  queued before the update has no revision and is written without comparing.
+- **Writes that do not raise `rev` are missed conflicts, never false ones (BUT-2213,
+  2026-10-08).** Only `FirebaseRecipeRepository.update`, `updateAtRevision` and `createOnce`
+  set `rev`. An app version from before this change, and every field-level writer that
+  updates a recipe document directly (the rating denormalisation in `rating_statistics.dart`,
+  the family rating summary in `family_rating_service.dart`, and the Cloud Functions that
+  mark recipes for retagging or scrub fields on them), leave it as it was, so a queued edit built on the
+  revision before such a write is written over it, as every queued edit was before. A
+  document without `rev` is revision 0, and a device copy queued before the update has no
+  revision and is written without comparing.
+- **A base is raised only over revisions this device produced, and an update with no known
+  base meets a conflict unless the server already holds the same content (BUT-2213,
+  2026-10-08).** The device copy records `{from, to}`: the device's own sends that started
+  at revision `from` (null: its own create) brought the server to `to`
+  (`RecipeRevisionRecord`, written by `RecipeDao.advanceRev`, dropped when the device takes
+  the server's recipe after a conflict). A save from a copy read inside that range is sent
+  on `to`; any other base is sent as it is. A save that carries no revision, on a recipe the
+  server has seen and the device did not create, is sent with base -1, which equals no
+  revision: the server takes it only when it already holds the same content, and otherwise
+  the user gets the conflict banner and chooses. The cost is a conflict notice for an edit
+  made from a copy cached before revisions existed; the alternative, writing it without
+  comparing, could replace another device's version without anyone seeing it.
+- **A create the queue sends again does not replace what the server holds by then
+  (BUT-2213, 2026-10-08).** `createOnce` writes only when the document does not exist.
+  When it does, the create counts as done if the server holds the same content at revision
+  0, and is otherwise a conflict carrying the server's recipe; it never resets `rev`.
 - **A queue conflict keeps the device's version even when the newer one is the user's own
   (Malin, 2026-10-08, A1).** `QueuedRecipeConflicts._keep` stores the device's version as an
   `OverwrittenVersion` (`recipeOwn`, type `recipe`) for 30 days whoever saved the server's

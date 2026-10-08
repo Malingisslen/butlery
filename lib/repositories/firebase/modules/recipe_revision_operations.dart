@@ -54,8 +54,8 @@ class RecipeRevisionOperations {
   };
 
   /// Writes [recipe] to [ref] if the server is still at [expectedRev], and
-  /// returns the revision the server now has. A null [expectedRev] is a save
-  /// whose base is not known, written without comparing.
+  /// returns the revision the server now has. A null [expectedRev] is
+  /// written without comparing.
   ///
   /// When the server has moved on but already holds exactly what is sent (a
   /// send repeated after its answer was lost), the save counts as done and
@@ -85,6 +85,31 @@ class RecipeRevisionOperations {
       }
       tx.update(ref, {...fields, revField: serverRev + 1});
       return serverRev + 1;
+    });
+  }
+
+  /// Writes [recipe] to [ref] as a new recipe and returns its revision, 0.
+  /// When the document already exists (a create sent again after its answer
+  /// was lost), nothing is written: the create counts as done while the
+  /// server holds the same content at revision 0, and is otherwise a conflict
+  /// carrying the server's recipe, so a later save from another device is
+  /// neither replaced nor its revision reset.
+  Future<int> createOnce(
+    DocumentReference<Map<String, dynamic>> ref,
+    Recipe recipe,
+  ) {
+    final fields = toFirestore(recipe);
+    return firestore.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      final data = snap.data();
+      if (!snap.exists || data == null) {
+        tx.set(ref, fields);
+        return 0;
+      }
+      final server = Recipe.fromMap(snap.id, data);
+      await checkOwner(server);
+      if ((server.rev ?? 0) == 0 && _sameContent(fields, server)) return 0;
+      throw RecipeRevisionConflictException(server);
     });
   }
 

@@ -10,8 +10,10 @@ import 'dart:convert';
 
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
+import 'package:butlery/core/storage/drift/recipe_revision_record.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
@@ -32,8 +34,19 @@ class _RevisionServer implements QueuedRecipeWriter {
   /// Runs inside the next update, before the server answers.
   Future<void> Function()? duringNextUpdate;
 
+  /// A create that finds the recipe already there (sent again after its
+  /// answer was lost) is done when the server holds what is sent at
+  /// revision 0, and a conflict otherwise.
   @override
-  Future<void> create(Recipe recipe) async => recipes[recipe.id] = recipe;
+  Future<int> create(Recipe recipe) async {
+    final server = recipes[recipe.id];
+    if (server != null) {
+      if ((server.rev ?? 0) == 0 && server.title == recipe.title) return 0;
+      throw RecipeRevisionConflictException(server);
+    }
+    recipes[recipe.id] = _withRev(recipe, 0);
+    return 0;
+  }
 
   @override
   Future<int> update(Recipe recipe) async {
@@ -185,30 +198,31 @@ void main() {
     expect(await db.syncQueueDao.countPending(uid), 0);
   });
 
-  group('the revision a queued write is built on is never lowered', () {
-    setUp(() async {
-      await db.recipeDao.upsertRecipe(
-        id: 'r1',
-        userId: uid,
-        recipeJson: jsonEncode(recipe('På enheten', rev: 5).toJson()),
-        needsSync: false,
-      );
-    });
+  Future<void> storeOnDevice(Recipe recipe) => db.recipeDao.upsertRecipe(
+    id: recipe.id,
+    userId: uid,
+    recipeJson: jsonEncode(recipe.toJson()),
+    needsSync: false,
+  );
 
-    test('an edit built on an older copy takes the device copy\'s', () async {
+  group('a device copy whose revision the device did not produce', () {
+    setUp(() => storeOnDevice(recipe('På enheten', rev: 5)));
+
+    test('an edit built on an older copy keeps its own base', () async {
       await storage.saveRecipeForUser(recipe('Äldre kopia', rev: 3), uid);
-      expect((await onDevice()).rev, 5);
+      expect((await onDevice()).rev, 3);
       expect((await onDevice()).title, 'Äldre kopia');
-    });
-
-    test('an edit that lost its revision takes the device copy\'s', () async {
-      await storage.saveRecipeForUser(recipe('Utan revision'), uid);
-      expect((await onDevice()).rev, 5);
     });
 
     test('an edit built on a newer one keeps its own', () async {
       await storage.saveRecipeForUser(recipe('Nyare', rev: 7), uid);
       expect((await onDevice()).rev, 7);
+    });
+
+    test('an edit without a revision is not given the copy\'s: its base is '
+        'unknown', () async {
+      await storage.saveRecipeForUser(recipe('Utan revision'), uid);
+      expect((await onDevice()).rev, RecipeRevisionRecord.unknownBase);
     });
 
     test('a new recipe has none: the server has not seen it', () async {
@@ -219,6 +233,170 @@ void main() {
       );
       expect((await onDevice()).rev, isNull);
     });
+  });
+
+  test('an edit without a revision on a recipe the device holds no copy of '
+      'has an unknown base', () async {
+    await storage.saveRecipeForUser(recipe('Utan revision'), uid);
+    expect((await onDevice()).rev, RecipeRevisionRecord.unknownBase);
+  });
+
+  test('an edit of a recipe whose create is still queued is sent without '
+      'comparing', () async {
+    await storage.saveRecipeForUser(
+      recipe('Ny'),
+      uid,
+      operation: SyncOperation.create,
+    );
+    await storage.saveRecipeForUser(recipe('Ny, ändrad'), uid);
+    expect((await onDevice()).rev, isNull);
+  });
+
+  test('retagging the device copy keeps the revision the copy is built '
+      'on', () async {
+    await storeOnDevice(recipe('På enheten', rev: 5));
+
+    final retagged = await storage.retagRecipeForUser(
+      'r1',
+      uid,
+      (_) async => TagResult(
+        tags: const {},
+        allergenStatus: const {},
+        dietaryStatus: const {},
+        coverage: 1,
+        unknownIngredients: const [],
+        generatedAt: QueueHarness.t0,
+        generatorVersion: 'test',
+      ),
+    );
+
+    expect(retagged, isTrue);
+    expect((await onDevice()).rev, 5);
+  });
+
+  group('an edit with an unknown base', () {
+    test('meets a conflict when the server holds something else', () async {
+      server.recipes['r1'] = recipe('Från min andra enhet', rev: 5);
+      await storage.saveRecipeForUser(recipe('Min ändring'), uid);
+
+      await pass();
+
+      expect(server.recipes['r1']!.title, 'Från min andra enhet');
+      expect(conflicts.single.$1.title, 'Min ändring');
+      expect((await onDevice()).rev, 5);
+    });
+  });
+
+  group('a base is raised only over revisions this device produced', () {
+    test('an edit from a copy read before the device\'s own send is sent on '
+        'the revision that send produced', () async {
+      server.recipes['r1'] = recipe('Linsgryta', rev: 2);
+      await storage.saveRecipeForUser(recipe('Första', rev: 2), uid);
+      await pass();
+      expect(server.recipes['r1']!.rev, 3);
+
+      // The editor still holds the copy it opened, at revision 2.
+      await storage.saveRecipeForUser(recipe('Andra', rev: 2), uid);
+      await pass();
+
+      expect(server.updates.last.rev, 3);
+      expect(server.recipes['r1']!.title, 'Andra');
+      expect(conflicts, isEmpty);
+    });
+
+    test('an edit without a revision, built on the device\'s own create, is '
+        'sent on the create\'s revision', () async {
+      await storage.saveRecipeForUser(
+        recipe('Ny'),
+        uid,
+        operation: SyncOperation.create,
+      );
+      await pass();
+
+      await storage.saveRecipeForUser(recipe('Ny, ändrad'), uid);
+      expect((await onDevice()).rev, 0);
+      await pass();
+
+      expect(server.recipes['r1']!.title, 'Ny, ändrad');
+      expect(conflicts, isEmpty);
+    });
+
+    test(
+      'after a conflict, an edit from the copy read before it is not '
+      'raised to the server\'s revision and meets the conflict too',
+      () async {
+        server.recipes['r1'] = recipe('Från min andra enhet', rev: 3);
+        await storage.saveRecipeForUser(recipe('Min ändring', rev: 2), uid);
+        await pass();
+        expect((await onDevice()).rev, 3, reason: "the server's recipe");
+
+        // An editor opened before the conflict saves again, on revision 2.
+        await storage.saveRecipeForUser(recipe('Gammal skärm', rev: 2), uid);
+        expect((await onDevice()).rev, 2);
+        await pass();
+
+        expect(server.recipes['r1']!.title, 'Från min andra enhet');
+        expect(conflicts.map((c) => c.$1.title), [
+          'Min ändring',
+          'Gammal skärm',
+        ]);
+      },
+    );
+
+    test('a save and the end of a send cannot interleave into a base the '
+        'device did not mean', () async {
+      server.recipes['r1'] = recipe('Linsgryta', rev: 3);
+      await storeOnDevice(recipe('Första', rev: 2));
+
+      await Future.wait([
+        storage.saveRecipeForUser(recipe('Andra', rev: 2), uid),
+        db.recipeDao.advanceRev('r1', uid, sentRev: 2, newRev: 3),
+      ]);
+
+      expect((await onDevice()).rev, 3);
+      expect((await onDevice()).title, 'Andra');
+    });
+  });
+
+  test('a conflict met while a newer edit was saved leaves that edit queued, '
+      'and it is the one handed on when it meets the conflict', () async {
+    server.recipes['r1'] = recipe('Från min andra enhet', rev: 3);
+    await storage.saveRecipeForUser(recipe('Första', rev: 2), uid);
+    server.duringNextUpdate = () async {
+      await storage.saveRecipeForUser(recipe('Andra', rev: 2), uid);
+    };
+
+    await pass();
+
+    expect((await onDevice()).title, 'Andra');
+    expect((await db.recipeDao.getRecipe('r1', uid))!.needsSync, isTrue);
+    expect(await db.syncQueueDao.countPending(uid), 1);
+    expect(conflicts, isEmpty);
+    expect(settled, isEmpty);
+
+    await pass();
+
+    expect(conflicts.single.$1.title, 'Andra');
+    expect((await onDevice()).title, 'Från min andra enhet');
+    expect(server.recipes['r1']!.title, 'Från min andra enhet');
+    expect(await db.syncQueueDao.countPending(uid), 0);
+  });
+
+  test('a create sent again that finds another device\'s save takes the '
+      'server\'s recipe and hands on the conflict', () async {
+    server.recipes['r1'] = recipe('Från min andra enhet', rev: 1);
+    await storage.saveRecipeForUser(
+      recipe('Min nya'),
+      uid,
+      operation: SyncOperation.create,
+    );
+
+    await pass();
+
+    expect(server.recipes['r1']!.title, 'Från min andra enhet');
+    expect(conflicts.single.$1.title, 'Min nya');
+    expect((await onDevice()).rev, 1);
+    expect(await db.syncQueueDao.countPending(uid), 0);
   });
 
   test('a create that reached the server leaves the device copy on revision '

@@ -178,6 +178,65 @@ void main() {
     expect((await server())['core']['title'], 'Någon annans');
   });
 
+  group('the queue\'s create', () {
+    test('writes a new recipe at revision 0', () async {
+      expect(await at(() => repository.createOnce(recipe('Linsgryta'))), 0);
+
+      final data = await server();
+      expect(data['core']['title'], 'Linsgryta');
+      expect(data.containsKey('rev'), isFalse, reason: 'missing reads as 0');
+    });
+
+    test('sent again with what the server already holds counts as done and '
+        'writes nothing', () async {
+      await at(() => repository.createOnce(recipe('Linsgryta')));
+      await doc().update({'marker': 'kept'});
+
+      expect(await at(() => repository.createOnce(recipe('Linsgryta'))), 0);
+      expect((await server())['marker'], 'kept');
+    });
+
+    test('sent again after another device saved neither replaces that save '
+        'nor resets its revision', () async {
+      await seed('Från min andra enhet', rev: 1);
+
+      await expectLater(
+        at(() => repository.createOnce(recipe('Linsgryta'))),
+        throwsA(
+          isA<RecipeRevisionConflictException>().having(
+            (e) => e.remote.title,
+            'remote title',
+            'Från min andra enhet',
+          ),
+        ),
+      );
+      final data = await server();
+      expect(data['rev'], 1);
+      expect(data['core']['title'], 'Från min andra enhet');
+    });
+
+    test('sent again over other content at revision 0 is a conflict too, '
+        'since field writers do not raise the revision', () async {
+      await seed('Annat innehåll');
+
+      await expectLater(
+        at(() => repository.createOnce(recipe('Linsgryta'))),
+        throwsA(isA<RecipeRevisionConflictException>()),
+      );
+      expect((await server())['core']['title'], 'Annat innehåll');
+    });
+
+    test('over someone else\'s recipe is refused', () async {
+      await seed('Någon annans', createdBy: 'someone-else');
+
+      await expectLater(
+        at(() => repository.createOnce(recipe('Min'))),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect((await server())['core']['title'], 'Någon annans');
+    });
+  });
+
   test('the revision is the repository\'s: a device copy keeps it, the '
       'recipe\'s own serializer never writes it', () {
     final withRev = recipe('Linsgryta', rev: 7);

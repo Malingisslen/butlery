@@ -7,6 +7,10 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// Repository interface for recipe data operations.
 abstract class RecipeRepository extends Repository<Recipe>
     with StreamManagementMixin {
+  /// BUT-2213: creates [entity] for the offline queue and returns its
+  /// revision; a create sent twice does not replace a later save.
+  Future<int> createOnce(Recipe entity);
+
   /// BUT-2213: saves [entity] only while the server's recipe is at revision
   /// [expectedRev] (null: not compared), and returns the revision after the
   /// save. Throws `RecipeRevisionConflictException` carrying the server's
