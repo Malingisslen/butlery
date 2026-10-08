@@ -24641,11 +24641,11 @@ abstract class AppLocalizations {
   /// **'din@email.se'**
   String get feedbackEmailHint;
 
-  /// Hint text showing example phone number format in MFA SMS enrollment field.
+  /// Hint text showing the national number format in the MFA SMS enrollment field; the country code has its own field beside it.
   ///
   /// In sv, this message translates to:
-  /// **'+46 70 123 45 67'**
-  String get mfaPhoneHint;
+  /// **'070 123 45 67'**
+  String get mfaNationalNumberHint;
 
   /// Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField).
   ///
@@ -27310,6 +27310,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
   String get mfaBackupCodesFailed;
+
+  /// No description provided for @mfaCountryCodeLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Landskod'**
+  String get mfaCountryCodeLabel;
+
+  /// No description provided for @mfaCountryCodeInvalid.
+  ///
+  /// In sv, this message translates to:
+  /// **'Landskoden ska börja med + och ha 1–4 siffror, till exempel +46. Rätta landskoden och försök igen.'**
+  String get mfaCountryCodeInvalid;
+
+  /// No description provided for @mfaPhoneDigitsOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Numret får bara innehålla siffror, mellanslag och bindestreck. Rätta numret och försök igen.'**
+  String get mfaPhoneDigitsOnly;
+
+  /// No description provided for @mfaPhoneTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Numret är för långt. Med landskod får ett telefonnummer ha högst 15 siffror. Rätta numret och försök igen.'**
+  String get mfaPhoneTooLong;
+
+  /// No description provided for @mfaCodeWillBeSentTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koden skickas till {phone}'**
+  String mfaCodeWillBeSentTo(String phone);
+
+  /// No description provided for @mfaErrorUnverifiedEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen slogs inte på, eftersom din e-postadress inte är verifierad. Öppna mejlet vi skickade till dig, tryck på verifieringslänken och försök sedan igen.'**
+  String get mfaErrorUnverifiedEmail;
+
+  /// No description provided for @mfaErrorSecondFactorInUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen slogs inte på, eftersom det här telefonnumret redan används för tvåstegsverifiering på ett konto. Ange ett annat nummer.'**
+  String get mfaErrorSecondFactorInUse;
+
+  /// No description provided for @mfaErrorRequiresRecentLogin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen slogs inte på, eftersom din inloggning är för gammal. Logga ut, logga in igen och försök sedan på nytt.'**
+  String get mfaErrorRequiresRecentLogin;
 
   /// No description provided for @permAllow.
   ///

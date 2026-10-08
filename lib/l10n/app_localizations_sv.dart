@@ -14790,7 +14790,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackEmailHint => 'din@email.se';
 
   @override
-  String get mfaPhoneHint => '+46 70 123 45 67';
+  String get mfaNationalNumberHint => '070 123 45 67';
 
   @override
   String get dialogEmailLabel => 'E-post';
@@ -16587,6 +16587,38 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get mfaBackupCodesFailed =>
       'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.';
+
+  @override
+  String get mfaCountryCodeLabel => 'Landskod';
+
+  @override
+  String get mfaCountryCodeInvalid =>
+      'Landskoden ska börja med + och ha 1–4 siffror, till exempel +46. Rätta landskoden och försök igen.';
+
+  @override
+  String get mfaPhoneDigitsOnly =>
+      'Numret får bara innehålla siffror, mellanslag och bindestreck. Rätta numret och försök igen.';
+
+  @override
+  String get mfaPhoneTooLong =>
+      'Numret är för långt. Med landskod får ett telefonnummer ha högst 15 siffror. Rätta numret och försök igen.';
+
+  @override
+  String mfaCodeWillBeSentTo(String phone) {
+    return 'Koden skickas till $phone';
+  }
+
+  @override
+  String get mfaErrorUnverifiedEmail =>
+      'Tvåstegsverifieringen slogs inte på, eftersom din e-postadress inte är verifierad. Öppna mejlet vi skickade till dig, tryck på verifieringslänken och försök sedan igen.';
+
+  @override
+  String get mfaErrorSecondFactorInUse =>
+      'Tvåstegsverifieringen slogs inte på, eftersom det här telefonnumret redan används för tvåstegsverifiering på ett konto. Ange ett annat nummer.';
+
+  @override
+  String get mfaErrorRequiresRecentLogin =>
+      'Tvåstegsverifieringen slogs inte på, eftersom din inloggning är för gammal. Logga ut, logga in igen och försök sedan på nytt.';
 
   @override
   String get permAllow => 'Tillåt';

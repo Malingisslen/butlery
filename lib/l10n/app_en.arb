@@ -10756,9 +10756,9 @@
   "@feedbackEmailHint": {
     "description": "Hint text inside the optional email field on the in-app feedback dialog."
   },
-  "mfaPhoneHint": "+46 70 123 45 67",
-  "@mfaPhoneHint": {
-    "description": "Hint text showing example phone number format in MFA SMS enrollment field."
+  "mfaNationalNumberHint": "070 123 45 67",
+  "@mfaNationalNumberHint": {
+    "description": "Hint text showing the national number format in the MFA SMS enrollment field; the country code has its own field beside it."
   },
   "dialogEmailLabel": "Email",
   "@dialogEmailLabel": {
@@ -12302,6 +12302,21 @@
   "mfaBackupCodesSaved": "I have saved the codes",
   "mfaBackupCodesContinue": "Continue to the phone number",
   "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.",
+  "mfaCountryCodeLabel": "Country code",
+  "mfaCountryCodeInvalid": "The country code must start with + and have 1–4 digits, for example +46. Correct the country code and try again.",
+  "mfaPhoneDigitsOnly": "The number can only contain digits, spaces and hyphens. Correct the number and try again.",
+  "mfaPhoneTooLong": "The number is too long. Including the country code, a phone number can have at most 15 digits. Correct the number and try again.",
+  "mfaCodeWillBeSentTo": "The code will be sent to {phone}",
+  "@mfaCodeWillBeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaErrorUnverifiedEmail": "Two-step verification was not switched on, because your email address is not verified. Open the email we sent you, tap the verification link and try again.",
+  "mfaErrorSecondFactorInUse": "Two-step verification was not switched on, because this phone number is already used for two-step verification on an account. Enter a different number.",
+  "mfaErrorRequiresRecentLogin": "Two-step verification was not switched on, because your sign-in is too old. Sign out, sign in again and try once more.",
   "permAllow": "Allow",
   "permNotNow": "Not now",
   "permAskAgain": "Ask again",

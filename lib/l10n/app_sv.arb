@@ -10874,9 +10874,9 @@
   "@feedbackEmailHint": {
     "description": "Hint text inside the optional email field on the in-app feedback dialog."
   },
-  "mfaPhoneHint": "+46 70 123 45 67",
-  "@mfaPhoneHint": {
-    "description": "Hint text showing example phone number format in MFA SMS enrollment field."
+  "mfaNationalNumberHint": "070 123 45 67",
+  "@mfaNationalNumberHint": {
+    "description": "Hint text showing the national number format in the MFA SMS enrollment field; the country code has its own field beside it."
   },
   "dialogEmailLabel": "E-post",
   "@dialogEmailLabel": {
@@ -12628,6 +12628,21 @@
   "mfaBackupCodesSaved": "Jag har sparat koderna",
   "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
   "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.",
+  "mfaCountryCodeLabel": "Landskod",
+  "mfaCountryCodeInvalid": "Landskoden ska börja med + och ha 1–4 siffror, till exempel +46. Rätta landskoden och försök igen.",
+  "mfaPhoneDigitsOnly": "Numret får bara innehålla siffror, mellanslag och bindestreck. Rätta numret och försök igen.",
+  "mfaPhoneTooLong": "Numret är för långt. Med landskod får ett telefonnummer ha högst 15 siffror. Rätta numret och försök igen.",
+  "mfaCodeWillBeSentTo": "Koden skickas till {phone}",
+  "@mfaCodeWillBeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaErrorUnverifiedEmail": "Tvåstegsverifieringen slogs inte på, eftersom din e-postadress inte är verifierad. Öppna mejlet vi skickade till dig, tryck på verifieringslänken och försök sedan igen.",
+  "mfaErrorSecondFactorInUse": "Tvåstegsverifieringen slogs inte på, eftersom det här telefonnumret redan används för tvåstegsverifiering på ett konto. Ange ett annat nummer.",
+  "mfaErrorRequiresRecentLogin": "Tvåstegsverifieringen slogs inte på, eftersom din inloggning är för gammal. Logga ut, logga in igen och försök sedan på nytt.",
   "permAllow": "Tillåt",
   "permNotNow": "Inte nu",
   "permAskAgain": "Fråga igen",
