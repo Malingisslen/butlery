@@ -1,7 +1,5 @@
 /// A personal list keeps its items in the `items` subcollection, which is
-/// what the next launch reads. `updateList` is how the menu writes its rows,
-/// so it has to reach that subcollection: before, a menu merge showed for the
-/// rest of the session and was gone after the next login.
+/// what the next launch reads.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/services/unified/modules/shopping_list_management_module.dart';
 
 import '../../../../infrastructure/mocks/production_mocks.dart';
@@ -92,5 +91,36 @@ void main() {
 
     verifyNever(() => repository.addItemsBatch(any(), any()));
     verifyNever(() => repository.removeItemsBatch(any(), any()));
+  });
+
+  test('BUT-2140: a menu merge replaces the local copy with the server-based '
+      'result, so the other device\'s rows show at once', () async {
+    lists = [
+      _list([_item('own')]),
+    ];
+    final merged = _list([_item('own'), _item('theirs'), _item('ours')]);
+    final request = PersonalMergeRequest(
+      rows: (_) => [_item('ours')],
+      replace: false,
+    );
+    when(() => repository.applyPersonalMerge(any(), request)).thenAnswer(
+      (_) async => PersonalMergeResult(
+        list: merged,
+        added: [_item('ours')],
+        removed: const [],
+        concurrentChange: true,
+      ),
+    );
+
+    final result = await build().applyPersonalMerge('list-1', request);
+
+    expect(result.concurrentChange, isTrue);
+    expect(lists.single.items.map((i) => i.id), ['own', 'theirs', 'ours']);
+    final base =
+        verify(
+              () => repository.applyPersonalMerge(captureAny(), request),
+            ).captured.single
+            as UnifiedShoppingList;
+    expect(base.items.map((i) => i.id), ['own'], reason: 'the memory copy');
   });
 }

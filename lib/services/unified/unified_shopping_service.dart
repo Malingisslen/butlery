@@ -442,6 +442,19 @@ class UnifiedShoppingService
     return await _listManagement.updateList(list);
   }
 
+  /// BUT-2140: the week menu's merge into a personal list. Throws on failure.
+  Future<PersonalMergeResult> applyPersonalMerge(
+    String listId,
+    PersonalMergeRequest request,
+  ) => _listManagement.applyPersonalMerge(listId, request);
+
+  /// BUT-2140: Ångra for [applyPersonalMerge]. Throws on failure.
+  Future<void> undoPersonalMerge(
+    String listId,
+    List<String> addedIds,
+    List<UnifiedShoppingItem> restore,
+  ) => _listManagement.undoPersonalMerge(listId, addedIds, restore);
+
   /// BUT-1726: persist a membership change on a shared list — add, remove,
   /// change permission, leave.
   ///

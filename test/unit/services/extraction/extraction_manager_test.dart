@@ -70,11 +70,26 @@ void main() {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
 
+      // extractFromUrl runs through executeServiceOperation with requiresAuth:
+      // true, which reads AuthRepository.currentUserId via the PRODUCTION
+      // ServiceLocator. Without an authenticated repository there the auth
+      // pre-flight fails closed and returns the fallback result without ever running
+      // the extraction pipeline. DIContainer wraps the same GetIt.instance the
+      // harness registers into.
+      TestServiceLocator.registerMock<AuthRepository>(
+        MockFactory.createAuthRepository(
+          isAuthenticated: true,
+          userId: 'test_user_123',
+        ),
+      );
+      app.ServiceLocator.initialize(DIContainer());
+
       // Using real ExtractionManager implementation for integration-style testing
       manager = ExtractionManager();
     });
 
     tearDown(() async {
+      app.ServiceLocator.reset();
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
       // Dispose of the manager to clean up resources
@@ -145,6 +160,7 @@ void main() {
         expect(result, isA<ExtractionResult>());
         expect(result, isNotNull);
         expect(result.success, isFalse);
+        expect(result.metadata['reason'], equals('unknown_platform'));
       });
 
       test('should handle invalid URLs gracefully', () async {
@@ -158,6 +174,7 @@ void main() {
         expect(result, isA<ExtractionResult>());
         expect(result, isNotNull);
         expect(result.success, isFalse);
+        expect(result.metadata['reason'], equals('unknown_platform'));
       });
     });
 
@@ -224,6 +241,7 @@ void main() {
         expect(result, isA<ExtractionResult>());
         expect(result, isNotNull);
         expect(result.success, isFalse);
+        expect(result.metadata['reason'], equals('unknown_platform'));
       });
 
       test('should handle URLs with special characters', () async {
@@ -296,6 +314,7 @@ void main() {
         // Assert - Would use OCR in production
         expect(result, isA<ExtractionResult>());
         expect(result.success, isFalse); // OCR not available in unit tests
+        expect(result.metadata['reason'], equals('unknown_platform'));
       });
 
       test('should handle PDF URL extraction', () async {
@@ -575,27 +594,6 @@ void main() {
       // ica.se is detected as a supported recipesite by the real
       // PlatformDetector, so extraction reaches the scrape+retry stage.
       const supportedUrl = 'https://www.ica.se/recept/retry-test';
-
-      setUp(() {
-        // extractFromUrl runs through executeServiceOperation with
-        // requiresAuth: true, which reads AuthRepository.currentUserId via the
-        // PRODUCTION ServiceLocator. Two things are needed so the scrape stage
-        // is actually reached (otherwise the auth pre-flight fails closed and
-        // the op returns the auth fallback, never touching the scraper):
-        //   1. an authenticated AuthRepository in the shared GetIt, and
-        //   2. the production ServiceLocator pointed at that GetIt — the test
-        //      harness intentionally skips wiring it (DIContainer wraps the
-        //      same GetIt.instance the harness registers into).
-        TestServiceLocator.registerMock<AuthRepository>(
-          MockFactory.createAuthRepository(
-            isAuthenticated: true,
-            userId: 'test_user_123',
-          ),
-        );
-        app.ServiceLocator.initialize(DIContainer());
-      });
-
-      tearDown(app.ServiceLocator.reset);
 
       test(
         'retries the scrape when the first attempt fails with reason:network',
