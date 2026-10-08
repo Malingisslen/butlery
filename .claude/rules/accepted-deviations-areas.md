@@ -55,5 +55,5 @@ A new deviation in this area is appended HERE and in that document, in the same 
   the discriminator fixture.
 
 - "Ersätt listan" offline replaces the personal week list from the copy in memory, so a tick made on a recipe row on another device meanwhile can be lost; an offline add stays safe (`arrayUnion` on `menuItemIds`), and the receipt reports no change on that path. BUT-1683 shape (BUT-2140, B1, 2026-10-08)
-- An offline cached-base replay that overwrites another member's change on a shared list keeps no `previous` or `recentlyRemoved` entry for what it overwrote; `recentlyRemoved` is queued as `arrayUnion`/`arrayRemove`, never the cached array, and is pruned only online. BUT-1683 shape (BUT-2140 PR 3, 2026-10-08)
+- An offline cached-base replay that overwrites another member's change on a shared list keeps no `previous` or `recentlyRemoved` entry for what it overwrote; `recentlyRemoved` is queued as `arrayUnion`/`arrayRemove`, never the cached array; offline, a removal past 30 cached entries is not kept for restore. BUT-1683 shape (BUT-2140 PR 3, 2026-10-08)
 - An app from before BUT-2140 sends a shared list's rows without `previous`, so that list's earlier versions can no longer be restored; no current content and no `recentlyRemoved` entry is lost (BUT-2140 PR 3, 2026-10-08)

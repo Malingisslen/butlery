@@ -279,6 +279,47 @@ void main() {
       expect(payload.keys, isNot(contains('recentlyRemoved')));
     });
 
+    test('a union adds only the newest entries that fit under 30', () {
+      final history = [
+        for (var i = 0; i < 29; i++) entry('h$i', Duration(days: 2, hours: i)),
+      ];
+      final live = _list(
+        items: [_item('bröd')],
+      ).copyWith(recentlyRemoved: history);
+      final older = entry('äldre', const Duration(hours: 2));
+      final newest = entry('nyast', const Duration(hours: 1));
+      final payload = withClock(
+        Clock.fixed(now),
+        () => module.cachedBasePayload(
+          live.copyWith(recentlyRemoved: [...history, older, newest]),
+          live: live,
+          storedHistory: live.toFirestore()['recentlyRemoved'],
+        ),
+      );
+      expect(
+        payload['recentlyRemoved'],
+        FieldValue.arrayUnion([newest.toFirestore()]),
+      );
+    });
+
+    test('a full cached array takes no new entry', () {
+      final history = [
+        for (var i = 0; i < 30; i++) entry('h$i', Duration(days: 2, hours: i)),
+      ];
+      final live = _list(
+        items: [_item('bröd')],
+      ).copyWith(recentlyRemoved: history);
+      final payload = withClock(
+        Clock.fixed(now),
+        () => module.cachedBasePayload(
+          live.copyWith(recentlyRemoved: [...history, fresh]),
+          live: live,
+          storedHistory: live.toFirestore()['recentlyRemoved'],
+        ),
+      );
+      expect(payload.keys, isNot(contains('recentlyRemoved')));
+    });
+
     test('a restore removes every entry for the id as the cache stores it', () {
       final again = entry('mjölk', const Duration(hours: 2));
       final live = _list(

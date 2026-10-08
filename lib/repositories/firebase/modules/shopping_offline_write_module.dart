@@ -1,5 +1,7 @@
 // lib/repositories/firebase/modules/shopping_offline_write_module.dart
 
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
@@ -264,13 +266,12 @@ class ShoppingOfflineWriteModule {
   /// cached array itself is never sent: it would overwrite every entry another
   /// device added while this one was offline.
   ///
-  /// New entries go as `arrayUnion`. A row id whose entries were all taken
+  /// New entries go as `arrayUnion`, the newest first and only as many as
+  /// keep the cached array at [RestorableRows.maxRemoved]. A row id whose entries were all taken
   /// out while still restorable (a restore) goes as `arrayRemove` of those
   /// elements as [storedHistory] holds them, but only when nothing is added,
   /// since one update cannot carry two transforms on the same field. Entries
-  /// pruned because they are older than 30 days, or squeezed out by the cap,
-  /// are not sent at all: they stay on the server until an online write
-  /// prunes the array it rebuilds from the live document.
+  /// pruned because they are older than 30 days are not sent at all.
   Map<String, Object?> _recentlyRemovedDelta(
     UnifiedShoppingList live,
     UnifiedShoppingList mutated,
@@ -282,9 +283,15 @@ class ShoppingOfflineWriteModule {
         if (!before.contains(s)) s,
     ];
     if (added.isNotEmpty) {
+      final stored = storedHistory is List
+          ? storedHistory.length
+          : live.recentlyRemoved.length;
+      final room = max(0, RestorableRows.maxRemoved - stored);
+      final kept = (added..sort((a, b) => b.at.compareTo(a.at))).take(room);
+      if (kept.isEmpty) return const {};
       return {
         UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayUnion([
-          for (final s in added) s.toFirestore(),
+          for (final s in kept) s.toFirestore(),
         ]),
       };
     }

@@ -155,8 +155,7 @@ class ShoppingRestoreOperationsModule {
   /// [list] is the parent document the caller already read for routing, so
   /// this costs no read. The dropped entries are therefore re-serialised from
   /// that parsed copy rather than sent as stored; `arrayRemove` matches by
-  /// value, and Firestore treats a stored integer `amount` as equal to the
-  /// double sent.
+  /// value.
   void _stageRemoved(
     WriteBatch batch,
     DocumentReference<Map<String, dynamic>> parent,
@@ -195,8 +194,8 @@ class ShoppingRestoreOperationsModule {
   /// stamped as `addedBy`, so a shared list's erasure trail names them.
   ///
   /// An entry is matched on its row id alone: the copy a caller holds may
-  /// carry a different `at` than the stored one, and the history keeps one
-  /// entry per id. Every entry with that id goes.
+  /// carry a different `at` than the stored one. Every entry with that id
+  /// goes, and the row is built from the newest stored one, not the caller's.
   ///
   /// When a row with that id is already on the list (restored by someone
   /// else, or twice), nothing is added and only the entry goes. When the list
@@ -209,21 +208,22 @@ class ShoppingRestoreOperationsModule {
   ) async {
     final uid = requireCurrentUserId();
     final now = clock.now().toUtc();
-    if (!entry.restorableAt(now)) return null;
     final list = await requireList(listId);
-    bool holds(UnifiedShoppingList l) =>
-        l.recentlyRemoved.any((s) => s.id == entry.id);
+    ShoppingRowSnapshot? storedEntry(UnifiedShoppingList l) => maxBy(
+      l.recentlyRemoved.where((s) => s.id == entry.id && s.restorableAt(now)),
+      (s) => s.at,
+    );
     // Checked on the copy just loaded (the cache, offline) so a stale entry
     // costs no write: offline, even an unchanged list would queue the whole
     // cached `items` array.
-    if (!holds(list)) return null;
-    final row = _stampedRestore(entry, uid, now);
+    if (storedEntry(list) == null) return null;
 
     UnifiedShoppingItem? written;
     if (list.type == ListType.collaborative) {
       await mutateCollaborativeList(listId, (live) {
         written = null;
-        if (!holds(live)) return live;
+        final liveEntry = storedEntry(live);
+        if (liveEntry == null) return live;
         UnifiedShoppingList withoutEntry(UnifiedShoppingList l) => l.copyWith(
           recentlyRemoved: [
             for (final s in l.recentlyRemoved)
@@ -234,20 +234,28 @@ class ShoppingRestoreOperationsModule {
         if (live.items.any((item) => item.id == entry.id)) {
           return withoutEntry(live);
         }
+        final row = _stampedRestore(liveEntry, uid, now);
         written = row;
         return withoutEntry(withItems(live, [...live.items, row], uid));
       });
     } else {
       await _requireOwner(uid, list, listId);
       final parent = getUserCollection(uid).doc(listId);
-      final rowRef = parent.collection(FirestoreCollections.items).doc(row.id);
+      final rowRef = parent
+          .collection(FirestoreCollections.items)
+          .doc(entry.id);
+      final snapshot = await parent.get();
+      final liveEntry = storedEntry(
+        UnifiedShoppingList.fromFirestore(snapshot),
+      );
       // The stored values, not re-serialised ones: `arrayRemove` matches by
       // exact value.
       final stored = RestorableRows.storedElements(
-        (await parent.get()).data()?[UnifiedShoppingList.recentlyRemovedKey],
+        snapshot.data()?[UnifiedShoppingList.recentlyRemovedKey],
         {entry.id},
       );
-      if (stored.isEmpty) return null;
+      if (liveEntry == null || stored.isEmpty) return null;
+      final row = _stampedRestore(liveEntry, uid, now);
       final batch = firestore.batch();
       if (!(await rowRef.get()).exists) {
         batch.set(rowRef, row.toFirestore());

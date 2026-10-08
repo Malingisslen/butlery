@@ -311,6 +311,12 @@ UnifiedShoppingList _personal({
 /// Lets the unawaited offline `update` land on the fake.
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
 
+/// [n] restorable entries, the oldest first, an hour apart.
+List<ShoppingRowSnapshot> _history(int n) => [
+  for (var i = 0; i < n; i++)
+    _entry('h$i', at: _now.subtract(Duration(hours: n - i))),
+];
+
 void main() {
   group('shared list, online', () {
     test(
@@ -541,6 +547,67 @@ void main() {
     );
   });
 
+  group('the cap of 30', () {
+    test('offline removals never grow the cached array past 30', () async {
+      final h = _Harness(uid: _bob, offline: true);
+      final rows = [for (var i = 0; i < 5; i++) _row('r$i')];
+      await h.seedShared(_shared(items: rows, recentlyRemoved: _history(28)));
+
+      for (final row in rows) {
+        await withClock(
+          Clock.fixed(_now),
+          () => h.module.removeItem(_listId, row.id),
+        );
+        await _settle();
+        final stored = (await h.storedSharedRaw())['recentlyRemoved'] as List;
+        expect(stored.length, lessThanOrEqualTo(30));
+      }
+
+      expect((await h.storedShared()).items, isEmpty);
+      final ids = (await h.storedShared()).recentlyRemoved.map((s) => s.id);
+      expect(ids, containsAll(['r0', 'r1']));
+      expect(ids, isNot(contains('r2')));
+    });
+
+    test('an offline batch keeps only the newest that fit', () async {
+      final h = _Harness(uid: _bob, offline: true);
+      final rows = [for (var i = 0; i < 5; i++) _row('r$i')];
+      await h.seedShared(_shared(items: rows, recentlyRemoved: _history(28)));
+
+      await withClock(
+        Clock.fixed(_now),
+        () => h.module.removeItemsBatch(
+          _listId,
+          rows.map((r) => r.id).toList(),
+        ),
+      );
+      await _settle();
+
+      expect((await h.storedSharedRaw())['recentlyRemoved'], hasLength(30));
+    });
+
+    test('an online tick caps a stored array of 40 to the newest 30', () async {
+      final h = _Harness();
+      await h.seedShared(
+        _shared(items: [_row('mjölk')], recentlyRemoved: _history(40)),
+      );
+
+      await withClock(
+        Clock.fixed(_now),
+        () => h.module.updateItem(
+          _listId,
+          _row('mjölk', bought: true),
+          before: _row('mjölk'),
+        ),
+      );
+
+      final kept = (await h.storedShared()).recentlyRemoved;
+      expect(kept, hasLength(30));
+      expect(kept.map((s) => s.id), isNot(contains('h9')));
+      expect(kept.map((s) => s.id), contains('h10'));
+    });
+  });
+
   group('restore on a shared list', () {
     test(
       're-adds the row with its old id, stamps the restorer, drops the entry',
@@ -686,6 +753,55 @@ void main() {
       final list = await h.storedShared();
       expect(list.items.map((i) => i.id), ['bröd', 'mjölk']);
       expect(list.recentlyRemoved, isEmpty);
+    });
+
+    test('the row comes from the stored entry, not a stale copy', () async {
+      final stored = _entry(
+        'mjölk',
+        name: 'mjölk 3%',
+        at: _now.subtract(const Duration(days: 2)),
+      );
+      final h = _Harness();
+      await h.seedShared(
+        _shared(items: [_row('bröd')], recentlyRemoved: [stored]),
+      );
+      // Outside 30 days and with an old name: neither may decide anything.
+      final stale = _entry(
+        'mjölk',
+        at: _now.subtract(const Duration(days: 40)),
+      );
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreRemovedRow(_listId, stale),
+      );
+
+      expect(row?.name, 'mjölk 3%');
+      final list = await h.storedShared();
+      expect(list.items.last.name, 'mjölk 3%');
+    });
+
+    test('an expired stored entry is refused whatever the copy says', () async {
+      final stored = _entry(
+        'mjölk',
+        at: _now.subtract(const Duration(days: 31)),
+      );
+      final h = _Harness();
+      await h.seedShared(
+        _shared(items: [_row('bröd')], recentlyRemoved: [stored]),
+      );
+      final fresh = _entry(
+        'mjölk',
+        at: _now.subtract(const Duration(hours: 1)),
+      );
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreRemovedRow(_listId, fresh),
+      );
+
+      expect(row, isNull);
+      expect(h.transactionWrites, isEmpty);
     });
 
     test('an entry the list no longer holds costs no write', () async {
@@ -906,6 +1022,31 @@ void main() {
         expect(await h.storedPersonalHistory(), isEmpty);
       },
     );
+
+    test('the row comes from the stored entry, not a stale copy', () async {
+      final stored = _entry(
+        'mjölk',
+        name: 'mjölk 3%',
+        at: _now.subtract(const Duration(days: 2)),
+      );
+      final h = _Harness();
+      await h.seedPersonal(
+        _personal(items: [_row('bröd')], recentlyRemoved: [stored]),
+      );
+      final stale = _entry(
+        'mjölk',
+        at: _now.subtract(const Duration(days: 40)),
+      );
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreRemovedRow(_listId, stale),
+      );
+
+      expect(row?.name, 'mjölk 3%');
+      expect((await h.storedPersonalRow('mjölk'))?.name, 'mjölk 3%');
+      expect(await h.storedPersonalHistory(), isEmpty);
+    });
 
     test('an entry the list no longer holds costs no write', () async {
       final entry = _entry('mjölk', at: _now.subtract(const Duration(days: 3)));

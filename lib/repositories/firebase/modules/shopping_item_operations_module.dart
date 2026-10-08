@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_restore_operations_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -113,7 +114,8 @@ class ShoppingItemOperationsModule {
   /// "unknown") instead of falling through to someone else's.
   ///
   /// BUT-2140: online, the write sends the whole `recentlyRemoved` array, so
-  /// entries older than 30 days drop out here; offline only the delta goes.
+  /// entries older than 30 days or past [RestorableRows.maxRemoved] drop out
+  /// here; offline only the delta goes.
   UnifiedShoppingList _withItems(
     UnifiedShoppingList live,
     List<UnifiedShoppingItem> items,
@@ -126,10 +128,11 @@ class ShoppingItemOperationsModule {
       lastActivityAt: now,
       lastActivityByUserId: uid,
       lastActivityByDisplayName: resolveDisplayName().orEmpty(),
-      recentlyRemoved: [
-        for (final s in live.recentlyRemoved)
-          if (s.restorableAt(now)) s,
-      ],
+      recentlyRemoved: RestorableRows.withRemoved(
+        live,
+        const [],
+        now,
+      ).recentlyRemoved,
     );
   }
 

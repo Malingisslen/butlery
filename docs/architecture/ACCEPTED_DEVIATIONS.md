@@ -449,8 +449,8 @@ never saw it. **Accepted.**
 **Why:** it is the same window as the BUT-1683 entry above and has the same cause; catching it
 needs the server's copy, which an offline write does not have. `recentlyRemoved` itself is queued
 as `arrayUnion` (a restore with no new entry as `arrayRemove`), never as the cached array, so an
-offline write cannot drop entries another device added. Entries older than 30 days or past the
-cap of 30 are not pruned offline. — 2026-10-08
+offline write cannot drop entries another device added. Entries older than 30 days are not
+pruned offline. Offline, a removal past 30 cached entries is not kept for restore. — 2026-10-08
 
 ### [Shopping/Compat] An app version from before BUT-2140 drops `previous` on a shared list (BUT-2140, PR 3)
 A shared list's rows sit inline in `items`. An app
