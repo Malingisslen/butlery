@@ -245,7 +245,7 @@ void main() {
       // BaseService.executeServiceOperation reads AuthRepository through the
       // production ServiceLocator. Without an authenticated one registered
       // here its auth pre-flight returns the fallback and the operation body
-      // (e.g. RealtimeRecipeOperations) never runs.
+      // never runs.
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
 
       // Stub OfflineService -> AppDatabase -> CacheDao chain
