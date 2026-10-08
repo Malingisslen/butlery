@@ -15,11 +15,16 @@ abstract class PantryRepository {
   /// another field changed on another device. [changes] comes from
   /// [PantryItem.changesFrom] or [PantryItem.editableFields]; an empty map
   /// writes nothing.
+  ///
+  /// With [before], the same update also replaces `previous` with what
+  /// [before] stored for the changed fields, for Återställ (BUT-2140).
+  /// Without it, `previous` is left as it is.
   Future<void> updateFields(
     String userId,
     String itemId,
-    Map<String, Object> changes,
-  );
+    Map<String, Object> changes, {
+    PantryItem? before,
+  });
 
   /// Changes the item's quantity by [delta], sent as a relative change
   /// ("Bocka av 2 av 6 skickas som delta: -2", produktregler.md:146), so two

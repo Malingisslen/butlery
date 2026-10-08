@@ -17655,4 +17655,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String shoppingRestoredChanged(String name) {
     return '$name har fått sin förra version tillbaka.';
   }
+
+  @override
+  String pantryPreviousVersion(String when) {
+    return 'Förra versionen · $when';
+  }
+
+  @override
+  String get pantryRestorePreviousAction => 'Återställ';
+
+  @override
+  String get pantryPreviousRestored => 'Förra versionen är återställd';
+
+  @override
+  String get pantryRestorePreviousFailed =>
+      'Kunde inte återställa förra versionen';
 }

@@ -18,6 +18,7 @@ import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
+import 'package:butlery/views/pantry/pantry_previous_version_row.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -290,6 +291,8 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
+            if (widget.existingItem case final existing?)
+              PantryPreviousVersionRow(item: existing),
             TextField(
               controller: _nameController,
               onChanged: _onSearchChanged,

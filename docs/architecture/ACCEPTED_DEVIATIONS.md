@@ -2115,6 +2115,23 @@ harmonisation mutant — test 8 is the one that catches it.
 that line carries a pointer back. It existed before, but this change makes it durable, because
 opening and saving no longer normalises the unit away.
 
+## Pantry — Återställ the previous version (BUT-2140, 2026-10-08)
+
+### An older version stays in the document after 30 days (Malin, 2026-10-08)
+
+**Verdict: Malin's call, 2026-10-08.** An edit-sheet save writes `previous: {fields, at}` on
+the pantry item in the same update. The sheet offers Återställ only while
+`PantryPreviousVersion.isRestorableAt` holds (younger than `restoreWindow`, 30 days). After
+that the version stays in the document, unshown, until the next edit-sheet save replaces it
+or the item or the account is deleted, and until then it is in the Art. 15 pantry export.
+Firestore TTL deletes whole documents, not fields. There is no nightly job.
+
+### Återställ can use a local copy older than another device's save (2026-10-08)
+
+`PantryViewModel` loads the pantry once and holds no live stream. `restorePrevious` swaps the
+values in the `previous` of the item it holds, so after a save the same user made on another
+device it writes back the version that copy carries, not the newer one. BUT-1683 shape.
+
 ## Poll votes on non-poll messages, and the missing `memberSince` cut-off (BUT-1832, 2026-08-17)
 
 **Decision (Malin, 2026-08-17): ship, fix separately, record it.**

@@ -13546,5 +13546,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "pantryPreviousVersion": "Previous version · {when}",
+  "@pantryPreviousVersion": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryRestorePreviousAction": "Restore",
+  "pantryPreviousRestored": "Previous version restored",
+  "pantryRestorePreviousFailed": "Couldn't restore the previous version"
 }

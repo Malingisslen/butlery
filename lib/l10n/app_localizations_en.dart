@@ -17637,4 +17637,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String shoppingRestoredChanged(String name) {
     return '$name is back to its earlier version.';
   }
+
+  @override
+  String pantryPreviousVersion(String when) {
+    return 'Previous version · $when';
+  }
+
+  @override
+  String get pantryRestorePreviousAction => 'Restore';
+
+  @override
+  String get pantryPreviousRestored => 'Previous version restored';
+
+  @override
+  String get pantryRestorePreviousFailed =>
+      'Couldn\'t restore the previous version';
 }

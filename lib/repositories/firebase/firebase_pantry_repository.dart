@@ -6,6 +6,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/pantry/pantry_previous_version.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 
 /// Firebase implementation of [PantryRepository].
@@ -63,8 +64,9 @@ class FirebasePantryRepository
   Future<void> updateFields(
     String userId,
     String itemId,
-    Map<String, Object> changes,
-  ) async {
+    Map<String, Object> changes, {
+    PantryItem? before,
+  }) async {
     if (changes.isEmpty) return;
     try {
       // Only the changed fields: the whole item used to be written here, so
@@ -72,6 +74,11 @@ class FirebasePantryRepository
       await _col(userId).doc(itemId).update({
         ...changes,
         ..._stamp(userId),
+        // In the same update, so keeping it costs no write of its own.
+        if (before != null)
+          'previous': PantryPreviousVersion.toFirestore(
+            before.storedValues(changes.keys),
+          ),
       });
       AppLogger.info(
         'PantryItem updated: $itemId (${changes.keys.join(', ')})',

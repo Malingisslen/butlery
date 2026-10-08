@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/models/pantry/pantry_previous_version.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -134,7 +135,11 @@ class PantryService extends BaseService {
   /// [previous] (produktregler.md:105, :142). Without [previous] every
   /// editable field is written, but a missing amount still never wipes a
   /// known one (produktregler.md:148).
-  Future<void> updateItem(
+  ///
+  /// With [previous], the values it replaces are kept for Återställ
+  /// (BUT-2140) and returned; without it there is nothing to keep, and the
+  /// result is null, as it is when nothing was written.
+  Future<PantryPreviousVersion?> updateItem(
     String userId,
     PantryItem item, {
     PantryItem? previous,
@@ -143,11 +148,52 @@ class PantryService extends BaseService {
     final changes = previous == null
         ? item.editableFields()
         : item.changesFrom(previous);
-    if (changes.isEmpty) return;
-    await executeServiceOperation<void>(
-      () => _pantryRepository.updateFields(userId, item.id, changes),
+    if (changes.isEmpty) return null;
+    final written = await executeServiceOperation<bool>(
+      () async {
+        await _pantryRepository.updateFields(
+          userId,
+          item.id,
+          changes,
+          before: previous,
+        );
+        return true;
+      },
       operationName: 'updateItem',
+      defaultValue: false,
     );
+    if (written != true || previous == null) return null;
+    return PantryPreviousVersion(
+      fields: previous.storedValues(changes.keys),
+      at: clock.now(),
+    );
+  }
+
+  /// Återställ (BUT-2140): puts [item]'s previous values back and keeps the
+  /// values they replace as the new previous version, in one update, so the
+  /// restore can itself be restored. Returns the item as it is now stored.
+  Future<PantryItem> restorePrevious(String userId, PantryItem item) async {
+    final restored = item.withPreviousRestored(clock.now());
+    final kept = item.previous;
+    if (restored == null || kept == null || kept.fields.isEmpty) {
+      throw StateError('restorePrevious: no previous version');
+    }
+    final written = await executeServiceOperation<bool>(
+      () async {
+        await _pantryRepository.updateFields(
+          userId,
+          item.id,
+          kept.restoreChanges,
+          before: item,
+        );
+        return true;
+      },
+      operationName: 'restorePrevious',
+    );
+    if (written != true) {
+      throw StateError('restorePrevious failed');
+    }
+    return restored.copyWith(updatedBy: userId);
   }
 
   /// Changes a known amount by [delta] — a relative change, never a new

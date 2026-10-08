@@ -13888,5 +13888,26 @@
         "type": "String"
       }
     }
+  },
+  "pantryPreviousVersion": "Förra versionen · {when}",
+  "@pantryPreviousVersion": {
+    "description": "BUT-2140: the row under the pantry edit sheet's heading while the last save's previous values can be restored (30 days). {when} is ContentTimeLabels.whenLabel: \"i dag 14:02\", \"i går\", \"9 juli\".",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryRestorePreviousAction": "Återställ",
+  "@pantryRestorePreviousAction": {
+    "description": "BUT-2140: the button on the pantry edit sheet's previous-version row."
+  },
+  "pantryPreviousRestored": "Förra versionen är återställd",
+  "@pantryPreviousRestored": {
+    "description": "BUT-2140: snackbar with Ångra after restoring a pantry item's previous version (class 1, no dialog)."
+  },
+  "pantryRestorePreviousFailed": "Kunde inte återställa förra versionen",
+  "@pantryRestorePreviousFailed": {
+    "description": "BUT-2140: the viewmodel's failure text when restoring a pantry item's previous version, shown whole as the error (base_viewmodel.dart executeAsync)."
   }
 }

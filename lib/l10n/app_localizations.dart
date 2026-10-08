@@ -28996,6 +28996,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{name} har fått sin förra version tillbaka.'**
   String shoppingRestoredChanged(String name);
+
+  /// BUT-2140: the row under the pantry edit sheet's heading while the last save's previous values can be restored (30 days). {when} is ContentTimeLabels.whenLabel: "i dag 14:02", "i går", "9 juli".
+  ///
+  /// In sv, this message translates to:
+  /// **'Förra versionen · {when}'**
+  String pantryPreviousVersion(String when);
+
+  /// BUT-2140: the button on the pantry edit sheet's previous-version row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ'**
+  String get pantryRestorePreviousAction;
+
+  /// BUT-2140: snackbar with Ångra after restoring a pantry item's previous version (class 1, no dialog).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förra versionen är återställd'**
+  String get pantryPreviousRestored;
+
+  /// BUT-2140: the viewmodel's failure text when restoring a pantry item's previous version, shown whole as the error (base_viewmodel.dart executeAsync).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte återställa förra versionen'**
+  String get pantryRestorePreviousFailed;
 }
 
 class _AppLocalizationsDelegate
