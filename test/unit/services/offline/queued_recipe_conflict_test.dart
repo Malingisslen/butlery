@@ -176,6 +176,18 @@ void main() {
     expect(conflicts, isEmpty);
   });
 
+  test('an entry whose device copy no longer needs sending still tells the '
+      'screen to re-read it', () async {
+    await storage.saveRecipeForUser(recipe('Linsgryta', rev: 2), uid);
+    await db.recipeDao.markSynced('r1', uid);
+
+    await pass();
+
+    expect(await db.syncQueueDao.countPending(uid), 0);
+    expect(server.updates, isEmpty);
+    expect(settled, ['r1']);
+  });
+
   test('an edit saved while the first was on its way is sent on the new '
       'revision, with no conflict', () async {
     server.recipes['r1'] = recipe('Linsgryta', rev: 2);

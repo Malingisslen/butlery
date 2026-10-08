@@ -69,6 +69,7 @@ class QueuedRecipeSend {
     if (!offlineRecipe.needsSync) {
       await _syncQueueDao.dequeue(item.id);
       AppLogger.info('✅ Recept ${item.recipeId} behöver inte synkas längre');
+      _onRecipeSent?.call(item.recipeId);
       return false;
     }
 

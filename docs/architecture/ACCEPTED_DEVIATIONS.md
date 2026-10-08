@@ -5717,11 +5717,9 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   a kept recipe version reads and writes the recipe document. `realtimeResourceShapeOk`
   still admits `type == 'menu'` only. Do not open the type "for completeness".
 - **Writes that do not raise `rev` are missed conflicts, never false ones (BUT-2213,
-  2026-10-08).** Only `FirebaseRecipeRepository.update`, `updateAtRevision` and `createOnce`
+  2026-10-08).** Only `FirebaseRecipeRepository.update` and `updateAtRevision`
   set `rev`. An app version from before this change, and every field-level writer that
-  updates a recipe document directly (the rating denormalisation in `rating_statistics.dart`,
-  the family rating summary in `family_rating_service.dart`, and the Cloud Functions that
-  mark recipes for retagging or scrub fields on them), leave it as it was, so a queued edit built on the
+  updates a recipe document directly, leave it as it was, so a queued edit built on the
   revision before such a write is written over it, as every queued edit was before. A
   document without `rev` is revision 0, and a device copy queued before the update has no
   revision and is written without comparing.
