@@ -1090,7 +1090,7 @@ void main() {
       });
     });
 
-    group('cross-user cache round-trip (shared Firestore store)', () {
+    group('Firestore round-trip', () {
       test(
         'a round-trip stamps the current schema version and is stable across a '
         'second read (no re-migration for the next reader)',
