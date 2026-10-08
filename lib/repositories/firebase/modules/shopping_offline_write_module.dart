@@ -1,11 +1,15 @@
 // lib/repositories/firebase/modules/shopping_offline_write_module.dart
 
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 
 /// Narrow write payloads for collaborative shopping lists, plus the offline
 /// half they were first built for: reading the cached document, deciding
@@ -59,10 +63,16 @@ class ShoppingOfflineWriteModule {
       .where((key) => !privilegedKeys.contains(key))
       .toList(growable: false);
 
-  /// Every key an offline payload can actually carry — the items array plus the
-  /// activity stamp. A change to anything else is DROPPED by both builders.
+  /// Every key an offline payload can actually carry — the items array, the
+  /// restore history and the activity stamp. A change to anything else is
+  /// DROPPED by both builders.
+  ///
+  /// BUT-2140: `recentlyRemoved` is carried only as a set operation, never as
+  /// the array — see [_recentlyRemovedDelta] for which part of a change that
+  /// keeps and which it leaves to the next online write.
   static final Set<String> offlineCarriableKeys = {
     'items',
+    UnifiedShoppingList.recentlyRemovedKey,
     ..._writableActivityKeys,
   };
 
@@ -109,8 +119,9 @@ class ShoppingOfflineWriteModule {
     throw ArgumentError.value(
       dropped.join(', '),
       'mutate',
-      'An offline collaborative-list mutation can only carry items and the '
-          'activity stamp; these changes would be dropped silently',
+      'An offline collaborative-list mutation can only carry items, the '
+          'activity stamp and recentlyRemoved as a set operation; these '
+          'changes would be dropped silently',
     );
   }
 
@@ -186,15 +197,23 @@ class ShoppingOfflineWriteModule {
 
   /// Append-only payload: the new rows unioned in, so a replay merges with
   /// whatever the household did meanwhile instead of replacing it.
+  ///
+  /// [live] is the cached base [mutated] was computed from, and
+  /// [storedHistory] that cached document's raw `recentlyRemoved`; both are
+  /// required so the restore history a mutation changed cannot be dropped by
+  /// a caller that forgot to pass them.
   Map<String, Object?> appendPayload(
     UnifiedShoppingList mutated,
-    List<UnifiedShoppingItem> appended,
-  ) {
+    List<UnifiedShoppingItem> appended, {
+    required UnifiedShoppingList live,
+    required Object? storedHistory,
+  }) {
     final serialized = mutated.toFirestore();
     return {
       'items': FieldValue.arrayUnion([
         for (final item in appended) item.toFirestore(),
       ]),
+      ..._recentlyRemovedDelta(live, mutated, storedHistory),
       // Non-null only: a mutator that does not stamp activity would otherwise
       // queue three nulls and wipe another member's attribution on the server.
       for (final key in _writableActivityKeys)
@@ -227,13 +246,64 @@ class ShoppingOfflineWriteModule {
   /// caller is told the mutation applied. Safe today because every live mutator
   /// only touches items, but `mutateCollaborativeList` takes an arbitrary
   /// mutator and is on the public repository interface.
-  Map<String, Object?> cachedBasePayload(UnifiedShoppingList mutated) {
+  Map<String, Object?> cachedBasePayload(
+    UnifiedShoppingList mutated, {
+    required UnifiedShoppingList live,
+    required Object? storedHistory,
+  }) {
     final serialized = mutated.toFirestore();
     return {
       'items': [for (final item in mutated.items) item.toFirestore()],
+      ..._recentlyRemovedDelta(live, mutated, storedHistory),
       // Non-null only — see the note on [appendPayload].
       for (final key in _writableActivityKeys)
         if (serialized[key] != null) key: serialized[key],
+    };
+  }
+
+  /// BUT-2140: the change [mutated] makes to `recentlyRemoved`, as a set
+  /// operation a replay merges with whatever other members did meanwhile. The
+  /// cached array itself is never sent: it would overwrite every entry another
+  /// device added while this one was offline.
+  ///
+  /// New entries go as `arrayUnion`, the newest first and only as many as
+  /// keep the cached array at [RestorableRows.maxRemoved]. A row id whose entries were all taken
+  /// out while still restorable (a restore) goes as `arrayRemove` of those
+  /// elements as [storedHistory] holds them, but only when nothing is added,
+  /// since one update cannot carry two transforms on the same field. Entries
+  /// pruned because they are older than 30 days are not sent at all.
+  Map<String, Object?> _recentlyRemovedDelta(
+    UnifiedShoppingList live,
+    UnifiedShoppingList mutated,
+    Object? storedHistory,
+  ) {
+    final before = live.recentlyRemoved.toSet();
+    final added = [
+      for (final s in mutated.recentlyRemoved)
+        if (!before.contains(s)) s,
+    ];
+    if (added.isNotEmpty) {
+      final stored = storedHistory is List
+          ? storedHistory.length
+          : live.recentlyRemoved.length;
+      final room = max(0, RestorableRows.maxRemoved - stored);
+      final kept = (added..sort((a, b) => b.at.compareTo(a.at))).take(room);
+      if (kept.isEmpty) return const {};
+      return {
+        UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayUnion([
+          for (final s in kept) s.toFirestore(),
+        ]),
+      };
+    }
+    final now = clock.now();
+    final kept = {for (final s in mutated.recentlyRemoved) s.id};
+    final taken = RestorableRows.storedElements(storedHistory, {
+      for (final s in live.recentlyRemoved)
+        if (!kept.contains(s.id) && s.restorableAt(now)) s.id,
+    });
+    if (taken.isEmpty) return const {};
+    return {
+      UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove(taken),
     };
   }
 
@@ -354,18 +424,14 @@ class ShoppingOfflineWriteModule {
         resource: 'collaborative_shopping_list',
         operation: 'update',
         granted: false,
-        details:
-            'List: $listId, offline mutation REJECTED on replay by rules — '
-            'edit rights were revoked while offline; the local tick has been '
-            'rolled back',
+        details: 'List: $listId, offline mutation REJECTED on replay by rules',
       );
     }
     final gone = error is FirebaseException && error.code == 'not-found';
     AppLogger.error(
       denied
           ? 'Queued offline mutation of collaborative list $listId was denied '
-                'on replay (permission-denied) — the member no longer has edit '
-                'rights'
+                'on replay (permission-denied)'
           : gone
           ? 'Queued offline mutation of collaborative list $listId hit a list '
                 'that no longer exists (not-found) — the queued ticks are '

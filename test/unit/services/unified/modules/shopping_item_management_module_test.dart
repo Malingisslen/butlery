@@ -108,6 +108,10 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   final List<UnifiedShoppingItem> updatedItems = [];
   final List<List<UnifiedShoppingItem>> updatedBatches = [];
   final List<String> removedItemIds = [];
+
+  /// BUT-2140: what each call handed over as the row's earlier copy.
+  final List<UnifiedShoppingItem?> updateBefores = [];
+  final List<UnifiedShoppingItem?> removedRows = [];
   final List<List<String>> removedBatches = [];
 
   /// Holds addItem open the way an offline Firestore write does: it settles
@@ -131,9 +135,14 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async {
     if (throwOnUpdateItem != null) throw throwOnUpdateItem!;
     updatedItems.add(item);
+    updateBefores.add(before);
   }
 
   @override
@@ -147,13 +156,22 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> removeItem(String listId, String itemId) async {
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async {
     if (throwOnRemoveItem != null) throw throwOnRemoveItem!;
     removedItemIds.add(itemId);
+    removedRows.add(removed);
   }
 
   @override
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async {
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async {
     if (throwOnRemoveItemsBatch != null) throw throwOnRemoveItemsBatch!;
     removedBatches.add(itemIds);
   }
@@ -773,6 +791,35 @@ void main() {
   // -------------------------------------------------------------------------
   // removeItemFromActiveList
   // -------------------------------------------------------------------------
+
+  // BUT-2140: the repository can only keep a personal row's history from the
+  // copy the service hands it.
+  group('restore history inputs', () {
+    test('an edit hands the row as it was before the edit', () async {
+      final existing = UnifiedShoppingItem(name: 'Ägg', amount: 12);
+      lists.add(_seedList(id: 'L', items: [existing]));
+      activeListId = 'L';
+
+      await buildModule().updateItemInActiveList(
+        itemId: existing.id,
+        quantity: 6,
+      );
+
+      expect(fakeRepo.updateBefores.single, same(existing));
+      expect(lists.first.items.single.previous?.amount, 12);
+    });
+
+    test('a removal hands the removed row and records it locally', () async {
+      final item = UnifiedShoppingItem(name: 'Mjölk', amount: 1);
+      lists.add(_seedList(id: 'L', items: [item]));
+      activeListId = 'L';
+
+      await buildModule().removeItemFromActiveList(item.id);
+
+      expect(fakeRepo.removedRows.single, same(item));
+      expect(lists.first.recentlyRemoved.single.id, item.id);
+    });
+  });
 
   group('removeItemFromActiveList', () {
     /// Proves: stale active id (list gone) returns false, doesn't throw.

@@ -67,6 +67,15 @@ abstract final class RestorableRows {
     return list.copyWith(recentlyRemoved: capped, updatedAt: list.updatedAt);
   }
 
+  /// The raw elements of a stored `recentlyRemoved` array whose `id` is in
+  /// [ids], exactly as read, for an `arrayRemove`: it matches by value, and a
+  /// value parsed and written back can differ from the stored one.
+  static List<Object?> storedElements(Object? raw, Set<String> ids) => [
+    if (raw is List)
+      for (final element in raw)
+        if (element is Map && ids.contains(element['id'])) element,
+  ];
+
   /// The entries of [list] a user can still restore at [now], newest first.
   static List<ShoppingRowSnapshot> restorableAt(
     UnifiedShoppingList list,

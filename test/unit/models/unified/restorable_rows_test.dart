@@ -220,4 +220,24 @@ void main() {
       ]);
     });
   });
+
+  group('storedElements', () {
+    // An arrayRemove matches the stored value exactly, so the elements must
+    // be the stored ones themselves, never a re-serialised copy.
+    test('returns the stored maps for the ids, untouched', () {
+      final kept = {'id': 'a', 'amount': 2};
+      final again = {'id': 'a', 'amount': 3};
+      final other = {'id': 'b', 'amount': 1};
+      final found = RestorableRows.storedElements([kept, other, again], {'a'});
+      expect(found, hasLength(2));
+      expect(identical(found[0], kept), isTrue);
+      expect(identical(found[1], again), isTrue);
+    });
+
+    test('a missing or malformed array yields nothing', () {
+      expect(RestorableRows.storedElements(null, {'a'}), isEmpty);
+      expect(RestorableRows.storedElements('x', {'a'}), isEmpty);
+      expect(RestorableRows.storedElements(['a', 1], {'a'}), isEmpty);
+    });
+  });
 }

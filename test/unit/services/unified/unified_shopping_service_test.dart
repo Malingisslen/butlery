@@ -105,6 +105,10 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   final List<List<UnifiedShoppingItem>> updatedBatches = [];
   final List<List<UnifiedShoppingItem>> batchedItems = [];
   final List<String> removedItemIds = [];
+
+  /// BUT-2140: what each call handed over as the row's earlier copy.
+  final List<UnifiedShoppingItem?> updateBefores = [];
+  final List<UnifiedShoppingItem?> removedRows = [];
   final List<List<String>> removedBatches = [];
 
   void seed(UnifiedShoppingList list) => _lists[list.id] = list;
@@ -176,9 +180,14 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async {
     if (throwOnUpdateItem != null) throw throwOnUpdateItem!;
     updatedItems.add(item);
+    updateBefores.add(before);
   }
 
   @override
@@ -192,13 +201,22 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   }
 
   @override
-  Future<void> removeItem(String listId, String itemId) async {
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async {
     if (throwOnRemoveItem != null) throw throwOnRemoveItem!;
     removedItemIds.add(itemId);
+    removedRows.add(removed);
   }
 
   @override
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async {
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async {
     if (throwOnRemoveItemsBatch != null) throw throwOnRemoveItemsBatch!;
     removedBatches.add(itemIds);
   }

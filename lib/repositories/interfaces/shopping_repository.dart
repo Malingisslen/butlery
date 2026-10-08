@@ -1,4 +1,5 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
@@ -79,10 +80,28 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   Future<void> addItemsBatch(String listId, List<UnifiedShoppingItem> items);
 
   /// Removes an item from the specified shopping list.
-  Future<void> removeItem(String listId, String itemId);
+  ///
+  /// BUT-2140: [removed] is the caller's copy of the row, which a personal
+  /// list records in `recentlyRemoved` for the 30-day restore. Without it the
+  /// removal keeps no history there. A shared list records the live row and
+  /// ignores it.
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  });
 
   /// Updates an existing item in the specified shopping list atomically.
-  Future<void> updateItem(String listId, UnifiedShoppingItem item);
+  ///
+  /// BUT-2140: [before] is the caller's copy of the row before the edit. On a
+  /// personal list a content edit against it keeps [before]'s content as the
+  /// row's `previous`; without it `previous` is left as stored. A shared list
+  /// takes `previous` from the live row and ignores it.
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  });
 
   /// BUT-1697: updates several existing items in ONE write. On a
   /// collaborative list that is a single transaction, not one per item —
@@ -92,7 +111,27 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   Future<void> updateItemsBatch(String listId, List<UnifiedShoppingItem> items);
 
   /// Removes multiple items from the specified shopping list using batch operations.
-  Future<void> removeItemsBatch(String listId, List<String> itemIds);
+  /// [removed] works as on [removeItem].
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  });
+
+  /// BUT-2140: puts the removed row [entry] back with its old id and takes it
+  /// out of `recentlyRemoved` in the same write, stamping the caller as
+  /// `addedBy`. A row already holding that id is not duplicated. Returns the
+  /// row as written, or null when nothing was put back. On a shared list this
+  /// needs edit rights, as any row write does.
+  Future<UnifiedShoppingItem?> restoreRemovedRow(
+    String listId,
+    ShoppingRowSnapshot entry,
+  );
+
+  /// BUT-2140: swaps row [itemId]'s content with its `previous`, so the
+  /// version it replaces becomes the new `previous`. Returns the row as
+  /// written, or null when it has nothing restorable.
+  Future<UnifiedShoppingItem?> restoreChangedRow(String listId, String itemId);
 
   /// BUT-1665: applies [mutate] to a collaborative list inside a Firestore
   /// transaction that re-reads the live document, so a concurrent household

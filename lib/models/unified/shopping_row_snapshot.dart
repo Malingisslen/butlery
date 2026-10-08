@@ -23,6 +23,10 @@ class ShoppingRowSnapshot {
     this.note,
   });
 
+  /// [at] is kept to the millisecond. `arrayRemove` matches a stored entry
+  /// by exact value, and a web client reads timestamps at millisecond
+  /// precision, so an entry written with microseconds could never be taken
+  /// out of the history from there.
   factory ShoppingRowSnapshot.fromItem(UnifiedShoppingItem item, DateTime at) =>
       ShoppingRowSnapshot(
         id: item.id,
@@ -31,7 +35,10 @@ class ShoppingRowSnapshot {
         unit: item.unit,
         category: item.category,
         note: item.note,
-        at: at,
+        at: DateTime.fromMillisecondsSinceEpoch(
+          at.millisecondsSinceEpoch,
+          isUtc: at.isUtc,
+        ),
       );
 
   /// Strict on `id`, `name` and `at`: a snapshot without them cannot be shown

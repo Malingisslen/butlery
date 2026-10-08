@@ -214,4 +214,17 @@ void main() {
       expect(bytes, lessThan(16 * 1024));
     });
   });
+
+  // BUT-2140 PR 3: measured on the emulator, `arrayRemove` with a timestamp
+  // truncated to the millisecond does not match one stored with microseconds.
+  test('fromItem keeps the time to the millisecond', () {
+    final at = DateTime.utc(2026, 10, 8, 12, 0, 0, 123, 456);
+    final snapshot = ShoppingRowSnapshot.fromItem(
+      UnifiedShoppingItem(id: 'a', name: 'a', amount: 1),
+      at,
+    );
+    expect(snapshot.at.microsecond, 0);
+    expect(snapshot.at.millisecond, 123);
+    expect(snapshot.at.isUtc, isTrue);
+  });
 }

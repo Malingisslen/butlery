@@ -260,6 +260,7 @@ class PersonalShoppingOperations {
       lastModifiedByUserId: item.lastModifiedByUserId,
       lastModifiedByDisplayName: item.lastModifiedByDisplayName,
       lastModifiedAt: item.lastModifiedAt,
+      previous: item.previous,
     );
 
     // Update the list

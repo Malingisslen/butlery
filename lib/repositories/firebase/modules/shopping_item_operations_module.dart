@@ -3,7 +3,9 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/repositories/firebase/modules/shopping_restore_operations_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -85,6 +87,21 @@ class ShoppingItemOperationsModule {
     required this.resolveDisplayName,
   });
 
+  /// BUT-2140: the restore history the row writes below keep, and the two
+  /// restore operations.
+  late final ShoppingRestoreOperationsModule restore =
+      ShoppingRestoreOperationsModule(
+        firestore: firestore,
+        requireCurrentUserId: requireCurrentUserId,
+        requireList: _requireList,
+        mutateCollaborativeList: mutateCollaborativeList,
+        getUserCollection: getUserCollection,
+        validateOwnership: validateOwnership,
+        logPermissionCheck: logPermissionCheck,
+        resolveDisplayName: resolveDisplayName,
+        withItems: _withItems,
+      );
+
   /// Rebuilds [live] with [items] and stamps the shared-list activity fields.
   /// Always applied to the transaction's live document, never to a cached one.
   ///
@@ -95,6 +112,10 @@ class ShoppingItemOperationsModule {
   /// on, so a list other household members read told them Erik changed what
   /// Anna changed. An unknown name now writes empty (the model treats that as
   /// "unknown") instead of falling through to someone else's.
+  ///
+  /// BUT-2140: online, the write sends the whole `recentlyRemoved` array, so
+  /// entries older than 30 days or past [RestorableRows.maxRemoved] drop out
+  /// here; offline only the delta goes.
   UnifiedShoppingList _withItems(
     UnifiedShoppingList live,
     List<UnifiedShoppingItem> items,
@@ -107,6 +128,11 @@ class ShoppingItemOperationsModule {
       lastActivityAt: now,
       lastActivityByUserId: uid,
       lastActivityByDisplayName: resolveDisplayName().orEmpty(),
+      recentlyRemoved: RestorableRows.withRemoved(
+        live,
+        const [],
+        now,
+      ).recentlyRemoved,
     );
   }
 
@@ -340,8 +366,14 @@ class ShoppingItemOperationsModule {
     );
   }
 
-  /// Update an existing item in the shopping list atomically
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
+  /// Update an existing item in the shopping list atomically. [before] is the
+  /// caller's copy of the row before the edit; a personal list takes the
+  /// row's `previous` from it (BUT-2140), a shared list from the live row.
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async {
     final uid = requireCurrentUserId();
 
     final list = await _requireList(listId);
@@ -354,9 +386,9 @@ class ShoppingItemOperationsModule {
         listId,
         (live) => _withItems(
           live,
-          live.items
-              .map((existing) => existing.id == item.id ? item : existing)
-              .toList(),
+          ShoppingRestoreOperationsModule.replaceRows(live.items, {
+            item.id: item,
+          }, clock.now().toUtc()),
           uid,
         ),
       );
@@ -372,7 +404,13 @@ class ShoppingItemOperationsModule {
           .doc(listId)
           .collection(FirestoreCollections.items)
           .doc(item.id)
-          .update(item.toFirestore());
+          .update(
+            ShoppingRestoreOperationsModule.personalUpdatePayload(
+              item,
+              before,
+              clock.now().toUtc(),
+            ),
+          );
 
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
@@ -416,9 +454,11 @@ class ShoppingItemOperationsModule {
         listId,
         (live) => _withItems(
           live,
-          live.items
-              .map((existing) => replacements[existing.id] ?? existing)
-              .toList(),
+          ShoppingRestoreOperationsModule.replaceRows(
+            live.items,
+            replacements,
+            clock.now().toUtc(),
+          ),
           uid,
         ),
       );
@@ -469,7 +509,14 @@ class ShoppingItemOperationsModule {
       for (final chunk in present.chunked(kFirestoreBatchSafeChunkSize)) {
         final batch = firestore.batch();
         for (final item in chunk) {
-          batch.update(itemsCollection.doc(item.id), item.toFirestore());
+          batch.update(
+            itemsCollection.doc(item.id),
+            ShoppingRestoreOperationsModule.personalUpdatePayload(
+              item,
+              null,
+              clock.now().toUtc(),
+            ),
+          );
         }
         await batch.commit();
       }
@@ -488,8 +535,14 @@ class ShoppingItemOperationsModule {
     );
   }
 
-  /// Remove item from shopping list (handles both personal and collaborative)
-  Future<void> removeItem(String listId, String itemId) async {
+  /// Remove item from shopping list (handles both personal and collaborative).
+  /// [removed] is the caller's copy of the row: a personal list records it in
+  /// `recentlyRemoved` (BUT-2140); a shared list records the live row instead.
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async {
     final uid = requireCurrentUserId();
 
     // Verify list exists and user has access
@@ -503,11 +556,7 @@ class ShoppingItemOperationsModule {
 
       await mutateCollaborativeList(
         listId,
-        (live) => _withItems(
-          live,
-          live.items.where((item) => item.id != itemId).toList(),
-          uid,
-        ),
+        (live) => restore.removeRows(live, {itemId}, uid),
       );
     } else {
       // Handle personal lists - items stored in subcollection
@@ -524,9 +573,7 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
 
-      await getUserCollection(
-        uid,
-      ).doc(listId).collection(FirestoreCollections.items).doc(itemId).delete();
+      await restore.deletePersonalRows(uid, list, [itemId], [?removed]);
 
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
@@ -540,8 +587,13 @@ class ShoppingItemOperationsModule {
     );
   }
 
-  /// Remove multiple items from shopping list using batch operations
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async {
+  /// Remove multiple items from shopping list using batch operations.
+  /// [removed] works as on [removeItem].
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async {
     if (itemIds.isEmpty) return;
 
     final uid = requireCurrentUserId();
@@ -553,11 +605,7 @@ class ShoppingItemOperationsModule {
     if (list.type == ListType.collaborative) {
       await mutateCollaborativeList(
         listId,
-        (live) => _withItems(
-          live,
-          live.items.where((item) => !itemIdSet.contains(item.id)).toList(),
-          uid,
-        ),
+        (live) => restore.removeRows(live, itemIdSet, uid),
       );
     } else {
       await validateOwnership(
@@ -567,17 +615,7 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
 
-      final itemsCollection = getUserCollection(
-        uid,
-      ).doc(listId).collection(FirestoreCollections.items);
-
-      for (final chunk in itemIds.chunked(kFirestoreBatchSafeChunkSize)) {
-        final batch = firestore.batch();
-        for (final itemId in chunk) {
-          batch.delete(itemsCollection.doc(itemId));
-        }
-        await batch.commit();
-      }
+      await restore.deletePersonalRows(uid, list, itemIds, removed);
 
       // "Rensa klart" is a real shopping session — the one the collection-group
       // alternative could never see, because it deletes its own evidence.

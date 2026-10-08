@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
@@ -387,12 +388,18 @@ class FirebaseShoppingRepository
   ) async => _itemOpsModule.addItemsBatch(listId, items);
 
   @override
-  Future<void> removeItem(String listId, String itemId) async =>
-      _itemOpsModule.removeItem(listId, itemId);
+  Future<void> removeItem(
+    String listId,
+    String itemId, {
+    UnifiedShoppingItem? removed,
+  }) async => _itemOpsModule.removeItem(listId, itemId, removed: removed);
 
   @override
-  Future<void> updateItem(String listId, UnifiedShoppingItem item) async =>
-      _itemOpsModule.updateItem(listId, item);
+  Future<void> updateItem(
+    String listId,
+    UnifiedShoppingItem item, {
+    UnifiedShoppingItem? before,
+  }) async => _itemOpsModule.updateItem(listId, item, before: before);
 
   @override
   Future<void> updateItemsBatch(
@@ -401,8 +408,24 @@ class FirebaseShoppingRepository
   ) async => _itemOpsModule.updateItemsBatch(listId, items);
 
   @override
-  Future<void> removeItemsBatch(String listId, List<String> itemIds) async =>
-      _itemOpsModule.removeItemsBatch(listId, itemIds);
+  Future<void> removeItemsBatch(
+    String listId,
+    List<String> itemIds, {
+    List<UnifiedShoppingItem> removed = const [],
+  }) async =>
+      _itemOpsModule.removeItemsBatch(listId, itemIds, removed: removed);
+
+  @override
+  Future<UnifiedShoppingItem?> restoreRemovedRow(
+    String listId,
+    ShoppingRowSnapshot entry,
+  ) => _itemOpsModule.restore.restoreRemovedRow(listId, entry);
+
+  @override
+  Future<UnifiedShoppingItem?> restoreChangedRow(
+    String listId,
+    String itemId,
+  ) => _itemOpsModule.restore.restoreChangedRow(listId, itemId);
 
   /// Create or update a personal list for the current user.
   /// Uses base class create/update methods for consistency.

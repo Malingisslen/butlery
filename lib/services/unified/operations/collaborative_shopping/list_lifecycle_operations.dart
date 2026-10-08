@@ -277,6 +277,8 @@ class ListLifecycleOperations {
       assignedToDisplayName: keepAssigned ? item.assignedToDisplayName : null,
       // A claim without a claimer is noise, so its timestamp goes with it.
       assignedAt: keepAssigned ? item.assignedAt : null,
+      // BUT-2140: a snapshot holds no name or uid, so the strip keeps it.
+      previous: item.previous,
     );
   }
 }

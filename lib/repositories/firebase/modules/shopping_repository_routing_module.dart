@@ -464,7 +464,10 @@ class ShoppingRepositoryRoutingModule {
     DocumentReference<Map<String, dynamic>> docRef,
     UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
   ) async {
-    final live = fromFirestore(await _offline.readCachedDoc(docRef, listId));
+    final cached = await _offline.readCachedDoc(docRef, listId);
+    final live = fromFirestore(cached);
+    final storedHistory = cached
+        .data()?[UnifiedShoppingList.recentlyRemovedKey];
     await _guards.requireEditRights(uid, listId, live);
 
     final mutated = mutate(live);
@@ -482,8 +485,17 @@ class ShoppingRepositoryRoutingModule {
     // merge, so it is safe on the cached-base path too.
     final payload = _withContributorTrail(
       appended != null
-          ? _offline.appendPayload(mutated, appended)
-          : _offline.cachedBasePayload(mutated),
+          ? _offline.appendPayload(
+              mutated,
+              appended,
+              live: live,
+              storedHistory: storedHistory,
+            )
+          : _offline.cachedBasePayload(
+              mutated,
+              live: live,
+              storedHistory: storedHistory,
+            ),
       uid,
     );
     // Deliberately not awaited: while offline this future only settles once
