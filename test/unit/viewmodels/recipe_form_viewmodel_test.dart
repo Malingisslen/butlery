@@ -19,6 +19,9 @@ import 'package:mocktail/mocktail.dart';
 
 // Production imports
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -1268,6 +1271,140 @@ void main() {
 
         viewModel.state.setOriginalParsedRecipe(parsedWith(const [low]));
         expect(viewModel.pendingParseConfirmations, 1);
+      });
+    });
+
+    // BUT-2158 (flow 03): photo, text and voice imports reach the review
+    // through a snapshot carrying per-line confidence.
+    group('BUT-2158 import review from a confidence snapshot', () {
+      late ParsedRecipeCache cache;
+
+      setUp(() {
+        cache = ParsedRecipeCache();
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ParsedRecipeCache>()) {
+          getIt.unregister<ParsedRecipeCache>();
+        }
+        getIt.registerSingleton<ParsedRecipeCache>(cache);
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ParsedRecipeCache>()) {
+          getIt.unregister<ParsedRecipeCache>();
+        }
+      });
+
+      Recipe imported(List<String> ingredients) => RecipeBuilder()
+          .withId('imported-1')
+          .withTitle('Potatisbullar')
+          .withIngredients(ingredients)
+          .withInstructions(['Blanda och grädda.'])
+          .build();
+
+      RecipeFormViewModel openTemplate(
+        Recipe recipe, {
+        List<ParseConfidence>? confidences,
+      }) {
+        ImportCorrectionSnapshot.capture(
+          recipe,
+          source: ImportSource.photo,
+          cache: cache,
+          confidences: confidences,
+        );
+        return RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: recipe,
+          isTemplate: true,
+        );
+      }
+
+      group('TR::FLOW::03::foto-ocr::otolkad-text', () {
+        test('a line that could not be read is empty in the editor, marked in '
+            'the review, and stays pending until confirmed', () {
+          final vm = openTemplate(
+            imported(const ['3 dl vetemjöl', '} dl potatismjöl', '2 ägg']),
+            confidences: const [
+              ParseConfidence.high,
+              ParseConfidence.failed,
+              ParseConfidence.high,
+            ],
+          );
+          addTearDown(vm.dispose);
+
+          expect(vm.ingredients.take(3), ['3 dl vetemjöl', '', '2 ägg']);
+          final unread = vm.parsedIngredients!
+              .where((r) => r.confidence == ParseConfidence.failed)
+              .toList();
+          expect(unread.map((r) => r.originalLine), ['} dl potatismjöl']);
+          expect(vm.pendingParseConfirmations, 1);
+
+          vm.confirmParseRow(unread.single);
+          expect(vm.pendingParseConfirmations, 0);
+        });
+
+        test('the image reader\'s marker is emptied the same way', () {
+          final vm = openTemplate(imported(const ['2 ägg', '[oläsligt]']));
+          addTearDown(vm.dispose);
+
+          expect(vm.ingredients.take(2), ['2 ägg', '']);
+          expect(vm.pendingParseConfirmations, 1);
+        });
+      });
+
+      group('TR::FLOW::03::granska::fält-med-låg-säkerhet', () {
+        test('a low row from a text import waits for Stämmer', () {
+          final vm = openTemplate(
+            imported(const ['3 dl vetemjöl', 'en skvätt grädde']),
+            confidences: const [ParseConfidence.high, ParseConfidence.low],
+          );
+          addTearDown(vm.dispose);
+
+          expect(vm.ingredients.take(2), ['3 dl vetemjöl', 'en skvätt grädde']);
+          expect(vm.pendingParseConfirmations, 1);
+        });
+
+        test('a snapshot without confidence shows no review', () {
+          final vm = openTemplate(imported(const ['3 dl vetemjöl', '2 ägg']));
+          addTearDown(vm.dispose);
+
+          expect(vm.parsedIngredients, isNull);
+          expect(vm.pendingParseConfirmations, 0);
+        });
+      });
+
+      test('a blank line between ingredients does not shift the rows', () {
+        final vm = openTemplate(
+          imported(const ['2 ägg', '', '} dl potatismjöl']),
+          confidences: const [
+            ParseConfidence.high,
+            ParseConfidence.high,
+            ParseConfidence.failed,
+          ],
+        );
+        addTearDown(vm.dispose);
+
+        expect(vm.ingredients.take(3), ['2 ägg', '', '']);
+        expect(vm.pendingParseConfirmations, 1);
+      });
+
+      test('a snapshot whose lines differ from the recipe empties nothing', () {
+        ImportCorrectionSnapshot.capture(
+          imported(const ['3 dl vetemjöl', '} dl potatismjöl']),
+          source: ImportSource.photo,
+          cache: cache,
+          confidences: const [ParseConfidence.failed, ParseConfidence.high],
+        );
+        final vm = RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: imported(const ['4 dl vetemjöl', '} dl potatismjöl']),
+          isTemplate: true,
+        );
+        addTearDown(vm.dispose);
+
+        expect(vm.ingredients.take(2), ['4 dl vetemjöl', '} dl potatismjöl']);
+        expect(vm.parsedIngredients, isNull);
+        expect(vm.pendingParseConfirmations, 0);
       });
     });
   });

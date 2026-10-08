@@ -8,6 +8,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 
@@ -27,10 +28,10 @@ import 'package:butlery/utils/text/ingredient_parser.dart';
 /// [IngredientParser] the diff calculator uses on the corrected side, so an
 /// unedited save diffs to zero corrections (no spurious training rows).
 ///
-/// The snapshot carries no genuine per-field confidence — it exists only to
-/// anchor the edit diff — so it is stamped with [snapshotParserVersion]. The
-/// form uses that sentinel to keep the per-ingredient confidence UI and the
-/// import-source analytics limited to real parses (URL today).
+/// A snapshot without per-line confidence exists only to anchor the edit diff
+/// and is stamped with [snapshotParserVersion]. One whose lines carry the
+/// reader's confidence is stamped [reviewParserVersion], and the form shows
+/// those lines in the import review (BUT-2158).
 class ImportCorrectionSnapshot {
   ImportCorrectionSnapshot._();
 
@@ -39,20 +40,43 @@ class ImportCorrectionSnapshot {
   /// "anchor for correction diffing" from "real per-field confidence".
   static const String snapshotParserVersion = 'import-snapshot-v1';
 
+  /// Parser-version stamp for a snapshot whose ingredient lines carry the
+  /// reader's per-line confidence, so the form can review them.
+  static const String reviewParserVersion = 'import-snapshot-v2';
+
   /// Build a snapshot for [recipe] and store it in the shared cache keyed by
   /// recipe id. Best-effort: a missing cache (e.g. tests without DI) or any
   /// failure is swallowed so capture never disturbs the import path.
+  ///
+  /// [confidences] is one entry per line of `recipe.ingredients`. Without it,
+  /// a snapshot already cached for the same recipe and lines keeps its
+  /// confidences: photo and voice re-tag the text strategy's snapshot, and
+  /// the re-tag must not erase what the text strategy measured. Failing that,
+  /// a line [UnreadLineDetector] calls unread is still marked.
   static void capture(
     Recipe recipe, {
     required ImportSource source,
     String? domain,
     ParsedRecipeCache? cache,
+    List<ParseConfidence>? confidences,
   }) {
     if (recipe.id.isEmpty) return;
     try {
       final target = cache ?? ServiceLocator.tryGet<ParsedRecipeCache>();
       if (target == null) return;
-      target.store(recipe.id, build(recipe, source: source, domain: domain));
+      final previous = confidences == null ? target.retrieve(recipe.id) : null;
+      target.store(
+        recipe.id,
+        build(
+          recipe,
+          source: source,
+          domain: domain,
+          confidences:
+              confidences ??
+              _keptConfidences(previous, recipe) ??
+              _unreadConfidences(recipe),
+        ),
+      );
     } catch (e) {
       AppLogger.debug('ImportCorrectionSnapshot: capture skipped: $e');
     }
@@ -64,10 +88,17 @@ class ImportCorrectionSnapshot {
     Recipe recipe, {
     required ImportSource source,
     String? domain,
+    List<ParseConfidence>? confidences,
   }) {
+    final lines = recipe.ingredients;
+    final reviewed = confidences != null && confidences.length == lines.length;
     final ingredients = [
-      for (final line in recipe.ingredients)
-        if (line.trim().isNotEmpty) _toParsedIngredient(line),
+      for (var i = 0; i < lines.length; i++)
+        if (lines[i].trim().isNotEmpty)
+          _toParsedIngredient(
+            lines[i],
+            reviewed ? confidences[i] : ParseConfidence.medium,
+          ),
     ];
 
     return ParsedRecipe(
@@ -94,7 +125,7 @@ class ImportCorrectionSnapshot {
         domain: domain,
         tierResults: const [],
         totalParseTime: Duration.zero,
-        parserVersion: snapshotParserVersion,
+        parserVersion: reviewed ? reviewParserVersion : snapshotParserVersion,
         timestamp: clock.now(),
       ),
     );
@@ -102,14 +133,46 @@ class ImportCorrectionSnapshot {
 
   /// Structure one ingredient line the same way the diff calculator structures
   /// the corrected side, so an untouched line compares equal on both sides.
-  static ParsedIngredient _toParsedIngredient(String line) {
+  static ParsedIngredient _toParsedIngredient(
+    String line,
+    ParseConfidence confidence,
+  ) {
     final parsed = IngredientParser.parseIngredient(line);
     return ParsedIngredient(
       name: parsed.name,
       originalLine: line,
       quantity: parsed.quantity.toString(),
       unit: parsed.unit.isEmpty ? null : parsed.unit,
-      confidence: ParseConfidence.medium,
+      confidence: confidence,
     );
+  }
+
+  static List<ParseConfidence>? _keptConfidences(
+    ParsedRecipe? previous,
+    Recipe recipe,
+  ) {
+    if (previous == null ||
+        previous.metadata.parserVersion != reviewParserVersion) {
+      return null;
+    }
+    final rows = previous.ingredients.value;
+    final lines = recipe.ingredients;
+    if (rows == null || lines.any((l) => l.trim().isEmpty)) return null;
+    if (rows.length != lines.length) return null;
+    for (var i = 0; i < lines.length; i++) {
+      if (rows[i].originalLine != lines[i]) return null;
+    }
+    return [for (final row in rows) row.confidence];
+  }
+
+  static List<ParseConfidence>? _unreadConfidences(Recipe recipe) {
+    final unread = [
+      for (final line in recipe.ingredients) UnreadLineDetector.isUnread(line),
+    ];
+    if (!unread.contains(true)) return null;
+    return [
+      for (final u in unread)
+        u ? ParseConfidence.failed : ParseConfidence.medium,
+    ];
   }
 }

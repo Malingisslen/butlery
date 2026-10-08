@@ -6,6 +6,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -283,6 +284,15 @@ class RecipeFormState extends ChangeNotifier {
   /// Called when importing a recipe to enable diff calculation on save
   void setOriginalParsedRecipe(ParsedRecipe? parsed) {
     _originalParsedRecipe = parsed;
+  }
+
+  /// BUT-2158: the import review's rows when the import produced a snapshot
+  /// with per-line confidence rather than a full parse.
+  List<ParsedIngredient>? get importReviewRows => _importReviewRows;
+  List<ParsedIngredient>? _importReviewRows;
+
+  void setImportReviewRows(List<ParsedIngredient>? rows) {
+    _importReviewRows = rows;
   }
 
   /// BUT-1469: pre-edit snapshot diffed against the saved recipe to capture

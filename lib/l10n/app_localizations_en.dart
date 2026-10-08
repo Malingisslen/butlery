@@ -6574,6 +6574,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String importPreviewUnreadLines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines could not be read. Tap to review the recipe.',
+      one: '1 line could not be read. Tap to review the recipe.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importPreviewOpenedForReview => 'Opened for review';
+
+  @override
   String get stateAddRecipes => 'Add recipes';
 
   @override

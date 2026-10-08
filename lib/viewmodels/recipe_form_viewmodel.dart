@@ -40,7 +40,9 @@ import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Import for per-ingredient confidence review (BUT-925)
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 
 // Import for tagging validation preview
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
@@ -191,19 +193,46 @@ class RecipeFormViewModel extends BaseViewModel
         if (parsed != null) {
           // Diff-on-save applies to every import path.
           _state.setImportCorrectionSnapshot(parsed);
-          // The per-ingredient confidence UI + import-source analytics only
-          // apply to genuine multi-tier parses (URL today), not the lighter
-          // snapshots the other strategies store.
-          final isGenuineParse =
-              parsed.metadata.parserVersion !=
-              ImportCorrectionSnapshot.snapshotParserVersion;
-          if (isGenuineParse) {
+          // Import-source analytics only apply to genuine multi-tier parses
+          // (URL today), not the lighter snapshots the other strategies
+          // store. A snapshot carrying per-line confidence still gets the
+          // review (BUT-2158).
+          final version = parsed.metadata.parserVersion;
+          if (version == ImportCorrectionSnapshot.reviewParserVersion) {
+            _showImportReview(initialRecipe, parsed);
+          } else if (version !=
+              ImportCorrectionSnapshot.snapshotParserVersion) {
             _state.setOriginalParsedRecipe(parsed);
           }
           AppLogger.debug(
             '📊 Retrieved parse snapshot for feedback loop: ${initialRecipe.id}',
           );
         }
+      }
+    }
+  }
+
+  /// Hands the snapshot's lines to the review and empties each editor line
+  /// the reader could not read: the line is shown empty and marked, never as
+  /// guessed text (flows-roles-budget.md). The snapshot's rows are the
+  /// non-empty lines of [recipe], in order; a snapshot that no longer matches
+  /// them is not shown, so a mismatch can never empty the wrong line.
+  void _showImportReview(Recipe recipe, ParsedRecipe parsed) {
+    final rows = parsed.ingredients.value;
+    if (rows == null || rows.isEmpty) return;
+    final lines = recipe.ingredients;
+    final lineIndices = [
+      for (var i = 0; i < lines.length; i++)
+        if (lines[i].trim().isNotEmpty) i,
+    ];
+    if (lineIndices.length != rows.length) return;
+    for (var row = 0; row < rows.length; row++) {
+      if (rows[row].originalLine != lines[lineIndices[row]]) return;
+    }
+    _state.setImportReviewRows(rows);
+    for (var row = 0; row < rows.length; row++) {
+      if (rows[row].confidence == ParseConfidence.failed) {
+        _state.ingredientsManager.updateAt(lineIndices[row], '');
       }
     }
   }
@@ -304,11 +333,11 @@ class RecipeFormViewModel extends BaseViewModel
 
   /// Per-ingredient parse confidence for the confidence review widget (BUT-925).
   ///
-  /// Only populated for imported recipes that went through the CRF/NER/LLM
-  /// parsing pipeline and were cached in [ParsedRecipeCache]. Returns null for
-  /// manually-entered recipes or when the cache entry expired.
+  /// Populated for imported recipes whose parse, or whose snapshot with
+  /// per-line confidence (BUT-2158), is still in [ParsedRecipeCache]. Returns
+  /// null for manually-entered recipes or when the cache entry expired.
   List<ParsedIngredient>? get parsedIngredients =>
-      _state.originalParsedRecipe?.ingredients.value;
+      _state.originalParsedRecipe?.ingredients.value ?? _state.importReviewRows;
 
   /// P6-U03: rows of the import review the user has confirmed, kept by
   /// object identity — never by position or text (two identical lines are
@@ -318,7 +347,8 @@ class RecipeFormViewModel extends BaseViewModel
   Object? _confirmedParseSource;
 
   void _syncConfirmedParseRows() {
-    final source = _state.originalParsedRecipe;
+    final Object? source =
+        _state.originalParsedRecipe ?? _state.importReviewRows;
     if (!identical(source, _confirmedParseSource)) {
       _confirmedParseRows.clear();
       _confirmedParseSource = source;

@@ -36,7 +36,19 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v3.1.0 — 2026-07-03 (current)
+## v3.2.0 — 2026-10-08 (current)
+
+**What changed:** The photo (`IMAGE_OCR_SYSTEM_PROMPT`) and handwritten (`IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT`) prompts gain a shared `UNREADABLE_RULE`: never guess an ingredient that cannot be read; write the exact marker `[oläsligt]` where the unreadable part stands, or as the whole line's `name`, and keep the line. An unreadable amount becomes `amount: null` with the marker in `preparation`, because `amount` is a NUMBER and cannot carry it. The handwritten prompt's instruction to "gissa det mest sannolika" for an unreadable word is removed; its "prefer partial extraction, never drop the line" half stays. No schema change: the marker is text inside an ingredient string.
+
+**Why:** BUT-2158. Flow 03 requires an OCR line that could not be read to reach the review "med raden tom och markerad — aldrig gissad text" (design repo `flows-roles-budget.md`). The app shows an ingredient line carrying the marker empty and marked, and its editor line is emptied until the user writes it (`UnreadLineDetector.unreadMarker`). A guess is indistinguishable from a reading, so the app cannot mark it.
+
+**Expected impact:** Some handwritten and photo imports now contain marker lines where they held a guess; each such recipe opens in the review with the line empty. No change to the text, URL or spoken prompts (byte-identical). MINOR bump: additive instruction, backward-compatible parser. An app from before BUT-2158 shows the marker as literal text.
+
+**Linked metrics / tickets:** BUT-2158. Watch for markers on lines that were readable (the app's corpus rule allows 1 in 100). Deploy note: functions before the app; if the prod `system/prompts` doc overrides `imageOcrSystemPrompt` / `imageOcrHandwrittenSystemPrompt`, update those keys in the same deploy or the override keeps serving the guessing instruction.
+
+---
+
+## v3.1.0 — 2026-07-03
 
 **What changed:** The ingredient-group rule ("Deg:"/"Fyllning:" set `section` per ingredient and are NEVER an ingredient of their own) is now extracted into a shared `INGREDIENT_GROUP_RULE` constant and included in the **photo (`IMAGE_OCR_SYSTEM_PROMPT`), handwritten (`IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT`), and spoken (`SPOKEN_CONTENT_SYSTEM_PROMPT`) prompts** — previously only the text-extraction prompt carried it. The text prompt is byte-identical (it now references the same constant). No schema change (all four already share `RECIPE_SCHEMA`, where a bare `name:"Deg"` was structurally valid and thus emit-able).
 
