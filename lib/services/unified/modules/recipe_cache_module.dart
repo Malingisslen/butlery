@@ -296,6 +296,9 @@ class RecipeCacheModule {
     }
   }
 
+  Future<void> dropDiscardedRecipe(String recipeId) =>
+      _removeCachedRecipe(recipeId, 'offline queue');
+
   /// Remove cached recipe from Firebase change
   Future<void> _removeCachedRecipe(String recipeId, String source) async {
     try {

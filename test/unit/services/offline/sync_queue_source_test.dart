@@ -81,6 +81,30 @@ void main() {
     verify(() => offline.refreshSyncState()).called(1);
     // BUT-2295: the recipe screens drop the thrown-away local version.
     verify(() => offline.announceRecipeLeftQueue('r1')).called(1);
+    verifyNever(() => offline.announceRecipeDropped(any()));
+  });
+
+  test('a phone-only recipe thrown away is announced as dropped', () async {
+    when(() => auth.currentUserId).thenReturn('u1');
+    await db.syncQueueDao.enqueue(
+      userId: 'u1',
+      recipeId: 'r2',
+      operation: SyncOperation.create,
+      opId: 'op-2',
+    );
+    final source = OfflineSyncQueueSource(
+      offlineService: offline,
+      authRepository: auth,
+    );
+    final change = (await source.watchChanges().first).draining.firstWhere(
+      (c) => c.id == 'op-2',
+    );
+    expect(change.isNeverSyncedRecipe, isTrue);
+
+    await source.discard(change);
+
+    verify(() => offline.announceRecipeDropped('r2')).called(1);
+    verifyNever(() => offline.announceRecipeLeftQueue(any()));
   });
 
   settledTests();

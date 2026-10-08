@@ -163,9 +163,10 @@ Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {
 /// kept as a copy, so leaving them under Väntar på dig would only offer
 /// choices that fail.
 ///
-/// Returns the id of the recipe whose queued write was thrown away, so the
-/// recipe screens can drop the local version (BUT-2295). Null for an image.
-Future<String?> discardQueuedChange(
+/// Returns the recipe whose queued write was thrown away, and whether the
+/// recipe itself went with it, so the recipe screens can drop the local
+/// version (BUT-2295). Null for an image.
+Future<({String recipeId, bool recipeDeleted})?> discardQueuedChange(
   AppDatabase db,
   String userId,
   QueuedChange change,
@@ -173,7 +174,7 @@ Future<String?> discardQueuedChange(
   // BUT-2295: the cancelled uploads' copies on the device, removed once the
   // transaction has committed so a rollback never loses a file it still needs.
   final cancelledFiles = <String>[];
-  String? discardedRecipeId;
+  ({String recipeId, bool recipeDeleted})? discarded;
   await db.transaction(() async {
     final chain = await db.markChainPermanentlyFailed(
       userId,
@@ -190,7 +191,12 @@ Future<String?> discardQueuedChange(
         await (db.delete(
           db.syncQueueEntries,
         )..where((e) => e.opId.equals(change.id))).go();
-        discardedRecipeId = entry?.recipeId;
+        if (entry != null) {
+          discarded = (
+            recipeId: entry.recipeId,
+            recipeDeleted: change.isNeverSyncedRecipe,
+          );
+        }
         if (entry != null && change.isNeverSyncedRecipe) {
           final dependants = chain.difference({change.id}).toList();
           if (dependants.isNotEmpty) {
@@ -228,7 +234,7 @@ Future<String?> discardQueuedChange(
   for (final path in cancelledFiles) {
     await _deleteQuietly(path);
   }
-  return discardedRecipeId;
+  return discarded;
 }
 
 /// A queued image's copy that is already gone is fine.

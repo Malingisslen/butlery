@@ -232,6 +232,17 @@ void main() {
       expect(await sent, 'r1');
     });
 
+    test(
+      'a thrown-away phone-only recipe is announced on recipesDropped',
+      () async {
+        final dropped = offlineService.recipesDropped.first;
+
+        offlineService.announceRecipeDropped('r1');
+
+        expect(await dropped, 'r1');
+      },
+    );
+
     group('Resource Management', () {
       test('should dispose resources', () {
         offlineService.dispose();

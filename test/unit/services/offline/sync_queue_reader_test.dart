@@ -163,7 +163,10 @@ void main() {
       'u1',
     )).firstWhere((c) => c.id == 'add');
 
-    expect(await discardQueuedChange(db, 'u1', add), 'r1');
+    expect(await discardQueuedChange(db, 'u1', add), (
+      recipeId: 'r1',
+      recipeDeleted: false,
+    ));
 
     final queue = QueueSnapshot(await readQueuedChanges(db, 'u1'));
     expect(queue.needsUser.map((c) => c.id), ['check']);
@@ -189,7 +192,10 @@ void main() {
     expect(created.discardAsksFirst, isTrue);
     expect(changed.discardAsksFirst, isFalse);
 
-    await discardQueuedChange(db, 'u1', created);
+    expect(await discardQueuedChange(db, 'u1', created), (
+      recipeId: 'r1',
+      recipeDeleted: true,
+    ));
     await discardQueuedChange(db, 'u1', changed);
 
     expect(await db.recipeDao.getRecipe('r1', 'u1'), isNull);
