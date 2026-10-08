@@ -51,35 +51,10 @@ void main() {
       expect(op.sourceType, 'url');
     });
 
-    test('withLlm factory creates LLM operation with cost', () {
+    test('withLlm factory creates LLM operation', () {
       final op = ImportOperation.withLlm('url', LlmOperationType.enhancement);
       expect(op.requiresLlm, isTrue);
       expect(op.llmType, LlmOperationType.enhancement);
-      expect(op.estimatedCost, LlmOperationType.enhancement.estimatedCost);
-    });
-  });
-
-  group('LlmOperationCost', () {
-    setUp(() async => await BaseUnitTest.setupUnit());
-    tearDown(() => BaseUnitTest.resetMocks());
-
-    // Worked by hand from the list price: 16,666 input tokens at 0.10 and
-    // the output cap at 0.40, per million tokens.
-    test('a call that can return a whole recipe costs at most 0.0025 USD', () {
-      for (final type in [
-        LlmOperationType.enhancement,
-        LlmOperationType.fullExtraction,
-        LlmOperationType.vision,
-      ]) {
-        expect(type.estimatedCost, closeTo(0.0024666, 1e-6), reason: '$type');
-      }
-    });
-
-    test('ingredient lines have the smaller output cap', () {
-      expect(
-        LlmOperationType.ingredientLines.estimatedCost,
-        closeTo(0.0020666, 1e-6),
-      );
     });
   });
 
@@ -155,6 +130,22 @@ void main() {
         DateTime.utc(2026, 2, 2),
       );
       expect(ServerLlmCost.dayResetAfter(_feb01At0001).isUtc, isTrue);
+    });
+
+    // Same TZ caveat as the key test above: bites under TZ=Europe/Stockholm,
+    // where 23:59 UTC on 31 Jan is already 1 Feb on the wall clock.
+    test('resets are computed from the UTC instant of a local DateTime', () {
+      final local = _jan31At2359.toLocal();
+      expect(
+        ServerLlmCost.dayResetAfter(local),
+        ServerLlmCost.dayResetAfter(_jan31At2359),
+      );
+      expect(ServerLlmCost.dayResetAfter(local), DateTime.utc(2026, 2));
+      expect(
+        ServerLlmCost.monthResetAfter(local),
+        ServerLlmCost.monthResetAfter(_jan31At2359),
+      );
+      expect(ServerLlmCost.monthResetAfter(local), DateTime.utc(2026, 2));
     });
 
     test('the month resets at the first instant of the next UTC month', () {

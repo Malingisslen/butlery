@@ -605,7 +605,6 @@ void main() {
         requiresLlm: true,
         llmType: LlmOperationType.fullExtraction,
         sourceType: 'url',
-        estimatedCost: 0.03,
       );
 
       Future<RateLimitResult> checkAt(DateTime now) =>
@@ -803,7 +802,6 @@ void main() {
             requiresLlm: true,
             llmType: LlmOperationType.enhancement,
             sourceType: 'url',
-            estimatedCost: 0.01,
           );
 
           await withClock(Clock.fixed(_t0), () async {
