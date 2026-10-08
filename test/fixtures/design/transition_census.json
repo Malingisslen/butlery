@@ -847,6 +847,11 @@
         {
           "file": "test/widget/auth/mfa_challenge_test.dart",
           "name": "automatic verification mid-typing signs in without an error"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "automatic verification mid-entry shows no error and MFA on",
+          "group": "enabling two-step verification"
         }
       ],
       "ticket": "BUT-2142",
@@ -856,11 +861,17 @@
       "id": "TR::FLOW::06::mfa::ominloggning-kravs",
       "flow": "06",
       "status": "BUILT_NOT_REACHABLE",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
+      "test_file": "test/widget/views/settings/mfa_settings_view_test.dart",
+      "test_name": "an invalid country code blocks before re-authentication",
+      "tests": [
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "an invalid country code blocks before re-authentication",
+          "group": "enabling two-step verification"
+        }
+      ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this. The re-login is in lib/views/settings/mfa_settings_view.dart:91-97 and :220-227; no test drives it."
+      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
     },
     {
       "id": "TR::FLOW::06::mfa::paslagning-kraver-reservkoder",
@@ -872,6 +883,21 @@
         {
           "file": "test/widget/auth/mfa_challenge_test.dart",
           "name": "all ten codes are shown and Fortsätt waits for the tick"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "codes are made and acknowledged before the number is sent, and 070 123 45 67 goes out as +46701234567",
+          "group": "enabling two-step verification"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "cancelling the codes enrolls nothing and discards them",
+          "group": "enabling two-step verification"
+        },
+        {
+          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
+          "name": "leaving the screen on the code step discards the codes",
+          "group": "enabling two-step verification"
         }
       ],
       "ticket": "BUT-2142",
