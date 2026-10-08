@@ -1677,11 +1677,6 @@ void main() {
             'group-weekly-menu-plans-export-failed',
             (m) => m.exportGroupWeeklyMenuPlans('alice'),
           ),
-          (
-            'realtime recipes',
-            'realtime-recipes-export-failed',
-            (m) => m.exportRealtimeRecipes('alice'),
-          ),
           // BUT-2028. This table is hand-typed, so a new section does not join
           // it by existing — and the test below is named "every section", a
           // quantifier that goes false silently while staying green.

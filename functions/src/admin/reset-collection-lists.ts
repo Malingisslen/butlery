@@ -135,7 +135,6 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
     name: "recipePresence",
     subcollections: ["activeUsers"],
   },
-  { name: "realtime_recipes" },
   { name: "realtime_menus" },
   { name: "realtime_resources" },
   { name: "deep_links", subcollections: ["clicks"] },

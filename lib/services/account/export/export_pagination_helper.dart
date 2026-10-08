@@ -63,9 +63,7 @@ void normalizeTimestampPaths(Map<String, dynamic> row, List<String> paths) {
   }
 }
 
-/// Normalises every zone-less stamp a serialised RECIPE document carries,
-/// under [prefix] ('' for the document root, 'recipe' where a realtime
-/// document embeds a whole recipe).
+/// Normalises every zone-less stamp a serialised RECIPE document carries.
 ///
 /// These are the fields `RecipeSerialization.toFirestore` delegates to a
 /// `toJson()` rather than writing as a `Timestamp`. They are enumerated rather
@@ -77,20 +75,16 @@ void normalizeTimestampPaths(Map<String, dynamic> row, List<String> paths) {
 /// nests, while `RecipeSerialization.fromMap` still reads a flat document as a
 /// legacy shape. A path whose parent is absent is skipped, so the spelling that
 /// does not apply costs nothing.
-void normalizeRecipeDocumentStamps(
-  Map<String, dynamic> row, {
-  String prefix = '',
-}) {
-  final p = prefix.isEmpty ? '' : '$prefix.';
+void normalizeRecipeDocumentStamps(Map<String, dynamic> row) {
   normalizeTimestampPaths(row, [
-    '${p}core.sourceArtefact.fetchedAt',
-    '${p}core.tagOverrides.lastEditedAt',
-    '${p}sourceArtefact.fetchedAt',
-    '${p}tagOverrides.lastEditedAt',
-    '${p}realtimeData.lastEditedAt',
+    'core.sourceArtefact.fetchedAt',
+    'core.tagOverrides.lastEditedAt',
+    'sourceArtefact.fetchedAt',
+    'tagOverrides.lastEditedAt',
+    'realtimeData.lastEditedAt',
   ]);
   // Keys are uids, so there is no leaf to name.
-  normalizeTimestampMapValues(row, '${p}realtimeData.lastSeenAt');
+  normalizeTimestampMapValues(row, 'realtimeData.lastSeenAt');
 }
 
 /// Normalises every VALUE of the map at [path], for a field whose keys are

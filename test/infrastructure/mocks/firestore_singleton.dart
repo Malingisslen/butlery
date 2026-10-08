@@ -112,7 +112,6 @@ class FirestoreSingleton {
         'conversations',
         'messages',
         'shared_content',
-        'realtime_recipes',
         'universal_links',
         'user_stats',
         'test_models',

@@ -572,28 +572,6 @@ class ContentExportManager {
     }
   }
 
-  /// BUT-1396: Export collaborative recipes the user owns (`realtime_recipes`
-  /// where `ownerId == uid`). The deletion cascade erases these, so Art. 15
-  /// requires them in the export.
-  Future<Map<String, dynamic>> exportRealtimeRecipes(String userId) async {
-    try {
-      final recipes = await _exports.exportRealtimeRecipesByOwner(userId);
-      return {
-        'realtime_recipes': recipes.map((entry) {
-          // A realtime document embeds a WHOLE serialised recipe under
-          // `recipe` (`RecipeSerialization.serializeRealtimeContent`), so
-          // it carries the same zone-less stamps one level deeper.
-          final row = sanitizeForJson(entry['data']) as Map<String, dynamic>;
-          normalizeRecipeDocumentStamps(row, prefix: 'recipe');
-          return {'recipe_id': entry['id'], 'data': row};
-        }).toList(),
-        'total_count': recipes.length,
-      };
-    } catch (e) {
-      return _failed('realtime recipes', 'realtime-recipes-export-failed', e);
-    }
-  }
-
   /// Fields of an ingredient suggestion that reach the Art. 15 bundle.
   ///
   /// An allowlist rather than a deny-list, so the section FAILS CLOSED: a field

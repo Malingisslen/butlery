@@ -855,31 +855,6 @@ void main() {
                 'updatedAt': Timestamp.fromDate(DateTime(2026, 2, 4, 5)),
               });
 
-          // `realtime_recipes` embeds a WHOLE serialised recipe under `recipe`,
-          // so the same zone-less stamps appear one level deeper. The section
-          // was empty in this fixture, which is why the walk was green over it.
-          await fakeFirestore.collection('realtime_recipes').doc('zone-rt').set(
-            {
-              'ownerId': testUserId,
-              'recipe': {
-                'core': {
-                  'title': 'Semlor',
-                  'sourceArtefact': {
-                    'type': 'url',
-                    'payload': 'https://example.test/semlor',
-                    'fetchedAt': DateTime(2026, 2, 7, 8).toIso8601String(),
-                  },
-                },
-                'realtimeData': {
-                  'lastEditedAt': DateTime(2026, 2, 8, 9).toIso8601String(),
-                  'lastSeenAt': {
-                    testUserId: DateTime(2026, 2, 8, 10).toIso8601String(),
-                  },
-                },
-              },
-            },
-          );
-
           // The family section serialises MODELS, so its stamps never pass a
           // Firestore document at all — `toJson()` emits `toIso8601String()`
           // on a LOCAL `DateTime`. The group's default household repository
@@ -1015,9 +990,6 @@ void main() {
               '/recipes/recipes[0]/data/realtimeData/lastSeenAt/$testUserId',
               '/recipes/recipes[1]/data/sourceArtefact/fetchedAt',
               '/recipes/recipes[1]/data/tagOverrides/lastEditedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/core/sourceArtefact/fetchedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastEditedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastSeenAt/$testUserId',
             ]),
           );
         },
@@ -1108,7 +1080,6 @@ void main() {
         // satisfied even when the user has none of this data.
         expect(data['reports'], isNotNull);
         expect(data['pings'], isNotNull);
-        expect(data['realtime_recipes'], isNotNull);
         // BUT-2151: live menus, empty for a user with none.
         expect(data['live_menus']['total_count'], 0);
         expect(data['group_weekly_menu_plans'], isNotNull);
@@ -1366,28 +1337,6 @@ void main() {
           isNot(contains('theirs')),
           reason: 'a foreign user\'s report must never appear in the export',
         );
-      });
-
-      test('BUT-1396: collaborative recipes the user owns export under '
-          'realtime_recipes (total_count==1)', () async {
-        // `realtime_recipes` is keyed on `ownerId` (the model\'s authoritative
-        // field), not the cascade CF\'s no-op `userId`. The export queries
-        // ownerId so the bundle ⊇ what deletion erases.
-        await fakeFirestore.collection('realtime_recipes').doc('rt-1').set({
-          'ownerId': testUserId,
-          'title': 'Delat recept',
-        });
-
-        final jsonString = await service.exportUserData();
-        final data = json.decode(jsonString) as Map<String, dynamic>;
-
-        final section = data['realtime_recipes'] as Map<String, dynamic>;
-        expect(section.containsKey('error'), isFalse);
-        expect(section['total_count'], 1);
-        final recipes = section['realtime_recipes'] as List<dynamic>;
-        final recipe = recipes.single as Map<String, dynamic>;
-        expect(recipe['recipe_id'], 'rt-1');
-        expect(recipe['data']['title'], 'Delat recept');
       });
 
       test('BUT-2028: ingredient suggestions the user submitted export, '
@@ -1649,7 +1598,7 @@ void main() {
 
       test('BUT-1396: a user with none of the new PII data still gets the '
           'sections present with no error (empty-safe Art. 15)', () async {
-        // No reports/pings/realtime_recipes/group menus seeded — the export
+        // No reports/pings/group menus seeded — the export
         // must still surface every section as an empty, error-free shape so
         // the bundle is honest about "you have none of this" rather than
         // omitting the section or carrying a swallowed error.
@@ -1659,7 +1608,6 @@ void main() {
         for (final key in const [
           'reports',
           'pings',
-          'realtime_recipes',
           'group_weekly_menu_plans',
           // BUT-2028. The zero-row case is not an edge case for this
           // section — no code in the app creates a suggestion, so it is the
@@ -1679,7 +1627,6 @@ void main() {
         }
         expect(data['reports']['total'], 0);
         expect(data['pings']['total'], 0);
-        expect(data['realtime_recipes']['total_count'], 0);
         expect(data['group_weekly_menu_plans']['total_count'], 0);
         expect(data['ingredient_suggestions']['total_count'], 0);
         expect(data['recipe_suggestions']['total_count'], 0);
