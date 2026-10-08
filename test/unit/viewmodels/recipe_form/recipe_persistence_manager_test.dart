@@ -498,4 +498,88 @@ void main() {
       verifyNever(() => offline.queueRecipeImage(any(), any(), any()));
     });
   });
+
+  // BUT-2293: the queue adds a finished image to the recipe on the device.
+  // A form opened before that must not save it away.
+  group('an image the queue added while the form was open (BUT-2293)', () {
+    late _MockOfflineService offline;
+    final opened = RecipeFactory.build(id: 'r1', imageUrls: ['a', 'b']);
+
+    setUp(() {
+      offline = _MockOfflineService();
+      when(() => offline.isQueueReady).thenReturn(true);
+      GetIt.instance.registerSingleton<OfflineService>(offline);
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      mockRecipeService.setRecipeState(
+        isInitialized: true,
+        personalOperations: mockPersonalOps,
+        currentUserId: 'u1',
+      );
+      when(() => mockState.isEditing).thenReturn(true);
+      when(() => mockState.originalRecipe).thenReturn(opened);
+      when(() => mockImageManager.networkFailedImages).thenReturn(const []);
+      when(() => mockImageManager.hasTooLargeImage).thenReturn(false);
+      when(
+        () => mockImageManager.releaseToOfflineQueue(any()),
+      ).thenAnswer((_) {});
+      when(
+        () => mockPersonalOps.updateUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Recipe saved'));
+    });
+
+    tearDown(() {
+      app_provider.ServiceLocator.reset();
+      GetIt.instance.unregister<OfflineService>();
+    });
+
+    void onDevice(List<String> imageUrls) {
+      when(() => offline.getOfflineRecipeForUser('r1', 'u1')).thenAnswer(
+        (_) async => RecipeFactory.build(id: 'r1', imageUrls: imageUrls),
+      );
+    }
+
+    List<String> savedImages() =>
+        verify(
+              () => mockState.createRecipe(
+                recipeId: 'r1',
+                imageUrls: captureAny(named: 'imageUrls'),
+                thumbnailUrl: any(named: 'thumbnailUrl'),
+              ),
+            ).captured.last
+            as List<String>;
+
+    Future<Recipe?> save() =>
+        manager.saveRecipe(isCollaborative: false, onNotify: () {});
+
+    test('is kept beside the images the form saves', () async {
+      when(() => mockImageManager.validImageUrls).thenReturn(['a']);
+      onDevice(['a', 'b', 'queued']);
+
+      expect(await save(), isNotNull);
+
+      expect(savedImages(), ['a', 'queued']);
+    });
+
+    test('an image removed in the form stays removed', () async {
+      when(() => mockImageManager.validImageUrls).thenReturn(['a']);
+      onDevice(['a', 'b']);
+
+      await save();
+
+      expect(savedImages(), ['a']);
+    });
+
+    test('a second save does not bring back what the first removed', () async {
+      when(() => mockImageManager.validImageUrls).thenReturn(['a', 'c']);
+      onDevice(['a', 'b']);
+      await save();
+      when(() => mockImageManager.validImageUrls).thenReturn(['a']);
+      onDevice(['a', 'c']);
+
+      await save();
+
+      expect(savedImages(), ['a']);
+    });
+  });
 }
