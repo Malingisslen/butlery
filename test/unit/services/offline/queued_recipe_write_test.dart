@@ -48,10 +48,13 @@ void main() {
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     repository = MockRecipeRepository();
-    when(() => repository.create(any())).thenAnswer(
-      (inv) async => inv.positionalArguments.first as Recipe,
-    );
-    when(() => repository.update(any())).thenAnswer((_) async {});
+    when(() => repository.createOnce(any())).thenAnswer((_) async => 0);
+    when(
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).thenAnswer((_) async => 1);
     when(() => repository.delete(any())).thenAnswer((_) async {});
     when(() => repository.read(any())).thenAnswer((_) async => null);
     storage = OfflineUserStorage(database: db);
@@ -93,9 +96,14 @@ void main() {
 
     await pass();
 
-    final sent = verify(() => repository.create(captureAny())).captured;
+    final sent = verify(() => repository.createOnce(captureAny())).captured;
     expect(sent.single, isA<Recipe>().having((r) => r.id, 'id', 'r1'));
-    verifyNever(() => repository.update(any()));
+    verifyNever(
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    );
     expect(await db.syncQueueDao.countPending(uid), 0);
   });
 
@@ -112,9 +120,14 @@ void main() {
 
       await pass();
 
-      final sent = verify(() => repository.create(captureAny())).captured;
+      final sent = verify(() => repository.createOnce(captureAny())).captured;
       expect((sent.single as Recipe).title, 'Tredje');
-      verifyNever(() => repository.update(any()));
+      verifyNever(
+        () => repository.updateAtRevision(
+          any(),
+          expectedRev: any(named: 'expectedRev'),
+        ),
+      );
       expect(await db.syncQueueDao.countPending(uid), 0);
     },
   );
@@ -135,10 +148,21 @@ void main() {
 
   test('a save made while the write is on its way is sent after it', () async {
     await storage.saveRecipeForUser(recipe('r1', title: 'Första'), uid);
-    when(() => repository.update(any())).thenAnswer((_) async {
+    when(
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).thenAnswer((_) async {
       // The user saves again before the server has answered.
-      when(() => repository.update(any())).thenAnswer((_) async {});
+      when(
+        () => repository.updateAtRevision(
+          any(),
+          expectedRev: any(named: 'expectedRev'),
+        ),
+      ).thenAnswer((_) async => 2);
       await storage.saveRecipeForUser(recipe('r1', title: 'Andra'), uid);
+      return 1;
     });
 
     await pass();
@@ -151,7 +175,12 @@ void main() {
     expect(device!.needsSync, isTrue);
 
     await pass();
-    final sent = verify(() => repository.update(captureAny())).captured;
+    final sent = verify(
+      () => repository.updateAtRevision(
+        captureAny(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).captured;
     expect((sent.last as Recipe).title, 'Andra');
     expect(await db.syncQueueDao.countPending(uid), 0);
   });
@@ -183,7 +212,7 @@ void main() {
 
     await pass();
 
-    verifyNever(() => repository.create(any()));
+    verifyNever(() => repository.createOnce(any()));
     expect(await db.syncQueueDao.countPending(uid), 0);
     expect(await db.syncQueueDao.getPermanentFailures(uid), isEmpty);
   });
@@ -191,7 +220,10 @@ void main() {
   test('a repository refusal waits for the user, with its cause', () async {
     final op = await storage.saveRecipeForUser(recipe('r1'), uid);
     when(
-      () => repository.update(any()),
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
     ).thenThrow(PermissionDeniedException('not the owner'));
 
     await pass();
@@ -239,7 +271,7 @@ void main() {
     expect(SyncQueueDao.dependsOnOf(tagRow), [writeOp]);
 
     await pass();
-    verify(() => repository.create(any())).called(1);
+    verify(() => repository.createOnce(any())).called(1);
     expect(tagged, ['r1@$uid']);
   });
 
@@ -268,14 +300,25 @@ void main() {
       "account's entries for its own next pass", () async {
     await storage.saveRecipeForUser(recipe('r1'), uid);
     await storage.saveRecipeForUser(recipe('r2'), uid);
-    when(() => repository.update(any())).thenAnswer((inv) async {
+    when(
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).thenAnswer((inv) async {
       // The first send is on its way when the user switches account.
       auth.setAuthState(user: FakeUser(), userId: 'u2', isAuthenticated: true);
+      return 1;
     });
 
     await pass();
 
-    final sent = verify(() => repository.update(captureAny())).captured;
+    final sent = verify(
+      () => repository.updateAtRevision(
+        captureAny(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).captured;
     expect(sent.map((r) => (r as Recipe).id), ['r1']);
     final left = await db.syncQueueDao.getPendingForUser(uid);
     expect(left.map((e) => e.recipeId), ['r2']);
@@ -286,8 +329,11 @@ void main() {
   test('a send that never completes is a failure the queue retries', () async {
     await storage.saveRecipeForUser(recipe('r1'), uid);
     when(
-      () => repository.update(any()),
-    ).thenAnswer((_) => Completer<void>().future);
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).thenAnswer((_) => Completer<int>().future);
 
     await pass();
 
@@ -316,11 +362,17 @@ void main() {
     final gate = Completer<void>();
     var inFlight = 0;
     var most = 0;
-    when(() => repository.update(any())).thenAnswer((_) async {
+    when(
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).thenAnswer((_) async {
       inFlight++;
       most = max(most, inFlight);
       await gate.future;
       inFlight--;
+      return 1;
     });
 
     final first = pass();
@@ -337,7 +389,15 @@ void main() {
   test('a pass waiting when the manager is disposed does not run', () async {
     await storage.saveRecipeForUser(recipe('r1'), uid);
     final gate = Completer<void>();
-    when(() => repository.update(any())).thenAnswer((_) => gate.future);
+    when(
+      () => repository.updateAtRevision(
+        any(),
+        expectedRev: any(named: 'expectedRev'),
+      ),
+    ).thenAnswer((_) async {
+      await gate.future;
+      return 1;
+    });
 
     final first = pass();
     await pumpEventQueue();

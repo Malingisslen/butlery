@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
+import 'package:butlery/core/storage/drift/recipe_revision_record.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
@@ -82,50 +83,64 @@ class OfflineUserStorage {
     bool queueTagging = true,
   }) async {
     try {
-      final recipeJson = jsonEncode(recipe.toJson());
-      final opId = const Uuid().v4();
-      // An edit of a recipe whose create has not reached the server goes
-      // down with that create if it fails for good (produktregler.md:187).
-      final createOpId = operation == SyncOperation.create
-          ? null
-          : await _syncQueueDao.pendingCreateOpId(userId, recipe.id);
-
-      await _recipeDao.upsertRecipe(
-        id: recipe.id,
-        userId: userId,
-        recipeJson: recipeJson,
-        needsSync: true,
+      // The base is read, and the copy and its entry written, in one
+      // transaction, so a send finishing in between cannot move the copy's
+      // revision under the base taken from it (BUT-2213).
+      return await _database.transaction(
+        () => _saveRecipe(recipe, userId, operation, queueTagging),
       );
-      await _syncQueueDao.enqueue(
-        userId: userId,
-        recipeId: recipe.id,
-        operation: operation,
-        opId: opId,
-        dependsOn: [?createOpId],
-      );
-
-      // H9: Queue for tagging if recipe has failed/pending tagging
-      final tagResult = recipe.core.tagResult;
-      if (queueTagging && tagResult != null && _needsRetagging(tagResult)) {
-        await _syncQueueDao.enqueue(
-          userId: userId,
-          recipeId: recipe.id,
-          operation: SyncOperation.tag,
-          dependsOn: [opId],
-        );
-        AppLogger.debug(
-          '📋 Queued offline tagging for recipe: ${recipe.title}',
-        );
-      }
-
-      AppLogger.info(
-        '💾 Recipe queued for user ${userId.maskedUserId}: ${recipe.title}',
-      );
-      return opId;
     } catch (e) {
       AppLogger.error('❌ Error saving recipe offline: $e');
       rethrow;
     }
+  }
+
+  Future<String> _saveRecipe(
+    Recipe recipe,
+    String userId,
+    SyncOperation operation,
+    bool queueTagging,
+  ) async {
+    final recipeJson = await _withRevisionBase(recipe, userId, operation);
+    final opId = const Uuid().v4();
+    // An edit of a recipe whose create has not reached the server goes
+    // down with that create if it fails for good (produktregler.md:187).
+    final createOpId = operation == SyncOperation.create
+        ? null
+        : await _syncQueueDao.pendingCreateOpId(userId, recipe.id);
+
+    await _recipeDao.upsertRecipe(
+      id: recipe.id,
+      userId: userId,
+      recipeJson: recipeJson,
+      needsSync: true,
+    );
+    await _syncQueueDao.enqueue(
+      userId: userId,
+      recipeId: recipe.id,
+      operation: operation,
+      opId: opId,
+      dependsOn: [?createOpId],
+    );
+
+    // H9: Queue for tagging if recipe has failed/pending tagging
+    final tagResult = recipe.core.tagResult;
+    if (queueTagging && tagResult != null && _needsRetagging(tagResult)) {
+      await _syncQueueDao.enqueue(
+        userId: userId,
+        recipeId: recipe.id,
+        operation: SyncOperation.tag,
+        dependsOn: [opId],
+      );
+      AppLogger.debug(
+        '📋 Queued offline tagging for recipe: ${recipe.title}',
+      );
+    }
+
+    AppLogger.info(
+      '💾 Recipe queued for user ${userId.maskedUserId}: ${recipe.title}',
+    );
+    return opId;
   }
 
   /// Removes the recipe from the device and queues its deletion on the
@@ -279,12 +294,40 @@ class OfflineUserStorage {
           socialData: recipe.socialData,
           realtimeData: recipe.realtimeData,
           offlineData: recipe.offlineData,
+          rev: recipe.rev,
         ),
         userId,
         queueTagging: false,
       );
       return true;
     });
+  }
+
+  /// The device copy's JSON for [recipe]: a create carries no revision, and
+  /// an update the revision it is built on ([RecipeRevisionRecord.baseFor]),
+  /// with the record of the revisions this device produced kept.
+  Future<String> _withRevisionBase(
+    Recipe recipe,
+    String userId,
+    SyncOperation operation,
+  ) async {
+    final json = recipe.toJson();
+    if (operation == SyncOperation.create) {
+      return jsonEncode(json..remove('rev'));
+    }
+    final row = await _recipeDao.getRecipe(recipe.id, userId);
+    final stored = row == null
+        ? null
+        : jsonDecode(row.recipeJson) as Map<String, dynamic>;
+    final base = RecipeRevisionRecord.baseFor(recipe.rev, stored);
+    if (base == null) {
+      json.remove('rev');
+    } else {
+      json['rev'] = base;
+    }
+    final own = stored?[RecipeRevisionRecord.key];
+    if (own != null) json[RecipeRevisionRecord.key] = own;
+    return jsonEncode(json);
   }
 
   /// Get specific offline recipe for user

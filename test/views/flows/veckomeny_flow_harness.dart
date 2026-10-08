@@ -58,7 +58,12 @@ const flowUserId = 'flow-user-1';
 /// no day (weekly_menu_plan_service.dart distributeFromGeneratedMenu).
 final flowMonday = DateTime(2026, 9, 21, 8);
 
-/// The plan repository, in memory.
+/// The plan repository, in memory. BUT-2215: [save] follows the lineage rule
+/// of `firestore.rules` (`weekSaveBuiltOnStored`, and an unchanged
+/// `createdAt`), and answers a refusal the way the Firebase repository does,
+/// with a [WeekPlanConflictException] carrying the stored week. The recipe
+/// scrub writes a new revision of each week it changes, as the Firebase one
+/// does.
 class MemoryPlanRepository implements WeeklyMenuPlanRepository {
   final Map<String, WeeklyMenuPlan> plans = {};
   final List<WeeklyMenuPlan> saves = [];
@@ -71,6 +76,10 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {
+    final stored = plans[plan.id];
+    if (stored != null && !_builtOn(plan, stored)) {
+      throw WeekPlanConflictException(stored);
+    }
     saves.add(plan);
     plans[plan.id] = plan;
   }
@@ -88,7 +97,24 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
   Future<int> removeRecipeFromAllPlans({
     required String userId,
     required String recipeId,
-  }) async => 0;
+  }) async {
+    var changed = 0;
+    for (final stored in plans.values.toList()) {
+      if (stored.userId != userId) continue;
+      final kept = stored.entries.where((e) => e.recipeId != recipeId).toList();
+      if (kept.length == stored.entries.length) continue;
+      final next = stored.copyWith(entries: kept).nextRevision();
+      plans[next.id] = next;
+      changed++;
+    }
+    return changed;
+  }
+
+  static bool _builtOn(WeeklyMenuPlan plan, WeeklyMenuPlan stored) {
+    if (!plan.createdAt.isAtSameMomentAs(stored.createdAt)) return false;
+    if (plan.revId == null) return true;
+    return plan.revId != stored.revId && plan.baseRevId == stored.revId;
+  }
 }
 
 /// MenuService at its generation edge. [next] is what the next generation

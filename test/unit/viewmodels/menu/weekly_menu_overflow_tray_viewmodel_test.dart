@@ -29,7 +29,11 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../test_support/base_unit_test.dart';
 
-class _MockService extends Mock implements WeeklyMenuPlanService {}
+class _MockService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockRecipes extends Mock implements UnifiedRecipeService {}
 
@@ -143,7 +147,7 @@ void main() {
     service = _MockService();
     recipes = _MockRecipes();
     when(() => service.overflowTrayOwnerId).thenReturn('malin');
-    when(() => service.save(any())).thenAnswer((_) async {});
+    when(() => service.saveRevision(any())).thenAnswer((_) async {});
     when(
       () => service.readWeek(any()),
     ).thenAnswer(
@@ -254,7 +258,7 @@ void main() {
               as Map<String, List<Recipe>>;
       expect(generatedArg['middag']!.map((r) => r.id), ['o1', 'o2']);
       verify(
-        () => service.save(
+        () => service.saveRevision(
           any(
             that: isA<WeeklyMenuPlan>().having(
               (p) => p.weekStartDate,
@@ -286,7 +290,7 @@ void main() {
     wedTest('a refused save puts the tray back', () async {
       final vm = await generated();
       stubNextWeek();
-      when(() => service.save(any())).thenThrow(Exception('denied'));
+      when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
       final moved = await vm.placeOverflowInNextWeek();
 
@@ -310,7 +314,7 @@ void main() {
 
       expect(await vm.placeOverflowInNextWeek(), isNull);
       expect(vm.overflow, hasLength(2));
-      verifyNever(() => service.save(any()));
+      verifyNever(() => service.saveRevision(any()));
     });
   });
 
@@ -472,7 +476,7 @@ void main() {
           clearInteractions(service);
           expect(await later.placeOverflowInNextWeek(), isNull);
         });
-        verifyNever(() => service.save(any()));
+        verifyNever(() => service.saveRevision(any()));
         verifyNever(
           () => service.distributeFromGeneratedMenu(
             generated: any(named: 'generated'),

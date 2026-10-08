@@ -106,6 +106,7 @@ class RecipeTaggingHandler {
         socialData: viewModel.recipe.socialData,
         realtimeData: viewModel.recipe.realtimeData,
         offlineData: viewModel.recipe.offlineData,
+        rev: viewModel.recipe.rev,
       );
 
       // Save to database

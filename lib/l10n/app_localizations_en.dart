@@ -8283,12 +8283,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Someone else changed it at the same time. Your version is still here — choose which one applies.';
 
   @override
+  String get conflictBannerBodyOtherDevice =>
+      'You changed the recipe on another device. Your version is still here — choose which one applies.';
+
+  @override
   String conflictWeekSaved(String name) {
     return '$name saved the week';
   }
 
   @override
   String get conflictWeekSavedUnnamed => 'Someone else saved the week';
+
+  @override
+  String get conflictWeekSavedElsewhere =>
+      'The week was saved on another device';
 
   @override
   String get conflictDiffTitle => 'What changed';

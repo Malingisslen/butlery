@@ -223,6 +223,7 @@ class RetaggingScheduler with StreamManagementMixin {
         socialData: recipe.socialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
 
       await _saveRecipe(updatedRecipe);

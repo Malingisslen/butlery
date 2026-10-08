@@ -84,6 +84,7 @@ class RecipeMemberManager {
         socialData: updatedSocialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
 
       final success = await _updateRecipe(updatedRecipe);
@@ -183,6 +184,7 @@ class RecipeMemberManager {
         socialData: updatedSocialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
 
       final success = await _updateRecipe(updatedRecipe);
@@ -301,6 +303,7 @@ class RecipeMemberManager {
         socialData: updatedSocialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
 
       final success = await _updateRecipe(updatedRecipe);
@@ -404,6 +407,7 @@ class RecipeMemberManager {
         socialData: updatedSocialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
 
       final success = await _updateRecipe(updatedRecipe);

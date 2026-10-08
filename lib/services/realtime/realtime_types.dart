@@ -43,6 +43,17 @@ enum ConflictResolutionStrategy {
   remoteWon,
 }
 
+/// Where a [ConflictEvent] was found (BUT-2213).
+enum ConflictOrigin {
+  /// The realtime resource path settled it (ConflictResolutionModule).
+  realtime,
+
+  /// A queued recipe edit met a newer server version and was not written;
+  /// the device's version is in the event, and its choice goes back through
+  /// the recipe's own queue, never through `realtime_resources` (BUT-2151).
+  queue,
+}
+
 /// BUT-1031: Broadcast when two users edit the same resource and
 /// `ConflictResolutionModule.resolveConflict` picks a winner.
 ///
@@ -85,6 +96,10 @@ class ConflictEvent {
   /// suggestion to the recipe, rather than being a new one.
   final bool suggestionReplaced;
 
+  /// Which path found the conflict, and so which path a choice is written
+  /// through.
+  final ConflictOrigin origin;
+
   ConflictEvent({
     required this.collectionPath,
     required this.docId,
@@ -95,6 +110,7 @@ class ConflictEvent {
     required this.occurredAt,
     this.suggestionId,
     this.suggestionReplaced = false,
+    this.origin = ConflictOrigin.realtime,
   });
 
   @override

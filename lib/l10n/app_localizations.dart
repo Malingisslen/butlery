@@ -13957,6 +13957,12 @@ abstract class AppLocalizations {
   /// **'Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.'**
   String get conflictBannerBodyUnnamed;
 
+  /// BUT-2213 (B1, Malin 2026-10-08): conflict banner body when a queued edit of the user's own recipe met a newer version saved from their other device.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du ändrade receptet på en annan enhet. Din version finns kvar — välj vilken som gäller.'**
+  String get conflictBannerBodyOtherDevice;
+
   /// P3-U08: week-menu conflict snackbar, 30 s (produktregler.md:104, ux-beslut D-04).
   ///
   /// In sv, this message translates to:
@@ -13968,6 +13974,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Någon annan sparade veckan'**
   String get conflictWeekSavedUnnamed;
+
+  /// BUT-2215: week-menu conflict snackbar, 30 s, when the user's own other device saved the week first.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan sparades på en annan enhet'**
+  String get conflictWeekSavedElsewhere;
 
   /// BUT-1163: title of the conflict diff view.
   ///

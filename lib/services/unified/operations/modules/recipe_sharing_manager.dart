@@ -578,6 +578,7 @@ class RecipeSharingManager {
       ),
       realtimeData: recipe.realtimeData,
       offlineData: recipe.offlineData,
+      rev: recipe.rev,
     );
 
     return _updateRecipe(updated);

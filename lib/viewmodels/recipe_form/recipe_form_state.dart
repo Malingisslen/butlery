@@ -917,6 +917,9 @@ class RecipeFormState extends ChangeNotifier {
         heirloom: heirloom ?? _originalRecipe?.core.heirloom,
       ),
       type: RecipeType.personal,
+      // BUT-2213: the revision the opened recipe was read at, so a queued
+      // save is compared against the version the user actually edited.
+      rev: _originalRecipe?.rev,
     );
   }
 

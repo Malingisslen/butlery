@@ -92,6 +92,7 @@ class RecipePersonalTagHandler {
         socialData: recipe.socialData,
         realtimeData: recipe.realtimeData,
         offlineData: recipe.offlineData,
+        rev: recipe.rev,
       );
 
       // Save to database

@@ -36,8 +36,11 @@ import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
 import '../golden/golden_helper.dart';
 
-class _MockWeeklyMenuPlanService extends Mock
-    implements WeeklyMenuPlanService {}
+class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
@@ -125,7 +128,7 @@ void main() {
     setUp(() {
       service = _MockWeeklyMenuPlanService();
       recipeService = _MockUnifiedRecipeService();
-      when(() => service.save(any())).thenAnswer((_) async {});
+      when(() => service.saveRevision(any())).thenAnswer((_) async {});
     });
 
     testWidgets('renders the empty-hint state (arrow + StateWidget.empty) when '
@@ -845,7 +848,7 @@ void main() {
 
       testWidgets('a REFUSED clear shows no success snackbar', (tester) async {
         await pumpWeekWithOneEntry(tester);
-        when(() => service.save(any())).thenThrow(Exception('denied'));
+        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
         await tester.tap(find.byTooltip('Rensa veckan'));
         await tester.pumpAndSettle();
@@ -857,7 +860,7 @@ void main() {
       // that never shows the snackbar at all.
       testWidgets('a successful clear does show it', (tester) async {
         await pumpWeekWithOneEntry(tester);
-        when(() => service.save(any())).thenAnswer((_) async {});
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
         await tester.tap(find.byTooltip('Rensa veckan'));
         await tester.pumpAndSettle();
@@ -999,7 +1002,7 @@ void main() {
         final handle = tester.ensureSemantics();
         // BUT-1988: presence publishes from the resident plan and SAVES, so
         // the refusal to stage is the save's.
-        when(() => service.save(any())).thenThrow(Exception('denied'));
+        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester);
 
@@ -1011,7 +1014,7 @@ void main() {
       // that never shows the notice at all.
       testWidgets('a successful presence save does show it', (tester) async {
         final handle = tester.ensureSemantics();
-        when(() => service.save(any())).thenAnswer((_) async {});
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester);
 
@@ -1028,7 +1031,7 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(() => service.save(any())).thenThrow(Exception('denied'));
+        when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
@@ -1040,7 +1043,7 @@ void main() {
         tester,
       ) async {
         final handle = tester.ensureSemantics();
-        when(() => service.save(any())).thenAnswer((_) async {});
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
@@ -1235,7 +1238,7 @@ void main() {
 
       final service = _MockWeeklyMenuPlanService();
       final recipeService = _MockUnifiedRecipeService();
-      when(() => service.save(any())).thenAnswer((_) async {});
+      when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
       // Use a week in the past so the "today" badge doesn't render (the
       // badge path uses DateTime.now() and would make the golden

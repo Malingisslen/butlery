@@ -79,10 +79,11 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
   }
 
   @override
-  Future<void> create(Recipe recipe) => _recipeRepository.create(recipe);
+  Future<int> create(Recipe recipe) => _recipeRepository.createOnce(recipe);
 
   @override
-  Future<void> update(Recipe recipe) => _recipeRepository.update(recipe);
+  Future<int> update(Recipe recipe) =>
+      _recipeRepository.updateAtRevision(recipe, expectedRev: recipe.rev);
 
   @override
   Future<void> delete(String recipeId) async {

@@ -27,6 +27,7 @@ import 'package:butlery/services/realtime/overwritten_version_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_suggestion_repository.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
@@ -96,6 +97,22 @@ class CollaborationModule implements DIModule {
       ),
     );
 
+    // The owner's own library recipe, read and written the way the owner's
+    // own editor does it (RecipePersistenceManager.saveRecipe), so a write
+    // goes through the offline queue where there is one. Resolved at call
+    // time, so the content module's registration order does not matter.
+    Future<Recipe?> readOwnRecipe(String id) async =>
+        container.isRegistered<UnifiedRecipeService>()
+        ? container<UnifiedRecipeService>().getRecipeById(id)
+        : null;
+    Future<void> writeOwnRecipe(Recipe recipe) async {
+      final recipes = container<UnifiedRecipeService>();
+      final result = await recipes.personal.updateUnifiedRecipe(recipe);
+      if (!result.isSuccess) {
+        throw StateError(result.message ?? 'recipe update failed');
+      }
+    }
+
     container.registerLazySingleton<RealtimeSyncService>(
       () => RealtimeSyncService(
         firestoreRepository: app<FirestoreRepository>(),
@@ -105,28 +122,18 @@ class CollaborationModule implements DIModule {
         // P6-U08b: conflict notices wait for the offline queue to empty
         // (produktregler.md:189).
         queueSettled: () => SyncQueueSource.resolve().watchSettled(),
+        // BUT-2213: "Behåll min version" on a queued recipe edit.
+        writeOwnRecipe: writeOwnRecipe,
       ),
     );
 
-    // Q6-08 = A: a suggestion is taken into the owner's own library recipe,
-    // written the way the owner's own editor writes it
-    // (RecipePersistenceManager.saveRecipe). Resolved at call time, so the
-    // content module's registration order does not matter.
+    // Q6-08 = A: a suggestion is taken into the owner's own library recipe.
     container.registerLazySingleton<RecipeSuggestionService>(
       () => RecipeSuggestionService(
         repository: container<RecipeSuggestionRepository>(),
         syncService: container<RealtimeSyncService>(),
-        readOwnRecipe: (id) async =>
-            container.isRegistered<UnifiedRecipeService>()
-            ? container<UnifiedRecipeService>().getRecipeById(id)
-            : null,
-        writeOwnRecipe: (recipe) async {
-          final recipes = container<UnifiedRecipeService>();
-          final result = await recipes.personal.updateUnifiedRecipe(recipe);
-          if (!result.isSuccess) {
-            throw StateError(result.message ?? 'recipe update failed');
-          }
-        },
+        readOwnRecipe: readOwnRecipe,
+        writeOwnRecipe: writeOwnRecipe,
         // The suggester's view of their own suggestion reads the owner's
         // recipe through the member's read path (recipe-shared-read-rules).
         readSharedRecipe: ({required ownerId, required recipeId}) async =>
@@ -143,6 +150,9 @@ class CollaborationModule implements DIModule {
       () => OverwrittenVersionService(
         repository: container<OverwrittenVersionRepository>(),
         syncService: container<RealtimeSyncService>(),
+        // BUT-2213: a kept recipe version comes back through the recipe.
+        readOwnRecipe: readOwnRecipe,
+        writeOwnRecipe: writeOwnRecipe,
       ),
     );
 
