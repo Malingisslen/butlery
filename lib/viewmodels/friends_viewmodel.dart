@@ -213,8 +213,26 @@ class FriendsViewModel extends BaseViewModel {
     firebaseUser: _authRepository.currentUser,
   );
 
+  // BUT-2306: a second tap while the first call is still running joins it.
+  // Run twice, the send failed on the request its twin had just added and
+  // reported "Kunde inte skicka vänförfrågan" for a request that went out.
+  final _inFlight = <String, Future<bool>>{};
+
+  // The block body matters: `remove` returns this very future, and a
+  // whenComplete callback that returns a future is awaited, so an arrow body
+  // would make the call wait on itself forever.
+  Future<bool> _joined(String key, Future<bool> Function() run) =>
+      _inFlight[key] ??= run().whenComplete(() {
+        _inFlight.remove(key);
+      });
+
   /// Send friend request to user
-  Future<bool> sendFriendRequest(String userId, {String? message}) async {
+  Future<bool> sendFriendRequest(String userId, {String? message}) => _joined(
+    'send:$userId',
+    () => _sendFriendRequest(userId, message: message),
+  );
+
+  Future<bool> _sendFriendRequest(String userId, {String? message}) async {
     // Client-side mirror of the server isAccountMatured() gate (BUT-659).
     // The server is still the authority; this prevents the opaque
     // permission-denied that new accounts would otherwise see.
@@ -289,7 +307,10 @@ class FriendsViewModel extends BaseViewModel {
   }
 
   /// Accept incoming friend request
-  Future<bool> acceptFriendRequest(String requestId) async {
+  Future<bool> acceptFriendRequest(String requestId) =>
+      _joined('accept:$requestId', () => _acceptFriendRequest(requestId));
+
+  Future<bool> _acceptFriendRequest(String requestId) async {
     // Find the request to get sender ID for analytics. The request may have
     // already vanished (cancelled on another device / double-tap) — don't
     // throw; the service safely no-ops on a missing request.

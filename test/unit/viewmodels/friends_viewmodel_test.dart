@@ -259,6 +259,42 @@ void main() {
     });
 
     group('Friend Requests', () {
+      // BUT-2306: a double tap used to run the verb twice; the second send
+      // then failed on its twin's request and showed an error for a request
+      // that had gone out.
+      test('a second send while the first is running joins it', () async {
+        mockManagement.pauseRequests();
+        final first = viewModel.sendFriendRequest(testFriendId);
+        final second = viewModel.sendFriendRequest(testFriendId);
+        mockManagement.releaseRequests();
+
+        expect(await Future.wait([first, second]), [true, true]);
+        expect(mockManagement.sendCalls, [testFriendId]);
+
+        // Once settled, a new tap is a new call again.
+        await viewModel.sendFriendRequest(testFriendId);
+        expect(mockManagement.sendCalls, [testFriendId, testFriendId]);
+      });
+
+      test('a second accept while the first is running joins it', () async {
+        mockFriendsService.setFriendsState(
+          incomingRequests: [testFriendRequest],
+          isInitialized: true,
+          management: mockManagement,
+        );
+        mockManagement.setManagementState(
+          incomingRequests: [testFriendRequest],
+        );
+        mockManagement.pauseRequests();
+        final first = viewModel.acceptFriendRequest(testRequestId);
+        final second = viewModel.acceptFriendRequest(testRequestId);
+        mockManagement.releaseRequests();
+
+        final results = await Future.wait([first, second]);
+        expect(results.first, results.last);
+        expect(mockManagement.acceptCalls, [testRequestId]);
+      });
+
       test('should send friend request with message', () async {
         // Arrange - use state-based configuration (ultrathink gold standard)
         mockManagement.setManagementState(friends: []);
