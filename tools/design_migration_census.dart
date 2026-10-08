@@ -681,9 +681,16 @@ Map<String, Object?> _transitions(CensusSource src, List<_Finding> out) {
   final source = _json(src, _transitionSource);
   final entries = (census['entries'] as List).cast<Map<String, dynamic>>();
   final notDone = <Map<String, Object?>>[];
+  final resting = <Map<String, Object?>>[];
   for (final e in entries) {
     final status = e['status'] as String;
     if (status == 'TESTED') continue;
+    // A requirement Malin has put to rest is not a known failure; it is
+    // counted apart, as accepted a11y findings are (D5 = B).
+    if (status == 'RESTING') {
+      resting.add({'id': e['id'], 'ticket': e['ticket']});
+      continue;
+    }
     final gap = e['known_gap'] as Map<String, dynamic>?;
     final ticket = (e['ticket'] ?? gap?['ticket']) as String?;
     notDone.add({'id': e['id'], 'status': status, 'ticket': ticket});
@@ -697,6 +704,7 @@ Map<String, Object?> _transitions(CensusSource src, List<_Finding> out) {
     'required_in_block288': source?['TRANSITIONS_REQUIRED'],
     'by_status': _countBy(entries.map((e) => e['status'] as String)),
     'not_done': notDone,
+    'resting': resting,
   };
 }
 
@@ -1178,6 +1186,8 @@ Map<String, Object?> buildCensus(CensusSource src) {
       'known_failures': findings.length,
       'known_failures_by_list': byList,
       'accepted_failures': (sections['a11y']! as Map)['accepted_findings'] ?? 0,
+      'resting_transitions':
+          ((sections['transitions']! as Map)['resting'] as List?)?.length ?? 0,
       'tickets_registered': tickets.length,
       'failures_without_ticket': untracked,
       'residue_lists_not_empty': residue,
@@ -1240,6 +1250,10 @@ String renderMarkdown(Map<String, Object?> census) {
       '${v['accepted_failures']}',
     )
     ..writeln(
+      '- Resting transition requirements, counted apart: '
+      '${v['resting_transitions']}',
+    )
+    ..writeln(
       '- Tickets: ${v['tickets_registered']} registered in Linear',
     )
     ..writeln(
@@ -1277,7 +1291,9 @@ String renderMarkdown(Map<String, Object?> census) {
       ..writeln(
         'Only TESTED counts as done. PARTIAL is built and driven but misses '
         'its canonical outcome; BUILT_NOT_REACHABLE is built but a user '
-        'cannot reach it; MISSING is not built.',
+        'cannot reach it; MISSING is not built. RESTING is a requirement '
+        'Malin has put to rest; it is listed apart and is not a known '
+        'failure.',
       )
       ..writeln()
       ..writeln('| Transition | Status | Ticket |')
@@ -1285,6 +1301,10 @@ String renderMarkdown(Map<String, Object?> census) {
     for (final e in t['not_done']! as List) {
       final m = e as Map;
       b.writeln('| `${m['id']}` | ${m['status']} | ${m['ticket'] ?? '—'} |');
+    }
+    for (final e in (t['resting'] as List?) ?? const []) {
+      final m = e as Map;
+      b.writeln('| `${m['id']}` | RESTING | ${m['ticket'] ?? '—'} |');
     }
   }
 

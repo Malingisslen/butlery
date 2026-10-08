@@ -16,7 +16,8 @@
 /// 3. every entry that is not TESTED names a BUT-#### Linear ticket and a
 ///    reason; a PARTIAL entry carries them in its known_gap, and only a
 ///    PARTIAL entry has a known_gap, so a transition whose canonical outcome
-///    fails is never counted as TESTED;
+///    fails is never counted as TESTED; a RESTING entry also names the
+///    decision that put it to rest, and only a RESTING entry does;
 /// 4. none of the 5 NOT_REQUIRED transitions is in the census as present;
 /// 5. the negative D-03 and D-04 assertions exist in flow_01.
 ///
@@ -35,7 +36,13 @@ import 'package:flutter_test/flutter_test.dart';
 const _pinnedHash =
     '51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e';
 
-const _statuses = {'TESTED', 'PARTIAL', 'BUILT_NOT_REACHABLE', 'MISSING'};
+const _statuses = {
+  'TESTED',
+  'PARTIAL',
+  'BUILT_NOT_REACHABLE',
+  'MISSING',
+  'RESTING',
+};
 
 final _ticket = RegExp(r'^BUT-\d+$');
 
@@ -185,6 +192,12 @@ void main() {
       } else if (e['status'] != 'TESTED') {
         hasTicket(id, e);
       }
+      // A resting requirement is Malin's call, so it names where she made it.
+      expect(
+        (e['decision'] as String?)?.trim().isNotEmpty ?? false,
+        e['status'] == 'RESTING',
+        reason: '$id: a decision goes with RESTING, and only with RESTING',
+      );
     }
   });
 
@@ -218,6 +231,7 @@ void main() {
       'partial': count('PARTIAL'),
       'built_not_reachable': count('BUILT_NOT_REACHABLE'),
       'missing': count('MISSING'),
+      'resting': count('RESTING'),
       'not_done': [
         for (final e in entries)
           if (e['status'] != 'TESTED')

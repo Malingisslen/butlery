@@ -9048,6 +9048,7 @@
   "accountSecurityMfaSettings": "Two-Factor Authentication",
   "accountSecurityPasswordChanged": "Password changed successfully",
   "accountSecurityEmailVerificationSent": "Verification link sent to new email address",
+  "accountSecurityEmailChangeHow": "We send a link to the new address. The change applies only once you have opened it, and your current address then gets an email where the change can be undone.",
   "accountSecurityPasswordMismatch": "Passwords do not match",
   "profileAccountSecurity": "Account Security",
   "profileAccountSecuritySubtitle": "Password, email, and two-factor authentication",

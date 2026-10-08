@@ -303,6 +303,19 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
               ),
             ),
           ),
+        // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms only the
+        // new address; the old one is told afterwards and can undo. The user
+        // reads that before asking for the change, not in a two-line snackbar.
+        Padding(
+          key: const ValueKey('accountSecurity.emailChangeHow'),
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+          child: Text(
+            context.l10n.accountSecurityEmailChangeHow,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
         TextField(
           controller: _emailPasswordController,
           focusNode: _emailPasswordFocus,

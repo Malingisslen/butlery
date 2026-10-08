@@ -1,0 +1,4 @@
+# test/<dir> | ticket | why no workflow runs it (BUT-1676)
+# Read by tools/check_test_suite_coverage.sh. Every line needs both a ticket and a reason.
+test_support| BUT-1676 | base classes and helpers whose file names end in _test.dart; they declare no main() and are not suites
+performance| BUT-1676 | wall-clock thresholds (e.g. 50 ms per recipe) that depend on the machine; red locally on 2026-10-08 at 65 ms
