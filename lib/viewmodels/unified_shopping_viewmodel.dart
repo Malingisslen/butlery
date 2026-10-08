@@ -16,6 +16,7 @@
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
 import 'dart:async';
+import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -521,6 +522,21 @@ class UnifiedShoppingViewModel extends BaseViewModel {
       note: item.note,
       priority: item.priority,
     );
+  }
+
+  /// BUT-2140: puts a row removed in the last 30 days back on the active list.
+  Future<bool> restoreRemovedRow(ShoppingRowSnapshot entry) async {
+    final listId = activeList?.id;
+    if (listId == null || !canEditActiveList) return false;
+    return _shoppingService.restoreRemovedRow(listId, entry);
+  }
+
+  /// BUT-2140: swaps a row on the active list back to its earlier version.
+  /// Swapping twice is the undo.
+  Future<bool> restoreChangedRow(String itemId) async {
+    final listId = activeList?.id;
+    if (listId == null || !canEditActiveList) return false;
+    return _shoppingService.restoreChangedRow(listId, itemId);
   }
 
   /// BUT-948: bulk delete for multi-select. Removes every id sequentially;

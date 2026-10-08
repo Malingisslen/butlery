@@ -5,6 +5,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -21,6 +22,7 @@ enum _ShoppingRootAction {
   sharingStatus,
   sortCategories,
   uncheckAll,
+  restoreItems,
 }
 
 /// App bar actions for shopping view
@@ -38,10 +40,19 @@ class ShoppingAppBar {
     VoidCallback? onBrowseTemplates,
     VoidCallback? onSortCategories,
     VoidCallback? onUncheckAll,
+    VoidCallback? onRestoreItems,
   }) {
     final canShare = viewModel.hasItems;
     final hasActiveList = viewModel.activeList != null;
     final hasBoughtItems = viewModel.boughtItems > 0;
+    // BUT-2140: the row exists only while something from the last 30 days can
+    // be put back, and only for someone who may edit the list.
+    final activeList = viewModel.activeList;
+    final canRestore =
+        onRestoreItems != null &&
+        activeList != null &&
+        RestorableRows.hasRestorable(activeList, DateTime.now()) &&
+        viewModel.canEditActiveList;
 
     // Skarmar v12 del 2 #inkop draws one outlined "more" button on the root
     // bar and nothing else, so the list's secondary actions live in one
@@ -71,6 +82,8 @@ class ShoppingAppBar {
                 onSortCategories?.call();
               case _ShoppingRootAction.uncheckAll:
                 onUncheckAll?.call();
+              case _ShoppingRootAction.restoreItems:
+                onRestoreItems?.call();
             }
           },
           itemBuilder: (menuContext) => [
@@ -96,6 +109,12 @@ class ShoppingAppBar {
                 _ShoppingRootAction.uncheckAll,
                 ButleryIcons.square,
                 context.l10n.shoppingUncheckAll,
+              ),
+            if (canRestore)
+              _item(
+                _ShoppingRootAction.restoreItems,
+                ButleryIcons.history,
+                context.l10n.shoppingRestoreItems,
               ),
             if (canShare)
               _item(

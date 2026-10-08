@@ -240,4 +240,53 @@ void main() {
       expect(RestorableRows.storedElements(['a', 1], {'a'}), isEmpty);
     });
   });
+
+  group('changedAt and hasRestorable', () {
+    UnifiedShoppingList withRows(List<UnifiedShoppingItem> items) =>
+        emptyList().copyWith(items: items);
+
+    UnifiedShoppingItem edited(String id, int daysAgo, {double was = 12}) =>
+        row(id, name: 'Ägg', amount: 6).withPreviousSnapshot(
+          ShoppingRowSnapshot.fromItem(
+            row(id, name: 'Ägg', amount: was),
+            now.subtract(Duration(days: daysAgo)),
+          ),
+        );
+
+    test('lists changed rows within 30 days, newest first', () {
+      final list = withRows([
+        edited('old', 5),
+        edited('new', 1),
+        edited('x', 31),
+      ]);
+      expect(RestorableRows.changedAt(list, now).map((r) => r.id), [
+        'new',
+        'old',
+      ]);
+    });
+
+    test('a previous equal to the current content is not a change', () {
+      final list = withRows([edited('same', 1, was: 6)]);
+      expect(RestorableRows.changedAt(list, now), isEmpty);
+    });
+
+    test('hasRestorable is true for either kind and false for neither', () {
+      expect(RestorableRows.hasRestorable(emptyList(), now), isFalse);
+      expect(
+        RestorableRows.hasRestorable(withRows([edited('a', 1)]), now),
+        isTrue,
+      );
+      expect(
+        RestorableRows.hasRestorable(
+          emptyList().copyWith(
+            recentlyRemoved: [
+              snapshot('r', now.subtract(const Duration(days: 2))),
+            ],
+          ),
+          now,
+        ),
+        isTrue,
+      );
+    });
+  });
 }

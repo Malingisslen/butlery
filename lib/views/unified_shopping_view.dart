@@ -31,6 +31,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart';
+import 'package:butlery/views/unified_shopping/widgets/restore_items_sheet.dart';
 
 // The canonical top bar (Komponentark v1 §01)
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -194,6 +195,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                     onBrowseTemplates: _showTemplateBrowser,
                     onSortCategories: () => _showCategoryOrderSheet(viewModel),
                     onUncheckAll: () => _uncheckAllItems(viewModel),
+                    onRestoreItems: () =>
+                        RestoreItemsSheet.show(context, viewModel),
                   ),
               ],
       ),

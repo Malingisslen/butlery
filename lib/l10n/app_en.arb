@@ -13487,5 +13487,64 @@
         "type": "int"
       }
     }
+  },
+  "shoppingRestoreItems": "Restore items",
+  "@shoppingRestoreItems": {
+    "description": "Overflow menu row and sheet title for putting back items removed or changed in the last 30 days (BUT-2140)."
+  },
+  "shoppingRestoreGroupRemoved": "Removed",
+  "@shoppingRestoreGroupRemoved": {
+    "description": "Sheet group heading for rows removed from the list."
+  },
+  "shoppingRestoreGroupChanged": "Changed",
+  "@shoppingRestoreGroupChanged": {
+    "description": "Sheet group heading for rows whose content was edited."
+  },
+  "shoppingRestoreButton": "Restore",
+  "@shoppingRestoreButton": {
+    "description": "Button on one line in the restore sheet."
+  },
+  "shoppingRestoreButtonFor": "Restore {name}",
+  "@shoppingRestoreButtonFor": {
+    "description": "Accessible name of the restore button on one line.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRestoreChangedLine": "{label} (now: {current})",
+  "@shoppingRestoreChangedLine": {
+    "description": "A changed row in the restore sheet: the earlier value, then the current one. label is e.g. 'Ägg 12 st', current e.g. '6 st'.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRestoreEmpty": "Nothing to restore.",
+  "@shoppingRestoreEmpty": {
+    "description": "Restore sheet when no removed or changed rows are left."
+  },
+  "shoppingRestoredRemoved": "{name} is back on the list.",
+  "@shoppingRestoredRemoved": {
+    "description": "Snackbar after a removed row was restored; Ångra removes it again.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRestoredChanged": "{name} is back to its earlier version.",
+  "@shoppingRestoredChanged": {
+    "description": "Snackbar after a changed row was swapped back; Ångra swaps it again.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
