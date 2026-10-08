@@ -11089,6 +11089,18 @@ abstract class AppLocalizations {
   /// **'{ingredients} ingredienser · {steps} steg'**
   String importPreviewSubtitle(int ingredients, int steps);
 
+  /// BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rad kunde inte läsas. Tryck för att granska receptet.} other{{count} rader kunde inte läsas. Tryck för att granska receptet.}}'**
+  String importPreviewUnreadLines(int count);
+
+  /// BUT-2158: a recipe from the multi-recipe picker the user has opened in the editor. It is not part of the batch save.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppnat för granskning'**
+  String get importPreviewOpenedForReview;
+
   /// No description provided for @stateAddRecipes.
   ///
   /// In sv, this message translates to:

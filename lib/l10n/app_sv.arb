@@ -4446,6 +4446,19 @@
       }
     }
   },
+  "importPreviewUnreadLines": "{count, plural, =1{1 rad kunde inte läsas. Tryck för att granska receptet.} other{{count} rader kunde inte läsas. Tryck för att granska receptet.}}",
+  "@importPreviewUnreadLines": {
+    "description": "BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewOpenedForReview": "Öppnat för granskning",
+  "@importPreviewOpenedForReview": {
+    "description": "BUT-2158: a recipe from the multi-recipe picker the user has opened in the editor. It is not part of the batch save."
+  },
   "stateAddRecipes": "Lägg till recept",
   "stateCreateWeeklyMenu": "Skapa veckomeny",
   "stateGenerateMenu": "Generera meny",

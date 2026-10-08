@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -9,6 +11,11 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Preview screen for batch file import.
 /// Shows parsed recipes as a selectable checklist before saving.
+///
+/// A recipe with lines the reader could not read is never saved with the
+/// batch: it would save guessed text past the review (flows-roles-budget.md,
+/// BUT-2158). Its row says how many lines, and a tap opens it in the editor,
+/// where the review shows them.
 class BatchImportPreview extends StatefulWidget {
   final List<Recipe> recipes;
 
@@ -24,23 +31,42 @@ class BatchImportPreview extends StatefulWidget {
 
 class _BatchImportPreviewState extends State<BatchImportPreview> {
   final Set<int> _selectedIndices = {};
+  final Set<int> _openedIndices = {};
+  late final List<int> _unreadCounts = [
+    for (final recipe in widget.recipes)
+      recipe.ingredients.where(UnreadLineDetector.isUnread).length,
+  ];
+
+  Iterable<int> get _batchIndices => Iterable<int>.generate(
+    widget.recipes.length,
+  ).where((i) => _unreadCounts[i] == 0);
 
   @override
   void initState() {
     super.initState();
-    _selectedIndices.addAll(Iterable<int>.generate(widget.recipes.length));
+    _selectedIndices.addAll(_batchIndices);
   }
 
-  bool get _allSelected => _selectedIndices.length == widget.recipes.length;
+  bool get _allSelected =>
+      _batchIndices.isNotEmpty &&
+      _selectedIndices.length == _batchIndices.length;
 
   void _toggleAll() {
     setState(() {
       if (_allSelected) {
         _selectedIndices.clear();
       } else {
-        _selectedIndices.addAll(Iterable<int>.generate(widget.recipes.length));
+        _selectedIndices.addAll(_batchIndices);
       }
     });
+  }
+
+  Future<void> _openForReview(int index) async {
+    setState(() => _openedIndices.add(index));
+    await Navigator.of(context).pushNamed(
+      Routes.manualEntry,
+      arguments: {'initialRecipe': widget.recipes[index], 'isTemplate': true},
+    );
   }
 
   void _toggle(int index) {
@@ -90,6 +116,29 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
         itemBuilder: (context, index) {
           final recipe = widget.recipes[index];
           final isSelected = _selectedIndices.contains(index);
+          final unread = _unreadCounts[index];
+
+          if (unread > 0) {
+            return ListTile(
+              key: ValueKey('batch-import-unread-$index'),
+              onTap: () => _openForReview(index),
+              title: Text(
+                recipe.title,
+                style: AppTextStyles.titleSmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                _openedIndices.contains(index)
+                    ? context.l10n.importPreviewOpenedForReview
+                    : context.l10n.importPreviewUnreadLines(unread),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+              trailing: const ButleryIcon(ButleryIcons.chevronRight),
+            );
+          }
 
           return CheckboxListTile(
             value: isSelected,

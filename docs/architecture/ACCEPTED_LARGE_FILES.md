@@ -31,7 +31,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `tag_result.dart` | 982 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 915 | Shopping list model — serialization, member permissions, sync status |
 | `conversation.dart` | 501 | Conversation model — serialization, participant and read-status tracking, plus the BUT-1838 history cut-off the list row and search filter both go through. Sat at exactly 500 until BUT-1854 (2026-09-11) made the cut-off's comparison shared with the Art. 15 export; that comparison was moved OUT to `history_cutoff.dart` rather than kept here, so what remains over the limit is the delegation and its import. Splitting further would separate `canReadMessageAt`, `historyQueryStartFor` and `joinedLaterAt` — three questions about one stamp that are only correct read together. |
-| `recipe_form_state.dart` | 992 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. |
+| `recipe_form_state.dart` | 1021 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. Refreshed 2026-10-08: measured 1011 before BUT-2158 and 1021 after it added `importReviewRows`. |
 | `unified_shopping_item.dart` | 977 | Shopping item model — serialization, category, unit conversion |
 | `invitation_target.dart` | 652 | Invitation model — many invitation type variants |
 | `realtime_menu.dart` | 620 | Realtime menu model with collaboration operations |
@@ -98,7 +98,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `user_service.dart` | 1098 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1251 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
-| `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
+| `text_import_strategy.dart` | 1188 | Text-based recipe import strategy. Row refreshed 2026-10-08: recorded 1038, measured 1156 before BUT-2158 and 1188 after it passed per-line confidences to the import snapshot. |
 | `friends_management_operations.dart` | 687 | Add/remove/block friends operations |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 636 | Friend category CRUD operations |
@@ -200,7 +200,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
 | `auth_view.dart` | 780 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 383 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
-| `recipe_form_viewmodel.dart` | 777 | Recipe form VM — delegates to 6 managers. Row refreshed 2026-08-14: recorded 729, measured 767 before BUT-1845 (+38 pre-existing drift) and 777 after it replaced the `mealTypes` re-export with `mealTypeOptions`. |
+| `recipe_form_viewmodel.dart` | 940 | Recipe form VM — delegates to 6 managers. Row refreshed 2026-08-14: recorded 729, measured 767 before BUT-1845 (+38 pre-existing drift) and 777 after it replaced the `mealTypes` re-export with `mealTypeOptions`. Refreshed 2026-10-08: measured 915 before BUT-2158 and 940 after it added the import review from a confidence snapshot. |
 | `personal_tag_selector.dart` | 685 | Tag picker widget |
 | `adaptive_navigation.dart` | 631 | Bottom nav / side nav adaptive widget |
 | `universal_image_manager.dart` | 590 | Image management widget |

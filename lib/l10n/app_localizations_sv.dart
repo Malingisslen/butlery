@@ -6578,6 +6578,20 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String importPreviewUnreadLines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rader kunde inte läsas. Tryck för att granska receptet.',
+      one: '1 rad kunde inte läsas. Tryck för att granska receptet.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importPreviewOpenedForReview => 'Öppnat för granskning';
+
+  @override
   String get stateAddRecipes => 'Lägg till recept';
 
   @override

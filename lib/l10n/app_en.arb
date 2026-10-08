@@ -4425,6 +4425,19 @@
       }
     }
   },
+  "importPreviewUnreadLines": "{count, plural, =1{1 line could not be read. Tap to review the recipe.} other{{count} lines could not be read. Tap to review the recipe.}}",
+  "@importPreviewUnreadLines": {
+    "description": "BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewOpenedForReview": "Opened for review",
+  "@importPreviewOpenedForReview": {
+    "description": "BUT-2158: a recipe from the multi-recipe picker the user has opened in the editor. It is not part of the batch save."
+  },
   "stateAddRecipes": "Add recipes",
   "stateCreateWeeklyMenu": "Create weekly menu",
   "stateGenerateMenu": "Generate menu",
