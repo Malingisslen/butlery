@@ -424,18 +424,14 @@ class ShoppingOfflineWriteModule {
         resource: 'collaborative_shopping_list',
         operation: 'update',
         granted: false,
-        details:
-            'List: $listId, offline mutation REJECTED on replay by rules — '
-            'edit rights were revoked while offline; the local tick has been '
-            'rolled back',
+        details: 'List: $listId, offline mutation REJECTED on replay by rules',
       );
     }
     final gone = error is FirebaseException && error.code == 'not-found';
     AppLogger.error(
       denied
           ? 'Queued offline mutation of collaborative list $listId was denied '
-                'on replay (permission-denied) — the member no longer has edit '
-                'rights'
+                'on replay (permission-denied)'
           : gone
           ? 'Queued offline mutation of collaborative list $listId hit a list '
                 'that no longer exists (not-found) — the queued ticks are '
