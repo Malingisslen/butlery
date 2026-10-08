@@ -4111,8 +4111,8 @@ class AppLocalizationsSv extends AppLocalizations {
       'Säkerhets- och åtkomsthistorik (GDPR Artikel 15)';
 
   @override
-  String get dataExportOnlyYourData =>
-      'OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.';
+  String get dataExportSharedDataNote =>
+      'OBS: Exporten innehåller din egen data. För det du har gemensamt med andra, som delade inköpslistor, konversationer och notiser, ingår även vissa uppgifter om dem, till exempel namn eller användar-id.';
 
   @override
   String get dateToday => 'Idag';
@@ -13170,13 +13170,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get legalOpenSourceLicenses => 'Öppen källkod-licenser';
-
-  @override
-  String get authAgeConfirmation => 'Jag bekräftar att jag är minst 15 år';
-
-  @override
-  String get authAgeConfirmationRequired =>
-      'Du måste bekräfta din ålder för att skapa ett konto';
 
   @override
   String get authTermsAcceptPrefix => 'Jag accepterar ';

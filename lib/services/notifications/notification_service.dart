@@ -544,9 +544,9 @@ class NotificationService extends BaseService {
         '🔔 Sending FCM notification to: ${targetUserId.maskedUserId}',
       );
 
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'sendNotification',
-      );
+      final callable = FirebaseFunctions.instanceFor(
+        region: 'europe-west1',
+      ).httpsCallable('sendNotification');
 
       final result = await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -593,9 +593,9 @@ class NotificationService extends BaseService {
         '🔔 Sending silent FCM notification to: ${targetUserId.maskedUserId}',
       );
 
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'sendNotification',
-      );
+      final callable = FirebaseFunctions.instanceFor(
+        region: 'europe-west1',
+      ).httpsCallable('sendNotification');
 
       await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,

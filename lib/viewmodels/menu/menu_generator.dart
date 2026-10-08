@@ -208,7 +208,7 @@ class MenuGenerator {
     final beforeCount = recipes.length;
     final unknownSoft = <String>{};
     if (filterByAllergens) {
-      recipes = _filterByPrefs(
+      recipes = filterByPrefs(
         recipes,
         prefs,
         allergens: true,
@@ -216,7 +216,7 @@ class MenuGenerator {
       );
     }
     if (filterByDietary) {
-      recipes = _filterByPrefs(recipes, prefs, allergens: false);
+      recipes = filterByPrefs(recipes, prefs, allergens: false);
     }
     lastPoolStats = MenuPoolStats(
       hiddenByAllergenFilter: beforeCount - recipes.length,
@@ -291,7 +291,10 @@ class MenuGenerator {
   /// [unknownSoftCollector], when supplied on the allergen pass, receives the
   /// ids of recipes that were INCLUDED despite an UNKNOWN effective status
   /// for a tracked allergen — the UI marks these (PM condition 2).
-  List<Recipe> _filterByPrefs(
+  ///
+  /// Static so the onboarding sample menu (BUT-2299) filters through the same
+  /// guards as a generated menu.
+  static List<Recipe> filterByPrefs(
     List<Recipe> recipes,
     UserAllergenPreferences prefs, {
     required bool allergens,
@@ -338,12 +341,12 @@ class MenuGenerator {
   /// Single-user allergen filtering (sync pool only) — same trust-guarded
   /// filter as the async paths, fed by the user's own preferences.
   List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(recipes, _ownPrefs, allergens: true);
+      filterByPrefs(recipes, _ownPrefs, allergens: true);
 
   /// Single-user dietary filtering (sync pool only) — see
   /// [_filterByAllergenPreferences].
   List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) =>
-      _filterByPrefs(recipes, _ownPrefs, allergens: false);
+      filterByPrefs(recipes, _ownPrefs, allergens: false);
 
   /// The signed-in user's own preferences as the MENU filters by them —
   /// see [HouseholdService.ownMenuPreferences] (BUT-2085, BUT-1694).

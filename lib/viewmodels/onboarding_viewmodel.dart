@@ -19,6 +19,7 @@ import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Outcome of the server-side age check run when the user advances past the
 /// age-gate page (BUT-1386). The view branches on this to allow advancing,
@@ -379,7 +380,7 @@ class OnboardingViewModel extends BaseViewModel {
       // plan plus a matching shopping list, so the new user lands on a
       // populated menu and shopping list instead of two empty screens. Best
       // effort and idempotent — never blocks onboarding completion.
-      await _seedSampleMenu(seededRecipeIds);
+      await _seedSampleMenu(seededRecipeIds, prefs);
 
       if (isSkip) {
         _analytics?.logEvent(
@@ -503,7 +504,13 @@ class OnboardingViewModel extends BaseViewModel {
   /// walk could discard the breakfast/övrigt recipe). Single-recipe slots
   /// (lunch/middag) hold one per day across the seven days; övrigt is a
   /// multi-recipe bucket that stacks, so it always has room.
-  Future<void> _seedSampleMenu(List<String> seededRecipeIds) async {
+  ///
+  /// BUT-2299: the recipes go through the same allergen and dietary filter as
+  /// a generated menu, fed by the choices made in this onboarding.
+  Future<void> _seedSampleMenu(
+    List<String> seededRecipeIds,
+    UserAllergenPreferences? prefs,
+  ) async {
     if (seededRecipeIds.isEmpty) return;
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
@@ -529,12 +536,22 @@ class OnboardingViewModel extends BaseViewModel {
       // Track the next free day per single-recipe slot so each gets its own
       // Monday→Sunday fill independent of the other slots. Multi slots (övrigt)
       // stack on Monday — they're unbounded so there's no day to run out of.
+      var recipes = [
+        for (final id in seededRecipeIds) ?recipeService.getRecipeById(id),
+      ];
+      if (prefs != null) {
+        recipes = MenuGenerator.filterByPrefs(recipes, prefs, allergens: true);
+        recipes = MenuGenerator.filterByPrefs(
+          recipes,
+          prefs,
+          allergens: false,
+        );
+      }
+
       final nextDayForSlot = <MealSlot, int>{};
       var placed = 0;
       var dropped = 0;
-      for (final recipeId in seededRecipeIds) {
-        final recipe = recipeService.getRecipeById(recipeId);
-        if (recipe == null) continue;
+      for (final recipe in recipes) {
         final slot = mapMealTypeToSlot(recipe.mealType);
 
         final int dayIndex;

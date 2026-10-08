@@ -398,7 +398,7 @@ class DataExportView extends StatelessWidget {
             _buildInfoItem(context, context.l10n.dataExportIncludesAuditLogs),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              context.l10n.dataExportOnlyYourData,
+              context.l10n.dataExportSharedDataNote,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
