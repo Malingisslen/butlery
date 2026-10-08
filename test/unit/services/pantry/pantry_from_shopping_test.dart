@@ -59,7 +59,9 @@ void main() {
       pantryService: pantry,
       userService: users,
     );
-    when(() => pantry.updateItem(any(), any())).thenAnswer((_) async {});
+    when(
+      () => pantry.updateItem(any(), any()),
+    ).thenAnswer((_) async => null);
     when(
       () => pantry.adjustQuantity(any(), any(), any()),
     ).thenAnswer((_) async => true);
@@ -198,7 +200,7 @@ void main() {
       when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
       when(
         () => pantry.updateItem(any(), any(), previous: any(named: 'previous')),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => null);
       when(
         () => pantry.fillUnknownQuantity(any(), any(), any(), any()),
       ).thenAnswer((_) async => true);

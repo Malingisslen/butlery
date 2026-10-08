@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show immutable;
 
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
+import 'package:butlery/models/pantry/pantry_previous_version.dart';
 
 /// Physical location where a pantry item is stored.
 ///
@@ -80,6 +81,9 @@ class PantryItem {
   /// none.
   final String? updatedBy;
 
+  /// What the last edit-sheet save replaced, for Återställ (BUT-2140).
+  final PantryPreviousVersion? previous;
+
   const PantryItem({
     required this.id,
     required this.ingredientName,
@@ -93,6 +97,7 @@ class PantryItem {
     this.isStaple = false,
     this.updatedAt,
     this.updatedBy,
+    this.previous,
   });
 
   factory PantryItem.fromFirestore(DocumentSnapshot doc) {
@@ -122,6 +127,9 @@ class PantryItem {
       isStaple: SerializationUtils.safeBool(data, 'isStaple'),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
       updatedBy: SerializationUtils.safeNullableString(data, 'updatedBy'),
+      previous: PantryPreviousVersion.fromMap(
+        SerializationUtils.safeNullableMap(data, 'previous'),
+      ),
     );
   }
 
@@ -187,6 +195,41 @@ class PantryItem {
     };
   }
 
+  /// What is stored for each of [keys] that a user edits, null where nothing
+  /// is: the `fields` of the [PantryPreviousVersion] a save of [keys] keeps.
+  Map<String, Object?> storedValues(Iterable<String> keys) {
+    final stored = toFirestore();
+    return {
+      for (final key in keys)
+        if (PantryPreviousVersion.restorableKeys.contains(key))
+          key: stored[key],
+    };
+  }
+
+  /// This item as Återställ leaves it at [now]: the previous values in place,
+  /// and the values they replace kept as the new [previous], so a restore can
+  /// itself be restored. Null when there is no previous version.
+  PantryItem? withPreviousRestored(DateTime now) {
+    final kept = previous;
+    if (kept == null) return null;
+    final stored = toFirestore();
+    for (final entry in kept.fields.entries) {
+      if (entry.value == null) {
+        stored.remove(entry.key);
+      } else {
+        stored[entry.key] = entry.value;
+      }
+    }
+    return PantryItem.fromMap(stored, id).copyWith(
+      updatedAt: now,
+      updatedBy: updatedBy,
+      previous: PantryPreviousVersion(
+        fields: storedValues(kept.fields.keys),
+        at: now,
+      ),
+    );
+  }
+
   PantryItem copyWith({
     String? id,
     String? ingredientId,
@@ -200,6 +243,7 @@ class PantryItem {
     bool? isStaple,
     DateTime? updatedAt,
     String? updatedBy,
+    PantryPreviousVersion? previous,
     bool clearIngredientId = false,
     bool clearQuantity = false,
     bool clearExpiryDate = false,
@@ -220,6 +264,7 @@ class PantryItem {
       isStaple: isStaple ?? this.isStaple,
       updatedAt: updatedAt ?? this.updatedAt,
       updatedBy: updatedBy ?? this.updatedBy,
+      previous: previous ?? this.previous,
     );
   }
 

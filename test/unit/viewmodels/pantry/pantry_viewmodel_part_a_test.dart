@@ -68,7 +68,7 @@ void main() {
         any(),
         previous: any(named: 'previous'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => null);
 
     await vm.updateItem(stored.copyWith(note: 'ekologiskt'));
 
@@ -95,7 +95,7 @@ void main() {
         any(),
         previous: any(named: 'previous'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => null);
 
     await vm.updateItem(stored.copyWith(clearQuantity: true));
 

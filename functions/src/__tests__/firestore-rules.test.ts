@@ -613,6 +613,27 @@ test("pantry: a stranger cannot update the owner's item", async () => {
   );
 });
 
+// P8 (BUT-2140): an edit-sheet save carries the replaced values in
+// `previous`, in the same update, with a server-stamped `at`. The pantry
+// rules hold no key allowlist, so this pins that the app's real payload,
+// with a null marker for a field that was missing, is not refused.
+test("pantry: an update carrying the previous version is allowed", async () => {
+  await seedPantryItem("p8");
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc(`users/${OWNER_UID}/pantry/p8`).update({
+      ingredientName: "Dinkelmjöl",
+      note: "öppnad",
+      updatedAt: serverTimestamp(),
+      updatedBy: OWNER_UID,
+      previous: {
+        fields: { ingredientName: "Mjöl", note: null },
+        at: serverTimestamp(),
+      },
+    })
+  );
+});
+
 // ============================================================================
 // ONBOARDING PROGRESS (BUT-675) — 5 assertions across 5 tests
 // Resume-onboarding state at /users/{uid}/onboarding/{progressDoc}.

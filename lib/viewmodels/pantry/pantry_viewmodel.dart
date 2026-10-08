@@ -204,7 +204,11 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         final idx = _items.indexWhere((i) => i.id == item.id);
         final previous = idx >= 0 ? _items[idx] : null;
         // Only what the user changed is written (produktregler.md:105).
-        await _pantryService.updateItem(userId, item, previous: previous);
+        final kept = await _pantryService.updateItem(
+          userId,
+          item,
+          previous: previous,
+        );
         if (idx >= 0) {
           // A missing amount never replaces a known one (produktregler.md:148),
           // so the row keeps showing it, as the stored item does.
@@ -214,11 +218,32 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
               quantity: keepsQuantity ? previous.quantity : null,
               updatedAt: clock.now(),
               updatedBy: userId,
+              previous: kept,
             );
         }
       },
       errorPrefix: AppLocale.current.pantryItemUpdateFailed,
     );
+  }
+
+  /// Återställ in the edit sheet (BUT-2140): swaps [item] with its previous
+  /// version. Returns the item as it now is, which the snackbar's Ångra
+  /// passes back here to swap again; null when the restore failed.
+  Future<PantryItem?> restorePrevious(PantryItem item) async {
+    final userId = _currentUserId();
+    if (userId == null) return null;
+
+    PantryItem? restored;
+    await executeAsyncVoid(
+      () async {
+        final now = await _pantryService.restorePrevious(userId, item);
+        final idx = _items.indexWhere((i) => i.id == item.id);
+        if (idx >= 0) _items = [..._items]..[idx] = now;
+        restored = now;
+      },
+      errorPrefix: AppLocale.current.pantryRestorePreviousFailed,
+    );
+    return restored;
   }
 
   /// Changes a known amount by [delta], sent as a relative change

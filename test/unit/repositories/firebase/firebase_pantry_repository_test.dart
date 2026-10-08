@@ -3,12 +3,17 @@
 /// Pure-Dart; uses FakeFirebaseFirestore.
 library;
 
+import 'dart:convert';
+
 import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show sanitizeForJson;
 
 const _alice = 'user-alice';
 
@@ -167,6 +172,152 @@ void main() {
               .data();
       expect(data?['quantity'], 2);
       expect(data?['updatedBy'], _alice);
+    });
+  });
+
+  // BUT-2140: the edit-sheet save keeps what it replaced, for Återställ.
+  group('previous version', () {
+    DocumentReference<Map<String, dynamic>> doc(
+      FakeFirebaseFirestore f,
+      String id,
+    ) => f.collection('users').doc(_alice).collection('pantry').doc(id);
+
+    test('is written in the same update as the change', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final base = _item(id: 'i1', name: 'Mjölk', qty: 2);
+      await repo.add(_alice, base);
+      final snapshots = <Map<String, dynamic>?>[];
+      final sub = doc(
+        firestore,
+        'i1',
+      ).snapshots().listen((s) => snapshots.add(s.data()));
+      await pumpEventQueue();
+      snapshots.clear();
+
+      final edited = base.copyWith(ingredientName: 'Havremjölk', note: 'ny');
+      await repo.updateFields(
+        _alice,
+        'i1',
+        edited.changesFrom(base),
+        before: base,
+      );
+      await pumpEventQueue();
+      await sub.cancel();
+
+      // One write: the first snapshot after it already holds both halves.
+      expect(snapshots, hasLength(1));
+      final data = snapshots.single!;
+      expect(data['ingredientName'], 'Havremjölk');
+      final previous = data['previous'] as Map<String, dynamic>;
+      expect(previous['fields'], {'ingredientName': 'Mjölk', 'note': null});
+      expect(previous['at'], isA<Timestamp>());
+    });
+
+    test('a missing field is kept as a null marker and read back', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final base = _item(id: 'i1');
+      await repo.add(_alice, base);
+
+      final edited = base.copyWith(note: 'öppnad');
+      await repo.updateFields(
+        _alice,
+        'i1',
+        edited.changesFrom(base),
+        before: base,
+      );
+
+      final read = (await repo.getAll(_alice)).single;
+      expect(read.note, 'öppnad');
+      expect(read.previous?.fields, {'note': null});
+      expect(read.previous!.fields.containsKey('note'), isTrue);
+    });
+
+    test('+/− does not touch it', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final base = _item(id: 'i1', qty: 6);
+      await repo.add(_alice, base);
+      await repo.updateFields(
+        _alice,
+        'i1',
+        base.copyWith(unit: 'dl').changesFrom(base),
+        before: base,
+      );
+      final kept = (await doc(firestore, 'i1').get()).data()?['previous'];
+
+      await repo.adjustQuantity(_alice, 'i1', -2);
+      await repo.adjustQuantity(_alice, 'i1', 1);
+
+      final data = (await doc(firestore, 'i1').get()).data();
+      expect(data?['quantity'], 5);
+      expect(data?['previous'], kept);
+      expect((data?['previous'] as Map)['fields'], {'unit': 'l'});
+    });
+
+    test('an update without before leaves it as it is', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final base = _item(id: 'i1');
+      await repo.add(_alice, base);
+      await repo.updateFields(
+        _alice,
+        'i1',
+        base.copyWith(note: 'a').changesFrom(base),
+        before: base,
+      );
+
+      await repo.updateFields(_alice, 'i1', {'unit': 'st'});
+
+      final read = (await repo.getAll(_alice)).single;
+      expect(read.unit, 'st');
+      expect(read.previous?.fields, {'note': null});
+    });
+
+    // Art. 15: the pantry section exports the whole document through
+    // sanitizeForJson (content_export_manager.dart), so the version goes with
+    // it; it must survive JSON and name nobody.
+    test('is in the Art. 15 export as JSON, without a uid', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final base = _item(id: 'i1', expiry: DateTime.utc(2026, 11, 1));
+      await repo.add(_alice, base);
+      await repo.updateFields(
+        _alice,
+        'i1',
+        base.copyWith(clearExpiryDate: true).changesFrom(base),
+        before: base,
+      );
+
+      final exported = await repo.exportAllByUser(_alice);
+      final json = sanitizeForJson(exported.single['data']) as Map;
+      final previous = json['previous'] as Map;
+
+      expect(previous['at'], isA<String>());
+      expect((previous['fields'] as Map)['expiryDate'], isA<String>());
+      expect(jsonEncode(previous), isNot(contains(_alice)));
+      expect(jsonEncode(json), contains(_alice)); // updatedBy, the control
+    });
+
+    test('a timestamp still pending locally reads as now', () async {
+      final now = DateTime.utc(2026, 10, 8, 12);
+      final item = withClock(
+        Clock.fixed(now),
+        () => PantryItem.fromMap({
+          'ingredientName': 'Mjölk',
+          'unit': 'l',
+          'location': 'fridge',
+          'addedAt': Timestamp.fromDate(DateTime.utc(2026)),
+          'previous': const {
+            'fields': {'note': null},
+            'at': null,
+          },
+        }, 'i1'),
+      );
+
+      expect(item.previous?.at, now);
+      expect(item.previous!.isRestorableAt(now), isTrue);
     });
   });
 
