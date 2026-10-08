@@ -9438,7 +9438,7 @@ async function scenario_reactionKeysAgreeAcrossRulesAppAndCascade(): Promise<voi
   const repoRoot = path.resolve(__dirname, "..", "..", "..");
   assertGuardTriggersCoverItsDartInputs(repoRoot, [
     path.join(repoRoot, "lib", "widgets", "common", "emoji_reaction_picker.dart"),
-  ]);
+  ], check);
   const quoted = (body: string): string[] =>
     [...body.matchAll(/['"]([A-Za-z_]+)['"]\s*[,:\]]/g)].map((m) => m[1]);
 
