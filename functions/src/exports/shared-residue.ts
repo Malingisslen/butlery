@@ -82,6 +82,7 @@ export const ITEM_EXPORT_KEYS: readonly string[] = [
   "assignedToUserId",
   "assignedToDisplayName",
   "assignedAt",
+  "previous",
 ];
 
 type ItemUidField = (typeof ITEM_UID_FIELDS)[number];
@@ -378,7 +379,8 @@ export function projectItem(
   const out: ExportedItem = {};
   for (const key of ITEM_EXPORT_KEYS) {
     if (Object.prototype.hasOwnProperty.call(raw, key)) {
-      const value = exportValue(raw[key]);
+      const value =
+        key === "previous" ? exportSnapshot(raw[key]) : exportValue(raw[key]);
       if (value !== undefined) out[key] = value;
     }
   }
@@ -409,6 +411,29 @@ function exportValue(value: unknown): unknown {
     return value.toDate().toISOString();
   }
   return undefined;
+}
+
+/** `ShoppingRowSnapshot.toFirestore`'s keys: the row's content, no uid. */
+export const SNAPSHOT_EXPORT_KEYS: readonly string[] = [
+  "id",
+  "name",
+  "amount",
+  "unit",
+  "category",
+  "note",
+  "at",
+];
+
+function exportSnapshot(value: unknown): unknown {
+  if (!isPlainObject(value)) return exportValue(value);
+  const out: Record<string, unknown> = {};
+  for (const key of SNAPSHOT_EXPORT_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const exported = exportValue(value[key]);
+      if (exported !== undefined) out[key] = exported;
+    }
+  }
+  return out;
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

@@ -20809,3 +20809,18 @@ in functions/src. Finding (Medium): `scenario_reactionKeysAgreeAcrossRulesAppAnd
 cloud-functions-unit.yml `paths:`, and does not call `assertGuardTriggersCoverItsDartInputs`
 (BUT-2002 precedent). Folded into the gdpr-erasure chapter's index bullet and a new CI-trigger
 bullet. Verdict pass (0 blocking).
+
+### 2026-10-08 — exportSharedResidue projects BUT-2140's `previous` snapshot [review]
+Commit-gate review of `functions/src/exports/shared-residue.ts` + its suite. BUT-2140 added
+`previous` (ShoppingRowSnapshot.toFirestore: id,name,amount,unit,category,note,at) to
+UnifiedShoppingItem.toFirestore; the change allowlists `previous` and projects it through a
+nested `SNAPSHOT_EXPORT_KEYS` list (scalars/Timestamps only). Verified: key set equals the Dart
+serializer at review time, no uid in the snapshot (no cascade leg owed), suite 27/27, tsc clean.
+Findings (non-blocking): Medium — `SNAPSHOT_EXPORT_KEYS` is not source-pinned to
+`lib/models/unified/shopping_row_snapshot.dart` and that file is not in cloud-functions-unit.yml
+`paths:`, so a new snapshot key is silently under-exported (the parent pin sees only `previous`).
+Low — the new test asserts only `name` and `at`; dropping e.g. `amount` from the list stays green.
+Folded into the gdpr-erasure chapter as a per-LEVEL allowlist-pin bullet. Verdict pass (0 blocking).
+Re-review same day: both findings applied (SNAPSHOT_EXPORT_KEYS exported and source-pinned to
+shopping_row_snapshot.dart, file in both cloud-functions-unit.yml `paths:` blocks, full key-list
+assertion). Re-read staged blobs b27fc1e0 / 4514dadc; 27/27, tsc clean. Verdict pass (0 blocking).

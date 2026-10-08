@@ -287,6 +287,37 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "previous: the snapshot's content keys export, anything else in it is dropped",
+    fn: async () => {
+      const item = residue.projectItem(
+        mineRow({
+          previous: {
+            id: "r1",
+            name: "Filmjölk",
+            amount: 1,
+            unit: "l",
+            category: "Mejeri",
+            note: null,
+            at: admin.firestore.Timestamp.fromDate(new Date(T0_ISO)),
+            editedByUserId: OTHER,
+            nested: { who: OTHER },
+          },
+        }),
+        UID,
+      );
+      const previous = item.previous as Record<string, unknown>;
+      assertEqual(
+        JSON.stringify(Object.keys(previous).sort()),
+        JSON.stringify(["amount", "at", "category", "id", "name", "note", "unit"]),
+        "every snapshot key kept",
+      );
+      assertEqual(previous.name, "Filmjölk", "content kept");
+      assertEqual(previous.at, T0_ISO, "Timestamp as ISO");
+      assertEqual("editedByUserId" in previous, false, "unknown key dropped");
+      assertEqual(JSON.stringify(item).includes(OTHER), false, "no other uid leaks");
+    },
+  },
+  {
     name: "allowlist key set equals UnifiedShoppingItem.toFirestore's keys",
     fn: async () => {
       const repoRoot = path.join(__dirname, "..", "..", "..");
@@ -318,8 +349,31 @@ const cases: UnitCase[] = [
         );
       }
 
+      const snapshotFile = path.join(
+        repoRoot,
+        "lib",
+        "models",
+        "unified",
+        "shopping_row_snapshot.dart",
+      );
+      const snapshotSource = fs.readFileSync(snapshotFile, "utf8");
+      const snapshotStart = snapshotSource.indexOf("Map<String, dynamic> toFirestore()");
+      assertTrue(snapshotStart >= 0, "toFirestore not found in the snapshot model");
+      const snapshotBody = snapshotSource.slice(
+        snapshotStart,
+        snapshotSource.indexOf("};", snapshotStart),
+      );
+      const snapshotKeys = [...snapshotBody.matchAll(/^\s*'(\w+)'\s*:/gm)]
+        .map((m) => m[1])
+        .sort();
+      assertEqual(
+        JSON.stringify([...residue.SNAPSHOT_EXPORT_KEYS].sort()),
+        JSON.stringify(snapshotKeys),
+        "snapshot allowlist vs Dart toFirestore",
+      );
+
       const failures: string[] = [];
-      assertGuardTriggersCoverItsDartInputs(repoRoot, [dartFile], (name, ok, reason) => {
+      assertGuardTriggersCoverItsDartInputs(repoRoot, [dartFile, snapshotFile], (name, ok, reason) => {
         if (!ok) failures.push(`${name}: ${reason ?? ""}`);
       });
       assertEqual(failures.join("; ") || "(none)", "(none)", "CI trigger covers the Dart input");
