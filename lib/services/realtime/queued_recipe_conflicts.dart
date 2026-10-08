@@ -14,6 +14,7 @@ library;
 import 'package:clock/clock.dart';
 
 import 'package:butlery/core/cache/lru_map.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
@@ -119,17 +120,18 @@ class QueuedRecipeConflicts {
   /// who saved it last from its own `realtimeData`.
   static RealtimeRecipe asResource(Recipe recipe, String? fallbackOwnerId) {
     final ownerId =
-        recipe.socialData?.ownerId ?? recipe.createdBy ?? fallbackOwnerId ?? '';
+        (recipe.socialData?.ownerId ?? recipe.createdBy ?? fallbackOwnerId)
+            .orEmpty();
     final edit = recipe.realtimeData;
     return RealtimeRecipe(
       id: recipe.id,
       ownerId: ownerId,
-      ownerDisplayName: recipe.socialData?.ownerDisplayName ?? '',
+      ownerDisplayName: (recipe.socialData?.ownerDisplayName).orEmpty(),
       participants: {ownerId: ResourcePermission.owner},
       createdAt: recipe.core.createdAt,
       lastEditedAt: edit?.lastEditedAt ?? recipe.core.updatedAt,
       lastEditedBy: edit?.lastEditedByUserId ?? ownerId,
-      lastEditedByDisplayName: edit?.lastEditedByDisplayName ?? '',
+      lastEditedByDisplayName: (edit?.lastEditedByDisplayName).orEmpty(),
       editCount: recipe.rev ?? 0,
       recipe: recipe,
     );
