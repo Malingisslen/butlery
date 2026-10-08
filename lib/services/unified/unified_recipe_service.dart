@@ -204,6 +204,7 @@ class UnifiedRecipeService
   // Auth state subscription (stored to prevent garbage collection)
   StreamSubscription<User?>? _authSubscription;
   StreamSubscription<String>? _queueSentSubscription;
+  StreamSubscription<String>? _queueDroppedSubscription;
 
   /// CRIT-7: Stream controller for tagging failure notifications.
   /// UI can listen to this stream to show snackbars when tagging fails.
@@ -376,6 +377,10 @@ class UnifiedRecipeService
     _queueSentSubscription = ServiceLocator.tryGet<OfflineService>()
         ?.recipesSent
         .listen(_cacheModule.refreshAfterQueueSend);
+    unawaited(_queueDroppedSubscription?.cancel());
+    _queueDroppedSubscription = ServiceLocator.tryGet<OfflineService>()
+        ?.recipesDropped
+        .listen(_cacheModule.dropDiscardedRecipe);
 
     _contentOps = RecipeContentOperations(
       personalModule: _personalModule,
@@ -1190,6 +1195,7 @@ class UnifiedRecipeService
   void dispose() {
     _authSubscription?.cancel();
     _queueSentSubscription?.cancel();
+    _queueDroppedSubscription?.cancel();
     _socialRetryTimer?.cancel();
     _taggingFailureController.close();
     _stateSubject.close();

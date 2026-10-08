@@ -231,11 +231,18 @@ class OfflineSyncQueueSource extends SyncQueueSource {
   Future<void> discard(QueuedChange change) async {
     final signedIn = _signedIn();
     if (signedIn == null) return;
-    await discardQueuedChange(
+    final recipeId = await discardQueuedChange(
       signedIn.offline.database,
       signedIn.userId,
       change,
     );
     await signedIn.offline.refreshSyncState();
+    if (recipeId == null) return;
+    // A never-synced recipe went with its create (discardQueuedChange).
+    if (change.isNeverSyncedRecipe) {
+      signedIn.offline.announceRecipeDropped(recipeId);
+    } else {
+      signedIn.offline.announceRecipeLeftQueue(recipeId);
+    }
   }
 }

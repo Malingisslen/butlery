@@ -278,6 +278,21 @@ void main() {
         await module.dispose();
       });
 
+      // BUT-2295: offline the server cannot say the recipe is gone, so the
+      // drop must not wait on a read.
+      test('a dropped phone-only recipe leaves without a read', () async {
+        final module = moduleWith(
+          {},
+          server: {'r1': RecipeFactory.build(id: 'r1')},
+        );
+        await module.saveRecipeToCache(RecipeFactory.build(id: 'r1'));
+
+        await module.dropDiscardedRecipe('r1');
+
+        expect(await module.loadRecipeFromCache('r1'), isNull);
+        await module.dispose();
+      });
+
       test('nothing is read while another write of it waits', () async {
         final module = moduleWith(
           {'r1'},

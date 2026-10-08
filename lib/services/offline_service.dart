@@ -99,6 +99,12 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   /// The id of each recipe whose write or deletion has just left the queue.
   /// The server's copy is then the one to show.
   Stream<String> get recipesSent => _recipeSent.stream;
+
+  final StreamController<String> _recipeDropped =
+      StreamController<String>.broadcast();
+
+  /// The id of each phone-only recipe thrown away under Väntar på dig.
+  Stream<String> get recipesDropped => _recipeDropped.stream;
   QueuedRecipeWriter? _recipeWriter;
 
   // User-specific storage state
@@ -246,6 +252,19 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     // uploadImageFile returns null for a failure it has no code for.
     if (result == null) throw StateError('Image upload failed');
     return (url: result.imageUrl, thumbnailUrl: result.thumbnailUrl);
+  }
+
+  /// A queued write thrown away under Väntar på dig leaves the queue unsent,
+  /// and the recipe screens still show it until they hear about it.
+  void announceRecipeLeftQueue(String recipeId) {
+    if (!_recipeSent.isClosed) _recipeSent.add(recipeId);
+  }
+
+  /// A recipe the server never had, thrown away with its create. Offline the
+  /// server cannot be asked whether it exists, so the screens drop it on
+  /// this word alone.
+  void announceRecipeDropped(String recipeId) {
+    if (!_recipeDropped.isClosed) _recipeDropped.add(recipeId);
   }
 
   /// Whether the device holds a write of the recipe the server has not
@@ -430,6 +449,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     _isDisposed = true;
     unawaited(_authSubscription?.cancel());
     unawaited(_recipeSent.close());
+    unawaited(_recipeDropped.close());
     if (_isInitializationReady) {
       _initialization.dispose();
     }

@@ -262,6 +262,9 @@ void main() {
         () => mockOfflineService.recipesSent,
       ).thenAnswer((_) => const Stream.empty());
       when(
+        () => mockOfflineService.recipesDropped,
+      ).thenAnswer((_) => const Stream.empty());
+      when(
         () => mockOfflineService.queueRecipeWrite(
           any(),
           any(),

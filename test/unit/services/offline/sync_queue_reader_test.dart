@@ -163,7 +163,7 @@ void main() {
       'u1',
     )).firstWhere((c) => c.id == 'add');
 
-    await discardQueuedChange(db, 'u1', add);
+    expect(await discardQueuedChange(db, 'u1', add), 'r1');
 
     final queue = QueueSnapshot(await readQueuedChanges(db, 'u1'));
     expect(queue.needsUser.map((c) => c.id), ['check']);
@@ -262,7 +262,7 @@ void main() {
     final image = (await readQueuedChanges(db, 'u1')).single;
     expect(image.reason, QueuedChangeReason.tooLarge);
 
-    await discardQueuedChange(db, 'u1', image);
+    expect(await discardQueuedChange(db, 'u1', image), isNull);
 
     expect(await readQueuedChanges(db, 'u1'), isEmpty);
     final counts = await db.watchQueueCounts('u1').first;
