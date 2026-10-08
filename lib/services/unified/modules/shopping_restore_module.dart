@@ -44,7 +44,7 @@ class ShoppingRestoreModule {
               : [...list.items, row],
           recentlyRemoved: [
             for (final s in list.recentlyRemoved)
-              if (s != entry) s,
+              if (s.id != entry.id) s,
           ],
           updatedAt: list.updatedAt,
         ),

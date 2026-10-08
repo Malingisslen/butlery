@@ -153,7 +153,10 @@ class ShoppingRestoreOperationsModule {
   /// so an offline replay merges with what another device added meanwhile.
   ///
   /// [list] is the parent document the caller already read for routing, so
-  /// this costs no read.
+  /// this costs no read. The dropped entries are therefore re-serialised from
+  /// that parsed copy rather than sent as stored; `arrayRemove` matches by
+  /// value, and Firestore treats a stored integer `amount` as equal to the
+  /// double sent.
   void _stageRemoved(
     WriteBatch batch,
     DocumentReference<Map<String, dynamic>> parent,
@@ -191,9 +194,13 @@ class ShoppingRestoreOperationsModule {
   /// [entry] out of `recentlyRemoved` in the same write. The restorer is
   /// stamped as `addedBy`, so a shared list's erasure trail names them.
   ///
+  /// An entry is matched on its row id alone: the copy a caller holds may
+  /// carry a different `at` than the stored one, and the history keeps one
+  /// entry per id. Every entry with that id goes.
+  ///
   /// When a row with that id is already on the list (restored by someone
-  /// else, or twice), nothing is added and only the entry goes. When [entry]
-  /// is no longer in the history (another member restored it first), nothing
+  /// else, or twice), nothing is added and only the entry goes. When the list
+  /// holds no entry with that id (another member restored it first), nothing
   /// is written. Returns the row as written, or null when nothing was put
   /// back. An entry older than 30 days is refused.
   Future<UnifiedShoppingItem?> restoreRemovedRow(
@@ -204,51 +211,53 @@ class ShoppingRestoreOperationsModule {
     final now = clock.now().toUtc();
     if (!entry.restorableAt(now)) return null;
     final list = await requireList(listId);
+    bool holds(UnifiedShoppingList l) =>
+        l.recentlyRemoved.any((s) => s.id == entry.id);
+    // Checked on the copy just loaded (the cache, offline) so a stale entry
+    // costs no write: offline, even an unchanged list would queue the whole
+    // cached `items` array.
+    if (!holds(list)) return null;
     final row = _stampedRestore(entry, uid, now);
 
     UnifiedShoppingItem? written;
     if (list.type == ListType.collaborative) {
       await mutateCollaborativeList(listId, (live) {
         written = null;
-        final kept = [
-          for (final s in live.recentlyRemoved)
-            if (s != entry) s,
-        ];
-        if (kept.length == live.recentlyRemoved.length) return live;
+        if (!holds(live)) return live;
+        UnifiedShoppingList withoutEntry(UnifiedShoppingList l) => l.copyWith(
+          recentlyRemoved: [
+            for (final s in l.recentlyRemoved)
+              if (s.id != entry.id) s,
+          ],
+          updatedAt: l.updatedAt,
+        );
         if (live.items.any((item) => item.id == entry.id)) {
-          return live.copyWith(
-            recentlyRemoved: kept,
-            updatedAt: live.updatedAt,
-          );
+          return withoutEntry(live);
         }
         written = row;
-        return withItems(live, [
-          ...live.items,
-          row,
-        ], uid).copyWith(recentlyRemoved: kept);
+        return withoutEntry(withItems(live, [...live.items, row], uid));
       });
     } else {
       await _requireOwner(uid, list, listId);
       final parent = getUserCollection(uid).doc(listId);
       final rowRef = parent.collection(FirestoreCollections.items).doc(row.id);
-      // The stored value, not a re-serialised one: `arrayRemove` matches by
-      // exact value, and a timestamp read on another platform can come back
-      // at a coarser precision than it was written with.
-      final stored = await _storedEntry(parent, entry);
-      if (stored != null) {
-        final batch = firestore.batch();
-        if (!(await rowRef.get()).exists) {
-          batch.set(rowRef, row.toFirestore());
-          written = row;
-        }
-        batch.update(parent, {
-          UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove([
-            stored,
-          ]),
-          'updatedAt': Timestamp.fromDate(now),
-        });
-        await batch.commit();
+      // The stored values, not re-serialised ones: `arrayRemove` matches by
+      // exact value.
+      final stored = RestorableRows.storedElements(
+        (await parent.get()).data()?[UnifiedShoppingList.recentlyRemovedKey],
+        {entry.id},
+      );
+      if (stored.isEmpty) return null;
+      final batch = firestore.batch();
+      if (!(await rowRef.get()).exists) {
+        batch.set(rowRef, row.toFirestore());
+        written = row;
       }
+      batch.update(parent, {
+        UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove(stored),
+        'updatedAt': Timestamp.fromDate(now),
+      });
+      await batch.commit();
     }
 
     await logPermissionCheck(
@@ -256,7 +265,9 @@ class ShoppingRestoreOperationsModule {
       resource: 'shopping_item',
       operation: 'restore_removed',
       granted: true,
-      details: 'List: $listId, Item: ${entry.id}, Type: ${list.type}',
+      details:
+          'List: $listId, Item: ${entry.id}, Type: ${list.type}, '
+          'restored: ${written != null}',
     );
     return written;
   }
@@ -275,6 +286,9 @@ class ShoppingRestoreOperationsModule {
 
     UnifiedShoppingItem? written;
     if (list.type == ListType.collaborative) {
+      // Same reason as in [restoreRemovedRow]: nothing to swap, no write.
+      final loaded = list.items.firstWhereOrNull((i) => i.id == itemId);
+      if (loaded == null || _swapped(loaded, uid, now) == null) return null;
       await mutateCollaborativeList(listId, (live) {
         written = null;
         final current = live.items.firstWhereOrNull((i) => i.id == itemId);
@@ -294,10 +308,9 @@ class ShoppingRestoreOperationsModule {
       final swapped = data == null
           ? null
           : _swapped(UnifiedShoppingItem.fromFirestore(data), uid, now);
-      if (swapped != null) {
-        await rowRef.update(swapped.toFirestore());
-        written = swapped;
-      }
+      if (swapped == null) return null;
+      await rowRef.update(swapped.toFirestore());
+      written = swapped;
     }
 
     await logPermissionCheck(
@@ -367,30 +380,5 @@ class ShoppingRestoreOperationsModule {
           lastModifiedAt: now,
         )
         .withPreviousSnapshot(ShoppingRowSnapshot.fromItem(current, now));
-  }
-
-  /// The raw stored element of the parent's `recentlyRemoved` that parses to
-  /// [entry], or null when it is no longer there.
-  Future<Object?> _storedEntry(
-    DocumentReference<Map<String, dynamic>> parent,
-    ShoppingRowSnapshot entry,
-  ) async {
-    final raw = (await parent.get())
-        .data()?[UnifiedShoppingList.recentlyRemovedKey];
-    if (raw is! List) return null;
-    for (final element in raw) {
-      if (element is! Map) continue;
-      try {
-        final parsed = ShoppingRowSnapshot.fromMap(
-          Map<String, dynamic>.from(element),
-        );
-        if (parsed.id == entry.id && parsed.at.isAtSameMomentAs(entry.at)) {
-          return element;
-        }
-      } on FormatException {
-        continue;
-      }
-    }
-    return null;
   }
 }

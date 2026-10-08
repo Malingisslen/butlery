@@ -3,11 +3,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
-import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/shopping/restorable_rows.dart';
 
 /// Narrow write payloads for collaborative shopping lists, plus the offline
 /// half they were first built for: reading the cached document, deciding
@@ -117,8 +117,9 @@ class ShoppingOfflineWriteModule {
     throw ArgumentError.value(
       dropped.join(', '),
       'mutate',
-      'An offline collaborative-list mutation can only carry items and the '
-          'activity stamp; these changes would be dropped silently',
+      'An offline collaborative-list mutation can only carry items, the '
+          'activity stamp and recentlyRemoved as a set operation; these '
+          'changes would be dropped silently',
     );
   }
 
@@ -195,20 +196,22 @@ class ShoppingOfflineWriteModule {
   /// Append-only payload: the new rows unioned in, so a replay merges with
   /// whatever the household did meanwhile instead of replacing it.
   ///
-  /// [live] is the cached base [mutated] was computed from; it is required so
-  /// the restore history a mutation changed cannot be dropped by a caller that
-  /// forgot to pass it.
+  /// [live] is the cached base [mutated] was computed from, and
+  /// [storedHistory] that cached document's raw `recentlyRemoved`; both are
+  /// required so the restore history a mutation changed cannot be dropped by
+  /// a caller that forgot to pass them.
   Map<String, Object?> appendPayload(
     UnifiedShoppingList mutated,
     List<UnifiedShoppingItem> appended, {
     required UnifiedShoppingList live,
+    required Object? storedHistory,
   }) {
     final serialized = mutated.toFirestore();
     return {
       'items': FieldValue.arrayUnion([
         for (final item in appended) item.toFirestore(),
       ]),
-      ..._recentlyRemovedDelta(live, mutated),
+      ..._recentlyRemovedDelta(live, mutated, storedHistory),
       // Non-null only: a mutator that does not stamp activity would otherwise
       // queue three nulls and wipe another member's attribution on the server.
       for (final key in _writableActivityKeys)
@@ -244,11 +247,12 @@ class ShoppingOfflineWriteModule {
   Map<String, Object?> cachedBasePayload(
     UnifiedShoppingList mutated, {
     required UnifiedShoppingList live,
+    required Object? storedHistory,
   }) {
     final serialized = mutated.toFirestore();
     return {
       'items': [for (final item in mutated.items) item.toFirestore()],
-      ..._recentlyRemovedDelta(live, mutated),
+      ..._recentlyRemovedDelta(live, mutated, storedHistory),
       // Non-null only — see the note on [appendPayload].
       for (final key in _writableActivityKeys)
         if (serialized[key] != null) key: serialized[key],
@@ -260,18 +264,19 @@ class ShoppingOfflineWriteModule {
   /// cached array itself is never sent: it would overwrite every entry another
   /// device added while this one was offline.
   ///
-  /// New entries go as `arrayUnion`. An entry taken out while still restorable
-  /// (a restore) goes as `arrayRemove`, but only when nothing is added, since
-  /// one update cannot carry two transforms on the same field. Entries pruned
-  /// because they are older than 30 days, or squeezed out by the cap, are not
-  /// sent at all: they stay on the server until the next online removal
+  /// New entries go as `arrayUnion`. A row id whose entries were all taken
+  /// out while still restorable (a restore) goes as `arrayRemove` of those
+  /// elements as [storedHistory] holds them, but only when nothing is added,
+  /// since one update cannot carry two transforms on the same field. Entries
+  /// pruned because they are older than 30 days, or squeezed out by the cap,
+  /// are not sent at all: they stay on the server until an online write
   /// prunes the array it rebuilds from the live document.
   Map<String, Object?> _recentlyRemovedDelta(
     UnifiedShoppingList live,
     UnifiedShoppingList mutated,
+    Object? storedHistory,
   ) {
     final before = live.recentlyRemoved.toSet();
-    final after = mutated.recentlyRemoved.toSet();
     final added = [
       for (final s in mutated.recentlyRemoved)
         if (!before.contains(s)) s,
@@ -284,15 +289,14 @@ class ShoppingOfflineWriteModule {
       };
     }
     final now = clock.now();
-    final taken = <ShoppingRowSnapshot>[
+    final kept = {for (final s in mutated.recentlyRemoved) s.id};
+    final taken = RestorableRows.storedElements(storedHistory, {
       for (final s in live.recentlyRemoved)
-        if (!after.contains(s) && s.restorableAt(now)) s,
-    ];
+        if (!kept.contains(s.id) && s.restorableAt(now)) s.id,
+    });
     if (taken.isEmpty) return const {};
     return {
-      UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove([
-        for (final s in taken) s.toFirestore(),
-      ]),
+      UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove(taken),
     };
   }
 

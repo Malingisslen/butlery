@@ -111,6 +111,9 @@ class ShoppingItemOperationsModule {
   /// on, so a list other household members read told them Erik changed what
   /// Anna changed. An unknown name now writes empty (the model treats that as
   /// "unknown") instead of falling through to someone else's.
+  ///
+  /// BUT-2140: online, the write sends the whole `recentlyRemoved` array, so
+  /// entries older than 30 days drop out here; offline only the delta goes.
   UnifiedShoppingList _withItems(
     UnifiedShoppingList live,
     List<UnifiedShoppingItem> items,
@@ -123,6 +126,10 @@ class ShoppingItemOperationsModule {
       lastActivityAt: now,
       lastActivityByUserId: uid,
       lastActivityByDisplayName: resolveDisplayName().orEmpty(),
+      recentlyRemoved: [
+        for (final s in live.recentlyRemoved)
+          if (s.restorableAt(now)) s,
+      ],
     );
   }
 

@@ -517,6 +517,28 @@ void main() {
         expect(stored.recentlyRemoved, isEmpty);
       },
     );
+
+    test(
+      'a restore offline of an entry the cache lacks queues nothing',
+      () async {
+        final entry = _entry(
+          'mjölk',
+          at: _now.subtract(const Duration(hours: 2)),
+        );
+        final h = _Harness(uid: _bob, offline: true);
+        await h.seedShared(_shared(items: [_row('bröd')]));
+        final before = await h.storedSharedRaw();
+
+        final row = await withClock(
+          Clock.fixed(_now),
+          () => h.module.restore.restoreRemovedRow(_listId, entry),
+        );
+        await _settle();
+
+        expect(row, isNull);
+        expect(await h.storedSharedRaw(), before);
+      },
+    );
   });
 
   group('restore on a shared list', () {
@@ -637,6 +659,83 @@ void main() {
 
       expect(row, isNull);
       expect(h.transactionWrites, isEmpty);
+    });
+
+    test('matches on the row id alone and takes every entry for it', () async {
+      final stored = _entry(
+        'mjölk',
+        at: _now.subtract(const Duration(days: 3)),
+      );
+      final again = _entry('mjölk', at: _now.subtract(const Duration(days: 1)));
+      final h = _Harness();
+      await h.seedShared(
+        _shared(items: [_row('bröd')], recentlyRemoved: [stored, again]),
+      );
+      // The caller's copy carries an `at` the server never stored.
+      final callers = _entry(
+        'mjölk',
+        at: _now.subtract(const Duration(hours: 1)),
+      );
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreRemovedRow(_listId, callers),
+      );
+
+      expect(row?.id, 'mjölk');
+      final list = await h.storedShared();
+      expect(list.items.map((i) => i.id), ['bröd', 'mjölk']);
+      expect(list.recentlyRemoved, isEmpty);
+    });
+
+    test('an entry the list no longer holds costs no write', () async {
+      final entry = _entry('mjölk', at: _now.subtract(const Duration(days: 3)));
+      final h = _Harness();
+      await h.seedShared(_shared(items: [_row('bröd')]));
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreRemovedRow(_listId, entry),
+      );
+
+      expect(row, isNull);
+      expect(h.transactionWrites, isEmpty);
+    });
+
+    test('a row with nothing to swap back costs no write', () async {
+      final h = _Harness();
+      await h.seedShared(_shared(items: [_row('ägg')]));
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreChangedRow(_listId, 'ägg'),
+      );
+
+      expect(row, isNull);
+      expect(h.transactionWrites, isEmpty);
+    });
+
+    test('any row write prunes entries older than 30 days', () async {
+      final expired = _entry(
+        'gammal',
+        at: _now.subtract(const Duration(days: 31)),
+      );
+      final kept = _entry('ost', at: _now.subtract(const Duration(days: 2)));
+      final h = _Harness();
+      await h.seedShared(
+        _shared(items: [_row('mjölk')], recentlyRemoved: [expired, kept]),
+      );
+
+      await withClock(
+        Clock.fixed(_now),
+        () => h.module.updateItem(
+          _listId,
+          _row('mjölk', bought: true),
+          before: _row('mjölk'),
+        ),
+      );
+
+      expect((await h.storedShared()).recentlyRemoved, [kept]);
     });
   });
 
@@ -776,6 +875,52 @@ void main() {
       expect(row, isNull);
       expect((await h.storedPersonalRow('mjölk'))?.name, 'mjölk 3%');
       expect(await h.storedPersonalHistory(), isEmpty);
+    });
+
+    test(
+      'a restore removes the entry as stored, int amount included',
+      () async {
+        final h = _Harness();
+        await h.seedPersonal(_personal(items: [_row('bröd')]));
+        final stored = _entry(
+          'mjölk',
+          at: _now.subtract(const Duration(days: 3)),
+        );
+        await h.personalRef.update({
+          'recentlyRemoved': [
+            {...stored.toFirestore(), 'amount': 1},
+          ],
+        });
+        h.firestore.batchWrites.clear();
+        final callers = _entry(
+          'mjölk',
+          at: _now.subtract(const Duration(hours: 1)),
+        );
+
+        final row = await withClock(
+          Clock.fixed(_now),
+          () => h.module.restore.restoreRemovedRow(_listId, callers),
+        );
+
+        expect(row?.id, 'mjölk');
+        expect(await h.storedPersonalHistory(), isEmpty);
+      },
+    );
+
+    test('an entry the list no longer holds costs no write', () async {
+      final entry = _entry('mjölk', at: _now.subtract(const Duration(days: 3)));
+      final h = _Harness();
+      await h.seedPersonal(_personal(items: [_row('bröd')]));
+      h.firestore.batchWrites.clear();
+
+      final row = await withClock(
+        Clock.fixed(_now),
+        () => h.module.restore.restoreRemovedRow(_listId, entry),
+      );
+
+      expect(row, isNull);
+      expect(h.firestore.batchWrites, isEmpty);
+      expect(await h.storedPersonalRow('mjölk'), isNull);
     });
 
     test('a changed row swaps with its previous', () async {

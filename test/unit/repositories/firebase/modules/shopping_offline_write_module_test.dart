@@ -148,7 +148,11 @@ void main() {
     test('carries only items and the activity stamp', () {
       final live = _list(items: [_item('mjölk')]);
 
-      final payload = module.cachedBasePayload(live, live: live);
+      final payload = module.cachedBasePayload(
+        live,
+        live: live,
+        storedHistory: null,
+      );
 
       expect(
         payload.keys,
@@ -184,7 +188,11 @@ void main() {
         memberPermissions: const {'bob': SharedListPermission.edit},
       );
 
-      final payload = module.cachedBasePayload(unstamped, live: unstamped);
+      final payload = module.cachedBasePayload(
+        unstamped,
+        live: unstamped,
+        storedHistory: null,
+      );
 
       expect(payload.keys, contains('items'));
       expect(
@@ -234,6 +242,7 @@ void main() {
         () => module.cachedBasePayload(
           live.copyWith(recentlyRemoved: [fresh]),
           live: live,
+          storedHistory: null,
         ),
       );
       expect(payload['recentlyRemoved'], isA<FieldValue>());
@@ -248,6 +257,7 @@ void main() {
         () => module.cachedBasePayload(
           live.copyWith(recentlyRemoved: const []),
           live: live,
+          storedHistory: live.toFirestore()['recentlyRemoved'],
         ),
       );
       expect(payload.keys, isNot(contains('recentlyRemoved')));
@@ -263,9 +273,33 @@ void main() {
           live.copyWith(items: [...live.items, _item('ost')]),
           [_item('ost')],
           live: live,
+          storedHistory: live.toFirestore()['recentlyRemoved'],
         ),
       );
       expect(payload.keys, isNot(contains('recentlyRemoved')));
+    });
+
+    test('a restore removes every entry for the id as the cache stores it', () {
+      final again = entry('mjölk', const Duration(hours: 2));
+      final live = _list(
+        items: [_item('bröd')],
+      ).copyWith(recentlyRemoved: [fresh, again]);
+      final stored = [
+        {...fresh.toFirestore(), 'amount': 1},
+        {...again.toFirestore(), 'amount': 1},
+      ];
+      final payload = withClock(
+        Clock.fixed(now),
+        () => module.cachedBasePayload(
+          live.copyWith(recentlyRemoved: const []),
+          live: live,
+          storedHistory: stored,
+        ),
+      );
+      expect(
+        payload['recentlyRemoved'],
+        FieldValue.arrayRemove(stored),
+      );
     });
   });
 

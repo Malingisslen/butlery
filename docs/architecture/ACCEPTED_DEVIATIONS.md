@@ -450,12 +450,11 @@ never saw it. **Accepted.**
 needs the server's copy, which an offline write does not have. `recentlyRemoved` itself is queued
 as `arrayUnion` (a restore with no new entry as `arrayRemove`), never as the cached array, so an
 offline write cannot drop entries another device added. Entries older than 30 days or past the
-cap of 30 are not pruned offline; the next online removal on the list does it. — 2026-10-08
+cap of 30 are not pruned offline. — 2026-10-08
 
 ### [Shopping/Compat] An app version from before BUT-2140 drops `previous` on a shared list (BUT-2140, PR 3)
-A shared list's rows sit inline in `items`, and every row write sends the whole array. An app
-from before BUT-2140 does not know `UnifiedShoppingItem.previous`, so any row write it makes
-sends every row without it, and the earlier versions on that list can no longer be restored.
+A shared list's rows sit inline in `items`. An app
+from before BUT-2140 does not know `UnifiedShoppingItem.previous`.
 **Accepted.** No current content is lost, only the restore point. `recentlyRemoved` is a
 top-level field such an app never sends, so its merge-set leaves it as stored. — 2026-10-08
 

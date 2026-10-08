@@ -302,7 +302,11 @@ class ShoppingItemManagementModule {
           final original = preUpdateById[committed.id];
           if (original == null) continue;
           try {
-            await repository.updateItem(activeListId, original);
+            await repository.updateItem(
+              activeListId,
+              original,
+              before: committed,
+            );
           } catch (_) {
             // Best-effort rollback; original value is logged below.
           }
@@ -326,7 +330,13 @@ class ShoppingItemManagementModule {
         );
         for (final updated in itemsToUpdate) {
           final idx = currentItems.indexWhere((i) => i.id == updated.id);
-          if (idx >= 0) currentItems[idx] = updated;
+          if (idx >= 0) {
+            currentItems[idx] = RestorableRows.withPrevious(
+              currentItems[idx],
+              updated,
+              clock.now(),
+            );
+          }
         }
         currentItems.addAll(itemsToAdd);
         lists[targetIndex] = lists[targetIndex].copyWith(items: currentItems);
