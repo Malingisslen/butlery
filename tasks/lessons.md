@@ -4693,6 +4693,6 @@ Example: 2026-10-05 — dd2fc03, `holdRegistrationDisplayName({email, displayNam
 
 ### `flutter analyze` rapporterar inte fel inne i beroenden; en paketuppdatering bevisas med `flutter test` (2026-10-08)
 Date: 2026-10-08
-Trigger: Paketuppdateringar före visning. `flutter pub upgrade` inom befintliga gränser gav cloud_firestore 6.7.0, firebase_auth 6.5.5 m.fl. tillsammans med firebase_core_platform_interface 7.1.0. `flutter analyze --fatal-infos --fatal-warnings` var ren, men paketen refererar `FirebasePlugin`, som 7.1.0 inte definierar, så ingenting som importerar dem kompilerade. testing-specialist hittade det genom att köra `flutter test` på tre filer.
+Trigger: Paketuppdateringar före visning. `flutter pub upgrade` inom befintliga gränser gav cloud_firestore 6.7.0, firebase_auth 6.5.5 m.fl. `flutter analyze --fatal-infos --fatal-warnings` var ren, men paketen refererar `FirebasePlugin`, som den redan låsta firebase_core_platform_interface 7.1.0 inte definierar, så ingenting som importerar dem kompilerade. testing-specialist hittade det genom att köra `flutter test` på tre filer.
 Rule: Efter en ändring i pubspec.lock räcker inte analysen. Kör minst ett test som importerar de uppdaterade paketen innan granskning och commit, eftersom analysatorn inte rapporterar kompileringsfel inne i beroenden och en löst versionsmängd inte är en kompilerande mängd.
 Example: 2026-10-08 — Firebase-sviten hölls kvar (BUT-2315); resten av uppdateringen gick igenom efter `flutter test test/unit`.
