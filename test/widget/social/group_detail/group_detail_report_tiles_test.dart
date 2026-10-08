@@ -131,10 +131,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // The Report tile uses the localized 'reportContent' label.
-        // For Swedish: 'Rapportera'. The flag icon is the only Icons.flag_outlined
+        // For Swedish: 'Rapportera'. The flag icon is the only ButleryIcons.flag
         // in the menu, so we can match by either.
         expect(find.text('Rapportera'), findsOneWidget);
-        expect(find.byIcon(Icons.flag_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.flag), findsOneWidget);
 
         // Tap the Report tile — should open ReportContentDialog's reason dialog.
         await tester.tap(find.text('Rapportera'));
@@ -172,7 +172,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Rapportera'), findsNothing);
-      expect(find.byIcon(Icons.flag_outlined), findsNothing);
+      expect(find.byIcon(ButleryIcons.flag), findsNothing);
     });
   });
 

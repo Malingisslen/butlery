@@ -268,7 +268,7 @@ class _NotificationTile extends StatelessWidget {
       shape: chosen ? Border.all(color: cs.onSurface, width: 1.5) : null,
       leading: isSelectionMode
           ? ButleryIcon(
-              isSelected ? ButleryIcons.circleCheck : Icons.circle_outlined,
+              isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
               color: isSelected ? cs.onSurface : cs.outline,
               size: AppDimensions.iconSizeAction,
             )

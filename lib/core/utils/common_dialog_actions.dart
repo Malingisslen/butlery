@@ -113,7 +113,7 @@ class CommonDialogActions {
       title: context.l10n.groupLeaveTitle,
       message: context.l10n.groupLeaveMessage(groupName),
       confirmText: context.l10n.groupLeaveAction,
-      icon: Icons.exit_to_app,
+      icon: ButleryIcons.logOut,
       confirmColor: context.modeColors.warning,
       isDangerous: true,
     );

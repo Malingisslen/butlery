@@ -97,7 +97,7 @@ class SettingsHubView extends StatelessWidget {
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionAccount),
                 _SettingsTile(
-                  icon: Icons.security,
+                  icon: ButleryIcons.shield,
                   title: context.l10n.accountSecurityTitle,
                   onTap: () => Navigator.pushNamed(
                     context,
@@ -129,7 +129,7 @@ class SettingsHubView extends StatelessWidget {
                 // ProfileMenu bottom-sheet) — this just makes them findable
                 // from /settings.
                 _SettingsTile(
-                  icon: Icons.logout,
+                  icon: ButleryIcons.logOut,
                   title: context.l10n.profileLogout,
                   onTap: () => AuthActionHandler.handleLogout(context),
                 ),
@@ -173,7 +173,7 @@ class SettingsHubView extends StatelessWidget {
                   builder: (context, snap) {
                     if (snap.data != true) return const SizedBox.shrink();
                     return _SettingsTile(
-                      icon: Icons.shield_outlined,
+                      icon: ButleryIcons.shield,
                       title: context.l10n.moderatorReviewTitle,
                       onTap: () =>
                           Navigator.pushNamed(context, Routes.moderatorReview),
@@ -414,7 +414,7 @@ class _LanguageTileState extends State<LanguageTile> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
-      leading: ButleryIcon(Icons.language, color: cs.onSurfaceVariant),
+      leading: ButleryIcon(ButleryIcons.globe, color: cs.onSurfaceVariant),
       title: Text(
         context.l10n.settingsLanguageTitle,
         style: AppTextStyles.bodyMedium,

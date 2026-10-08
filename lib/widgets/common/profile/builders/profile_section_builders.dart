@@ -91,7 +91,7 @@ class ProfileSectionBuilders {
                   ),
                 ),
               ),
-              icon: const ButleryIcon(Icons.logout),
+              icon: const ButleryIcon(ButleryIcons.logOut),
               label: Text(
                 context.l10n.profileLogout,
                 style: AppTextStyles.labelLarge,

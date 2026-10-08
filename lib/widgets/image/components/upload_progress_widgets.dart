@@ -161,7 +161,7 @@ class UploadProgressWidgets {
         if (hasRetryableFailures && onClearAllFailed != null) {
           controls.add(
             buildBulkActionButton(
-              icon: Icons.clear_all,
+              icon: ButleryIcons.listX,
               label: context.l10n.uploadClearFailed,
               onTap: onClearAllFailed,
               color: cs.error,

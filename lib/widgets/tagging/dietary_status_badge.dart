@@ -86,7 +86,7 @@ class DietaryStatusBadge extends StatelessWidget {
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
-        return (TagStatusTone.success, Icons.eco_outlined);
+        return (TagStatusTone.success, ButleryIcons.leaf);
       case TriState.contains:
         // Dietary "contains" = factual ("not vegetarian"), not an allergen
         // health risk. Using the same red as allergen warnings made "Ej

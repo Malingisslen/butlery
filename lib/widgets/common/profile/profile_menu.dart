@@ -440,7 +440,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             context,
             title: context.l10n.profileAccountSecurity,
             subtitle: context.l10n.profileAccountSecuritySubtitle,
-            icon: Icons.security,
+            icon: ButleryIcons.shield,
             onTap: () =>
                 Navigator.pushNamed(context, Routes.settingsAccountSecurity),
           ),

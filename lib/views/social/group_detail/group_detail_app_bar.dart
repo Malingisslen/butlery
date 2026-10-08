@@ -87,7 +87,7 @@ class GroupDetailAppBar {
               value: 'add_members',
               child: Row(
                 children: [
-                  const ButleryIcon(Icons.person_add),
+                  const ButleryIcon(ButleryIcons.userPlus),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Text(context.l10n.groupAddMembers),
                 ],
@@ -133,7 +133,7 @@ class GroupDetailAppBar {
                 children: [
                   // The menu's own text colour: saffron belongs to a view's
                   // hero action only.
-                  const ButleryIcon(Icons.exit_to_app),
+                  const ButleryIcon(ButleryIcons.logOut),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Text(context.l10n.groupLeaveGroup),
                 ],
@@ -146,7 +146,7 @@ class GroupDetailAppBar {
               child: Row(
                 children: [
                   ButleryIcon(
-                    Icons.flag_outlined,
+                    ButleryIcons.flag,
                     color: Theme.of(context).colorScheme.error,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),

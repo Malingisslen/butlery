@@ -96,7 +96,7 @@ class FullscreenImageViewer extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ButleryIcon(
-                          Icons.broken_image,
+                          ButleryIcons.imageOff,
                           size: 64,
                           color: cs.outline,
                         ),

@@ -138,7 +138,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ButleryIcon(Icons.exit_to_app, color: cs.error),
+                    ButleryIcon(ButleryIcons.logOut, color: cs.error),
                     const SizedBox(width: AppDimensions.space4),
                     Flexible(
                       child: Text(context.l10n.chatLeaveConversation),

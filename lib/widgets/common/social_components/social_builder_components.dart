@@ -238,7 +238,7 @@ class SocialBuilderComponents {
       'received': {
         'value': receivedInvitations,
         'label': context.l10n.socialReceived,
-        'icon': Icons.inbox,
+        'icon': ButleryIcons.inbox,
       },
       if (acceptedInvitations != null)
         'accepted': {

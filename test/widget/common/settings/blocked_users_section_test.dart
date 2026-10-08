@@ -173,8 +173,11 @@ void main() {
         find.byIcon(ButleryIcons.unlock),
         findsOneWidget,
       ); // bulk bar shown
-      expect(find.byIcon(Icons.check_box), findsOneWidget); // u1 selected
-      expect(find.byIcon(Icons.check_box_outline_blank), findsNWidgets(2));
+      expect(
+        find.byIcon(ButleryIcons.checkSquare),
+        findsOneWidget,
+      ); // u1 selected
+      expect(find.byIcon(ButleryIcons.square), findsNWidgets(2));
     });
 
     testWidgets('tap toggles additional tiles in selection mode', (
@@ -187,8 +190,8 @@ void main() {
       await tester.tap(find.text('u2'));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check_box), findsNWidgets(2));
-      expect(find.byIcon(Icons.check_box_outline_blank), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.checkSquare), findsNWidgets(2));
+      expect(find.byIcon(ButleryIcons.square), findsOneWidget);
     });
 
     testWidgets('cancel exits selection mode', (tester) async {
@@ -203,7 +206,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(ButleryIcons.unlock), findsNothing);
-      expect(find.byIcon(Icons.check_box), findsNothing);
+      expect(find.byIcon(ButleryIcons.checkSquare), findsNothing);
     });
 
     testWidgets(

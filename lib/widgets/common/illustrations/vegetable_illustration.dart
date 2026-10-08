@@ -139,9 +139,9 @@ class VegetableIllustration extends StatelessWidget {
   IconData _getFallbackIcon(VegetableType type) {
     switch (type) {
       case VegetableType.broccoli:
-        return Icons.eco;
+        return ButleryIcons.leaf;
       case VegetableType.mushroom:
-        return Icons.search_off;
+        return ButleryIcons.searchOff;
       case VegetableType.peaPod:
         return ButleryIcons.calendar;
       case VegetableType.carrot:
@@ -157,7 +157,7 @@ class VegetableIllustration extends StatelessWidget {
         return Icons.circle;
       case VegetableType.pumpkin:
       case VegetableType.beetroot:
-        return Icons.eco;
+        return ButleryIcons.leaf;
     }
   }
 

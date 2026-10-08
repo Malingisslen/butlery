@@ -261,7 +261,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                       ButleryIcon(
                         selected
                             ? ButleryIcons.circleCheck
-                            : Icons.circle_outlined,
+                            : ButleryIcons.circle,
                         color: selected ? cs.onSurface : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),

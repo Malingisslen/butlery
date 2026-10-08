@@ -542,8 +542,8 @@ class _AssignedSlot extends StatelessWidget {
                   if (selectionMode)
                     ButleryIcon(
                       isSelected
-                          ? Icons.check_box
-                          : Icons.check_box_outline_blank,
+                          ? ButleryIcons.checkSquare
+                          : ButleryIcons.square,
                       size: 14,
                       color: cs.secondary,
                     ),
@@ -737,9 +737,7 @@ class _OvrigtEntry extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 3),
                   child: ButleryIcon(
-                    isSelected
-                        ? Icons.check_box
-                        : Icons.check_box_outline_blank,
+                    isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
                     size: 12,
                     color: cs.secondary,
                   ),

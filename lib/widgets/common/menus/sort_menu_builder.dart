@@ -50,7 +50,7 @@ class SortMenuBuilder {
         context,
         SortCriteria.lastCooked,
         context.l10n.sortLastCooked,
-        Icons.history,
+        ButleryIcons.history,
         currentSort,
         sortAscending,
       ),

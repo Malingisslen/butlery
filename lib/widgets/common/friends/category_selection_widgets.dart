@@ -65,7 +65,7 @@ class CategorySelectionWidgets {
                       onCategoryToggled(categoryId);
                     }
                   },
-                  icon: const ButleryIcon(Icons.clear_all),
+                  icon: const ButleryIcon(ButleryIcons.listX),
                   label: Text(context.l10n.commonClearAll),
                 ),
               ],
@@ -302,7 +302,7 @@ class CategorySelectionWidgets {
                 ),
               ),
               child: ButleryIcon(
-                Icons.category,
+                ButleryIcons.grid,
                 color: Theme.of(context).colorScheme.onPrimary,
                 size: AppDimensions.iconSizeS,
               ),

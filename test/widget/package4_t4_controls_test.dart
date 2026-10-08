@@ -257,7 +257,10 @@ void main() {
         tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
         cs.onSurface,
       );
-      expect(tester.widget<Icon>(find.byIcon(Icons.eco)).color, cs.onSurface);
+      expect(
+        tester.widget<Icon>(find.byIcon(ButleryIcons.leaf)).color,
+        cs.onSurface,
+      );
     });
   });
 }

@@ -67,12 +67,12 @@ void main() {
       }
     });
 
-    test('icons.json counts 78 masters, one file each', () {
+    test('icons.json counts 96 masters, one file each', () {
       final entries = _entries();
-      expect(entries, hasLength(78));
+      expect(entries, hasLength(96));
       expect(
         (_manifest()['counts'] as Map)['total'],
-        78,
+        96,
       );
       for (final e in entries) {
         expect(File('assets/icons/${e['name']}.svg').existsSync(), isTrue);
@@ -263,7 +263,7 @@ void main() {
     testWidgets('a Material residue icon falls back to Icon rendering', (
       tester,
     ) async {
-      await tester.pumpWidget(host(const ButleryIcon(Icons.history)));
+      await tester.pumpWidget(host(const ButleryIcon(Icons.cloud_done)));
       expect(
         find.descendant(
           of: find.byType(ButleryIcon),

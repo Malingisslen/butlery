@@ -117,7 +117,7 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
         placeholder: (_, __) => ColoredBox(color: cs.surfaceContainerHighest),
         errorWidget: (_, __, ___) => ColoredBox(
           color: cs.surfaceContainerHighest,
-          child: ButleryIcon(Icons.broken_image, color: cs.onSurfaceVariant),
+          child: ButleryIcon(ButleryIcons.imageOff, color: cs.onSurfaceVariant),
         ),
       ),
     );
@@ -208,7 +208,7 @@ class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
                     placeholder: (_, __) => const SizedBox.shrink(),
                     errorWidget: (_, __, ___) => const Center(
                       child: ButleryIcon(
-                        Icons.broken_image,
+                        ButleryIcons.imageOff,
                         color: Colors.white,
                         size: 48,
                       ),

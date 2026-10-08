@@ -214,7 +214,7 @@ class InvitationStates {
     String? query,
     String? title,
     String? message,
-    IconData icon = Icons.search_off,
+    IconData icon = ButleryIcons.searchOff,
     VoidCallback? onClearSearch,
     String? clearButtonText,
     bool showClearButton = true,

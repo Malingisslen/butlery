@@ -319,7 +319,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 border: Border.all(color: cs.outlineVariant),
               ),
               child: ButleryIcon(
-                isSelected ? ButleryIcons.check : Icons.circle_outlined,
+                isSelected ? ButleryIcons.check : ButleryIcons.circle,
                 size: AppDimensions.iconSizeS,
                 color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
               ),

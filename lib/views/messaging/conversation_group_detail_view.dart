@@ -151,7 +151,7 @@ class ConversationGroupDetailView extends StatelessWidget {
             ActionButtons.textButton(
               context,
               label: context.l10n.commonAdd,
-              icon: Icons.person_add,
+              icon: ButleryIcons.userPlus,
               onPressed: () => _showAddMembersDialog(context, viewModel),
             ),
           ],
@@ -196,7 +196,7 @@ class ConversationGroupDetailView extends StatelessWidget {
         ActionButtons.secondaryButton(
           context,
           label: context.l10n.messagingLeaveGroup,
-          icon: Icons.exit_to_app,
+          icon: ButleryIcons.logOut,
           onPressed: viewModel.isLeavingGroup
               ? null
               : () => _confirmLeaveGroup(context, viewModel),

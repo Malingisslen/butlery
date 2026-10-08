@@ -344,7 +344,7 @@ class SocialGroupComponents {
               children: [
                 Expanded(
                   child: StatItemWidget(
-                    icon: Icons.category,
+                    icon: ButleryIcons.grid,
                     value: totalCategories.toString(),
                     label: context.l10n.socialCategories,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -407,7 +407,7 @@ class SocialGroupComponents {
     BuildContext context, {
     String? title,
     String? subtitle,
-    IconData icon = Icons.category_outlined,
+    IconData icon = ButleryIcons.grid,
     VoidCallback? onCreateFirst,
     String? createButtonText,
   }) {

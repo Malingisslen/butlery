@@ -114,7 +114,7 @@ class InvitationTargetStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ButleryIcon(
-            Icons.search_off,
+            ButleryIcons.searchOff,
             size: 48,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

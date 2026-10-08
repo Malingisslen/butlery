@@ -121,7 +121,7 @@ class _EditableMenuItemsPreviewDialogState
               });
             },
             icon: ButleryIcon(
-              Icons.clear_all,
+              ButleryIcons.listX,
               color: Theme.of(context).colorScheme.error,
             ),
             label: Text(

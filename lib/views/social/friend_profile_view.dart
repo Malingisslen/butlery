@@ -124,7 +124,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                   child: Row(
                     children: [
                       ButleryIcon(
-                        Icons.flag_outlined,
+                        ButleryIcons.flag,
                         color: Theme.of(context).colorScheme.error,
                       ),
                       const SizedBox(width: AppDimensions.spacingSm),

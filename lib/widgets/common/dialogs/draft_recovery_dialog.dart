@@ -45,7 +45,7 @@ class DraftRecoveryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: ButleryIcon(
-        Icons.restore,
+        ButleryIcons.history,
         color: Theme.of(context).colorScheme.onSurface,
         size: AppDimensions.iconSizeL,
       ),
@@ -112,7 +112,10 @@ class DraftRecoveryDialog extends StatelessWidget {
           onPressed: availableDrafts.isNotEmpty
               ? () => Navigator.of(context).pop(availableDrafts.first.draftId)
               : null,
-          icon: const ButleryIcon(Icons.restore, size: AppDimensions.iconSizeS),
+          icon: const ButleryIcon(
+            ButleryIcons.history,
+            size: AppDimensions.iconSizeS,
+          ),
           label: Text(context.l10n.draftRestore),
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,

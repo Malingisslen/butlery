@@ -175,7 +175,7 @@ class PantryItemCard extends StatelessWidget {
         children: [
           if (selectionMode) ...[
             ButleryIcon(
-              selected ? ButleryIcons.circleCheck : Icons.circle_outlined,
+              selected ? ButleryIcons.circleCheck : ButleryIcons.circle,
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
               size: AppDimensions.iconSizeM,
             ),

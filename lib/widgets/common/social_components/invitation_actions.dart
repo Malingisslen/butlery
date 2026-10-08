@@ -129,7 +129,7 @@ class InvitationActions {
             onPressed: onCreateGroup,
             tooltip: createTooltip,
             heroTag: 'create_group',
-            child: const ButleryIcon(Icons.group_add),
+            child: const ButleryIcon(ButleryIcons.usersPlus),
           ),
         ),
       );

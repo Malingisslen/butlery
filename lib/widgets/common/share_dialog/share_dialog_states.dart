@@ -51,7 +51,7 @@ class ShareDialogStates {
               Navigator.pop(context);
               Navigator.pushNamed(context, Routes.friends);
             },
-            icon: const ButleryIcon(Icons.person_add),
+            icon: const ButleryIcon(ButleryIcons.userPlus),
             label: Text(context.l10n.shareAddFriends),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(

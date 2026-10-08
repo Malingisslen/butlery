@@ -223,7 +223,7 @@ class SharedMenuCard {
                   ),
                   const SizedBox(width: AppDimensions.space4),
                   ButleryIcon(
-                    Icons.category,
+                    ButleryIcons.grid,
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

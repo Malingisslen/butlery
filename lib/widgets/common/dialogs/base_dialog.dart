@@ -203,7 +203,7 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.subtitle,
     super.primaryActionText,
     super.secondaryActionText,
-    super.primaryActionIcon = Icons.save,
+    super.primaryActionIcon = ButleryIcons.save,
     super.primaryActionColor,
   });
 

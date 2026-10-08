@@ -195,7 +195,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             _buildRequiredConsentItem(
               context.l10n.consentBasicServices,
               context.l10n.consentBasicServicesDescription,
-              Icons.security,
+              ButleryIcons.shield,
             ),
             const SizedBox(height: AppDimensions.spacingL),
             _buildRequiredConsentItem(

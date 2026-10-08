@@ -95,7 +95,7 @@ class ShoppingAppBar {
             if (hasBoughtItems && onUncheckAll != null)
               _item(
                 _ShoppingRootAction.uncheckAll,
-                Icons.check_box_outline_blank,
+                ButleryIcons.square,
                 context.l10n.shoppingUncheckAll,
               ),
             if (canShare)

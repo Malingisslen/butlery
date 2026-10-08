@@ -51,7 +51,7 @@ class ReplyBanner extends StatelessWidget {
         children: [
           // Reply icon
           ButleryIcon(
-            Icons.reply,
+            ButleryIcons.reply,
             size: AppDimensions.iconSizeM,
             color: context.modeColors.success,
           ),

@@ -73,7 +73,7 @@ class PersonalTagTile extends StatelessWidget {
         textColor: isUnused ? colorScheme.onSurfaceVariant : null,
         leading: inSelectionMode
             ? ButleryIcon(
-                isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
                 color: isSelected
                     ? colorScheme.onSurface
                     : colorScheme.onSurfaceVariant,

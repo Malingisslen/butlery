@@ -19,6 +19,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Section rendering the original heirloom scan with a rust corner stamp.
 ///
@@ -62,7 +63,7 @@ class HeirloomSection extends StatelessWidget {
                 placeholder: (_, __) => const SizedBox.shrink(),
                 errorWidget: (_, __, ___) => Center(
                   child: ButleryIcon(
-                    Icons.broken_image_outlined,
+                    ButleryIcons.imageOff,
                     color: cs.onSurface,
                   ),
                 ),

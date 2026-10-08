@@ -88,7 +88,7 @@ class ShareTargetSelection {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ButleryIcon(
-              searchQuery.isEmpty ? ButleryIcons.users : Icons.search_off,
+              searchQuery.isEmpty ? ButleryIcons.users : ButleryIcons.searchOff,
               size: 48,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

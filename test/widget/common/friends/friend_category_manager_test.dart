@@ -324,7 +324,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
 
-        expect(find.byIcon(Icons.category_outlined), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.grid), findsOneWidget);
       });
     });
 

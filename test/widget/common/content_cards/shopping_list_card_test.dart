@@ -248,7 +248,7 @@ void main() {
 
         // 1 bought (Br\u00f6d) = check_circle, 2 not bought = radio_button_unchecked
         expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
-        expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2));
+        expect(find.byIcon(ButleryIcons.circle), findsNWidgets(2));
       });
 
       testWidgets('hides preview when showPreview is false', (

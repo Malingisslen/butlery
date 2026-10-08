@@ -8,6 +8,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 void main() {
   group('QuickFilterChips', () {
@@ -21,7 +22,7 @@ void main() {
       const QuickFilterOption(
         id: 'vegetarian',
         label: 'Vegetariskt',
-        icon: Icons.eco,
+        icon: ButleryIcons.leaf,
       ),
     ];
 
@@ -71,7 +72,7 @@ void main() {
         );
 
         // Only vegetarian has an icon
-        expect(find.byIcon(Icons.eco), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.leaf), findsOneWidget);
       });
 
       testWidgets('should use horizontal scroll', (tester) async {

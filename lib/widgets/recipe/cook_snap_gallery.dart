@@ -189,7 +189,7 @@ class _SnapThumbnail extends StatelessWidget {
                         errorWidget: (_, __, ___) => ColoredBox(
                           color: colorScheme.surfaceContainerHighest,
                           child: ButleryIcon(
-                            Icons.broken_image,
+                            ButleryIcons.imageOff,
                             color: colorScheme.onSurfaceVariant,
                           ),
                         ),

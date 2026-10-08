@@ -60,7 +60,7 @@ class DraftRecoveryDialog extends StatelessWidget {
       title: Row(
         children: [
           ButleryIcon(
-            Icons.restore,
+            ButleryIcons.history,
             color: theme.colorScheme.onSurface,
           ),
           const SizedBox(width: AppDimensions.width12),

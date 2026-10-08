@@ -412,7 +412,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Row(
               children: [
                 ButleryIcon(
-                  Icons.history,
+                  ButleryIcons.history,
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),

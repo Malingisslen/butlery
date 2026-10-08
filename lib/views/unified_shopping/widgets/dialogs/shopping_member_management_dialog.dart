@@ -500,7 +500,7 @@ class _ShoppingMemberManagementDialogState
                   label: context.l10n.shoppingAddFriendsCount(
                     _selectedFriends.length,
                   ),
-                  icon: Icons.person_add,
+                  icon: ButleryIcons.userPlus,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _addSelectedMembers,
                   isExpanded: true,

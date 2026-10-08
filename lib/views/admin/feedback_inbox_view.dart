@@ -63,7 +63,7 @@ class _FeedbackInboxContent extends StatelessWidget {
         title: context.l10n.adminFeedbackInboxTitle,
         actions: [
           IconButton(
-            icon: const ButleryIcon(Icons.logout),
+            icon: const ButleryIcon(ButleryIcons.logOut),
             tooltip: context.l10n.adminSignOut,
             onPressed: () => ServiceLocator.get<AuthService>().signOut(),
           ),
@@ -90,7 +90,7 @@ class _FeedbackInboxContent extends StatelessWidget {
     if (vm.entries.isEmpty) {
       return StateWidget.empty(
         title: context.l10n.adminFeedbackEmpty,
-        icon: Icons.inbox_outlined,
+        icon: ButleryIcons.inbox,
       );
     }
     return ListView.separated(
@@ -363,7 +363,7 @@ class _Screenshot extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Row(
           children: [
-            ButleryIcon(Icons.broken_image_outlined, color: cs.outline),
+            ButleryIcon(ButleryIcons.imageOff, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(

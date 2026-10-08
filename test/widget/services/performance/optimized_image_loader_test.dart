@@ -857,7 +857,7 @@ void main() {
         await tester.pumpWidget(TestApp(child: builtOnError));
 
         // Assert - the default broken-image fallback is shown
-        expect(find.byIcon(Icons.broken_image), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.imageOff), findsOneWidget);
       },
     );
   });

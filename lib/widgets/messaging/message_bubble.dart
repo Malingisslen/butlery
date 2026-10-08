@@ -18,6 +18,7 @@ import 'package:butlery/widgets/messaging/components/system_message_widget.dart'
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Message bubble component for chat messages.
 /// Uses extracted components from [MessageContentBuilder],
@@ -207,7 +208,7 @@ class _MessageBubbleState extends State<MessageBubble>
                             opacity: (_dragExtent.abs() / _swipeThreshold)
                                 .clamp(0.0, 1.0),
                             child: ButleryIcon(
-                              Icons.reply,
+                              ButleryIcons.reply,
                               color: context.modeColors.success,
                               size: AppDimensions.iconSizeL,
                             ),

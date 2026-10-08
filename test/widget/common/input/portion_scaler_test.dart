@@ -149,7 +149,7 @@ void main() {
 
         // Step 1: Verify text and icon exist (we know these work)
         expect(find.text('Konvertera amerikanska enheter'), findsOneWidget);
-        expect(find.byIcon(Icons.language), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.globe), findsOneWidget);
 
         // Step 2: Check if the condition is working by tapping the text
         await tester.tap(find.text('Konvertera amerikanska enheter'));

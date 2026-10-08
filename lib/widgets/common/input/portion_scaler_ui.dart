@@ -237,7 +237,7 @@ class PortionScalerUI {
             mainAxisSize: MainAxisSize.min,
             children: [
               ButleryIcon(
-                convertToSwedish ? Icons.language : Icons.calculate,
+                convertToSwedish ? ButleryIcons.globe : Icons.calculate,
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
@@ -277,7 +277,9 @@ class PortionScalerUI {
             child: OutlinedButton.icon(
               onPressed: onToggleUnitConversion,
               icon: ButleryIcon(
-                convertToSwedish ? ButleryIcons.circleCheck : Icons.language,
+                convertToSwedish
+                    ? ButleryIcons.circleCheck
+                    : ButleryIcons.globe,
                 size: AppDimensions.iconSizeS,
               ),
               label: Text(

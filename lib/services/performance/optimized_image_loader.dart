@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Image size optimization parameters
 class ImageOptimizationParams {
@@ -477,7 +478,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
       color: cs.surfaceContainerLow,
       child: Center(
         child: ButleryIcon(
-          Icons.broken_image,
+          ButleryIcons.imageOff,
           size: 48,
           color: cs.outline,
         ),

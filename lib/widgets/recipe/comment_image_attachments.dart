@@ -54,7 +54,7 @@ class CommentImageAttachments extends StatelessWidget {
                   errorWidget: (_, __, ___) => ColoredBox(
                     color: cs.surfaceContainerHighest,
                     child: ButleryIcon(
-                      Icons.broken_image,
+                      ButleryIcons.imageOff,
                       color: cs.onSurfaceVariant,
                     ),
                   ),
@@ -112,7 +112,7 @@ class _CommentImageViewer extends StatelessWidget {
                     placeholder: (_, __) => const SizedBox.shrink(),
                     errorWidget: (_, __, ___) => const Center(
                       child: ButleryIcon(
-                        Icons.broken_image,
+                        ButleryIcons.imageOff,
                         color: Colors.white,
                         size: 48,
                       ),

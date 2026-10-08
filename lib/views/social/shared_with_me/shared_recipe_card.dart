@@ -333,7 +333,7 @@ class _ReplyButtonState extends State<_ReplyButton> {
     return SocialBuilderComponents.socialActionButton(
       text: context.l10n.sharedReplyToSender,
       onPressed: _startConversation,
-      icon: _isLoading ? null : Icons.reply,
+      icon: _isLoading ? null : ButleryIcons.reply,
       loading: _isLoading,
       outlined: true,
       compact: true,

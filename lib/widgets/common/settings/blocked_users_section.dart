@@ -375,7 +375,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
         children: [
           if (_selectionMode) ...[
             ButleryIcon(
-              isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+              isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
               color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingSm),

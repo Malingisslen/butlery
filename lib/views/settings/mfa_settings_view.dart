@@ -304,7 +304,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         child: Row(
           children: [
             ButleryIcon(
-              _hasMfa ? ButleryIcons.shieldCheck : Icons.security,
+              _hasMfa ? ButleryIcons.shieldCheck : ButleryIcons.shield,
               color: _hasMfa
                   ? context.modeColors.success
                   : context.modeColors.warning,

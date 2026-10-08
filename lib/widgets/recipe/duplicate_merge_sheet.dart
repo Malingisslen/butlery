@@ -288,7 +288,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
           color: cs.surfaceContainerHighest,
           alignment: Alignment.center,
           child: ButleryIcon(
-            Icons.broken_image_outlined,
+            ButleryIcons.imageOff,
             color: cs.onSurfaceVariant,
           ),
         ),
