@@ -7,7 +7,8 @@ A Stop-hook tripwire counts the lines across all digest files and warns when the
 Routing — put a new line in the file that matches when it is needed:
 `lessons-digest.md` (here) for anything that binds any session; `lessons-digest-delivery.md`
 for sprint, Linear, worktree and ship-pipeline lessons; `lessons-digest-testing.md` for
-lessons that only matter while writing or running tests.
+lessons that only matter while writing or running tests; `lessons-digest-code.md` for lessons
+that only bind in app, Cloud Functions or Firestore code.
 
 ## Workflow
 
@@ -38,14 +39,10 @@ lessons that only matter while writing or running tests.
 - A registry/structural lint that reddens on a given day is usually pointing at that day's DELETION commit, not at itself
 - "It's the tooling, not the app" is a CLAIM, not a default — name the mechanism and show the measurement before writing it. (BUT-1837)
 - Adding a CALLER changes the callee, even untouched … Check a callee's logs, bounds and errors against the NEW caller's inputs (BUT-1822)
-- An ARB edit rewrites the WHOLE file … compare KEY SETS against `git show HEAD:<file>` as JSON before staging any shared generated file (BUT-1783)
 - A subagent's transcript file is NOT a liveness signal … only the completion notification proves an agent finished
 - Anything you WRITE about code is an UNTESTED ASSERTION with a half-life … State the RULE, never the current mechanism (BUT-1786, BUT-1418)
-- A deploy that DELETES many Cloud Run services … verify per-function `state` from `--json` after any deploy that removes services (2026-08-03)
 - "I read very little of what you reply" is a CONFIG bug first — grep the always-on setup
 - A verifier's RED COUNT fingerprints the bytes it READ … revert the fix and check whether the claimed signature reproduces exactly
-- A model field that reaches Firestore is a RULES change too — `hasOnly` fails CLOSED in silence. (BUT-1482)
-- A rules block that ATTESTS on a parent document must first establish WHERE and WHEN that parent is written (2026-08-12)
 - "Not a live bug" is a claim about CALLERS, not about a nullable fallback … Trace UP from the WRITE (BUT-1849)
 - A source edit made THROUGH another language inherits ITS escape rules … Write `chr(92)+'b'`. (BUT-1901, 2026-08-19)
 - A hand-graded set is shaped by the SCREEN that fed it candidates — ask what that screen could not see (BUT-1847)
@@ -83,15 +80,9 @@ lessons that only matter while writing or running tests.
 
 ## Language and Firebase gotchas
 
-- Dart RegExp `\b` is ASCII-only — bound Swedish tokens with explicit lookarounds
-- Firestore `sum()`/`average()` with a filter on a DIFFERENT field needs a COMPOSITE index
-- A FAILED_PRECONDITION's `create_composite` token base64url-decodes to Firestore's OWN index spec
-- Ett värde som fångas för en identitet och läses över ett auth-byte nycklas till identiteten (e-post/uid), aldrig rensas på händelser — och en kapplöpningsrättelse är oprövad tills den körts i riktiga appen (2026-10-05)
 - A boundary/heuristic/attribution bug usually has a TWIN CLASS — grep sibling classes by NAME (not path) (BUT-1691, BUT-1697)
 - A harness picking between two on-disk shapes for the same fact must choose on the property that decides TRUTH (2026-08-05, [Workflow])
-- A wrong-path Firestore read is a bug CLASS … Grep the CONSTANT for every reader AND writer (BUT-1724)
 - "Affected users" is a CLAIM WITH A TIMESTAMP … Date the window at both ends and check live status before any sentence about who is affected (BUT-1846)
-- A rule bounding a field's VALUE does not bound a denormalised COPY of it on another collection (BUT-1903)
 - A claim can be true per verb, caller, purpose or fixture and false universally (BUT-1838)
 - A config artefact in the wrong SHAPE is dead SILENTLY and forever … Existence is not liveness (2026-08-22)
 - Read the first three lines of any config/data file before editing it … Fix the SOURCE, re-run the generator ([Workflow], 2026-08-22)
@@ -101,7 +92,6 @@ lessons that only matter while writing or running tests.
 - A CLI's output format is a PLATFORM variable … Reproduce a tool's output on the TARGET platform before parsing it (BUT-1894)
 - The paragraph written to BE the correction is where the next false sentences land … Close the gap rather than scope the sentence (BUT-1961, 2026-08-27)
 - Never end a reply with a future action in the PRESENT tense — the turn terminates on that sentence and nothing runs. (2026-08-29)
-- Before designing a new attribution field's STORAGE or its erasure, grep every construction site of the thing it attributes (BUT-1832, BUT-1971, 2026-08-30)
 - A gate reviewing a staged diff must see a FROZEN index … Batch fixes, re-stage once, re-brief (BUT-1957, 2026-09-02)
 - A correction is written in the state of mind least suited to writing one … Strike rather than reword (BUT-1957, 2026-09-02)
 - A refuted claim has SIBLINGS, and one of them is text you wrote minutes ago … Sweep the CONCEPT (BUT-1922, 2026-09-05)
@@ -110,17 +100,13 @@ lessons that only matter while writing or running tests.
 - An untested PROMISE and a kept promise are the same artefact … REPAIRING what made a claim untestable is what makes the claim false (BUT-2010, 2026-09-05)
 - A correction can contradict the sentence it was written to SAVE … After fixing a sentence, re-read the neighbouring claim the fix was defending. (BUT-2028, 2026-09-07)
 - Commit-gate review coverage is keyed on BYTES … Batch every fix, re-stage ONCE, then resume the SAME agent with exactly what changed (BUT-2032, 2026-09-08)
-- A chunked migration walks by OFFSET; "re-read and ask what is left" is a DIFFERENT algorithm that looks identical (BUT-2046, 2026-09-08)
 - En delta till en ÅTERUPPTAGEN granskare räknas från mottagarens senaste läsning, inte från ditt senaste meddelande (BUT-2046, 2026-09-09)
 - En STRYKNING kan göra en mening falsk genom att ta bort satsen som avgränsade den … Läs den ÖVERLEVANDE meningen ensam efter varje strykning (BUT-1943, BUT-2025, BUT-2015, 2026-09-09)
 - Att KOPPLA UR ett anrop faller hjälparens EGNA dokument … grepa HJÄLPARENS fil, inte bara anroparen (BUT-2060, BUT-2005, 2026-09-10)
 - En GRANSKARE SOM HÅLLER MED är inte en mätning … fråga vad vakten dyrast MÖTER, inte vad den snabbast avvisar (BUT-2037, BUT-2034, 2026-09-10)
 - En HÄNGD granskningsagent ser exakt ut som en tänkande, och `running` säger ingenting (BUT-2068, BUT-2022, 2026-09-10)
 - En STRYKNING som lägger till text är inte en strykning … Andra underkännandet av en mening = radera satsen (BUT-2062, BUT-2067, 2026-09-10)
-- Ett NYTT FÄLT på en samling motbevisar daterade UPPRÄKNINGAR av samlingens form i ORÖRDA filer (BUT-2057, 2026-09-11)
 - Ett storleksanspråk gömmer sig i GRAMMATIKEN efter att räkneordet strukits … Stryk räkneordet OCH anaforen som ärver det i samma redigering (BUT-1716, 2026-09-12)
-- Läs läsarens schema och fönster och grepa VARJE annan läsare av samlingen innan du ansluter (BUT-1952, 2026-09-11)
-- En BREDDAD returtyp är oprövad tills den svit som kör den KOMPONERANDE raden finns (BUT-1925, BUT-2027, 2026-09-12)
 
 - Ett API-svars ORDNING är ett påstående, inte en garanti … en artefakt som SKRIVS OM av sin egen automatik kan inte dateras av `createdAt` (2026-08-28, 2026-09-17)
 - En mening i en användarvänd JURIDISK artefakt om vad som HÄNDER MED DATA är ett påstående om en SKRIVARE, aldrig om en avvikelsepost (BUT-1838, 2026-09-17, [Workflow])
