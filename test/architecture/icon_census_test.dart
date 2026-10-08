@@ -150,9 +150,10 @@ const Map<String, Map<String, int>> _residue = {
   },
   'lib/views/smart_import/import_widgets.dart': {'content_paste': 2},
   'lib/views/smart_import_view.dart': {'videocam_off': 1},
-  'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart': {
-    'hourglass_empty': 2,
-  },
+  'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart':
+      {
+        'hourglass_empty': 2,
+      },
   'lib/views/social/collaborative_shopping/collaborative_shopping_items.dart': {
     'swipe': 1,
   },
@@ -194,14 +195,16 @@ const Map<String, Map<String, int>> _residue = {
     'podcasts': 1,
   },
   'lib/views/tag_detail_view.dart': {'play_arrow': 1},
-  'lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart': {
-    'admin_panel_settings': 1,
-    'manage_accounts': 1,
-  },
-  'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart': {
-    'admin_panel_settings': 4,
-    'manage_accounts': 1,
-  },
+  'lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart':
+      {
+        'admin_panel_settings': 1,
+        'manage_accounts': 1,
+      },
+  'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart':
+      {
+        'admin_panel_settings': 4,
+        'manage_accounts': 1,
+      },
   'lib/views/unified_shopping/widgets/shopping_app_bar.dart': {
     'admin_panel_settings': 1,
     'list_alt_outlined': 1,
