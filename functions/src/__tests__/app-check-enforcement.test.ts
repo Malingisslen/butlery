@@ -45,6 +45,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "logParseCorrection", // events/log-parse-correction.ts — import telemetry
   "requestAccountDeletion", // account/request-account-deletion.ts
   "exportAuditLogs", // exports/audit-logs.ts — GDPR Article 15 export
+  "exportMfaRecoveryData", // exports/mfa-recovery-data.ts — Art. 15 for backup codes (BUT-2142)
   "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
