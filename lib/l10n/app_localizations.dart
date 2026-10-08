@@ -27254,7 +27254,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodeLocked.
   ///
   /// In sv, this message translates to:
-  /// **'För många försök med reservkod. Vänta en timme innan du försöker igen.'**
+  /// **'För många försök med reservkod. Försök igen senare, det kan dröja upp till en timme.'**
   String get mfaBackupCodeLocked;
 
   /// No description provided for @mfaBackupCodeUnavailable.

@@ -16555,7 +16555,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaBackupCodeLocked =>
-      'För många försök med reservkod. Vänta en timme innan du försöker igen.';
+      'För många försök med reservkod. Försök igen senare, det kan dröja upp till en timme.';
 
   @override
   String get mfaBackupCodeUnavailable =>
