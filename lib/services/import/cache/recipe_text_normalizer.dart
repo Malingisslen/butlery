@@ -5,9 +5,7 @@
 /// normalization core. This file contains ONLY the base logic — the
 /// pooled-ratings "strengthened"
 /// transforms (diacritic folding, OCR digit repair, hashtag stripping) live on
-/// the CanonicalPoolKey path alone and must NEVER be added here, or they would
-/// silently change the fingerprint (see
-/// content_fingerprint_golden_test.dart, which fails on any such drift).
+/// the CanonicalPoolKey path alone and must NEVER be added here.
 ///
 /// Behavior-preserving extraction: the constants, regexes, and method bodies
 /// are moved unchanged.
