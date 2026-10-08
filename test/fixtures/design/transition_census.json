@@ -194,18 +194,58 @@
     {
       "id": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",
       "flow": "02",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-      "test_name": "rows that reached the list after the sheet opened are kept: the merge builds on the list as it is at the write",
+      "status": "TESTED",
+      "test_file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+      "test_name": "another device added a row and ran its own merge: every row stays, menuItemIds keeps theirs and ours, and the change is reported",
       "tests": [
         {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "another device added a row and ran its own merge: every row stays, menuItemIds keeps theirs and ours, and the change is reported",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "nothing changed elsewhere: no change is reported",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ersätt listan carries over a tick the other device made on a recipe row",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ersätt listan does not bring back a recipe row the other device deleted, and Ångra has nothing of it to restore",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "offline: the rows are queued from memory, nothing is reported, and menuItemIds is extended with arrayUnion, not overwritten",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "writes of this device still waiting to sync are not reported as another device's change",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/unit/repositories/firebase/modules/shopping_personal_merge_module_test.dart",
+          "name": "Ångra after a change elsewhere takes off only our rows and our ids",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
           "file": "test/unit/services/shopping/menu_shopping_list_generator_merge_test.dart",
-          "name": "rows that reached the list after the sheet opened are kept: the merge builds on the list as it is at the write",
+          "name": "a change made on another device reaches the receipt, which takes its removed rows from the server for Ångra",
+          "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
+        },
+        {
+          "file": "test/widget/views/veckomeny_shopping_merge_receipt_test.dart",
+          "name": "a change on another device is named in the receipt, and Ångra is still offered",
           "group": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt"
         }
       ],
-      "ticket": "BUT-2140",
-      "reason": "The merge builds on the list the service holds at the write, so nothing it knows of is overwritten (tested). But the generated list is owner-only (lib/services/shopping/menu_shopping_list_generator.dart:260-264), so another person cannot change it; the same account on a second device is not merged, and the user is never told a conflict happened. Merging per operation is BUT-2140; realtime is BUT-2151."
+      "ticket": null,
+      "reason": "BUT-2140, 2026-10-08, with the plan's defaults A1/B1/C1. A1: the other writer is the same account on another device, on the personal week list. The merge writes per operation against the server's copy (arrayUnion on menuItemIds, a transaction only for Ersätt listan), so nothing another device wrote is overwritten, and the receipt says the list had been changed on another device, with Ångra (C1). B1: offline, Ersätt listan replaces from the copy in memory, an accepted deviation."
     },
     {
       "id": "TR::FLOW::02::merge-ark::ersätt-listan-på",

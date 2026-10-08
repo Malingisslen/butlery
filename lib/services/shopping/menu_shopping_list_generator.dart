@@ -12,6 +12,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/shopping_repository.dart'
+    show PersonalMergeRequest;
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
@@ -258,10 +260,12 @@ class MenuShoppingListGenerator extends BaseService {
   /// off only the rows an earlier merge put there
   /// ([UnifiedShoppingList.menuItemIds]) and keeps every other row.
   ///
-  /// The write replaces the list document in one go. The generated list is
-  /// personal (firestore.rules, `unified_shopping_lists` is owner-only), so
-  /// no other person can change it at the same time. The same account on a
-  /// second device can; merging such writes per operation is BUT-2140.
+  /// The generated list is personal (firestore.rules,
+  /// `unified_shopping_lists` is owner-only), so no other person can change
+  /// it, but the same account on a second device can. The write therefore
+  /// goes per operation against the server's copy
+  /// ([UnifiedShoppingService.applyPersonalMerge], BUT-2140), and the receipt
+  /// says when that copy had changed.
   Future<MenuShoppingMergeReceipt?> apply(
     MenuShoppingMergePreview merge,
   ) async {
@@ -290,33 +294,15 @@ class MenuShoppingListGenerator extends BaseService {
         createdList = true;
       }
 
-      // The freshest copy the service holds, read right before the write.
       final list = shoppingService.lists.firstWhere((l) => l.id == listId);
       final previousMenuIds = list.menuItemIds;
-      final menuIds = (previousMenuIds ?? const <String>[]).toSet();
       // A list written before menuItemIds existed has no known recipe rows,
       // so a replace there adds, and the receipt says it added
       // ([canReplaceWeekList]).
       final replace =
           merge.options.replaceList && (createdList || previousMenuIds != null);
-      final removed = replace
-          ? list.items.where((item) => menuIds.contains(item.id)).toList()
-          : const <UnifiedShoppingItem>[];
-      final kept = replace
-          ? list.items.where((item) => !menuIds.contains(item.id)).toList()
-          : list.items;
 
-      // § 8.7: bought status survives a replace by name and unit, keyed by
-      // the same normalization as the aggregation.
-      String boughtKey(String name, String unit) =>
-          '${SwedishCharacterNormalizer.normalize(name)}|'
-          '${unit.toLowerCase().trim()}';
-      final wasBought = {
-        for (final item in removed)
-          boughtKey(item.name, item.unit): item.bought,
-      };
-
-      final added = [
+      final fresh = [
         for (final line in merge.lines)
           UnifiedShoppingItem(
             name: line.name,
@@ -325,26 +311,19 @@ class MenuShoppingListGenerator extends BaseService {
             amount: line.amount ?? 1,
             unit: line.unit,
             category: line.category,
-            bought: wasBought[boughtKey(line.name, line.unit)] ?? false,
             note: _noteFor(line),
           ),
       ];
-      final addedIds = [for (final item in added) item.id];
-      final nextMenuIds = [if (!replace) ...menuIds, ...addedIds];
-
-      final updated = await shoppingService.updateList(
-        list.copyWith(
-          items: [...kept, ...added],
+      final result = await shoppingService.applyPersonalMerge(
+        listId,
+        PersonalMergeRequest(
+          rows: (removed) => _carryBought(fresh, removed),
+          replace: replace,
           generatedForWeek: weekKey,
-          menuItemIds: nextMenuIds,
         ),
       );
-      // `list` was fetched by id, so its name is the one the user sees (a
-      // reused list may have been renamed).
-      if (!updated) {
-        throw StateError('Could not write items to "${list.name}"');
-      }
       await shoppingService.setActiveList(listId);
+      final addedIds = [for (final item in result.added) item.id];
 
       // BUT-1681: EXACTLY ONE analytics event per merge, and only for a
       // genuine creation. `initial_item_count` carries the volume.
@@ -353,27 +332,30 @@ class MenuShoppingListGenerator extends BaseService {
             .logShoppingListCreated(
               listId: listId,
               listType: 'personal',
-              initialItemCount: added.length,
+              initialItemCount: addedIds.length,
               source: 'menu_generated',
             );
       }
 
       return MenuShoppingMergeReceipt(
         listId: listId,
-        listName: list.name,
+        // The server's name: a reused list may have been renamed, here or on
+        // another device.
+        listName: result.list.name,
         addedItemIds: List.unmodifiable(addedIds),
-        removedItems: List.unmodifiable(removed),
+        removedItems: List.unmodifiable(result.removed),
         previousMenuItemIds: previousMenuIds,
         replaced: replace,
         createdList: createdList,
+        concurrentChange: result.concurrentChange,
       );
     }, operationName: 'applyMerge');
   }
 
   /// Ångra for a merge: takes off exactly the rows it added and puts back the
-  /// recipe rows a replace took off. Rows changed or added since are left
-  /// alone. A list the merge created that is empty again is deleted. Returns
-  /// whether the list is back.
+  /// recipe rows a replace took off. Rows changed or added since, here or on
+  /// another device, are left alone. A list the merge created that is empty
+  /// again is deleted. Returns whether the list is back.
   Future<bool> undo(MenuShoppingMergeReceipt receipt) async {
     final result = await executeServiceOperation<bool>(() async {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
@@ -382,23 +364,42 @@ class MenuShoppingListGenerator extends BaseService {
           .firstOrNull;
       if (list == null) return false;
       final added = receipt.addedItemIds.toSet();
-      final items = [
-        ...list.items.where((item) => !added.contains(item.id)),
-        ...receipt.removedItems,
-      ];
-      if (receipt.createdList && items.isEmpty) {
+      final left =
+          list.items.where((item) => !added.contains(item.id)).length +
+          receipt.removedItems.length;
+      if (receipt.createdList && left == 0) {
         return shoppingService.deleteList(receipt.listId);
       }
-      final restoredIds = receipt.replaced
-          ? (receipt.previousMenuItemIds ?? const <String>[])
-          : (list.menuItemIds ?? const <String>[])
-                .where((id) => !added.contains(id))
-                .toList();
-      return shoppingService.updateList(
-        list.copyWith(items: items, menuItemIds: restoredIds),
+      await shoppingService.undoPersonalMerge(
+        receipt.listId,
+        receipt.addedItemIds,
+        receipt.removedItems,
       );
+      return true;
     }, operationName: 'undoMerge');
     return result ?? false;
+  }
+
+  /// § 8.7: bought status survives a replace by name and unit, keyed by the
+  /// same normalization as the aggregation. [removed] is what the write takes
+  /// off, read from the server where it could be.
+  static List<UnifiedShoppingItem> _carryBought(
+    List<UnifiedShoppingItem> fresh,
+    List<UnifiedShoppingItem> removed,
+  ) {
+    String boughtKey(String name, String unit) =>
+        '${SwedishCharacterNormalizer.normalize(name)}|'
+        '${unit.toLowerCase().trim()}';
+    final wasBought = {
+      for (final item in removed)
+        if (item.bought) boughtKey(item.name, item.unit),
+    };
+    return [
+      for (final item in fresh)
+        wasBought.contains(boughtKey(item.name, item.unit))
+            ? item.copyWith(bought: true)
+            : item,
+    ];
   }
 
   /// The row's note: how many recipes it came from ("Raden visar '3

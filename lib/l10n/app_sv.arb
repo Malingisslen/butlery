@@ -12407,6 +12407,15 @@
       }
     }
   },
+  "shoppingMergeConcurrentChange": "{count, plural, =1{Listan hade ändrats på en annan enhet. Din vara lades till och inget skrevs över.} other{Listan hade ändrats på en annan enhet. Dina {count} varor lades till och inget skrevs över.}}",
+  "@shoppingMergeConcurrentChange": {
+    "description": "BUT-2140: receipt with Ångra after a merge, when the list had been changed on another device (same account) before the write.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingMergeUndoFailed": "Ångra gick inte att slutföra",
   "@shoppingMergeUndoFailed": {
     "description": "P6-U02: failure, what happened."

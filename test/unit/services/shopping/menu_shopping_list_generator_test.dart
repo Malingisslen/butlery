@@ -48,6 +48,7 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'personal_merge_stub.dart';
 
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
@@ -190,6 +191,10 @@ void main() {
   late _MockPantryService pantryService;
   late MenuShoppingListGenerator generator;
 
+  /// BUT-2140: every list the merge wrote, through the in-memory stub of
+  /// [UnifiedShoppingService.applyPersonalMerge].
+  late List<UnifiedShoppingList> writes;
+
   /// BUT-1681: every analytics event the generation emitted, as
   /// (name, parameters). The count is as load-bearing as the content — the
   /// reverted first attempt fired one per generated line.
@@ -205,6 +210,7 @@ void main() {
         ownerDisplayName: 'x',
       ),
     );
+    registerPersonalMergeFallbacks();
   });
 
   setUp(() async {
@@ -265,6 +271,8 @@ void main() {
       () => shoppingService.setActiveList(any()),
     ).thenAnswer((_) async => true);
     when(() => shoppingService.deleteList(any())).thenAnswer((_) async => true);
+    writes = [];
+    stubPersonalMerge(shoppingService, writes);
 
     generator = MenuShoppingListGenerator();
   });
@@ -302,12 +310,9 @@ void main() {
       ],
       isInitialized: true,
     );
-    when(() => shoppingService.updateList(any())).thenAnswer((_) async => true);
   }
 
-  UnifiedShoppingList capturedUpdate() =>
-      verify(() => shoppingService.updateList(captureAny())).captured.single
-          as UnifiedShoppingList;
+  UnifiedShoppingList capturedUpdate() => writes.single;
 
   // BUT-1613 harness: empty list collection → create → update, so a fresh
   // week generates into "new-list-1". Presence-scaling tests only care about
@@ -326,7 +331,9 @@ void main() {
       );
       return 'new-list-1';
     });
-    when(() => shoppingService.updateList(any())).thenAnswer((_) async => true);
+    // A test may reset the mocks and seed again for a second run.
+    writes.clear();
+    stubPersonalMerge(shoppingService, writes);
   }
 
   Map<String, UnifiedShoppingItem> writtenByName() => {
@@ -661,7 +668,7 @@ void main() {
       expect(
         result,
         isNotNull,
-        reason: 'regeneration must reach the updateList write',
+        reason: 'regeneration must reach the merge write',
       );
       final written = capturedUpdate();
       final byName = {for (final i in written.items) i.name: i};
@@ -722,16 +729,13 @@ void main() {
         lists: [existing],
         personalLists: [existing],
       );
-      when(
-        () => shoppingService.updateList(any()),
-      ).thenAnswer((_) async => true);
 
       final result = await generator.generateForWeek(_date);
 
       expect(
         result,
         isNotNull,
-        reason: 'regeneration must reach the updateList write',
+        reason: 'regeneration must reach the merge write',
       );
       final written = capturedUpdate();
       expect(
@@ -782,9 +786,6 @@ void main() {
         );
         return 'new-list-1';
       });
-      when(
-        () => shoppingService.updateList(any()),
-      ).thenAnswer((_) async => true);
 
       final result = await generator.generateForWeek(_date);
 
@@ -832,6 +833,7 @@ void main() {
           items: any(named: 'items'),
         ),
       );
+      expect(writes, isEmpty);
       verifyNever(() => shoppingService.updateList(any()));
     });
 
@@ -865,6 +867,7 @@ void main() {
           items: any(named: 'items'),
         ),
       );
+      expect(writes, isEmpty);
       verifyNever(() => shoppingService.updateList(any()));
     });
 
@@ -893,6 +896,7 @@ void main() {
           items: any(named: 'items'),
         ),
       );
+      expect(writes, isEmpty);
       verifyNever(() => shoppingService.updateList(any()));
     });
 
@@ -924,9 +928,6 @@ void main() {
         );
         return 'new-list-1';
       });
-      when(
-        () => shoppingService.updateList(any()),
-      ).thenAnswer((_) async => true);
 
       final result = await generator.generateForWeek(_date);
 

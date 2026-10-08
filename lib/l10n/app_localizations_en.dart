@@ -16165,6 +16165,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String shoppingMergeConcurrentChange(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The list had been changed on another device. Your $count items were added and nothing was overwritten.',
+      one:
+          'The list had been changed on another device. Your item was added and nothing was overwritten.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get shoppingMergeUndoFailed => 'The undo could not be completed';
 
   @override
