@@ -20,7 +20,9 @@ import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
+import 'package:butlery/services/realtime/queued_recipe_conflicts.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 
 /// What a restore replaced, so it can be undone.
@@ -52,11 +54,21 @@ class OverwrittenVersionService {
   OverwrittenVersionService({
     required OverwrittenVersionRepository repository,
     required RealtimeSyncService syncService,
+    Future<Recipe?> Function(String recipeId)? readOwnRecipe,
+    OwnRecipeWriter? writeOwnRecipe,
   }) : _repository = repository,
-       _sync = syncService;
+       _sync = syncService,
+       _readOwnRecipe = readOwnRecipe,
+       _writeOwnRecipe = writeOwnRecipe;
 
   final OverwrittenVersionRepository _repository;
   final RealtimeSyncService _sync;
+
+  /// BUT-2213: the user's own recipe lives on its recipe document, not in
+  /// `realtime_resources` (BUT-2151), so a kept recipe version is read and
+  /// written the way the recipe editor does it.
+  final Future<Recipe?> Function(String recipeId)? _readOwnRecipe;
+  final OwnRecipeWriter? _writeOwnRecipe;
 
   /// The signed-in user's kept versions for [entity] (and [resourceId] when
   /// given), newest first, without any that are past their 30 days.
@@ -87,6 +99,14 @@ class OverwrittenVersionService {
   /// counter (RealtimeSyncService.recoverLocalVersion), so it wins the next
   /// comparison instead of losing again. The kept row stays until [settle].
   Future<OverwrittenVersionRestore> restore(OverwrittenVersion version) async {
+    if (version.resourceType == RealtimeResourceType.recipe) {
+      final current = await _liveRecipe(version.resourceId);
+      await _writeRecipe(keptRecipe(version), current);
+      return OverwrittenVersionRestore(
+        version: version,
+        replaced: QueuedRecipeConflicts.asResource(current, current.createdBy),
+      );
+    }
     final current = await _live(version.resourceId);
     await _sync.recoverLocalVersion<RealtimeResource>(
       withSharingOf(parse(version), current),
@@ -97,6 +117,12 @@ class OverwrittenVersionService {
   /// Puts back the content [receipt] replaced, on the sharing the resource
   /// has now. The kept version stays kept.
   Future<void> undo(OverwrittenVersionRestore receipt) async {
+    final replaced = receipt.replaced;
+    if (replaced is RealtimeRecipe) {
+      final current = await _liveRecipe(replaced.id);
+      await _writeRecipe(replaced.recipe, current);
+      return;
+    }
     final current = await _live(receipt.replaced.id);
     await _sync.recoverLocalVersion<RealtimeResource>(
       withSharingOf(receipt.replaced, current),
@@ -111,6 +137,40 @@ class OverwrittenVersionService {
       throw OverwrittenVersionTargetMissing(resourceId);
     }
     return current;
+  }
+
+  Future<Recipe> _liveRecipe(String recipeId) async {
+    final read = _readOwnRecipe;
+    final current = read == null ? null : await read(recipeId);
+    if (current == null) throw OverwrittenVersionTargetMissing(recipeId);
+    return current;
+  }
+
+  /// Writes [content] over [current] through the recipe's own path, with the
+  /// sharing [current] has now (as [withSharingOf] does for a resource) and
+  /// built on [current]'s revision.
+  Future<void> _writeRecipe(Recipe content, Recipe current) async {
+    final write = _writeOwnRecipe;
+    if (write == null) throw StateError('No recipe writer is attached');
+    await write(
+      Recipe(
+        core: content.core,
+        type: current.type,
+        socialData: current.socialData,
+        realtimeData: content.realtimeData,
+        rev: current.rev,
+      ),
+    );
+  }
+
+  /// The kept recipe itself, read with the recipe's own serializer: the
+  /// realtime one keeps only part of a recipe (no tags, for one).
+  static Recipe keptRecipe(OverwrittenVersion version) {
+    final data = version.version['recipe'];
+    return Recipe.fromMap(
+      version.resourceId,
+      data is Map ? Map<String, dynamic>.from(data) : const {},
+    );
   }
 
   /// [content] with the sharing state of [current]: participants,

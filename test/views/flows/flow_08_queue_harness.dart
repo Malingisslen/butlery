@@ -32,7 +32,8 @@ import '../../unit/services/offline/queue_harness.dart'
     show MidRandom, QueueHarness;
 
 /// What reached the server, with the recipe as sent, and the failure the
-/// next write of a recipe id throws.
+/// next write of a recipe id throws (a `RecipeRevisionConflictException`
+/// is the server's newer version, BUT-2213).
 class RecordingWriter implements QueuedRecipeWriter {
   final List<(String, Recipe?, String)> writes = [];
   final Map<String, Object> failWith = {};
@@ -44,10 +45,18 @@ class RecordingWriter implements QueuedRecipeWriter {
   }
 
   @override
-  Future<void> create(Recipe recipe) => _write('create', recipe.id, recipe);
+  Future<int> create(Recipe recipe) async {
+    await _write('create', recipe.id, recipe);
+    return 0;
+  }
 
+  /// The server's revision after the write: one above the one it was
+  /// built on.
   @override
-  Future<void> update(Recipe recipe) => _write('update', recipe.id, recipe);
+  Future<int> update(Recipe recipe) async {
+    await _write('update', recipe.id, recipe);
+    return (recipe.rev ?? 0) + 1;
+  }
 
   @override
   Future<void> delete(String recipeId) => _write('delete', recipeId, null);
@@ -186,6 +195,10 @@ class QueueJourney {
   final List<String> uploaded = [];
   final List<String> errors = [];
 
+  /// Where the queue hands a recipe conflict (BUT-2213); production hands
+  /// it to RealtimeSyncService.announceQueuedRecipeConflict.
+  RecipeConflictCallback? onRecipeConflict;
+
   static Future<QueueJourney> open() async {
     QueueHarness.registerFallbacks();
     final j = QueueJourney._();
@@ -210,6 +223,8 @@ class QueueJourney {
         return (url: 'https://img/$name', thumbnailUrl: 'https://thumb/$name');
       },
       userStorage: storage,
+      onRecipeConflict: (local, remote) =>
+          j.onRecipeConflict?.call(local, remote),
     );
     j.recipes = PersonalRecipeModule(
       recipeRepository: MockRecipeRepository(),

@@ -8295,6 +8295,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Någon annan ändrade samtidigt. Din version finns kvar — välj vilken som gäller.';
 
   @override
+  String get conflictBannerBodyOtherDevice =>
+      'Du ändrade receptet på en annan enhet. Din version finns kvar — välj vilken som gäller.';
+
+  @override
   String conflictWeekSaved(String name) {
     return '$name sparade veckan';
   }

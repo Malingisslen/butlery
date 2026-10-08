@@ -35,10 +35,16 @@ class _Writer implements QueuedRecipeWriter {
   }
 
   @override
-  Future<void> create(Recipe recipe) => _write('create', recipe.id, recipe);
+  Future<int> create(Recipe recipe) async {
+    await _write('create', recipe.id, recipe);
+    return 0;
+  }
 
   @override
-  Future<void> update(Recipe recipe) => _write('update', recipe.id, recipe);
+  Future<int> update(Recipe recipe) async {
+    await _write('update', recipe.id, recipe);
+    return (recipe.rev ?? 0) + 1;
+  }
 
   @override
   Future<void> delete(String recipeId) => _write('delete', recipeId, null);
@@ -409,13 +415,14 @@ class _SwitchingWriter implements QueuedRecipeWriter {
   final void Function() _onCreate;
 
   @override
-  Future<void> create(Recipe recipe) async {
-    await _inner.create(recipe);
+  Future<int> create(Recipe recipe) async {
+    final rev = await _inner.create(recipe);
     _onCreate();
+    return rev;
   }
 
   @override
-  Future<void> update(Recipe recipe) => _inner.update(recipe);
+  Future<int> update(Recipe recipe) => _inner.update(recipe);
 
   @override
   Future<void> delete(String recipeId) => _inner.delete(recipeId);

@@ -422,6 +422,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       core: updatedCore,
       type: recipe.type,
       socialData: recipe.socialData,
+      rev: recipe.rev,
     );
   }
 

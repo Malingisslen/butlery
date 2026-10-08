@@ -15,6 +15,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_suggestion_repository.dart';
 
 // Realtime modules
@@ -23,6 +24,7 @@ import 'package:butlery/services/realtime/connection_state_module.dart';
 import 'package:butlery/services/realtime/resource_parser_module.dart';
 import 'package:butlery/services/realtime/conflict_resolution_module.dart';
 import 'package:butlery/services/realtime/conflict_release_gate.dart';
+import 'package:butlery/services/realtime/queued_recipe_conflicts.dart';
 
 /// Real-time synchronization service with modular connection, parsing, and conflict resolution.
 class RealtimeSyncService extends BaseService with StreamManagementMixin {
@@ -41,10 +43,14 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// package 5 choice applies instead (PQ-02 = A).
   final RecipeSuggestionRepository? _suggestions;
 
+  /// BUT-2213: how "Behåll min version" saves a queued recipe edit.
+  final OwnRecipeWriter? _writeOwnRecipe;
+
   // Modules
   late final ConnectionStateModule _connectionModule;
   late final ResourceParserModule _parserModule;
   late final ConflictResolutionModule _conflictModule;
+  late final QueuedRecipeConflicts _queuedRecipes;
 
   /// P6-U08b: conflict notices wait here until the offline queue has
   /// emptied and the device is online (produktregler.md:189). Null lets
@@ -57,10 +63,12 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     OverwrittenVersionRepository? overwrittenVersions,
     RecipeSuggestionRepository? suggestions,
     Stream<bool> Function()? queueSettled,
+    OwnRecipeWriter? writeOwnRecipe,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository,
        _overwrittenVersions = overwrittenVersions,
-       _suggestions = suggestions {
+       _suggestions = suggestions,
+       _writeOwnRecipe = writeOwnRecipe {
     // Initialize StreamControllers using StreamManagementMixin
     _connectionController = createBroadcastController<bool>(
       name: 'connection_state',
@@ -112,6 +120,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       notifyListeners: () => notifyListeners(),
       onUserLoggedOut: () {
         _cachedResources.clear();
+        _queuedRecipes.clear();
       },
     );
 
@@ -135,9 +144,17 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         }
       },
     );
+
+    _queuedRecipes = QueuedRecipeConflicts(
+      conflicts: _conflictModule,
+      currentUserId: () => _currentUserId,
+      overwrittenVersions: _overwrittenVersions,
+      writeOwnRecipe: _writeOwnRecipe,
+    );
   }
 
   void _publishConflict(ConflictEvent event) {
+    _queuedRecipes.remember(event);
     if (!_conflictController.isClosed) {
       _conflictController.add(event);
     }
@@ -509,6 +526,23 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     await updateResource<T>(recovered);
   }
 
+  /// BUT-2213: a queued edit of the user's own recipe met a newer server
+  /// version and was not written. The notice goes through the queue gate.
+  Future<void> announceQueuedRecipeConflict(Recipe local, Recipe remote) =>
+      _queuedRecipes.announce(local, remote);
+
+  /// The queue notice for [recipeId] the user has not yet chosen on or
+  /// closed, for a recipe screen opened after it was shown.
+  ConflictEvent? pendingQueuedConflict(String recipeId) =>
+      _queuedRecipes.pendingFor(recipeId);
+
+  void clearQueuedConflict(String recipeId) => _queuedRecipes.forget(recipeId);
+
+  /// "Behåll min version" on a queue notice: saved through the recipe's own
+  /// queue on the server's revision, never through `realtime_resources`.
+  Future<void> keepQueuedRecipe(ConflictEvent event) =>
+      _queuedRecipes.keepLocal(event);
+
   /// Ta bort en realtidsresurs
   Future<void> deleteResource(
     String resourceId,
@@ -629,6 +663,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     _conflictGate?.dispose();
     await disposeStreamResources(); // StreamManagementMixin handles controllers and subscriptions
     _cachedResources.clear();
+    _queuedRecipes.clear();
     _conflictModule.clearTracking();
     _connectionModule.dispose();
   }

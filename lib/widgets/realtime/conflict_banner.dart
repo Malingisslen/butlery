@@ -73,6 +73,10 @@ class _ConflictBannerState extends State<ConflictBanner> {
   void _subscribe() {
     final svc = ServiceLocator.tryGet<RealtimeSyncService>();
     if (svc == null) return;
+    // BUT-2213: a queue notice released while this recipe was not on screen
+    // waits in the service until the user chooses or closes it.
+    final filter = widget.filterDocId;
+    if (filter != null) _activeEvent = svc.pendingQueuedConflict(filter);
     _sub = svc.conflictStream.listen((event) {
       if (!mounted) return;
       final filter = widget.filterDocId;
@@ -90,6 +94,12 @@ class _ConflictBannerState extends State<ConflictBanner> {
   }
 
   void _dismiss() {
+    final event = _activeEvent;
+    if (event != null && event.origin == ConflictOrigin.queue) {
+      ServiceLocator.tryGet<RealtimeSyncService>()?.clearQueuedConflict(
+        event.docId,
+      );
+    }
     setState(() {
       _activeEvent = null;
     });
@@ -115,7 +125,16 @@ class _ConflictBannerState extends State<ConflictBanner> {
       );
       return;
     }
-    ConflictDiffView.show(context, event);
+    unawaited(
+      ConflictDiffView.show(context, event).then((_) {
+        // A choice made there clears the service's notice; then this one goes.
+        if (!mounted || event.origin != ConflictOrigin.queue) return;
+        final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+        if (svc != null && svc.pendingQueuedConflict(event.docId) == null) {
+          setState(() => _activeEvent = null);
+        }
+      }),
+    );
   }
 
   /// P5-U27b: someone else's shared recipe whose owner's version stayed,
@@ -140,6 +159,11 @@ class _ConflictBannerState extends State<ConflictBanner> {
   /// Who made the other change comes from the remote snapshot's cached
   /// display name, never from the collection or position.
   String _body(BuildContext context, ConflictEvent event) {
+    // B1 (Malin, 2026-10-08): only the owner writes their recipe, so a queue
+    // conflict is the user's own save from another device.
+    if (event.origin == ConflictOrigin.queue) {
+      return context.l10n.conflictBannerBodyOtherDevice;
+    }
     final name = event.remoteValue.lastEditedByDisplayName.trim();
     if (_isSuggestion(event)) {
       // Q6-12 = B: the member is told when the edit replaced the suggestion
