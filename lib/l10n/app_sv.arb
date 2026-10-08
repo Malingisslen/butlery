@@ -9159,6 +9159,8 @@
   },
   "bulkDelete": "Ta bort valda",
   "bulkShare": "Dela valda",
+  "bulkShareFriendsLoadFailed": "Kunde inte läsa dina vänner",
+  "bulkShareSelectionKept": "Recepten är fortfarande valda.",
   "bulkTag": "Tagga valda",
   "bulkTagDialogTitle": "Lägg till tagg på {count} recept",
   "@bulkTagDialogTitle": {

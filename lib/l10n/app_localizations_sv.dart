@@ -13061,6 +13061,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get bulkShare => 'Dela valda';
 
   @override
+  String get bulkShareFriendsLoadFailed => 'Kunde inte läsa dina vänner';
+
+  @override
+  String get bulkShareSelectionKept => 'Recepten är fortfarande valda.';
+
+  @override
   String get bulkTag => 'Tagga valda';
 
   @override

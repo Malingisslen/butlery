@@ -13037,6 +13037,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bulkShare => 'Share Selected';
 
   @override
+  String get bulkShareFriendsLoadFailed => 'Could not load your friends';
+
+  @override
+  String get bulkShareSelectionKept => 'The recipes are still selected.';
+
+  @override
   String get bulkTag => 'Tag Selected';
 
   @override

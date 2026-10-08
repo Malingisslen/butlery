@@ -21833,6 +21833,18 @@ abstract class AppLocalizations {
   /// **'Dela valda'**
   String get bulkShare;
 
+  /// No description provided for @bulkShareFriendsLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa dina vänner'**
+  String get bulkShareFriendsLoadFailed;
+
+  /// No description provided for @bulkShareSelectionKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten är fortfarande valda.'**
+  String get bulkShareSelectionKept;
+
   /// No description provided for @bulkTag.
   ///
   /// In sv, this message translates to:

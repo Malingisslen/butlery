@@ -9073,6 +9073,8 @@
   },
   "bulkDelete": "Delete Selected",
   "bulkShare": "Share Selected",
+  "bulkShareFriendsLoadFailed": "Could not load your friends",
+  "bulkShareSelectionKept": "The recipes are still selected.",
   "bulkTag": "Tag Selected",
   "bulkTagDialogTitle": "Add tag to {count} recipes",
   "@bulkTagDialogTitle": {

@@ -107,7 +107,7 @@ import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-add-recipe`     → empty state "Lägg till recept"
-///  - `recipe-card-{index}` → each recipe card in the list/grid
+///  - `recipe-card-{recipeId}` → each recipe card in the list/grid
 ///
 /// Personal recipe management view with multi-provider architecture.
 class MinaReceptView extends StatefulWidget {

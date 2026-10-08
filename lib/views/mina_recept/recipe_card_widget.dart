@@ -174,7 +174,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
 
     if (index != null) {
       card = Semantics(
-        identifier: 'recipe-card-$index',
+        identifier: 'recipe-card-${recipe.id}',
         button: true,
         child: card,
       );
