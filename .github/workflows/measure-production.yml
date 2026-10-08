@@ -1,0 +1,74 @@
+# BUT-2278, BUT-2260 and BUT-2031: read-only measurements against butlery-app-1.
+#
+# Writes nothing to Firestore or anywhere else in the project. Prints counts
+# only, never a uid or a log line's text, because the onUserDeleted error line
+# carries the deleted user's uid.
+#
+# Uses the deploy service account, which lives behind the `production`
+# environment.
+name: Measure production (read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: Read-only counts
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Authenticate
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured." >&2
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=butlery-app-1" >> "$GITHUB_ENV"
+
+      - name: "BUT-2278 and BUT-2260: searchable minor profiles, recipe cache"
+        working-directory: functions
+        run: node scripts/measure-launch-risks.js | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: "BUT-2031: onUserDeleted social cleanup failures"
+        run: |
+          set -uo pipefail
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1
+          # Only timestamps are read; the message text names the deleted user.
+          if out=$(gcloud logging read '"Social cleanup failed for user"' \
+                --project butlery-app-1 --freshness=3650d \
+                --format='value(timestamp)' 2>"$RUNNER_TEMP/logging.err"); then
+            count=$(printf '%s' "$out" | grep -c . || true)
+            oldest=$(gcloud logging read 'resource.labels.function_name="onUserDeleted"' \
+                --project butlery-app-1 --freshness=3650d --order=asc --limit=1 \
+                --format='value(timestamp)' 2>/dev/null || true)
+            {
+              echo "social_cleanup_failures=$count"
+              echo "oldest_onUserDeleted_log_entry=${oldest:-none}"
+            } | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Cloud Logging read refused: $(head -c 300 "$RUNNER_TEMP/logging.err")"
+            exit 1
+          fi
