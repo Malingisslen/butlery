@@ -28,3 +28,4 @@ same drift tripwire as the core digest (`knowledge.digestFiles`).
 - Ett NYTT FÄLT på en samling motbevisar daterade UPPRÄKNINGAR av samlingens form i ORÖRDA filer (BUT-2057, 2026-09-11)
 - Läs läsarens schema och fönster och grepa VARJE annan läsare av samlingen innan du ansluter (BUT-1952, 2026-09-11)
 - En BREDDAD returtyp är oprövad tills den svit som kör den KOMPONERANDE raden finns (BUT-1925, BUT-2027, 2026-09-12)
+- `flutter analyze` rapporterar inte fel inne i beroenden: en ändrad pubspec.lock bevisas med ett `flutter test` som importerar paketen (BUT-2315, 2026-10-08)
