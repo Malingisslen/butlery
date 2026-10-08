@@ -1103,6 +1103,22 @@ service cloud.firestore {
     // ========================================
     // Doc ID is `{userId}_{YYYY}-W{WW}` so ownership is encoded in the path.
     // Owner-only read/write — no sharing in Phase 1.
+    //
+    // weekSaveBuiltOnStored (BUT-2215): an update that carries `revId` must
+    // mint a new string `revId` and name, in `baseRevId`, the `revId` of the
+    // stored week it was built on (both read as null when absent). A save
+    // built on any other copy, typically from the owner's other device or
+    // queued behind a save that was itself refused, is denied, and the app
+    // turns that refusal into the "Veckan sparades på en annan enhet"
+    // snackbar. An update WITHOUT `revId` passes: that is an app version from
+    // before this check. No `get()`.
+
+    function weekSaveBuiltOnStored() {
+      return !('revId' in request.resource.data)
+        || (request.resource.data.revId is string
+            && request.resource.data.revId != resource.data.get('revId', null)
+            && request.resource.data.get('baseRevId', null) == resource.data.get('revId', null));
+    }
 
     match /weekly_menu_plans/{planId} {
       allow read: if isAuthenticated()
@@ -1116,7 +1132,8 @@ service cloud.firestore {
         && planId.matches('^' + request.auth.uid + '_.*')
         && request.auth.uid == resource.data.userId
         && request.auth.uid == request.resource.data.userId
-        && cannotModify(['userId', 'createdAt']);
+        && cannotModify(['userId', 'createdAt'])
+        && weekSaveBuiltOnStored();
 
       allow delete: if isAuthenticated()
         && planId.matches('^' + request.auth.uid + '_.*');

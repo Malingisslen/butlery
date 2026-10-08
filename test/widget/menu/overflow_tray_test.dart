@@ -32,7 +32,11 @@ import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
 
-class _MockService extends Mock implements WeeklyMenuPlanService {}
+class _MockService extends Mock implements WeeklyMenuPlanService {
+  // BUT-2215: the week menu listens from its constructor.
+  @override
+  Stream<String?> get weekWrites => const Stream.empty();
+}
 
 class _MockRecipes extends Mock implements UnifiedRecipeService {}
 
@@ -179,7 +183,7 @@ void main() {
 
     setUp(() {
       service = _MockService();
-      when(() => service.save(any())).thenAnswer((_) async {});
+      when(() => service.saveRevision(any())).thenAnswer((_) async {});
       when(() => service.overflowTrayOwnerId).thenReturn(null);
       when(() => service.readWeek(any())).thenAnswer(
         (_) async =>

@@ -149,8 +149,46 @@ class FirebaseWeeklyMenuPlanRepository
         userId: plan.userId,
       );
     }
-    await collection.doc(plan.id).set(toFirestore(plan));
+    try {
+      await collection.doc(plan.id).set(toFirestore(plan));
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+      final stored = await _storedAfterRefusal(plan);
+      // A resent write the server already applied is refused because its
+      // revId is now the stored one; the save landed, so nothing is wrong.
+      if (stored != null &&
+          stored.revId != null &&
+          stored.revId == plan.revId) {
+        return;
+      }
+      if (stored == null || !_weekMovedOn(stored, plan)) rethrow;
+      throw WeekPlanConflictException(stored, originalError: e);
+    }
   }
+
+  /// BUT-2215: the stored week after a refused save, from one server read.
+  /// Null when the read fails or the week is absent, so the refusal keeps its
+  /// own meaning.
+  Future<WeeklyMenuPlan?> _storedAfterRefusal(WeeklyMenuPlan plan) async {
+    final DocumentSnapshot<Map<String, dynamic>> snapshot;
+    try {
+      snapshot = await collection
+          .doc(plan.id)
+          .get(const GetOptions(source: Source.server));
+    } catch (e) {
+      AppLogger.warning('Could not read the week after a refused save: $e');
+      return null;
+    }
+    if (!snapshot.exists) return null;
+    return fromFirestore(snapshot);
+  }
+
+  /// The week has moved on when the stored `revId` is not the one [plan] was
+  /// built on (`plan.baseRevId`), or when the stored `createdAt` differs — a
+  /// plan started from an empty week over a week that exists (BUT-1961).
+  bool _weekMovedOn(WeeklyMenuPlan stored, WeeklyMenuPlan plan) =>
+      stored.revId != plan.baseRevId ||
+      !stored.createdAt.isAtSameMomentAs(plan.createdAt);
 
   @override
   Future<int> deleteAllByUser(String userId) async {
@@ -213,38 +251,63 @@ class FirebaseWeeklyMenuPlanRepository
 
     if (snapshot.docs.isEmpty) return 0;
 
-    final affected = <DocumentSnapshot<Map<String, dynamic>>>[];
-    final scrubbedEntries = <List<dynamic>>[];
-
+    var changed = 0;
     for (final doc in snapshot.docs) {
-      final plan = fromFirestore(doc);
-      final filteredEntries = plan.entries
-          .where((e) => e.recipeId != recipeId)
-          .toList();
-      if (filteredEntries.length == plan.entries.length) continue;
-      affected.add(doc);
-      // Run through toFirestore so the entries match the on-disk shape
-      // (timestamps, sentinels, etc.) but only extract the entries field
-      // — see batch.update below.
-      final scrubbed = plan.copyWith(entries: filteredEntries);
-      final asMap = toFirestore(scrubbed);
-      scrubbedEntries.add(asMap['entries'] as List<dynamic>);
+      if (await _scrubRecipe(doc.reference, fromFirestore(doc), recipeId)) {
+        changed++;
+      }
     }
-
-    if (affected.isEmpty) return 0;
-
-    final batch = firestore.batch();
-    for (var i = 0; i < affected.length; i++) {
-      // batch.update (not set) so concurrent writers can't lose fields
-      // added outside the entries array — partial update by design.
-      batch.update(affected[i].reference, {'entries': scrubbedEntries[i]});
-    }
-    await batch.commit();
+    if (changed == 0) return 0;
 
     AppLogger.info(
-      'Scrubbed recipe $recipeId from ${affected.length} weekly plan(s) for ${userId.maskedUserId}',
+      'Scrubbed recipe $recipeId from $changed weekly plan(s) for ${userId.maskedUserId}',
     );
-    return affected.length;
+    return changed;
+  }
+
+  /// BUT-2215: how often [_scrubRecipe] re-reads a week whose save was refused
+  /// because the week changed after it was read.
+  static const int _scrubAttempts = 3;
+
+  /// Removes [recipeId] from one week, as a new revision built on the copy
+  /// that was read (`firestore.rules` refuses any other). Returns whether the
+  /// week held the recipe.
+  ///
+  /// A partial update (only `entries` and the lineage fields), so a field
+  /// another writer added outside `entries` is kept. When the week changed
+  /// between the read and the write the update is refused; it is then read
+  /// again from the server and retried, up to [_scrubAttempts] times in all.
+  /// After that the refusal is thrown: the recipe itself is already deleted
+  /// by then, and the caller logs the failed scrub (BUT-893).
+  Future<bool> _scrubRecipe(
+    DocumentReference<Map<String, dynamic>> ref,
+    WeeklyMenuPlan read,
+    String recipeId,
+  ) async {
+    var plan = read;
+    for (var attempt = 1; ; attempt++) {
+      final kept = plan.entries.where((e) => e.recipeId != recipeId).toList();
+      if (kept.length == plan.entries.length) return false;
+      // Run through toFirestore so the entries match the on-disk shape
+      // (timestamps, sentinels, etc.).
+      final next = plan.copyWith(entries: kept).nextRevision();
+      final asMap = toFirestore(next);
+      try {
+        await ref.update({
+          'entries': asMap['entries'],
+          'revId': next.revId,
+          'baseRevId': next.baseRevId,
+        });
+        return true;
+      } on FirebaseException catch (e) {
+        if (e.code != 'permission-denied' || attempt >= _scrubAttempts) {
+          rethrow;
+        }
+        final fresh = await ref.get(const GetOptions(source: Source.server));
+        if (!fresh.exists) return false;
+        plan = fromFirestore(fresh);
+      }
+    }
   }
 
   @override

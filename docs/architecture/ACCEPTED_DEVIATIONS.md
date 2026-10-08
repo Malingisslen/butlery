@@ -2569,6 +2569,19 @@ Windows, Chrome and Edge, so the "unverified on a device" half of the sentence a
 A refused save now rolls the calendar back, guarded on the published plan still being the
 resident one. Malin's decision, 2026-08-28.
 
+**AMENDED 2026-10-08 (BUT-2215).** Retires, for the week-menu path only: "what is lost is
+the user's own local edit, plus an unexplained failure." When a save from
+`WeeklyMenuPlanViewModel` is refused, `FirebaseWeeklyMenuPlanRepository.save` reads the
+stored week once from the server and throws `WeekPlanConflictException` when the stored
+`revId` is not the save's `baseRevId` or the stored `createdAt` differs. The week menu
+then shows the stored week, sets no error, and shows "Veckan sparades på en annan enhet" for
+30 s with "Behåll min"; the button writes the user's dishes and who's-home choices over the
+stored week and says "Din version sparades" or "Kunde inte spara din version". Without the
+tap the user's edit is lost, as before. On the meal-poll path (BUT-1925) a save whose week
+moved on between the poll's read and its write is now refused rather than written over the
+other save, and reaches the user through the message BUT-1925 already shows.
+`acceptCachedAbsence` is unchanged and still passed only by `fetchForWeek`.
+
 ## The weekly-menu `save` audits refusals only (BUT-1981, 2026-08-28)
 
 
@@ -5717,3 +5730,40 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   "Removing other people's uids is a default awaiting Malin's answer." `exportSharedResidue`
   keeps the requester's uid and the list owner's uid on a left list's rows and removes every
   other uid and display name.
+
+## BUT-2215 — the week plan's revision check (2026-10-08)
+
+Every save of a `weekly_menu_plans` document from a current app writes a new random string
+`revId` and, as `baseRevId`, the `revId` of the copy it was built on (the key is left out
+when that copy had none). `firestore.rules`' update limb (`weekSaveBuiltOnStored`) accepts an
+update that carries `revId` only when `revId` is a string, differs from the stored `revId`,
+and `baseRevId` equals the stored `revId`, an absent key on either side counting as null. The
+rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
+
+- **An app version from before the check bypasses it (BUT-2215, 2026-10-08).** An update
+  without `revId` is allowed, so an older app still overwrites a newer save silently. Its
+  whole-document `set()` also drops `revId` and `baseRevId`; a current app that read the week
+  before that save, from a copy that had a `revId`, then names a base the stored week no longer has and gets the conflict
+  notice.
+  An older app's recipe scrub is a batch of `update()` calls that write only `entries`. On a
+  week that has a `revId` the updated document still carries the stored `revId`, so that
+  update is denied by the `revId` inequality, the batch fails as a whole, and the older app
+  scrubs no week; the recipe itself is still deleted.
+- **A stored week without a `revId` is not protected against an older app (BUT-2215,
+  2026-10-08).** That covers a week that never had one and a week whose `revId` an older
+  app's `set()` removed. A current app that read such a week names no base. If an older app saves
+  the week in between, the stored week still has no `revId`, the two nulls compare equal, and
+  the current app's save is accepted over the older app's without a notice. Two current apps
+  are covered from the first save on: the first one that lands writes a `revId`, and the
+  other's save naming no base is refused.
+- **The recipe scrub can fail, and the deleted recipe then stays on the week (BUT-2215,
+  2026-10-08).** `removeRecipeFromAllPlans` updates each week that holds the recipe with a new
+  revision built on the copy it read. A refused update is read again from the server and
+  retried, three attempts in all, and the third refusal is thrown. The service logs it
+  (`executeServiceOperation`), and `personal_recipe_crud` deletes the recipe either way, so
+  the week keeps an entry whose recipe is gone. Each week is its own update, so a failure
+  leaves weeks already scrubbed as they are.
+- **A conflict with the user's own other device keeps no 30-day copy (BUT-2215, D1, Malin
+  2026-10-08).** The 30 s "Behåll min" is the only rescue. Nothing is written to the
+  overwritten-versions store, the same rule `RealtimeSyncService._keepOverwritten` applies
+  when the winning save is the user's own.

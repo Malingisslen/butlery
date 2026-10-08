@@ -4,6 +4,7 @@
 /// and stacked entries for the multi-recipe `övrigt` slot.
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
@@ -310,6 +311,22 @@ class WeeklyMenuPlanService extends BaseService {
 
   String? get _currentUserId => _userService.currentUserProfile?.uid;
 
+  final StreamController<String?> _weekWrites =
+      StreamController<String?>.broadcast();
+
+  /// BUT-2215: the id of a week this service saved for a caller that does not
+  /// hold the week itself (another screen, the poll winner, the recipe-delete
+  /// scrub), or null when the write may have touched any week. Emitted once
+  /// the server has the write. The week menu re-reads the week it shows, so
+  /// its next edit builds on that save instead of being refused as one from
+  /// another device. Not emitted for [saveRevision].
+  Stream<String?> get weekWrites => _weekWrites.stream;
+
+  @override
+  Future<void> onDispose() async {
+    await _weekWrites.close();
+  }
+
   /// P5-U24: whose overflow tray this device keeps (null when signed out).
   String? get overflowTrayOwnerId => _currentUserId;
 
@@ -379,7 +396,22 @@ class WeeklyMenuPlanService extends BaseService {
   /// offline. Offline has two open tickets: BUT-1965 for the generated-week
   /// write, and BUT-1975 for the calendar sitting in a permanent loading state
   /// because this future never completes.
-  Future<void> save(WeeklyMenuPlan plan) async => _repository.save(plan);
+  ///
+  /// BUT-2215: saves [plan] as a new revision built on it, for a caller that
+  /// read the week and saves once. A caller that keeps the saved plan (the
+  /// week menu shows it, and builds the next edit on it) uses [saveRevision]
+  /// instead.
+  Future<void> save(WeeklyMenuPlan plan) async {
+    final next = plan.nextRevision();
+    await _repository.save(next);
+    if (!_weekWrites.isClosed) _weekWrites.add(next.id);
+  }
+
+  /// BUT-2215: saves exactly [plan], which the caller has already made a new
+  /// revision with `nextRevision()`. The week menu publishes that copy before
+  /// it saves, so a second quick edit builds on the new revision.
+  Future<void> saveRevision(WeeklyMenuPlan plan) async =>
+      _repository.save(plan);
 
   /// BUT-996: copy every entry from [fromWeekStart] into [toWeekStart].
   ///
@@ -489,7 +521,7 @@ class WeeklyMenuPlanService extends BaseService {
     // not hear about: the reads were hoisted out by BUT-1972, the save by
     // BUT-1962, and what is left in between is pure computation over values
     // already in hand. A wrapper here would only be able to swallow.
-    await _repository.save(dest);
+    await save(dest);
     return newEntries.length;
   }
 
@@ -562,7 +594,7 @@ class WeeklyMenuPlanService extends BaseService {
       plan = updated;
       moved++;
     }
-    if (moved > 0) await _repository.save(plan);
+    if (moved > 0) await save(plan);
     return moved;
   }
 
@@ -582,6 +614,7 @@ class WeeklyMenuPlanService extends BaseService {
       ),
       operationName: 'removeRecipeFromAllPlans',
     );
+    if ((result ?? 0) > 0 && !_weekWrites.isClosed) _weekWrites.add(null);
     return result ?? 0;
   }
 
@@ -796,7 +829,7 @@ class WeeklyMenuPlanService extends BaseService {
         dayIdx++;
       }
     }
-    if (added > 0) await _repository.save(plan);
+    if (added > 0) await save(plan);
     return (added: added, overflowed: overflowed);
   }
 
@@ -834,7 +867,7 @@ class WeeklyMenuPlanService extends BaseService {
         recipe: recipe,
       );
     }
-    await _repository.save(plan);
+    await save(plan);
     return unique.length;
   }
 

@@ -58,6 +58,37 @@ abstract final class ConflictSnackBar {
     final message = name.isEmpty
         ? l.conflictWeekSavedUnnamed
         : l.conflictWeekSaved(name);
+    return _show(context, messenger, message, () => _keepMine(context, event));
+  }
+
+  /// BUT-2215: "Veckan sparades på en annan enhet" with "Behåll min", for a
+  /// save of the user's own week that lost to their other device. Same
+  /// window, persistence and look as [showWeekSaved].
+  ///
+  /// [onKeepMine] writes the user's version back. It returns false when that
+  /// save lost again (the caller then shows a new notice, so this one says
+  /// nothing more), and throws when it failed.
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
+  showWeekSavedElsewhere(
+    BuildContext context, {
+    required Future<bool> Function() onKeepMine,
+  }) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return null;
+    return _show(
+      context,
+      messenger,
+      context.l10n.conflictWeekSavedElsewhere,
+      () => _rescue(context, onKeepMine),
+    );
+  }
+
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> _show(
+    BuildContext context,
+    ScaffoldMessengerState messenger,
+    String message,
+    VoidCallback onKeepMine,
+  ) {
     final persist = MediaQuery.maybeAccessibleNavigationOf(context) ?? false;
 
     // Same queue rule as the undo primitive: this notice goes to the head of
@@ -69,8 +100,8 @@ abstract final class ConflictSnackBar {
       SnackBar(
         content: Text(message),
         action: SnackBarAction(
-          label: l.conflictWeekKeepMine,
-          onPressed: () => _keepMine(context, event),
+          label: context.l10n.conflictWeekKeepMine,
+          onPressed: onKeepMine,
         ),
         duration: kConflictNoticeWindow,
         persist: persist,
@@ -84,14 +115,22 @@ abstract final class ConflictSnackBar {
   static Future<void> _keepMine(
     BuildContext context,
     ConflictEvent event,
-  ) async {
+  ) => _rescue(context, () async {
     final svc = ServiceLocator.tryGet<RealtimeSyncService>();
+    if (svc == null) {
+      throw StateError('RealtimeSyncService is not registered');
+    }
+    await svc.recoverLocalVersion(event.localValue);
+    return true;
+  });
+
+  static Future<void> _rescue(
+    BuildContext context,
+    Future<bool> Function() keep,
+  ) async {
     try {
-      if (svc == null) {
-        throw StateError('RealtimeSyncService is not registered');
-      }
-      await svc.recoverLocalVersion(event.localValue);
-      if (!context.mounted) return;
+      final kept = await keep();
+      if (!kept || !context.mounted) return;
       SnackBarUtils.showSuccess(context, context.l10n.conflictDiffKeptToast);
     } catch (e) {
       AppLogger.error('Failed to re-apply local week after conflict', e);
