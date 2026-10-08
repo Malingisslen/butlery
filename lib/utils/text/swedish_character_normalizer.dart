@@ -15,7 +15,7 @@
 /// If this implementation changes, the TypeScript side MUST be updated
 /// to match, otherwise cascade retagging will fail silently.
 ///
-/// See: docs/tagging/normalization_contract.md
+/// See: docs/tagging/tagging_system.md
 class SwedishCharacterNormalizer {
   /// Private constructor to prevent instantiation
   SwedishCharacterNormalizer._();

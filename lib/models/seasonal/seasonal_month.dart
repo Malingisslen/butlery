@@ -17,7 +17,7 @@ class SeasonalMonth {
   final int monthIndex;
 
   /// Stable lowercase month identifier used as an l10n key suffix —
-  /// e.g. `january` maps to `seasonalHeroMonthJanuary`.
+  /// e.g. `january` maps to `seasonalMonthJanuary`.
   final String monthKey;
 
   /// Canonical lowercase ingredient names to match against recipe ingredients.

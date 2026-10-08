@@ -1,7 +1,6 @@
 // lib/services/unified/operations/shopping/shopping_presence_module.dart
 //
 // Collaborative shopping presence tracking (BUT-238).
-// Mirrors [PresenceTrackingModule] (recipe presence) but scoped to shopping lists.
 // Per-list, 30s TTL heartbeat, atomic `set(merge: true)` writes.
 
 import 'dart:async';
