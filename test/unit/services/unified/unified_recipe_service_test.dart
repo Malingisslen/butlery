@@ -32,6 +32,7 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
@@ -248,6 +249,12 @@ void main() {
         MockFirebaseSharedRecipeRepository(),
       );
       TestServiceLocator.registerMock<UserRepository>(MockUserRepository());
+
+      // BaseService.executeServiceOperation reads AuthRepository through the
+      // production ServiceLocator. Without an authenticated one registered
+      // here its auth pre-flight returns the fallback and the operation body
+      // (e.g. RealtimeRecipeOperations) never runs.
+      TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
 
       // Stub OfflineService -> AppDatabase -> CacheDao chain
       // Required because _cacheHelper getter accesses offlineService.database.cacheDao
@@ -3118,7 +3125,8 @@ void main() {
 
           // Act
           // User1 stops editing
-          await service.realtime.stopRealtimeEditing(recipe.id);
+          final stopped = await service.realtime.stopRealtimeEditing(recipe.id);
+          expect(stopped, isTrue);
 
           // User2 starts editing
           await service.realtime.startRealtimeEditing(recipe.id);

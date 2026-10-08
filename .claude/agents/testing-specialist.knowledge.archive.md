@@ -40198,3 +40198,6 @@ THIRD time (a stale clause I was about to file as Info was struck by the coordin
 renamed) — each move re-read with `Read`, because the ledger pins bytes. Core card was at 14,992
 chars, so the `RecipeFactory.build`-has-no-`tagResult` principle moved verbatim to the
 parsing-tagging-menu chapter to make room for the return-line coverage principle.
+
+### 2026-10-08 — BUT-1937: falsely green extraction and unified-recipe suites
+Wired an authenticated `AuthRepository` into the production `ServiceLocator` in `extraction_manager_test`, `social_media_extractor_test` and `unified_recipe_service_test`; all three stayed green. Probe on `session handoff`: with the registration removed, `stopRealtimeEditing` returned false (expected true), so the added assertion discriminates. The other three realtime tests still assert `anyOf(isTrue,isFalse)`: `unified_recipe_service.dart:459` constructs `RealtimeRecipeOperations` with no `realtimeSyncService`, so `startRealtimeEditing` returns false regardless.
