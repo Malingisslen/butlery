@@ -14,6 +14,7 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Consolidated friends internal operations handling Firebase sync and category management
 class FriendsInternalOperations {
@@ -75,7 +76,7 @@ class FriendsInternalOperations {
 
         // Route to correct method based on ownership to prevent privilege escalation
         AppLogger.debug(
-          'Syncing category ${category.id} to owner ${category.ownerId} (current user: $currentUserId)',
+          'Syncing category ${category.id} to owner ${category.ownerId.maskedUserId} (current user: ${currentUserId.maskedUserId})',
         );
         if (currentUserId == category.ownerId) {
           await _categoryRepository.saveCategory(category.ownerId, category);
@@ -146,7 +147,7 @@ class FriendsInternalOperations {
           e,
         );
         AppLogger.error(
-          '   Category owner: ${category.ownerId}, Current user: $currentUser',
+          '   Category owner: ${category.ownerId.maskedUserId}, Current user: $currentUser',
         );
         rethrow;
       }
@@ -186,7 +187,7 @@ class FriendsInternalOperations {
     // Check if friend is already in category
     if (category.friendUserIds.contains(friendId)) {
       AppLogger.debug(
-        'Friend already in category: $friendId -> ${category.name}',
+        'Friend already in category: ${friendId.maskedUserId} -> ${category.name}',
       );
       return;
     }
@@ -202,7 +203,7 @@ class FriendsInternalOperations {
 
     _stateManager.updateCategory(categoryId, updatedCategory);
     AppLogger.success(
-      '✅ Added friend $friendId to category ${category.name} (local state)',
+      '✅ Added friend ${friendId.maskedUserId} to category ${category.name} (local state)',
     );
   }
 

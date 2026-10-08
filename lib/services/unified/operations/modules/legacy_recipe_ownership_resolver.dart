@@ -12,7 +12,9 @@ class LegacyRecipeOwnershipResolver {
 
       final standardOwnerId = recipe.socialData?.ownerId ?? recipe.createdBy;
       if (standardOwnerId != null && standardOwnerId.isNotEmpty) {
-        AppLogger.debug('✅ Standard ownership found: $standardOwnerId');
+        AppLogger.debug(
+          '✅ Standard ownership found: ${standardOwnerId.maskedUserId}',
+        );
         return standardOwnerId;
       }
 

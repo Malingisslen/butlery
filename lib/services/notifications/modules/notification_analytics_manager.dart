@@ -6,6 +6,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Notification analytics with delivery tracking and engagement metrics.
 /// Follows SRP - handles only analytics (not FCM, content, preferences, or batching).
@@ -264,7 +265,7 @@ class NotificationAnalyticsManager {
 
   Future<void> dispose() async {
     AppLogger.info(
-      '📊 Disposing NotificationAnalyticsManager for user $_userId',
+      '📊 Disposing NotificationAnalyticsManager for user ${_userId.maskedUserId}',
     );
 
     await _flushPendingEvents();

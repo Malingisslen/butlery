@@ -150,7 +150,7 @@ class MessageManagementOperations {
       }
 
       AppLogger.success(
-        '✅ Successfully cleared conversation messages for user $currentUserId',
+        '✅ Successfully cleared conversation messages for user ${currentUserId.maskedUserId}',
       );
     } catch (e) {
       AppLogger.error(
@@ -197,7 +197,7 @@ class MessageManagementOperations {
       }
 
       AppLogger.info(
-        '🗑️ Deleting conversation ${conversationId.maskedConversationId} for user $currentUserId',
+        '🗑️ Deleting conversation ${conversationId.maskedConversationId} for user ${currentUserId.maskedUserId}',
       );
 
       // First delete all messages in the conversation

@@ -50,7 +50,7 @@ class RealtimeEditorTracker {
       final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
       await collaborativeRepo.updatePresenceHeartbeat(recipeId, currentUserId);
       AppLogger.debug(
-        'Updated presence for user $currentUserId in recipe $recipeId',
+        'Updated presence for user ${currentUserId.maskedUserId} in recipe $recipeId',
       );
     } catch (e) {
       AppLogger.error('❌ Error updating editor presence: $e');

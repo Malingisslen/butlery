@@ -209,7 +209,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
 
       AppLogger.debug(
-        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid}',
+        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid.maskedUserId}',
       );
       return KeyedSubtree(
         key: ValueKey(user.uid),

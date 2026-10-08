@@ -26,6 +26,7 @@ library;
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
@@ -799,4 +800,41 @@ void main() {
       },
     );
   });
+
+  group(
+    'importFromFile — failures reach the log without content (BUT-2230)',
+    () {
+      test('a malformed backup is labelled by its type, not its text', () {
+        Object? caught;
+        try {
+          json.decode('{"butlery_backup": {"title": "Mormors köttbullar" x}}');
+        } catch (e) {
+          caught = e;
+        }
+        // The raw text quotes the file; the label must not.
+        expect(caught.toString(), contains('Mormors'));
+        final label = BackupService.importFailureLabel(caught!);
+        expect(label, 'FormatException');
+        expect(label, isNot(contains('Mormors')));
+      });
+
+      test('neither import catch hands the exception object to the logger', () {
+        final source = File(
+          'lib/services/backup_service.dart',
+        ).readAsStringSync();
+        final importBody = source.substring(
+          source.indexOf('Future<ImportResult> importFromFile()'),
+          source.indexOf('String _formatDate('),
+        );
+        final calls = RegExp(
+          r'AppLogger\.error\(([^;]*)\);',
+        ).allMatches(importBody);
+        expect(calls, hasLength(2));
+        for (final call in calls) {
+          expect(call.group(1), contains('importFailureLabel(e)'));
+          expect(call.group(1), isNot(matches(RegExp(r',\s*e\s*,'))));
+        }
+      });
+    },
+  );
 }
