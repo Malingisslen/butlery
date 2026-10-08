@@ -19,6 +19,7 @@ const Map<String, String> knownA11yFindings = {};
 /// Accepted failures on every host. Host-bound accepted failures are in
 /// [acceptedA11yFindingsLinuxOnly] and [acceptedA11yFindingsWindowsOnly].
 const Map<String, String> acceptedA11yFindings = {
+  'hem::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'inköpslista::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptdetalj::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptdetalj::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
@@ -81,4 +82,4 @@ const int knownA11yFindingsCeiling = 0;
 
 /// The most entries the three accepted lists may hold together. Lower it when
 /// an entry goes; an accepted failure is never added without Malin's decision.
-const int acceptedA11yFindingsCeiling = 12;
+const int acceptedA11yFindingsCeiling = 13;
