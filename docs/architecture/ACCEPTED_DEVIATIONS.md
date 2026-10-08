@@ -5694,3 +5694,7 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
   trail never recorded the requester (written before the trail, or by a client that skipped
   it) and where someone else acted last is not found; the `listData` copy on a `shared_content`
   document is not searched. Erasure does not reach either through these queries.
+- **RESOLVED 2026-10-08 — Malin: remove other people's uids (BUT-1747, 2026-10-08).** Retires
+  "Removing other people's uids is a default awaiting Malin's answer." `exportSharedResidue`
+  keeps the requester's uid and the list owner's uid on a left list's rows and removes every
+  other uid and display name.
