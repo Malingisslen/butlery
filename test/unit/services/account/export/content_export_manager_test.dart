@@ -55,27 +55,16 @@ class _FakeDataExportRepository extends Fake
     this.shoppingLists = const [],
     this.sharedOwned = const [],
     this.sharedMember = const [],
-    this.sharedContributor = const [],
-    this.contributorProbeError,
     this.ingredientSuggestions = const [],
   });
   final List<Map<String, dynamic>> personalMenus;
   final List<Map<String, dynamic>> sharedMenus;
   final List<Map<String, dynamic>> shoppingLists;
-  // BUT-1732: the three shared-list probes, mirroring the deletion cascade's.
   final List<Map<String, dynamic>> sharedOwned;
   final List<Map<String, dynamic>> sharedMember;
-  final List<Map<String, dynamic>> sharedContributor;
   // BUT-2028.
   final List<Map<String, dynamic>> ingredientSuggestions;
 
-  /// The exact failure the contributor probe raises, not a bool. The section
-  /// branches on WHICH error arrived — a rules refusal is a documented,
-  /// expected gap ("you have left these lists"), anything else is an unproven
-  /// completeness claim that has to reach `export_metadata.warnings`. A boolean
-  /// flag can only ever stage one of those two, which is how the refusal
-  /// predicate came to be deletable with the suite green.
-  final Object? contributorProbeError;
   int? capturedMaxLists;
 
   // Sentinel default (NOT the real 500), same shape as `_FakePantryRepository`:
@@ -100,17 +89,6 @@ class _FakeDataExportRepository extends Fake
     String userId, {
     int maxDocuments = 500,
   }) async => sharedMember;
-
-  @override
-  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsContributor(
-    String userId, {
-    int maxDocuments = 500,
-  }) async {
-    if (contributorProbeError != null) {
-      throw contributorProbeError!;
-    }
-    return sharedContributor;
-  }
 
   @override
   Future<List<Map<String, dynamic>>> exportPersonalMenus(
@@ -1145,7 +1123,7 @@ void main() {
       },
     };
 
-    test('merges the three probes and records every role', () async {
+    test('merges the two probes and records every role', () async {
       final manager = _manager(
         exports: _FakeDataExportRepository(
           sharedOwned: [sharedDoc(id: 'l1', ownerId: 'alice')],
@@ -1153,7 +1131,6 @@ void main() {
             sharedDoc(id: 'l1', ownerId: 'alice'),
             sharedDoc(id: 'l2', ownerId: 'bob'),
           ],
-          sharedContributor: [sharedDoc(id: 'l2', ownerId: 'bob')],
         ),
       );
 
@@ -1165,7 +1142,7 @@ void main() {
           (list as Map)['list_id']: list,
       };
       expect(byId['l1']!['your_roles'], ['member', 'owner']);
-      expect(byId['l2']!['your_roles'], ['contributor', 'member']);
+      expect(byId['l2']!['your_roles'], ['member']);
     });
 
     // The minimisation contract, asserted as ABSENCE of the other member's
@@ -1251,99 +1228,6 @@ void main() {
       }
     });
 
-    // A list the user has LEFT is exactly what `contributorUserIds` finds and
-    // exactly what `firestore.rules` refuses the client. That must degrade to a
-    // documented gap, never to a failed export section.
-    //
-    // BUT-1732 review: these two tests are a PAIR, and the pairing is the
-    // point. Both branch strings contain the word "left", so an assertion on
-    // that substring alone matched either arm — the whole
-    // `e is FirebaseException && e.code == 'permission-denied'` predicate was
-    // deletable with the suite green. Each test therefore asserts the phrase
-    // UNIQUE to its arm plus the flag the arm sets, because the flag is the
-    // half that reaches `export_metadata.warnings` and so the half a data
-    // subject can act on.
-    test('a rules refusal is worded as a documented gap, with no '
-        'warning flag', () async {
-      final manager = _manager(
-        exports: _FakeDataExportRepository(
-          sharedOwned: [sharedDoc(id: 'l1', ownerId: 'alice')],
-          contributorProbeError: FirebaseException(
-            plugin: 'cloud_firestore',
-            code: 'permission-denied',
-          ),
-        ),
-      );
-
-      final result = await manager.exportSharedShoppingLists('alice');
-
-      expect(result['error'], isNull);
-      expect(result['total_count'], 1);
-      expect(
-        result['note'],
-        contains('could not be included'),
-        reason:
-            'the phrase unique to the refusal arm — "left" appears in BOTH '
-            'branches and cannot tell them apart',
-      );
-      expect(
-        result.containsKey('contributor_probe_failed'),
-        isFalse,
-        reason:
-            'an expected, documented gap is not a warning; flagging it would '
-            'tell every departed-list user their export is unreliable',
-      );
-      expect(result.containsKey('error_code'), isFalse);
-    });
-
-    test('a non-permission failure is worded neutrally and raises the '
-        'warning flag', () async {
-      // A network drop, a deadline or a missing index lands in the same catch.
-      // The bundle may say it is incomplete but must not invent WHY — and
-      // unlike the refusal, this one is genuinely unproven, so it has to carry
-      // an `error_code`: `DataExportService` keys `export_metadata.warnings` on
-      // that field ALONE, and without it the metadata reads complete while a
-      // probe silently did not run.
-      final manager = _manager(
-        exports: _FakeDataExportRepository(
-          sharedOwned: [sharedDoc(id: 'l1', ownerId: 'alice')],
-          contributorProbeError: FirebaseException(
-            plugin: 'cloud_firestore',
-            code: 'unavailable',
-          ),
-        ),
-      );
-
-      final result = await manager.exportSharedShoppingLists('alice');
-
-      expect(result['error'], isNull, reason: 'still not a failed section');
-      expect(result['total_count'], 1);
-      expect(
-        result['note'],
-        contains('did not complete'),
-        reason: 'the phrase unique to the neutral arm',
-      );
-      expect(
-        result['note'],
-        isNot(contains('could not be included')),
-        reason:
-            'asserting an expected cause the data is silent about is its own '
-            'defect — the user has not left anything',
-      );
-      expect(result['contributor_probe_failed'], isTrue);
-      expect(
-        result['error_code'],
-        'shared-shopping-lists-contributor-probe-failed',
-        reason:
-            'the only field DataExportService lifts into '
-            'export_metadata.warnings',
-      );
-    });
-
-    // BUT-1732 review round 2: the section's `truncated` flag is a THREE-way
-    // OR and it shipped with no truncation test at all, while the CONTRIBUTOR
-    // leg's flag was being discarded outright — a clipped bundle silently
-    // claiming completeness, which is the dangerous direction for Art. 15.
     // One test per probe, each clipping only its own leg, so a collapse to any
     // single term reddens (the same per-leg shape the recipes and menus
     // sections already carry).
@@ -1356,7 +1240,7 @@ void main() {
       },
     };
 
-    for (final leg in ['owned', 'member', 'contributor']) {
+    for (final leg in ['owned', 'member']) {
       test('stamps truncated when only the $leg probe clipped', () async {
         // Derived, not literal: re-tuning the cap is a config change, not a
         // behaviour regression, and must not fail here.
@@ -1371,7 +1255,6 @@ void main() {
           exports: _FakeDataExportRepository(
             sharedOwned: leg == 'owned' ? clipped : const [],
             sharedMember: leg == 'member' ? clipped : const [],
-            sharedContributor: leg == 'contributor' ? clipped : const [],
           ),
         );
 
@@ -1386,7 +1269,7 @@ void main() {
       });
     }
 
-    // The recall control for all three above: a section that fits must NOT
+    // The recall control for both above: a section that fits must NOT
     // claim to be incomplete. Exactly AT the cap is the flip point — the
     // pre-BUT-1662 `length >= cap` shape stamped a complete export as
     // truncated, a false incompleteness claim on a GDPR bundle.
@@ -1419,13 +1302,6 @@ void main() {
       expect(result['shared_shopping_lists'], isEmpty);
       expect(result.containsKey('error'), isFalse);
       expect(result.containsKey('truncated'), isFalse);
-      expect(
-        result.containsKey('note'),
-        isFalse,
-        reason:
-            'the left-lists note belongs to a REFUSED probe, not an empty '
-            'one — stamping it here would tell every user data was withheld',
-      );
     });
 
     // The twin of the personal-list test above, and the one this group was

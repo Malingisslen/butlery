@@ -171,6 +171,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     dailyLimit: 50,
   },
 
+  // BUT-1747 panel condition 1: five per hour, ten per day.
+  exportSharedResidue: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
+
   // Notification Operations
   sendNotification: {
     maxTokens: 60,

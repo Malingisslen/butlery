@@ -54,6 +54,7 @@ import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
+import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
 // Device security
@@ -353,6 +354,9 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           firestoreRepository: container<FirestoreRepository>(),
           dataExportRepository: container<FirebaseDataExportRepository>(),
+          sharedResidueExportManager: SharedResidueExportManager(
+            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+          ),
         ),
       );
 

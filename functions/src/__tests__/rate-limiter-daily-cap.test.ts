@@ -331,6 +331,16 @@ const cases: UnitCase[] = [
       );
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: exportSharedResidue is five per hour, ten per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.exportSharedResidue;
+      assertEqual(cfg.dailyLimit, 10, "exportSharedResidue.dailyLimit");
+      assertEqual(cfg.maxTokens, 5, "exportSharedResidue.maxTokens");
+      assertEqual(cfg.refillRate, 5, "exportSharedResidue.refillRate");
+      assertEqual(cfg.refillIntervalMs, 3600000, "exportSharedResidue.refillIntervalMs");
+    },
+  },
   // The coverage promise itself, rather than a count of the entries that keep
   // it. Every previous wording quantified ("three", then "FOUR") and went stale
   // by ADDITION with its own bytes untouched — twice. This case fails on the
@@ -346,6 +356,7 @@ const cases: UnitCase[] = [
         "ensureCategoryChat",
         "sendGroupInvitations",
         "findUserByEmail",
+        "exportSharedResidue",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

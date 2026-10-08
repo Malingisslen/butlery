@@ -5651,3 +5651,46 @@ uid, the six `reactionKeys()` and comments the caller can read (`canReadComment(
 - **Deploy order: functions before rules.** `scrubCommentReactions` (step `comment_reactions`)
   and the six `comment reaction <key>` probe legs must be live before the rules let a
   reaction be written.
+
+## BUT-1747 — lists the requester LEFT, and `shared_content` items, in the Art. 15 bundle (2026-10-07)
+
+- **SUPERSEDES the BUT-1732 "Known gap, deliberate" paragraph and the BUT-1718 "Named residual
+  — the export" paragraph (BUT-1747, 2026-10-07).** They read: "lists the requester has LEFT
+  are NOT in the export" and "A list a member has LEFT is not in their Art. 15 bundle." The
+  callable `exportSharedResidue` (`functions/src/exports/shared-residue.ts`) now finds those
+  lists with the Admin SDK by `contributorUserIds` array-contains and `lastActivityByUserId ==`,
+  drops lists the requester owns or is still a member of, and the client puts the result in the
+  `shared_lists_left` section. The client `contributorUserIds` probe and its notes are removed:
+  `firestore.rules` refused that query for every user, including one who had left nothing
+  (emulator, 2026-10-07).
+- **A left list exports only the requester's own traces (BUT-1747, 2026-10-07).** Only items
+  naming the requester in `addedByUserId`, `lastModifiedByUserId`, `purchasedByUserId` or
+  `assignedToUserId`; `lastActivityByUserId/At` only when it is the requester;
+  `contributorUserIds` becomes `recorded_as_contributor`. Other people's uid fields on those
+  rows are removed and display names are kept only beside the requester's own uid; `ownerId`
+  is kept. Every item goes through a fail-closed allowlist pinned to
+  `UnifiedShoppingItem.toFirestore`. BUT-1732's keep of other members' uids and the full
+  `contributorUserIds` rested on the requester being able to read the list, which a leaver
+  cannot. Removing other people's uids is a default awaiting Malin's answer.
+- **`shared_content/{id}/items` is in the same callable (BUT-1747, 2026-10-07).** Rows naming
+  the requester in one of the four uid fields under a top-level `shared_content` parent, plus
+  every row under a share the requester made, through the same projection. Personal-list
+  `items` rows are filtered out before the cap counts.
+- **SUPERSEDES the BUT-1716 "Art. 15." paragraph (BUT-1747, 2026-10-07).** It read: "this
+  change makes rows erasable that are not exportable." `exportSharedResidue` now exports
+  `shared_content/{id}/items` rows naming the requester and every row under a share the
+  requester made, the same rows the cascade erases.
+- **Declines, never truncates (BUT-1747, 2026-10-07).** Above 500 left lists, 500 owned shares,
+  2000 item rows, a raw query bound, or about 8 MB of response, the callable fails with
+  `shared-residue-too-large`. Any callable failure becomes the section's `error_code` and a
+  bundle warning; the rest of the bundle still ships.
+- **Another account can make the section decline (BUT-1747, 2026-10-07).** Whoever creates a
+  shared list may write `contributorUserIds` naming someone else, so enough such lists push that
+  person past the left-list cap or the response-size bound, and their `shared_lists_left`
+  section fails with `shared-residue-too-large`. The rest of the bundle still ships and the
+  section says it failed. Item rows under personal lists cannot cause this: the item queries
+  are scoped by document path to `shared_content`.
+- **Named gaps the callable reports in `known_gaps` (BUT-1747, 2026-10-07).** A left list whose
+  trail never recorded the requester (written before the trail, or by a client that skipped
+  it) and where someone else acted last is not found; the `listData` copy on a `shared_content`
+  document is not searched. Erasure does not reach either through these queries.

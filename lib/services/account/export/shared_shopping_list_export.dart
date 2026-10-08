@@ -1,21 +1,19 @@
 // lib/services/account/export/shared_shopping_list_export.dart
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
 
 /// BUT-1732: the Article-15 section for SHARED shopping lists
-/// (`unified_shared_shopping_lists`) — the lists the user owns, is a member of,
-/// or has contributed rows to.
+/// (`unified_shared_shopping_lists`) — the lists the user owns or is a member
+/// of.
 ///
 /// `ContentExportManager.exportShoppingLists` only ever read
 /// `users/{uid}/unified_shopping_lists`, so a household that does all its
 /// shopping on a shared list received an export whose shopping section was
 /// empty — while `account-deletion-cascade.ts` scrubs exactly these documents
-/// under Article 17. Art. 15 has to cover at least what Art. 17 erases, so the
-/// three probes below mirror the cascade's own.
+/// under Article 17. Art. 15 has to cover at least what Art. 17 erases.
 ///
 /// Split out of [ContentExportManager] purely to keep that facade under the
 /// 500-line limit.
@@ -86,50 +84,6 @@ class SharedShoppingListExport {
         ),
       );
 
-      // The contributor probe is the one that can be refused outright: a list
-      // the user has LEFT is precisely what `contributorUserIds` was added to
-      // find, and precisely what the read rule
-      // (`ownerId == uid || uid in memberPermissions`) no longer lets them see.
-      // A refusal is a documented gap in the bundle, not a failed export.
-      var contributorRows = const <Map<String, dynamic>>[];
-      var contributorTruncated = false;
-      var contributorProbeFailed = false;
-      String? contributorNote;
-      try {
-        final contributed = await ExportPaginationHelper.fetchCapped(
-          type: 'shared_shopping_lists',
-          fetch: (max) => _exports.exportSharedShoppingListsAsContributor(
-            userId,
-            maxDocuments: max,
-          ),
-        );
-        contributorRows = contributed.items;
-        contributorTruncated = contributed.truncated;
-      } catch (e) {
-        // Only a rules refusal actually means "you have left these lists". A
-        // network drop, a deadline, or a missing index lands in this same
-        // catch, and an Art. 15 bundle may say it is incomplete but must not
-        // invent WHY — an asserted cause the data is silent about is its own
-        // defect. Branch, and log the real error either way so the transient
-        // case stays tellable apart from the permanent one afterwards.
-        final refusedByRules =
-            e is FirebaseException && e.code == 'permission-denied';
-        contributorNote = refusedByRules
-            ? 'Lists you have left could not be included: they are readable '
-                  'only by their current members. Your name is still removed '
-                  'from them when you delete your account.'
-            : 'One lookup for lists you may have left did not complete, so '
-                  'this section may be incomplete.';
-        contributorProbeFailed = !refusedByRules;
-        // AppLogger.warning takes no error object; use error() so the real
-        // exception is attached rather than lost — telling a transient failure
-        // apart from a permanent refusal afterwards depends on having it.
-        app_logger.AppLogger.error(
-          '[$_logTag] contributor probe failed (refusedByRules=$refusedByRules)',
-          e,
-        );
-      }
-
       final roles = <String, Set<String>>{};
       final docs = <String, Map<String, dynamic>>{};
       void collect(Iterable<Map<String, dynamic>> rows, String role) {
@@ -142,7 +96,6 @@ class SharedShoppingListExport {
 
       collect(owned.items, 'owner');
       collect(member.items, 'member');
-      collect(contributorRows, 'contributor');
 
       final lists = [
         for (final entry in docs.entries)
@@ -160,29 +113,8 @@ class SharedShoppingListExport {
         'data_minimisation':
             "Other household members' cached display names are omitted; their "
             'user IDs are retained.',
-        'note': ?contributorNote,
-        // Distinct from `truncated` (we know rows were cut) and from the
-        // rules-refusal note (a documented, expected gap): this says a probe
-        // did not complete for an unknown reason, so the section's own
-        // completeness claim is unproven.
-        //
-        // `error_code` is not decoration — `DataExportService` keys
-        // `export_metadata.warnings` on that field ALONE, so without it this
-        // whole branch is invisible at bundle level and the metadata reads
-        // complete while a probe silently did not run. That is the same defect
-        // the outer catch's error_code closes, one branch over. The
-        // permission-denied case deliberately stays a `note` only: it is a
-        // documented, expected gap, not a warning.
-        if (contributorProbeFailed) ...{
-          'contributor_probe_failed': true,
-          'error_code': 'shared-shopping-lists-contributor-probe-failed',
-        },
-        // Per-sub-query flags, not merged-length-vs-one-cap (BUT-1662). All
-        // THREE probes count: a capped contributor probe omits rows just as
-        // silently as a capped owner probe, and this section is the one place
-        // the bundle can admit it.
-        if (owned.truncated || member.truncated || contributorTruncated)
-          'truncated': true,
+        // Per-sub-query flags, not merged-length-vs-one-cap (BUT-1662).
+        if (owned.truncated || member.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(

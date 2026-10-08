@@ -31,6 +31,7 @@ import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
+import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson, sanitizeTimestamp;
 
@@ -60,6 +61,7 @@ class DataExportService extends BaseService {
   late final ComplianceExportManager _complianceManager;
   late final PreferencesExportManager _preferencesManager;
   late final FamilyExportManager _familyManager;
+  late final SharedResidueExportManager _sharedResidueManager;
 
   // BUT-501: residual-Firestore gateway used by every manager that still
   // touches collections without a typed repository. Held here so the
@@ -98,6 +100,7 @@ class DataExportService extends BaseService {
     // Tests inject a pre-built manager with a mocked FirebaseFunctions
     // to bypass the Firebase.app dependency.
     ComplianceExportManager? complianceExportManager,
+    required SharedResidueExportManager sharedResidueExportManager,
     // BUT-1773: test seam for the one-row-per-export audit trail.
     FirebaseAuditRepository? auditRepository,
   }) : _authRepository = authRepository,
@@ -139,6 +142,7 @@ class DataExportService extends BaseService {
     _preferencesManager = PreferencesExportManager(
       dataExportRepository: _exportRepo,
     );
+    _sharedResidueManager = sharedResidueExportManager;
     _familyManager = FamilyExportManager(
       householdRepository: householdRepository,
       dinerProfileRepository: dinerProfileRepository,
@@ -234,6 +238,8 @@ class DataExportService extends BaseService {
       'shared_shopping_lists': _contentManager.exportSharedShoppingLists(
         userId,
       ),
+      // BUT-1747: lists the user has LEFT, which the read rule refuses them.
+      'shared_lists_left': _sharedResidueManager.exportSharedListsLeft(),
       'personal_tags': _contentManager.exportPersonalTags(userId),
       'personal_tag_groups': _contentManager.exportPersonalTagGroups(userId),
       'cook_snaps': _contentManager.exportCookSnaps(userId),
@@ -374,12 +380,9 @@ class DataExportService extends BaseService {
         // The two shapes are NOT the same claim, and asserting the stronger one
         // for both would re-introduce this ticket's defect with the sign
         // flipped. `error` means the section failed outright. `error_code`
-        // WITHOUT `error` is a partial: `shared_shopping_list_export.dart` sets
-        // it when one of three probes failed while the other two returned, so
-        // the section body still ships its lists and its own accurate note. A
-        // flat "could not be exported" would tell the data subject an exported
-        // section is missing — at the root of an Art. 15 artifact they may
-        // forward to a supervisory authority.
+        // WITHOUT `error` is a partial. A flat "could not be exported" would
+        // tell the data subject an exported section is missing — at the root
+        // of an Art. 15 artifact they may forward to a supervisory authority.
         final failedOutright = value['error'] != null;
         warnings.add({
           'section': entry.key,

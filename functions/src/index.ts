@@ -104,6 +104,9 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 // layer (BUT-424 tampering-detection invariant); this callable runs under
 // Admin SDK to satisfy the user's right to access their own actor history.
 export { exportAuditLogs } from "./exports/audit-logs";
+// BUT-1747: shared shopping data the client SDK cannot read — lists the user
+// has left and `shared_content` item rows.
+export { exportSharedResidue } from "./exports/shared-residue";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
