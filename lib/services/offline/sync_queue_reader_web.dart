@@ -16,11 +16,11 @@ Stream<List<QueuedChange>> watchQueuedChanges(AppDatabase db, String userId) =>
 Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {}
 
 /// Nothing to discard on the web.
-Future<void> discardQueuedChange(
+Future<String?> discardQueuedChange(
   AppDatabase db,
   String userId,
   QueuedChange change,
-) async {}
+) async => null;
 
 /// Nothing to copy on the web.
 Future<String> saveQueuedChangeAsCopy(

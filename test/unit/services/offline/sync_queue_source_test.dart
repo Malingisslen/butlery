@@ -79,6 +79,8 @@ void main() {
 
     expect((await source.watchChanges().first).isEmpty, isTrue);
     verify(() => offline.refreshSyncState()).called(1);
+    // BUT-2295: the recipe screens drop the thrown-away local version.
+    verify(() => offline.announceRecipeLeftQueue('r1')).called(1);
   });
 
   settledTests();

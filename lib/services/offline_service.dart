@@ -250,6 +250,12 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Whether the device holds a write of the recipe the server has not
   /// confirmed. A server copy of such a recipe is older than the device's.
+  /// A queued write thrown away under Väntar på dig leaves the queue unsent,
+  /// and the recipe screens still show it until they hear about it.
+  void announceRecipeLeftQueue(String recipeId) {
+    if (!_recipeSent.isClosed) _recipeSent.add(recipeId);
+  }
+
   Future<bool> hasUnsentRecipeWrite(String recipeId, String userId) async {
     if (!isQueueReady) return false;
     return _userStorage.hasUnsentWrite(recipeId, userId);

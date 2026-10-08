@@ -222,6 +222,16 @@ void main() {
       });
     });
 
+    // BUT-2295: a write thrown away under Väntar på dig reaches the same
+    // stream the recipe service refreshes its copy from.
+    test('a discarded recipe write is announced on recipesSent', () async {
+      final sent = offlineService.recipesSent.first;
+
+      offlineService.announceRecipeLeftQueue('r1');
+
+      expect(await sent, 'r1');
+    });
+
     group('Resource Management', () {
       test('should dispose resources', () {
         offlineService.dispose();
