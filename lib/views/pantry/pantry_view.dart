@@ -194,28 +194,23 @@ class _PantrySections extends StatelessWidget {
         if (expiring.isNotEmpty)
           _PantrySection(
             title: l10n.pantrySectionExpiring,
-            icon: ButleryIcons.clock,
             items: expiring,
             initiallyExpanded: true,
           ),
         _PantrySection(
           title: l10n.pantrySectionFridge,
-          icon: Icons.kitchen,
           items: vm.itemsByLocation(PantryLocation.fridge),
         ),
         _PantrySection(
           title: l10n.pantrySectionFreezer,
-          icon: Icons.ac_unit,
           items: vm.itemsByLocation(PantryLocation.freezer),
         ),
         _PantrySection(
           title: l10n.pantrySectionPantry,
-          icon: Icons.inventory_2_outlined,
           items: vm.itemsByLocation(PantryLocation.pantry),
         ),
         _PantrySection(
           title: l10n.pantrySectionSpiceRack,
-          icon: Icons.grass_outlined,
           items: vm.itemsByLocation(PantryLocation.spiceRack),
         ),
       ],
@@ -226,13 +221,11 @@ class _PantrySections extends StatelessWidget {
 class _PantrySection extends StatelessWidget {
   const _PantrySection({
     required this.title,
-    required this.icon,
     required this.items,
     this.initiallyExpanded = false,
   });
 
   final String title;
-  final IconData icon;
   final List<PantryItem> items;
   final bool initiallyExpanded;
 
@@ -268,11 +261,6 @@ class _PantrySection extends StatelessWidget {
             vertical: AppDimensions.spacingXs,
           ),
           childrenPadding: EdgeInsets.zero,
-          leading: ButleryIcon(
-            icon,
-            color: cs.onSurface,
-            size: AppDimensions.iconSizeM,
-          ),
           title: Row(
             children: [
               Text(

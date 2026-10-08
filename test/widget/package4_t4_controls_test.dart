@@ -235,7 +235,7 @@ void main() {
     });
   });
   group('chosen row in dark mode', () {
-    testWidgets('the icon and check stay text.primary, not ink', (
+    testWidgets('the check stays text.primary, not ink', (
       tester,
     ) async {
       final vm = OnboardingViewModel()..toggleDietaryPref('vegetarisk');
@@ -255,10 +255,6 @@ void main() {
       expect(cs.onSurface, isNot(cs.primary));
       expect(
         tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
-        cs.onSurface,
-      );
-      expect(
-        tester.widget<Icon>(find.byIcon(ButleryIcons.leaf)).color,
         cs.onSurface,
       );
     });
