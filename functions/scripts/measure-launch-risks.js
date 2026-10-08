@@ -2,6 +2,9 @@
  * BUT-2278: read-only count of minor public profiles that are searchable.
  * BUT-2260: read-only count of documents left in `globalRecipeCache`, the
  * collection BUT-2244 stopped using.
+ * BUT-2213: read-only count of `realtime_recipes` documents and of the
+ * `presence` rows under them, before the code that erases and exports them is
+ * removed.
  *
  * Prints counts only, never a uid, so the job log can be read by anyone with
  * access to the repository. Writes nothing.
@@ -52,6 +55,18 @@ async function main() {
 
   const cache = await db.collection("globalRecipeCache").count().get();
   console.log(`global_recipe_cache_docs=${cache.data().count}`);
+
+  const realtimeRecipes = await db.collection("realtime_recipes").count().get();
+  console.log(`realtime_recipes_docs=${realtimeRecipes.data().count}`);
+
+  // `presence` is also the name of a subcollection elsewhere, so only rows
+  // whose grandparent collection is `realtime_recipes` are counted. A row can
+  // outlive its parent document, which is why this does not walk the parents.
+  const presence = await db.collectionGroup("presence").select().get();
+  const recipePresence = presence.docs.filter(
+    (d) => d.ref.parent.parent?.parent.id === "realtime_recipes",
+  ).length;
+  console.log(`realtime_recipes_presence_rows=${recipePresence}`);
 }
 
 main().catch((err) => {
