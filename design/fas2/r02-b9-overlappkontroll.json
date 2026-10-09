@@ -1,0 +1,32 @@
+[
+ {
+  "art": "kompkallahel",
+  "a": "Visa mindre",
+  "b": "Jämför med receptet som det är nu",
+  "overlapp": {
+   "w": 76.38,
+   "h": 25.96
+  },
+  "sammaPort": false,
+  "aSynlig": false,
+  "bSynlig": true,
+  "aPortScroll": true,
+  "bPortScroll": false,
+  "verklig": false
+ },
+ {
+  "art": "kompkallahel",
+  "a": "Visa mindre",
+  "b": "Tolka källan igen och skriv över",
+  "overlapp": {
+   "w": 76.38,
+   "h": 14.04
+  },
+  "sammaPort": false,
+  "aSynlig": false,
+  "bSynlig": true,
+  "aPortScroll": true,
+  "bPortScroll": false,
+  "verklig": false
+ }
+]

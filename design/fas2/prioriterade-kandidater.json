@@ -1,0 +1,2861 @@
+{
+ "$schema": "butlery-prioriterade-kandidater/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "c4dd269",
+ "$status": "PRIORITIZED UNDECLARED COMPONENT ADJUDICATION KLAR",
+ "$typ": "ANALYS / COVERAGE. Inga produktskrivningar.",
+ "P0_population": {
+  "raInventering": 108,
+  "prioriteradeIDettaBlock": 21,
+  "utanforOmfang": 87,
+  "definition": "syskonrad ELLER samma typ deklarerad i skarmen",
+  "provadeDefinitioner": [
+   {
+    "definition": "syskonrad ar deklarerad kontroll",
+    "antal": 20
+   },
+   {
+    "definition": "prioritet >= 4",
+    "antal": 24
+   },
+   {
+    "definition": "prioritet >= 5",
+    "antal": 17
+   },
+   {
+    "definition": "prioritet >= 6",
+    "antal": 8
+   },
+   {
+    "definition": "prioritet > 0",
+    "antal": 108
+   },
+   {
+    "definition": "syskonrad ELLER samma typ deklarerad i skarmen",
+    "antal": 21
+   }
+  ],
+  "fingeravtryck": "cc1fbe4362269a4614f86f80",
+  "$prioriteringsregel": "Narliggande deklarerad kontroll ar en prioriterings- och undersokningssignal. Den ar inte semantiskt bevis for kandidaten.",
+  "medlemmar": [
+   {
+    "identitet": "inkopmerge|22",
+    "art": "inkopmerge",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "prioritet": 4,
+    "syskonKontroller": 2,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "inkopmergeoppen|12",
+    "art": "inkopmergeoppen",
+    "ordinal": 12,
+    "komponent": "checkbox",
+    "etikett": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+    "prioritet": 5,
+    "syskonKontroller": 2,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "inkopmergeoppen|19",
+    "art": "inkopmergeoppen",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "etikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+    "prioritet": 5,
+    "syskonKontroller": 2,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "inkopmergeoppen|26",
+    "art": "inkopmergeoppen",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "etikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+    "prioritet": 5,
+    "syskonKontroller": 2,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "inkopmergeoppen|33",
+    "art": "inkopmergeoppen",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "prioritet": 4,
+    "syskonKontroller": 2,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "veckoallergi|45",
+    "art": "veckoallergi",
+    "ordinal": 45,
+    "komponent": "chip",
+    "etikett": "Mindre kött · kan släppas",
+    "prioritet": 4,
+    "syskonKontroller": 0,
+    "sammaTypDeklarerad": 1,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "betygsammanslaget|21",
+    "art": "betygsammanslaget",
+    "ordinal": 21,
+    "komponent": "chip",
+    "etikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av Maja I Ida hoppade över · Ingen historik per tillfälle. Data",
+    "prioritet": 4,
+    "syskonKontroller": 2,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "delatmindel|41",
+    "art": "delatmindel",
+    "ordinal": 41,
+    "komponent": "checkbox",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "prioritet": 6,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 5,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "delatmindel|48",
+    "art": "delatmindel",
+    "ordinal": 48,
+    "komponent": "checkbox",
+    "etikett": "1 kg · potatis · AAnna tar",
+    "prioritet": 6,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 5,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "delatnarvaro|25",
+    "art": "delatnarvaro",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "prioritet": 6,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 4,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ]
+   },
+   {
+    "identitet": "delatclaimkonflikt|15",
+    "art": "delatclaimkonflikt",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "prioritet": 7,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 2,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|13",
+    "art": "veckochips",
+    "ordinal": 13,
+    "komponent": "chip",
+    "etikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher",
+    "prioritet": 5,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|14",
+    "art": "veckochips",
+    "ordinal": 14,
+    "komponent": "chip",
+    "etikett": "3 middagar · tacofredag · max 30 min · 2 luncher",
+    "prioritet": 5,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|15",
+    "art": "veckochips",
+    "ordinal": 15,
+    "komponent": "chip",
+    "etikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher",
+    "prioritet": 5,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|16",
+    "art": "veckochips",
+    "ordinal": 16,
+    "komponent": "chip",
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher",
+    "prioritet": 5,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|17",
+    "art": "veckochips",
+    "ordinal": 17,
+    "komponent": "chip",
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min",
+    "prioritet": 5,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|20",
+    "art": "veckochips",
+    "ordinal": 20,
+    "komponent": "chip",
+    "etikett": "”som förra gången”",
+    "prioritet": 5,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "veckochips|25",
+    "art": "veckochips",
+    "ordinal": 25,
+    "komponent": "chip",
+    "etikett": "”lite lyxigt”",
+    "prioritet": 6,
+    "syskonKontroller": 1,
+    "sammaTypDeklarerad": 0,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL"
+    ]
+   },
+   {
+    "identitet": "impassist2|16",
+    "art": "impassist2",
+    "ordinal": 16,
+    "komponent": "checkbox",
+    "etikett": "500 g blandfärs",
+    "prioritet": 7,
+    "syskonKontroller": 3,
+    "sammaTypDeklarerad": 3,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "impassist2|19",
+    "art": "impassist2",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "etikett": "1 gul lök",
+    "prioritet": 7,
+    "syskonKontroller": 3,
+    "sammaTypDeklarerad": 3,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ]
+   },
+   {
+    "identitet": "impassist2|22",
+    "art": "impassist2",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "etikett": "3 dl grädde",
+    "prioritet": 7,
+    "syskonKontroller": 3,
+    "sammaTypDeklarerad": 3,
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ]
+   }
+  ]
+ },
+ "P1_evidens": [
+  {
+   "id": "inkopmerge|22",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 364,
+     "h": 38,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "egenText": "",
+    "radtext": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ TOM_RAM",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Till inköpslistan — sammanslagning",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 3,
+     "roller": [
+      "button"
+     ],
+     "namn": [
+      "Visa detaljer om sammanslagningen",
+      "Avbryt",
+      "Lägg till 18 varor"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1px rgb(125, 137, 124)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|12",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 364,
+     "h": 79,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+    "egenText": "",
+    "radtext": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "deklarerade": 2,
+    "roll": "checkbox",
+    "exempel": [
+     "familjmedlemsamtycke|19",
+     "familjmedlemsamtycke|32"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Till inköpslistan — detaljer öppna",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 3,
+     "roller": [
+      "button"
+     ],
+     "namn": [
+      "Dölj detaljer om sammanslagningen",
+      "Avbryt",
+      "Lägg till 18 varor"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgb(36, 56, 44)",
+    "ram": null,
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 14,
+      "h": 14,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "check",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|19",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 364,
+     "h": 79,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+    "egenText": "",
+    "radtext": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "deklarerade": 2,
+    "roll": "checkbox",
+    "exempel": [
+     "familjmedlemsamtycke|19",
+     "familjmedlemsamtycke|32"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Till inköpslistan — detaljer öppna",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 3,
+     "roller": [
+      "button"
+     ],
+     "namn": [
+      "Dölj detaljer om sammanslagningen",
+      "Avbryt",
+      "Lägg till 18 varor"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgb(36, 56, 44)",
+    "ram": null,
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 14,
+      "h": 14,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "check",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|26",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 364,
+     "h": 79,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+    "egenText": "",
+    "radtext": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "deklarerade": 2,
+    "roll": "checkbox",
+    "exempel": [
+     "familjmedlemsamtycke|19",
+     "familjmedlemsamtycke|32"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Till inköpslistan — detaljer öppna",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 3,
+     "roller": [
+      "button"
+     ],
+     "namn": [
+      "Dölj detaljer om sammanslagningen",
+      "Avbryt",
+      "Lägg till 18 varor"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgb(36, 56, 44)",
+    "ram": null,
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 14,
+      "h": 14,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "check",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|33",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 364,
+     "h": 60,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "egenText": "",
+    "radtext": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ TOM_RAM",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Till inköpslistan — detaljer öppna",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 3,
+     "roller": [
+      "button"
+     ],
+     "namn": [
+      "Dölj detaljer om sammanslagningen",
+      "Avbryt",
+      "Lägg till 18 varor"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1px rgb(125, 137, 124)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ]
+  },
+  {
+   "id": "veckoallergi|45",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 349,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Soja · låst Mindre kött · kan släppas",
+     "barnOrdning": "KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "Mindre kött · kan släppas",
+    "egenText": "Soja · låst",
+    "radtext": "Soja · låst Mindre kött · kan släppas",
+    "sektion": "Krav i det här hushållet"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckogenerering — allergihushåll",
+    "sektion": "Krav i det här hushållet",
+    "artefaktkontroller": {
+     "antal": 6,
+     "roller": [
+      "button",
+      "checkbox"
+     ],
+     "namn": [
+      "Stäng genereringen",
+      "Granska Misogrillad aubergine",
+      "Granska Pad thai med tofu",
+      "Släpp kravet mindre kött",
+      "Släng förslaget",
+      "Spara de tre placerade rätterna"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 103,
+     "h": 48
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1px rgb(204, 209, 194)",
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 13,
+      "h": 13,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "lock",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Chipet ar 48 px hogt, samma hojd som den deklarerade motparten — geometrin ensam skulle kunna tolkas som en avsedd traffyta",
+    "Lock-ikonen ar markt data-graphic-role=\"redundant\", vilket innebar att statusen ocksa bars av texten \"· last\" och inte enbart av ikonen"
+   ]
+  },
+  {
+   "id": "betygsammanslaget|21",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "div",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 414,
+     "h": 702,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "Familjens betyg 4,3 3 av 4 röstade Alla tyckte ungefär lika Per person M Maja · du P Perinmatat av Maja I Ida hoppade över Ingen historik per tillfälle. Datamodellen har ett betyg per person och recep",
+     "barnOrdning": "TEXT+TEXT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av Maja I Ida hoppade över · Ingen historik per tillfälle. Data",
+    "egenText": "Alla tyckte ungefär lika",
+    "radtext": "Familjens betyg 4,3 3 av 4 röstade Alla tyckte ungefär lika Per person M Maja · du P Perinmatat av Maja I Ida hoppade över Ingen historik per tillfälle. Datamodellen har ett betyg per person och recep",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|block|TEXT+KOMPONENT+TEXT+TEXT ‖ FYLLD_MED_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Betyg — sammanslaget",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 3,
+     "roller": [
+      "button"
+     ],
+     "namn": [
+      "Tillbaka till receptet",
+      "Ändra betygen",
+      "Planera in igen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 184,
+     "h": 29
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 14,
+      "h": 14,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "users",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Chipet har ingen deklarerad motpart i korpusen med samma signatur, sa det finns inget deklarerat exempel som styrker vare sig tolkningen",
+    "Chipet ar 29 px hogt och saknar traffyta — det ar forenligt med lasvarde, men lag hojd ar inte i sig bevis"
+   ]
+  },
+  {
+   "id": "delatmindel|41",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 48,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "",
+     "barnOrdning": "KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "2 st · gul lök · AAnna tar",
+    "egenText": "",
+    "radtext": "",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT ‖ TOM_RAM",
+    "deklarerade": 13,
+    "roll": "checkbox",
+    "exempel": [
+     "delatlistaaktiv|25",
+     "delatlistaaktiv|40"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Delad lista — Min del",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 14,
+     "roller": [
+      "button",
+      "tab",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Fler åtgärder",
+      "Visa Allt",
+      "Visa Min del",
+      "Visa Avdelning",
+      "Bocka av champinjoner",
+      "Bocka av grädde",
+      "Bocka av pasta",
+      "Anna tar gul lök, tryck för att ta över",
+      "Anna tar potatis, tryck för att ta över",
+      "Bocka av smör",
+      "Tar jag smör"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(125, 137, 124)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ]
+  },
+  {
+   "id": "delatmindel|48",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 48,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "",
+     "barnOrdning": "KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "1 kg · potatis · AAnna tar",
+    "egenText": "",
+    "radtext": "",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT ‖ TOM_RAM",
+    "deklarerade": 13,
+    "roll": "checkbox",
+    "exempel": [
+     "delatlistaaktiv|25",
+     "delatlistaaktiv|40"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Delad lista — Min del",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 14,
+     "roller": [
+      "button",
+      "tab",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Fler åtgärder",
+      "Visa Allt",
+      "Visa Min del",
+      "Visa Avdelning",
+      "Bocka av champinjoner",
+      "Bocka av grädde",
+      "Bocka av pasta",
+      "Anna tar gul lök, tryck för att ta över",
+      "Anna tar potatis, tryck för att ta över",
+      "Bocka av smör",
+      "Tar jag smör"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(125, 137, 124)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ]
+  },
+  {
+   "id": "delatnarvaro|25",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 48,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "",
+     "barnOrdning": "KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "2 st · gul lök · AAnna tar",
+    "egenText": "",
+    "radtext": "",
+    "sektion": null
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT ‖ TOM_RAM",
+    "deklarerade": 13,
+    "roll": "checkbox",
+    "exempel": [
+     "delatlistaaktiv|25",
+     "delatlistaaktiv|40"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Delad lista — närvaro och avdelning",
+    "sektion": null,
+    "artefaktkontroller": {
+     "antal": 11,
+     "roller": [
+      "button",
+      "tab",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Anna handlar just nu",
+      "Visa Allt",
+      "Visa Min del",
+      "Visa Avdelning",
+      "Anna tar gul lök, tryck för att ta över",
+      "Bocka av champinjoner",
+      "Tar jag champinjoner",
+      "Bocka av potatis",
+      "Bocka av grädde",
+      "Bocka av smör"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(125, 137, 124)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ]
+  },
+  {
+   "id": "delatclaimkonflikt|15",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 48,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "",
+     "barnOrdning": "KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "2 st · gul lök · AAnna tar",
+    "egenText": "",
+    "radtext": "",
+    "sektion": "Frukt & grönt"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT ‖ TOM_RAM",
+    "deklarerade": 13,
+    "roll": "checkbox",
+    "exempel": [
+     "delatlistaaktiv|25",
+     "delatlistaaktiv|40"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Delad lista — någon hann först",
+    "sektion": "Frukt & grönt",
+    "artefaktkontroller": {
+     "antal": 8,
+     "roller": [
+      "button",
+      "tab",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa Allt",
+      "Visa Min del",
+      "Visa Avdelning",
+      "Anna tar gul lök, tryck för att ta över",
+      "Bocka av champinjoner",
+      "Tar jag champinjoner",
+      "Bocka av grädde"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 24,
+     "h": 24
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(125, 137, 124)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ]
+  },
+  {
+   "id": "veckochips|13",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 70,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+     "barnOrdning": "KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher",
+    "egenText": "3 middagar",
+    "radtext": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+    "sektion": "Så tolkade jag beskrivningen"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|KOMPONENT+TEXT+TEXT+TEXT+TEXT ‖ FYLLD_UTAN_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Så tolkade jag beskrivningen",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 93,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "veckochips|14",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 70,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+     "barnOrdning": "KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "3 middagar · tacofredag · max 30 min · 2 luncher",
+    "egenText": "1 vegetariskt",
+    "radtext": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+    "sektion": "Så tolkade jag beskrivningen"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|TEXT+KOMPONENT+TEXT+TEXT+TEXT ‖ FYLLD_UTAN_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Så tolkade jag beskrivningen",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 100,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "veckochips|15",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 70,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+     "barnOrdning": "KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher",
+    "egenText": "tacofredag",
+    "radtext": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+    "sektion": "Så tolkade jag beskrivningen"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|TEXT+TEXT+KOMPONENT+TEXT+TEXT ‖ FYLLD_UTAN_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Så tolkade jag beskrivningen",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 92,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "veckochips|16",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 70,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+     "barnOrdning": "KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher",
+    "egenText": "max 30 min",
+    "radtext": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+    "sektion": "Så tolkade jag beskrivningen"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|TEXT+TEXT+TEXT+KOMPONENT+TEXT ‖ FYLLD_UTAN_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Så tolkade jag beskrivningen",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 94,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "veckochips|17",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 70,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+     "barnOrdning": "KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min",
+    "egenText": "2 luncher",
+    "radtext": "3 middagar1 vegetariskttacofredagmax 30 min2 luncher",
+    "sektion": "Så tolkade jag beskrivningen"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|TEXT+TEXT+TEXT+TEXT+KOMPONENT ‖ FYLLD_UTAN_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Så tolkade jag beskrivningen",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 80,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "veckochips|20",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 31,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "”lite lyxigt””som förra gången”",
+     "barnOrdning": "KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "”som förra gången”",
+    "egenText": "”lite lyxigt”",
+    "radtext": "”lite lyxigt””som förra gången”",
+    "sektion": "Förstod inte"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "deklarerade": 0,
+    "roll": null,
+    "exempel": [],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Förstod inte",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 106,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 13,
+      "h": 13,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "circle-help",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "veckochips|25",
+   "A_authoradStruktur": {
+    "dataComponent": "chip",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "div",
+     "display": "flex",
+     "w": 372,
+     "h": 31,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "”lite lyxigt””som förra gången”",
+     "barnOrdning": "KOMPONENT+KOMPONENT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "”lite lyxigt”",
+    "egenText": "”som förra gången”",
+    "radtext": "”lite lyxigt””som förra gången”",
+    "sektion": "Förstod inte"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "chip ‖ div|flex|TEXT+KOMPONENT ‖ FYLLD_MED_IKON",
+    "deklarerade": 1,
+    "roll": null,
+    "exempel": [
+     "veckoallergi|49"
+    ],
+    "$not": "traffarna saknar kontrollroll och ar darfor INGEN deklarerad kontrollprecedens"
+   },
+   "D_funktionskontext": {
+    "skarm": "Veckomeny — vad tolkningen förstod",
+    "sektion": "Förstod inte",
+    "artefaktkontroller": {
+     "antal": 4,
+     "roller": [
+      "button",
+      "tab"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Visa lista",
+      "Visa kalender",
+      "Förfina beskrivningen"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 157,
+     "h": 31
+    },
+    "bakgrund": "rgb(230, 234, 217)",
+    "ram": null,
+    "radie": "999px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": [
+     {
+      "tagg": "svg",
+      "pos": "static",
+      "w": 13,
+      "h": 13,
+      "bg": "rgba(0, 0, 0, 0)",
+      "ram": null,
+      "ikon": "circle-help",
+      "text": ""
+     }
+    ]
+   },
+   "F_motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ]
+  },
+  {
+   "id": "impassist2|16",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 372,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "500 g blandfärs",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "500 g blandfärs",
+    "egenText": "",
+    "radtext": "500 g blandfärs",
+    "sektion": "Vilka rader är instruktioner?"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT ‖ TOM_RAM",
+    "deklarerade": 5,
+    "roll": "checkbox",
+    "exempel": [
+     "impassist1|36",
+     "impassist1|39"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Assisterad import — steg 2, instruktionerna",
+    "sektion": "Vilka rader är instruktioner?",
+    "artefaktkontroller": {
+     "antal": 6,
+     "roller": [
+      "button",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Vald rad: Blanda färsen med ägg och st",
+      "Vald rad: Stek köttbullarna i smör.",
+      "Välj rad: Servera med potatismos.",
+      "Tillbaka till ingredienserna",
+      "Gå till granskning"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 27,
+     "h": 27
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(204, 209, 194)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Rutan ar 27x27 pa en 48 px hog rad — samma matt som de deklarerade raderna i samma lista, vilket talar for A."
+   ]
+  },
+  {
+   "id": "impassist2|19",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 372,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "1 gul lök",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "1 gul lök",
+    "egenText": "",
+    "radtext": "1 gul lök",
+    "sektion": "Vilka rader är instruktioner?"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT ‖ TOM_RAM",
+    "deklarerade": 5,
+    "roll": "checkbox",
+    "exempel": [
+     "impassist1|36",
+     "impassist1|39"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Assisterad import — steg 2, instruktionerna",
+    "sektion": "Vilka rader är instruktioner?",
+    "artefaktkontroller": {
+     "antal": 6,
+     "roller": [
+      "button",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Vald rad: Blanda färsen med ägg och st",
+      "Vald rad: Stek köttbullarna i smör.",
+      "Välj rad: Servera med potatismos.",
+      "Tillbaka till ingredienserna",
+      "Gå till granskning"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 27,
+     "h": 27
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(204, 209, 194)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Rutan ar 27x27 pa en 48 px hog rad — samma matt som de deklarerade raderna i samma lista, vilket talar for A."
+   ]
+  },
+  {
+   "id": "impassist2|22",
+   "A_authoradStruktur": {
+    "dataComponent": "checkbox",
+    "egenRoll": null,
+    "egetHit": null,
+    "egetState": null,
+    "egenGrupp": null,
+    "forfaderRoll": null,
+    "tagg": "span",
+    "agarrad": {
+     "tagg": "span",
+     "display": "flex",
+     "w": 372,
+     "h": 48,
+     "roll": null,
+     "hit": null,
+     "namn": null,
+     "state": null,
+     "komponent": null,
+     "text": "3 dl grädde",
+     "barnOrdning": "KOMPONENT+TEXT"
+    },
+    "handlare": [],
+    "tabindex": null,
+    "role": null,
+    "aria": []
+   },
+   "B_etikettVarde": {
+    "synligEtikett": "3 dl grädde",
+    "egenText": "",
+    "radtext": "3 dl grädde",
+    "sektion": "Vilka rader är instruktioner?"
+   },
+   "C_strukturellPrecedens": {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT ‖ TOM_RAM",
+    "deklarerade": 5,
+    "roll": "checkbox",
+    "exempel": [
+     "impassist1|36",
+     "impassist1|39"
+    ],
+    "$not": "exemplen levererar en kontrollroll"
+   },
+   "D_funktionskontext": {
+    "skarm": "Assisterad import — steg 2, instruktionerna",
+    "sektion": "Vilka rader är instruktioner?",
+    "artefaktkontroller": {
+     "antal": 6,
+     "roller": [
+      "button",
+      "checkbox"
+     ],
+     "namn": [
+      "Tillbaka",
+      "Vald rad: Blanda färsen med ägg och st",
+      "Vald rad: Stek köttbullarna i smör.",
+      "Välj rad: Servera med potatismos.",
+      "Tillbaka till ingredienserna",
+      "Gå till granskning"
+     ]
+    }
+   },
+   "E_renderadEvidens": {
+    "geometri": {
+     "w": 27,
+     "h": 27
+    },
+    "bakgrund": "rgba(0, 0, 0, 0)",
+    "ram": "1.5px rgb(204, 209, 194)",
+    "radie": "6px",
+    "opacitet": "1",
+    "pekare": "auto",
+    "barn": []
+   },
+   "F_motevidens": [
+    "Rutan ar 27x27 pa en 48 px hog rad — samma matt som de deklarerade raderna i samma lista, vilket talar for A."
+   ]
+  }
+ ],
+ "P2_verdikt": {
+  "INTERACTIVE_CONTROL": 5,
+  "NON_INTERACTIVE_STATE_GRAPHIC": 9,
+  "DECORATIVE_GRAPHIC": 0,
+  "UNKNOWN": 7
+ },
+ "P2_adjudicering": [
+  {
+   "id": "inkopmerge|22",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "familj": "sammanslagningsreglerna",
+   "kontrolltyp": "checkbox",
+   "positiv": [
+    "AUTHORED KOMPONENTTYP: elementet bar data-component=\"checkbox\"",
+    "RITNINGENS EGEN TEXT om just dessa objekt: skarmbildtexten pa inkopmergeoppen sager \"Alla fyra reglagen ligger kvar i det utfallda laget, sa ingen installning gommer sig; ”Ersatt listan” ar alltid av som standard.\" Ritningen kallar dem reglage och installningar och anger ett standardlage — det ar en utsaga om anvandarstyrt val, inte om utseende",
+    "ETIKETT/VARDE-RELATION: varje rad ar ett namngivet alternativ (\"Sla samman dubbletter\") foljt av vad valet gor med utfallet (\"Gul lok fran tre recept blir en rad med summerad mangd\")",
+    "TILLSTANDSRELATION: tva renderade lagen forekommer i samma grupp — fylld ruta med bock (#24382c + check) mot tom ruta med ram. Det renderade laget for \"Ersatt listan\" ar tomt, vilket stammer med ritningens uttalade standardlage \"av\"",
+    "FUNKTIONSKONTEXT: skarmen ar dialogen fran veckomeny till inkopslista, dar de tre siffrorna 6 slas samman / 3 konverteras / 6 finns hemma ar utfallet av just dessa regler"
+   ],
+   "motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ],
+   "ejBarande": [
+    "grannraden ar en deklarerad knapp",
+    "checkbox-typens deklarationsgrad i korpusen",
+    "att rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|12",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "familj": "sammanslagningsreglerna",
+   "kontrolltyp": "checkbox",
+   "positiv": [
+    "AUTHORED KOMPONENTTYP: elementet bar data-component=\"checkbox\"",
+    "RITNINGENS EGEN TEXT om just dessa objekt: skarmbildtexten pa inkopmergeoppen sager \"Alla fyra reglagen ligger kvar i det utfallda laget, sa ingen installning gommer sig; ”Ersatt listan” ar alltid av som standard.\" Ritningen kallar dem reglage och installningar och anger ett standardlage — det ar en utsaga om anvandarstyrt val, inte om utseende",
+    "ETIKETT/VARDE-RELATION: varje rad ar ett namngivet alternativ (\"Sla samman dubbletter\") foljt av vad valet gor med utfallet (\"Gul lok fran tre recept blir en rad med summerad mangd\")",
+    "TILLSTANDSRELATION: tva renderade lagen forekommer i samma grupp — fylld ruta med bock (#24382c + check) mot tom ruta med ram. Det renderade laget for \"Ersatt listan\" ar tomt, vilket stammer med ritningens uttalade standardlage \"av\"",
+    "FUNKTIONSKONTEXT: skarmen ar dialogen fran veckomeny till inkopslista, dar de tre siffrorna 6 slas samman / 3 konverteras / 6 finns hemma ar utfallet av just dessa regler"
+   ],
+   "motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ],
+   "ejBarande": [
+    "grannraden ar en deklarerad knapp",
+    "checkbox-typens deklarationsgrad i korpusen",
+    "att rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|19",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "familj": "sammanslagningsreglerna",
+   "kontrolltyp": "checkbox",
+   "positiv": [
+    "AUTHORED KOMPONENTTYP: elementet bar data-component=\"checkbox\"",
+    "RITNINGENS EGEN TEXT om just dessa objekt: skarmbildtexten pa inkopmergeoppen sager \"Alla fyra reglagen ligger kvar i det utfallda laget, sa ingen installning gommer sig; ”Ersatt listan” ar alltid av som standard.\" Ritningen kallar dem reglage och installningar och anger ett standardlage — det ar en utsaga om anvandarstyrt val, inte om utseende",
+    "ETIKETT/VARDE-RELATION: varje rad ar ett namngivet alternativ (\"Sla samman dubbletter\") foljt av vad valet gor med utfallet (\"Gul lok fran tre recept blir en rad med summerad mangd\")",
+    "TILLSTANDSRELATION: tva renderade lagen forekommer i samma grupp — fylld ruta med bock (#24382c + check) mot tom ruta med ram. Det renderade laget for \"Ersatt listan\" ar tomt, vilket stammer med ritningens uttalade standardlage \"av\"",
+    "FUNKTIONSKONTEXT: skarmen ar dialogen fran veckomeny till inkopslista, dar de tre siffrorna 6 slas samman / 3 konverteras / 6 finns hemma ar utfallet av just dessa regler"
+   ],
+   "motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ],
+   "ejBarande": [
+    "grannraden ar en deklarerad knapp",
+    "checkbox-typens deklarationsgrad i korpusen",
+    "att rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|26",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "familj": "sammanslagningsreglerna",
+   "kontrolltyp": "checkbox",
+   "positiv": [
+    "AUTHORED KOMPONENTTYP: elementet bar data-component=\"checkbox\"",
+    "RITNINGENS EGEN TEXT om just dessa objekt: skarmbildtexten pa inkopmergeoppen sager \"Alla fyra reglagen ligger kvar i det utfallda laget, sa ingen installning gommer sig; ”Ersatt listan” ar alltid av som standard.\" Ritningen kallar dem reglage och installningar och anger ett standardlage — det ar en utsaga om anvandarstyrt val, inte om utseende",
+    "ETIKETT/VARDE-RELATION: varje rad ar ett namngivet alternativ (\"Sla samman dubbletter\") foljt av vad valet gor med utfallet (\"Gul lok fran tre recept blir en rad med summerad mangd\")",
+    "TILLSTANDSRELATION: tva renderade lagen forekommer i samma grupp — fylld ruta med bock (#24382c + check) mot tom ruta med ram. Det renderade laget for \"Ersatt listan\" ar tomt, vilket stammer med ritningens uttalade standardlage \"av\"",
+    "FUNKTIONSKONTEXT: skarmen ar dialogen fran veckomeny till inkopslista, dar de tre siffrorna 6 slas samman / 3 konverteras / 6 finns hemma ar utfallet av just dessa regler"
+   ],
+   "motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ],
+   "ejBarande": [
+    "grannraden ar en deklarerad knapp",
+    "checkbox-typens deklarationsgrad i korpusen",
+    "att rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "inkopmergeoppen|33",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "familj": "sammanslagningsreglerna",
+   "kontrolltyp": "checkbox",
+   "positiv": [
+    "AUTHORED KOMPONENTTYP: elementet bar data-component=\"checkbox\"",
+    "RITNINGENS EGEN TEXT om just dessa objekt: skarmbildtexten pa inkopmergeoppen sager \"Alla fyra reglagen ligger kvar i det utfallda laget, sa ingen installning gommer sig; ”Ersatt listan” ar alltid av som standard.\" Ritningen kallar dem reglage och installningar och anger ett standardlage — det ar en utsaga om anvandarstyrt val, inte om utseende",
+    "ETIKETT/VARDE-RELATION: varje rad ar ett namngivet alternativ (\"Sla samman dubbletter\") foljt av vad valet gor med utfallet (\"Gul lok fran tre recept blir en rad med summerad mangd\")",
+    "TILLSTANDSRELATION: tva renderade lagen forekommer i samma grupp — fylld ruta med bock (#24382c + check) mot tom ruta med ram. Det renderade laget for \"Ersatt listan\" ar tomt, vilket stammer med ritningens uttalade standardlage \"av\"",
+    "FUNKTIONSKONTEXT: skarmen ar dialogen fran veckomeny till inkopslista, dar de tre siffrorna 6 slas samman / 3 konverteras / 6 finns hemma ar utfallet av just dessa regler"
+   ],
+   "motevidens": [
+    "Raden bar ingen data-a11y-role, inget data-hit och inget data-a11y-state",
+    "Radformen ar KOMPONENT+TEXT, medan den vanligaste deklarerade switchkonventionen i korpusen ar TEXT+KOMPONENT",
+    "inkopmerge|22 och inkopmergeoppen|33 (\"Ersatt listan\") har tillstandsstrukturen TOM_RAM, och for just den kombinationen finns inget deklarerat exempel i korpusen"
+   ],
+   "ejBarande": [
+    "grannraden ar en deklarerad knapp",
+    "checkbox-typens deklarationsgrad i korpusen",
+    "att rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "veckoallergi|45",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "allergikrav",
+   "kontrolltyp": null,
+   "positiv": [
+    "SYNLIG TEXT DIREKT UNDER OBJEKTET: \"Lasta krav har ingen kryssruta. Ett allergikrav kan inte slappas — varken har eller nagon annanstans i appen.\" Utsagan galler exakt denna forekomst: chipet ar \"Soja · last\"",
+    "RITNINGENS EGEN TEXT: \"Lasta krav har ingen kryssruta, for de kan inte slappas\"",
+    "DEKLARERAD MOTPART I SAMMA RAD: syskonchipet \"Mindre kott · kan slappas\" ar deklarerat data-a11y-role=\"checkbox\" med data-hit=\"self\" och en check-ikon. Det visar exakt hur den interaktiva varianten ar ritad — och den lasta saknar bade rollen och bocken",
+    "EGEN GRAFIK FOR TILLSTANDET: chipet bar en lock-ikon och en blekare ram (#ccd1c2 mot #7d897c). Det formedlar kravets status"
+   ],
+   "motevidens": [
+    "Chipet ar 48 px hogt, samma hojd som den deklarerade motparten — geometrin ensam skulle kunna tolkas som en avsedd traffyta",
+    "Lock-ikonen ar markt data-graphic-role=\"redundant\", vilket innebar att statusen ocksa bars av texten \"· last\" och inte enbart av ikonen"
+   ],
+   "ejBarande": [
+    "att objektet saknar a11y-metadata"
+   ]
+  },
+  {
+   "id": "betygsammanslaget|21",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "betygssammanfattning",
+   "kontrolltyp": null,
+   "positiv": [
+    "OBJEKTETS EGET INNEHALL AR ETT VARDE I ORD: chipet lyder \"Alla tyckte ungefar lika\" och star direkt under siffran 4,3",
+    "RITNINGENS EGEN TEXT: \"Spridningen visas i ord nar den ar stor: 3,7 kan betyda ”alla tyckte okej” eller ”tva alskade och en avskydde”.\" Chipet ar den spridningsutsagan",
+    "LASLAGE ANGIVET I RITNINGEN: \"Familjebetyget efter sparning\" — vyn visar ett sparat resultat",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Andra betygen\"",
+    "IKONEN AR DEKLARERAT REDUNDANT: users-ikonen bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipet har ingen deklarerad motpart i korpusen med samma signatur, sa det finns inget deklarerat exempel som styrker vare sig tolkningen",
+    "Chipet ar 29 px hogt och saknar traffyta — det ar forenligt med lasvarde, men lag hojd ar inte i sig bevis"
+   ],
+   "ejBarande": [
+    "att objektet saknar a11y-metadata",
+    "att chip ofta ar odeklarerat i korpusen"
+   ]
+  },
+  {
+   "id": "veckochips|13",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "veckochips|14",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "veckochips|15",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "veckochips|16",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "veckochips|17",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "veckochips|20",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "veckochips|25",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "tolkningsredovisning",
+   "kontrolltyp": null,
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Tolkaren redovisar sig sjalv i tva hogar: forstod (understood, med kategori) och forstod inte (notUnderstood).\" Objekten ar en redovisning",
+    "SYNLIG TEXT PA SKARMEN, i samma vy: \"Tolkningen ar en redovisning, inte ett lofte\"",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Forfina beskrivningen\", och ritningen sager uttryckligen \"en lank tillbaka till faltet — ingen automatisk omtolkning\"",
+    "INGEN TILLSTANDSSTRUKTUR: chipen har inget valt/ovalt lage. Alla fem i forsta gruppen har identisk fyllning, alla tva i andra gruppen har identisk fyllning",
+    "IKONERNA AR DEKLARERAT REDUNDANTA: circle-help bar data-graphic-role=\"redundant\""
+   ],
+   "motevidens": [
+    "Chipen ar 31 px hoga — under 48 px, vilket vore ovanligt for en avsedd kontroll, men lag hojd ar inte i sig bevis for icke-interaktivitet",
+    "Chip anvands pa andra hall i korpusen aven som kontroll (t.ex. deklarerade filterchip)"
+   ],
+   "ejBarande": [
+    "att de saknar a11y-metadata",
+    "att de ser ut som etiketter"
+   ]
+  },
+  {
+   "id": "delatmindel|41",
+   "verdikt": "UNKNOWN",
+   "familj": "varurader tagna av nagon annan",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Tar det bort mojligheten att bocka av en vara att nagon annan har tagit den, eller ar raden bara nedtonad? Korpusen sager bada.",
+   "tvaTolkningar": [
+    "A: deklarationen saknas av misstag. Exakt samma rad — \"2 st · gul lok\" med chipet \"Anna tar gul lok, tryck for att ta over\" — ar deklarerad data-a11y-role=\"checkbox\" i delatlistaaktiv och delatvidare, med bit-identisk stilstrang pa den 48x48 stora omslutningen. 13 deklarerade kontroller i korpusen delar exakt samma signatur.",
+    "B: nedtoningen ar en avsedd regel. I samtliga sex delat-skarmar galler samma monster utan undantag: nar raden ar nedtonad till #5b6959 OCH bar ett \"Anna tar\"-chip ar kryssrutan odeklarerad; nar samma vara och samma chip INTE ar nedtonad ar den deklarerad. Ritningen sager om de nedtonade raderna att de ar \"fortfarande overtagbara\" — den namner inte avbockning."
+   ],
+   "avgorande": "En utsaga i ritningen eller koden om huruvida en vara som nagon annan tagit kan bockas av. Nedtoningen #5b6959 ar dessutom en annan nyans an den ovriga nedtoningen #627061, som INTE tar bort deklarationen — sa nyansen bar sannolikt en egen betydelse som inte ar dokumenterad.",
+   "motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ],
+   "ejBarande": [
+    "grannraderna ar deklarerade kontroller",
+    "rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "delatmindel|48",
+   "verdikt": "UNKNOWN",
+   "familj": "varurader tagna av nagon annan",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Tar det bort mojligheten att bocka av en vara att nagon annan har tagit den, eller ar raden bara nedtonad? Korpusen sager bada.",
+   "tvaTolkningar": [
+    "A: deklarationen saknas av misstag. Exakt samma rad — \"2 st · gul lok\" med chipet \"Anna tar gul lok, tryck for att ta over\" — ar deklarerad data-a11y-role=\"checkbox\" i delatlistaaktiv och delatvidare, med bit-identisk stilstrang pa den 48x48 stora omslutningen. 13 deklarerade kontroller i korpusen delar exakt samma signatur.",
+    "B: nedtoningen ar en avsedd regel. I samtliga sex delat-skarmar galler samma monster utan undantag: nar raden ar nedtonad till #5b6959 OCH bar ett \"Anna tar\"-chip ar kryssrutan odeklarerad; nar samma vara och samma chip INTE ar nedtonad ar den deklarerad. Ritningen sager om de nedtonade raderna att de ar \"fortfarande overtagbara\" — den namner inte avbockning."
+   ],
+   "avgorande": "En utsaga i ritningen eller koden om huruvida en vara som nagon annan tagit kan bockas av. Nedtoningen #5b6959 ar dessutom en annan nyans an den ovriga nedtoningen #627061, som INTE tar bort deklarationen — sa nyansen bar sannolikt en egen betydelse som inte ar dokumenterad.",
+   "motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ],
+   "ejBarande": [
+    "grannraderna ar deklarerade kontroller",
+    "rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "delatnarvaro|25",
+   "verdikt": "UNKNOWN",
+   "familj": "varurader tagna av nagon annan",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Tar det bort mojligheten att bocka av en vara att nagon annan har tagit den, eller ar raden bara nedtonad? Korpusen sager bada.",
+   "tvaTolkningar": [
+    "A: deklarationen saknas av misstag. Exakt samma rad — \"2 st · gul lok\" med chipet \"Anna tar gul lok, tryck for att ta over\" — ar deklarerad data-a11y-role=\"checkbox\" i delatlistaaktiv och delatvidare, med bit-identisk stilstrang pa den 48x48 stora omslutningen. 13 deklarerade kontroller i korpusen delar exakt samma signatur.",
+    "B: nedtoningen ar en avsedd regel. I samtliga sex delat-skarmar galler samma monster utan undantag: nar raden ar nedtonad till #5b6959 OCH bar ett \"Anna tar\"-chip ar kryssrutan odeklarerad; nar samma vara och samma chip INTE ar nedtonad ar den deklarerad. Ritningen sager om de nedtonade raderna att de ar \"fortfarande overtagbara\" — den namner inte avbockning."
+   ],
+   "avgorande": "En utsaga i ritningen eller koden om huruvida en vara som nagon annan tagit kan bockas av. Nedtoningen #5b6959 ar dessutom en annan nyans an den ovriga nedtoningen #627061, som INTE tar bort deklarationen — sa nyansen bar sannolikt en egen betydelse som inte ar dokumenterad.",
+   "motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ],
+   "ejBarande": [
+    "grannraderna ar deklarerade kontroller",
+    "rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "delatclaimkonflikt|15",
+   "verdikt": "UNKNOWN",
+   "familj": "varurader tagna av nagon annan",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Tar det bort mojligheten att bocka av en vara att nagon annan har tagit den, eller ar raden bara nedtonad? Korpusen sager bada.",
+   "tvaTolkningar": [
+    "A: deklarationen saknas av misstag. Exakt samma rad — \"2 st · gul lok\" med chipet \"Anna tar gul lok, tryck for att ta over\" — ar deklarerad data-a11y-role=\"checkbox\" i delatlistaaktiv och delatvidare, med bit-identisk stilstrang pa den 48x48 stora omslutningen. 13 deklarerade kontroller i korpusen delar exakt samma signatur.",
+    "B: nedtoningen ar en avsedd regel. I samtliga sex delat-skarmar galler samma monster utan undantag: nar raden ar nedtonad till #5b6959 OCH bar ett \"Anna tar\"-chip ar kryssrutan odeklarerad; nar samma vara och samma chip INTE ar nedtonad ar den deklarerad. Ritningen sager om de nedtonade raderna att de ar \"fortfarande overtagbara\" — den namner inte avbockning."
+   ],
+   "avgorande": "En utsaga i ritningen eller koden om huruvida en vara som nagon annan tagit kan bockas av. Nedtoningen #5b6959 ar dessutom en annan nyans an den ovriga nedtoningen #627061, som INTE tar bort deklarationen — sa nyansen bar sannolikt en egen betydelse som inte ar dokumenterad.",
+   "motevidens": [
+    "Att ett 48x48 stort omslutande element finns ar korpusens idiom for en traffyta, vilket talar for A. Att monstret ar undantagslost over sex skarmar talar for B."
+   ],
+   "ejBarande": [
+    "grannraderna ar deklarerade kontroller",
+    "rutan ser klickbar ut"
+   ]
+  },
+  {
+   "id": "impassist2|16",
+   "verdikt": "UNKNOWN",
+   "familj": "redan uteslutna importrader",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Ar den overstrukna raden en avstangd kryssruta eller en icke-interaktiv redovisning av att raden redan ar tagen?",
+   "tvaTolkningar": [
+    "A: en avstangd kontroll. Ritningen sager \"Raderna du redan tagit ar uteslutna, inte bara omarkerade (excludedIndices = ingrediensvalet)\" — uteslutning ar ett tillstand hos ett val. I steg 1 (impassist1) ar exakt samma rad, \"500 g blandfars\", deklarerad data-a11y-role=\"checkbox\". 5 deklarerade kontroller delar signaturen.",
+    "B: en icke-interaktiv redovisning. Raden ar overstruken (text-decoration:line-through), textfargen ar nedtonad till #627061 och rutans ram ar blek #ccd1c2 mot de deklarerade radernas #24382c. Ingen annan kontroll finns pa raden."
+   ],
+   "avgorande": "Korpusen har ett etablerat satt att rita en avstangd kontroll — data-a11y-role plus data-a11y-state=\"disabled\", som pa behnotiser-reglagen. Det ar inte anvant har. Det talar for B men ar avsaknad av metadata, vilket enligt regeln inte far vara bevis. Det som skulle avgora ar en utsaga om huruvida en utesluten rad kan valjas tillbaka i steg 2.",
+   "motevidens": [
+    "Rutan ar 27x27 pa en 48 px hog rad — samma matt som de deklarerade raderna i samma lista, vilket talar for A."
+   ],
+   "ejBarande": [
+    "tre av fem syskonrader ar deklarerade kontroller",
+    "checkbox-typens deklarationsgrad"
+   ]
+  },
+  {
+   "id": "impassist2|19",
+   "verdikt": "UNKNOWN",
+   "familj": "redan uteslutna importrader",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Ar den overstrukna raden en avstangd kryssruta eller en icke-interaktiv redovisning av att raden redan ar tagen?",
+   "tvaTolkningar": [
+    "A: en avstangd kontroll. Ritningen sager \"Raderna du redan tagit ar uteslutna, inte bara omarkerade (excludedIndices = ingrediensvalet)\" — uteslutning ar ett tillstand hos ett val. I steg 1 (impassist1) ar exakt samma rad, \"500 g blandfars\", deklarerad data-a11y-role=\"checkbox\". 5 deklarerade kontroller delar signaturen.",
+    "B: en icke-interaktiv redovisning. Raden ar overstruken (text-decoration:line-through), textfargen ar nedtonad till #627061 och rutans ram ar blek #ccd1c2 mot de deklarerade radernas #24382c. Ingen annan kontroll finns pa raden."
+   ],
+   "avgorande": "Korpusen har ett etablerat satt att rita en avstangd kontroll — data-a11y-role plus data-a11y-state=\"disabled\", som pa behnotiser-reglagen. Det ar inte anvant har. Det talar for B men ar avsaknad av metadata, vilket enligt regeln inte far vara bevis. Det som skulle avgora ar en utsaga om huruvida en utesluten rad kan valjas tillbaka i steg 2.",
+   "motevidens": [
+    "Rutan ar 27x27 pa en 48 px hog rad — samma matt som de deklarerade raderna i samma lista, vilket talar for A."
+   ],
+   "ejBarande": [
+    "tre av fem syskonrader ar deklarerade kontroller",
+    "checkbox-typens deklarationsgrad"
+   ]
+  },
+  {
+   "id": "impassist2|22",
+   "verdikt": "UNKNOWN",
+   "familj": "redan uteslutna importrader",
+   "kontrolltyp": null,
+   "positiv": [],
+   "olostFraga": "Ar den overstrukna raden en avstangd kryssruta eller en icke-interaktiv redovisning av att raden redan ar tagen?",
+   "tvaTolkningar": [
+    "A: en avstangd kontroll. Ritningen sager \"Raderna du redan tagit ar uteslutna, inte bara omarkerade (excludedIndices = ingrediensvalet)\" — uteslutning ar ett tillstand hos ett val. I steg 1 (impassist1) ar exakt samma rad, \"500 g blandfars\", deklarerad data-a11y-role=\"checkbox\". 5 deklarerade kontroller delar signaturen.",
+    "B: en icke-interaktiv redovisning. Raden ar overstruken (text-decoration:line-through), textfargen ar nedtonad till #627061 och rutans ram ar blek #ccd1c2 mot de deklarerade radernas #24382c. Ingen annan kontroll finns pa raden."
+   ],
+   "avgorande": "Korpusen har ett etablerat satt att rita en avstangd kontroll — data-a11y-role plus data-a11y-state=\"disabled\", som pa behnotiser-reglagen. Det ar inte anvant har. Det talar for B men ar avsaknad av metadata, vilket enligt regeln inte far vara bevis. Det som skulle avgora ar en utsaga om huruvida en utesluten rad kan valjas tillbaka i steg 2.",
+   "motevidens": [
+    "Rutan ar 27x27 pa en 48 px hog rad — samma matt som de deklarerade raderna i samma lista, vilket talar for A."
+   ],
+   "ejBarande": [
+    "tre av fem syskonrader ar deklarerade kontroller",
+    "checkbox-typens deklarationsgrad"
+   ]
+  }
+ ],
+ "P3_populationer": {
+  "historisktVerifierade": 1344,
+  "deklareradeMatbara": 1346,
+  "semantisktUpptackta": 1351,
+  "$regel": "Semantiskt upptackta kontroller ar INTE R-02-verifierade, INTE deklarerade kontroller och INTE matbara traffytor forran en senare strukturbatch deklarerat dem."
+ },
+ "P4_prospektivR02": [
+  {
+   "id": "inkopmerge|22",
+   "avseddAgare": "radens div — samma agarmodell som det deklarerade exemplet familjmedlemsamtycke|19, dar data-a11y-role, data-a11y-name, data-hit=\"self\" och data-a11y-state sitter pa raden och data-component=\"checkbox\" pa den 24x24 stora rutan",
+   "befintligTraffytedeklaration": null,
+   "renderadAgargeometri": {
+    "w": 364,
+    "h": 38
+   },
+   "bredd": 364,
+   "hojd": 38,
+   "traffbarhetsevidens": "ingen — varken data-hit eller data-a11y-role finns pa raden eller pa komponenten",
+   "overlappsevidens": "ingen matbar overlappning kan bedomas utan en deklarerad traffyta",
+   "r02": "UNKNOWN",
+   "r02Skal": "Ingen giltig explicit traffyta ar deklarerad. En stor rad far inte kallas PASS bara for att den skulle kunna anvandas som framtida traffyta.",
+   "forvantadFixtyp": "STRUKTURELL — hojden maste okas",
+   "hojd48": "raden ar 38 px och kraver faktisk layoutandring"
+  },
+  {
+   "id": "inkopmergeoppen|12",
+   "avseddAgare": "radens div — samma agarmodell som det deklarerade exemplet familjmedlemsamtycke|19, dar data-a11y-role, data-a11y-name, data-hit=\"self\" och data-a11y-state sitter pa raden och data-component=\"checkbox\" pa den 24x24 stora rutan",
+   "befintligTraffytedeklaration": null,
+   "renderadAgargeometri": {
+    "w": 364,
+    "h": 79
+   },
+   "bredd": 364,
+   "hojd": 79,
+   "traffbarhetsevidens": "ingen — varken data-hit eller data-a11y-role finns pa raden eller pa komponenten",
+   "overlappsevidens": "ingen matbar overlappning kan bedomas utan en deklarerad traffyta",
+   "r02": "UNKNOWN",
+   "r02Skal": "Ingen giltig explicit traffyta ar deklarerad. En stor rad far inte kallas PASS bara for att den skulle kunna anvandas som framtida traffyta.",
+   "forvantadFixtyp": "METADATA-ONLY",
+   "hojd48": "raden ar redan 79 px hog"
+  },
+  {
+   "id": "inkopmergeoppen|19",
+   "avseddAgare": "radens div — samma agarmodell som det deklarerade exemplet familjmedlemsamtycke|19, dar data-a11y-role, data-a11y-name, data-hit=\"self\" och data-a11y-state sitter pa raden och data-component=\"checkbox\" pa den 24x24 stora rutan",
+   "befintligTraffytedeklaration": null,
+   "renderadAgargeometri": {
+    "w": 364,
+    "h": 79
+   },
+   "bredd": 364,
+   "hojd": 79,
+   "traffbarhetsevidens": "ingen — varken data-hit eller data-a11y-role finns pa raden eller pa komponenten",
+   "overlappsevidens": "ingen matbar overlappning kan bedomas utan en deklarerad traffyta",
+   "r02": "UNKNOWN",
+   "r02Skal": "Ingen giltig explicit traffyta ar deklarerad. En stor rad far inte kallas PASS bara for att den skulle kunna anvandas som framtida traffyta.",
+   "forvantadFixtyp": "METADATA-ONLY",
+   "hojd48": "raden ar redan 79 px hog"
+  },
+  {
+   "id": "inkopmergeoppen|26",
+   "avseddAgare": "radens div — samma agarmodell som det deklarerade exemplet familjmedlemsamtycke|19, dar data-a11y-role, data-a11y-name, data-hit=\"self\" och data-a11y-state sitter pa raden och data-component=\"checkbox\" pa den 24x24 stora rutan",
+   "befintligTraffytedeklaration": null,
+   "renderadAgargeometri": {
+    "w": 364,
+    "h": 79
+   },
+   "bredd": 364,
+   "hojd": 79,
+   "traffbarhetsevidens": "ingen — varken data-hit eller data-a11y-role finns pa raden eller pa komponenten",
+   "overlappsevidens": "ingen matbar overlappning kan bedomas utan en deklarerad traffyta",
+   "r02": "UNKNOWN",
+   "r02Skal": "Ingen giltig explicit traffyta ar deklarerad. En stor rad far inte kallas PASS bara for att den skulle kunna anvandas som framtida traffyta.",
+   "forvantadFixtyp": "METADATA-ONLY",
+   "hojd48": "raden ar redan 79 px hog"
+  },
+  {
+   "id": "inkopmergeoppen|33",
+   "avseddAgare": "radens div — samma agarmodell som det deklarerade exemplet familjmedlemsamtycke|19, dar data-a11y-role, data-a11y-name, data-hit=\"self\" och data-a11y-state sitter pa raden och data-component=\"checkbox\" pa den 24x24 stora rutan",
+   "befintligTraffytedeklaration": null,
+   "renderadAgargeometri": {
+    "w": 364,
+    "h": 60
+   },
+   "bredd": 364,
+   "hojd": 60,
+   "traffbarhetsevidens": "ingen — varken data-hit eller data-a11y-role finns pa raden eller pa komponenten",
+   "overlappsevidens": "ingen matbar overlappning kan bedomas utan en deklarerad traffyta",
+   "r02": "UNKNOWN",
+   "r02Skal": "Ingen giltig explicit traffyta ar deklarerad. En stor rad far inte kallas PASS bara for att den skulle kunna anvandas som framtida traffyta.",
+   "forvantadFixtyp": "METADATA-ONLY",
+   "hojd48": "raden ar redan 60 px hog"
+  }
+ ],
+ "P5_prospektivtAgarskap": [
+  {
+   "id": "inkopmerge|22",
+   "kontrollkropp": "radens div, 364x38",
+   "tillstandsbarare": "den 24x24 stora rutan (data-component=\"checkbox\")",
+   "ikonBockMarkor": "ingen — tom ram",
+   "trackThumb": "ej tillampligt for kryssruta",
+   "ickeTextrelationer": [
+    "rutans ram 1px rgb(125, 137, 124) mot ytan utanfor kontrollen"
+   ],
+   "nuvarandeMatningsagarskap": "utanfor kontrollpopulationen — objektet har ingen data-a11y-role och mats darfor inte som kontrollgrafik idag",
+   "agarskapFlyttat": false,
+   "framtidaMigration": "efter en strukturell deklaration skulle rutan bli stateCarrier och raden componentIdentityCarrier i CONTROL_NON_TEXT, pa samma satt som BG-020 flyttades for profil. Migrationen ar INTE gjord.",
+   "renderadIckeFargBarare": "ja — fylld ruta med bock mot tom ruta med ram. Skillnaden ar innehall och avgransning, inte bara farg",
+   "stateMetadataSaknas": true,
+   "framtidaStateGroupBehovs": "ja — bada lagena forekommer i samma grupp, och det deklarerade exemplet familjmedlemsamtycke|19 bar data-state-group. Ingen state-group skapas i detta block",
+   "kongruensNyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ TOM_RAM"
+  },
+  {
+   "id": "inkopmergeoppen|12",
+   "kontrollkropp": "radens div, 364x79",
+   "tillstandsbarare": "den 24x24 stora rutan (data-component=\"checkbox\")",
+   "ikonBockMarkor": "check-svg inuti rutan, data-graphic-role=\"required\"",
+   "trackThumb": "ej tillampligt for kryssruta",
+   "ickeTextrelationer": [
+    "rutans fyllning rgb(36, 56, 44) mot ytan utanfor kontrollen",
+    "bockens streckfarg mot rutans inre yta"
+   ],
+   "nuvarandeMatningsagarskap": "utanfor kontrollpopulationen — objektet har ingen data-a11y-role och mats darfor inte som kontrollgrafik idag",
+   "agarskapFlyttat": false,
+   "framtidaMigration": "efter en strukturell deklaration skulle rutan bli stateCarrier och raden componentIdentityCarrier i CONTROL_NON_TEXT, pa samma satt som BG-020 flyttades for profil. Migrationen ar INTE gjord.",
+   "renderadIckeFargBarare": "ja — fylld ruta med bock mot tom ruta med ram. Skillnaden ar innehall och avgransning, inte bara farg",
+   "stateMetadataSaknas": true,
+   "framtidaStateGroupBehovs": "ja — bada lagena forekommer i samma grupp, och det deklarerade exemplet familjmedlemsamtycke|19 bar data-state-group. Ingen state-group skapas i detta block",
+   "kongruensNyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON"
+  },
+  {
+   "id": "inkopmergeoppen|19",
+   "kontrollkropp": "radens div, 364x79",
+   "tillstandsbarare": "den 24x24 stora rutan (data-component=\"checkbox\")",
+   "ikonBockMarkor": "check-svg inuti rutan, data-graphic-role=\"required\"",
+   "trackThumb": "ej tillampligt for kryssruta",
+   "ickeTextrelationer": [
+    "rutans fyllning rgb(36, 56, 44) mot ytan utanfor kontrollen",
+    "bockens streckfarg mot rutans inre yta"
+   ],
+   "nuvarandeMatningsagarskap": "utanfor kontrollpopulationen — objektet har ingen data-a11y-role och mats darfor inte som kontrollgrafik idag",
+   "agarskapFlyttat": false,
+   "framtidaMigration": "efter en strukturell deklaration skulle rutan bli stateCarrier och raden componentIdentityCarrier i CONTROL_NON_TEXT, pa samma satt som BG-020 flyttades for profil. Migrationen ar INTE gjord.",
+   "renderadIckeFargBarare": "ja — fylld ruta med bock mot tom ruta med ram. Skillnaden ar innehall och avgransning, inte bara farg",
+   "stateMetadataSaknas": true,
+   "framtidaStateGroupBehovs": "ja — bada lagena forekommer i samma grupp, och det deklarerade exemplet familjmedlemsamtycke|19 bar data-state-group. Ingen state-group skapas i detta block",
+   "kongruensNyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON"
+  },
+  {
+   "id": "inkopmergeoppen|26",
+   "kontrollkropp": "radens div, 364x79",
+   "tillstandsbarare": "den 24x24 stora rutan (data-component=\"checkbox\")",
+   "ikonBockMarkor": "check-svg inuti rutan, data-graphic-role=\"required\"",
+   "trackThumb": "ej tillampligt for kryssruta",
+   "ickeTextrelationer": [
+    "rutans fyllning rgb(36, 56, 44) mot ytan utanfor kontrollen",
+    "bockens streckfarg mot rutans inre yta"
+   ],
+   "nuvarandeMatningsagarskap": "utanfor kontrollpopulationen — objektet har ingen data-a11y-role och mats darfor inte som kontrollgrafik idag",
+   "agarskapFlyttat": false,
+   "framtidaMigration": "efter en strukturell deklaration skulle rutan bli stateCarrier och raden componentIdentityCarrier i CONTROL_NON_TEXT, pa samma satt som BG-020 flyttades for profil. Migrationen ar INTE gjord.",
+   "renderadIckeFargBarare": "ja — fylld ruta med bock mot tom ruta med ram. Skillnaden ar innehall och avgransning, inte bara farg",
+   "stateMetadataSaknas": true,
+   "framtidaStateGroupBehovs": "ja — bada lagena forekommer i samma grupp, och det deklarerade exemplet familjmedlemsamtycke|19 bar data-state-group. Ingen state-group skapas i detta block",
+   "kongruensNyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON"
+  },
+  {
+   "id": "inkopmergeoppen|33",
+   "kontrollkropp": "radens div, 364x60",
+   "tillstandsbarare": "den 24x24 stora rutan (data-component=\"checkbox\")",
+   "ikonBockMarkor": "ingen — tom ram",
+   "trackThumb": "ej tillampligt for kryssruta",
+   "ickeTextrelationer": [
+    "rutans ram 1px rgb(125, 137, 124) mot ytan utanfor kontrollen"
+   ],
+   "nuvarandeMatningsagarskap": "utanfor kontrollpopulationen — objektet har ingen data-a11y-role och mats darfor inte som kontrollgrafik idag",
+   "agarskapFlyttat": false,
+   "framtidaMigration": "efter en strukturell deklaration skulle rutan bli stateCarrier och raden componentIdentityCarrier i CONTROL_NON_TEXT, pa samma satt som BG-020 flyttades for profil. Migrationen ar INTE gjord.",
+   "renderadIckeFargBarare": "ja — fylld ruta med bock mot tom ruta med ram. Skillnaden ar innehall och avgransning, inte bara farg",
+   "stateMetadataSaknas": true,
+   "framtidaStateGroupBehovs": "ja — bada lagena forekommer i samma grupp, och det deklarerade exemplet familjmedlemsamtycke|19 bar data-state-group. Ingen state-group skapas i detta block",
+   "kongruensNyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ TOM_RAM"
+  }
+ ],
+ "P6_avstamning": {
+  "adjudicerade": 21,
+  "summa": "INTERACTIVE_CONTROL 5 + NON_INTERACTIVE_STATE_GRAPHIC 9 + DECORATIVE_GRAPHIC 0 + UNKNOWN 7 = 21",
+  "raInventeringFore": 108,
+  "raInventeringEfter": 108,
+  "produktskrivningar": 0,
+  "avgjorda": 14,
+  "utanforOmfang": 87,
+  "utanforOmfangVerdiktandringar": 0,
+  "globalSemantiskUnknown": 94,
+  "globalSemantiskUnknownFormel": "87 utanfor omfanget + 7 olosta av de 21 = 94"
+ },
+ "R_frysta": {
+  "deklareradeKontroller": {
+   "fore": 1346,
+   "efter": 1346
+  },
+  "r02": {
+   "fore": {
+    "measured": 1346,
+    "pass": 1346,
+    "fail": 0,
+    "unknown": 0
+   },
+   "efter": {
+    "measured": 1346,
+    "pass": 1346,
+    "fail": 0,
+    "unknown": 0
+   }
+  },
+  "kontrollIckeTextFynd": {
+   "fore": 0,
+   "efter": 0
+  },
+  "grafiskaDelar": {
+   "fore": 1644,
+   "efter": 1644
+  },
+  "fristaendeRequired": {
+   "fore": 266,
+   "efter": 266
+  },
+  "fristaendeFynd": {
+   "fore": 0,
+   "efter": 0
+  },
+  "fristaendeUnknown": {
+   "fore": 0,
+   "efter": 0
+  },
+  "stateColorUse": {
+   "fore": {
+    "medTillstand": 137,
+    "saknarFamilj": 0,
+    "familjer": 71,
+    "singleton": 52,
+    "par": 21,
+    "okandaPar": 0,
+    "colorOnly": 0
+   },
+   "efter": {
+    "medTillstand": 137,
+    "saknarFamilj": 0,
+    "familjer": 71,
+    "singleton": 52,
+    "par": 21,
+    "okandaPar": 0,
+    "colorOnly": 0
+   }
+  },
+  "r04BitIdentiskt": true,
+  "produktfilerOrorda": true
+ },
+ "S_stoppvillkor": []
+}

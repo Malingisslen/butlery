@@ -1,0 +1,284 @@
+{
+ "$schema": "butlery-nt-batch03-utford/1",
+ "$datum": "2026-08-14",
+ "$status": "BATCH-03 UTFORD OCH VERIFIERAD. Fargskrivningsstoppet ater i fullt lage.",
+ "A_kallbokforing": {
+  "avseddaDeklarationer": 5,
+  "andradeDeklarationer": 5,
+  "filer": 4,
+  "ovrigaFargandringar": 0,
+  "$bevis": "Radvis diff over produktfilerna: 5 rader bort, 5 till. Netto forandring endast #ce7c1e -5 och #4a5c50 +5. Alla andra farger oforandrade pa bada sidor.",
+  "perEnhet": {
+   "DU-01-B": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 129675
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "offset": 28700
+    }
+   ],
+   "DU-01-D": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 128338
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 101581
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "offset": 26004
+    }
+   ]
+  },
+  "varjeWriteHarleddTillBeslut": true,
+  "filsummor": [
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "langdFore": 222468,
+    "langdEfter": 222468,
+    "shaFore": "9e3ab1c54dde6efa",
+    "shaEfter": "ef01ff80749bbb0c",
+    "andrade": 2
+   },
+   {
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "langdFore": 160609,
+    "langdEfter": 160609,
+    "shaFore": "9139f8289bfa5f1c",
+    "shaEfter": "1729624fd7fc6d5f",
+    "andrade": 1
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "langdFore": 216876,
+    "langdEfter": 216876,
+    "shaFore": "4109652bec0fda20",
+    "shaEfter": "69f0ca89a5a3120f",
+    "andrade": 1
+   },
+   {
+    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+    "langdFore": 144165,
+    "langdEfter": 144165,
+    "shaFore": "6a93af029a6079f6",
+    "shaEfter": "c158042c0d59f4f7",
+    "andrade": 1
+   }
+  ],
+  "$ingenGlobalReplace": "Varje skrivning gjordes pa en exakt byteoffset med kontroll av kallformen fore och exakt en fargtraff i deklarationen."
+ },
+ "B_frusnaKontroller": {
+  "text": true,
+  "historiskIckeText": true,
+  "traffytor": true,
+  "rendering": true,
+  "effekter": true,
+  "identitet": true,
+  "metod": "separat arbetskopia av appen fore BATCH-03, samma princip som BATCH-01 och BATCH-02"
+ },
+ "C_grafikmatning": {
+  "population": 34,
+  "kandidatavstamning": "2492 = 2458 + 34",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "findings": {
+   "fore": 9,
+   "efter": 4
+  },
+  "losta": [
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "nyKvot": 4.58,
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "enhet": "DU-01-B"
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "nyKvot": 4.58,
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "enhet": "DU-01-B"
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "nyKvot": 5.83,
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "enhet": "DU-01-D"
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "nyKvot": 5.83,
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "enhet": "DU-01-D"
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "nyKvot": 5.83,
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "enhet": "DU-01-D"
+   }
+  ],
+  "kvarstaende": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "form": "REGLAGE",
+    "kvot": 1.41
+   },
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 1.96
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "form": "FORLOPP",
+    "kvot": 2.64
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 2.98
+   }
+  ],
+  "$forvantat": "9 -> 4 var den forvantade reconciliationen. Utfallet stammer och har inte framtvingats."
+ },
+ "D_kopplingsintegritet": {
+  "skarm": "smartimport",
+  "rader": [
+   {
+    "id": "BG-005",
+    "enhet": "DU-01-B",
+    "beslut": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-B",
+    "stabilRelationsId": "smartimport|31→32",
+    "vardeIdentitet": "smartimport|32|background-color",
+    "bararIdentitet": "smartimport|31|background-color",
+    "fillOrdinal": 32,
+    "trackOrdinal": 31,
+    "renderadFill": "rgb(74, 92, 80)",
+    "renderadTrack": "rgb(204, 209, 194)",
+    "kvot": 4.58,
+    "deklarationOffset": 129675
+   },
+   {
+    "id": "BG-004",
+    "enhet": "DU-01-D",
+    "beslut": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
+    "stabilRelationsId": "smartimport|19→20",
+    "vardeIdentitet": "smartimport|20|background-color",
+    "bararIdentitet": "smartimport|19|background-color",
+    "fillOrdinal": 20,
+    "trackOrdinal": 19,
+    "renderadFill": "rgb(74, 92, 80)",
+    "renderadTrack": "rgb(230, 234, 217)",
+    "kvot": 5.83,
+    "deklarationOffset": 128338
+   }
+  ],
+  "badaOver3": true,
+  "egnaTracksBevarade": true,
+  "sarskiljande": {
+   "fillFarg": "IDENTISK — duger inte som sarskiljare",
+   "ordinal": true,
+   "trackIdentitet": true,
+   "trackFarg": true,
+   "kallankare": true,
+   "beslutspost": true,
+   "relationsId": true
+  },
+  "antalOberoendeSarskiljare": 6,
+  "$failClosed": "Verifieraren skiljer enheterna at pa ordinal, bararidentitet, sparfarg, kallankare, relationsid och beslutspost. Fyllfargen ar identisk och anvands INTE som sarskiljare.",
+  "utfall": "GRON"
+ },
+ "E_R04guardrail": {
+  "registerraderAndrade": 0,
+  "d18": {
+   "token": "--yta-upphojd-d18",
+   "ljusvarde": "#d8b784",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "$status": "OFORANDRAD i detta block"
+  },
+  "nyDarkEvidence": "ingen",
+  "darkVardeAndrat": "nej",
+  "coverageCredit": 0,
+  "ordinarieDarkImplementation": "FORTSATT PAUSAD",
+  "$bevis": "Endast fas2/nt-remediering-beslut.json uppdaterades, med produktwrite-status. fas2/r04-designbeslut.json ar oror d i detta block."
+ },
+ "F_identiteter": {
+  "DU-01-B": {
+   "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-B",
+   "token": "PROGRESS_FILL_DU_01_B",
+   "varde": "#4a5c50",
+   "track": "rgb(204, 209, 194)",
+   "relationer": [
+    "BG-005",
+    "BG-030"
+   ],
+   "skrivplatser": 2
+  },
+  "DU-01-D": {
+   "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
+   "token": "PROGRESS_FILL_DU_01_D",
+   "varde": "#4a5c50",
+   "track": "rgb(230, 234, 217)",
+   "relationer": [
+    "BG-004",
+    "BG-026",
+    "BG-031"
+   ],
+   "skrivplatser": 3
+  },
+  "$regel": "Tva beslutsidentiteter, tva tokens, tva skrivomfang. Samma numeriska varde ar inte mappningsevidens, ingen sammanslagning och ingen R-04-kredit.",
+  "ejGjort": [
+   "source consolidation",
+   "shared-token merge",
+   "identity merge",
+   "ny mapping evidence",
+   "R-04-credit",
+   "dark-mode implementation"
+  ]
+ },
+ "G_stoppvillkor": {
+  "utlosta": [],
+  "utfall": "INGET STOPPVILLKOR UTLOST"
+ },
+ "H_lage": {
+  "GENERAL_PRODUCT_COLOR_WRITE_STOP": "ATER I FULLT LAGE",
+  "ordinarieR04": "PAUSAD",
+  "profil": "BLOCKERAD OCH OFORANDRAD",
+  "aterstaendeEnheter": [
+   "DU-01-A (BG-027)",
+   "DU-01-E (BG-033)",
+   "DU-02 (BG-028)",
+   "profil (BG-020)"
+  ],
+  "aterstaendeFynd": 4
+ },
+ "ejGjort": [
+  "inga ytterligare fargskrivningar",
+  "ingen R-04-registerandring",
+  "ingen profilatgard",
+  "ingen dark-mode-implementation"
+ ]
+}

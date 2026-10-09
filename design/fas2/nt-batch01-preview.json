@@ -1,0 +1,1365 @@
+{
+ "$schema": "butlery-nt-batch01-preview/1",
+ "$datum": "2026-08-13",
+ "$status": "PREVIEWPAKET. 0 produktwrites, 0 registerwrites. R-04-implementation fortsatt pausad.",
+ "A_normativRegel": {
+  "$rubrik": "Kravda delar i ett sammansatt grafiskt objekt",
+  "regel": "For ett sammansatt grafiskt objekt: avgor vilka delar som kravs for att anvandaren ska forsta vad grafiken formedlar. Behandla varje lagkontrastdel som osynlig och fraga om objektet fortfarande ar begripligt utan den. Om nej ar delen REQUIRED_FOR_UNDERSTANDING och maste na 3.0 mot sin faktiskt malade angransande farg.",
+  "$ejKodat": "Ingen generell regel av typen \"varje del kraver alltid 3:1\".",
+  "$aldrigMellanDelar": "Kravet mats mot angransande bakgrund, aldrig mellan delarna. Varken punkt1 mot punkt2 eller punkt2 mot punkt3 provas.",
+  "verktyg": "tools/graphic-part-requirement.mjs",
+  "prov": {
+   "fil": "tools/graphic-part-requirement-fixtures.mjs",
+   "antal": 8,
+   "godkanda": 8,
+   "poster": [
+    {
+     "id": "GP-01",
+     "vad": "en del objektet klarar sig utan ar SUPPLEMENTAL och far inget eget krav",
+     "ok": true,
+     "diag": "objektet ar lika begripligt utan skuggan"
+    },
+    {
+     "id": "GP-02",
+     "vad": "en del objektet inte klarar sig utan ar REQUIRED_FOR_UNDERSTANDING med krav 3.0",
+     "ok": true,
+     "diag": "WCAG 1.4.11 · grafiska objekt som kravs for att forsta innehallet"
+    },
+    {
+     "id": "GP-03",
+     "vad": "en obedomd del faller stangt som UNKNOWN",
+     "ok": true,
+     "diag": "begriplighet utan delen ar inte bedomd — faller stangt"
+    },
+    {
+     "id": "GP-04",
+     "vad": "skrivindikatorns tre punkter ar alla kravda for forstaelsen",
+     "ok": true,
+     "diag": "kravda: punkt1, punkt2, punkt3"
+    },
+    {
+     "id": "GP-05",
+     "vad": "kravet mats mot angransande bakgrund, aldrig mellan delarna",
+     "ok": true,
+     "diag": "alla tre mot bubblan 12.99 / 10.22 / 8.56 — godkant, trots att punkt1 mot punkt2 bara ar 1.27"
+    },
+    {
+     "id": "GP-06",
+     "vad": "den nuvarande ljusa indikatorn faller pa tva av tre punkter",
+     "ok": true,
+     "diag": "punkt1 4.27 · punkt2 1.79 ✖ · punkt3 1.27 ✖"
+    },
+    {
+     "id": "GP-07",
+     "vad": "ordningen mellan delarna avgor inte konformans",
+     "ok": true,
+     "diag": "bade fallande och stigande serie ar godkanda — ordningen ar ett designdrag, inte kravets kalla"
+    },
+    {
+     "id": "GP-08",
+     "vad": "kallan kraver en bedomning per del och har ingen villkorslos treregel",
+     "ok": true,
+     "diag": "enda troskeln i koden ar 3.0 och den tillampas bara pa delar som bedomts kravda"
+    }
+   ]
+  },
+  "metodprovTotalt": 388,
+  "filer": 30,
+  "fore": 380,
+  "nya": 8
+ },
+ "B_tillampningSkrivindikator": {
+  "objekt": "skrivindikator, tre punkter",
+  "bortfallsprov": "En ensam kvarvarande synlig punkt bevarar inte den igenkannbara treprickformen.",
+  "utfall": "alla tre punkter ar REQUIRED_FOR_UNDERSTANDING",
+  "kravPerPunkt": "kontrast(punkt, faktiskt malad bubbelbakgrund) >= 3.0",
+  "$ejKrav": [
+   "kontrast(punkt1, punkt2) >= 3.0",
+   "kontrast(punkt2, punkt3) >= 3.0"
+  ]
+ },
+ "C_fallandeStyrka": {
+  "$rattadFormulering": "Det ar INTE etablerat som WCAG-faktum att den fallande luminansserien i sig ar informationen.",
+  "etablerat": "TREPRICKFORMEN ar den informationsbarande skrivindikatorn.",
+  "designdrag": {
+   "DOT_1": "visuellt starkast",
+   "DOT_2": "mellanlage",
+   "DOT_3": "svagast",
+   "status": "manskligt godkant designdrag, inte kallan till 3.0-kravet",
+   "$villkor": "Ordningen blir informationsbarande forst om separat evidens visar att luminansprogressionen formedlar ett ytterligare tillstand eller varde."
+  },
+  "$bevis": "Prov GP-07: bade en fallande och en stigande serie ar konformansgodkanda. Ordningen avgor inte utfallet."
+ },
+ "D_ljusPreview": {
+  "beslutsenhet": "VDU-1 · ljus skrivindikator",
+  "vyer": [
+   "chatt",
+   "chatt320"
+  ],
+  "viewportbevis": {
+   "indikatornsUtsnitt": "47x21 i bada",
+   "sammaMatt": true,
+   "pixelidentiska": false,
+   "$forklaring": "Indikatorn ar dimensionellt och deklarativt identisk i bada vyerna. Bitmapparna skiljer sig bara i kantutjamning, eftersom bubblan hamnar pa x=67 i den ena och x=63 i den andra. Ett buntval galler darfor bada vyerna."
+  },
+  "mekaniskEkvivalens": {
+   "metod": "CIELAB, CIE76, troskel 2.3 (klassisk JND)",
+   "varden": 8,
+   "kluster": 8,
+   "minstaParvisaSkillnad": 4.65,
+   "buntarFore": 56,
+   "buntarEfter": 56,
+   "kollapsade": 0,
+   "$utfall": "Ingen bunt kunde kollapsas. Minsta parvisa fargskillnad ar 4.65, vilket ar over troskeln — alla 56 ar genuint atskilda renderade resultat.",
+   "$ejGjort": "Ingen bunt bortvald pa smak, narhet till 3.0 eller vanlighet."
+  },
+  "rendering": {
+   "kontext": "faktisk chatt-skarm, utsnitt runt indikatorn med grannmeddelanden",
+   "antal": 56,
+   "kallgrind": true,
+   "kollateralTotalt": 0,
+   "okandTotalt": 0,
+   "$regel": "Bara indikatorns tre kanaler andras. Inga andra chattfarger ror sig."
+  },
+  "buntar": [
+   {
+    "nr": 1,
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#2f4437"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     8.56
+    ],
+    "fil": "ljus-01.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 2,
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#3f5145"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     6.93
+    ],
+    "fil": "ljus-02.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 3,
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     5.9
+    ],
+    "fil": "ljus-03.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 4,
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     5.83
+    ],
+    "fil": "ljus-04.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 5,
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     5
+    ],
+    "fil": "ljus-05.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 6,
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     4.27
+    ],
+    "fil": "ljus-06.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 7,
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#3f5145"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     6.93
+    ],
+    "fil": "ljus-07.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 8,
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     5.9
+    ],
+    "fil": "ljus-08.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 9,
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     5.83
+    ],
+    "fil": "ljus-09.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 10,
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     5
+    ],
+    "fil": "ljus-10.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 11,
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     4.27
+    ],
+    "fil": "ljus-11.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 12,
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     5.9
+    ],
+    "fil": "ljus-12.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 13,
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     5.83
+    ],
+    "fil": "ljus-13.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 14,
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     5
+    ],
+    "fil": "ljus-14.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 15,
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     4.27
+    ],
+    "fil": "ljus-15.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 16,
+    "punkter": [
+     "#17251d",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     5.9,
+     5.83
+    ],
+    "fil": "ljus-16.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 17,
+    "punkter": [
+     "#17251d",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     5.9,
+     5
+    ],
+    "fil": "ljus-17.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 18,
+    "punkter": [
+     "#17251d",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     5.9,
+     4.27
+    ],
+    "fil": "ljus-18.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 19,
+    "punkter": [
+     "#17251d",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     5.83,
+     5
+    ],
+    "fil": "ljus-19.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 20,
+    "punkter": [
+     "#17251d",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     5.83,
+     4.27
+    ],
+    "fil": "ljus-20.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 21,
+    "punkter": [
+     "#17251d",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     5,
+     4.27
+    ],
+    "fil": "ljus-21.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 22,
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#3f5145"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     6.93
+    ],
+    "fil": "ljus-22.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 23,
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     5.9
+    ],
+    "fil": "ljus-23.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 24,
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     5.83
+    ],
+    "fil": "ljus-24.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 25,
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     5
+    ],
+    "fil": "ljus-25.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 26,
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     4.27
+    ],
+    "fil": "ljus-26.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 27,
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     5.9
+    ],
+    "fil": "ljus-27.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 28,
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     5.83
+    ],
+    "fil": "ljus-28.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 29,
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     5
+    ],
+    "fil": "ljus-29.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 30,
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     4.27
+    ],
+    "fil": "ljus-30.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 31,
+    "punkter": [
+     "#24382c",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     10.22,
+     5.9,
+     5.83
+    ],
+    "fil": "ljus-31.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 32,
+    "punkter": [
+     "#24382c",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     5.9,
+     5
+    ],
+    "fil": "ljus-32.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 33,
+    "punkter": [
+     "#24382c",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     5.9,
+     4.27
+    ],
+    "fil": "ljus-33.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 34,
+    "punkter": [
+     "#24382c",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     5.83,
+     5
+    ],
+    "fil": "ljus-34.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 35,
+    "punkter": [
+     "#24382c",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     5.83,
+     4.27
+    ],
+    "fil": "ljus-35.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 36,
+    "punkter": [
+     "#24382c",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     5,
+     4.27
+    ],
+    "fil": "ljus-36.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 37,
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     5.9
+    ],
+    "fil": "ljus-37.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 38,
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     5.83
+    ],
+    "fil": "ljus-38.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 39,
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     5
+    ],
+    "fil": "ljus-39.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 40,
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     4.27
+    ],
+    "fil": "ljus-40.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 41,
+    "punkter": [
+     "#2f4437",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     8.56,
+     5.9,
+     5.83
+    ],
+    "fil": "ljus-41.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 42,
+    "punkter": [
+     "#2f4437",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     8.56,
+     5.9,
+     5
+    ],
+    "fil": "ljus-42.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 43,
+    "punkter": [
+     "#2f4437",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     5.9,
+     4.27
+    ],
+    "fil": "ljus-43.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 44,
+    "punkter": [
+     "#2f4437",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     8.56,
+     5.83,
+     5
+    ],
+    "fil": "ljus-44.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 45,
+    "punkter": [
+     "#2f4437",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     5.83,
+     4.27
+    ],
+    "fil": "ljus-45.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 46,
+    "punkter": [
+     "#2f4437",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     5,
+     4.27
+    ],
+    "fil": "ljus-46.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 47,
+    "punkter": [
+     "#3f5145",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     6.93,
+     5.9,
+     5.83
+    ],
+    "fil": "ljus-47.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 48,
+    "punkter": [
+     "#3f5145",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     6.93,
+     5.9,
+     5
+    ],
+    "fil": "ljus-48.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 49,
+    "punkter": [
+     "#3f5145",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     6.93,
+     5.9,
+     4.27
+    ],
+    "fil": "ljus-49.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 50,
+    "punkter": [
+     "#3f5145",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     6.93,
+     5.83,
+     5
+    ],
+    "fil": "ljus-50.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 51,
+    "punkter": [
+     "#3f5145",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     6.93,
+     5.83,
+     4.27
+    ],
+    "fil": "ljus-51.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 52,
+    "punkter": [
+     "#3f5145",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     6.93,
+     5,
+     4.27
+    ],
+    "fil": "ljus-52.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 53,
+    "punkter": [
+     "#4a5c43",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     5.9,
+     5.83,
+     5
+    ],
+    "fil": "ljus-53.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 54,
+    "punkter": [
+     "#4a5c43",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     5.9,
+     5.83,
+     4.27
+    ],
+    "fil": "ljus-54.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 55,
+    "punkter": [
+     "#4a5c43",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     5.9,
+     5,
+     4.27
+    ],
+    "fil": "ljus-55.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 56,
+    "punkter": [
+     "#4a5c50",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     5.83,
+     5,
+     4.27
+    ],
+    "fil": "ljus-56.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   }
+  ]
+ },
+ "E_morktUtanLosning": {
+  "beslutsenhet": "VDU-2 · mork skrivindikator",
+  "klassificering": "NO_EXISTING_PALETTE_SOLUTION",
+  "nulage": {
+   "bubbla": "#2f4437",
+   "punkter": [
+    "#627061",
+    "#4a5c50",
+    "rgba(245,244,237,0.18)"
+   ],
+   "komponerade": [
+    "#627061",
+    "#4a5c50",
+    "#536458"
+   ],
+   "kvoter": [
+    2,
+    1.47,
+    1.66
+   ],
+   "$brutenOrdning": "Tredje punkten ar deklarerad som genomskinlig overlay men komponeras ljusare an den andra."
+  },
+  "observeradePaletten": [
+   {
+    "varde": "#ce7c1e",
+    "n": 5,
+    "kvot": 3.26
+   },
+   {
+    "varde": "#17251d",
+    "n": 56,
+    "kvot": 1.52
+   },
+   {
+    "varde": "#4a5c43",
+    "n": 1,
+    "kvot": 1.45
+   },
+   {
+    "varde": "#24382c",
+    "n": 101,
+    "kvot": 1.19
+   }
+  ],
+  "$endaSomKlarar": "Accenten #ce7c1e pa 3.26. Uteslutet: en accent bar status i systemet och en skrivindikator har ingen.",
+  "medBubblanIAtgarden": {
+   "provadeBubblor": 4,
+   "gerLosning": 0,
+   "$utfall": "Ingen kombination av observerade morka ytvarden ger tre punkter over 3.0."
+  },
+  "kravband": {
+   "bubblansLuminans": 0.05014417530047516,
+   "ljusarePunktKraverLuminansMinst": 0.2504325259014255,
+   "morkarePunktKraverLuminansHogst": -0.01661860823317495,
+   "$morkareOmojligt": true,
+   "$text": "Mot bubblan #2f4437 kan ingen punkt losa kravet genom att bli morkare — talet ar negativt, alltsa finns ingen sadan farg. Varje kravd punkt maste bli LJUSARE, med relativ luminans minst 0.2504."
+  },
+  "alternativ": [
+   {
+    "id": "D1",
+    "vad": "nytt semantiskt neutralt morkt indikatorvarde eller en bunt",
+    "status": "HUMAN_VISUAL_CANDIDATE",
+    "evidens": "NOLL observerad mappningsevidens",
+    "krav": "relativ luminans minst 0.2504 mot bubblan, neutral, tre atskilda varden",
+    "$ejKallas": [
+     "VERIFIED",
+     "OBSERVED"
+    ]
+   },
+   {
+    "id": "D2",
+    "vad": "strukturell omdesign sa att treprickformen bars av en annan konform mekanism",
+    "exempel": "en ljusare bubbla for just indikatorn, eller en kontur runt punkterna",
+    "$not": "Ett strukturbyte flyttar fragan fran farg till form och maste da provas om fran borjan."
+   }
+  ],
+  "$ejGjort": "Tillampligheten har inte andrats for att fa en palettlosning att uppsta."
+ },
+ "F_beslutsidentiteter": {
+  "ljust": {
+   "enhet": "VDU-1",
+   "beslut": 1,
+   "vyer": 2,
+   "relationer": [
+    "BG-010",
+    "BG-011",
+    "BG-017",
+    "BG-018"
+   ]
+  },
+  "morkt": {
+   "enhet": "VDU-2",
+   "beslut": 1,
+   "vyer": 1,
+   "relationer": [
+    "BG-012",
+    "BG-013",
+    "BG-014"
+   ]
+  },
+  "BATCH01_HUMAN_VISUAL_DECISIONS": 2,
+  "IMPLEMENTATION_WRITE_SITES": 5,
+  "$regel": "Beslutsantal och skrivplatsantal ar inte samma sak och blandas inte."
+ },
+ "G_stopp": {
+  "produktwrites": 0,
+  "registerwrites": 0,
+  "R04": "fortsatt pausad",
+  "profil": "fortsatt blockerad tills kontrollpopulationen ar avstamd"
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen registerwrite",
+  "ingen bunt vald",
+  "ingen tillamplighet uppluckrad",
+  "ingen smakbaserad gallring",
+  "ingen accent anvand"
+ ]
+}

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Semibold.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-BoldItalic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+body{margin:0;background:#F5F4ED;font-family:"Butlery Sans",system-ui,sans-serif;font-synthesis:none;color:#24382C;text-wrap:pretty}
+a{color:#8A5212}
+a:hover{color:#24382C}
+</style>
+</helmet>
+
+<div style="max-width:940px;margin:0 auto;padding:64px 32px 120px;display:flex;flex-direction:column;gap:56px">
+
+  <header style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="width:22px;height:4px;background:#CE7C1E;border-radius:2px"></span>
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Butlery · beslutsunderlag</span>
+    </div>
+    <h1 style="margin:0;font-size:44px;font-weight:700;letter-spacing:-1.2px;line-height:1.1;max-width:720px">Nio beslut som väntar på dig</h1>
+    <p style="margin:0;font-size:17px;line-height:1.65;color:#37453A;max-width:660px">Designen är ritad och mätt. Det som återstår på min sida är inte arbete — det är nio frågor jag inte får svara på själv. Fem av dem har jag redan kört på ett standardsvar för att inte blockera ritningen; de gäller tills du säger annat, men de står inte i <a href="beslutslogg.md">beslutslogg.md</a> och är därför inga beslut.</p>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#627061;max-width:660px">Välj ett svar per fråga. Ditt val sparas i den här vyn. Längst ned finns protokollet att klistra in i beslutsloggen.</p>
+  </header>
+
+  <div style="display:flex;align-items:baseline;gap:20px;padding:20px 24px;background:#E6EAD9;border-radius:8px">
+    <span style="font-size:34px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums">{{ kvar }}</span>
+    <span style="flex:1;font-size:15px;line-height:1.5;color:#37453A">{{ statusText }}</span>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Blockerar release</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·01</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Slutför OFL-attribueringen för Butlery Sans</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Butlery Sans är ett <b>modifierat och omdöpt OFL-1.1-derivat</b> av Mona Sans, Albert Sans och DM Sans. <b>Namnet och våra egna ändringar kan tillhöra Butlery</b> — det som inte kan göras proprietärt är fontprogramvaran och källmaterialet. Kortet sa tidigare att typsnittet ”inte är vårt” och att name-tabellen måste bära licensen; båda var för kategoriska, och fontbygget har rättat oss. OFL godtar licenstext som fristående filer, headers <i>eller</i> metadata, och en OFL-font får ingå i en kommersiell app.</p>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Kvar i de faktiska 0.626-filerna: <b>kursivfilerna krediterar bara Mona Sans</b> medan de raka vikterna har full attribution, <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">app-assets</code> bär inga licenstexter, och licensfilernas första rader är dubblerade.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Låser: inte release i sig — bara en build som saknar texterna. Källa: <a href="00-spec-index.md">spec-index</a> P1-7, <a href="blockerande.md">blockerande.md</a> § 5, beslut B-30.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v01a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s01a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Behåll derivatet — metadata-only 0.626.</b> Harmonisera copyrightfälten i alla sex stilar, städa licensfilernas dubblerade rader, lägg texterna i release-bundlen. Inga glyfer, ingen spacing, inget utseende rört. <i style="color:#8A5212">Mitt råd, och fontbyggets.</i></span>
+        </button>
+        <button type="button" onClick="{{ v01b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s01b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Kräver ni ett exklusivt typsnitt</b> som ingen annan får återanvända, går det inte med ett OFL-derivat — då licensieras ett eget, och hela typskalan mäts om. Välj bara detta om exklusiviteten är ett verkligt krav.</span>
+        </button>
+      </div>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·02</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Verifieringsprotokollet — vem kör det, och när</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">P0-9 är den enda punkten designen inte kan stänga själv: TalkBack, VoiceOver, Accessibility Scanner och reducerad rörelse <b>på fysisk enhet</b>. Protokollet ligger tomt i <a href="testmatris.md">testmatris.md</a> § 4 sedan fyra dagar. Utan det står 72 krav kvar som <i>implementerade</i> i stället för <i>verifierade</i> — och skillnaden är hela poängen med statusordboken.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Låser: statusen <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">verifierad</code> på 72 krav. Källa: spec-index P0-9, beslut B-24.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v02a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s02a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Teamet kör det den här sprinten</b>, en Android och en iPhone, protokollrad per vy. <i style="color:#8A5212">Mitt råd — det är två personers halvdag, och varje dag som går ritar vi vidare på obevisad mark.</i></span>
+        </button>
+        <button type="button" onClick="{{ v02b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s02b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Extern tillgänglighetsgranskning.</b> Dyrare och långsammare, men ett utlåtande som håller mot en upphandling.</span>
+        </button>
+        <button type="button" onClick="{{ v02c }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s02c }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Efter första implementerade etappen.</b> Testa på riktig kod i stället för på ritningar — senare, men på det som faktiskt levereras.</span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Håller specen öppen</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·03</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">iOS-toppfältet — ett fält eller två</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Specen säger <b>ett toppfält, samma på båda plattformar</b>. Appen har <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">AdaptiveAppBar</code> med Cupertino på iOS, redan migrerad i <b>39 vyer</b>. Antingen ritar jag iOS-varianten av varje toppfält, eller så river vi en migrering som är gjord. Frågan har stått öppen sedan 26 juli och <a href="plattformsmatris.md">plattformsmatris.md</a> pekar på den två gånger.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Låser: plattformsmatrisen och 39 migrerade vyer. Källa: <a href="migration-gap.md">migration-gap.md</a> K-09.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v03a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s03a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Ett gemensamt fält — men behåll iOS-gesterna.</b> Butlery ser likadant ut på båda; svep-tillbaka och Taptic ligger kvar. <i style="color:#8A5212">Mitt råd — plattformskänslan sitter i rörelse och gest, inte i fältets form.</i></span>
+        </button>
+        <button type="button" onClick="{{ v03b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s03b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Behåll Cupertino på iOS.</b> Då ritar jag iOS-varianten av varje toppfält — räkna med en egen etapp, och två sanningar att hålla i synk för alltid.</span>
+        </button>
+        <button type="button" onClick="{{ v03c }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s03c }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Gemensamt fält utom där iOS-idiomet bär funktion</b> — stora titlar i listvyer, resten gemensamt. Kompromiss, men gränsen måste då skrivas som en regel.</span>
+        </button>
+      </div>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·04</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Allergenmärkningen — ord, färg eller form</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Specen säger <b>tre tillstånd i ord plus statusfärg, aldrig ikon</b>. Koden använder form <i>och</i> ikon. Ingen av oss har haft fel: regeln finns för att en ikon inte kan säga <i>okänt</i>, men <b>färg som enda bärare fungerar inte för färgblinda</b> — och det här är den enda ytan i Butlery där ett missförstånd kan skada någon.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Låser: allergenmärkningen i varje receptvy. Källa: migration-gap K-07, <a href="produktregler.md">produktregler.md</a> § 1.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v04a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s04a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Ord + färg + form.</b> Formen är redundans för färgblinda, inte dekor — och ordet står alltid kvar. <i style="color:#8A5212">Mitt råd — den enda varianten som håller när en av tre kanaler faller bort.</i></span>
+        </button>
+        <button type="button" onClick="{{ v04b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s04b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Ord + färg, som specen står i dag.</b> Renast typografiskt, och regeln behöver inte skrivas om.</span>
+        </button>
+        <button type="button" onClick="{{ v04c }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s04c }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Kodens modell oförändrad.</b> Snabbast för teamet — men färgerna ligger utanför båda paletterna och ikonen kan inte uttrycka <i>okänt</i>.</span>
+        </button>
+      </div>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·05</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Flervalets synliga ingång</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Vi har ritat flervalet på <b>sex ytor</b>, men frågan K-05 faktiskt ställer är obesvarad: <b>hur kommer man in i det</b>. I appen är långtryck enda vägen, och långtryck får enligt vår egen plattformsmatris bara vara en genväg — aldrig enda vägen. Det är det sista designhålet i specen.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Låser: sex flervalsytor och C-04-familjen i <a href="evidensmatris.md">evidensmatris.md</a>. Källa: migration-gap K-05, <a href="luckor-etapp9.md">luckor-etapp9.md</a> L-21.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v05a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s05a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>”Välj” i toppfältet</b> på de sex ytorna, långtryck kvar som genväg. <i style="color:#8A5212">Mitt råd — ett ord, samma plats varje gång, och det syns utan att man vet att det finns.</i></span>
+        </button>
+        <button type="button" onClick="{{ v05b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s05b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Kebabmenyn per lista.</b> Följer specens ursprungliga hållning, men gömmer en vanlig handling två tryck bort.</span>
+        </button>
+        <button type="button" onClick="{{ v05c }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s05c }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Långtryck räcker.</b> Ingen ny yta att rita — men då stryker vi vår egen regel, och den skrevs av ett skäl.</span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Kört på standardsvar · behöver ditt ja</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+    <p style="margin:0 0 6px;font-size:15px;line-height:1.65;color:#627061;max-width:660px">De fyra nedan är ritade enligt mitt standardsvar den 29 juli för att inte stoppa etapp 9. De gäller i ritningen men finns inte i beslutsloggen — säger du nej är ändringen liten nu och stor senare.</p>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·06</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Emoji i användarinnehåll</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Manualen förbjuder emoji. Appen har <b>emoji-reaktioner</b> i chatt och kommentarer. Regeln skrevs för Butlerys egen röst — men en reaktion är användarens röst, inte vår.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Standardsvar: regeln skrivs om, emoji tillåts som reaktion i chatt och kommentarer. Källa: luckor-etapp9 L-14.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v06a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s06a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Bekräfta standardsvaret.</b> Emoji tillåts endast som reaktion i chatt och kommentarer — aldrig i Butlerys egen text. <i style="color:#8A5212">Mitt råd.</i></span>
+        </button>
+        <button type="button" onClick="{{ v06b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s06b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Stryk reaktionerna.</b> Regeln står orörd, en befintlig funktion försvinner.</span>
+        </button>
+      </div>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·07</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Knuffarna och svep-tipset</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Båda finns i koden, ingen är ritad. En <b>knuff</b> är att peta på en familjemedlem som inte betygsatt maten; <b>svep-tipset</b> är en banderoll som lär ut en gest. Jag strök dem: knuffen skapar en social skuld appen inte behöver, och ett tips som måste visas betyder att gesten inte är begriplig.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Standardsvar: båda stryks. Kvarstår i koden som händelsetyp. Källa: luckor-etapp9 L-12, L-04.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v07a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s07a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Bekräfta strykningen av båda.</b> <i style="color:#8A5212">Mitt råd — och då ska händelsetypen bort ur koden också, annars finns knuffen kvar utan yta.</i></span>
+        </button>
+        <button type="button" onClick="{{ v07b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s07b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Behåll knuffen</b> som en tyst rad i aktivitetsflödet, aldrig som notis. Då ritar jag den.</span>
+        </button>
+        <button type="button" onClick="{{ v07c }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s07c }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Behåll båda.</b> Två ritningar till, och svep-tipset behöver en regel för när det slutar visas.</span>
+        </button>
+      </div>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·08</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Röstimporten — gäller den, eller är den struken?</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Specen säger två saker. <b>Röst är en av de nio källorna</b> i <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">ImportSource</code> och är ritad i <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">#imp1kalla</code> med cachetid och nätkrav — samtidigt som två andra ställen påstod att den <i>ströks</i>. Motsägelsen kom av att ordet stod i en plan från 26 juli, före att jag läste importkoden. Jag har rättat texterna åt det ritade hållet, men vilket som <b>ska</b> gälla är ditt beslut.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Låser: en av nio importkällor. Källa: <a href="produktregler.md">produktregler.md</a> § 9.1, ram <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">#imp1kalla</code>. Röstassistansen i matlagningsläget är en <b>annan</b> fråga och redan avgjord — § 20.11, ram <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">#komprost</code>.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v08a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s08a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Röstimporten gäller.</b> Koden har källan, ramarna finns, och ordet ”struken” var en kvarleva. <i style="color:#8A5212">Mitt råd — att diktera ett recept ur huvudet är det enda sättet att få in mormors kakor.</i></span>
+        </button>
+        <button type="button" onClick="{{ v08b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s08b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Stryk röstimporten.</b> Då tar jag bort källan ur <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">#imp1kalla</code> och <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">#impoffline</code>, och teamet tar bort den ur <code style="font-size:13px;background:#F0EEE2;padding:1px 5px;border-radius:2px">ImportSource</code> — annars finns vägen kvar utan yta.</span>
+        </button>
+        <button type="button" onClick="{{ v08c }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s08c }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Behåll källan, dölj vägen till efter lansering.</b> Ritningen står kvar men ingången göms — sämsta av två världar om ingen skriver ner varför.</span>
+        </button>
+      </div>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:28px 28px 22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <span style="flex:none;font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;padding-top:7px;font-variant-numeric:tabular-nums">BS·09</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.25">Matlagningsläget i bred layout</h2>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Etapp 11 ritade fyra breda ytor. Den femte — matlagningsläget på tablet — lade jag sist med noteringen <i>får strykas</i>, och den ritades aldrig. Frågan är om en surfplatta på köksbänken är ett verkligt bruk för er eller en artefakt av att koden har en tablet-variant.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Standardsvar: struken. Källa: etapp 11, punkt 11.4.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onClick="{{ v09a }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s09a }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Stryk — matlagningsläget är en spalt på alla bredder.</b> <i style="color:#8A5212">Mitt råd, om ni inte vet att någon lagar mat efter en surfplatta.</i></span>
+        </button>
+        <button type="button" onClick="{{ v09b }}" style="display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;background:#F5F4ED;border:1px solid #CCD1C2;border-radius:4px;font:inherit;text-align:left;cursor:pointer" style-hover="background:#E6EAD9">
+          <span style="flex:none;width:18px;height:18px;margin-top:2px;border-radius:9px;border:2px solid #627061;display:flex;align-items:center;justify-content:center"><sc-if value="{{ s09b }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:#CE7C1E"></span></sc-if></span>
+          <span style="flex:1;font-size:15px;line-height:1.5"><b>Rita den.</b> Steg och ingredienser samtidigt, större typ, timrarna kvar i synfältet — två till tre ramar.</span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px;padding:32px;background:#E6EAD9;border-radius:8px">
+    <h2 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.4px">Protokoll</h2>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A">{{ protokollText }}</p>
+    <pre style="margin:0;padding:20px;background:#F5F4ED;border-radius:4px;font-family:ui-monospace,monospace;font-size:13px;line-height:1.7;white-space:pre-wrap;color:#24382C">{{ protokoll }}</pre>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button type="button" onClick="{{ kopiera }}" style="min-height:48px;padding:0 22px;background:#24382C;color:#F5F4ED;border:none;border-radius:4px;font:inherit;font-size:15px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:#37453A">{{ kopieraText }}</button>
+      <button type="button" onClick="{{ nollstall }}" style="min-height:48px;padding:0 22px;background:transparent;color:#8A5212;border:1px solid #8A5212;border-radius:4px;font:inherit;font-size:15px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:#F5F4ED">Nollställ alla svar</button>
+    </div>
+  </section>
+
+  <footer style="display:flex;flex-direction:column;gap:12px;padding-top:8px;border-top:1px solid #CCD1C2">
+    <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Utöver de nio ligger <b>22 blockerande krav</b> hos utvecklingsteamet — utelåsningen vid MFA, samtycket som skrivs över, UGC-överklagandet, de exakta larmen. De kräver kod, inte ett beslut. Listan står i <a href="blockerande.md">blockerande.md</a>.</p>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Underlag: <a href="00-spec-index.md">00-spec-index.md</a> · <a href="granskning-v12.md">granskning-v12.md</a> · <a href="migration-gap.md">migration-gap.md</a> · <a href="luckor-etapp9.md">luckor-etapp9.md</a>. Besvarade frågor ska in i <a href="beslutslogg.md">beslutslogg.md</a> som numrerade poster — ett beslut som bara finns i den här vyn är inget beslut.</p>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000}}">
+const NYCKEL = 'butlery-utestaende-beslut-v1';
+const MIGRERAD_08 = 'butlery-utestaende-beslut-migrerad-08';
+const MIGRERAD_01 = 'butlery-utestaende-beslut-migrerad-01';
+
+const BESLUT = [
+  { id: '01', fraga: 'OFL-attribueringen för Butlery Sans', svar: {
+      a: 'Behåll derivatet; metadata-only 0.626 harmoniserar attributionen och lägger texterna i release-bundlen',
+      b: 'Exklusivitet krävs — då licensieras ett eget typsnitt i stället' } },
+  { id: '02', fraga: 'Verifieringsprotokollet på enhet', svar: {
+      a: 'Teamet kör det den här sprinten på en Android och en iPhone',
+      b: 'Extern tillgänglighetsgranskning',
+      c: 'Efter första implementerade etappen, på riktig kod' } },
+  { id: '03', fraga: 'iOS-toppfältet (K-09)', svar: {
+      a: 'Ett gemensamt fält på båda plattformar; iOS-gesterna behålls',
+      b: 'Cupertino behålls på iOS; iOS-varianten ritas per toppfält',
+      c: 'Gemensamt fält utom där iOS-idiomet bär funktion' } },
+  { id: '04', fraga: 'Allergenmärkningen (K-07)', svar: {
+      a: 'Ord + statusfärg + form, där formen är redundans för färgblinda',
+      b: 'Ord + statusfärg, som specen står i dag',
+      c: 'Kodens form och ikon behålls oförändrade' } },
+  { id: '05', fraga: 'Flervalets synliga ingång (K-05, L-21)', svar: {
+      a: '”Välj” i toppfältet på de sex ytorna; långtryck kvar som genväg',
+      b: 'Kebabmenyn per lista',
+      c: 'Långtryck räcker; regeln om synlig ingång stryks' } },
+  { id: '06', fraga: 'Emoji i användarinnehåll (L-14)', svar: {
+      a: 'Regeln skrivs om: emoji endast som reaktion i chatt och kommentarer',
+      b: 'Reaktionerna stryks; regeln står orörd' } },
+  { id: '07', fraga: 'Knuffarna och svep-tipset (L-12, L-04)', svar: {
+      a: 'Båda stryks, och händelsetypen tas bort ur koden',
+      b: 'Knuffen behålls som tyst rad i aktivitetsflödet, aldrig som notis',
+      c: 'Båda behålls och ritas' } },
+  { id: '08', fraga: 'Röstimporten — gäller eller struken (§ 9.1)', svar: {
+      a: 'Gäller: röst är en av nio källor, ritad i #imp1kalla; ordet ”struken” utgår',
+      b: 'Stryks: källan tas bort ur ramarna och ur ImportSource',
+      c: 'Källan behålls men vägen göms till efter lansering' } },
+  { id: '09', fraga: 'Matlagningsläget i bred layout (11.4)', svar: {
+      a: 'Stryks — matlagningsläget är en spalt på alla bredder',
+      b: 'Ritas brett: steg och ingredienser samtidigt' } }
+];
+
+class Component extends DCLogic {
+  state = { val: {}, kopierad: false };
+
+  componentDidMount() {
+    try {
+      const rå = localStorage.getItem(NYCKEL);
+      if (!rå) return;
+      const val = JSON.parse(rå) || {};
+      // BS-08 bytte fråga 2026-07-30 (röstassistansen → röstimporten). Ett sparat
+      // svar på den gamla frågan får inte läsas som ett svar på den nya, så det
+      // enda fältet släpps en gång. Övriga åtta svar är användarens arbete.
+      let migrerat = false;
+      if (!localStorage.getItem(MIGRERAD_08)) {
+        delete val['08'];
+        localStorage.setItem(MIGRERAD_08, '1');
+        migrerat = true;
+      }
+      // BS-01 bytte fråga 2026-07-30: fontlicensen var felformulerad och
+      // alternativen ”byt font” / ”eget typsnitt” utgick. Samma skäl som 08.
+      if (!localStorage.getItem(MIGRERAD_01)) {
+        delete val['01'];
+        localStorage.setItem(MIGRERAD_01, '1');
+        migrerat = true;
+      }
+      if (migrerat) localStorage.setItem(NYCKEL, JSON.stringify(val));
+      this.setState({ val: val });
+    } catch (e) { /* tom vy är ett giltigt utgångsläge */ }
+  }
+
+  valj(id, alt) {
+    this.setState(s => {
+      const val = Object.assign({}, s.val);
+      if (val[id] === alt) delete val[id]; else val[id] = alt;
+      try { localStorage.setItem(NYCKEL, JSON.stringify(val)); } catch (e) {}
+      return { val: val, kopierad: false };
+    });
+  }
+
+  nollstall() {
+    try { localStorage.removeItem(NYCKEL); } catch (e) {}
+    this.setState({ val: {}, kopierad: false });
+  }
+
+  protokolltext() {
+    const val = this.state.val;
+    const rader = BESLUT.filter(b => val[b.id]).map((b, i) => {
+      return '- **BS-' + b.id + ' · ' + b.fraga + '** — ' + b.svar[val[b.id]];
+    });
+    if (!rader.length) return '(inga svar ännu)';
+    return '## Beslut ' + new Date().toISOString().slice(0, 10) + '\n' + rader.join('\n');
+  }
+
+  renderVals() {
+    const val = this.state.val;
+    const antal = Object.keys(val).length;
+    const kvar = BESLUT.length - antal;
+    const v = {
+      kvar: kvar === 0 ? 'Alla' : String(kvar),
+      statusText: kvar === 0
+        ? 'Alla ' + BESLUT.length + ' är besvarade. Kvar: föra in dem i beslutsloggen som numrerade poster, och rita om de tre som ändrar en ritning.'
+        : (antal === 0
+            ? (kvar === 1 ? 'fråga' : 'frågor') + ' väntar på ett svar. Fem av dem gäller redan i ritningen på mitt standardsvar — de blir beslut först när du bekräftar dem.'
+            : (kvar === 1 ? 'fråga kvar. ' : 'frågor kvar. ') + antal + ' besvarade, protokollet längst ned uppdateras med varje val.'),
+      protokoll: this.protokolltext(),
+      protokollText: antal === 0
+        ? 'Välj ett svar ovan. Protokollet skrivs här som markdown, klart att klistra in i beslutsloggen.'
+        : 'Klistra in i beslutsloggen. Jag numrerar dem som B-poster och rättar de ritningar som berörs.',
+      kopieraText: this.state.kopierad ? 'Kopierat' : 'Kopiera protokollet',
+      kopiera: () => {
+        const t = this.protokolltext();
+        try {
+          navigator.clipboard.writeText(t);
+          this.setState({ kopierad: true });
+        } catch (e) {}
+      },
+      nollstall: () => this.nollstall()
+    };
+    BESLUT.forEach(b => {
+      Object.keys(b.svar).forEach(alt => {
+        v['s' + b.id + alt] = val[b.id] === alt;
+        v['v' + b.id + alt] = () => this.valj(b.id, alt);
+      });
+    });
+    return v;
+  }
+}
+</script>
+</body>
+</html>

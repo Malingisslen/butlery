@@ -1,0 +1,5870 @@
+{
+ "$schema": "butlery-nt-atgardskandidater/1",
+ "$datum": "2026-08-13",
+ "$status": "KANDIDAT- OCH BESLUTSPAKET. 0 produktwrites, 0 fargfixar, 0 registerwrites.",
+ "A_population": {
+  "relationer": 34,
+  "produktfel": 18,
+  "rotorsaker": 16,
+  "UNKNOWN": 0,
+  "$regel": "Talet 28 anvands inte langre."
+ },
+ "B_atgardskandidater": {
+  "ljuspalett": {
+   "varden": 44,
+   "ogenomskinligaYtvarden": 30
+  },
+  "villkorPaKandidat": [
+   "relationen nar minst 3.0",
+   "kandidaten har observerats i LJUST lage i SAMMA roll som vardet den ersatter",
+   "bararens roll bevaras pa samma satt",
+   "ingen kandidat valjs for att den ar numeriskt narmast",
+   "palettmedlemskap ensamt racker inte"
+  ],
+  "$ejTillampat": "Ingen kandidat ar vald. 3.0 ar ett konformansgolv, inte ett designmal.",
+  "rader": [
+   {
+    "id": "BG-011",
+    "stabilRelationsId": "chatt|30→33",
+    "skarm": "chatt",
+    "familj": "chatt-default-412",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chatt|30|background-color",
+    "vardeIdentitet": "chatt|33|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(204, 209, 194)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 1.27,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgb(204, 209, 194);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 3.36,
+      "sparMotBakom": 4.75,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 3.38,
+      "sparMotBakom": 4.78,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 3.93,
+      "sparMotBakom": 5.56,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 4.09,
+      "sparMotBakom": 5.78,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 4.4,
+      "sparMotBakom": 6.22,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 4.58,
+      "sparMotBakom": 6.48,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 4.64,
+      "sparMotBakom": 6.56,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 5.44,
+      "sparMotBakom": 7.7,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 6.72,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 8.03,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 10.21,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#ccd1c2"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-018",
+    "stabilRelationsId": "chatt320|30→33",
+    "skarm": "chatt320",
+    "familj": "chatt320-322",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chatt320|30|background-color",
+    "vardeIdentitet": "chatt320|33|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(204, 209, 194)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 1.27,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgb(204, 209, 194);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 3.36,
+      "sparMotBakom": 4.75,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 3.38,
+      "sparMotBakom": 4.78,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 3.93,
+      "sparMotBakom": 5.56,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 4.09,
+      "sparMotBakom": 5.78,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 4.4,
+      "sparMotBakom": 6.22,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 4.58,
+      "sparMotBakom": 6.48,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 4.64,
+      "sparMotBakom": 6.56,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 5.44,
+      "sparMotBakom": 7.7,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 6.72,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 8.03,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 10.21,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#ccd1c2"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-020",
+    "stabilRelationsId": "profil|38→39",
+    "skarm": "profil",
+    "familj": "profil-414",
+    "form": "REGLAGE",
+    "semantiskRoll": "stateCarrier — knoppens lage visar pa eller av",
+    "bararIdentitet": "profil|38|background-color",
+    "vardeIdentitet": "profil|39|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(245, 244, 237)",
+    "nuvarandeSpar": "rgb(204, 209, 194)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 1.41,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "width: 34px; height: 20px; border-radius: 999px; background: rgb(204, 209, 194); position: relative;",
+    "deklarationVarde": "position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 999px; background: rgb(245, 244, 237);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 3.36,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 3.38,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 3.93,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 4.09,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 4.4,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 4.58,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 4.64,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 5.44,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 6.72,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 8.03,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 10.21,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#7d897c",
+      "kvot": 3.32,
+      "sparMotBakom": 3.32,
+      "roller": [
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-kontroll"
+      ],
+      "forekomsterILjust": 1121
+     },
+     {
+      "varde": "#627061",
+      "kvot": 4.75,
+      "sparMotBakom": 4.75,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.78,
+      "sparMotBakom": 4.78,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5.56,
+      "sparMotBakom": 5.56,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.78,
+      "sparMotBakom": 5.78,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 6.22,
+      "sparMotBakom": 6.22,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 6.48,
+      "sparMotBakom": 6.48,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 6.56,
+      "sparMotBakom": 6.56,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 7.7,
+      "sparMotBakom": 7.7,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 9.51,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 11.36,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 14.44,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#ccd1c2",
+      "#f5f4ed"
+     ]
+    },
+    "bifynd": "deklarerad toggle men utanfor [data-a11y-role] — osynlig for kontrollpopulationen"
+   },
+   {
+    "id": "BG-013",
+    "stabilRelationsId": "chattmorkt|30→32",
+    "skarm": "chattmorkt",
+    "familj": "chatt-default-412",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chattmorkt|30|background-color",
+    "vardeIdentitet": "chattmorkt|32|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(74, 92, 80)",
+    "nuvarandeSpar": "rgb(47, 68, 55)",
+    "bakomSparet": "rgb(23, 37, 29)",
+    "kvot": 1.47,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgb(74, 92, 80);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#ce7c1e",
+      "kvot": 3.26,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "ikon-fristaende"
+      ],
+      "forekomsterILjust": 296,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#93a48d",
+      "kvot": 3.96,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 240,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#de9078",
+      "kvot": 4.18,
+      "roller": [
+       "ikon-fristaende",
+       "ram-behallare",
+       "text-innehall",
+       "text-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 19,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a9b2a0",
+      "kvot": 4.77,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 4.95,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 5.46,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 5.51,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 6.04,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 6.72,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 7.87,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 8.7,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 9,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 9.51,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#a9b2a0",
+      "kvot": 3.26,
+      "sparMotBakom": 7.25,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 3.38,
+      "sparMotBakom": 7.52,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 3.73,
+      "sparMotBakom": 8.3,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 3.75,
+      "sparMotBakom": 8.36,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 4.12,
+      "sparMotBakom": 9.18,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 4.58,
+      "sparMotBakom": 10.21,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 5.37,
+      "sparMotBakom": 11.96,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 5.83,
+      "sparMotBakom": 12.99,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 5.93,
+      "sparMotBakom": 13.22,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 6.14,
+      "sparMotBakom": 13.67,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 6.48,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#2f4437",
+      "#4a5c50"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-014",
+    "stabilRelationsId": "chattmorkt|30→33",
+    "skarm": "chattmorkt",
+    "familj": "chatt-default-412",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chattmorkt|30|background-color",
+    "vardeIdentitet": "chattmorkt|33|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(83, 100, 88)",
+    "nuvarandeSpar": "rgb(47, 68, 55)",
+    "bakomSparet": "rgb(23, 37, 29)",
+    "kvot": 1.66,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgba(245, 244, 237, 0.18);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#ce7c1e",
+      "kvot": 3.26,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "ikon-fristaende"
+      ],
+      "forekomsterILjust": 296,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#93a48d",
+      "kvot": 3.96,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 240,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#de9078",
+      "kvot": 4.18,
+      "roller": [
+       "ikon-fristaende",
+       "ram-behallare",
+       "text-innehall",
+       "text-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 19,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a9b2a0",
+      "kvot": 4.77,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 4.95,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 5.46,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 5.51,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 6.04,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 6.72,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 7.87,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 8.7,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 9,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 9.51,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#2f4437",
+      "#536458",
+      "rgba(245,244,237,0.18)"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-010",
+    "stabilRelationsId": "chatt|30→32",
+    "skarm": "chatt",
+    "familj": "chatt-default-412",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chatt|30|background-color",
+    "vardeIdentitet": "chatt|32|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(169, 178, 160)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 1.79,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgb(169, 178, 160);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#9c3b23",
+      "kvot": 3.12,
+      "sparMotBakom": 6.22,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 3.26,
+      "sparMotBakom": 6.48,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 3.29,
+      "sparMotBakom": 6.56,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 3.86,
+      "sparMotBakom": 7.7,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 4.77,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 5.7,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 7.25,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#a9b2a0"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-017",
+    "stabilRelationsId": "chatt320|30→32",
+    "skarm": "chatt320",
+    "familj": "chatt320-322",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chatt320|30|background-color",
+    "vardeIdentitet": "chatt320|32|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(169, 178, 160)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 1.79,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgb(169, 178, 160);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#9c3b23",
+      "kvot": 3.12,
+      "sparMotBakom": 6.22,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 3.26,
+      "sparMotBakom": 6.48,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 3.29,
+      "sparMotBakom": 6.56,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 3.86,
+      "sparMotBakom": 7.7,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 4.77,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 5.7,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 7.25,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#a9b2a0"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-027",
+    "stabilRelationsId": "lagatimers|13→14",
+    "skarm": "lagatimers",
+    "familj": "lagatimers-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "lagatimers|13|background-color",
+    "vardeIdentitet": "lagatimers|14|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(83, 100, 88)",
+    "bakomSparet": "rgb(47, 68, 55)",
+    "kvot": 1.96,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "height: 3px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); margin-top: 6px; overflow: hidden;",
+    "deklarationVarde": "display: block; height: 100%; width: 58%; background: rgb(206, 124, 30); border-radius: 2px;",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#b4bfa6",
+      "kvot": 3.28,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 3.31,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 3.63,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 4.04,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 4.73,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 5.14,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 5.23,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 5.41,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 5.72,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 1,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 1.19,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 1.52,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#536458",
+      "#ce7c1e",
+      "rgba(245,244,237,0.18)"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-012",
+    "stabilRelationsId": "chattmorkt|30→31",
+    "skarm": "chattmorkt",
+    "familj": "chatt-default-412",
+    "form": "SKRIVINDIKATOR",
+    "semantiskRoll": "informationsbarande — punkterna visar att nagon skriver",
+    "bararIdentitet": "chattmorkt|30|background-color",
+    "vardeIdentitet": "chattmorkt|31|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(98, 112, 97)",
+    "nuvarandeSpar": "rgb(47, 68, 55)",
+    "bakomSparet": "rgb(23, 37, 29)",
+    "kvot": 2,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+    "deklarationVarde": "width: 5px; height: 5px; border-radius: 50%; background: rgb(98, 112, 97);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#ce7c1e",
+      "kvot": 3.26,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "ikon-fristaende"
+      ],
+      "forekomsterILjust": 296,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#93a48d",
+      "kvot": 3.96,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 240,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#de9078",
+      "kvot": 4.18,
+      "roller": [
+       "ikon-fristaende",
+       "ram-behallare",
+       "text-innehall",
+       "text-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 19,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a9b2a0",
+      "kvot": 4.77,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 4.95,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 5.46,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 5.51,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 6.04,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 6.72,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 7.87,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 8.7,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 9,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 9.51,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#c3c6ba",
+      "kvot": 3.02,
+      "sparMotBakom": 9.18,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 3.04,
+      "sparMotBakom": 1,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 3.36,
+      "sparMotBakom": 10.21,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 3.93,
+      "sparMotBakom": 11.96,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 4.27,
+      "sparMotBakom": 12.99,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 4.35,
+      "sparMotBakom": 13.22,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 4.5,
+      "sparMotBakom": 13.67,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 4.75,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#2f4437",
+      "#627061"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-005",
+    "stabilRelationsId": "smartimport|31→32",
+    "skarm": "smartimport",
+    "familj": "smartimport-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "smartimport|31|background-color",
+    "vardeIdentitet": "smartimport|32|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(204, 209, 194)",
+    "bakomSparet": "rgb(230, 234, 217)",
+    "kvot": 2.06,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4px; background: rgb(204, 209, 194);",
+    "deklarationVarde": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 62%; background: rgb(206, 124, 30); border-radius: 2px;",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 3.36,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 3.38,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 3.93,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 4.09,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 4.4,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 4.58,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 4.64,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 5.44,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 6.72,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 8.03,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 10.21,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#ccd1c2",
+      "#ce7c1e"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-030",
+    "stabilRelationsId": "vmbgenererar|50→51",
+    "skarm": "vmbgenererar",
+    "familj": "vmbgenererar-panel",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "vmbgenererar|50|background-color",
+    "vardeIdentitet": "vmbgenererar|51|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(204, 209, 194)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 2.06,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "height: 2px; background: rgb(204, 209, 194);",
+    "deklarationVarde": "display: block; width: 60%; height: 2px; background: rgb(206, 124, 30);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 3.36,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 3.38,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 3.93,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 4.09,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 4.4,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 4.58,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 4.64,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 5.44,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 6.72,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 8.03,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 10.21,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#ccd1c2",
+      "#ce7c1e"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-001",
+    "stabilRelationsId": "start|18→19",
+    "skarm": "start",
+    "familj": "start-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "start|18|background-color",
+    "vardeIdentitet": "start|19|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(74, 90, 79)",
+    "bakomSparet": "rgb(36, 56, 44)",
+    "kvot": 2.28,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "width: 120px; height: 3px; border-radius: 999px; background: rgba(245, 244, 237, 0.18); overflow: hidden;",
+    "deklarationVarde": "width: 46%; height: 100%; background: rgb(206, 124, 30); border-radius: 999px;",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#a9b2a0",
+      "kvot": 3.34,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 3.46,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 3.82,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 3.85,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 4.22,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 4.7,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 5.5,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 5.98,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 6.08,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 6.29,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 6.64,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 1.19,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 1,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 1.27,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "LIGHT_SOURCE_VALUE_UPDATE_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "via": "kallidentitet",
+       "traffarDennaArtefakt": true
+      },
+      {
+       "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+       "token": "--yta-upphojd-d17",
+       "ljusvarde": "rgba(245,244,237,0.18)",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": true,
+       "via": "beslutsenhet"
+      },
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": true,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#4a5a4f",
+      "#ce7c1e",
+      "rgba(245,244,237,0.18)"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-024",
+    "stabilRelationsId": "snackbars|23→24",
+    "skarm": "snackbars",
+    "familj": "snackbars-450",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "snackbars|23|background-color",
+    "vardeIdentitet": "snackbars|24|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(74, 90, 79)",
+    "bakomSparet": "rgb(36, 56, 44)",
+    "kvot": 2.28,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "width: 36px; height: 4px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); display: inline-block; position: relative; overflow: hidden; flex: 0 0 auto;",
+    "deklarationVarde": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 55%; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#a9b2a0",
+      "kvot": 3.34,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 3.46,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 3.82,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 3.85,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 4.22,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 4.7,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 5.5,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 5.98,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 6.08,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 6.29,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 6.64,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 1.19,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 1,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 1.27,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#4a5a4f",
+      "#ce7c1e",
+      "rgba(245,244,237,0.18)"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-004",
+    "stabilRelationsId": "smartimport|19→20",
+    "skarm": "smartimport",
+    "familj": "smartimport-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "smartimport|19|background-color",
+    "vardeIdentitet": "smartimport|20|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 2.63,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "width: 44px; height: 3px; border-radius: 2px; background: rgb(230, 234, 217); flex: 0 0 auto; overflow: hidden; display: inline-block; position: relative;",
+    "deklarationVarde": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 42%; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#ce7c1e"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-026",
+    "stabilRelationsId": "hemladdar|12→13",
+    "skarm": "hemladdar",
+    "familj": "hemladdar-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "hemladdar|12|background-color",
+    "vardeIdentitet": "hemladdar|13|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 2.63,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "width: 120px; height: 3px; border-radius: 2px; background: rgb(230, 234, 217); overflow: hidden; flex: 0 0 auto; display: inline-block; position: relative;",
+    "deklarationVarde": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 44%; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#ce7c1e"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-031",
+    "stabilRelationsId": "imp2hamtar|25→26",
+    "skarm": "imp2hamtar",
+    "familj": "imp2hamtar-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "imp2hamtar|25|background-color",
+    "vardeIdentitet": "imp2hamtar|26|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(230, 234, 217)",
+    "bakomSparet": "rgb(245, 244, 237)",
+    "kvot": 2.63,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "height: 4px; background: rgb(230, 234, 217); position: relative;",
+    "deklarationVarde": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 62%; background: rgb(206, 124, 30);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#627061",
+      "kvot": 4.27,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "ram-behallare",
+       "yta-upphojd",
+       "ikon-kontroll",
+       "text-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 1166,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a15a0a",
+      "kvot": 4.3,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll",
+       "ram-behallare",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 95,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f6b4f",
+      "kvot": 5,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-kontroll",
+       "text-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 107,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#8a5212",
+      "kvot": 5.2,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 5.59,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 5.83,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 5.9,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 8.56,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 10.22,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 12.99,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 9.51,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 11.36,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 14.44,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#e6ead9",
+      "#ce7c1e"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-033",
+    "stabilRelationsId": "globceremoni|7→8",
+    "skarm": "globceremoni",
+    "familj": "globceremoni-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "globceremoni|7|background-color",
+    "vardeIdentitet": "globceremoni|8|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(206, 124, 30)",
+    "nuvarandeSpar": "rgb(63, 81, 69)",
+    "bakomSparet": "rgb(36, 56, 44)",
+    "kvot": 2.64,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "width: 120px; height: 2px; border-radius: 2px; background: rgb(63, 81, 69); margin-top: 24px;",
+    "deklarationVarde": "width: 64px; height: 2px; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#93a48d",
+      "kvot": 3.21,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 240,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#de9078",
+      "kvot": 3.38,
+      "roller": [
+       "ikon-fristaende",
+       "ram-behallare",
+       "text-innehall",
+       "text-kontroll",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 19,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#a9b2a0",
+      "kvot": 3.86,
+      "roller": [
+       "yta-upphojd",
+       "text-kontroll",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 9,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dca968",
+      "kvot": 4.01,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 64,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#b4bfa6",
+      "kvot": 4.42,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 4.46,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 4.89,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 5.44,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 6.37,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 6.93,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 7.04,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 7.29,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 7.7,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#2f4437",
+      "kvot": 3.26,
+      "sparMotBakom": 1.19,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 3.89,
+      "sparMotBakom": 1,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 4.95,
+      "sparMotBakom": 1.27,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "DECISION_UNIT_SPLIT_REQUIRED",
+     "traffar": [
+      {
+       "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+       "token": "--yta-upphojd-d18",
+       "ljusvarde": "#ce7c1e",
+       "morkvarde": "rgba(245,244,237,0.18)",
+       "scope": [
+        "start"
+       ],
+       "traffarDennaArtefakt": false,
+       "via": "beslutsenhet"
+      }
+     ],
+     "ljusvardenIRelationen": [
+      "#3f5145",
+      "#ce7c1e"
+     ]
+    },
+    "bifynd": null
+   },
+   {
+    "id": "BG-028",
+    "stabilRelationsId": "lagatimers|22→23",
+    "skarm": "lagatimers",
+    "familj": "lagatimers-414",
+    "form": "FORLOPP",
+    "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+    "bararIdentitet": "lagatimers|22|background-color",
+    "vardeIdentitet": "lagatimers|23|background-color",
+    "rollVarde": "yta-upphojd",
+    "rollBarare": "yta-upphojd",
+    "nuvarandeVarde": "rgb(220, 169, 104)",
+    "nuvarandeSpar": "rgb(83, 100, 88)",
+    "bakomSparet": "rgb(47, 68, 55)",
+    "kvot": 2.98,
+    "krav": 3,
+    "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+    "deklarationBarare": "height: 3px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); margin-top: 6px; overflow: hidden;",
+    "deklarationVarde": "display: block; height: 100%; width: 22%; background: rgb(220, 169, 104); border-radius: 2px;",
+    "kandidaterOmVardetByts": [
+     {
+      "varde": "#b4bfa6",
+      "kvot": 3.28,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 6,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#d8b784",
+      "kvot": 3.31,
+      "roller": [
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 106,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#c3c6ba",
+      "kvot": 3.63,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#ccd1c2",
+      "kvot": 4.04,
+      "roller": [
+       "ram-app",
+       "ram-behallare",
+       "yta-upphojd",
+       "ram-kontroll",
+       "yta-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 3417,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#dfe0d6",
+      "kvot": 4.73,
+      "roller": [
+       "yta-upphojd"
+      ],
+      "forekomsterILjust": 2,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#e6ead9",
+      "kvot": 5.14,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "yta-platshallare",
+       "yta-kontroll",
+       "ram-kontroll",
+       "text-innehall"
+      ],
+      "forekomsterILjust": 650,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f7e8d2",
+      "kvot": 5.23,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 18,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f0eee2",
+      "kvot": 5.41,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 25,
+      "sammaRollSomNu": true
+     },
+     {
+      "varde": "#f5f4ed",
+      "kvot": 5.72,
+      "roller": [
+       "yta-app",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "text-innehall",
+       "ram-behallare",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 1745,
+      "sammaRollSomNu": true
+     }
+    ],
+    "kandidaterOmSparetByts": [
+     {
+      "varde": "#8a5212",
+      "kvot": 3.01,
+      "sparMotBakom": 1.65,
+      "roller": [
+       "text-innehall",
+       "ikon-fristaende",
+       "yta-upphojd",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 263
+     },
+     {
+      "varde": "#9c3b23",
+      "kvot": 3.24,
+      "sparMotBakom": 1.53,
+      "roller": [
+       "ikon-fristaende",
+       "text-innehall",
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare",
+       "text-kontroll",
+       "ikon-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 273
+     },
+     {
+      "varde": "#4a5c50",
+      "kvot": 3.38,
+      "sparMotBakom": 1.47,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll",
+       "ram-behallare"
+      ],
+      "forekomsterILjust": 8
+     },
+     {
+      "varde": "#4a5c43",
+      "kvot": 3.42,
+      "sparMotBakom": 1.45,
+      "roller": [
+       "yta-upphojd",
+       "text-innehall",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 53
+     },
+     {
+      "varde": "#3f5145",
+      "kvot": 4.01,
+      "sparMotBakom": 1.24,
+      "roller": [
+       "yta-upphojd",
+       "ram-behallare",
+       "ram-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 59
+     },
+     {
+      "varde": "#2f4437",
+      "kvot": 4.95,
+      "sparMotBakom": 1,
+      "roller": [
+       "yta-upphojd",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 24
+     },
+     {
+      "varde": "#24382c",
+      "kvot": 5.91,
+      "sparMotBakom": 1.19,
+      "roller": [
+       "yta-app",
+       "text-innehall",
+       "yta-upphojd",
+       "ram-behallare",
+       "ikon-fristaende",
+       "text-kontroll",
+       "ram-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll"
+      ],
+      "forekomsterILjust": 3686
+     },
+     {
+      "varde": "#17251d",
+      "kvot": 7.52,
+      "sparMotBakom": 1.52,
+      "roller": [
+       "text-innehall",
+       "yta-upphojd",
+       "ikon-fristaende",
+       "yta-app",
+       "text-kontroll",
+       "ikon-kontroll",
+       "yta-kontroll",
+       "ram-kontroll"
+      ],
+      "forekomsterILjust": 208
+     }
+    ],
+    "registerpaverkan": {
+     "klass": "NO_REGISTRY_IMPACT",
+     "traffar": [],
+     "ljusvardenIRelationen": [
+      "#536458",
+      "#dca968",
+      "rgba(245,244,237,0.18)"
+     ]
+    },
+    "bifynd": null
+   }
+  ]
+ },
+ "C_registerpaverkan": {
+  "fordelning": {
+   "NO_REGISTRY_IMPACT": 9,
+   "DECISION_UNIT_SPLIT_REQUIRED": 8,
+   "LIGHT_SOURCE_VALUE_UPDATE_REQUIRED": 1
+  },
+  "LIGHT_SOURCE_VALUE_UPDATE_REQUIRED": [
+   {
+    "id": "BG-001",
+    "skarm": "start",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "via": "kallidentitet",
+      "traffarDennaArtefakt": true
+     },
+     {
+      "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+      "token": "--yta-upphojd-d17",
+      "ljusvarde": "rgba(245,244,237,0.18)",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": true,
+      "via": "beslutsenhet"
+     },
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": true,
+      "via": "beslutsenhet"
+     }
+    ]
+   }
+  ],
+  "DECISION_UNIT_SPLIT_REQUIRED": [
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-024",
+    "skarm": "snackbars",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "traffar": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "traffarDennaArtefakt": false
+     }
+    ]
+   }
+  ],
+  "$regel": "En ljus konformansrattelse far aldrig tyst ogiltigforklara registrerad provenance. Inget nytt morkvarde uppfinns bara for att ljusvardet andras."
+ },
+ "D_rotorsaksklassning": {
+  "antal": 16,
+  "fordelning": {
+   "VISUAL_CHOICE_REQUIRED": 16
+  },
+  "grupper": [
+   {
+    "rotorsakId": "ROOT_CAUSE-01",
+    "relationer": [
+     "BG-001"
+    ],
+    "skarmar": [
+     "start"
+    ],
+    "bararDeklaration": "width: 120px; height: 3px; border-radius: 999px; background: rgba(245, 244, 237, 0.18); overflow: hidden;",
+    "vardeDeklaration": "width: 46%; height: 100%; background: rgb(206, 124, 30); border-radius: 999px;",
+    "kandidaterVarde": [
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-02",
+    "relationer": [
+     "BG-004"
+    ],
+    "skarmar": [
+     "smartimport"
+    ],
+    "bararDeklaration": "width: 44px; height: 3px; border-radius: 2px; background: rgb(230, 234, 217); flex: 0 0 auto; overflow: hidden; display: inline-block; position: relative;",
+    "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 42%; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-03",
+    "relationer": [
+     "BG-005"
+    ],
+    "skarmar": [
+     "smartimport"
+    ],
+    "bararDeklaration": "position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4px; background: rgb(204, 209, 194);",
+    "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 62%; background: rgb(206, 124, 30); border-radius: 2px;",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-04",
+    "relationer": [
+     "BG-010",
+     "BG-017"
+    ],
+    "skarmar": [
+     "chatt",
+     "chatt320"
+    ],
+    "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+    "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(169, 178, 160);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 18,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-05",
+    "relationer": [
+     "BG-011",
+     "BG-018"
+    ],
+    "skarmar": [
+     "chatt",
+     "chatt320"
+    ],
+    "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+    "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(204, 209, 194);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 22,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-06",
+    "relationer": [
+     "BG-012"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ],
+    "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+    "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(98, 112, 97);",
+    "kandidaterVarde": [
+     "#ce7c1e",
+     "#93a48d",
+     "#de9078",
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#c3c6ba",
+     "#17251d",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "antalGiltiga": 22,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-07",
+    "relationer": [
+     "BG-013"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ],
+    "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+    "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(74, 92, 80);",
+    "kandidaterVarde": [
+     "#ce7c1e",
+     "#93a48d",
+     "#de9078",
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "antalGiltiga": 25,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-08",
+    "relationer": [
+     "BG-014"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ],
+    "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+    "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgba(245, 244, 237, 0.18);",
+    "kandidaterVarde": [
+     "#ce7c1e",
+     "#93a48d",
+     "#de9078",
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-09",
+    "relationer": [
+     "BG-020"
+    ],
+    "skarmar": [
+     "profil"
+    ],
+    "bararDeklaration": "width: 34px; height: 20px; border-radius: 999px; background: rgb(204, 209, 194); position: relative;",
+    "vardeDeklaration": "position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 999px; background: rgb(245, 244, 237);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#7d897c",
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 23,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-10",
+    "relationer": [
+     "BG-024"
+    ],
+    "skarmar": [
+     "snackbars"
+    ],
+    "bararDeklaration": "width: 36px; height: 4px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); display: inline-block; position: relative; overflow: hidden; flex: 0 0 auto;",
+    "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 55%; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterVarde": [
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-11",
+    "relationer": [
+     "BG-026"
+    ],
+    "skarmar": [
+     "hemladdar"
+    ],
+    "bararDeklaration": "width: 120px; height: 3px; border-radius: 2px; background: rgb(230, 234, 217); overflow: hidden; flex: 0 0 auto; display: inline-block; position: relative;",
+    "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 44%; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-12",
+    "relationer": [
+     "BG-027"
+    ],
+    "skarmar": [
+     "lagatimers"
+    ],
+    "bararDeklaration": "height: 3px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); margin-top: 6px; overflow: hidden;",
+    "vardeDeklaration": "display: block; height: 100%; width: 58%; background: rgb(206, 124, 30); border-radius: 2px;",
+    "kandidaterVarde": [
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 12,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-13",
+    "relationer": [
+     "BG-028"
+    ],
+    "skarmar": [
+     "lagatimers"
+    ],
+    "bararDeklaration": "height: 3px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); margin-top: 6px; overflow: hidden;",
+    "vardeDeklaration": "display: block; height: 100%; width: 22%; background: rgb(220, 169, 104); border-radius: 2px;",
+    "kandidaterVarde": [
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 17,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-14",
+    "relationer": [
+     "BG-030"
+    ],
+    "skarmar": [
+     "vmbgenererar"
+    ],
+    "bararDeklaration": "height: 2px; background: rgb(204, 209, 194);",
+    "vardeDeklaration": "display: block; width: 60%; height: 2px; background: rgb(206, 124, 30);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-15",
+    "relationer": [
+     "BG-031"
+    ],
+    "skarmar": [
+     "imp2hamtar"
+    ],
+    "bararDeklaration": "height: 4px; background: rgb(230, 234, 217); position: relative;",
+    "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 62%; background: rgb(206, 124, 30);",
+    "kandidaterVarde": [
+     "#627061",
+     "#a15a0a",
+     "#3f6b4f",
+     "#8a5212",
+     "#9c3b23",
+     "#4a5c50",
+     "#4a5c43",
+     "#3f5145",
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 14,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   },
+   {
+    "rotorsakId": "ROOT_CAUSE-16",
+    "relationer": [
+     "BG-033"
+    ],
+    "skarmar": [
+     "globceremoni"
+    ],
+    "bararDeklaration": "width: 120px; height: 2px; border-radius: 2px; background: rgb(63, 81, 69); margin-top: 24px;",
+    "vardeDeklaration": "width: 64px; height: 2px; border-radius: 2px; background: rgb(206, 124, 30);",
+    "kandidaterVarde": [
+     "#93a48d",
+     "#de9078",
+     "#a9b2a0",
+     "#dca968",
+     "#b4bfa6",
+     "#d8b784",
+     "#c3c6ba",
+     "#ccd1c2",
+     "#dfe0d6",
+     "#e6ead9",
+     "#f7e8d2",
+     "#f0eee2",
+     "#f5f4ed"
+    ],
+    "kandidaterSpar": [
+     "#2f4437",
+     "#24382c",
+     "#17251d"
+    ],
+    "antalGiltiga": 16,
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "$regel": "3.0 ar ett konformansgolv, inte ett designmal. Flera giltiga varden betyder att valet ar visuellt."
+   }
+  ],
+  "$slutsats": "Ingen rotorsak ar PRINCIPLE_DETERMINATE. Varje har flera semantiskt giltiga losningar, sa varje rattelse ar ett visuellt val och kraver en avgransad preview i faktisk kontext fore produktwrite."
+ },
+ "E_bg022": {
+  "fraga": "Ar BG-022 och BG-023 interaktiva kontroller, icke-interaktiva tillstandsbilder eller specinnehall?",
+  "evidens": [
+   "Korpusen har 41 deklarerade switchar i 14 skarmar. Samtliga 41 bar data-hit.",
+   "Deklarerade switchgeometrier: 34x20, 48x28, 22x22. BG-022/023 ar 30x18 med knopp 14x14 — en storlek som inte forekommer bland de deklarerade.",
+   "BG-022/023 saknar bade data-component, data-a11y-role och data-hit.",
+   "Skarmens egen beskrivning namner \"automatiska regler (nyckelord/ingrediens) med kor-knapp\" — kor-knappen ar en annan, deklarerad kontroll.",
+   "Raden bar text som beskriver regeln och traffytan runt pillret ar inte utpekad nagonstans."
+  ],
+  "bedomning": "B · ICKE_INTERAKTIV_GRAFISK_TILLSTANDSBILD",
+  "motivering": "Korpusen deklarerar konsekvent allt interaktivt: 41 av 41 switchar har bade roll och traffyta. BG-022/023 har varken, och deras geometri finns inte bland de deklarerade switcharna. Det talar for en mindre indikatorvariant som visar att regeln ar aktiv, inte for en kontroll.",
+  "foljd": "Behalls i boxgrafikpopulationen som REQUIRED_INFORMATION_BEARING. Kvot 11.36 — passerar. Ingen av de 18 fargfelen.",
+  "$osakerhet": "Bedomningen vilar pa franvaron av deklarationer plus avvikande geometri, inte pa utseende. Om avsikten faktiskt ar en kontroll ar det i stallet en deklarationsmiss och da galler punkt A: stopp och avstamning av kontrollpopulationen.",
+  "$separatFynd": "DEKLARATIONSGAP"
+ },
+ "F_profilBifynd": {
+  "vad": "BG-019 och BG-020 i profil ar data-component=\"toggle\" utan data-a11y-role.",
+  "geometri": "34x20 med knopp 16x16 — exakt den dominerande deklarerade switchgeometrin (32 av 41).",
+  "fargpar": "rgb(36,56,44)/rgb(245,244,237) i pa-lage och rgb(204,209,194)/rgb(245,244,237) i av-lage — samma par som deklarerade switchar anvander.",
+  "bedomning": "A · INTERAKTIV PRODUKTKONTROLL, odeklarerad",
+  "foljd": "BG-020 ar bade ett fargfel (1.41) OCH en deklarationsmiss. Kontrollpopulationen maste stammas av innan den ratas, eftersom en deklaration flyttar relationen till kontrollpopulationen och andrar vilket kontrakt som galler.",
+  "$stopp": "Batchen med profil halls tillbaka tills kontrollavstamningen ar gjord."
+ },
+ "G_batchar": {
+  "antal": 7,
+  "batchar": [
+   {
+    "batchId": "BATCH-01",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarmar": [
+     "chatt",
+     "chatt320",
+     "chattmorkt"
+    ],
+    "relationer": [
+     "BG-011",
+     "BG-018",
+     "BG-013",
+     "BG-014",
+     "BG-010",
+     "BG-017",
+     "BG-012"
+    ],
+    "antal": 7,
+    "rotorsaker": [
+     "ROOT_CAUSE-04",
+     "ROOT_CAUSE-05",
+     "ROOT_CAUSE-06",
+     "ROOT_CAUSE-07",
+     "ROOT_CAUSE-08"
+    ],
+    "registerpaverkan": [
+     "NO_REGISTRY_IMPACT"
+    ],
+    "risk": "LAG — ingen registerkoppling",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   },
+   {
+    "batchId": "BATCH-02",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarmar": [
+     "profil",
+     "snackbars"
+    ],
+    "relationer": [
+     "BG-020",
+     "BG-024"
+    ],
+    "antal": 2,
+    "rotorsaker": [
+     "ROOT_CAUSE-09",
+     "ROOT_CAUSE-10"
+    ],
+    "registerpaverkan": [
+     "NO_REGISTRY_IMPACT",
+     "DECISION_UNIT_SPLIT_REQUIRED"
+    ],
+    "risk": "MEDEL — samma beslutsenhet finns registrerad i en annan artefakt",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   },
+   {
+    "batchId": "BATCH-03",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "skarmar": [
+     "lagatimers",
+     "hemladdar"
+    ],
+    "relationer": [
+     "BG-027",
+     "BG-026",
+     "BG-028"
+    ],
+    "antal": 3,
+    "rotorsaker": [
+     "ROOT_CAUSE-11",
+     "ROOT_CAUSE-12",
+     "ROOT_CAUSE-13"
+    ],
+    "registerpaverkan": [
+     "DECISION_UNIT_SPLIT_REQUIRED",
+     "NO_REGISTRY_IMPACT"
+    ],
+    "risk": "MEDEL — samma beslutsenhet finns registrerad i en annan artefakt",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   },
+   {
+    "batchId": "BATCH-05",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "skarmar": [
+     "vmbgenererar"
+    ],
+    "relationer": [
+     "BG-030"
+    ],
+    "antal": 1,
+    "rotorsaker": [
+     "ROOT_CAUSE-14"
+    ],
+    "registerpaverkan": [
+     "DECISION_UNIT_SPLIT_REQUIRED"
+    ],
+    "risk": "MEDEL — samma beslutsenhet finns registrerad i en annan artefakt",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   },
+   {
+    "batchId": "BATCH-06",
+    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+    "skarmar": [
+     "imp2hamtar"
+    ],
+    "relationer": [
+     "BG-031"
+    ],
+    "antal": 1,
+    "rotorsaker": [
+     "ROOT_CAUSE-15"
+    ],
+    "registerpaverkan": [
+     "DECISION_UNIT_SPLIT_REQUIRED"
+    ],
+    "risk": "MEDEL — samma beslutsenhet finns registrerad i en annan artefakt",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   },
+   {
+    "batchId": "BATCH-07",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "skarmar": [
+     "globceremoni"
+    ],
+    "relationer": [
+     "BG-033"
+    ],
+    "antal": 1,
+    "rotorsaker": [
+     "ROOT_CAUSE-16"
+    ],
+    "registerpaverkan": [
+     "DECISION_UNIT_SPLIT_REQUIRED"
+    ],
+    "risk": "MEDEL — samma beslutsenhet finns registrerad i en annan artefakt",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   },
+   {
+    "batchId": "BATCH-04",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarmar": [
+     "smartimport",
+     "start"
+    ],
+    "relationer": [
+     "BG-005",
+     "BG-001",
+     "BG-004"
+    ],
+    "antal": 3,
+    "rotorsaker": [
+     "ROOT_CAUSE-01",
+     "ROOT_CAUSE-02",
+     "ROOT_CAUSE-03"
+    ],
+    "registerpaverkan": [
+     "DECISION_UNIT_SPLIT_REQUIRED",
+     "LIGHT_SOURCE_VALUE_UPDATE_REQUIRED"
+    ],
+    "risk": "HOG — registrerad morkmappning pekar pa samma ljusvarde",
+    "grindarFore": [
+     "exakta BG-id angivna",
+     "0 orelaterade fargandringar",
+     "0 okant kallagarskap"
+    ],
+    "grindarEfter": [
+     "ljus textregression gron",
+     "historisk icke-textregression gron",
+     "boxgrafikpopulationen omkord",
+     "R-02 oforandrad",
+     "R-03 oforandrad om inte uttryckligen berord",
+     "effekter oforandrade",
+     "identitet oforandrad",
+     "morka renderade kallor inte forsamrade"
+    ]
+   }
+  ],
+  "$regel": "Rattelse och morkimplementation blandas aldrig i samma produktcommit.",
+  "$ordning": "Lag risk forst. profil halls tillbaka tills kontrollavstamningen ar gjord."
+ },
+ "H_stopp": {
+  "GENERAL_PRODUCT_COLOR_WRITE_STOP": "AKTIVT",
+  "BOUNDED_LIGHT_NON_TEXT_REMEDIATION": "AUKTORISERAD men inte pabörjad",
+  "$varfor": "Alla 16 rotorsaker ar VISUAL_CHOICE_REQUIRED. Ingen farg kan valjas utan ditt val och en avgransad preview.",
+  "produktwritesIDettaBlock": 0
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen fargfix",
+  "ingen registerwrite",
+  "ingen kandidat vald",
+  "ingen preview renderad",
+  "ingen R-04-implementation"
+ ]
+}

@@ -1,0 +1,1615 @@
+{
+ "$schema": "butlery-adjudikering-a2/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "dfc3766",
+ "$status": "CLEANEST-FIRST BATCH 2 KLAR — UNIFORM_RESOLVED",
+ "$typ": "SEMANTISK ADJUDIKERING. Inga produktandringar.",
+ "B_frusenPopulation": {
+  "antal": 2611,
+  "fingeravtryck": "d1d20de46bd68cc04770f519",
+  "klustringsfingeravtryck": "7e0d730a3e5ba58d9c9b19ae",
+  "strukturkluster": 566,
+  "partitioner": 701,
+  "$regel": "Ranking, vikter och trosklar ar oforandrade sedan bb98138 och dfc3766."
+ },
+ "B2_domangrind": {
+  "ok": true,
+  "provade": 2611,
+  "kontroller": [
+   "ytkvot finit och > 0",
+   "skarmyta finit och > 0",
+   "syskonantal heltal >= 1",
+   "ingen reservhink",
+   "logaritmerna finita"
+  ],
+  "brister": 0
+ },
+ "C_urval": {
+  "partition": "CL2-80e8e3d5c5",
+  "rang": 2,
+  "utfallForTopp12": [
+   {
+    "rang": 1,
+    "id": "CL2-d39109f820",
+    "olosta": 105,
+    "havstang": 12.814,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 2,
+    "id": "CL2-80e8e3d5c5",
+    "olosta": 31,
+    "havstang": 10.574,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 3,
+    "id": "CL2-c210220640",
+    "olosta": 23,
+    "havstang": 9.984,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 4,
+    "id": "CL2-e1d76124cd",
+    "olosta": 22,
+    "havstang": 9.899,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 5,
+    "id": "CL2-374616bec9",
+    "olosta": 20,
+    "havstang": 9.722,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 6,
+    "id": "CL2-37fcab90a5",
+    "olosta": 20,
+    "havstang": 9.722,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 7,
+    "id": "CL2-d238415887",
+    "olosta": 73,
+    "havstang": 9.65,
+    "ren": false,
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 8,
+    "id": "CL2-69e91a2775",
+    "olosta": 65,
+    "havstang": 9.322,
+    "ren": false,
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 9,
+    "id": "CL2-2944cae119",
+    "olosta": 14,
+    "havstang": 9.087,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 10,
+    "id": "CL2-514a3cd4f4",
+    "olosta": 12,
+    "havstang": 8.825,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 11,
+    "id": "CL2-0076b19d40",
+    "olosta": 19,
+    "havstang": 8.628,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 12,
+    "id": "CL2-52e65e4650",
+    "olosta": 47,
+    "havstang": 8.495,
+    "ren": false,
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   }
+  ],
+  "varfor": "Rang 1 var utesluten pa comparatorrollkonflikt. Rang 2 ar hogst rankad bland de rena. Urvalet registrerades FORE semantisk inspektion.",
+  "rankingkomponenter": {
+   "poang": 10.574,
+   "delar": {
+    "storlek": 31,
+    "upprepning": 4.95,
+    "comparator": 2,
+    "enRoll": 1,
+    "enTillstandsform": 1,
+    "enTexttopologi": 1,
+    "heterogen": 0
+   },
+   "$regel": "Havstang ar hur mycket EN evidensinsamling kan avgora. Den ar inte semantisk tilltro och far aldrig andra medlemskap."
+  }
+ },
+ "D_fingeravtryck": "f4bbebdc0b0e5698014255f0",
+ "D_signaturhash": "80e8e3d5c5399043",
+ "E_omfattning": {
+  "forekomster": 31,
+  "skarmar": 31,
+  "filer": 4
+ },
+ "F_struktur": {
+  "signatur": {
+   "malning": "fyllning",
+   "layout": "flex-rad-centrerad",
+   "form": "mycket-bred",
+   "egenText": true,
+   "glyfer": "1",
+   "nastladeFormer": "1",
+   "barn": "3-4",
+   "komponent": "ingen",
+   "piller": false,
+   "segmenterat": false,
+   "mekanismer": "PAINTED_TEXT_BODY",
+   "ytklass": "A-2",
+   "upprepning": "R0"
+  },
+  "partition": "tillstand=riktningsmarkor|text=etikett+sekundar|egenAtgard=ja|comparatorprofil=button",
+  "ytklass": "A-2",
+  "upprepning": "R0",
+  "comparatorprofil": {
+   "antal": 2,
+   "roller": [
+    "button"
+   ],
+   "identiteter": [
+    "veckonarvaro|47",
+    "socflode|50"
+   ]
+  },
+  "$vadDeAr": "Samtliga 31 ar skarmarnas oversta rad: en malad 412x65-remsa med nedre linje, som innehaller en deklarerad tillbakaknapp, en titel och ett sekundarvarde. Noll variation i roll, traffyta och handlare."
+ },
+ "G_verdikt": {
+  "NON_INTERACTIVE_STATE_GRAPHIC": 31
+ },
+ "G_utfallsklass": "UNIFORM_RESOLVED",
+ "H_perForekomst": [
+  {
+   "identitet": "veckoprompt|1",
+   "art": "veckoprompt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — prompt och tomt läge",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckogenererar|1",
+   "art": "veckogenererar",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — genererar",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckochips|1",
+   "art": "veckochips",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — vad tolkningen förstod",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoresultat|1",
+   "art": "veckoresultat",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — resultat och placeringsval",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckodolda|1",
+   "art": "veckodolda",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — färre recept av allergiskäl",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 4 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 4 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 4 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 4 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckofel|1",
+   "art": "veckofel",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — genereringen misslyckades",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckobyt|1",
+   "art": "veckobyt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — byte och slut på alternativ",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoplacering|1",
+   "art": "veckoplacering",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — placera själv",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Placera i veckan2 av 5",
+    "titel": "Placera i veckan",
+    "sekundarvarde": "2 av 5"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Placera i veckan\" och sekundarvardet \"2 av 5\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"2 av 5\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoplaceringvald|1",
+   "art": "veckoplaceringvald",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — rätt vald för placering",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Placera i veckan2 av 5",
+    "titel": "Placera i veckan",
+    "sekundarvarde": "2 av 5"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Placera i veckan\" och sekundarvardet \"2 av 5\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"2 av 5\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoplaceringavbryt|1",
+   "art": "veckoplaceringavbryt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — lämna placeringen",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Placera i veckan2 av 5",
+    "titel": "Placera i veckan",
+    "sekundarvarde": "2 av 5"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Placera i veckan\" och sekundarvardet \"2 av 5\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"2 av 5\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoautoplacerad|1",
+   "art": "veckoautoplacerad",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — automatiskt placerad",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckokalender|1",
+   "art": "veckokalender",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — kalendervecka",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckonarvaro|1",
+   "art": "veckonarvaro",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — vem är hemma per måltid",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckonarvarooversikt|1",
+   "art": "veckonarvarooversikt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — närvaro, veckoöversikt",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckooverflow|1",
+   "art": "veckooverflow",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — rätter som inte fick plats",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 7 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 7 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 7 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 7 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoflytta|1",
+   "art": "veckoflytta",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — flytta flera",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoskrivover|1",
+   "art": "veckoskrivover",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — skriva över veckan",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckoinkop|1",
+   "art": "veckoinkop",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — inköpslista från veckan",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "veckorostning|1",
+   "art": "veckorostning",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — rösta om en rätt",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Familjens veckomenyv31 · 5 rätter",
+    "titel": "Familjens veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Familjens veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "onbsenare|1",
+   "art": "onbsenare",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "skarm": "Onboarding — den uppskjutna frågan",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Veckomenyv31 · 5 rätter",
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Veckomeny\" och sekundarvardet \"v31 · 5 rätter\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"v31 · 5 rätter\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "imp3granska|1",
+   "art": "imp3granska",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — steg 3, granska tolkningen",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Granska receptSPARA",
+    "titel": "Granska recept",
+    "sekundarvarde": "SPARA"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Granska recept\" och sekundarvardet \"SPARA\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"SPARA\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "impassist1|1",
+   "art": "impassist1",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — steg 1, ingredienserna",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Hjälp mig tolka1/3",
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "1/3"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Hjälp mig tolka\" och sekundarvardet \"1/3\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"1/3\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "impassist2|1",
+   "art": "impassist2",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — steg 2, instruktionerna",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Hjälp mig tolka2/3",
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "2/3"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Hjälp mig tolka\" och sekundarvardet \"2/3\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"2/3\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "impassist3|1",
+   "art": "impassist3",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — steg 3, granska och rätta",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Hjälp mig tolka3/3",
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "3/3"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Hjälp mig tolka\" och sekundarvardet \"3/3\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"3/3\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "impassistavbryt|1",
+   "art": "impassistavbryt",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — avbryta med val gjorda",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Hjälp mig tolka2/3",
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "2/3"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Hjälp mig tolka\" och sekundarvardet \"2/3\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"2/3\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "impfil|1",
+   "art": "impfil",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — fil med flera recept",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Från fil7 av 9",
+    "titel": "Från fil",
+    "sekundarvarde": "7 av 9"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Från fil\" och sekundarvardet \"7 av 9\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"7 av 9\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "imparkiv|1",
+   "art": "imparkiv",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — ur arkivet",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Ur arkivet3 valda",
+    "titel": "Ur arkivet",
+    "sekundarvarde": "3 valda"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Ur arkivet\" och sekundarvardet \"3 valda\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"3 valda\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "taggregel|1",
+   "art": "taggregel",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Taggregel — bygga en regel",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Snabbt på vardagarREGEL",
+    "titel": "Snabbt på vardagar",
+    "sekundarvarde": "REGEL"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Snabbt på vardagar\" och sekundarvardet \"REGEL\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"REGEL\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "kontodelvis|1",
+   "art": "kontodelvis",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Konto — delvis raderat",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid rgb(204, 209, 194); flex: 0 0 "
+   },
+   "B_etikettVarde": {
+    "egenText": "Kontot är raderatDELVIS",
+    "titel": "Kontot är raderat",
+    "sekundarvarde": "DELVIS"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Kontot är raderat\" och sekundarvardet \"DELVIS\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"DELVIS\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "modrapporter|1",
+   "art": "modrapporter",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Moderering — öppna rapporter",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Moderering3 ÖPPNA",
+    "titel": "Moderering",
+    "sekundarvarde": "3 ÖPPNA"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Moderering\" och sekundarvardet \"3 ÖPPNA\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"3 ÖPPNA\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  },
+  {
+   "identitet": "modminderarig|1",
+   "art": "modminderarig",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Moderering — minderårigt konto",
+   "geometri": "412x65",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetHit": null,
+    "egetNamn": null,
+    "handlare": 0,
+    "stil": "display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ram-behallare-c); flex: "
+   },
+   "B_etikettVarde": {
+    "egenText": "Moderering1 ÖPPEN",
+    "titel": "Moderering",
+    "sekundarvarde": "1 ÖPPEN"
+   },
+   "C_funktionskontext": "skarmens overst liggande rad, avgransad nedat med en 1 px linje och skild fran det rullande innehallet",
+   "D_interaktionsagarskap": {
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Den enda interaktionen i raden ar en SEPARAT deklarerad kontroll. Raden sjalv bar varken roll, traffyta eller handlare."
+   },
+   "E_positivEvidens": [
+    "OBJEKTET AGER SYNLIG TEXT: raden ar den narmaste malade agaren till bade titeln \"Moderering\" och sekundarvardet \"1 ÖPPEN\". Enligt korpusens egen agarmodell tillhor icke-malande barns text den narmaste malade agaren.",
+    "SEKUNDARVARDET VARIERAR MED TILLSTANDET: samma radstruktur bar olika varden i olika skarmar i samma familj. I just denna forekomst star det \"1 ÖPPEN\".",
+    "HANDLINGEN AGS AV NAGON ANNAN: raden innehaller 1 deklarerad kontroll — button \"Tillbaka\" — och den bar hela interaktionen.",
+    "STRUKTURELL AVGRANSNING: raden malar en egen yta och en nedre linje som skiljer huvudet fran det rullande innehallet."
+   ],
+   "F_motevidens": [
+    "Texten ligger i barnspann. Man kan havda att spannen, inte raden, ar bararna. Korpusens agarmodell tillskriver dock icke-malande barns text den narmaste malade agaren, och raden ar den.",
+    "De tva comparatorerna, veckonarvaro|47 och socflode|50, ar deklarerade knappar men funktionellt oslaktade — en narvarochip och ett receptkort. De stoder ingenting har, och comparatorrollen har inte anvants.",
+    "Raden ar 412x65 och skulle geometriskt kunna vara en traffyta. Ingen sadan ar deklarerad, och geometri ensam ar inte evidens."
+   ],
+   "G_informationsbarare": {
+    "vilkenInformation": "skarmens identitet samt ett skarmspecifikt varde",
+    "redundantEllerSjalvstandig": "sjalvstandig — titeln och vardet star inte nagon annanstans i skarmen",
+    "framtidaNormativRelation": "textens kontrast mot radens fyllning ar en TEXTRELATION och tacks redan av R-01. Radens egen fyllning och dess nedre linje mot ytan bakom ar kandidater for icke-textmatning som FRISTAENDE grafik, inte som kontrollbarare.",
+    "horTillKontrollEllerFristaende": "fristaende — raden INNEHALLER en kontroll men ar inte del av en"
+   }
+  }
+ ],
+ "I_olostaFragor": [],
+ "J_nyaKontroller": {
+  "antal": 0,
+  "$not": "Inga nya kontroller i denna batch."
+ },
+ "K_prospektivt": {
+  "$not": "Inga nya kontroller, alltsa ingen prospektiv R-02. For informationsbararna galler att textens kontrast mot radens fyllning redan tacks av R-01, och att radens egen fyllning och nedre linje ar kandidater for icke-textmatning som FRISTAENDE grafik. Ingen remediering gors, ingen matpopulation flyttas."
+ },
+ "L_avstamning": {
+  "unresolvedFore": 2611,
+  "lostaIBatchen": 31,
+  "unresolvedEfter": 2580,
+  "unknownIBatchen": 0,
+  "rawOforandrad": 2700,
+  "$regel": "Ingen kandidat lamnar den ra upptackten for att den fatt ett verdikt."
+ },
+ "M_klustringInvariant": {
+  "bitIdentisk": true,
+  "strukturkluster": 566,
+  "partitioner": 701,
+  "fingeravtryck": "7e0d730a3e5ba58d9c9b19ae"
+ },
+ "O_frysta": {
+  "produktfilerOrorda": true,
+  "rawDiscoveryCandidates": 2700,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "klustringBitIdentisk": true,
+  "strukturkluster": 566,
+  "partitioner": 701
+ },
+ "P_produktskrivningar": 0,
+ "stopp": []
+}

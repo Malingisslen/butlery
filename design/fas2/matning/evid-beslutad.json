@@ -1,0 +1,926 @@
+[
+ {
+  "id": "T-05",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "alla",
+  "regel": "Fokusordning följer läsordning"
+ },
+ {
+  "id": "AU-14",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "auth",
+  "regel": "OTP läses som **ett** fält"
+ },
+ {
+  "id": "T-07",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "betyg",
+  "regel": "Betyg läses som radiogrupp"
+ },
+ {
+  "id": "R-06",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "chatt · formulär",
+  "regel": "Tangentbord öppet: åtgärdsrad ovanför tangentbordet"
+ },
+ {
+  "id": "A-04",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "pipeline",
+  "regel": "Automatisk tolkning ger aldrig `säker`"
+ },
+ {
+  "id": "A-07",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "pipeline",
+  "regel": "Databasuppdatering räknar om och meddelar"
+ },
+ {
+  "id": "A-08",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "pipeline",
+  "regel": "Källa avgör om `säker` får ges; automatisk tolkning aldrig ensam"
+ },
+ {
+  "id": "C-02",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "datalager",
+  "regel": "Stabila rad-ID, tombstones, operationstyper, `rev`"
+ },
+ {
+  "id": "C-03",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "inköp · skafferi",
+  "regel": "Relativa ändringar skickas relativt (`delta`), aldrig som absolut värde"
+ },
+ {
+  "id": "H-02",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "Hem",
+  "regel": "Förslag följer allergireglerna — endast `säker` i allergihushåll"
+ },
+ {
+  "id": "B-13",
+  "agare": "dev",
+  "status": "**beslutad** — samma `skipped` för två olika orsaker",
+  "vy": "familj",
+  "regel": "**En misslyckad rosterladdning får inte se ut som ett solohushåll** — båda loggar i dag maten utan närvaro och tiger"
+ },
+ {
+  "id": "B-14",
+  "agare": "dev",
+  "status": "**beslutad** — koden har opacitet 0,5, ruta 26, knappar 44 och 40",
+  "vy": "familj",
+  "regel": "Ovalt bärs av **ram och tom ruta**, aldrig av opacitet; kryssrutan är 24 px och alla tre knapparna 48 dp"
+ },
+ {
+  "id": "B-18",
+  "agare": "dev",
+  "status": "**beslutad** — ~28 px och färgskillnad i koden",
+  "vy": "familj",
+  "regel": "Allergen- och ogillar-chipsen är **48 dp** och bär bock, inte färg ensam"
+ },
+ {
+  "id": "B-07",
+  "agare": "dev",
+  "status": "beslutad — DPIA R3, godkänd",
+  "vy": "betyg",
+  "regel": "Varje betyg går in i ett anonymt publikt snitt, serversidigt; ingen identitet exponeras"
+ },
+ {
+  "id": "B-09",
+  "agare": "dev",
+  "status": "beslutad — DPIA § 2, signerad",
+  "vy": "konto",
+  "regel": "Retention: 24 mån vilande hushåll → varning → gallring"
+ },
+ {
+  "id": "S-16",
+  "agare": "dev",
+  "status": "**beslutad** — allt ligger i dag bakom långtryck",
+  "vy": "socialt",
+  "regel": "Varje bild har en **synlig meny** på 48 dp — destruktiv åtgärd får aldrig bara ligga bakom långtryck"
+ },
+ {
+  "id": "S-17",
+  "agare": "dev",
+  "status": "**beslutad** — raderas i dag direkt utan bekräftelse",
+  "vy": "socialt",
+  "regel": "Borttagning av en bild har **7 s Ångra** — en bild går inte att skriva igen"
+ },
+ {
+  "id": "S-18",
+  "agare": "dev",
+  "status": "**beslutad** — &quot;du har delat&quot; finns inte i vyn, bara per recept",
+  "vy": "socialt",
+  "regel": "Vänprofilen visar delning i **båda riktningar** med tal — till dig, från dig, till alla — och återkallandet ligger där siffran står"
+ },
+ {
+  "id": "S-19",
+  "agare": "dev",
+  "status": "**beslutad** — djuplänken läggs i dag i delningsarket utan förklaring",
+  "vy": "socialt",
+  "regel": "Profillänken säger **vad mottagaren ser** — den publika sidan, inget delat"
+ },
+ {
+  "id": "S-20",
+  "agare": "dev",
+  "status": "**beslutad** — sägs inte i dag",
+  "vy": "socialt",
+  "regel": "Att ta bort en vän **återkallar ingenting** av det redan delade; det står i bekräftelsen"
+ },
+ {
+  "id": "D-02",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "delat",
+  "regel": "Avvisning är tyst mot gruppen — avsändaren ser antal, aldrig namn"
+ },
+ {
+  "id": "I-24",
+  "agare": "dev",
+  "status": "**beslutad** — inget av det sägs i dag",
+  "vy": "editor",
+  "regel": "Vyn säger att utkastet är **lokalt**, att det finns **fem platser** och att det **rensas efter 24 h**"
+ },
+ {
+  "id": "I-25",
+  "agare": "dev",
+  "status": "**beslutad** — medvetet tyst i koden",
+  "vy": "editor",
+  "regel": "**Misslyckad utkastsparning är tyst** — tidsstämpeln är beviset och står still när något gått fel"
+ },
+ {
+  "id": "I-26",
+  "agare": "dev",
+  "status": "**beslutad** — nästa utkast trycker ut det äldsta",
+  "vy": "editor",
+  "regel": "Utkastlistan visar **hur länge** varje utkast finns kvar och märker när den femte platsen är full"
+ },
+ {
+  "id": "M-07",
+  "agare": "dev",
+  "status": "**beslutad** — uttryckligt i arbetsplanen",
+  "vy": "admin",
+  "regel": "Resten av admins nio vyer byggs av teamet ur mönstret"
+ },
+ {
+  "id": "D-08",
+  "agare": "dev",
+  "status": "beslutad — § 2.1",
+  "vy": "delat",
+  "regel": "Rader slås samman som operationer med tombstones — aldrig union av tillstånd"
+ },
+ {
+  "id": "O-05",
+  "agare": "dev",
+  "status": "**beslutad** — B-39, ny plats i menyresultatet krävs",
+  "vy": "onboarding · veckomeny",
+  "regel": "**Kostpreferenserna ställs efter första menygenereringen**, inte i guiden — samma fält, samma skrivväg"
+ },
+ {
+  "id": "O-12",
+  "agare": "dev",
+  "status": "**beslutad** — B-39, BUT-1611",
+  "vy": "onboarding",
+  "regel": "Hushållets storlek frågas **inte** i guiden; portionerna följer närvaron per måltid"
+ },
+ {
+  "id": "AU-03",
+  "agare": "dev",
+  "status": "**beslutad** — kräver kodändring, BUT-1384",
+  "vy": "auth · onboarding",
+  "regel": "**Åldern frågas en gång.** Självintyget vid registrering utgår; `verifySignupAge` är enda auktoriteten"
+ },
+ {
+  "id": "AU-04",
+  "agare": "dev",
+  "status": "**beslutad** — koden varnar i dag med snackbar",
+  "vy": "auth",
+  "regel": "Samtycket blockerar knappen **före** tryck, inte med en varning efter"
+ },
+ {
+  "id": "AU-08",
+  "agare": "dev",
+  "status": "**beslutad** — koden räknar ned i etiketten",
+  "vy": "auth",
+  "regel": "Omsändning har 60 s karens; nedräkningen står **utanför** knappens namn"
+ },
+ {
+  "id": "AU-10",
+  "agare": "dev",
+  "status": "**beslutad** — `MfaResolverInfo` används ingenstans i `lib/`",
+  "vy": "auth",
+  "regel": "**MFA-utmaningen saknas helt i appen.** Tjänsten kan lösa den, inställningarna kan slå på den, ingen vy tar emot den — aktivering kan låsa ut användaren"
+ },
+ {
+  "id": "AU-11",
+  "agare": "dev",
+  "status": "**beslutad** — `verificationCompleted`",
+  "vy": "auth",
+  "regel": "Utmaningen tål **automatisk verifiering**: fältet kan fyllas av telefonen och vyn bytas mitt i inmatning"
+ },
+ {
+  "id": "AU-12",
+  "agare": "dev",
+  "status": "**beslutad** — kravet är backendens",
+  "vy": "auth",
+  "regel": "MFA saknar reservväg om telefonen är borta — ingen återställningskod, inget andra faktorsalternativ"
+ },
+ {
+  "id": "BH-04",
+  "agare": "dev",
+  "status": "**beslutad** — fotoimporten går inte genom kontraktet",
+  "vy": "import · cook snaps",
+  "regel": "`limited` och `provisional` räknas som beviljade; **begränsad fotoåtkomst är ett eget läge** med väg att välja fler bilder"
+ },
+ {
+  "id": "BH-05",
+  "agare": "dev",
+  "status": "**beslutad** — `image_picker_service.dart`",
+  "vy": "import",
+  "regel": "Fotoimporten och kameran ska läggas på `OsPermissionHelper` — i dag har de en naken väg utan förklaring och utan inställningslänk"
+ },
+ {
+  "id": "BH-08",
+  "agare": "dev",
+  "status": "**beslutad** — ingen förekomst i `lib/`",
+  "vy": "matlagning",
+  "regel": "**Exakta larm saknas helt.** Utan behörigheten får matlagningsläget inte lova en timer på sekunden"
+ },
+ {
+  "id": "BH-11",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "matlagning",
+  "regel": "**Förgrundstjänsten:** en notis för alla timrar, närmast först, med steg, `+1 min` och `Pausa`; finns bara medan en timer går"
+ },
+ {
+  "id": "SK-03",
+  "agare": "dev",
+  "status": "**beslutad** — i dag bara en varningslogg",
+  "vy": "inköp",
+  "regel": "Ett oläsbart skafferi ger en lista **utan** uteslutning — och det sägs rakt ut, med en väg att försöka igen"
+ },
+ {
+  "id": "SK-04",
+  "agare": "dev",
+  "status": "**beslutad** — `isStaple` finns bara i modellen, ingen vy rör den",
+  "vy": "skafferi",
+  "regel": "**Basvaran går att sätta, syns i listan och har sin följd utskriven**"
+ },
+ {
+  "id": "SK-08",
+  "agare": "dev",
+  "status": "**beslutad** — kategoribytet sitter per rad",
+  "vy": "inköp",
+  "regel": "Flervalets bar bär **bara radera** — fyra obligatoriska parametrar, inga valfria; *Flytta till kategori* för hela urvalet finns inte"
+ },
+ {
+  "id": "SK-13",
+  "agare": "dev",
+  "status": "**beslutad** — kontraktet finns i koden, varningen finns inte",
+  "vy": "inköp",
+  "regel": "Den genererade listan identifieras av **ISO-veckomarkören**, inte namnet; regenerering ersätter innehållet, bockningar överlever på namn+enhet och **manuella tillägg försvinner** — vilket sägs **före** knapptrycket"
+ },
+ {
+  "id": "SK-15",
+  "agare": "dev",
+  "status": "**beslutad** — `unresolvedRecipes`",
+  "vy": "inköp",
+  "regel": "Ett recept som inte kan läsas utesluts ur listan och **syns** i vyn — i dag bara en logg"
+ },
+ {
+  "id": "SK-16",
+  "agare": "dev",
+  "status": "**beslutad** — två löften för samma handling",
+  "vy": "inköp · skafferi",
+  "regel": "Ångra-fönstret är **ett** tal för samma operationsklass — i dag 4 s i listan och 7 s i skafferiet"
+ },
+ {
+  "id": "SK-17",
+  "agare": "dev",
+  "status": "**beslutad** — `app_dimensions.dart`, etapp 8",
+  "vy": "alla",
+  "regel": "**Appens radier är 0 överallt** — `borderRadiusXs/S/M/L` är alla `0.0`, så varje `BorderRadius.circular` är en nolloperation. Specens 8/12 är en systemisk avvikelse som hör i temagenereringen"
+ },
+ {
+  "id": "MR-02",
+  "agare": "dev",
+  "status": "**beslutad** — `addAlternative` tillåts hela den aktiva tiden",
+  "vy": "veckomeny",
+  "regel": "Ett alternativ som tillkommer **efter** att någon röstat märks med hur många som redan röstat"
+ },
+ {
+  "id": "MR-03",
+  "agare": "dev",
+  "status": "**beslutad** — produktbeslut, inte ritning",
+  "vy": "veckomeny",
+  "regel": "Antingen ska rösten gå att ändra, eller ska alternativen låsas när första rösten fallit"
+ },
+ {
+  "id": "MR-04",
+  "agare": "dev",
+  "status": "**beslutad** — `leadingOption` bryter lika på id",
+  "vy": "veckomeny",
+  "regel": "**Ett lika resultat avgörs inte automatiskt.** Id-sortering är ingen anledning någon kan förklara"
+ },
+ {
+  "id": "MR-05",
+  "agare": "dev",
+  "status": "**beslutad** — tjänsten begränsar inte vem som resolvar",
+  "vy": "veckomeny",
+  "regel": "Bara den som startade rösten avgör ett lika resultat; övriga ser vad som väntar och på vem"
+ },
+ {
+  "id": "MR-06",
+  "agare": "dev",
+  "status": "**beslutad** — faller i dag utanför både `activeVotes` och `resolvedVotes`",
+  "vy": "veckomeny",
+  "regel": "**En utgången oavgjord röst har ett eget tillstånd med tre vägar** — avgör, öppna igen, släpp platsen"
+ },
+ {
+  "id": "KI-02",
+  "agare": "dev",
+  "status": "**beslutad** — samma klass som BUT-1322; sparningen ska utgå från det lästa samtycket",
+  "vy": "konto · import",
+  "regel": "**`aiProcessing` skrivs över till nej vid varje sparning** — viewmodellen bygger objektet ur fem av sju ändamål"
+ },
+ {
+  "id": "KI-04",
+  "agare": "dev",
+  "status": "**beslutad** — `acceptAll` är lokal, `revokeAllOptional` skriver",
+  "vy": "konto",
+  "regel": "**&quot;Godkänn alla&quot; sparar inte medan &quot;Återkalla allt&quot; sparar direkt** — asymmetrin ska bort"
+ },
+ {
+  "id": "KI-09",
+  "agare": "dev",
+  "status": "**beslutad** — delar i dag ett `isLoading`",
+  "vy": "konto",
+  "regel": "Lösenords- och e-postformuläret har **eget laddtillstånd per avsnitt**"
+ },
+ {
+  "id": "KI-11",
+  "agare": "dev",
+  "status": "**beslutad** — ligger i dag under säkerhet",
+  "vy": "konto",
+  "regel": "Juridik och öppen källkod flyttas ur Kontosäkerhet till **Om Butlery**"
+ },
+ {
+  "id": "KI-14",
+  "agare": "dev",
+  "status": "**beslutad** — `isEnabled` kräver i dag tre ja, och typen är osynlig",
+  "vy": "konto",
+  "regel": "**Typmatrisen slutar vara en inställning.** Leverans styrs av *takt* per kategori — direkt · samlat · sammanfattning · inget"
+ },
+ {
+  "id": "KI-15",
+  "agare": "dev",
+  "status": "**beslutad** — offline kan valen se ut som nollställda",
+  "vy": "konto",
+  "regel": "**Lokal lagring av notisval är en stubbe** — `toJson` ger `{}` och `fromJson` ger standardvärden"
+ },
+ {
+  "id": "KI-16",
+  "agare": "dev",
+  "status": "**beslutad** — `formattedPhone` i `_startEnrollment`",
+  "vy": "konto",
+  "regel": "**Landskoden är ett eget val**, aldrig en gissning — `+46` får inte klistras på ett nummer utan kod"
+ },
+ {
+  "id": "KI-19",
+  "agare": "dev",
+  "status": "**beslutad** — blockerande, hänger ihop med AU-10",
+  "vy": "konto",
+  "regel": "**Reservkoder hör i påslagningen**, och skyddet får inte gå att slå på förrän utmaningen och koderna finns"
+ },
+ {
+  "id": "KI-21",
+  "agare": "dev",
+  "status": "**beslutad** — ligger i dag i en popup",
+  "vy": "konto",
+  "regel": "**Markera alla lästa** flyttas ut ur kebabmenyn till en rad som bara syns när något är oläst"
+ },
+ {
+  "id": "KI-22",
+  "agare": "dev",
+  "status": "**beslutad** — routern faller tillbaka",
+  "vy": "konto",
+  "regel": "En post som **inte längre leder någonstans** märks i stället för att falla tyst till Hem"
+ },
+ {
+  "id": "KI-23",
+  "agare": "dev",
+  "status": "**beslutad** — `dismissSelected` är optimistisk utan Ångra, mot § 2.4",
+  "vy": "konto",
+  "regel": "**Borttagning ur inkorgen har 7 s Ångra** och säger att bara raden försvinner, inte det den handlade om"
+ },
+ {
+  "id": "KI-24",
+  "agare": "dev",
+  "status": "**beslutad** — UGC-policyn kräver överklagande; vyn visar bara status",
+  "vy": "konto",
+  "regel": "Anmälningar visar **utfallet i klartext** och har en **överklagandeväg** på avslutade"
+ },
+ {
+  "id": "KI-25",
+  "agare": "dev",
+  "status": "**beslutad** — brickan har en textfärg mot fyra bakgrunder",
+  "vy": "konto",
+  "regel": "Statusen bärs av **ord och form**, aldrig av färg ensam"
+ },
+ {
+  "id": "KI-26",
+  "agare": "dev",
+  "status": "**beslutad** — `SelectableText` på råfilen; `markdown_body.dart` finns oanvänd",
+  "vy": "konto",
+  "regel": "**De juridiska dokumenten renderas som text, inte som markdown-källa**"
+ },
+ {
+  "id": "KI-27",
+  "agare": "dev",
+  "status": "**beslutad** — versionen syns inte i dag",
+  "vy": "konto",
+  "regel": "Dokumentet visar **version, datum och vilken version du godkänt**, och säger när texten fallit tillbaka till svenska"
+ },
+ {
+  "id": "KI-29",
+  "agare": "dev",
+  "status": "**beslutad** — etiketterna färgkodas i dag, och nollsegment skrivs ut fast de inte ritas",
+  "vy": "konto",
+  "regel": "Fördelningens förklaring bär **andel i klartext**; färgen är stöd, och **nolldelar syns inte** i vare sig stapel eller förklaring"
+ },
+ {
+  "id": "KI-30",
+  "agare": "dev",
+  "status": "**beslutad** — raden är dessutom lägre än en träffyta",
+  "vy": "konto",
+  "regel": "Ofullständiga recept blir **tre uppgifter med tal**, störst först — inte en vågrät rad av alla i felrött"
+ },
+ {
+  "id": "P-06",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "—",
+  "regel": "OFL-noteringar följer varje distribuerad build"
+ },
+ {
+  "id": "P-07",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "—",
+  "regel": "Fontens name-tabell bär copyright och licens"
+ },
+ {
+  "id": "GL-02",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "globalt",
+  "regel": "Rubrik och åtgärdsknapp hårdkodade — måste fungera utan lokalisering"
+ },
+ {
+  "id": "GL-04",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "globalt",
+  "regel": "Ingen textskalningsklämning: 2,0× möts med rullning"
+ },
+ {
+  "id": "GL-06",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "globalt",
+  "regel": "Varningsdialogen har två lägen efter köns innehåll; *Logga ut nu* med kö går via bekräftelsen i § 2.4"
+ },
+ {
+  "id": "GL-07",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "globalt",
+  "regel": "**En timeout-utloggning rensar aldrig kön** — gäller alla tre skäl"
+ },
+ {
+  "id": "GL-08",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "globalt",
+  "regel": "Timeout i bakgrunden ger besked vid återkomsten, som upplysning och aldrig som fel"
+ },
+ {
+  "id": "GL-11",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "globalt",
+  "regel": "Reducerad rörelse: inget hårstreck, ceremonin väntar på tryck"
+ },
+ {
+  "id": "GL-13",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "globalt",
+  "regel": "Tipset slutar visas **permanent när gesten använts en gång**; annars efter tre visningar. Ett avvisande räknas som visning"
+ },
+ {
+  "id": "GL-14",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "globalt",
+  "regel": "Nyckeln bär `seen`-räknare **och** `used`-flagga — en ren *sedd*-flagga kan inte skilja inlärd från ignorerad"
+ },
+ {
+  "id": "GL-15",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "globalt",
+  "regel": "Aldrig två tips samtidigt, aldrig under första sessionen, ingen animerad hand vid reducerad rörelse"
+ },
+ {
+  "id": "FL-04",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "receptlistan",
+  "regel": "*Markera alla* är en växel som kan avmarkera"
+ },
+ {
+  "id": "FL-05",
+  "agare": "dev",
+  "status": "**beslutad · tyst förlust**",
+  "vy": "receptlistan",
+  "regel": "Massdelningens `catch (_)` visar fel — tomhet påstås inte"
+ },
+ {
+  "id": "FL-09",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "receptlistan",
+  "regel": "Flervalet behålls när användaren skickas till taggvyn och kommer tillbaka"
+ },
+ {
+  "id": "FL-11",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "receptlistan",
+  "regel": "**Överfyllnad avgörs före skrivningen; ingen snackbar utför en skrivning** (§ 2.4)"
+ },
+ {
+  "id": "FL-14",
+  "agare": "dev",
+  "status": "**beslutad · oåterkallelig**",
+  "vy": "taggar",
+  "regel": "Sammanslagning får Ångra — eller knappen heter vad den gör"
+ },
+ {
+  "id": "FL-17",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "alla sex ytor",
+  "regel": "I en flikvy sitter *Välj* i **vyns eget** toppfält, aldrig i skalets; med **färre än två rader** visas ordet inte alls"
+ },
+ {
+  "id": "KN-02",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "socialt",
+  "regel": "Knuffen är en **händelse i flödet, aldrig en notis** som väcker någon"
+ },
+ {
+  "id": "KN-04",
+  "agare": "dev",
+  "status": "**beslutad**",
+  "vy": "socialt",
+  "regel": "**Ingen knuff till ett barns profil**; ingen räknare och ingen historik över antal påminnelser"
+ },
+ {
+  "id": "I-29",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "alla flervalsytor",
+  "regel": "**Delvis utfall är ett tredje utfall**: namnger vad som gick och inte, låter misslyckade ligga kvar valda, lämnar aldrig flervalet automatiskt"
+ },
+ {
+  "id": "FB-03",
+  "agare": "dev",
+  "status": "**beslutad · art. 9**",
+  "vy": "feedback",
+  "regel": "**Allt som skickas redovisas rad för rad och avbockningsbart** — bild, enhetsinfo, skärmväg"
+ },
+ {
+  "id": "FB-05",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "feedback",
+  "regel": "Skärmvägen visas med faktiska skärmnamn, utfällbar till alla tjugo"
+ },
+ {
+  "id": "FB-06",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "feedback",
+  "regel": "Tom beskrivning ger fel vid fältet, inte i snackbar"
+ },
+ {
+  "id": "FB-07",
+  "agare": "dev",
+  "status": "**beslutad · tyst förlust**",
+  "vy": "feedback",
+  "regel": "Kvittot skiljer skickat med bild från skickat utan bild"
+ },
+ {
+  "id": "FB-09",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "admin",
+  "regel": "**Varje kopiering loggas i `ops_log`**"
+ },
+ {
+  "id": "FB-12",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "anmälan",
+  "regel": "Blockera samtidigt erbjuds som eget val i anmälan"
+ },
+ {
+  "id": "SO-01",
+  "agare": "dev",
+  "status": "**beslutad · falskt påstående**",
+  "vy": "flödet",
+  "regel": "Varje händelsetyp har sitt eget verb"
+ },
+ {
+  "id": "SO-02",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "flödet",
+  "regel": "Receptets titel skrivs som den heter — `toLowerCase()` utgår"
+ },
+ {
+  "id": "SO-04",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "flödet",
+  "regel": "**Knuffar utgår som händelsetyp**, inte bara som funktion"
+ },
+ {
+  "id": "SO-06",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "flödet",
+  "regel": "Oändlig skroll ligger i en skrollyssnare, inte i `itemBuilder`"
+ },
+ {
+  "id": "SO-08",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "flödet",
+  "regel": "Efter skickad förfrågan visas *Efterfrågat* med tid; ingen upprepning"
+ },
+ {
+  "id": "SO-09",
+  "agare": "dev",
+  "status": "**beslutad · ofullständigt flöde**",
+  "vy": "notiser",
+  "regel": "Ägarens svarsvy krävs (ja/nej i notiserna)"
+ },
+ {
+  "id": "SO-10",
+  "agare": "dev",
+  "status": "**beslutad · falsk visning**",
+  "vy": "profil",
+  "regel": "**Ett underval visar sitt eget värde, aldrig förälderns**; pausad grupp är synligt vilande"
+ },
+ {
+  "id": "SO-12",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "chatt · meny",
+  "regel": "Varje röstning har sluttid, och sluttiden avgör"
+ },
+ {
+  "id": "SO-17",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "grupper",
+  "regel": "Överlåtelsen förklarar ägarskapet, visar inga e-postadresser, meddelar den nya ägaren"
+ },
+ {
+  "id": "SO-18",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "delad lista",
+  "regel": "Delade listor får samma överlåtelse som grupper (D-07b)"
+ },
+ {
+  "id": "KO-01",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "inställningar",
+  "regel": "Hushållsstorleken har en hemvist; profilen pekar hit (B-39)"
+ },
+ {
+  "id": "KO-05",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "recept",
+  "regel": "Sent hushållsförval kvitteras en gång, inte som en främmande ändring"
+ },
+ {
+  "id": "KO-06",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "juridik",
+  "regel": "Fyra juridiska dokument, samma huvud och fot; rå markdown når aldrig användaren"
+ },
+ {
+  "id": "KO-09",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "sök",
+  "regel": "Taggfiltret är en trelägesväxel (av · med · utan)"
+ },
+ {
+  "id": "KO-15",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "recept",
+  "regel": "Bilduppladdning: per-bild-tillstånd; flyttat omslag sägs i klartext"
+ },
+ {
+  "id": "KO-17",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "recept",
+  "regel": "Relationen mellan recept går båda vägarna och det sägs"
+ },
+ {
+  "id": "KO-20",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "hem",
+  "regel": "Säsongsraden räknar egna recept; noll eller okänd månad → visas inte"
+ },
+ {
+  "id": "BR-02",
+  "agare": "dev",
+  "status": "**beslutad · motsägelse i kod**",
+  "vy": "globalt",
+  "regel": "En skärm kan inte vara två kategorier samtidigt — de tre överlappande frågorna reduceras"
+ },
+ {
+  "id": "BR-03",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "globalt",
+  "regel": "Max radlängd gäller även mobil (`infinity` utgår); 72 tecken, gäller kolumnen"
+ },
+ {
+  "id": "BR-04",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "globalt",
+  "regel": "**Skena kräver bredd ≥ 768 och höjd ≥ 500** — inte 600"
+ },
+ {
+  "id": "BR-05",
+  "agare": "dev",
+  "status": "**beslutad · identitetsbrott**",
+  "vy": "globalt",
+  "regel": "Skenan bär bottenradens vokabulär: vår botten, gemena etiketter, rostmarkering"
+ },
+ {
+  "id": "BR-07",
+  "agare": "dev",
+  "status": "**beslutad · varumärke**",
+  "vy": "globalt",
+  "regel": "Utfälld skena visar ordmärket som vektor, aldrig som text"
+ },
+ {
+  "id": "BR-08",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "globalt",
+  "regel": "Destinationsbyte behåller historik, skrollposition och öppet filter"
+ },
+ {
+  "id": "BR-11",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "recept",
+  "regel": "**En sidskroll och klistrad ingrediensspalt** — aldrig två oberoende skrollytor"
+ },
+ {
+  "id": "BV-02",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "meny",
+  "regel": "Kalenderläget lyder inte under textbredden; listläget behåller 900"
+ },
+ {
+  "id": "BV-03",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "meny",
+  "regel": "Prompten bor i en egen smal spalt, aldrig ovanför veckan"
+ },
+ {
+  "id": "BV-06",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "meny",
+  "regel": "**Överskrivning bekräftas som markering i rutnätet**, med antal och namn"
+ },
+ {
+  "id": "BV-07",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "meny",
+  "regel": "Genereringsoverlayen utgår; rutorna fylls i ordning, förlopp som hårstreck"
+ },
+ {
+  "id": "BV-08",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "meny",
+  "regel": "Generering skriver aldrig över en manuell placering utan att säga det"
+ },
+ {
+  "id": "BV-09",
+  "agare": "dev",
+  "status": "**beslutad · blockerande**",
+  "vy": "meny",
+  "regel": "**En stängd röstning lämnar alltid något i cellen**; högst en röstning per cell"
+ },
+ {
+  "id": "BV-11",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "meny",
+  "regel": "Resterna ligger i ett **arbetsförråd** som överlever omladdning och säger varför"
+ },
+ {
+  "id": "BV-16",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "recept",
+  "regel": "Fullständighetsbanderollen över båda spalterna och **pekar på fälten**; luckan står i listan"
+ },
+ {
+  "id": "BV-18",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "recept",
+  "regel": "Arvegodset: bilden brett och överst, råtext och avskrift sida vid sida, zoom utan att lämna vyn"
+ },
+ {
+  "id": "BV-23",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "inköp",
+  "regel": "Anspråk som namn i raden, inte färg; *se*-medlem utan bockrutor; **anspråk förfaller efter ett dygn**"
+ },
+ {
+  "id": "BV-24",
+  "agare": "dev",
+  "status": "**beslutad · tyst konflikt**",
+  "vy": "inköp",
+  "regel": "Offline: senast synkad i huvudet, anspråk före tystnaden märks osäkra, **dubbelbockning redovisas vid synk**"
+ },
+ {
+  "id": "BV-25",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "matlagning",
+  "regel": "**Tvinga rotation endast under 768 px kortaste sida**; A+ som utgångsläge brett; wakelock bara medan vyn lever"
+ },
+ {
+  "id": "BV-26",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "matlagning",
+  "regel": "**`SwipeHintBanner` tas bort ur matlagningsläget** — den synliga kontrollen finns redan (§ 16.5)"
+ },
+ {
+  "id": "BV-27",
+  "agare": "dev",
+  "status": "**beslutad · tyst ändring**",
+  "vy": "matlagning",
+  "regel": "Ingrediensbytet har alltid synlig ikon och frågar **i dag eller receptet**, med *bara i dag* som förval"
+ },
+ {
+  "id": "BV-28",
+  "agare": "dev",
+  "status": "beslutad",
+  "vy": "matlagning",
+  "regel": "Timrarna i egen list med stegnummer; **utgången timer står kvar tills den kvitteras**; tomt recept broadcastar inte *lagar just nu*"
+ }
+]

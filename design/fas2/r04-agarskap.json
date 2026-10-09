@@ -1,0 +1,821 @@
+{
+ "$schema": "butlery-r04-agarskap/1",
+ "$datum": "2026-08-13",
+ "$status": "ANALYS. Ingen preview, ingen produktwrite, ingen fargregistry-write, ingen farg vald.",
+ "A_metodprov": {
+  "fore": 311,
+  "nya": 15,
+  "efter": 326,
+  "nyaProv": [
+   "GC-01 … GC-08 · agarskap for currentColor",
+   "BT-01 … BT-07 · behorighet for P-TEXT-BRAND"
+  ],
+  "verktyg": [
+   "tools/currentcolor-ownership.mjs",
+   "tools/palette-registry.mjs · P-TEXT-BRAND-grenen",
+   "tools/ownership-brand-fixtures.mjs"
+  ]
+ },
+ "B_agarbivillkor": {
+  "$kontrakt": "En malad SVG-del med currentColor ar PAINT_CARRIER men aldrig COLOR_DECISION_OWNER. Fargbeslutet tillhor den upplosta agande fargkallan. Ingen extra beslutsenhet, ingen extra skrivbar kallpost, ingen duplicerad mappning — men barnets semantiska bivillkor propagerar till agaren.",
+  "currentColorMalningar": 62,
+  "informationsbarande": 18,
+  "distinktaAgare": 26,
+  "olostaAgare": 0,
+  "nyaBeslutsenheter": 0,
+  "nyaSkrivbaraKallor": 0,
+  "agareMedIckeTextkrav": 6,
+  "prov": [
+   {
+    "agare": "hem|0|color",
+    "barn": 5,
+    "krav": 3,
+    "kandidat": "#c9d3c4",
+    "haller": true,
+    "kvoter": [
+     10.31,
+     10.31,
+     10.31
+    ]
+   },
+   {
+    "agare": "hemmorkt|0|color",
+    "barn": 5,
+    "krav": 3,
+    "kandidat": "#c9d3c4",
+    "haller": true,
+    "kvoter": [
+     10.31,
+     10.31,
+     10.31
+    ]
+   },
+   {
+    "agare": "hemtom|0|color",
+    "barn": 5,
+    "krav": 3,
+    "kandidat": "#c9d3c4",
+    "haller": true,
+    "kvoter": [
+     10.31,
+     10.31,
+     10.31
+    ]
+   },
+   {
+    "agare": "hemladdar|0|color",
+    "barn": 5,
+    "krav": 3,
+    "kandidat": "#c9d3c4",
+    "haller": true,
+    "kvoter": [
+     10.31,
+     10.31,
+     10.31
+    ]
+   },
+   {
+    "agare": "hemoffline|0|color",
+    "barn": 5,
+    "krav": 3,
+    "kandidat": "#c9d3c4",
+    "haller": true,
+    "kvoter": [
+     10.31,
+     10.31,
+     10.31
+    ]
+   },
+   {
+    "agare": "hemfel|0|color",
+    "barn": 5,
+    "krav": 3,
+    "kandidat": "#c9d3c4",
+    "haller": true,
+    "kvoter": [
+     10.31,
+     10.31,
+     10.31
+    ]
+   }
+  ],
+  "utfall": "Den verifierade agarmappningen #24382c -> #c9d3c4 klarar samtliga beroende informationsbarande barn. Kvot 10.31 mot bade appytan #17251d och navigationsradens #24382c, kravet ar 3.",
+  "$viktigt": "Barnen skapar inget nytt beslut, men de kan ogiltigforklara en kandidat for agaren. Har gjorde de inte det."
+ },
+ "C_taxonomiplacering": {
+  "antal": 8,
+  "poster": [
+   {
+    "ljusvarde": "rgb(147, 164, 141)",
+    "egenskap": "fill",
+    "semantiskGrafikroll": "REDUNDANT_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 18,
+    "skarmar": [
+     "tomtrecept",
+     "offline",
+     "hemrecept",
+     "skafferi",
+     "familj",
+     "installningar",
+     "notiser",
+     "kalender",
+     "mer",
+     "vanner",
+     "meddelanden"
+    ],
+    "element": [
+     "tomtrecept|36|fill",
+     "offline|44|fill",
+     "hemrecept|76|fill",
+     "skafferi|57|fill",
+     "skafferi|68|fill",
+     "familj|46|fill",
+     "familj|57|fill",
+     "installningar|79|fill",
+     "installningar|90|fill",
+     "notiser|63|fill",
+     "notiser|74|fill",
+     "kalender|149|fill",
+     "mer|49|fill",
+     "mer|60|fill",
+     "vanner|72|fill",
+     "vanner|83|fill",
+     "meddelanden|64|fill",
+     "meddelanden|75|fill"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(206, 124, 30)",
+    "egenskap": "fill",
+    "semantiskGrafikroll": "DECORATIVE_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 4,
+    "skarmar": [
+     "start",
+     "installningar"
+    ],
+    "element": [
+     "start|8|fill",
+     "start|13|fill",
+     "installningar|55|fill",
+     "installningar|58|fill"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(245, 244, 237)",
+    "egenskap": "fill",
+    "semantiskGrafikroll": "REDUNDANT_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 4,
+    "skarmar": [
+     "tomtrecept",
+     "offline",
+     "hemrecept",
+     "kalender"
+    ],
+    "element": [
+     "tomtrecept|24|fill",
+     "offline|32|fill",
+     "hemrecept|64|fill",
+     "kalender|160|fill"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(245, 244, 237)",
+    "egenskap": "stroke",
+    "semantiskGrafikroll": "DECORATIVE_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 3,
+    "skarmar": [
+     "start",
+     "installningar"
+    ],
+    "element": [
+     "start|3|stroke",
+     "start|11|stroke",
+     "installningar|56|stroke"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(147, 164, 141)",
+    "egenskap": "stroke",
+    "semantiskGrafikroll": "DECORATIVE_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 2,
+    "skarmar": [
+     "start"
+    ],
+    "element": [
+     "start|5|stroke",
+     "start|6|stroke"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(206, 124, 30)",
+    "egenskap": "stroke",
+    "semantiskGrafikroll": "DECORATIVE_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 2,
+    "skarmar": [
+     "start",
+     "installningar"
+    ],
+    "element": [
+     "start|12|stroke",
+     "installningar|57|stroke"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(161, 90, 10)",
+    "egenskap": "fill",
+    "semantiskGrafikroll": "DECORATIVE_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 1,
+    "skarmar": [
+     "start"
+    ],
+    "element": [
+     "start|9|fill"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   },
+   {
+    "ljusvarde": "rgb(36, 56, 44)",
+    "egenskap": "fill",
+    "semantiskGrafikroll": "DECORATIVE_GRAPHIC",
+    "rollkarteroll": "ikon-fristaende",
+    "forekomster": 1,
+    "skarmar": [
+     "installningar"
+    ],
+    "element": [
+     "installningar|54|fill"
+    ],
+    "kallaSjalvstandig": true,
+    "kontext": [
+     "illustration"
+    ],
+    "princip": "P-GRAPHIC · dekorativ gren",
+    "$not": "Rollkarterollen ar harledd ur den ADJUDICERADE grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+   }
+  ],
+  "$regel": "Rollen ar harledd ur den adjudicerade grafikrollen och elementets position utanfor kontroll — aldrig ur rafargen."
+ },
+ "D_beslutsenheter": {
+  "OLD_UNITS": 91,
+  "OLD_UNITS_SPLIT": 0,
+  "OLD_UNITS_MERGED": 0,
+  "NEW_UNITS_CREATED": 8,
+  "FINAL_UNITS": 99,
+  "nya": [
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(147, 164, 141)",
+    "grafikroll": "REDUNDANT_GRAPHIC",
+    "forekomster": 18,
+    "skarmar": 11,
+    "skal": "kombinationen ikon-fristaende + rgb(147, 164, 141) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(206, 124, 30)",
+    "grafikroll": "DECORATIVE_GRAPHIC",
+    "forekomster": 4,
+    "skarmar": 2,
+    "skal": "kombinationen ikon-fristaende + rgb(206, 124, 30) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(245, 244, 237)",
+    "grafikroll": "REDUNDANT_GRAPHIC",
+    "forekomster": 4,
+    "skarmar": 4,
+    "skal": "kombinationen ikon-fristaende + rgb(245, 244, 237) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(245, 244, 237)",
+    "grafikroll": "DECORATIVE_GRAPHIC",
+    "forekomster": 3,
+    "skarmar": 2,
+    "skal": "kombinationen ikon-fristaende + rgb(245, 244, 237) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(147, 164, 141)",
+    "grafikroll": "DECORATIVE_GRAPHIC",
+    "forekomster": 2,
+    "skarmar": 1,
+    "skal": "kombinationen ikon-fristaende + rgb(147, 164, 141) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(206, 124, 30)",
+    "grafikroll": "DECORATIVE_GRAPHIC",
+    "forekomster": 2,
+    "skarmar": 2,
+    "skal": "kombinationen ikon-fristaende + rgb(206, 124, 30) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(161, 90, 10)",
+    "grafikroll": "DECORATIVE_GRAPHIC",
+    "forekomster": 1,
+    "skarmar": 1,
+    "skal": "kombinationen ikon-fristaende + rgb(161, 90, 10) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   },
+   {
+    "roll": "ikon-fristaende",
+    "ljusvarde": "rgb(36, 56, 44)",
+    "grafikroll": "DECORATIVE_GRAPHIC",
+    "forekomster": 1,
+    "skarmar": 1,
+    "skal": "kombinationen ikon-fristaende + rgb(36, 56, 44) fanns inte bland de 91. Den ar en egen malad kalla med egen semantisk grafikroll."
+   }
+  ],
+  "$regel": "Talet 91 bevarades inte artificiellt. Atta nya enheter ar en arlig okning, inte en force-fit."
+ },
+ "E_brandbehorighet": {
+  "enhet": "varumarkesraden \"Din butler i koket\"",
+  "roll": "BRAND_SUPPORTING_TEXT",
+  "princip": "P-TEXT-BRAND",
+  "typografi": "12 px, vikt 600, versalt, sparrat — krav 4.5",
+  "ljusvarde": "#dca968",
+  "SEMANTICALLY_ELIGIBLE": {
+   "utanBrandmotivering": [
+    "#93a48d",
+    "#c9d3c4",
+    "#8fb89a"
+   ],
+   "medBrandmotivering": [
+    "#93a48d",
+    "#c9d3c4",
+    "#8fb89a",
+    "#de9078",
+    "#dca968"
+   ]
+  },
+  "TECHNICALLY_PASSING": {
+   "motAllaTreBakgrunder": [
+    "rgba(245,244,237,0.18)",
+    "#c9d3c4",
+    "rgba(245,244,237,0.4)"
+   ]
+  },
+  "VISUALLY_PLAUSIBLE": {
+   "gemensamtOverAllaTre": [
+    "#c9d3c4"
+   ],
+   "$varning": "#c9d3c4 ar ocksa statusradens gemensamma varde. Som previewkontroll gar det bra. Som beslut skulle varumarkesrad och brodtext fa samma farg, vilket P-TEXT-BRAND uttryckligen varnar for."
+  },
+  "matris": [
+   {
+    "varde": "#17251d",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": false,
+    "skal": "anvands aldrig som forgrund",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 1
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 1.27
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 2.2
+     }
+    ],
+    "klararAllaBakgrunder": false
+   },
+   {
+    "varde": "rgba(245,244,237,0.18)",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": false,
+    "skal": "anvands aldrig som forgrund",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 14.44
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 11.36
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 6.56
+     }
+    ],
+    "klararAllaBakgrunder": true
+   },
+   {
+    "varde": "#93a48d",
+    "semantisktUtanMotiv": true,
+    "semantisktMedMotiv": true,
+    "skal": null,
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 6.02
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 4.73
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 2.73
+     }
+    ],
+    "klararAllaBakgrunder": false
+   },
+   {
+    "varde": "#24382c",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": false,
+    "skal": "anvands aldrig som forgrund",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 1.27
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 1
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 1.73
+     }
+    ],
+    "klararAllaBakgrunder": false
+   },
+   {
+    "varde": "#c9d3c4",
+    "semantisktUtanMotiv": true,
+    "semantisktMedMotiv": true,
+    "skal": null,
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 10.31
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 8.11
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 4.68
+     }
+    ],
+    "klararAllaBakgrunder": true
+   },
+   {
+    "varde": "rgba(245,244,237,0.4)",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": false,
+    "skal": "anvands aldrig som forgrund",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 14.44
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 11.36
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 6.56
+     }
+    ],
+    "klararAllaBakgrunder": true
+   },
+   {
+    "varde": "#8fb89a",
+    "semantisktUtanMotiv": true,
+    "semantisktMedMotiv": true,
+    "skal": null,
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 7.2
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 5.66
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 3.27
+     }
+    ],
+    "klararAllaBakgrunder": false
+   },
+   {
+    "varde": "#de9078",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": true,
+    "skal": "semantisk accent utan explicit brandmotivering — far inte anvandas for att losa kontrast",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 6.34
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 4.99
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 2.88
+     }
+    ],
+    "klararAllaBakgrunder": false
+   },
+   {
+    "varde": "#dca968",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": true,
+    "skal": "semantisk accent utan explicit brandmotivering — far inte anvandas for att losa kontrast",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 7.52
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 5.91
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 3.42
+     }
+    ],
+    "klararAllaBakgrunder": false
+   },
+   {
+    "varde": "#4a5c43",
+    "semantisktUtanMotiv": false,
+    "semantisktMedMotiv": false,
+    "skal": "anvands aldrig som forgrund",
+    "kvoter": [
+     {
+      "bakgrund": "#17251d",
+      "kvot": 2.2
+     },
+     {
+      "bakgrund": "#24382c",
+      "kvot": 1.73
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "kvot": 1
+     }
+    ],
+    "klararAllaBakgrunder": false
+   }
+  ],
+  "$brandaccentfragan": "Flaggan brandaccentMotiverad ar ett designbeslut, inte en matning. Med den blir #de9078 och #dca968 semantiskt behoriga — men ingen av dem klarar alla tre bakgrunderna. Flaggan andrar alltsa inte utfallet for ett gemensamt kontrollvarde."
+ },
+ "F_startInventering": {
+  "maladeVarden": 17,
+  "summering": {
+   "UNDECIDED": 10,
+   "VERIFIED_EXISTING_MAPPING": 4,
+   "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE": 3
+  },
+  "poster": [
+   {
+    "vad": "appyta",
+    "ljus": "#24382c",
+    "roll": "yta-app",
+    "status": "UNDECIDED",
+    "agare": "start|0|background-color"
+   },
+   {
+    "vad": "appram × 4",
+    "ljus": "#ccd1c2",
+    "roll": "ram-app",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "mork": "rgba(245,244,237,0.18)"
+   },
+   {
+    "vad": "varumarkesrad",
+    "ljus": "#dca968",
+    "roll": "BRAND_SUPPORTING_TEXT",
+    "status": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+    "kontroll": "#c9d3c4",
+    "$varning": "Tekniskt giltig som konstant. Men #c9d3c4 ar ocksa statusradens gemensamma varde — som BESLUT skulle det ge varumarkesrad och brodtext samma farg, vilket P-TEXT-BRAND uttryckligen varnar for. Duger som previewkontroll, inte som beslut."
+   },
+   {
+    "vad": "forloppsspar",
+    "ljus": "rgba(245,244,237,0.18)",
+    "roll": "PROGRESS_TRACK",
+    "status": "UNDECIDED"
+   },
+   {
+    "vad": "forloppsfyllning",
+    "ljus": "#ce7c1e",
+    "roll": "PROGRESS_VALUE",
+    "status": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+    "kontroll": "rgba(245,244,237,0.18)"
+   },
+   {
+    "vad": "statusrad",
+    "ljus": "#c9d3c4",
+    "roll": "text-innehall",
+    "status": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+    "kontroll": "#c9d3c4"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(245, 244, 237)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|3|stroke"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(147, 164, 141)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|5|stroke"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(147, 164, 141)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|6|stroke"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(206, 124, 30)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|8|fill"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(161, 90, 10)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|9|fill"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(245, 244, 237)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|11|stroke"
+   },
+   {
+    "vad": "illustration path",
+    "ljus": "rgb(206, 124, 30)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|12|stroke"
+   },
+   {
+    "vad": "illustration rect",
+    "ljus": "rgb(206, 124, 30)",
+    "roll": "DECORATIVE_GRAPHIC",
+    "status": "UNDECIDED",
+    "element": "start|13|fill"
+   }
+  ],
+  "summerar": true
+ },
+ "G_revalideradMatris": {
+  "appbakgrundFinalister": [
+   "#17251d",
+   "#24382c",
+   "#4a5c43"
+  ],
+  "forandrat": false,
+  "OBSERVED_SAME_UNIT_MAPPING_EVIDENCE": "none",
+  "PROGRESS_VALUE_common_pass": [
+   "rgba(245,244,237,0.18)"
+  ],
+  "STATUS_LINE_common_pass": [
+   "#c9d3c4"
+  ],
+  "BRAND_LINE_common_pass": [
+   "#c9d3c4"
+  ],
+  "PROGRESS_TRACK": {
+   "mojligaVarden": 4,
+   "status": "KAN INTE HALLAS TYST KONSTANT",
+   "skal": "sparets synlighet mot appbakgrunden varierar 1.00 till 2.20 beroende pa valt varde"
+  },
+  "DEKORATIV_ILLUSTRATION": {
+   "grafikbehorigaPalettvarden": 7,
+   "skiljerSigFranAllaTreBakgrunder": 7,
+   "status": "ETT gemensamt varde ar tekniskt mojligt men inte arligt",
+   "skal": "Illustrationen bestar av atta olika varden som tillsammans bygger en komposition med ljus och skugga. Att satta alla atta till samma varde gor den till en platt siluett och forandrar hur bakgrunden bedoms. Den ar ett visuellt objekt, inte atta oberoende val."
+  }
+ },
+ "H_minstaKvarvarandeBeslut": {
+  "antal": 3,
+  "paket": [
+   {
+    "id": 1,
+    "vad": "appbakgrunden #24382c",
+    "typ": "PREVIEWMALET",
+    "alternativ": 3,
+    "$not": "sjalva fragan previewn ska besvara"
+   },
+   {
+    "id": 2,
+    "vad": "forloppsindikatorns spar",
+    "typ": "KOPPLAT TILL 1",
+    "alternativ": 4,
+    "$not": "sparets synlighet paverkar hur bakgrunden uppfattas — kan inte tyst hallas konstant"
+   },
+   {
+    "id": 3,
+    "vad": "illustrationens atta varden",
+    "typ": "ETT VISUELLT OBJEKT",
+    "alternativ": null,
+    "$not": "atta varden som tillsammans ar en komposition. Ett beslut om objektet, inte atta beslut."
+   }
+  ],
+  "kanHallasKonstantUtanBeslut": [
+   {
+    "vad": "forloppsfyllningen",
+    "varde": "rgba(245,244,237,0.18)"
+   },
+   {
+    "vad": "statusraden",
+    "varde": "#c9d3c4"
+   },
+   {
+    "vad": "varumarkesraden",
+    "varde": "#c9d3c4",
+    "$varning": "flattar mot statusraden om det blir beslut"
+   }
+  ],
+  "redanKlara": [
+   {
+    "vad": "appramen × 4",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "mork": "rgba(245,244,237,0.18)"
+   }
+  ]
+ },
+ "ejGjort": [
+  "ingen preview renderad",
+  "ingen fargregistry-write",
+  "ingen produktwrite",
+  "ingen farg vald",
+  "ingen brandaccentflagga satt",
+  "ingen rollkarta skriven"
+ ]
+}

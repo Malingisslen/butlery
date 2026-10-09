@@ -1,0 +1,78 @@
+{
+  "$schema": "selection-contexts.schema.json",
+  "$note": "MASKINKÄLLA för urvalsdimensioner, giltiga kontexter och runtimeadapter. F2-A04: plattformsmatris.md var Markdown och kunde inte vara maskinkälla för något — en kontroll kan inte läsa en prosatabell. Dimensionerna bodde dessutom hårdkodade i tools/artifact-contract.mjs, vilket gjorde koden till sin egen auktoritet. Nu står vokabulären här, registrerad i source-authority.json, och Markdown-tabellen genereras härifrån.",
+  "version": "1.1",
+  "date": "2026-08-05",
+  "appCommit": "712ef7ba9ba711f9eec9013df6947ef617a50aa0",
+  "dimensions": [
+    {
+      "id": "platform",
+      "label": "Plattform",
+      "values": [
+        "ios",
+        "android",
+        "web"
+      ],
+      "enabled": true,
+      "runtimeAdapter": {
+        "expression": "kIsWeb ? web : defaultTargetPlatform",
+        "import": "package:flutter/foundation.dart",
+        "deterministic": true,
+        "usageSites": [
+          "lib/core/dialogs/dialog_factory.dart:19",
+          "lib/admin_main.dart:1",
+          "lib/firebase_options.dart:13"
+        ],
+        "note": "defaultTargetPlatform ensamt duger inte: pa webben beskriver det webblasarens malplattform, inte att programmet ar byggt for webb. kIsWeb avgor bygget. dialog_factory.dart:19 kombinerar redan bada (!kIsWeb && defaultTargetPlatform == iOS). admin_main.dart ar en egen web-entrypoint och ar darmed runtimebeviset for buildTarget admin-web."
+      },
+      "documentation": "plattformsmatris.md",
+      "note": "Produkten ar iOS + Android; adminwebben ar en TREDJE malplattform med egen build. Surfplatta ar en YTA (viewportClass), inte en plattform."
+    },
+    {
+      "id": "density",
+      "label": "Densitet",
+      "values": [
+        "compact",
+        "comfortable"
+      ],
+      "enabled": false,
+      "runtimeAdapter": null,
+      "documentation": null,
+      "note": "SPÄRRAD: ingen deklarerad källa och inget runtimeval. Densitet är i dag ingen beslutad dimension."
+    },
+    {
+      "id": "cohort",
+      "label": "Experimentkohort",
+      "values": [
+        "a",
+        "b"
+      ],
+      "enabled": false,
+      "runtimeAdapter": null,
+      "documentation": null,
+      "note": "SPÄRRAD tills ett verkligt experimentkontrakt och ett deterministiskt runtimeval finns."
+    },
+    {
+      "id": "theme",
+      "label": "Tema",
+      "values": [
+        "light",
+        "dark"
+      ],
+      "enabled": true,
+      "runtimeAdapter": {
+        "expression": "ThemeService.themeMode ?? ThemeMode.system, upplöst mot MediaQuery.platformBrightness när värdet är system",
+        "import": "package:butlery/services/theme_service.dart",
+        "deterministic": true,
+        "usageSites": [
+          "lib/services/theme_service.dart:25",
+          "lib/app/butlery_app.dart:712",
+          "lib/app/butlery_app.dart:711"
+        ],
+        "note": "Kallan ar ett ANVANDARVAL som persisteras i SharedPreferences under nyckeln theme_mode, last av ThemeService.readCachedThemeMode() fore runApp. Vardet ar light, dark eller system; bara system delegerar till plattformens ljusstyrka. prefers-color-scheme ar alltsa INTE runtimekallan — det ar hogst en indata till system-grenen. butlery_app.dart:712 satter themeMode och :711 valjer darkTheme."
+      },
+      "documentation": "produktregler.md",
+      "note": "Tre lagen i koden (light, dark, system) men TVA renderbara utfall. En artefakt ritas i ett av tva teman; system ar ett val mellan dem, inte ett tredje utseende."
+    }
+  ]
+}

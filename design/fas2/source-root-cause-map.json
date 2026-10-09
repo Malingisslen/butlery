@@ -1,0 +1,204 @@
+{
+ "$regel": "symptomGroup är en FELSIGNATUR och säger bara att två fel ser lika ut. sourceRootCause kräver belagd gemensam kod, komponent, token eller layoutregel.",
+ "$skillnad_mot_kanonisk_rapport": "De kanoniska legacy-källrotorsakerna i R-03-rapporten är OFÖRÄNDRADE. Denna karta ligger parallellt som analysunderlag.",
+ "legacy_kallrotorsaker_st": 5,
+ "symptomGroups": [
+  {
+   "signatur": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "instanser": [
+    "betygperperson",
+    "veckoallergi",
+    "flergrupp",
+    "kompkalla",
+    "langavarden"
+   ],
+   "sourceRootCauses": [
+    "SRC-01",
+    "SRC-02",
+    "SRC-03"
+   ]
+  },
+  {
+   "signatur": "div · klippning · innehåll utanför boxen",
+   "instanser": [
+    "synkko"
+   ],
+   "sourceRootCauses": [
+    "SRC-01"
+   ]
+  },
+  {
+   "signatur": "div · textrunkering · line-clamp",
+   "instanser": [
+    "langavarden"
+   ],
+   "sourceRootCauses": [
+    "SRC-03"
+   ]
+  },
+  {
+   "signatur": "span · klippning · överskott N px i x med overflow-x: hidden",
+   "instanser": [
+    "onbimport"
+   ],
+   "sourceRootCauses": [
+    "SRC-04"
+   ]
+  },
+  {
+   "signatur": "span · textrunkering · text-overflow ellipsis",
+   "instanser": [
+    "onbimport"
+   ],
+   "sourceRootCauses": [
+    "SRC-04"
+   ]
+  }
+ ],
+ "sourceRootCauses": [
+  {
+   "id": "SRC-01",
+   "rubrik": "Telefonramens innehållskolumn klipper i stället för att scrolla",
+   "belagg": {
+    "konstruktion": "style=\"flex: 1 1 0%; padding: Npx; overflow: hidden\"",
+    "foralder": "div.sc-phone — delad CSS-klass som själv deklarerar overflow:hidden",
+    "varfor_gemensam": "Samma layoutKONSTRUKTION, inte bara samma symptom: en flexbarnkolumn som fyller ramen och saknar scroll. Höjden beräknas av flex och är aldrig skriven för hand, så den kan inte garanteras rymma innehållet. Konstruktionen är teckenidentisk i fyra artefakter över två filer.",
+    "dc_tpl": [
+     "1510",
+     "223",
+     "154",
+     "784"
+    ]
+   },
+   "filer": [
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+   ],
+   "felinstanser_st": 4,
+   "ritningar": [
+    "betygperperson",
+    "veckoallergi",
+    "synkko",
+    "flergrupp"
+   ],
+   "ritningar_st": 4,
+   "intentionality": [
+    "unintended",
+    "undecided"
+   ]
+  },
+  {
+   "id": "SRC-02",
+   "rubrik": "Hårt max-height på källkodsblocket i komponentarket",
+   "belagg": {
+    "konstruktion": "style=\"... max-height: 150px; overflow: hidden\"",
+    "dc_tpl": [
+     "1313"
+    ],
+    "varfor_egen": "Ett uttryckligt max-height på ett enskilt innehållsblock. Ingen delad klass, ingen flexberäkning — en egen kodrad med ett eget beslut."
+   },
+   "filer": [
+    "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   ],
+   "felinstanser_st": 1,
+   "ritningar": [
+    "kompkalla"
+   ],
+   "ritningar_st": 1,
+   "intentionality": [
+    "undecided"
+   ]
+  },
+  {
+   "id": "SRC-03",
+   "rubrik": "Tvåradig line-clamp på recepttiteln i sökträffen",
+   "belagg": {
+    "konstruktion": "style=\"display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden\"",
+    "dc_tpl": [
+     "1662"
+    ],
+    "varfor_egen": "Egen CSS-konstruktion för textbegränsning, inte samma som flexkolumnen."
+   },
+   "filer": [
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+   ],
+   "felinstanser_st": 2,
+   "ritningar": [
+    "langavarden"
+   ],
+   "ritningar_st": 1,
+   "intentionality": [
+    "intentional"
+   ]
+  },
+  {
+   "id": "SRC-04",
+   "rubrik": "Ellips på värdet i URL-fältet vid receptimport",
+   "belagg": {
+    "konstruktion": "span[data-a11y-role=textbox] style=\"... overflow:hidden; text-overflow:ellipsis\"",
+    "dc_tpl": [
+     "436"
+    ],
+    "varfor_egen": "Ett inmatningsfälts VÄRDE, inte en etikett eller rubrik. Egen konstruktion, eget beslut."
+   },
+   "filer": [
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+   ],
+   "felinstanser_st": 2,
+   "ritningar": [
+    "onbimport"
+   ],
+   "ritningar_st": 1,
+   "intentionality": [
+    "undecided"
+   ]
+  }
+ ],
+ "$observation": "Ett symptom kan spänna över flera källor och en källa över flera symptom. SRC-03 och SRC-04 bär vardera TVÅ symptom, klippning och textrunkering, som är EN användareffekt sedd av två metoder.",
+ "prioritering": [
+  {
+   "rang": 1,
+   "kriterium": "innehåll helt eller väsentligt dolt",
+   "source": "SRC-02",
+   "motiv": "52 px av 226 px innehåll dolt i receptets källblock, cirka 2,8 rader. Ingen synlig affordans för att nå resten."
+  },
+  {
+   "rang": 2,
+   "kriterium": "interaktion eller begriplighet påverkad",
+   "source": "SRC-04",
+   "motiv": "Användaren ser inte hela adressen hen själv klistrat in i importfältet."
+  },
+  {
+   "rang": 3,
+   "kriterium": "faktisk textförlust",
+   "source": "SRC-03",
+   "motiv": "Rad tre av recepttiteln döljs — men clampen är dokumenterat avsiktlig."
+  },
+  {
+   "rang": 4,
+   "kriterium": "mindre geometrisk kapning",
+   "source": "SRC-01",
+   "motiv": "1–2 px verkligt innehåll under kanten i tre ritningar."
+  },
+  {
+   "rang": 5,
+   "kriterium": "osäker eller subpixeleffekt",
+   "source": "SRC-01 · flergrupp",
+   "motiv": "Signalerna motsäger varandra; ingen kapning kan visas."
+  }
+ ],
+ "runtimejamforelse": [
+  {
+   "source": "SRC-03",
+   "designArtifactResult": "line-clamp 2 på recepttiteln, rad tre dold, 22 px",
+   "runtimeImplementationResult": "maxLines: 2 med TextOverflow.ellipsis i lib/views/social/shared_with_me/shared_recipe_card.dart:171 och lib/views/recipe_detail/recipe_related_recipes_section.dart:174",
+   "slutsats": "Ritning och implementation ÖVERENSSTÄMMER. Begränsningen finns i båda."
+  },
+  {
+   "source": "SRC-04",
+   "designArtifactResult": "text-overflow: ellipsis på fältvärdet, 19 px dolt",
+   "runtimeImplementationResult": "lib/views/onboarding/onboarding_import_page.dart:93 är ett Flutter TextField utan maxLines eller overflow-begränsning. Ett TextField scrollar horisontellt, så hela adressen är nåbar för användaren.",
+   "slutsats": "RITNINGEN OCH IMPLEMENTATIONEN SKILJER SIG. Ritningen visar en begränsning som den verkliga komponenten inte har. Det är ett eget fynd, och ingendera anpassas automatiskt till den andra."
+  }
+ ]
+}

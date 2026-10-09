@@ -1,0 +1,1331 @@
+{
+  "schema": "butlery-verify-report/2",
+  "command": "node tools/verify.mjs",
+  "generated": "2026-08-08T13:49:18.977Z",
+  "node": "v22.16.0",
+  "cwd": "C:\\Butlery design system",
+  "sources": {
+    "tokens.json": {
+      "version": "1.13",
+      "inputSha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02",
+      "outputSha256": "444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02"
+    },
+    "icons.json": {
+      "version": "1.8",
+      "inputSha256": "fa46237fdc7ef51b4f46885144e1480504bc65230c63bf484b669975355f0cc9",
+      "outputSha256": "fa46237fdc7ef51b4f46885144e1480504bc65230c63bf484b669975355f0cc9"
+    },
+    "assets-manifest.json": {
+      "version": "1.4",
+      "inputSha256": "df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec",
+      "outputSha256": "df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec"
+    },
+    "$note": "inputSha256 är filen före kedjan, outputSha256 efter. Skiljer de sig har en generator skrivit i filen, vilket betyder att den incheckade versionen var stale — GEN-01 fäller på det. Drift är alltså förväntad som mätning, aldrig godtagbar som tillstånd."
+  },
+  "ranControls": [
+    "A11Y-01",
+    "A11Y-02",
+    "T-01",
+    "T-02",
+    "T-03",
+    "T-04",
+    "T-05",
+    "T-06a",
+    "T-06b",
+    "T-07",
+    "T-08",
+    "T-09",
+    "T-10",
+    "T-11",
+    "T-12",
+    "T-14",
+    "T-15",
+    "T-16",
+    "T-17",
+    "T-18a",
+    "T-18b",
+    "T-19",
+    "T-20",
+    "T-21"
+  ],
+  "manifest": {
+    "status": "not run",
+    "files": 0,
+    "parsed": 0,
+    "verified": 0,
+    "bad": 0,
+    "missing": 0,
+    "duplicates": 0,
+    "unlisted": 0,
+    "outsideAbsent": 0,
+    "exitCode": null,
+    "why": "kördes inte — verify.mjs anropades direkt i stället för via fas0/run-verify.sh",
+    "expected": 321
+  },
+  "steps": [
+    {
+      "step": "Rapportschema ur källan",
+      "script": "tools/gen-schema.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "✔ fas0/verify-report.schema.json genererad ur REPORT_SCHEMA (butlery-verify-report/2)"
+      ]
+    },
+    {
+      "step": "Preflight: incheckad genererad kod",
+      "script": "tools/preflight.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "✔ GEN-02  assets/generated/tokens.css · tokens 1.13 · generator tools/gen-css.mjs · fingeravtryck 5e423f8605df… oförändrat",
+        "✔ GEN-02  lib/theme/butlery_tokens.dart · tokens 1.13 · generator tools/gen-flutter.mjs · fingeravtryck f5957e59f8e5… oförändrat",
+        "✔ GEN-02  lib/theme/app_colors.dart · tokens 1.13 · generator tools/gen-app-theme.mjs · fingeravtryck 3ed8bfa7d6eb… oförändrat",
+        "✔ GEN-02  lib/theme/app_text_styles.dart · tokens 1.13 · generator tools/gen-app-theme.mjs · fingeravtryck 3ed8bfa7d6eb… oförändrat",
+        "✔ GEN-02  tools/gen-app-theme.mjs --check · kroppen är byteidentisk med generatorns resultat",
+        "✔ GEN-02  tools/gen-css.mjs --check · kroppen är byteidentisk med generatorns resultat",
+        "✔ GEN-02  tools/gen-flutter.mjs --check · kroppen är byteidentisk med generatorns resultat",
+        "PREFLIGHT-SUMMARY checked=4 stale=0 fingerprint_drift=0 body_drift=0 generators=3 tokens=1.13"
+      ]
+    },
+    {
+      "step": "Ikonräkning",
+      "script": "tools/gen-icons.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "usages uppdaterade för 78 glyfer · okända: inga · icons.json oförändrad — byteidentisk"
+      ]
+    },
+    {
+      "step": "Ram- och kontrollräkning",
+      "script": "tools/gen-counts.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "COUNT-SUMMARY frames=280 items=329 controls=1376 roles=1376 hits=661",
+        "räknat: frames 280 · items 329 · controls 1376 · roles 1376 · hits 661",
+        "0 fil(er) uppdaterade"
+      ]
+    },
+    {
+      "step": "CSS ur tokens",
+      "script": "tools/gen-css.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "tokens.css skriven · 198 variabelreferenser"
+      ]
+    },
+    {
+      "step": "Flutter-tema ur tokens",
+      "script": "tools/gen-flutter.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "butlery_tokens.dart skriven · 272 rader"
+      ]
+    },
+    {
+      "step": "App-tema ur tokens",
+      "script": "tools/gen-app-theme.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "app_colors.dart och app_text_styles.dart skrivna ur tokens 1.13"
+      ]
+    },
+    {
+      "step": "Källauktoritetsregister ur source-authority.json",
+      "script": "tools/gen-authority.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "kallauktoritetsregister.md skrivet · 25 domäner · 7 genererade artefakter · 8 superseded · 20 indexrader generatorägda"
+      ]
+    },
+    {
+      "step": "Artefaktförslag ur registret",
+      "script": "tools/gen-artifact-proposal.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "PROPOSE-SUMMARY undecided=0 proposed=0 exceptions=0 files=0 out=fas0/artefaktforslag.md"
+      ]
+    },
+    {
+      "step": "Manifestet mot enumeratorn",
+      "script": "tools/gen-manifest.mjs --check",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "GEN-CHECK ok fas0/andrade-filer.md",
+        "GEN-CHECK-SUMMARY generator=gen-manifest checked=1 drift=0"
+      ]
+    },
+    {
+      "step": "Genererad kod",
+      "script": "tools/test-generated.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "CSS: 147 variabler, 4 block",
+        "Dart: 8 klasser, 131 färger",
+        "app_colors.dart: 120 medlemmar (61 mappade + 21 varumärken + 37 alias)",
+        "app_text_styles.dart: 76 medlemmar, 16 stilar",
+        "app-temat: 452 jämförda värden · colors 61 · aliases 37 · brands 21 · scheme 56 · typeRoles 16 · typeAliases 39 · typeSemantic 21 · legacy 201",
+        "Genererad kod OK — fyra filer, genereringskontrakt uppfyllt."
+      ]
+    },
+    {
+      "step": "Kontrollgeometri",
+      "script": "tools/lint-controls.mjs",
+      "status": "failed",
+      "exitCode": 1,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 307,
+      "tail": [
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:585 [behlarmnekat] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:607 [lagatimerlofte] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:611 [lagatimerlofte] textstorlek 20 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:624 [lagatimernotis] textstorlek 44 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:629 [lagatimernotis] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:629 [lagatimernotis] textstorlek 10 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:652 [lagatimerutgangen] textstorlek 44 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:657 [lagatimerutgangen] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:657 [lagatimerutgangen] textstorlek 10 px — utanför rollskalan (10.5 11 12 12.5 13 14 15 16 17 19 22 26 32 38)",
+        "  Butlery Skarmar v12 etapp 3 onboarding.dc.html:669 [lagatimerutgangen] radie 4 — tillåtna: 0 / 2 / 8 / 12 / 999",
+        "  … och 107 fler",
+        "0 element hoppade över via data-lint-exempt."
+      ]
+    },
+    {
+      "step": "Spec-lint",
+      "script": "tools/spec-lint.mjs",
+      "status": "failed",
+      "exitCode": 1,
+      "specErrors": 719,
+      "specWarnings": 3,
+      "geometryDeviations": 0,
+      "tail": [
+        "✖ T-14  P-02 (rad 543) står \"implementerad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  P-03 (rad 544) står \"implementerad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  P-04 (rad 545) står \"verifierad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  P-05 (rad 546) står \"verifierad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  T-14 (rad 668) står \"implementerad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  T-15 (rad 669) står \"implementerad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  T-16 (rad 670) står \"verifierad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  BV-01 (rad 836) står \"implementerad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  Y-07 (rad 867) står \"verifierad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ T-14  Y-09 (rad 869) står \"verifierad\" utan bevis. Skriv screen:#id · component:<id> · manual:kap-NN · file:\"sökväg\" · scope:all-screens · n/a: motivering",
+        "✖ A11Y-01  Butlery Skarmar v12 del 1 recept och veckomeny.dc.html:1125 tillstånd \"disabled\" utan roll — ett halvt kontrakt granskas av ingen kontroll",
+        "✖ A11Y-02  245 kontroller med inneboende tillstånd saknar data-a11y-state (switch 19 · tab 101 · radio 48 · checkbox 77) — kontraktet i Fas 3 gör fältet obligatoriskt"
+      ]
+    },
+    {
+      "step": "Verifierarens egna mutationsprov",
+      "script": "tools/selftest.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "· T-21  T21-RESULT {\"kontroll\":\"CHK-T-21\",\"artifactsVersion\":\"2.3\",\"selectionContextsVersion\":\"1.1\",\"validerade_filer\":[\"artifacts.json\",\"artifacts.schema.json\",\"selection-contexts.json\",\"selection-contexts.schema.json\",\"layout-contract.json\"],\"poster_st\":329,\"observerade_st\":329,\"fel_st\":1,\"fel_id\":{\"T21-OBESLUTAT\":1},\"verktygsstatus\":\"ok\",\"utfall\":\"failed\"}",
+        "· T-10  20 generatorägda auktoritetsrader i versionstabellen · 3 domäner uttryckligen undantagna",
+        "· T-14  429 kravrader (gemensam parser) · 1 typade · 460 legacy · 23 utan bevis",
+        "· T-15  29 datarader i versionstabellen · 33 filreferenser · 33 mätta",
+        "✔ T-14 + · giltigt manual-bevis accepteras → inga nya T-14-fel, giltigt bevis accepteras",
+        "SELFTEST-SUMMARY pass=109 fail=0 skipped=0 fixture_fail=0 baseline_errors=719",
+        "· UNDANTAG T-03 — råfärgslint rapporterar bara varningar; ST-01 kräver fällande diagnostik och kan därför inte pröva den. Varningsräkningen prövas av M-01 (◐ räknas aldrig som fel)",
+        "· UNDANTAG T-04 — opacitetslint delar kodväg med T-03 (samma stilattributsläsning) och har ingen egen fällande gren utanför den",
+        "· UNDANTAG T-06a — kaskadberoende: mutationen skulle döljas av blocked-omklassningen. Kodvägen prövas av metatest M-06 (T-06a blocked, T-06b självständig)",
+        "· UNDANTAG T-06b — samma som T-06a — provas av M-06",
+        "· UNDANTAG T-09 — id-format: samma reguljära uttryck och samma insamling som T-16, vars dubblett-id-prov går genom exakt den koden",
+        "SELFTEST-COVERAGE runtime=24 proven_negative=19 exempt=5 uncovered=0 sum=24"
+      ]
+    },
+    {
+      "step": "Metatester för verktygskedjan",
+      "script": "tools/metatest.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "specErrors": 0,
+      "specWarnings": 0,
+      "geometryDeviations": 0,
+      "tail": [
+        "✔ M-38 · byggaren avvisar förbjudna kataloger och --force är säkert (11 domslut)",
+        "✔ M-39 · CI-jobbets körordning är fail-closed (20 domslut)",
+        "✔ M-25 · schemat godkänner en komplett rapport och fäller 17 trasiga",
+        "✔ M-26 · CHK-SC-01 kan inte passera med fallen producent eller driftande artefakt (6 fall)",
+        "✔ M-27 · registertäckning kräver exakt set-likhet och stabil metadata — full true · beskuren false (40 fel) · extra false · metadata false",
+        "✔ M-28 · pipes i scope, why och name escapas i den genererade rapporten",
+        "✔ M-29 · TG-01 fäller ändrade FÄRGVÄRDEN, schemaslottar, aliasmål och typroller — baslinje 0 fel · 12/12 mutationer fällda",
+        "✔ M-30 · GEN-02 fäller kroppsdrift trots korrekt header och fingeravtryck — ren 0 · css 1 · dart 1 · mutationer true,true · kroppsdiagnostik true",
+        "✔ M-31 · källmutationer i mappningen fälls efter regenerering (rå kind, okänd medlem, borttaget legacy-alias) — 4 fall: orörd grön, tre mutationer fällda",
+        "✔ M-32 · processprovens miljö bär bara uttryckligen tillåtna värden — bas: {\"m\":null,\"p\":null,\"x\":null} · tillåtet: {\"p\":\"1\",\"x\":null} · barnet såg: {\"m\":null,\"p\":\"1\",\"x\":null,\"g\":\"12345678901\"}",
+        "✔ M-40 · CHK-T-21 bär mustReport och kan inte stå not run — mustReport true · utan körbevis blocked · utan flagga not run · med körbevis passed · grind failed [\"CHK-T-21(not run)\"]",
+        "METATEST-SUMMARY pass=44 fail=0 total=44"
+      ]
+    }
+  ],
+  "measures": {
+    "specErrors": 719,
+    "specWarnings": 3,
+    "geometryDeviations": 307,
+    "coverageErrors": 1
+  },
+  "perControl": {
+    "LC-01": {
+      "errors": 0,
+      "warnings": 0,
+      "deviations": 307
+    },
+    "T-04": {
+      "errors": 0,
+      "warnings": 2
+    },
+    "T-11": {
+      "errors": 0,
+      "warnings": 1
+    },
+    "T-21": {
+      "errors": 1,
+      "warnings": 0
+    },
+    "T-02": {
+      "errors": 8,
+      "warnings": 0
+    },
+    "T-08": {
+      "errors": 685,
+      "warnings": 0
+    },
+    "T-14": {
+      "errors": 23,
+      "warnings": 0
+    },
+    "A11Y-01": {
+      "errors": 1,
+      "warnings": 0
+    },
+    "A11Y-02": {
+      "errors": 1,
+      "warnings": 0
+    }
+  },
+  "metrics": {
+    "frames": {
+      "value": 280,
+      "source": "gen-counts.mjs · COUNT-SUMMARY"
+    },
+    "items": {
+      "value": 329,
+      "source": "gen-counts.mjs · COUNT-SUMMARY"
+    },
+    "controls": {
+      "value": 1376,
+      "source": "gen-counts.mjs · COUNT-SUMMARY"
+    },
+    "roles": {
+      "value": 1376,
+      "source": "gen-counts.mjs · COUNT-SUMMARY"
+    },
+    "hits": {
+      "value": 661,
+      "source": "gen-counts.mjs · COUNT-SUMMARY"
+    }
+  },
+  "controls": [
+    {
+      "id": "CHK-T-01",
+      "legacyId": "T-01",
+      "name": "Tokens och mappningskällor mot JSON Schema",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Validerar tokens.json mot butlery-tokens.schema.json, assets/brand-colors.json mot sitt schema och tools/app-theme-map.json mot tools/app-theme-map.schema.json — samma validator (walkSchema) för alla tre. Fas 1: de två senare validerades inte av kedjan alls.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-02",
+      "legacyId": "T-02",
+      "name": "Kontrastlint över deklarerade par",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 1,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 8,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-T-03",
+      "legacyId": "T-03",
+      "name": "Råfärgslint i spec-HTML (varning)",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-04",
+      "legacyId": "T-04",
+      "name": "Opacitetslint",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 2,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-05",
+      "legacyId": "T-05",
+      "name": "Ikonlint — namn och masterfil",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 1,
+      "requiredForGate": [
+        1
+      ],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-06a",
+      "legacyId": "T-06a",
+      "name": "icons.json usages stämmer med källan",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 1,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Beroende av gen-icons: blockeras om generatorn faller.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-06b",
+      "legacyId": "T-06b",
+      "name": "assets-manifestets filreferenser finns på disk",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 1,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Oberoende av generatorerna — mäts alltid, även när gen-icons faller.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-07",
+      "legacyId": "T-07",
+      "name": "Föråldrade versionsreferenser i dokument (varning)",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 1,
+      "requiredForGate": [],
+      "scope": "Söker \"manual v1–v5\", \"0.620–0.624\" och \"Skarmar v10/v11\" i skärmdokumenten. Rapporterar VARNINGAR, inte fel. Fas 0.12: registret sa tidigare att kontrollen täcker genererade filer — det gör den inte, det är GEN-02 och T-15.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-08",
+      "legacyId": "T-08",
+      "name": "Träffyte- och rollint",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 3,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 685,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-T-09",
+      "legacyId": "T-09",
+      "name": "Syntaxlint per fil",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-10",
+      "legacyId": "T-10",
+      "name": "Indexlint — versionstabellen",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        1
+      ],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-11",
+      "legacyId": "T-11",
+      "name": "Räkningslint",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 1,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-12",
+      "legacyId": "T-12",
+      "name": "Ankarlint — citerade ankare i prosa",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-13",
+      "legacyId": "T-13",
+      "name": "Avstängd text mot eget golv 3:1",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "kräver renderad mätning i DOM (Fas 2). Textuell lint kan inte avgöra vilken yta tonen står på.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-T-14",
+      "legacyId": "T-14",
+      "name": "Skärmbevis-kolumnen valideras",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": "Skilt från T-12: T-12 läser citerade ankare i prosa, T-14 läser evidensmatrisens Skärmbevis-kolumn.",
+      "errors": 23,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-T-15",
+      "legacyId": "T-15",
+      "name": "Indexlint mäter HELA versionstabellen",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        1
+      ],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-16",
+      "legacyId": "T-16",
+      "name": "Ram-id kan inte kollidera — globalt",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": "Implementerad i Fas 0 under arbetsnamnet T-09b; id:t är T-16 enligt evidensmatrisen.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-17",
+      "legacyId": "T-17",
+      "name": "Interna #-länkar pekar i samma fil",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-20",
+      "legacyId": "T-20",
+      "name": "Källauktoriteten är maskinläsbar och konsistent",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 1,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Validerar source-authority.json mot sitt schema och kräver exakt EN aktiv auktoritet per domän, att varje deklarerad fil finns, att statusarna hör till ordboken, att kontrollstatusordboken är exakt de fem värdena och att supersededBy bildar ingen cykel. Registret i fas0/kallauktoritetsregister.md genereras ur filen. Fas 1: styrdokumentet krävde den maskinläsbara motsvarigheten, och till dess drev det handskrivna registret.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-21",
+      "legacyId": "T-21",
+      "name": "Artefaktklassificering (§ 5.1)",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 2,
+      "requiredForGate": [
+        2
+      ],
+      "scope": "Jämför de artefakter som OBSERVERAS i skärmfilerna mot beslutsregistret artifacts.json och redovisar tre skilda felklasser: registerfel (saknad, extra, dubblerad post), datafel (ogiltigt värde mot vokabulären, eller ett beslut som motsäger observationen) och obeslutat (giltig post utan klassificeringsbeslut). Unikheten prövas på HELA variantnyckeln screenId · stateId · viewportClass · variantId — flera aktiva responsiva varianter av samma vy är legitima. En enhetsram är stark evidens för en viewport men aldrig ett auktoritetsbeslut: observationen ägs av maskinen, klassificeringen av en människa, och seed-verktyget skriver aldrig ett beslutat fält.",
+      "errors": 1,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-LC-01",
+      "legacyId": "LC-01",
+      "name": "Kontrollgeometri (lint-controls)",
+      "owner": "DS",
+      "source": "lint-controls",
+      "resolutionPhase": 4,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "deviations": 307,
+      "why": "1 täckningsfel — en regel som körts på noll komponenter får inte bli grön",
+      "blockedBy": null,
+      "coverageErrors": 1,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-TG-01",
+      "legacyId": "TG-01",
+      "name": "Genererad kod (test-generated)",
+      "owner": "DEV",
+      "source": "test-generated",
+      "resolutionPhase": 1,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Prövar tokens.css och butlery_tokens.dart OCH — sedan Fas 1 — app_colors.dart och app_text_styles.dart mot tools/app-theme-map.json: varje mappad medlem, varje varumärkesfärg, varje alias INKLUSIVE dess högersida, varje typroll, varje typalias, varje semantisk variant och den publika ytan mot det frysta legacy-api-contract.json. En ändring i mappningsfilen som inte regenererats fäller kontrollen.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-A11Y-01",
+      "legacyId": "A11Y-01",
+      "name": "Roll och namn på märkta kontroller",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 3,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 1,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-A11Y-02",
+      "legacyId": "A11Y-02",
+      "name": "Tillståndsmetadata på stateful kontroller",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 3,
+      "requiredForGate": [],
+      "scope": "Räknar dynamiskt i lint-core. Statusen kommer ur körningen — inga tal i registret. Kontrakten i Fas 3 gör fältet obligatoriskt.",
+      "errors": 1,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "failed"
+    },
+    {
+      "id": "CHK-R-01",
+      "legacyId": "R-01",
+      "name": "Renderad kontrast per fil",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kräver DOM-rendering i CI.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-02",
+      "legacyId": "R-02",
+      "name": "Renderad träffyta",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kräver DOM-mätning; källdeklarationen är inte bevis.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-03",
+      "legacyId": "R-03",
+      "name": "Overflow och klippning renderat",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-04",
+      "legacyId": "R-04",
+      "name": "Mörkt läge per vy",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-05",
+      "legacyId": "R-05",
+      "name": "Kanonisk R-03-analys med findingId och enhetsvalidering",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Deduplicerar R-03a…d till ett fel per element och artefakt, klassar varje detektion som verifierad, avsiktlig, observation eller verktygsfel, och fäller på fel totalsumma eller tal utan enhetssuffix.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kräver en genomförd renderingskörning.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-06",
+      "legacyId": "R-06",
+      "name": "Beständiga negativa prov för renderingskedjan",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Tio prov: N-01 observation utan klippning, N-02 faktisk klippning, N-03 saknad och dubblerad mörk motpart, N-04 flertydig motpart, N-05 viewportartefakt utan profil, N-06 gridavvikelse vid 1920, N-07 avsiktligt scrollområde, N-08 line-clamp utan trunkering, N-09 deduplicering över metoder, N-10 fel enhet eller totalsumma.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kräver Chrome och en katalog utanför manifestytan.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-07",
+      "legacyId": "R-07",
+      "name": "Gridmätning mot levande konsumenter",
+      "owner": "DEV",
+      "source": "external",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "flutter test test/gridmatning_test.dart mäter kolumnantal, kortbredd, gap, oanvänd bredd, overflow och maxbredd vid 1180, 1919, 1920 och 2048, samt hela trappan vid varje kategorigräns.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "kräver app-repot; ingår inte i specpaketets kedja.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-08",
+      "legacyId": "R-08",
+      "name": "Reproducerbarhet för mätbaslinjen",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Två fullständiga rena körningar utan produktändringar måste ge identisk produktpopulation, probepopulation, detektioner, elementfynd, felinstanser, källrotorsaker, findingId:n och kontrollstatusar. Endast tids- och körnings-id-fält normaliseras.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kräver två genomförda renderingskörningar.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-I-01",
+      "legacyId": "I-01",
+      "name": "Ikongeometri mot viewBox",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Mäter varje inline-glyfs getBBox() i användarkoordinater mot dess egen viewBox och klassar utfallet som ok, utanfor, klippt, tom, ej-renderad eller verktygsfel. Fyra beständiga fixturer: 160-rutnätets geometri i en 24-viewBox ska fällas som utanfor, samma geometri med rättat fönster ska passera, geometri som skärs av fönstret ska fällas som klippt, och en glyf utan renderad geometri ska fällas som tom.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kräver Chrome och riktig SVG-geometri; en textmatchning över bandata kan inte ge korrekta gränser.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-ID-01",
+      "legacyId": "R-ID-01",
+      "name": "Entydig elementidentitet i R-03",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Redovisar legacy_collisions_st, stable_resolved_by_v2_st, candidate_only_st, ambiguous_st, verified_ambiguous_st och observation_ambiguous_st. Kontrollen ar RÖD sa lange verklig identitetsambiguitet finns, men verified_ambiguous_st ar sakerhetssignalen: sa lange den ar 0 ar R-03-fyndintegriteten opaverkad. Granskar om samma kanoniska elementKey betecknar flera olika DOM-noder inom samma artefakt, viewport, tema och textskala. Rapporterar unika_elementKeys_st, kolliderande_elementKeys_st, berorda_domnoder_st, verifierade_kollisioner_st, observationskollisioner_st och avsiktliga_kollisioner_st. Skiljer nyckelkollision fran samma nod sedd av flera metoder och fran forfader-barn-slaktskap — de tva senare ar inga kollisioner. Andrar aldrig hur findingId genereras.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kraver en genomford renderingskorning.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-T-01",
+      "legacyId": "R-T-01",
+      "name": "Triage av kvarvarande R-03-felinstanser",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Binder varje verifierad felinstans till faktisk kalla i markup och CSS, mater overskottet med tva oberoende signaler (scroll mot client, och barnens rektanglar i brakdelar), och skiljer symptomGroup fran sourceRootCause. En sourceRootCause far bara delas nar gemensam kod, komponent, token eller layoutregel ar belagd. Intentionalitet kraver positiv evidens; att CSS-raden anvander line-clamp, ellipsis eller overflow:hidden ar inget bevis.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kraver Chrome och en genomford renderingskorning.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-R-E-01",
+      "legacyId": "R-E-01",
+      "name": "Adjudicerade anvandareffekter (R-03)",
+      "owner": "DS",
+      "source": "rendered",
+      "resolutionPhase": 2,
+      "requiredForGate": [],
+      "scope": "Parallellt lager ovanpa legacy-detektionen. Redovisar detectedLegacyInstances_st, adjudicatedEffects_st, productErrors_st, intentionalEffects_st och undecidedEffects_st. Tva legacy-instanser slas ihop till en effekt endast vid samma artefakt, samma element, samma sourceRootCause och samma uppmatta konsekvens i samma axel. Samma symptomsignatur racker aldrig. En oadjudicerad instans eller en saknad sourceRootCause faller rapporten; ingen grupp hittas pa.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "Fas 2 — kraver den committade triagen.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-K-01",
+      "legacyId": "K-01",
+      "name": "dart analyze",
+      "owner": "DEV",
+      "source": "external",
+      "resolutionPhase": 6,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "kräver app-repot; ingår inte i specpaketets kedja.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-K-02",
+      "legacyId": "K-02",
+      "name": "Enhetsprotokoll (B-43)",
+      "owner": "DEV",
+      "source": "external",
+      "resolutionPhase": 6,
+      "requiredForGate": [],
+      "scope": null,
+      "errors": 0,
+      "warnings": 0,
+      "why": "kan inte köras före första implementerade etappen. Det är not run, inte not applicable — regeln säger att not applicable aldrig får användas för något som bara ännu inte körts.",
+      "blockedBy": null,
+      "status": "not run"
+    },
+    {
+      "id": "CHK-ST-01",
+      "legacyId": "ST-01",
+      "name": "Mutationsprov mot verifieraren (selftest)",
+      "owner": "DS",
+      "source": "selftest",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Varje prov muterar källan i minnet och kräver att rätt kontroll fäller. En kontroll som inte kan fällas mäter ingenting.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "passedTests": 109,
+      "skipped": 0,
+      "coverage": {
+        "runtime": 24,
+        "proven_negative": 19,
+        "exempt": 5,
+        "uncovered": 0,
+        "sum": 24
+      },
+      "status": "passed"
+    },
+    {
+      "id": "CHK-MT-01",
+      "legacyId": "MT-01",
+      "name": "Metatester för verktygskedjan",
+      "owner": "DS",
+      "source": "metatest",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Prövar rapportlogiken själv: statusreducering, exitkod, GEN-01 i totalen, manifestets fällning, kaskadblockering, täckningsfel, wrapperns viktning och att inget runtimekontroll bär hårdkodad status.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "passedTests": 44,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-19",
+      "legacyId": "T-19",
+      "name": "Markdown-tabelllint",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Fäller två tabellrader på samma källrad ('||'), varnar för ojämnt kolumnantal.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-GEN-02",
+      "legacyId": "GEN-02",
+      "name": "Incheckad genererad kod är aktuell (preflight)",
+      "owner": "DEV",
+      "source": "preflight",
+      "resolutionPhase": 1,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Körs FÖRE generatorerna och läser headerns tokenversion. T-15 mäter genererad output; GEN-01 mäter om körningen ändrade en incheckad fil; GEN-02 mäter om den incheckade filen var stale från början. Löses i Fas 1.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-18a",
+      "legacyId": "T-18a",
+      "name": "Evidensmatrisens STRUKTUR (grindande)",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Tabellhuvud, kolumnantal och historikmarkörens placering. Strukturfel gör att kravrader inte parsas och alltså försvinner ur baslinjen — därför grindar den.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-T-18b",
+      "legacyId": "T-18b",
+      "name": "Kravbaslinjens integritet (grindande)",
+      "owner": "DS",
+      "source": "spec-lint",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Okänd status och dubblerat krav-id gör kravbaslinjen tvetydig eller felräknad — det är integritetsfel, inte designskuld, och grindar därför tillsammans med T-18a. Fas 0.12.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-GEN-01",
+      "legacyId": "GEN-01",
+      "name": "Genererade filer är incheckade (ingen drift)",
+      "owner": "DEV",
+      "source": "wrapper",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        1
+      ],
+      "scope": "Jämför hash före och efter kedjan. Ändras en genererad fil av körningen var den incheckade versionen stale.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-SC-01",
+      "legacyId": "SC-01",
+      "name": "Rapportschemat (butlery-verify-report/2)",
+      "owner": "DS",
+      "source": "schema",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Rapporten valideras mot REPORT_SCHEMA vid varje körning; schemafilen genereras ur samma källa med tools/gen-schema.mjs. gate.mjs kör samma validering.",
+      "errors": 0,
+      "warnings": 0,
+      "why": null,
+      "blockedBy": null,
+      "status": "passed"
+    },
+    {
+      "id": "CHK-MF-01",
+      "legacyId": "MF-01",
+      "name": "Manifestkontroll (fas0/check-manifest.mjs)",
+      "owner": "DEV",
+      "source": "wrapper",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Körs av run-verify.sh FÖRE de muterande stegen. Status och antal kontrollerade filer skrivs in i rapporten av wrappern.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "kördes inte — verify.mjs anropades direkt i stället för via fas0/run-verify.sh",
+      "blockedBy": null,
+      "status": "not run",
+      "integrity": {
+        "ok": false,
+        "problems": [
+          "manifestet kördes inte"
+        ]
+      },
+      "parsed": 0,
+      "verified": 0,
+      "bad": 0,
+      "missing": 0,
+      "duplicates": 0,
+      "unlisted": 0,
+      "outsideAbsent": 0,
+      "expected": 321,
+      "mode": "repo"
+    },
+    {
+      "id": "CHK-CI-01",
+      "legacyId": "CI-01",
+      "name": "Verifieringskedjan körs i CI",
+      "owner": "DEV",
+      "source": "ci-evidence",
+      "resolutionPhase": 0,
+      "requiredForGate": [
+        0,
+        1
+      ],
+      "scope": "Blockerar Fas 0-grinden enligt styrdokumentet. Status kommer ur fas0/ci-evidence.json, som CI-jobbet skriver — den är inte hårdkodad och kan bli passed av en verklig körning.",
+      "errors": 0,
+      "warnings": 0,
+      "why": "inget körbevis i fas0/ci-evidence.json — kedjan har inte körts i CI",
+      "blockedBy": null,
+      "status": "not run"
+    }
+  ],
+  "selftestSummary": {
+    "pass": 109,
+    "fail": 0,
+    "skipped": 0,
+    "fixture_fail": 0,
+    "baseline_errors": 719
+  },
+  "selftestCoverage": {
+    "runtime": 24,
+    "proven_negative": 19,
+    "exempt": 5,
+    "uncovered": 0,
+    "sum": 24
+  },
+  "metatestSummary": {
+    "pass": 44,
+    "fail": 0,
+    "total": 44
+  },
+  "generatedDrift": [],
+  "packageIdentity": {
+    "artifactFingerprint": {
+      "mode": "repo",
+      "sha256": "59db042f27a76a7ca5255c6c7a1ab889d372d93749c8b31e21b317a5350781c8",
+      "declared": 312,
+      "hashed": 312,
+      "missing": 0,
+      "totalEntries": 321,
+      "outsideEntries": 9
+    },
+    "manifestSha256": "36851fbcf4269d1e970002da4fb398d4e3023d4dcdbecdcc70387fad79c239be",
+    "manifestExpected": 321,
+    "commit": null,
+    "cwd": "C:\\Butlery design system",
+    "node": "v22.16.0"
+  },
+  "registryValidation": {
+    "ok": true,
+    "problems": []
+  },
+  "ciEvidence": null,
+  "requirements": {
+    "total": 429,
+    "byStatus": {
+      "implementerad": 211,
+      "verifierad": 85,
+      "beslutad": 132,
+      "ersatt": 1
+    },
+    "integrityProblems": []
+  },
+  "evidenceIntegrity": {
+    "problems": [],
+    "countedBy": "spec-lint (CHK-T-18) — räknas inte om här"
+  },
+  "namespaces": {
+    "ok": true,
+    "problems": [],
+    "controls": 48,
+    "requirements": 429
+  },
+  "schemaArtifact": {
+    "missing": false,
+    "drift": false,
+    "deliveredSha256": "70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d"
+  },
+  "runId": "d3d6fafd3c94eeca",
+  "generatedAt": "2026-08-08T13:50:04.136Z",
+  "tally": {
+    "passed": 24,
+    "failed": 7,
+    "blocked": 0,
+    "not run": 17,
+    "not applicable": 0
+  },
+  "pipelineResult": "failed",
+  "stepsResult": "failed",
+  "controlsResult": "failed",
+  "phaseGateResult": "failed",
+  "overallResult": "failed",
+  "controlsSummary": {
+    "failed": [
+      "CHK-T-02",
+      "CHK-T-08",
+      "CHK-T-14",
+      "CHK-T-21",
+      "CHK-LC-01",
+      "CHK-A11Y-01",
+      "CHK-A11Y-02"
+    ],
+    "blocked": [],
+    "notRun": [
+      "CHK-T-13",
+      "CHK-R-01",
+      "CHK-R-02",
+      "CHK-R-03",
+      "CHK-R-04",
+      "CHK-R-05",
+      "CHK-R-06",
+      "CHK-R-07",
+      "CHK-R-08",
+      "CHK-I-01",
+      "CHK-R-ID-01",
+      "CHK-R-T-01",
+      "CHK-R-E-01",
+      "CHK-K-01",
+      "CHK-K-02",
+      "CHK-MF-01",
+      "CHK-CI-01"
+    ]
+  },
+  "required": {
+    "pipelineResult": false,
+    "controlsResult": false,
+    "phaseGateResult": false,
+    "manifest": false,
+    "generatedDrift": true
+  },
+  "currentPhase": 0,
+  "manifestMode": "repo",
+  "manifestIntegrity": {
+    "ok": false,
+    "problems": [
+      "manifestet kördes inte"
+    ]
+  },
+  "gateBlockers": [
+    "CHK-MF-01(not run)",
+    "CHK-CI-01(not run)"
+  ],
+  "exitCode": 1,
+  "finalExitCode": 1,
+  "blockers": [
+    "steg: Kontrollgeometri",
+    "steg: Spec-lint",
+    "manifest: not run — manifestet kördes inte",
+    "Fas 0-grinden: CHK-MF-01(not run), CHK-CI-01(not run)",
+    "kontroller: CHK-T-02(failed), CHK-T-08(failed), CHK-T-13(not run), CHK-T-14(failed), CHK-T-21(failed), CHK-LC-01(failed), CHK-A11Y-01(failed), CHK-A11Y-02(failed), CHK-R-01(not run), CHK-R-02(not run), CHK-R-03(not run), CHK-R-04(not run), CHK-R-05(not run), CHK-R-06(not run), CHK-R-07(not run), CHK-R-08(not run), CHK-I-01(not run), CHK-R-ID-01(not run), CHK-R-T-01(not run), CHK-R-E-01(not run), CHK-K-01(not run), CHK-K-02(not run), CHK-MF-01(not run), CHK-CI-01(not run)"
+  ],
+  "canonicalCommand": "bash fas0/run-verify.sh",
+  "overallBlockers": [
+    "steg: Kontrollgeometri",
+    "steg: Spec-lint",
+    "manifest: not run — manifestet kördes inte",
+    "Fas 0-grinden: CHK-MF-01(not run), CHK-CI-01(not run)",
+    "kontroller: CHK-T-02(failed), CHK-T-08(failed), CHK-T-13(not run), CHK-T-14(failed), CHK-T-21(failed), CHK-LC-01(failed), CHK-A11Y-01(failed), CHK-A11Y-02(failed), CHK-R-01(not run), CHK-R-02(not run), CHK-R-03(not run), CHK-R-04(not run), CHK-R-05(not run), CHK-R-06(not run), CHK-R-07(not run), CHK-R-08(not run), CHK-I-01(not run), CHK-R-ID-01(not run), CHK-R-T-01(not run), CHK-R-E-01(not run), CHK-K-01(not run), CHK-K-02(not run), CHK-MF-01(not run), CHK-CI-01(not run)"
+  ],
+  "firstFailingStep": "Kontrollgeometri",
+  "reportValidation": {
+    "ok": true,
+    "problems": []
+  },
+  "registryCoverage": {
+    "ok": true,
+    "problems": [],
+    "reportCount": 48,
+    "registryCount": 48
+  },
+  "result": "failed",
+  "schemaValidation": {
+    "ok": true,
+    "problems": []
+  }
+}

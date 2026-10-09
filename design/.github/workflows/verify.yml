@@ -1,0 +1,324 @@
+name: verify
+on: [push, pull_request]
+# Reporot = specpaketets rot (katalogen som bär tools/, fas0/ och dokumenten).
+#
+# TRE JOBB, med skilda ansvar (Fas 0.12 · utökat i Fas 1):
+#   fas0-gate      · avgör om FAS 0-GRINDEN passerar. Innehållsfynd och GEN-01-drift
+#                    får INTE fälla det här jobbet.
+#   fas1-gate      · avgör om FAS 1-GRINDEN ("en källa") passerar. Egen körning med
+#                    BUTLERY_PHASE=1 — grinden bedömer bara en rapport som räknats
+#                    för samma fas — plus GEN-01 som fällande steg.
+#   content-baseline · rapporterar totalen och driften. Får vara rött. Kör kedjan TVÅ
+#                    gånger och kräver byteidentisk generatorutdata på andra körningen.
+# Fas 0.11 hade ett jobb, och ett obligatoriskt git diff fällde det på GEN-01-drift
+# trots att drift ligger utanför grinden.
+jobs:
+  fas0-gate:
+    name: Fas 0-grinden
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+
+      # CI-kontext: bevisar VAR och MOT VAD kedjan körs. Ingen slutsats om utfall.
+      - name: CI-kontext för CHK-CI-01
+        run: |
+          node -e "
+            const fs=require('fs'), crypto=require('crypto');
+            const mf = fs.existsSync('fas0/andrade-filer.md')
+              ? crypto.createHash('sha256').update(fs.readFileSync('fas0/andrade-filer.md')).digest('hex') : null;
+            fs.mkdirSync('fas0',{recursive:true});
+            fs.writeFileSync('fas0/ci-evidence.json', JSON.stringify({
+              schema: 'butlery-ci-evidence/2',
+              ciProvider: 'github-actions',
+              githubActions: process.env.GITHUB_ACTIONS || null,
+              runId: process.env.GITHUB_RUN_ID || null,
+              runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+              runnerOs: process.env.RUNNER_OS || null,
+              repository: process.env.GITHUB_REPOSITORY || null,
+              commit: process.env.GITHUB_SHA || null,
+              workflow: process.env.GITHUB_WORKFLOW || null,
+              manifestSha256: mf,
+              startedAt: new Date().toISOString()
+            }, null, 2));
+          "
+
+      # EN körning av generatorer och lint. Får vara röd.
+      - name: Verifieringskedjan (manifest + kedja)
+        id: chain
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: bash fas0/run-verify.sh
+
+      # Körningens FAKTISKA exitkod in i beviset.
+      - name: Komplettera CI-beviset
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='fas0/ci-evidence.json';
+            if (!fs.existsSync(p)) process.exit(0);
+            const e=JSON.parse(fs.readFileSync(p,'utf8'));
+            e.verifyExitCode = fs.existsSync('fas0/verify-exit') ? Number(fs.readFileSync('fas0/verify-exit','utf8').trim()) : null;
+            e.completedAt = new Date().toISOString();
+            fs.writeFileSync(p, JSON.stringify(e,null,2));
+            console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
+          "
+
+      # FINALISERING: rent, icke-muterande. Läser det kompletta beviset, reducerar
+      # om CI-kontrollen och totalerna, skriver atomiskt om båda rapportfilerna.
+      # Generatorerna körs INTE igen.
+      - name: Finalisera rapporten
+        if: always()
+        continue-on-error: true
+        env:
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: node tools/finalize.mjs
+
+      # GRINDEN avgör det här jobbet.
+      # Grinden körs ALLTID, även när finaliseringen avbröts — den ska dokumentera
+      # avslaget, inte hoppas över.
+      - name: Fas 0-grinden
+        if: always()
+        run: node tools/gate.mjs --phase=0
+
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fas0-gate-report
+          path: |
+            fas0/verify.log
+            fas0/manifest.log
+            fas0/verify-report.json
+            fas0/kontrollstatus.md
+            fas0/ci-evidence.json
+
+  # FAS 1-GRINDEN — "en källa". Egen körning eftersom rapporten beräknas för EN
+  # aktuell fas (BUTLERY_PHASE) och grinden vägrar bedöma en rapport som räknats
+  # för en annan. Fas 0-grinden ingår i Fas 1-mängden: verktygsintegriteten får
+  # inte regressera. Innehållsbaslinjen får fortfarande vara röd.
+  fas1-gate:
+    name: Fas 1-grinden (en källa · delivery-läge)
+    runs-on: ubuntu-latest
+    # F1-U01: jobbet körde tidigare i repo-läge direkt i checkouten. De nio
+    # zip:/-posterna var då outside_absent, delivery-läget kördes ALDRIG i CI,
+    # och en grön grind bevisade aldrig leveransytan. Nu byggs hela leveransen
+    # ur Git och grinden körs i den — samma yta som den lokala verifieringen.
+    defaults:
+      run:
+        working-directory: leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: repo
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+
+      - name: Bygg den fullständiga leveransen ur Git
+        working-directory: repo
+        run: |
+          node tools/build-delivery.mjs --out="$GITHUB_WORKSPACE/leverans-bygge" --force
+          test -f "$GITHUB_WORKSPACE/leverans-bygge/fas0/DELIVERY" || { echo "leveransmarkoren saknas i bygget"; exit 1; }
+
+      # F1-U13 · KÖRORDNINGEN ÄR FAIL-CLOSED.
+      #
+      # Den gamla ordningen var: kor -> komplettera bevis -> FINALISERA ->
+      # reproducerbarhetssteget kor kedjan EN ANDRA GANG -> grind. Andra
+      # korningen skrev over den finaliserade rapporten med en ofinaliserad,
+      # och grinden bedomde den utan att finalize.mjs kort igen:
+      #     integrity=failed · rapporten ar inte finaliserad
+      # Reproducerbarhetssteget bar dessutom ett obevakat `|| true`: en krasch
+      # innan rapporten skrevs svaldes, generatorhasharna var oforandrade,
+      # REPRO-SUMMARY blev gron och grinden las den GAMLA rapporten.
+      #
+      # Ny ordning: snapshot -> korning 1 -> bevisa fullfoljd -> jamfor mot
+      # incheckat (GEN-01) -> snapshot -> korning 2 -> bevisa fullfoljd ->
+      # jamfor korning 1 mot 2 -> komplettera CI-beviset ur SISTA korningen ->
+      # finalisera -> grind. Rapporten grinden bedomer ar alltid den sist
+      # skrivna, och den ar alltid finaliserad.
+
+      - name: CI-kontext för CHK-CI-01
+        run: |
+          node -e "
+            const fs=require('fs'), crypto=require('crypto');
+            const mf = fs.existsSync('fas0/andrade-filer.md')
+              ? crypto.createHash('sha256').update(fs.readFileSync('fas0/andrade-filer.md')).digest('hex') : null;
+            fs.mkdirSync('fas0',{recursive:true});
+            fs.writeFileSync('fas0/ci-evidence.json', JSON.stringify({
+              schema: 'butlery-ci-evidence/2',
+              ciProvider: 'github-actions',
+              githubActions: process.env.GITHUB_ACTIONS || null,
+              runId: process.env.GITHUB_RUN_ID || null,
+              runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+              runnerOs: process.env.RUNNER_OS || null,
+              repository: process.env.GITHUB_REPOSITORY || null,
+              commit: process.env.GITHUB_SHA || null,
+              workflow: process.env.GITHUB_WORKFLOW || null,
+              manifestSha256: mf,
+              startedAt: new Date().toISOString()
+            }, null, 2));
+          "
+
+      # 1 · Snapshot av det INCHECKADE tillstandet, dynamiskt ur gen-targets.
+      - name: Snapshot före körning 1 (alla generatorutdata)
+        run: node tools/repro-check.mjs --snapshot=/tmp/repro-incheckat.json
+
+      # 2 · Forsta korningen. Exitkoden fangas i stallet for att svaljas.
+      - name: Verifieringskedjan · körning 1 (delivery-läge)
+        env:
+          BUTLERY_MANIFEST_MODE: delivery
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/run1.log
+          echo "${PIPESTATUS[0]}" > /tmp/run1.exit
+          set -e
+          echo "kedjans exitkod: $(cat /tmp/run1.exit)"
+
+      - name: Bevisa att körning 1 fullföljdes
+        run: node tools/run-complete.mjs --log=/tmp/run1.log --exit="$(cat /tmp/run1.exit)"
+
+      # 3 · GEN-01 mot det INCHECKADE tillstandet — alla elva skrivmal, harledda
+      #     ur tools/gen-targets.mjs. Den hardkodade sjufilslistan ar borta.
+      - name: Genererade filer oförändrade av körningen (GEN-01)
+        run: node tools/repro-check.mjs --compare=/tmp/repro-incheckat.json
+
+      # 4 · Snapshot EFTER forsta korningen.
+      - name: Snapshot efter körning 1
+        run: node tools/repro-check.mjs --snapshot=/tmp/repro-korning1.json
+
+      # 5 · Andra korningen. Inget obevakat `|| true` — exitkoden fangas och
+      #     fullfoljden bevisas maskinellt av nasta steg.
+      - name: Verifieringskedjan · körning 2 (reproducerbarhet)
+        env:
+          BUTLERY_MANIFEST_MODE: delivery
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          node -e "console.log(require('./fas0/verify-report.json').runId)" > /tmp/run1.runid
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/run2.log
+          echo "${PIPESTATUS[0]}" > /tmp/run2.exit
+          set -e
+          echo "kedjans exitkod: $(cat /tmp/run2.exit)"
+
+      - name: Bevisa att körning 2 fullföljdes
+        run: |
+          node tools/run-complete.mjs --log=/tmp/run2.log \
+            --not-runid="$(cat /tmp/run1.runid)" --exit="$(cat /tmp/run2.exit)"
+
+      # 6 · Byteidentitet mellan de tva korningarna, alla elva.
+      - name: Reproducerbarhet — körning 1 mot körning 2
+        run: node tools/repro-check.mjs --compare=/tmp/repro-korning1.json
+
+      # 7 · CI-beviset kompletteras ur den SISTA genomforda korningen.
+      - name: Komplettera CI-beviset
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='fas0/ci-evidence.json';
+            if (!fs.existsSync(p)) process.exit(0);
+            const e=JSON.parse(fs.readFileSync(p,'utf8'));
+            e.verifyExitCode = fs.existsSync('fas0/verify-exit') ? Number(fs.readFileSync('fas0/verify-exit','utf8').trim()) : null;
+            e.completedAt = new Date().toISOString();
+            fs.writeFileSync(p, JSON.stringify(e,null,2));
+            console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
+          "
+
+      # 8 · Finalisering av den rapport grinden FAKTISKT ska bedoma.
+      - name: Finalisera rapporten
+        if: always()
+        continue-on-error: true
+        env:
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: node tools/finalize.mjs
+
+      # 9 · Grinden sist.
+      - name: Fas 1-grinden
+        if: always()
+        run: node tools/gate.mjs --phase=1
+
+      # F1-U12 · ABSOLUTA SÖKVÄGAR.
+      # defaults.run.working-directory galler bara `run`-steg. upload-artifact ar
+      # ingen `run`, sa dess relativa `fas0/...`-sokvagar utgick fran arbetsytans
+      # rot — dar de inte finns. Artefakten blev tom utan att nagot fallerade.
+      # if-no-files-found: error gor det till ett fel i stallet for en tyst nolla.
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fas1-gate-report
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify.log
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/manifest.log
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify-report.json
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/kontrollstatus.md
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/ci-evidence.json
+
+  content-baseline:
+    name: Innehållsbaslinje (får vara röd)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      # Kedjan ger avsiktligt exit 1 på den röda innehållsbaslinjen. Utan
+      # continue-on-error hoppades diffsteget över helt. Fas 0.13.
+      - name: Verifieringskedjan
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/baseline1.log
+          echo "${PIPESTATUS[0]}" > /tmp/baseline1.exit
+          set -e
+          node tools/run-complete.mjs --log=/tmp/baseline1.log --exit="$(cat /tmp/baseline1.exit)"
+      # ANDRA KÖRNINGEN: generatorutdata måste vara byteidentisk mellan körningar.
+      # Fas 1 (andra vändan): gen-icons stämplade dagens datum och bytte nyckelnamn,
+      # så varje körning gav ett nytt icons.json.
+      # F1-U13: `|| true` svalde en krasch i andra körningen. Da var
+      # generatorhasharna oforandrade av det trivialaste skalet — ingenting hade
+      # kort — och REPRO-SUMMARY blev gron pa en korning som aldrig hande.
+      # Fullfoljden bevisas nu maskinellt, aven i det har jobbet.
+      - name: Reproducerbarhet — andra körningen ger byteidentisk utdata (baslinje)
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          node tools/repro-check.mjs --snapshot=/tmp/repro-baseline.json
+          node -e "console.log(require('./fas0/verify-report.json').runId)" > /tmp/baseline1.runid
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/baseline2.log
+          echo "${PIPESTATUS[0]}" > /tmp/baseline2.exit
+          set -e
+          node tools/run-complete.mjs --log=/tmp/baseline2.log \
+            --not-runid="$(cat /tmp/baseline1.runid)" --exit="$(cat /tmp/baseline2.exit)"
+          node tools/repro-check.mjs --compare=/tmp/repro-baseline.json
+      - name: Genererade filer är incheckade (GEN-01)
+        continue-on-error: true
+        run: |
+          git diff --exit-code -- . \
+            ':!fas0/ci-evidence.json' ':!fas0/verify-report.json' ':!fas0/kontrollstatus.md' \
+            ':!fas0/verify.log' ':!fas0/manifest.log' ':!fas0/verify-exit' ':!fas0/verify-chain-exit' \
+            || (echo "◐ generatorerna ändrade incheckade filer — committa dem (GEN-01, utanför Fas 0-grinden)" && exit 1)
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-baseline-report
+          path: |
+            fas0/verify.log
+            fas0/verify-report.json
+            fas0/kontrollstatus.md

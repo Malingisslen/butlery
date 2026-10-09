@@ -1,0 +1,60 @@
+{
+ "glyfer": [
+  {
+   "namn": "Skicka med skärmdumpen",
+   "kontrollbox": {
+    "x": 76,
+    "y": 17692.66,
+    "w": 48,
+    "h": 48,
+    "right": 124,
+    "bottom": 17740.66
+   },
+   "glyf": {
+    "x": 76,
+    "y": 17692.66,
+    "w": 24,
+    "h": 24,
+    "right": 100,
+    "bottom": 17716.66
+   },
+   "glyfBakgrund": "rgb(36, 56, 44)",
+   "kontrollboxBakgrund": "rgba(0, 0, 0, 0)",
+   "klippt": false,
+   "utanforArtefakt": false
+  },
+  {
+   "namn": "Skicka med de senaste skärmarna",
+   "kontrollbox": {
+    "x": 76,
+    "y": 17934.66,
+    "w": 48,
+    "h": 48,
+    "right": 124,
+    "bottom": 17982.66
+   },
+   "glyf": {
+    "x": 76,
+    "y": 17934.66,
+    "w": 24,
+    "h": 24,
+    "right": 100,
+    "bottom": 17958.66
+   },
+   "glyfBakgrund": "rgb(36, 56, 44)",
+   "kontrollboxBakgrund": "rgba(0, 0, 0, 0)",
+   "klippt": false,
+   "utanforArtefakt": false
+  }
+ ],
+ "overlapp": [],
+ "kontroller": 10,
+ "ram": {
+  "scrollW": 412,
+  "clientW": 412,
+  "scrollH": 1015,
+  "clientH": 1015,
+  "horisontellOverflow": false,
+  "vertikalOverflow": false
+ }
+}

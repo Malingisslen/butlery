@@ -1,0 +1,477 @@
+{
+ "$schema": "butlery-nt-batch01-mork/1",
+ "$datum": "2026-08-13",
+ "$status": "LJUS BESLUTSPROVENANS + MORKT PREVIEWPAKET. 0 produktwrites, 0 registerwrites i R-04.",
+ "A_ljustBeslut": {
+  "beslutsId": "NTR-BATCH01-LIGHT-TYPING-INDICATOR",
+  "variant": 51,
+  "punkter": [
+   "#3f5145",
+   "#4a5c50",
+   "#627061"
+  ],
+  "kvoter": [
+   6.93,
+   5.83,
+   4.27
+  ],
+  "fil": "fas2/nt-remediering-beslut.json",
+  "$separation": "Beslutet ligger i en egen icke-textprovenans, inte i R-04:s designbeslutsregister.",
+  "R04_COVERAGE_CREDIT": 0,
+  "produktwrite": "INTE UTFORD",
+  "treIdentiteter": [
+   "TYPING_INDICATOR_DOT_1",
+   "TYPING_INDICATOR_DOT_2",
+   "TYPING_INDICATOR_DOT_3"
+  ],
+  "$regel": "Ett visuellt beslut, tre komponentvarden, 2 skrivplatser."
+ },
+ "B_deltaENotering": {
+  "$status": "ICKE-NORMATIV",
+  "$vad": "CIE76 med troskel 2.3 kodas INTE som en universell perceptuell troskel.",
+  "$anvandning": "Den togs bort ingen av de 56 ljusa alternativen och paverkar darfor inte det fattade beslutet.",
+  "primarMetod": "deterministisk renderad likhet — sha256 over de faktiska bilderna",
+  "utfall": {
+   "unikaRenderade": 56,
+   "sammanslagna": 0
+  },
+  "$regel": "Perceptuella avstandsmatt anvands hadanefter bara som stodjande, icke-normativ information efter att deterministisk likhet provats forst."
+ },
+ "C_morkStrategi": {
+  "vald": "D1",
+  "$vad": "behall trepricksstrukturen",
+  "$ejVald": "D2 strukturell omdesign — kvar som reserv om D1 inte ger en visuellt godtagbar neutral bunt",
+  "skal": "strukturen ar giltig och igenkannbar; blockeringen ligger i den morka fargrymden, inte i komponenten"
+ },
+ "D_kandidatrymd": {
+  "SAME_ROLE_OBSERVED_DARK_PALETTE": {
+   "varden": 5,
+   "neutralaSomKlararKravet": 0,
+   "status": "NO_EXISTING_SAME_ROLE_DARK_PALETTE_SOLUTION",
+   "$regel": "Formuleringen ar oforandrad och forsvagas inte."
+  },
+  "BROADER_SEMANTICALLY_NEUTRAL_DARK_DESIGN_PALETTE": {
+   "$vad": "semantiskt neutrala varden som redan anvands i faktiskt forfattat morkt lage, oavsett roll",
+   "varden": [
+    {
+     "varde": "#f5f4ed",
+     "kvotMotBubbla": 9.51,
+     "forekomsterIMorkt": 130,
+     "roller": [
+      "ikon-fristaende:7",
+      "text-innehall:56",
+      "ikon-kontroll:46",
+      "text-kontroll:21"
+     ],
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0,
+     "status": "HUMAN_VISUAL_CANDIDATE"
+    },
+    {
+     "varde": "#e6ead9",
+     "kvotMotBubbla": 8.56,
+     "forekomsterIMorkt": 21,
+     "roller": [
+      "yta-platshallare:21"
+     ],
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0,
+     "status": "HUMAN_VISUAL_CANDIDATE"
+    },
+    {
+     "varde": "#c9d3c4",
+     "kvotMotBubbla": 6.79,
+     "forekomsterIMorkt": 362,
+     "roller": [
+      "text-innehall:137",
+      "ikon-fristaende:16",
+      "ikon-kontroll:37",
+      "text-kontroll:172"
+     ],
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0,
+     "status": "HUMAN_VISUAL_CANDIDATE"
+    },
+    {
+     "varde": "#8fb89a",
+     "kvotMotBubbla": 4.74,
+     "forekomsterIMorkt": 17,
+     "roller": [
+      "ikon-fristaende:5",
+      "text-innehall:12"
+     ],
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0,
+     "status": "HUMAN_VISUAL_CANDIDATE"
+    },
+    {
+     "varde": "#93a48d",
+     "kvotMotBubbla": 3.96,
+     "forekomsterIMorkt": 387,
+     "roller": [
+      "text-innehall:285",
+      "ikon-fristaende:33",
+      "ikon-kontroll:41",
+      "text-kontroll:28"
+     ],
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0,
+     "status": "HUMAN_VISUAL_CANDIDATE"
+    }
+   ],
+   "$regel": "Numeriskt ateranvandande fran en annan neutral roll gor INTE mappningen verifierad. Varje varde far en egen TYPING_INDICATOR-tokenidentitet utan aliasing till text-, status-, success-, warning- eller action-token."
+  },
+  "nyaHexBehovs": false,
+  "$not": "Fem anvandbara neutrala luminansnivaer finns. Inga nya hexvarden behover konstrueras."
+ },
+ "E_buntar": {
+  "antal": 10,
+  "krav": [
+   "exakt tre kravda punkter",
+   "alla mot den faktiskt malade morka bubblan",
+   "varje punkt >= 3.0",
+   "DOT_1 starkast, DOT_2 mellan, DOT_3 svagast",
+   "neutral semantik",
+   "ingen orange, status- eller action-accent",
+   "inget krav mellan punkterna",
+   "ingen strukturandring",
+   "kollateral 0",
+   "okant agarskap 0"
+  ],
+  "$ordning": "Ordningen ar ett manskligt designvillkor, inte kallan till WCAG-tillampligheten.",
+  "rader": [
+   {
+    "nr": 1,
+    "DOT_1": "#f5f4ed",
+    "DOT_2": "#e6ead9",
+    "DOT_3": "#c9d3c4",
+    "kvoter": [
+     9.51,
+     8.56,
+     6.79
+    ],
+    "kallpalettroller": [
+     "ikon-fristaende:7 text-innehall:56",
+     "yta-platshallare:21",
+     "text-innehall:137 ikon-fristaende:16"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-01.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 2,
+    "DOT_1": "#f5f4ed",
+    "DOT_2": "#e6ead9",
+    "DOT_3": "#8fb89a",
+    "kvoter": [
+     9.51,
+     8.56,
+     4.74
+    ],
+    "kallpalettroller": [
+     "ikon-fristaende:7 text-innehall:56",
+     "yta-platshallare:21",
+     "ikon-fristaende:5 text-innehall:12"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-02.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 3,
+    "DOT_1": "#f5f4ed",
+    "DOT_2": "#e6ead9",
+    "DOT_3": "#93a48d",
+    "kvoter": [
+     9.51,
+     8.56,
+     3.96
+    ],
+    "kallpalettroller": [
+     "ikon-fristaende:7 text-innehall:56",
+     "yta-platshallare:21",
+     "text-innehall:285 ikon-fristaende:33"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-03.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 4,
+    "DOT_1": "#f5f4ed",
+    "DOT_2": "#c9d3c4",
+    "DOT_3": "#8fb89a",
+    "kvoter": [
+     9.51,
+     6.79,
+     4.74
+    ],
+    "kallpalettroller": [
+     "ikon-fristaende:7 text-innehall:56",
+     "text-innehall:137 ikon-fristaende:16",
+     "ikon-fristaende:5 text-innehall:12"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-04.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 5,
+    "DOT_1": "#f5f4ed",
+    "DOT_2": "#c9d3c4",
+    "DOT_3": "#93a48d",
+    "kvoter": [
+     9.51,
+     6.79,
+     3.96
+    ],
+    "kallpalettroller": [
+     "ikon-fristaende:7 text-innehall:56",
+     "text-innehall:137 ikon-fristaende:16",
+     "text-innehall:285 ikon-fristaende:33"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-05.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 6,
+    "DOT_1": "#f5f4ed",
+    "DOT_2": "#8fb89a",
+    "DOT_3": "#93a48d",
+    "kvoter": [
+     9.51,
+     4.74,
+     3.96
+    ],
+    "kallpalettroller": [
+     "ikon-fristaende:7 text-innehall:56",
+     "ikon-fristaende:5 text-innehall:12",
+     "text-innehall:285 ikon-fristaende:33"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-06.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 7,
+    "DOT_1": "#e6ead9",
+    "DOT_2": "#c9d3c4",
+    "DOT_3": "#8fb89a",
+    "kvoter": [
+     8.56,
+     6.79,
+     4.74
+    ],
+    "kallpalettroller": [
+     "yta-platshallare:21",
+     "text-innehall:137 ikon-fristaende:16",
+     "ikon-fristaende:5 text-innehall:12"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-07.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 8,
+    "DOT_1": "#e6ead9",
+    "DOT_2": "#c9d3c4",
+    "DOT_3": "#93a48d",
+    "kvoter": [
+     8.56,
+     6.79,
+     3.96
+    ],
+    "kallpalettroller": [
+     "yta-platshallare:21",
+     "text-innehall:137 ikon-fristaende:16",
+     "text-innehall:285 ikon-fristaende:33"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-08.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 9,
+    "DOT_1": "#e6ead9",
+    "DOT_2": "#8fb89a",
+    "DOT_3": "#93a48d",
+    "kvoter": [
+     8.56,
+     4.74,
+     3.96
+    ],
+    "kallpalettroller": [
+     "yta-platshallare:21",
+     "ikon-fristaende:5 text-innehall:12",
+     "text-innehall:285 ikon-fristaende:33"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-09.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   },
+   {
+    "nr": 10,
+    "DOT_1": "#c9d3c4",
+    "DOT_2": "#8fb89a",
+    "DOT_3": "#93a48d",
+    "kvoter": [
+     6.79,
+     4.74,
+     3.96
+    ],
+    "kallpalettroller": [
+     "text-innehall:137 ikon-fristaende:16",
+     "ikon-fristaende:5 text-innehall:12",
+     "text-innehall:285 ikon-fristaende:33"
+    ],
+    "OBSERVED_SAME_ROLE_EVIDENCE": [
+     0,
+     0,
+     0
+    ],
+    "numerisktAteranvantFranAnnanRoll": true,
+    "$regel": "Ateranvandandet ar numeriskt, inte semantiskt. Ingen aliasing.",
+    "fil": "mork-10.png",
+    "kanalvis": {
+     "avsedda": 3,
+     "arvda": 0,
+     "kollaterala": 0,
+     "okanda": 0
+    }
+   }
+  ]
+ },
+ "F_previewintegritet": {
+  "scen": "chattmorkt",
+  "tema": "authored dark",
+  "kallgrind": true,
+  "kanaler": 50,
+  "bubblaOforandrad": true,
+  "grannInnehallOforandrat": true,
+  "kollateralTotalt": 0,
+  "okandTotalt": 0,
+  "identiskGeometri": true,
+  "ruta": {
+   "x": 35,
+   "y": 24445,
+   "width": 93,
+   "height": 93
+  },
+  "allaTrePunkterOver3": true,
+  "unikaRenderadeResultat": 10,
+  "textregression": "ingen textkanal rord",
+  "ovrigIckeTextregression": "inga andra grafiska relationer rorda"
+ },
+ "G_stopp": {
+  "morkBuntVald": false,
+  "morkRegistrering": "INTE UTFORD",
+  "ljusProduktwrite": "INTE UTFORD",
+  "R04": "fortsatt pausad",
+  "profil": "fortsatt blockerad"
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen mork bunt vald",
+  "ingen mork registrering",
+  "ingen accent anvand",
+  "ingen strukturandring",
+  "ingen smakbaserad gallring",
+  "ingen aliasing till annan semantisk token"
+ ]
+}

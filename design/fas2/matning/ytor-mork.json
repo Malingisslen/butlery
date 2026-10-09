@@ -1,0 +1,300 @@
+[
+ {
+  "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+  "tema": "dark",
+  "satt": [
+   "installningar:dark"
+  ],
+  "art": "installningar",
+  "ordinal": 53,
+  "egenskap": "fill",
+  "varde": "rgb(0, 0, 0)",
+  "kontrollroll": null,
+  "kontrollnamn": null,
+  "state": null,
+  "grafikroll": "decorative",
+  "ikon": null,
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(245, 244, 237)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(245, 244, 237)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "familjmedlemsamtycke",
+  "ordinal": 39,
+  "egenskap": "stroke",
+  "varde": "rgb(156, 59, 35)",
+  "kontrollroll": "checkbox",
+  "kontrollnamn": "Nötter, vald",
+  "state": "checked",
+  "grafikroll": null,
+  "ikon": "check",
+  "direktPaAppytan": false,
+  "underliggandeYta": {
+   "ordinal": 25,
+   "farg": "rgb(36, 56, 44)",
+   "klass": null,
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(36, 56, 44)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 14,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "1 av 5 för Maja",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 17,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "2 av 5 för Maja",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 20,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "3 av 5 för Maja",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 23,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "4 av 5 för Maja",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 26,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "5 av 5 för Maja",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 35,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "1 av 5 för Per",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 38,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "2 av 5 för Per",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 41,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "3 av 5 för Per",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "tema": "dark",
+  "satt": [
+   "familjmedlemsamtycke:dark",
+   "betygperperson:dark"
+  ],
+  "art": "betygperperson",
+  "ordinal": 44,
+  "egenskap": "fill",
+  "varde": "rgb(161, 90, 10)",
+  "kontrollroll": "radio",
+  "kontrollnamn": "4 av 5 för Per",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "star",
+  "direktPaAppytan": true,
+  "underliggandeYta": {
+   "ordinal": 0,
+   "farg": "rgb(23, 37, 29)",
+   "klass": "sc-phone",
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(23, 37, 29)"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "tema": "dark",
+  "satt": [
+   "flerbar:dark"
+  ],
+  "art": "flerbar",
+  "ordinal": 58,
+  "egenskap": "stroke",
+  "varde": "rgb(156, 59, 35)",
+  "kontrollroll": "menuitem",
+  "kontrollnamn": "Radera 3 recept",
+  "state": null,
+  "grafikroll": null,
+  "ikon": "trash-2",
+  "direktPaAppytan": false,
+  "underliggandeYta": {
+   "ordinal": 47,
+   "farg": "rgb(36, 56, 44)",
+   "klass": null,
+   "genomskinlig": false
+  },
+  "plattBakgrund": "rgb(36, 56, 44)"
+ }
+]

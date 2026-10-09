@@ -1,0 +1,1703 @@
+{
+ "$schema": "butlery-upptacktsslutning/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "aaf5b86",
+ "$status": "CONTROL DISCOVERY COVERAGE CLOSED — recall 1351/1351",
+ "$typ": "METHOD. Inga produktskrivningar.",
+ "A_de46": {
+  "antal": 46,
+  "fingeravtryck": "3afbd3b67a4dc22a6e5d146c",
+  "medlemmar": [
+   {
+    "identitet": "mfa|18",
+    "art": "mfa",
+    "roll": "textbox",
+    "namn": "Verifieringskod, sex siffror",
+    "geometri": "364x55",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 0,
+     "inreMalande": 6
+    }
+   },
+   {
+    "identitet": "chattmeny|46",
+    "art": "chattmeny",
+    "roll": "button",
+    "namn": "Ta bort meddelandet",
+    "geometri": "364x78",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-start",
+     "glyf": 1,
+     "egenText": 0,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "skafferivyn|34",
+    "art": "skafferivyn",
+    "roll": "button",
+    "namn": "Oatly iKaffe, 1 liter, inget datum",
+    "geometri": "368x56",
+    "rotorsak": "INVISIBLE_OWNER_NO_CONTENT",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "center",
+     "glyf": 0,
+     "egenText": 0,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "skafferibas|27",
+    "art": "skafferibas",
+    "roll": "button",
+    "namn": "Pasta, 500 gram",
+    "geometri": "368x56",
+    "rotorsak": "INVISIBLE_OWNER_NO_CONTENT",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "center",
+     "glyf": 0,
+     "egenText": 0,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "delatlistaaktiv|11",
+    "art": "delatlistaaktiv",
+    "roll": "button",
+    "namn": "Tre deltagare: du, Anna och Per",
+    "geometri": "412x48",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "center",
+     "glyf": 1,
+     "egenText": 29,
+     "inreMalande": 3
+    }
+   },
+   {
+    "identitet": "veckoresultat|28",
+    "art": "veckoresultat",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 32,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckoresultat|35",
+    "art": "veckoresultat",
+    "roll": "button",
+    "namn": "Öppna Tacos med svartbönor",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 35,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckoresultat|42",
+    "art": "veckoresultat",
+    "roll": "button",
+    "namn": "Öppna Ugnslax med potatis",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 34,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckoresultat|57",
+    "art": "veckoresultat",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 24,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckoresultat|64",
+    "art": "veckoresultat",
+    "roll": "button",
+    "namn": "Öppna Räkmacka",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 23,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckodolda|28",
+    "art": "veckodolda",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "292x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 32,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckodolda|43",
+    "art": "veckodolda",
+    "roll": "button",
+    "namn": "Öppna Ugnslax med potatis",
+    "geometri": "292x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 34,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckobyt|12",
+    "art": "veckobyt",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 32,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckobyt|19",
+    "art": "veckobyt",
+    "roll": "button",
+    "namn": "Öppna Tacos med svartbönor",
+    "geometri": "294x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 35,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "veckoplacering|22",
+    "art": "veckoplacering",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 9,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckoplacering|31",
+    "art": "veckoplacering",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 17,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckoplaceringvald|33",
+    "art": "veckoplaceringvald",
+    "roll": "button",
+    "namn": "Öppna Kanelbullar",
+    "geometri": "127x80",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 11,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckokalender|37",
+    "art": "veckokalender",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "126x92",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 9,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckokalender|66",
+    "art": "veckokalender",
+    "roll": "button",
+    "namn": "Öppna Ugnslax med potatis",
+    "geometri": "127x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 19,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckokalender|82",
+    "art": "veckokalender",
+    "roll": "button",
+    "namn": "Öppna Räkmacka",
+    "geometri": "127x80",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 8,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckokalender|104",
+    "art": "veckokalender",
+    "roll": "button",
+    "namn": "Öppna Tacos med svartbönor",
+    "geometri": "129x128",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 20,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckonarvaro|16",
+    "art": "veckonarvaro",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 9,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckonarvaro|25",
+    "art": "veckonarvaro",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 17,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckonarvaro|39",
+    "art": "veckonarvaro",
+    "roll": "button",
+    "namn": "Vem är hemma till lunch på måndag",
+    "geometri": "124x48",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "center",
+     "glyf": 1,
+     "egenText": 6,
+     "inreMalande": 2
+    }
+   },
+   {
+    "identitet": "veckonarvaro|61",
+    "art": "veckonarvaro",
+    "roll": "button",
+    "namn": "Öppna Ugnslax med potatis",
+    "geometri": "127x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 19,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckonarvaro|81",
+    "art": "veckonarvaro",
+    "roll": "button",
+    "namn": "Vem är hemma till middag på tisdag",
+    "geometri": "153x48",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "center",
+     "glyf": 1,
+     "egenText": 6,
+     "inreMalande": 3
+    }
+   },
+   {
+    "identitet": "veckooverflow|25",
+    "art": "veckooverflow",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 9,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckooverflow|34",
+    "art": "veckooverflow",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 17,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckooverflow|50",
+    "art": "veckooverflow",
+    "roll": "button",
+    "namn": "Öppna Räkmacka",
+    "geometri": "125x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 8,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckooverflow|59",
+    "art": "veckooverflow",
+    "roll": "button",
+    "namn": "Öppna Tacos med svartbönor",
+    "geometri": "125x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 20,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckooverflow|68",
+    "art": "veckooverflow",
+    "roll": "button",
+    "namn": "Öppna Kanelbullar",
+    "geometri": "125x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 11,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckoflytta|19",
+    "art": "veckoflytta",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "126x87",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 2,
+     "egenText": 9,
+     "inreMalande": 2
+    }
+   },
+   {
+    "identitet": "veckoflytta|31",
+    "art": "veckoflytta",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "126x87",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 2,
+     "egenText": 17,
+     "inreMalande": 2
+    }
+   },
+   {
+    "identitet": "veckoflytta|70",
+    "art": "veckoflytta",
+    "roll": "button",
+    "namn": "Öppna Räkmacka",
+    "geometri": "127x80",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 2,
+     "egenText": 8,
+     "inreMalande": 2
+    }
+   },
+   {
+    "identitet": "veckoinkop|16",
+    "art": "veckoinkop",
+    "roll": "button",
+    "namn": "Öppna Linssoppa",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 9,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckoinkop|25",
+    "art": "veckoinkop",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "126x86",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 1,
+     "egenText": 17,
+     "inreMalande": 1
+    }
+   },
+   {
+    "identitet": "veckoinkop|39",
+    "art": "veckoinkop",
+    "roll": "button",
+    "namn": "Vem är hemma till lunch på måndag",
+    "geometri": "124x48",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "center",
+     "glyf": 1,
+     "egenText": 6,
+     "inreMalande": 2
+    }
+   },
+   {
+    "identitet": "veckoinkop|47",
+    "art": "veckoinkop",
+    "roll": "button",
+    "namn": "Vem är hemma till middag på måndag",
+    "geometri": "153x48",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": true,
+     "display": "flex",
+     "align": "center",
+     "glyf": 1,
+     "egenText": 6,
+     "inreMalande": 3
+    }
+   },
+   {
+    "identitet": "veckorostning|20",
+    "art": "veckorostning",
+    "roll": "button",
+    "namn": "Öppna Krämig svamppasta",
+    "geometri": "244x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 32,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "authmfa|14",
+    "art": "authmfa",
+    "roll": "textbox",
+    "namn": "Sexsiffrig kod",
+    "geometri": "364x59",
+    "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "normal",
+     "glyf": 0,
+     "egenText": 0,
+     "inreMalande": 6
+    }
+   },
+   {
+    "identitet": "cooksnapgalleri|17",
+    "art": "cooksnapgalleri",
+    "roll": "button",
+    "namn": "Alternativ för din bild",
+    "geometri": "48x48",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-end",
+     "glyf": 1,
+     "egenText": 0,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "cooksnapgalleri|26",
+    "art": "cooksnapgalleri",
+    "roll": "button",
+    "namn": "Alternativ för Annas bild",
+    "geometri": "48x48",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-end",
+     "glyf": 1,
+     "egenText": 0,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "notiscentral|15",
+    "art": "notiscentral",
+    "roll": "button",
+    "namn": "Oläst: Anna delade Ärtsoppa med dig",
+    "geometri": "412x64",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-start",
+     "glyf": 1,
+     "egenText": 3,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "notiscentral|24",
+    "art": "notiscentral",
+    "roll": "button",
+    "namn": "Oläst: Erik vill bli vän",
+    "geometri": "412x56",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-start",
+     "glyf": 1,
+     "egenText": 5,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "notiscentral|33",
+    "art": "notiscentral",
+    "roll": "button",
+    "namn": "Läst: veckans meny är klar",
+    "geometri": "412x64",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-start",
+     "glyf": 1,
+     "egenText": 3,
+     "inreMalande": 0
+    }
+   },
+   {
+    "identitet": "notiscentral|43",
+    "art": "notiscentral",
+    "roll": "button",
+    "namn": "Läst: gammal notis som inte längre leder någonstans",
+    "geometri": "412x64",
+    "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+    "struktur": {
+     "malar": false,
+     "display": "flex",
+     "align": "flex-start",
+     "glyf": 1,
+     "egenText": 3,
+     "inreMalande": 0
+    }
+   }
+  ],
+  "avstamning": "1351 = 1305 aterupptackta + 46 explicita missar (lage vid aaf5b86)"
+ },
+ "B_uppdelning": {
+  "OWNER_WITH_NESTED_PAINTED_SHAPE": 27,
+  "BORDERLESS_NOT_CROSS_CENTERED": 17,
+  "INVISIBLE_OWNER_NO_CONTENT": 2,
+  "underfamiljer": {
+   "matkort": "22 vecko-kort: malad kortyta, egen text, en nastlad bricka eller avatar",
+   "deltagarrader": "3 rader: malad yta, egen text, tva till tre nastlade avatarer",
+   "mfaKod": "2 kodfalt: outline-inramad behallare runt sex identiska siffercellar",
+   "receptrader": "11 listrader: omalade, egen text, ingen tvarcentrering",
+   "ikonatgarder": "6 ikonatgarder: omalade, glyf, flex-start eller flex-end",
+   "osynliga": "2 skafferirader: etiketten lag i en nastlad span och rakuades som ingen text"
+  }
+ },
+ "C_mekanismer": {
+  "AUTHORED_COMPONENT": "elementet bar en authored data-component",
+  "PILL_KNOB": "pillerformat spar med ett absolut placerat runt barn",
+  "CONTROL_SHELL": "flexbehallare vars EGNA innehall ar text, glyf eller bada, utan nastlad malad form. Tvarcentrering kravs INTE — 17 deklarerade kontroller centrerar inte.",
+  "PAINTED_TEXT_BODY": "malad yta med egen text. Nastlade malade former hindrar INTE — 25 deklarerade kontroller bar en avatar eller bricka inuti sig.",
+  "PAINTED_BARE_BODY": "malad yta utan egen text, utan glyf och utan nastlad form",
+  "SEGMENTED_FIELD": "behallare utan egen text vars direkta barn innehaller minst tre malade syskon med identisk renderad geometri — den segmenterade faltformen"
+ },
+ "C_primitivkontrakt": {
+  "malar": "fyllning med alfa > 0, ELLER ram pa alla fyra sidor, ELLER en outline",
+  "egenTextLangd": "langden pa all text i subtradet som INTE ligger inuti en nastlad malad form",
+  "inreMalande": "antal element i subtradet som sjalva malar",
+  "svgAntal": "antal svg eller data-icon i subtradet",
+  "segmentgrupp": "storsta antal DIREKTA barn som malar och har identisk renderad geometri",
+  "display": "computed display",
+  "align": "computed align-items",
+  "w": "renderad bredd",
+  "h": "renderad hojd — DIAGNOSTIK, aldrig medlemskap"
+ },
+ "C_rattadePrimitiv": {
+  "outline": "En outline ar en malad avgransning precis som en ram. Den lastes inte. MFA-koden ar outline-inramad — det ar hela skalet till att den sag osynlig ut.",
+  "egenText": "Agarens egna text ar all text i subtradet som INTE ligger inuti en nastlad malad form. Den forra hjalparen laste bara direkta textnoder och barnlosa barn, sa en etikett i en nastlad span raknades som ingen text alls.",
+  "$slutsats": "De tva \"utan anvandbar strukturell signal\" var INTE en informationsgrans. De var omatta. DISCOVERY_INFORMATION_LIMIT: 0 fall."
+ },
+ "D_raddadeAvVarjeMekanism": {
+  "SEGMENTED_FIELD": 2,
+  "CONTROL_SHELL": 19,
+  "PAINTED_TEXT_BODY": 25
+ },
+ "D_perKontroll": [
+  {
+   "identitet": "mfa|18",
+   "roll": "textbox",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "SEGMENTED_FIELD",
+   "via": "agaren"
+  },
+  {
+   "identitet": "chattmeny|46",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "skafferivyn|34",
+   "roll": "button",
+   "gammalFamilj": "INVISIBLE_OWNER_NO_CONTENT",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "skafferibas|27",
+   "roll": "button",
+   "gammalFamilj": "INVISIBLE_OWNER_NO_CONTENT",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "delatlistaaktiv|11",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoresultat|28",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoresultat|35",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoresultat|42",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoresultat|57",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoresultat|64",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckodolda|28",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckodolda|43",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckobyt|12",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckobyt|19",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoplacering|22",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoplacering|31",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoplaceringvald|33",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckokalender|37",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckokalender|66",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckokalender|82",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckokalender|104",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckonarvaro|16",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckonarvaro|25",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckonarvaro|39",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckonarvaro|61",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckonarvaro|81",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckooverflow|25",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckooverflow|34",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckooverflow|50",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckooverflow|59",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckooverflow|68",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoflytta|19",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoflytta|31",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoflytta|70",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoinkop|16",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoinkop|25",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoinkop|39",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckoinkop|47",
+   "roll": "button",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "PAINTED_TEXT_BODY",
+   "via": "agaren"
+  },
+  {
+   "identitet": "veckorostning|20",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "authmfa|14",
+   "roll": "textbox",
+   "gammalFamilj": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "nuAterupptackt": true,
+   "mekanism": "SEGMENTED_FIELD",
+   "via": "agaren"
+  },
+  {
+   "identitet": "cooksnapgalleri|17",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "cooksnapgalleri|26",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "notiscentral|15",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "notiscentral|24",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "notiscentral|33",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  },
+  {
+   "identitet": "notiscentral|43",
+   "roll": "button",
+   "gammalFamilj": "BORDERLESS_NOT_CROSS_CENTERED",
+   "nuAterupptackt": true,
+   "mekanism": "CONTROL_SHELL",
+   "via": "agaren"
+  }
+ ],
+ "E_informationLimit": {
+  "antal": 0,
+  "$not": "Ingen deklarerad kontroll ar oupptackbar ur tillganglig kalla."
+ },
+ "F_recall": {
+  "deklarerade": 1351,
+  "aterupptackta": 1351,
+  "strikt": 1196,
+  "missade": 0,
+  "informationLimit": 0,
+  "recall": 100,
+  "under48_deklarerade": 33,
+  "under48_aterupptackta": 33
+ },
+ "G_perRoll": {
+  "button": {
+   "deklarerade": 919,
+   "aterupptackta": 919,
+   "missade": 0,
+   "recall": 100
+  },
+  "checkbox": {
+   "deklarerade": 128,
+   "aterupptackta": 128,
+   "missade": 0,
+   "recall": 100
+  },
+  "tab": {
+   "deklarerade": 111,
+   "aterupptackta": 111,
+   "missade": 0,
+   "recall": 100
+  },
+  "radio": {
+   "deklarerade": 68,
+   "aterupptackta": 68,
+   "missade": 0,
+   "recall": 100
+  },
+  "textbox": {
+   "deklarerade": 56,
+   "aterupptackta": 56,
+   "missade": 0,
+   "recall": 100
+  },
+  "switch": {
+   "deklarerade": 43,
+   "aterupptackta": 43,
+   "missade": 0,
+   "recall": 100
+  },
+  "link": {
+   "deklarerade": 14,
+   "aterupptackta": 14,
+   "missade": 0,
+   "recall": 100
+  },
+  "combobox": {
+   "deklarerade": 8,
+   "aterupptackta": 8,
+   "missade": 0,
+   "recall": 100
+  },
+  "menuitem": {
+   "deklarerade": 3,
+   "aterupptackta": 3,
+   "missade": 0,
+   "recall": 100
+  },
+  "searchbox": {
+   "deklarerade": 1,
+   "aterupptackta": 1,
+   "missade": 0,
+   "recall": 100
+  }
+ },
+ "H_tvaSkikt": {
+  "TIER_1": "upptacktsuniversum — hog recall, far overinkludera, ger kandidat, inget verdikt, ingen konformitetsgrind",
+  "TIER_2": "prioritering — rangordnar kandidater, far anvanda strukturell narhet och kontext, far ALDRIG andra Tier 1-medlemskap och aldrig satta verdikt",
+  "kandidatvolym": 2700,
+  "$regel": "Kandidatvolym ar granskningsarbete, inte tackning. Den loses i Tier 2 med prioritering och gruppering, aldrig genom att gora kontroller osynliga i Tier 1."
+ },
+ "I_konformitetsoberoende": {
+  "storlekar": [
+   {
+    "storlek": "24x24",
+    "mekanismer": [
+     "CONTROL_SHELL",
+     "PAINTED_TEXT_BODY"
+    ],
+    "uppfyllerTraffyta": false
+   },
+   {
+    "storlek": "42x42",
+    "mekanismer": [
+     "CONTROL_SHELL",
+     "PAINTED_TEXT_BODY"
+    ],
+    "uppfyllerTraffyta": false
+   },
+   {
+    "storlek": "48x48",
+    "mekanismer": [
+     "CONTROL_SHELL",
+     "PAINTED_TEXT_BODY"
+    ],
+    "uppfyllerTraffyta": true
+   },
+   {
+    "storlek": "64x64",
+    "mekanismer": [
+     "CONTROL_SHELL",
+     "PAINTED_TEXT_BODY"
+    ],
+    "uppfyllerTraffyta": true
+   }
+  ],
+  "sammaBeslutForAllaStorlekar": true,
+  "ingenStorlekIPredikaten": true,
+  "provadeKonformitetsmatt": [
+   "bredd",
+   "hojd",
+   "48x48",
+   "textkontrast",
+   "icke-textkontrast",
+   "klippning",
+   "tillstandsfullstandighet",
+   "namnfullstandighet"
+  ],
+  "$bevis": "Inget av dessa falt lases av nagot predikat. Predikatkoden innehaller varken w, h eller TRAFFYTA_MIN."
+ },
+ "K_tvetydigaAgare": {
+  "antal": 26,
+  "poster": [
+   {
+    "identitet": "laga|5",
+    "art": "laga",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "konkurrerandeAgare": [
+     "laga|4"
+    ],
+    "geometri": "48x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|28",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|37",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|40",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|43",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|49",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|55",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|64",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|67",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|79",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|82",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|85",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|91",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|97",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|100",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|103",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|106",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|109",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|112",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|115",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|118",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "skrivsjalv|15",
+    "art": "skrivsjalv",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "skrivsjalv|23"
+    ],
+    "geometri": "64x64",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "skrivsjalv|22",
+    "art": "skrivsjalv",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "skrivsjalv|23"
+    ],
+    "geometri": "64x64",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "fotoimport|19",
+    "art": "fotoimport",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "fotoimport|23"
+    ],
+    "geometri": "58x76",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "fotoimport|21",
+    "art": "fotoimport",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "fotoimport|23"
+    ],
+    "geometri": "58x76",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "dialogosparat|8",
+    "art": "dialogosparat",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "konkurrerandeAgare": [
+     "dialogosparat|6",
+     "dialogosparat|7"
+    ],
+    "geometri": "314x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   }
+  ],
+  "$regel": "Egen population, DISCOVERY_AMBIGUOUS_OWNER. Raknas aldrig som vanliga kandidater innan agaren ar kand, men forsvinner heller aldrig ur bokforingen."
+ },
+ "L_raPopulation": {
+  "fore": 161,
+  "nya": 2513,
+  "dedupliceringar": 161,
+  "tvetydiga": 26,
+  "efter": 2674,
+  "fingeravtryck": "b151fb27f0fef3e9cab2a094",
+  "forloradeIdentiteter": 0,
+  "invariant_ok": true
+ },
+ "M_N_matt": {
+  "RAW_DISCOVERY_CANDIDATES": {
+   "fore": 1734,
+   "efter": 2674,
+   "definition": "kandidatidentiteter som upptackten har ytat"
+  },
+  "ADJUDICATION_UNRESOLVED": {
+   "fore": 1719,
+   "efter": 2658,
+   "definition": "kandidatidentiteter vars semantiska verdikt ar UNKNOWN eller som annu inte adjudicerats"
+  },
+  "DISCOVERY_AMBIGUOUS_OWNER": {
+   "fore": 22,
+   "efter": 26,
+   "definition": "strukturellt ytade objekt vars semantiska agare annu inte gar att faststalla — oppet upptacktsarbete, inte kandidater"
+  },
+  "$historik": "De aldre talen 90, 94, 146 och 1719 var DETEKTORRELATIVA backlogtal — de raknade vad den DAVARANDE metoden hade ytat och inte bedomt. De var aldrig ett matt pa hur mycket som var okant i appen, och far inte lasas sa i efterhand.",
+  "$varning": "Inget av talen ar en uppskattning av hur manga kontroller appen har. De ar bokforing over vad metoden har ytat och vad som annu inte bedomts."
+ },
+ "O_dialogsparameny": {
+  "namnfalt": {
+   "identitet": "dialogsparameny|6",
+   "geometri": "314x42",
+   "kandidat": true,
+   "mekanismer": [
+    "PAINTED_TEXT_BODY"
+   ],
+   "verdikt": "UNKNOWN — OFORANDRAT",
+   "storlekstolkning": "OM det ar ett interaktivt textfalt ar 42 px ett R-02-fel. Storleken far inte paverka det semantiska verdiktet."
+  },
+  "avbryt": "INTERACTIVE_CONTROL — star",
+  "spara": "INTERACTIVE_CONTROL — star",
+  "kryssruta": "INTERACTIVE_CONTROL — star",
+  "dialogen": "INTE komplett: namnfaltets och overlagrets semantik ar UNKNOWN"
+ },
+ "P_Q_frysta": {
+  "historiskR02": 1344,
+  "deklareradeKontroller": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0,
+   "unknown": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "andradeProduktfiler": []
+ },
+ "R_produktskrivningar": 0,
+ "S_fargGeometriR04": {
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "r04BitIdentiskt": true
+ },
+ "stopp": []
+}

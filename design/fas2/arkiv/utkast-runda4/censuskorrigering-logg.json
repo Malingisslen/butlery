@@ -1,0 +1,700 @@
+{
+ "ANDRADE_FOREKOMSTER": 77,
+ "PF_A_ANKARE_OMPEKADE_I_EXTRAKRAV": 3,
+ "NYA_EXTRAKRAV": 7,
+ "logg": [
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::familj::39",
+   "RAM": "familj",
+   "ordProd": 39,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::familj::objekt::occ-nulbvmhamfsk",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::hemrecept::10",
+   "RAM": "hemrecept",
+   "ordProd": 10,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::hemrecept::objekt::occ-spzoitpczuxf",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagamorkt::49",
+   "RAM": "lagamorkt",
+   "ordProd": 49,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::lagamorkt::objekt::occ-tfcktnaildfg",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagastaende::49",
+   "RAM": "lagastaende",
+   "ordProd": 49,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::lagastaende::objekt::occ-qirebohofkue",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::plussheet::27",
+   "RAM": "plussheet",
+   "ordProd": 27,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::plussheet::objekt::occ-revcsxrxqiqg",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::plussheet::33",
+   "RAM": "plussheet",
+   "ordProd": 33,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::plussheet::objekt::occ-vxvkxzeczjrh",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::fotoimport::26",
+   "RAM": "fotoimport",
+   "ordProd": 26,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::fotoimport::objekt::occ-ggwlbspiqeep",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::grupp::47",
+   "RAM": "grupp",
+   "ordProd": 47,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::grupp::objekt::occ-mwyoclgnupsq",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::inloggning::8",
+   "RAM": "inloggning",
+   "ordProd": 8,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::inloggning::objekt::occ-tudmmrjernxc",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::144",
+   "RAM": "kalender",
+   "ordProd": 144,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::kalender::objekt::occ-plduvnsbwqsc",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::168",
+   "RAM": "kalender",
+   "ordProd": 168,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::kalender::objekt::occ-qgbgzogjrkgy",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::175",
+   "RAM": "kalender",
+   "ordProd": 175,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::kalender::objekt::occ-qfebygvwdvmq",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::11",
+   "RAM": "kontosakerhet",
+   "ordProd": 11,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::kontosakerhet::objekt::occ-vbsfvruolifl",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::16",
+   "RAM": "kontosakerhet",
+   "ordProd": 16,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::kontosakerhet::objekt::occ-flddqyqfkdni",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::6",
+   "RAM": "kontosakerhet",
+   "ordProd": 6,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::kontosakerhet::objekt::occ-xuphadqoqzbb",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::lagastaende320::30",
+   "RAM": "lagastaende320",
+   "ordProd": 30,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::lagastaende320::objekt::occ-mtxlzpbnndia",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::placera::26",
+   "RAM": "placera",
+   "ordProd": 26,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::placera::objekt::occ-pvjtyysdcyrj",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::placera::32",
+   "RAM": "placera",
+   "ordProd": 32,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::placera::objekt::occ-uvynkuayxiyt",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::23",
+   "RAM": "dialogvara",
+   "ordProd": 23,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/radio",
+   "AGARE": "OWNER::dialogvara::objekt::occ-vqlnvqsheila",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::24",
+   "RAM": "dialogvara",
+   "ordProd": 24,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/radio",
+   "AGARE": "OWNER::dialogvara::objekt::occ-ueendbgmcsdz",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::25",
+   "RAM": "dialogvara",
+   "ordProd": 25,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/radio",
+   "AGARE": "OWNER::dialogvara::objekt::occ-xdieburkwiyi",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::26",
+   "RAM": "dialogvara",
+   "ordProd": 26,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/radio",
+   "AGARE": "OWNER::dialogvara::objekt::occ-xpfadgtwatnn",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::kontextmeny::28",
+   "RAM": "kontextmeny",
+   "ordProd": 28,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/menuitem",
+   "AGARE": "OWNER::kontextmeny::objekt::occ-mhvmlmtocfzd",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::kontextmeny::32",
+   "RAM": "kontextmeny",
+   "ordProd": 32,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/menuitem",
+   "AGARE": "OWNER::kontextmeny::objekt::occ-dpqckssjknpv",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::mfa::29",
+   "RAM": "mfa",
+   "ordProd": 29,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::mfa::objekt::occ-wvxpfmhvvdsr",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nydelatlista::33",
+   "RAM": "nydelatlista",
+   "ordProd": 33,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::nydelatlista::objekt::occ-xntpqopinjoi",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::34",
+   "RAM": "nygruppchatt",
+   "ordProd": 34,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::nygruppchatt::objekt::occ-fervxvrhulbd",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::publikprofil::17",
+   "RAM": "publikprofil",
+   "ordProd": 17,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::publikprofil::objekt::occ-qnkzfvpjdxjm",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::statetom412::8",
+   "RAM": "statetom412",
+   "ordProd": 8,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::statetom412::objekt::occ-mlldbqnhaplj",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::statetom::8",
+   "RAM": "statetom",
+   "ordProd": 8,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::statetom::objekt::occ-ccevbcuzgjsy",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hem::30",
+   "RAM": "hem",
+   "ordProd": 30,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::hem::objekt::occ-npmjldkgfbgb",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hem::52",
+   "RAM": "hem",
+   "ordProd": 52,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::hem::objekt::occ-pswvdpscdesk",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemmorkt::30",
+   "RAM": "hemmorkt",
+   "ordProd": 30,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::hemmorkt::objekt::occ-sbezrywdwxoh",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemmorkt::52",
+   "RAM": "hemmorkt",
+   "ordProd": 52,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::hemmorkt::objekt::occ-anstnnnwmspr",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::40",
+   "RAM": "hemoffline",
+   "ordProd": 40,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::hemoffline::objekt::occ-tyseggoryvce",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::55",
+   "RAM": "hemoffline",
+   "ordProd": 55,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::hemoffline::objekt::occ-kldxhmwcvmsb",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::57",
+   "RAM": "hemoffline",
+   "ordProd": 57,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::hemoffline::objekt::occ-dqmaeineztah",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::16",
+   "RAM": "veckoallergi",
+   "ordProd": 16,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::veckoallergi::objekt::occ-onptakoetgwm",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::19",
+   "RAM": "veckoallergi",
+   "ordProd": 19,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::veckoallergi::objekt::occ-qqrnrogxxkqm",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::22",
+   "RAM": "veckoallergi",
+   "ordProd": 22,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::veckoallergi::objekt::occ-nlovkrzyxvkj",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-10-bred-layout-dc-html::bredrecept::8",
+   "RAM": "bredrecept",
+   "ordProd": 8,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::bredrecept::objekt::occ-ylkeitohhkhn",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbnormal::18",
+   "RAM": "rcbnormal",
+   "ordProd": 18,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::rcbnormal::objekt::occ-bhbotwyflklt",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatlasare::6",
+   "RAM": "delatlasare",
+   "ordProd": 6,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::delatlasare::objekt::occ-untvvrwuxtmc",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-inkop-och-skafferi-d::skafferiflerval::1",
+   "RAM": "skafferiflerval",
+   "ordProd": 1,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::skafferiflerval::objekt::occ-pecmsvdtjpqj",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-inkop-och-skafferi-d::skafferivyn::1",
+   "RAM": "skafferivyn",
+   "ordProd": 1,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/tab",
+   "AGARE": "OWNER::skafferivyn::objekt::occ-dkttzwostvnh",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::15",
+   "RAM": "impassist2",
+   "ordProd": 15,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/checkbox",
+   "AGARE": "OWNER::impassist2::objekt::occ-ncpgnsjjejcd",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::18",
+   "RAM": "impassist2",
+   "ordProd": 18,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/checkbox",
+   "AGARE": "OWNER::impassist2::objekt::occ-ibsymcxrkzqe",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::21",
+   "RAM": "impassist2",
+   "ordProd": 21,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/checkbox",
+   "AGARE": "OWNER::impassist2::objekt::occ-oehowpzudwql",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modminderarig::11",
+   "RAM": "modminderarig",
+   "ordProd": 11,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/combobox",
+   "AGARE": "OWNER::modminderarig::objekt::occ-wvpmtjolxxbc",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::11",
+   "RAM": "modrapporter",
+   "ordProd": 11,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/combobox",
+   "AGARE": "OWNER::modrapporter::objekt::occ-piojppdbbqsj",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::27",
+   "RAM": "modrapporter",
+   "ordProd": 27,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/combobox",
+   "AGARE": "OWNER::modrapporter::objekt::occ-wgaapoxqbwbe",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::42",
+   "RAM": "modrapporter",
+   "ordProd": 42,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/combobox",
+   "AGARE": "OWNER::modrapporter::objekt::occ-pivszmithrkz",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggexklusiv::8",
+   "RAM": "taggexklusiv",
+   "ordProd": 8,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::taggexklusiv::objekt::occ-hrljdwxmkzsu",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::16",
+   "RAM": "taggkalla",
+   "ordProd": 16,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::taggkalla::objekt::occ-gndjqpndbklx",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::23",
+   "RAM": "taggkalla",
+   "ordProd": 23,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::taggkalla::objekt::occ-laaypweeuocg",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::9",
+   "RAM": "taggkalla",
+   "ordProd": 9,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::taggkalla::objekt::occ-prpdkkzqgcup",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socgruppinfo::20",
+   "RAM": "socgruppinfo",
+   "ordProd": 20,
+   "FORE": "DECORATIVE_OR_STRUCTURAL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::socgruppinfo::objekt::occ-lzrnxjjmvlbv",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::13",
+   "RAM": "socknuff",
+   "ordProd": 13,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::socknuff::objekt::occ-ypsulgipdnyk",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::17",
+   "RAM": "socknuff",
+   "ordProd": 17,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::socknuff::objekt::occ-tijfrufuyqet",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::9",
+   "RAM": "socknuff",
+   "ordProd": 9,
+   "FORE": "KNOWN_NON_CONTROL/-",
+   "EFTER": "KNOWN_CONTROL/button",
+   "AGARE": "OWNER::socknuff::objekt::occ-yfomwfihctpr",
+   "SKAL": "H/I aterfunnen kontroll"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagamorkt::37",
+   "RAM": "lagamorkt",
+   "ordProd": 37,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "KNOWN_NON_CONTROL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagastaende::37",
+   "RAM": "lagastaende",
+   "ordProd": 37,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "KNOWN_NON_CONTROL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::12",
+   "RAM": "kontosakerhet",
+   "ordProd": 12,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "KNOWN_CONTROL/textbox",
+   "AGARE": "OWNER::kontosakerhet::objekt::occ-nlifsylrmkvj",
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::veckoplacering::15",
+   "RAM": "veckoplacering",
+   "ordProd": 15,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "KNOWN_NON_CONTROL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::veckoplaceringvald::7",
+   "RAM": "veckoplaceringvald",
+   "ordProd": 7,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "KNOWN_NON_CONTROL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-3-onboarding-dc-html::authmfa::7",
+   "RAM": "authmfa",
+   "ordProd": 7,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "DECORATIVE_OR_STRUCTURAL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impfoto::33",
+   "RAM": "impfoto",
+   "ordProd": 33,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "KNOWN_NON_CONTROL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-6-konto-och-integritet::kontosakerhetsvy::7",
+   "RAM": "kontosakerhetsvy",
+   "ordProd": 7,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "DECORATIVE_OR_STRUCTURAL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-6-konto-och-integritet::kontosakerhetsvy::23",
+   "RAM": "kontosakerhetsvy",
+   "ordProd": 23,
+   "FORE": "KNOWN_CONTROL/CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+   "EFTER": "DECORATIVE_OR_STRUCTURAL/-",
+   "AGARE": null,
+   "SKAL": "J omprovad ACTION_TEXT"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbkommentar::34",
+   "RAM": "rcbkommentar",
+   "ordProd": 34,
+   "FORE": "OUT_OF_SCOPE/-",
+   "EFTER": "KNOWN_CONTROL/link",
+   "AGARE": "OWNER::rcbkommentar::objekt::occ-houmojgtbytl",
+   "SKAL": "K prototyplank"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbofullstandigt::9",
+   "RAM": "rcbofullstandigt",
+   "ordProd": 9,
+   "FORE": "OUT_OF_SCOPE/-",
+   "EFTER": "KNOWN_CONTROL/link",
+   "AGARE": "OWNER::rcbofullstandigt::objekt::occ-ppbhtylzikar",
+   "SKAL": "K prototyplank"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbofullstandigt::10",
+   "RAM": "rcbofullstandigt",
+   "ordProd": 10,
+   "FORE": "OUT_OF_SCOPE/-",
+   "EFTER": "KNOWN_CONTROL/link",
+   "AGARE": "OWNER::rcbofullstandigt::objekt::occ-cghjlimlmklw",
+   "SKAL": "K prototyplank"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbofullstandigt::11",
+   "RAM": "rcbofullstandigt",
+   "ordProd": 11,
+   "FORE": "OUT_OF_SCOPE/-",
+   "EFTER": "KNOWN_CONTROL/link",
+   "AGARE": "OWNER::rcbofullstandigt::objekt::occ-myxahdacerdw",
+   "SKAL": "K prototyplank"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-6-konto-och-integritet::kontojuridik::29",
+   "RAM": "kontojuridik",
+   "ordProd": 29,
+   "FORE": "OUT_OF_SCOPE/-",
+   "EFTER": "KNOWN_CONTROL/link",
+   "AGARE": "OWNER::kontojuridik::objekt::occ-trrarwurbyxf",
+   "SKAL": "K prototyplank"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-globala-tillstand-oc::fbblockerade::19",
+   "RAM": "fbblockerade",
+   "ordProd": 19,
+   "FORE": "OUT_OF_SCOPE/-",
+   "EFTER": "KNOWN_CONTROL/link",
+   "AGARE": "OWNER::fbblockerade::objekt::occ-pafykhsctznj",
+   "SKAL": "K prototyplank"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::vmbgenererar::49",
+   "RAM": "vmbgenererar",
+   "ordProd": 49,
+   "FORE": "KNOWN_CONTROL/button",
+   "EFTER": "DECORATIVE_OR_STRUCTURAL/-",
+   "AGARE": null,
+   "SKAL": "L undantag"
+  },
+  {
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::betygsoversikt::13",
+   "RAM": "betygsoversikt",
+   "ordProd": 13,
+   "FORE": "KNOWN_CONTROL/button",
+   "EFTER": "KNOWN_NON_CONTROL/-",
+   "AGARE": null,
+   "SKAL": "L undantag"
+  }
+ ]
+}

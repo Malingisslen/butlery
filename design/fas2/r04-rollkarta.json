@@ -1,0 +1,2436 @@
+{
+ "$schema": "butlery-r04-rollkarta/1",
+ "$regel": "En roll ar en funktion, inte ett hexvarde. Samma hex far delas i flera roller. Ingen token skapas bara for att flera artefakter delar hexvarde.",
+ "pilot_artefakter": [
+  "arkivimport",
+  "stateladdar",
+  "stateladdar412",
+  "statefel",
+  "statefel412",
+  "synkko",
+  "receptdelningsstatus",
+  "delatlasare",
+  "authepost",
+  "authmfa",
+  "behlarmnekat",
+  "lagatimerlofte",
+  "komprelaterade"
+ ],
+ "deklarationer_st": 222,
+ "roller_st": 8,
+ "roller": [
+  {
+   "roll": "text-innehall",
+   "deklarationer_st": 79,
+   "artefakter_st": 13,
+   "ljusa_varden": [
+    {
+     "varde": "#627061",
+     "forekomster": 29
+    },
+    {
+     "varde": "#24382c",
+     "forekomster": 21
+    },
+    {
+     "varde": "#37453a",
+     "forekomster": 12
+    },
+    {
+     "varde": "#5b6959",
+     "forekomster": 10
+    },
+    {
+     "varde": "#8a5212",
+     "forekomster": 3
+    },
+    {
+     "varde": "#9c3b23",
+     "forekomster": 3
+    },
+    {
+     "varde": "#a15a0a",
+     "forekomster": 1
+    }
+   ],
+   "egenskaper": {
+    "color": 79
+   },
+   "artefakter": [
+    "arkivimport",
+    "stateladdar",
+    "stateladdar412",
+    "statefel",
+    "statefel412",
+    "synkko",
+    "receptdelningsstatus",
+    "delatlasare",
+    "authepost",
+    "authmfa",
+    "behlarmnekat",
+    "lagatimerlofte",
+    "komprelaterade"
+   ]
+  },
+  {
+   "roll": "ikon-fristaende",
+   "deklarationer_st": 39,
+   "artefakter_st": 11,
+   "ljusa_varden": [
+    {
+     "varde": "#24382c",
+     "forekomster": 10
+    },
+    {
+     "varde": "#9c3b23",
+     "forekomster": 9
+    },
+    {
+     "varde": "#37453a",
+     "forekomster": 8
+    },
+    {
+     "varde": "#5b6959",
+     "forekomster": 7
+    },
+    {
+     "varde": "#8a5212",
+     "forekomster": 3
+    },
+    {
+     "varde": "#627061",
+     "forekomster": 1
+    },
+    {
+     "varde": "#a15a0a",
+     "forekomster": 1
+    }
+   ],
+   "egenskaper": {
+    "color": 4,
+    "stroke": 35
+   },
+   "artefakter": [
+    "arkivimport",
+    "statefel",
+    "statefel412",
+    "synkko",
+    "receptdelningsstatus",
+    "delatlasare",
+    "authepost",
+    "authmfa",
+    "behlarmnekat",
+    "lagatimerlofte",
+    "komprelaterade"
+   ]
+  },
+  {
+   "roll": "ram-avdelare",
+   "deklarationer_st": 33,
+   "artefakter_st": 11,
+   "ljusa_varden": [
+    {
+     "varde": "#ccd1c2",
+     "forekomster": 28
+    },
+    {
+     "varde": "rgba(0,0,0,.1)",
+     "forekomster": 3
+    },
+    {
+     "varde": "#e6ead9",
+     "forekomster": 2
+    }
+   ],
+   "egenskaper": {
+    "border-bottom": 27,
+    "border-top": 6
+   },
+   "artefakter": [
+    "arkivimport",
+    "stateladdar",
+    "stateladdar412",
+    "statefel",
+    "statefel412",
+    "synkko",
+    "receptdelningsstatus",
+    "delatlasare",
+    "authmfa",
+    "behlarmnekat",
+    "lagatimerlofte"
+   ]
+  },
+  {
+   "roll": "ram-behallare",
+   "deklarationer_st": 19,
+   "artefakter_st": 8,
+   "ljusa_varden": [
+    {
+     "varde": "#24382c",
+     "forekomster": 11
+    },
+    {
+     "varde": "#7d897c",
+     "forekomster": 3
+    },
+    {
+     "varde": "#ccd1c2",
+     "forekomster": 3
+    },
+    {
+     "varde": "#9c3b23",
+     "forekomster": 2
+    }
+   ],
+   "egenskaper": {
+    "border": 19
+   },
+   "artefakter": [
+    "arkivimport",
+    "statefel",
+    "statefel412",
+    "synkko",
+    "authmfa",
+    "behlarmnekat",
+    "lagatimerlofte",
+    "komprelaterade"
+   ]
+  },
+  {
+   "roll": "yta-platshallare",
+   "deklarationer_st": 18,
+   "artefakter_st": 2,
+   "ljusa_varden": [
+    {
+     "varde": "#e6ead9",
+     "forekomster": 18
+    }
+   ],
+   "egenskaper": {
+    "background": 18
+   },
+   "artefakter": [
+    "stateladdar",
+    "stateladdar412"
+   ]
+  },
+  {
+   "roll": "yta-upphojd",
+   "deklarationer_st": 15,
+   "artefakter_st": 11,
+   "ljusa_varden": [
+    {
+     "varde": "#e6ead9",
+     "forekomster": 15
+    }
+   ],
+   "egenskaper": {
+    "background": 15
+   },
+   "artefakter": [
+    "arkivimport",
+    "statefel",
+    "statefel412",
+    "synkko",
+    "receptdelningsstatus",
+    "delatlasare",
+    "authepost",
+    "authmfa",
+    "behlarmnekat",
+    "lagatimerlofte",
+    "komprelaterade"
+   ]
+  },
+  {
+   "roll": "text-kontroll",
+   "deklarationer_st": 11,
+   "artefakter_st": 5,
+   "ljusa_varden": [
+    {
+     "varde": "#24382c",
+     "forekomster": 6
+    },
+    {
+     "varde": "#9c3b23",
+     "forekomster": 3
+    },
+    {
+     "varde": "#7d897c",
+     "forekomster": 2
+    }
+   ],
+   "egenskaper": {
+    "color": 11
+   },
+   "artefakter": [
+    "synkko",
+    "receptdelningsstatus",
+    "delatlasare",
+    "authepost",
+    "authmfa"
+   ]
+  },
+  {
+   "roll": "ram-kontroll",
+   "deklarationer_st": 8,
+   "artefakter_st": 6,
+   "ljusa_varden": [
+    {
+     "varde": "#24382c",
+     "forekomster": 5
+    },
+    {
+     "varde": "#7d897c",
+     "forekomster": 2
+    },
+    {
+     "varde": "#ccd1c2",
+     "forekomster": 1
+    }
+   ],
+   "egenskaper": {
+    "border": 8
+   },
+   "artefakter": [
+    "synkko",
+    "delatlasare",
+    "authepost",
+    "authmfa",
+    "behlarmnekat",
+    "komprelaterade"
+   ]
+  }
+ ],
+ "hexvarden_i_flera_roller": [
+  {
+   "varde": "#24382c",
+   "roller": [
+    "ram-behallare",
+    "text-innehall",
+    "ikon-fristaende",
+    "ram-kontroll",
+    "text-kontroll"
+   ]
+  },
+  {
+   "varde": "#9c3b23",
+   "roller": [
+    "ikon-fristaende",
+    "text-innehall",
+    "ram-behallare",
+    "text-kontroll"
+   ]
+  },
+  {
+   "varde": "#ccd1c2",
+   "roller": [
+    "ram-avdelare",
+    "ram-kontroll",
+    "ram-behallare"
+   ]
+  },
+  {
+   "varde": "#e6ead9",
+   "roller": [
+    "yta-upphojd",
+    "yta-platshallare",
+    "ram-avdelare"
+   ]
+  },
+  {
+   "varde": "#7d897c",
+   "roller": [
+    "ram-kontroll",
+    "text-kontroll",
+    "ram-behallare"
+   ]
+  },
+  {
+   "varde": "#37453a",
+   "roller": [
+    "text-innehall",
+    "ikon-fristaende"
+   ]
+  },
+  {
+   "varde": "#627061",
+   "roller": [
+    "text-innehall",
+    "ikon-fristaende"
+   ]
+  },
+  {
+   "varde": "#5b6959",
+   "roller": [
+    "ikon-fristaende",
+    "text-innehall"
+   ]
+  },
+  {
+   "varde": "#8a5212",
+   "roller": [
+    "ikon-fristaende",
+    "text-innehall"
+   ]
+  },
+  {
+   "varde": "#a15a0a",
+   "roller": [
+    "ikon-fristaende",
+    "text-innehall"
+   ]
+  }
+ ],
+ "poster": [
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"padding:24px 24px 0;display:flex;align-items:cen"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"required\" width=\"15\" height=\"15\" vie"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"padding:12px 24px 0;font-size:12px;color:#627061"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;d"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"flex:none;width:48px;height:48px;background:#e6e"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061;margin-top:2px\">"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"border:1.5px solid #24382c;font-size:14px;font-"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;d"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"flex:none;width:48px;height:48px;background:#e6e"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061;margin-top:2px\">"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"border:1.5px solid #24382c;font-size:14px;font-"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"flex:none;width:48px;height:48px;background:#e6e"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"18\" height=\"18\" vi"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061;margin-top:2px\">"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"border:1.5px solid #24382c;font-size:14px;font-"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"border:1.5px solid #24382c;text-align:center;fon"
+  },
+  {
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "egenskap": "border-top",
+   "varde": "rgba(0,0,0,.1)",
+   "roll": "ram-avdelare",
+   "taggstart": "<div class=\"sc-title\" style=\"margin:44px 0 24px;border-top:1"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:12px;font-size:12px;color:#627061\">"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;d"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"flex:none;width:56px;height:"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:80%;height:13px;border"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:45%;height:10px;border"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;d"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"flex:none;width:56px;height:"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:65%;height:13px;border"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:50%;height:10px;border"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"flex:none;width:56px;height:"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:72%;height:13px;border"
+  },
+  {
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:38%;height:10px;border"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:12px;font-size:12px;color:#627061\">"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;d"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"flex:none;width:56px;height:"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:80%;height:13px;border"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:45%;height:10px;border"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;d"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"flex:none;width:56px;height:"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:65%;height:13px;border"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:50%;height:10px;border"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"flex:none;width:56px;height:"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:72%;height:13px;border"
+  },
+  {
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-platshallare",
+   "taggstart": "<div class=\"sc-skeleton\" style=\"width:38%;height:10px;border"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"background:#e6ead9;border-bottom:1px solid #e6ea"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#e6ead9",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"background:#e6ead9;border-bottom:1px solid #e6ea"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#8a5212",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"14\" height=\"14\" vi"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#8a5212",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;font-weight:700;color:#8a5212\">"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"46\" height=\"46\" vi"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#627061;line-height:1.55;ma"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"margin-top:20px;border:1.5px solid #24382c;color"
+  },
+  {
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:20px;border:1.5px solid #24382c;color"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"background:#e6ead9;border-bottom:1px solid #e6ea"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#e6ead9",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"background:#e6ead9;border-bottom:1px solid #e6ea"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#8a5212",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"14\" height=\"14\" vi"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#8a5212",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;font-weight:700;color:#8a5212\">"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"46\" height=\"46\" vi"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#627061;line-height:1.55;ma"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"margin-top:20px;border:1.5px solid #24382c;color"
+  },
+  {
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:20px;border:1.5px solid #24382c;color"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:4px;padding:"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:14px;font-weight:700;color:#24"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;font-weight:700;color:#627061;fo"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:9px;padding:"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"15\" height=\"15\" vi"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:12.5px;color:#37453a\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"16\" height=\"16\" vi"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#9c3b23",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;font-weight:700;letter-spacing:1"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061;margin-top:4px;line"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border",
+   "varde": "#9c3b23",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"border:1.5px solid #9c3b23;border-radius:8px;pad"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;font-weight:600;color:#24382c\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#9c3b23",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;color:#9c3b23;margin-top:3px\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;padding:0 14px;"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;padding:0 14px;"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#9c3b23",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;padding:0 14px;"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border",
+   "varde": "#9c3b23",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"border:1.5px solid #9c3b23;border-radius:8px;pad"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;font-weight:600;color:#24382c\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#9c3b23",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;color:#9c3b23;margin-top:3px\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;padding:0 14px;"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;padding:0 14px;"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#9c3b23",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;padding:0 14px;"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-top",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:8px;margin-t"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#627061",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"16\" height=\"16\" vi"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;font-weight:700;letter-spacing:1"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:10px;min-hei"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;color:#627061;font-variant-numer"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:10px;min-hei"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;color:#627061;font-variant-numer"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:10px;min-hei"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061\">"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;color:#627061;font-variant-numer"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061;line-height:1.45;ma"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-top",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"flex:none;padding:12px 24px 18px;border-top:1px "
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "synkko",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-top",
+   "varde": "rgba(0,0,0,.1)",
+   "roll": "ram-avdelare",
+   "taggstart": "<div class=\"sc-title\" style=\"margin:44px 0 24px;border-top:1"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:4px;padding:"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:14px;font-weight:700;color:#24"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#a15a0a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"17\" height=\"17\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#a15a0a",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:13px;font-weight:700;color:#a1"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#9c3b23",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"min-height:48px;display:inline-"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;font-weight:600;color:#5b6959\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div data-hit-target=\"receptdelningsstatus-button-sluta-dela"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"17\" height=\"17\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;min-width:0;font-size:13px;color:#24382c"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div data-hit-target=\"receptdelningsstatus-button-sluta-dela"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"17\" height=\"17\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;min-width:0;font-size:13px;color:#24382c"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div data-hit-target=\"receptdelningsstatus-button-sluta-dela"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"17\" height=\"17\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;min-width:0;font-size:13px;color:#24382c"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;font-weight:600;color:#5b6959\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:11px;min-hei"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"17\" height=\"17\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#5b6959\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:11px;min-hei"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"17\" height=\"17\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#5b6959\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#9c3b23",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"margin-top:18px;background:#e6ead9;border-radius"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"15\" height=\"15\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;color:#37453a;line-height:1.5\">"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "stroke",
+   "varde": "#5b6959",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"15\" height=\"15\" vi"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;color:#5b6959;line-height:1.5\">"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:4px;padding:"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:14px;font-weight:700;color:#24"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:9px;min-heig"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"required\" width=\"16\" height=\"16\" vie"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:12.5px;color:#37453a\">"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:10.5px;font-weight:700;letter-spacing:"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12.5px;color:#5b6959;font-variant-num"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:12px;min-hei"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"width:56px;font-size:13px;font-weight:600;font-"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:11px;font-weight:700;color:#5b6959;wh"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:12px;min-hei"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"width:56px;font-size:13px;font-weight:600;font-"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:13px;color:#24382c\">"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:12px;min-hei"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"width:56px;font-size:13px;font-weight:600;font-"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:13px;color:#627061;text-decora"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:11px;font-weight:700;color:#5b6959;wh"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#5b6959",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:10.5px;font-weight:700;letter-spacing:"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;min-height:48px;"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-variant-numeric:tabular-nums;flex:1;font-s"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;min-height:48px;"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-variant-numeric:tabular-nums;flex:1;font-s"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"margin-top:18px;background:#e6ead9;border-radius"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"15\" height=\"15\" vi"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:12px;color:#37453a;line-height:1.5\">"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-top",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"flex:none;padding:12px 24px 18px;border-top:1px "
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "delatlasare",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "egenskap": "border-top",
+   "varde": "rgba(0,0,0,.1)",
+   "roll": "ram-avdelare",
+   "taggstart": "<div class=\"sc-title\" style=\"margin:44px 0 24px;border-top:1"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"64\" height=\"64\" vi"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:16px;font-weight:400;color:#37453a;lin"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#7d897c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#7d897c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;font-weight:600;color:#627061;t"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"margin-top:24px;background:#e6ead9;border-radius"
+  },
+  {
+   "art": "authepost",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:24px;background:#e6ead9;border-radius"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:4px;padding:"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"24\" height=\"24\" vi"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:16px;font-weight:400;color:#37453a;lin"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"flex:1;min-height:56px;border:1.5px solid #2438"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"flex:1;min-height:56px;border:1.5px solid #2438"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"flex:1;min-height:56px;border:1.5px solid #2438"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#7d897c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"flex:1;min-height:56px;border:1px solid #7d897c"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#7d897c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"flex:1;min-height:56px;border:1px solid #7d897c"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#7d897c",
+   "roll": "ram-behallare",
+   "taggstart": "<span style=\"flex:1;min-height:56px;border:1px solid #7d897c"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;font-weight:600;color:#627061;l"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#7d897c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#7d897c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#24382c",
+   "roll": "text-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"margin-top:24px;background:#e6ead9;border-radius"
+  },
+  {
+   "art": "authmfa",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:24px;background:#e6ead9;border-radius"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"flex:none;display:flex;align-items:center;gap:4p"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"border:1.5px solid #24382c;padding:14px\">"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;font-weight:600;color:#627061;m"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"display:flex;align-items:flex-start;gap:9px;marg"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg data-graphic-role=\"redundant\" width=\"18\" height=\"18\" vi"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:12.5px;font-weight:600;color:#"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#ccd1c2",
+   "roll": "ram-kontroll",
+   "taggstart": "<span style=\"display:flex;align-items:center;gap:10px;min-he"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#8a5212",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"flex:1;font-size:14px;font-weight:600;color:#8a"
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#8a5212",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "behlarmnekat",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#627061;line-height:1.5;mar"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border-bottom",
+   "varde": "#ccd1c2",
+   "roll": "ram-avdelare",
+   "taggstart": "<div style=\"flex:none;display:flex;align-items:center;gap:4p"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"border:1.5px solid #24382c;padding:14px\">"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;font-weight:600;color:#627061;m"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "border",
+   "varde": "#ccd1c2",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"border:1px solid #ccd1c2;padding:14px;margin-top"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"font-size:20px;font-weight:700;font-variant-num"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12.5px;font-weight:600;color:#627061;m"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<div style=\"margin-top:14px;background:#e6ead9;padding:12px;"
+  },
+  {
+   "art": "lagatimerlofte",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"margin-top:14px;background:#e6ead9;padding:12px;"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "border",
+   "varde": "#ccd1c2",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:12px;border:"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<span style=\"width:40px;height:40px;background:#e6ead9;flex:"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"display:block;font-size:11.5px;font-weight:600;"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "border",
+   "varde": "#ccd1c2",
+   "roll": "ram-behallare",
+   "taggstart": "<div style=\"display:flex;align-items:center;gap:12px;border:"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "background",
+   "varde": "#e6ead9",
+   "roll": "yta-upphojd",
+   "taggstart": "<span style=\"width:40px;height:40px;background:#e6ead9;flex:"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "color",
+   "varde": "#627061",
+   "roll": "text-innehall",
+   "taggstart": "<span style=\"display:block;font-size:11.5px;font-weight:600;"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "stroke",
+   "varde": "#37453a",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "border",
+   "varde": "#24382c",
+   "roll": "ram-kontroll",
+   "taggstart": "<span data-hit=\"self\" style=\"display:flex;align-items:center"
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "stroke",
+   "varde": "#24382c",
+   "roll": "ikon-fristaende",
+   "taggstart": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" "
+  },
+  {
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "egenskap": "color",
+   "varde": "#37453a",
+   "roll": "text-innehall",
+   "taggstart": "<div style=\"font-size:12px;color:#37453a;line-height:1.5;mar"
+  }
+ ],
+ "tokenkandidater": {
+  "$regel": "En kandidat ar en ROLL kombinerad med ett ljusvarde. Roller sammanfors aldrig over hexvarden utan bevis; darfor ar splittring alltid saker och sammanslagning det som kraver evidens.",
+  "antal": 29,
+  "med_stod_fran_befintliga_par": 20,
+  "utan_stod": 9,
+  "kandidater": [
+   {
+    "token": "text-innehall-627061",
+    "roll": "text-innehall",
+    "ljus": "#627061",
+    "dekl": 29,
+    "art": 13,
+    "morkForslag": "#93a48d",
+    "stodPar": 6
+   },
+   {
+    "token": "text-innehall-24382c",
+    "roll": "text-innehall",
+    "ljus": "#24382c",
+    "dekl": 21,
+    "art": 13,
+    "morkForslag": "#c9d3c4",
+    "stodPar": 4
+   },
+   {
+    "token": "text-innehall-37453a",
+    "roll": "text-innehall",
+    "ljus": "#37453a",
+    "dekl": 12,
+    "art": 13,
+    "morkForslag": "#93a48d",
+    "stodPar": 6
+   },
+   {
+    "token": "text-innehall-5b6959",
+    "roll": "text-innehall",
+    "ljus": "#5b6959",
+    "dekl": 10,
+    "art": 13,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "text-innehall-8a5212",
+    "roll": "text-innehall",
+    "ljus": "#8a5212",
+    "dekl": 3,
+    "art": 13,
+    "morkForslag": "#dca968",
+    "stodPar": 2
+   },
+   {
+    "token": "text-innehall-9c3b23",
+    "roll": "text-innehall",
+    "ljus": "#9c3b23",
+    "dekl": 3,
+    "art": 13,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "text-innehall-a15a0a",
+    "roll": "text-innehall",
+    "ljus": "#a15a0a",
+    "dekl": 1,
+    "art": 13,
+    "morkForslag": "#dca968",
+    "stodPar": 2
+   },
+   {
+    "token": "ikon-fristaende-24382c",
+    "roll": "ikon-fristaende",
+    "ljus": "#24382c",
+    "dekl": 10,
+    "art": 11,
+    "morkForslag": "#c9d3c4",
+    "stodPar": 4
+   },
+   {
+    "token": "ikon-fristaende-9c3b23",
+    "roll": "ikon-fristaende",
+    "ljus": "#9c3b23",
+    "dekl": 9,
+    "art": 11,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "ikon-fristaende-37453a",
+    "roll": "ikon-fristaende",
+    "ljus": "#37453a",
+    "dekl": 8,
+    "art": 11,
+    "morkForslag": "#93a48d",
+    "stodPar": 6
+   },
+   {
+    "token": "ikon-fristaende-5b6959",
+    "roll": "ikon-fristaende",
+    "ljus": "#5b6959",
+    "dekl": 7,
+    "art": 11,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "ikon-fristaende-8a5212",
+    "roll": "ikon-fristaende",
+    "ljus": "#8a5212",
+    "dekl": 3,
+    "art": 11,
+    "morkForslag": "#dca968",
+    "stodPar": 2
+   },
+   {
+    "token": "ikon-fristaende-627061",
+    "roll": "ikon-fristaende",
+    "ljus": "#627061",
+    "dekl": 1,
+    "art": 11,
+    "morkForslag": "#93a48d",
+    "stodPar": 6
+   },
+   {
+    "token": "ikon-fristaende-a15a0a",
+    "roll": "ikon-fristaende",
+    "ljus": "#a15a0a",
+    "dekl": 1,
+    "art": 11,
+    "morkForslag": "#dca968",
+    "stodPar": 2
+   },
+   {
+    "token": "ram-avdelare-ccd1c2",
+    "roll": "ram-avdelare",
+    "ljus": "#ccd1c2",
+    "dekl": 28,
+    "art": 11,
+    "morkForslag": "rgba(245,244,237,.18)",
+    "stodPar": 3
+   },
+   {
+    "token": "ram-avdelare-rgba(0,0,0,.1)",
+    "roll": "ram-avdelare",
+    "ljus": "rgba(0,0,0,.1)",
+    "dekl": 3,
+    "art": 11,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "ram-avdelare-e6ead9",
+    "roll": "ram-avdelare",
+    "ljus": "#e6ead9",
+    "dekl": 2,
+    "art": 11,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "ram-behallare-24382c",
+    "roll": "ram-behallare",
+    "ljus": "#24382c",
+    "dekl": 11,
+    "art": 8,
+    "morkForslag": "rgba(245,244,237,.35)",
+    "stodPar": 6
+   },
+   {
+    "token": "ram-behallare-7d897c",
+    "roll": "ram-behallare",
+    "ljus": "#7d897c",
+    "dekl": 3,
+    "art": 8,
+    "morkForslag": "rgba(245,244,237,.35)",
+    "stodPar": 3
+   },
+   {
+    "token": "ram-behallare-ccd1c2",
+    "roll": "ram-behallare",
+    "ljus": "#ccd1c2",
+    "dekl": 3,
+    "art": 8,
+    "morkForslag": "rgba(245,244,237,.18)",
+    "stodPar": 3
+   },
+   {
+    "token": "ram-behallare-9c3b23",
+    "roll": "ram-behallare",
+    "ljus": "#9c3b23",
+    "dekl": 2,
+    "art": 8,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "yta-platshallare-e6ead9",
+    "roll": "yta-platshallare",
+    "ljus": "#e6ead9",
+    "dekl": 18,
+    "art": 2,
+    "morkForslag": "#17251d",
+    "stodPar": 3
+   },
+   {
+    "token": "yta-upphojd-e6ead9",
+    "roll": "yta-upphojd",
+    "ljus": "#e6ead9",
+    "dekl": 15,
+    "art": 11,
+    "morkForslag": "#17251d",
+    "stodPar": 3
+   },
+   {
+    "token": "text-kontroll-24382c",
+    "roll": "text-kontroll",
+    "ljus": "#24382c",
+    "dekl": 6,
+    "art": 5,
+    "morkForslag": "#c9d3c4",
+    "stodPar": 4
+   },
+   {
+    "token": "text-kontroll-9c3b23",
+    "roll": "text-kontroll",
+    "ljus": "#9c3b23",
+    "dekl": 3,
+    "art": 5,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "text-kontroll-7d897c",
+    "roll": "text-kontroll",
+    "ljus": "#7d897c",
+    "dekl": 2,
+    "art": 5,
+    "morkForslag": null,
+    "stodPar": 0
+   },
+   {
+    "token": "ram-kontroll-24382c",
+    "roll": "ram-kontroll",
+    "ljus": "#24382c",
+    "dekl": 5,
+    "art": 6,
+    "morkForslag": "rgba(245,244,237,.35)",
+    "stodPar": 6
+   },
+   {
+    "token": "ram-kontroll-7d897c",
+    "roll": "ram-kontroll",
+    "ljus": "#7d897c",
+    "dekl": 2,
+    "art": 6,
+    "morkForslag": "rgba(245,244,237,.35)",
+    "stodPar": 3
+   },
+   {
+    "token": "ram-kontroll-ccd1c2",
+    "roll": "ram-kontroll",
+    "ljus": "#ccd1c2",
+    "dekl": 1,
+    "art": 6,
+    "morkForslag": "rgba(245,244,237,.18)",
+    "stodPar": 3
+   }
+  ]
+ },
+ "slutsats": {
+  "avgorande_fynd": "Samtliga tio hexvarden i pilotpopulationen bar FLERA semantiska roller. #24382c ensam bar fem: behallarram, innehallstext, fristaende ikon, kontrollram och kontrolltext.",
+  "konsekvens": "En hex-till-token-mappning hade varit fel i varje enskilt fall. Tokenmodellen maste utga fran roll, precis som ordern foreskriver.",
+  "status": "Steg 2 och 3 klara. Tokenisering, dual render, matning och regression aterstar."
+ }
+}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Closed cookbook with bookmark</title>
+  <g transform="translate(512 512) scale(.94) translate(-512 -512)">
+  <rect x="400" y="104" width="42" height="68" rx="3" fill="#CE7C1E"></rect>
+  <path d="M367 331h291c0 27 21 49 48 49v277c-27 0-48 22-48 49H367c0-27-21-49-48-49V380c27 0 48-22 48-49z" fill="#B4BFA6"></path>
+  <g fill="none" stroke="#24382C" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M250 167c150 2 301 2 451 2 51 0 72 1 79 14 8 14 8 48 8 106v527c0 28-17 43-46 43H266c-27 0-42-14-42-41V210c0-28 7-43 26-43z"></path>
+    <path d="M253 168v688"></path>
+    <path d="M788 188c27 5 39 16 39 43v575c0 36-17 53-55 53"></path>
+    <path d="M367 331h291c0 27 21 49 48 49v277c-27 0-48 22-48 49H367c0-27-21-49-48-49V380c27 0 48-22 48-49z"></path>
+  </g>
+  </g>
+</svg>

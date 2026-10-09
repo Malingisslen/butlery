@@ -1,0 +1,304 @@
+{
+ "$schema": "butlery-r04-tresistafarger/1",
+ "$datum": "2026-08-13",
+ "$status": "PREVIEWPAKET. Inga fargbeslut fattade, ingen registry-write, ingen produktwrite.",
+ "A_mappningstypKonsumentaudit": {
+  "$fraga": "Vilka verktyg och grenar lasar faltet mappningstyp?",
+  "$metod": "Fulltextsokning i hela repot efter mappningstyp, mapping_type och mappingType, samt efter vardena temainvariant och temavaxlande.",
+  "konsumenter": [],
+  "antalKonsumenter": 0,
+  "forekomsterUtanforBevisartefakter": 0,
+  "forekomster": [
+   {
+    "fil": "fas2/r04-designbeslut.json",
+    "typ": "BEVISARTEFAKT",
+    "roll": "faltet lagras har"
+   },
+   {
+    "fil": "fas2/r04-appbakgrund.json",
+    "typ": "BEVISARTEFAKT",
+    "roll": "rapporterar faltet"
+   },
+   {
+    "fil": "fas2/r04-tvatillstand.json",
+    "typ": "BEVISARTEFAKT",
+    "roll": "rapporterar auditen"
+   },
+   {
+    "fil": "fas2/r04-slutlig-preview.json",
+    "typ": "BEVISARTEFAKT",
+    "roll": "rapporterar totaler"
+   },
+   {
+    "fil": "fas2/r04-animationsfrysning.json",
+    "typ": "BEVISARTEFAKT",
+    "roll": "rapporterar totaler"
+   },
+   {
+    "fil": "fas2/r04-batch32-morkluckor.json",
+    "typ": "BEVISARTEFAKT",
+    "roll": "ordet temainvariant forekommer i en fritextmotivering, inte som faltvarde"
+   }
+  ],
+  "utfall": {
+   "paverkarMigration": false,
+   "paverkarKallskrivningar": false,
+   "paverkarCoverage": false,
+   "paverkarConformance": false,
+   "paverkarKandidatbehorighet": false,
+   "paverkarEndastRapporteringOchProveniens": true
+  },
+  "$svarPaStoppgaten": "Faltet har NOLL kodkonsumenter. Ingen gren nagonstans i tools/ laser det. Det pavekar varken migration, kallskrivningar, coverage, conformance eller kandidatbehorighet — bara rapportering och proveniens. Enligt punkt 9 far det darfor forbli ett separat underhallsblock medan previewarbetet fortsatter.",
+  "$ejGjort": "Ingen normativ definition foreslas i detta block. Att definiera faltet utan konsumenter vore att uppfinna semantik i efterhand. De 10 UNKNOWN forblir orörda."
+ },
+ "B_hypotes": {
+  "$klass": "HUMAN_PREVIEW_HYPOTHESIS",
+  "$ejKlass": [
+   "DECIDED",
+   "RECOMMENDED_BY_PRINCIPLE",
+   "VERIFIED_MAPPING"
+  ],
+  "$regel": "Anvands enbart for att kunna halla varden fasta mellan faserna sa att en variabel andras i taget. Ger ingen registerkredit.",
+  "varden": {
+   "PROGRESS_VALUE": "rgba(245,244,237,0.18)",
+   "STATUS_LINE": "#93a48d",
+   "BRAND": "#dca968"
+  }
+ },
+ "C_faser": [
+  {
+   "fas": 1,
+   "enhet": "PROGRESS_VALUE",
+   "kandidater": [
+    "#17251d",
+    "rgba(245,244,237,0.18)",
+    "#24382c"
+   ],
+   "bilderPerKandidat": 2,
+   "fastaVarden": {
+    "appbakgrund": "#24382c",
+    "forloppsspar": "rgba(245,244,237,0.18)",
+    "illustration": "bunt B, atta registrerade beslut",
+    "ovriga": [
+     {
+      "ordinal": 16,
+      "egenskap": "color",
+      "varde": "#c9d3c4"
+     },
+     {
+      "ordinal": 20,
+      "egenskap": "color",
+      "varde": "#c9d3c4"
+     }
+    ]
+   },
+   "matningar": [
+    {
+     "fas": 1,
+     "enhet": "PROGRESS_VALUE",
+     "kandidat": "#17251d",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "fyllMotSpar": 2.17,
+     "fyllMotBakgrund": 1.27
+    },
+    {
+     "fas": 1,
+     "enhet": "PROGRESS_VALUE",
+     "kandidat": "rgba(245,244,237,0.18)",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "fyllMotSpar": 1.54,
+     "fyllMotBakgrund": 2.63
+    },
+    {
+     "fas": 1,
+     "enhet": "PROGRESS_VALUE",
+     "kandidat": "#24382c",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "fyllMotSpar": 1.71,
+     "fyllMotBakgrund": 1
+    }
+   ]
+  },
+  {
+   "fas": 2,
+   "enhet": "BRAND_SUPPORTING_TEXT",
+   "kandidater": [
+    "#93a48d",
+    "#8fb89a",
+    "#c9d3c4",
+    "#de9078",
+    "#dca968"
+   ],
+   "bilderPerKandidat": 2,
+   "fastaVarden": {
+    "appbakgrund": "#24382c",
+    "forloppsspar": "rgba(245,244,237,0.18)",
+    "illustration": "bunt B, atta registrerade beslut",
+    "ovriga": [
+     {
+      "ordinal": 19,
+      "egenskap": "background-color",
+      "varde": "rgba(245,244,237,0.18)"
+     },
+     {
+      "ordinal": 20,
+      "egenskap": "color",
+      "varde": "#c9d3c4"
+     }
+    ]
+   },
+   "matningar": [
+    {
+     "fas": 2,
+     "enhet": "BRAND_SUPPORTING_TEXT",
+     "kandidat": "#93a48d",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 4.73
+    },
+    {
+     "fas": 2,
+     "enhet": "BRAND_SUPPORTING_TEXT",
+     "kandidat": "#8fb89a",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 5.66
+    },
+    {
+     "fas": 2,
+     "enhet": "BRAND_SUPPORTING_TEXT",
+     "kandidat": "#c9d3c4",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 8.11
+    },
+    {
+     "fas": 2,
+     "enhet": "BRAND_SUPPORTING_TEXT",
+     "kandidat": "#de9078",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 4.99
+    },
+    {
+     "fas": 2,
+     "enhet": "BRAND_SUPPORTING_TEXT",
+     "kandidat": "#dca968",
+     "avsedda": 11,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 5.91
+    }
+   ]
+  },
+  {
+   "fas": 3,
+   "enhet": "STATUS_LINE",
+   "kandidater": [
+    "#93a48d",
+    "#8fb89a",
+    "#c9d3c4"
+   ],
+   "bilderPerKandidat": 2,
+   "fastaVarden": {
+    "appbakgrund": "#24382c",
+    "forloppsspar": "rgba(245,244,237,0.18)",
+    "illustration": "bunt B, atta registrerade beslut",
+    "ovriga": [
+     {
+      "ordinal": 19,
+      "egenskap": "background-color",
+      "varde": "rgba(245,244,237,0.18)"
+     },
+     {
+      "ordinal": 16,
+      "egenskap": "color",
+      "varde": "#dca968"
+     }
+    ]
+   },
+   "matningar": [
+    {
+     "fas": 3,
+     "enhet": "STATUS_LINE",
+     "kandidat": "#93a48d",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 4.73
+    },
+    {
+     "fas": 3,
+     "enhet": "STATUS_LINE",
+     "kandidat": "#8fb89a",
+     "avsedda": 12,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 5.66
+    },
+    {
+     "fas": 3,
+     "enhet": "STATUS_LINE",
+     "kandidat": "#c9d3c4",
+     "avsedda": 11,
+     "arvda": 8,
+     "kollaterala": 0,
+     "okanda": 0,
+     "allaTraffade": true,
+     "motBakgrund": 8.11
+    }
+   ]
+  }
+ ],
+ "D_grindar": {
+  "bilder": 22,
+  "granskningarOk": true,
+  "kollateralaAndringar": 0,
+  "okandaAgarskap": 0,
+  "arvdaPerBild": 8,
+  "$arvsnot": "De atta arvda ar illustrationsdelarna vars ramfarger foljer den injicerade textfargen pa telefonramen. Klassificerat kanalvis, inte antaget.",
+  "tvaTillstand": {
+   "STATE_COVERED": 1375,
+   "STATE_REVEALED": 3475
+  },
+  "$vantegrind": "Animationerna registrerades forst efter 1100 ms i denna korning. Den rAF-baserade grinden i tools/animation-freeze.mjs racker inte nar sidan startar langsamt — requestAnimationFrame kan strypas i headless. Korningen pollar darfor med vaggklocka och ett explicit tak. Det bor flyttas in i verktyget innan nasta previewblock.",
+  "$matningsnot": "Tva kandidater visar 11 avsedda andringar i stallet for 12: #dca968 for varumarkesraden och #c9d3c4 for statusraden ar redan elementets ljusa varde, sa ingen andring registreras. Det ar korrekt och inte ett fel."
+ },
+ "E_ejGjort": [
+  "inga fargbeslut fattade",
+  "ingen registry-write for de tre",
+  "ingen produktwrite",
+  "ingen slutlig kombinationsbild — den kraver dina tre beslut forst",
+  "ingen mappningstypdefinition foreslagen"
+ ]
+}

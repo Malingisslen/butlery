@@ -1,0 +1,821 @@
+{
+ "$schema": "butlery-r02-baslinje/1",
+ "kontroll": "CHK-R-02",
+ "$typ": "TÄCKNINGS- OCH CONFORMANCEBASLINJE",
+ "$regel": "Unknown räknas aldrig som pass. Antalet fynd gäller den mätbara populationen och får aldrig citeras utan sitt scope. R-02 är inte stängd så länge den overifierade populationen är materiell.",
+ "matpunkt": {
+  "id": "compact-390",
+  "width": 390,
+  "height": 844,
+  "dpr": 2
+ },
+ "$matenhet": "En rad per KONTROLL. control × viewport (1441) är en annan mätenhet och ingår aldrig i talen nedan.",
+ "populationsmodell": {
+  "$regel": "SOURCE DECLARATIONS, DATA-HIT, UNDECLARED och OUTSIDE REGISTERED ARTIFACTS är kontrollmetadata. CONTROL × VIEWPORT är en annan mätenhet och ingår aldrig i samma summeringsidentitet.",
+  "sourceDeclarations": {
+   "kalltext": 1376,
+   "renderade": 1376,
+   "delta": 0
+  },
+  "dataHit": {
+   "totalt": 668,
+   "pa_kontroller": 660,
+   "pa_element_utan_roll": 8
+  },
+  "undeclared": {
+   "utan_data_hit": 709,
+   "aktiverbara_utan_deklaration": 0,
+   "summa": 709
+  },
+  "outsideRegisteredArtifacts": {
+   "st": 32,
+   "$regel": "Redovisas alltid, valideras som explicita poster, ingår aldrig i produktnämnaren.",
+   "poster": [
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Minska mängden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Öka mängden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut färska champinjoner"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut grädde"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut pasta"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut vitlöksklyftor"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut gul lök"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut smör"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Minska mängden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Öka mängden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Minska mängden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Öka mängden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut färska champinjoner"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut grädde"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut pasta"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut vitlöksklyftor"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Byt ut gul lök"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Börja laga"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Generera"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Generera"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Beskriv veckan"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Planera själv"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Avbryt planeringen"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Fortsätt i bakgrunden"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Avbryt och behåll 4 dagar"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Fyll resten från förslag"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Spara veckan · 5 rätter"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "roll": "button",
+     "namn": "Planera utan tidsgräns"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "roll": "button",
+     "namn": "Rensa köpta"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "roll": "button",
+     "namn": "Från veckomenyn"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "roll": "button",
+     "namn": "Lägg till vara"
+    },
+    {
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "roll": "button",
+     "namn": "Rensa köpta"
+    }
+   ]
+  },
+  "controlTimesViewport": {
+   "st": null,
+   "$regel": "ANNAN MÄTENHET. Får aldrig summeras med talen ovan."
+  },
+  "klasser": {
+   "metadata-utan-roll": 8,
+   "ingen-deklaration": 709,
+   "deklaration-self": 593,
+   "utanfor-artefakt": 32,
+   "deklaration-target": 31,
+   "deklaration-lopttext": 11
+  },
+  "produktnamnare_st": 1344,
+  "failClosed": {
+   "fel": [],
+   "status": "godkänd"
+  }
+ },
+ "population": {
+  "total_metadatapopulation_st": 1384,
+  "semantiska_kontroller_st": 1376,
+  "produktnamnare_st": 1344,
+  "utanfor_produktpopulationen_st": 32,
+  "metadata_utan_roll_st": 8
+ },
+ "deklaration": {
+  "self_st": 593,
+  "target_st": 31,
+  "lopttext_ej_migrerad_st": 11,
+  "odeklarerad_st": 709
+ },
+ "utfall": {
+  "measured_st": 624,
+  "unknown_st": 720,
+  "pass_st": 601,
+  "fail_st": 23,
+  "fail_bredd_st": 11,
+  "fail_hojd_st": 23,
+  "fail_bagge_st": 11,
+  "measured_coverage_pct": 46.4,
+  "unknown_coverage_pct": 53.6
+ },
+ "artefakter": {
+  "med_matt_kontroll_st": 177,
+  "med_fynd_st": 10,
+  "med_overifierad_kontroll_st": 210
+ },
+ "utanfor_produktpopulationen": {
+  "st": 32,
+  "$regel": "Redovisas alltid, valideras som explicita poster, ingår aldrig i produktnämnaren.",
+  "poster": [
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Minska mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Öka mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut färska champinjoner"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut grädde"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut pasta"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut vitlöksklyftor"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut gul lök"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut smör"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Minska mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Öka mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Minska mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Öka mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut färska champinjoner"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut grädde"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut pasta"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut vitlöksklyftor"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut gul lök"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Börja laga"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Generera"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Generera"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Beskriv veckan"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Planera själv"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Avbryt planeringen"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Fortsätt i bakgrunden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Avbryt och behåll 4 dagar"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Fyll resten från förslag"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Spara veckan · 5 rätter"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Planera utan tidsgräns"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Rensa köpta"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Från veckomenyn"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Lägg till vara"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Rensa köpta"
+   }
+  ]
+ },
+ "control_times_viewport": {
+  "st": 1441,
+  "$regel": "EGEN MÄTENHET. Redovisas här bara för att den inte ska förväxlas — den summeras aldrig med talen ovan."
+ },
+ "fynd": [
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:searchbox|Sök bland dina recept · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "searchbox",
+   "namn": "Sök bland dina recept",
+   "agare": "self",
+   "matt": {
+    "w": 222,
+    "h": 21.5,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 26.5
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · bredlandskap · roll:button|Lägg till · agare=self · vp=compact-390",
+   "artifactId": "bredlandskap",
+   "roll": "button",
+   "namn": "Lägg till",
+   "agare": "self",
+   "matt": {
+    "w": 44,
+    "h": 44,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 4,
+    "hojd": 4
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · bredrecept · roll:button|Färre portioner · agare=self · vp=compact-390",
+   "artifactId": "bredrecept",
+   "roll": "button",
+   "namn": "Färre portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · bredrecept · roll:button|Fler portioner · agare=self · vp=compact-390",
+   "artifactId": "bredrecept",
+   "roll": "button",
+   "namn": "Fler portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · bredinkop · roll:checkbox|Spetskål, bockad · agare=target:bredinkop-checkbox-spetskal-bockad · vp=compact-390",
+   "artifactId": "bredinkop",
+   "roll": "checkbox",
+   "namn": "Spetskål, bockad",
+   "agare": "target:bredinkop-checkbox-spetskal-bockad",
+   "matt": {
+    "w": 399,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · vmbdelvis · roll:button|Ugnspannkaka, placera · agare=self · vp=compact-390",
+   "artifactId": "vmbdelvis",
+   "roll": "button",
+   "namn": "Ugnspannkaka, placera",
+   "agare": "self",
+   "matt": {
+    "w": 138.39,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · vmbdelvis · roll:button|Ärtsoppa, placera · agare=self · vp=compact-390",
+   "artifactId": "vmbdelvis",
+   "roll": "button",
+   "namn": "Ärtsoppa, placera",
+   "agare": "self",
+   "matt": {
+    "w": 102.35,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · vmbdelvis · roll:button|Rotsakslåda, placera · agare=self · vp=compact-390",
+   "artifactId": "vmbdelvis",
+   "roll": "button",
+   "namn": "Rotsakslåda, placera",
+   "agare": "self",
+   "matt": {
+    "w": 122.2,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcbnormal · roll:button|Färre portioner · agare=self · vp=compact-390",
+   "artifactId": "rcbnormal",
+   "roll": "button",
+   "namn": "Färre portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcbnormal · roll:button|Fler portioner · agare=self · vp=compact-390",
+   "artifactId": "rcbnormal",
+   "roll": "button",
+   "namn": "Fler portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcbportion · roll:button|Färre portioner · agare=self · vp=compact-390",
+   "artifactId": "rcbportion",
+   "roll": "button",
+   "namn": "Färre portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcbportion · roll:button|Fler portioner · agare=self · vp=compact-390",
+   "artifactId": "rcbportion",
+   "roll": "button",
+   "namn": "Fler portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcblaser · roll:button|Färre portioner · agare=self · vp=compact-390",
+   "artifactId": "rcblaser",
+   "roll": "button",
+   "namn": "Färre portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcblaser · roll:button|Fler portioner · agare=self · vp=compact-390",
+   "artifactId": "rcblaser",
+   "roll": "button",
+   "namn": "Fler portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcboffline · roll:button|Färre portioner · agare=self · vp=compact-390",
+   "artifactId": "rcboffline",
+   "roll": "button",
+   "namn": "Färre portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · rcboffline · roll:button|Fler portioner · agare=self · vp=compact-390",
+   "artifactId": "rcboffline",
+   "roll": "button",
+   "namn": "Fler portioner",
+   "agare": "self",
+   "matt": {
+    "w": 47,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 1,
+    "hojd": 1
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · ikbnormal · roll:checkbox|Spetskål, bockad · agare=target:ikbnormal-checkbox-spetskal-bockad · vp=compact-390",
+   "artifactId": "ikbnormal",
+   "roll": "checkbox",
+   "namn": "Spetskål, bockad",
+   "agare": "target:ikbnormal-checkbox-spetskal-bockad",
+   "matt": {
+    "w": 415,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:button|Utan nötter · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "button",
+   "namn": "Utan nötter",
+   "agare": "self",
+   "matt": {
+    "w": 96.38,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:button|Utan gluten · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "button",
+   "namn": "Utan gluten",
+   "agare": "self",
+   "matt": {
+    "w": 100.45,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:button|Utan laktos · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "button",
+   "namn": "Utan laktos",
+   "agare": "self",
+   "matt": {
+    "w": 99.92,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:button|Under 30 minuter · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "button",
+   "namn": "Under 30 minuter",
+   "agare": "self",
+   "matt": {
+    "w": 107.69,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:button|Över en timme · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "button",
+   "namn": "Över en timme",
+   "agare": "self",
+   "matt": {
+    "w": 118.9,
+    "h": 46,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 2
+   }
+  },
+  {
+   "findingId": "CHK-R-02 · sokpanel · roll:button|Mormors · agare=self · vp=compact-390",
+   "artifactId": "sokpanel",
+   "roll": "button",
+   "namn": "Mormors",
+   "agare": "self",
+   "matt": {
+    "w": 83.06,
+    "h": 47,
+    "enhet": "css-px"
+   },
+   "krav": 48,
+   "brist": {
+    "bredd": 0,
+    "hojd": 1
+   }
+  }
+ ],
+ "overifierade_skal": {
+  "ingen deklaration": 709,
+  "löptextdeklaration \"48\" är inte maskinellt entydig och tolkas inte heuristiskt": 10,
+  "löptextdeklaration \"44\" är inte maskinellt entydig och tolkas inte heuristiskt": 1
+ },
+ "failClosed": {
+  "fel": [],
+  "status": "godkänd"
+ },
+ "reproducerbarhet": {
+  "körningar": 2,
+  "identiska": true,
+  "källa": "ren utcheckning av 8897b49",
+  "$regel": "Bägge körningarna gjordes från ren utcheckning, utan ändringar mellan dem. Rapporterna är byteidentiska, inklusive findingId-mängden."
+ }
+}
