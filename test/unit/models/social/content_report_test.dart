@@ -6,6 +6,8 @@
 /// was in force at submission time.
 library;
 
+import 'dart:io';
+
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,6 +26,23 @@ void main() {
             'Guideline version should be an ISO date so historical reports sort.',
       );
     });
+
+    // BUT-1522: a report cites this constant, so it must name the version
+    // the user could actually read.
+    for (final lang in ['sv', 'en']) {
+      test('community_guidelines_$lang.md carries the current version', () {
+        final text = File(
+          'assets/legal/community_guidelines_$lang.md',
+        ).readAsStringSync();
+        expect(
+          RegExp(
+            r'^Version: (\S+)$',
+            multiLine: true,
+          ).firstMatch(text)?.group(1),
+          kCurrentGuidelineVersion,
+        );
+      });
+    }
 
     test('toFirestore round-trips guidelineVersion', () async {
       final firestore = FakeFirebaseFirestore();

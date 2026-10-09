@@ -1,6 +1,7 @@
 COMMUNITY GUIDELINES FOR BUTLERY
 
-Last updated: 2026-02-28
+Last updated: 2026-10-09
+Version: 2026-10-09
 
 Butlery is a community for cooking enthusiasts. These guidelines help us create a safe and pleasant environment for all users.
 
@@ -28,31 +29,50 @@ The following is not allowed:
 4. INAPPROPRIATE CONTENT
 
 - Do not post offensive or vulgar content
-- Do not share images unrelated to food and cooking
+- Do not share images unrelated to food and cooking (your profile picture is an exception)
 - Avoid coarse or offensive language in comments
 
-5. COPYRIGHT
+5. IMAGES AND AI-ASSISTED CONTENT
+
+Images (for example your profile picture, recipe photos and photos of what you have cooked):
+- Only share images you took yourself or have the right to share
+- Do not share images of other people without their permission. For children, ask a parent or guardian
+- Do not share images containing nudity, sexual content, violence or other offensive content
+- Material that sexualises children is strictly prohibited
+
+AI-assisted content:
+- When you import a recipe from a link or a photo, Butlery may use AI to interpret it. The AI can make mistakes, so check ingredients, amounts and allergens before you save or share the recipe
+- Do not present AI-generated images as photos of food you cooked yourself
+- Do not use AI to create content that breaks these guidelines
+
+Review:
+- Uploaded files are automatically checked to be real image files, and other files are removed. What an image shows is reviewed when someone reports it
+- Images and content that break these guidelines may be removed, and profiles may be hidden from other users, see the section on enforcement
+
+6. COPYRIGHT
 
 - Only share recipes you have the right to share
 - Credit the source when sharing recipes from others
 - Respect others' creative work
 
-6. IMPERSONATION
+7. IMPERSONATION
 
 - Do not impersonate another person
 - Do not use others' images as your own
 - Be honest about your experiences and expertise
 
-7. ENFORCEMENT
+8. ENFORCEMENT
 
 Violations of these guidelines may result in:
+- Removal of the content
+- The profile is hidden from other users
 - Warning
 - Temporary suspension
 - Permanent account removal
 
 We review reports and take action based on the severity of the situation.
 
-8. REPORTING
+9. REPORTING
 
 If you see content or behavior that violates these guidelines, report it through the report function in the app. All reports are treated confidentially.
 
