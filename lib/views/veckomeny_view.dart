@@ -402,6 +402,28 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       ),
       body: _buildBody(context, viewModel),
       floatingActionButton: _buildShoppingFab(context, viewModel),
+      // BUT-2275: in the Scaffold's bottom slot the shopping button floats
+      // above the footer; inside the body it covered "Jag placerar själv".
+      bottomNavigationBar: _buildPlacementFooter(context, viewModel),
+    );
+  }
+
+  /// BUT-1241: explicit placement choice for the generated result.
+  Widget? _buildPlacementFooter(BuildContext context, MenuViewModel viewModel) {
+    if (_viewMode != VeckomenyViewMode.lista ||
+        !viewModel.hasMenu ||
+        viewModel.isGenerating ||
+        viewModel.hasError) {
+      return null;
+    }
+    return MenuPlacementChoiceFooter(
+      // BUT-1987: the placement state lives on the CALENDAR viewmodel, which
+      // owns the write.
+      isPlacing: context
+          .watch<WeeklyMenuPlanViewModel>()
+          .isPlacingGeneratedMenu,
+      onPlaceAuto: () => unawaited(_onPlaceAutomatically()),
+      onPlaceManual: () => unawaited(_openPlacement(redoAuto: false)),
     );
   }
 
@@ -732,23 +754,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                                         : null,
                                   ),
                           ),
-                          // BUT-1241: explicit placement choice for the
-                          // generated result.
-                          if (viewModel.hasMenu &&
-                              !viewModel.isGenerating &&
-                              !viewModel.hasError)
-                            MenuPlacementChoiceFooter(
-                              // BUT-1987: the placement state lives on the
-                              // CALENDAR viewmodel, which owns the write.
-                              isPlacing: context
-                                  .watch<WeeklyMenuPlanViewModel>()
-                                  .isPlacingGeneratedMenu,
-                              onPlaceAuto: () =>
-                                  unawaited(_onPlaceAutomatically()),
-                              onPlaceManual: () => unawaited(
-                                _openPlacement(redoAuto: false),
-                              ),
-                            ),
                         ],
                       ),
               ),
