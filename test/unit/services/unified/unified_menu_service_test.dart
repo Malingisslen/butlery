@@ -45,6 +45,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart' as app_prov;
+import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
@@ -342,14 +343,19 @@ void main() {
       /// exact bug fix the comment in production code calls out.
       test('merges realtime_menus where user is a participant', () async {
         await _seedOwnedMenu(fakeFirestore, ownerId: 'user-1', title: 'My own');
+        // BUT-2216: seeded through the real writer, so the reader is held
+        // to the shape RealtimeMenuData actually stores.
+        final content = RealtimeMenuData.fromMenuCategories(
+          menuTitle: 'Shared session',
+          menuSnapshot: {
+            'Middag': [RecipeFactory.build(id: 'r1', title: 'Köttbullar')],
+          },
+        ).serializeContent();
         await fakeFirestore.collection('realtime_menus').add({
+          ...content,
           'ownerId': 'user-2',
           'ownerDisplayName': 'Bea',
           'participantIds': ['user-1', 'user-2'],
-          'menuSnapshot': {
-            'title': 'Shared session',
-            'categories': <String, dynamic>{},
-          },
           'createdAt': null,
         });
 
@@ -362,6 +368,11 @@ void main() {
         );
         expect(collaborative.allowCollaboration, isTrue);
         expect(collaborative.realtimeMenuId, isNotEmpty);
+        expect(collaborative.menuTitle, 'Shared session');
+        expect(
+          collaborative.menuSnapshot['Middag']?.map((r) => r.title),
+          ['Köttbullar'],
+        );
       });
 
       /// Proves: realtime_menus where the user IS the owner are skipped
@@ -405,10 +416,8 @@ void main() {
             'ownerId': 'user-2',
             'ownerDisplayName': 'Bea',
             'participantIds': ['user-1'],
-            'menuSnapshot': {
-              'title': 'Good one',
-              'categories': <String, dynamic>{},
-            },
+            'menuTitle': 'Good one',
+            'menuSnapshot': <String, dynamic>{},
           });
 
           await service.initialize();
