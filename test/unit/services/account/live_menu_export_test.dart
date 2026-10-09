@@ -5,8 +5,11 @@
 /// each dish it stores — while keeping their uids.
 library;
 
+import 'dart:convert';
+
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -53,6 +56,34 @@ class _StubExports extends FirebaseDataExportRepository {
     String userId, {
     int maxDocuments = 500,
   }) async => _rows('j', (joined ?? 0).clamp(0, maxDocuments));
+}
+
+/// Answers the ballots probe from a row count, or throws. The first
+/// [foreign] rows sit under a parent that is not a live menu.
+class _StubVotes extends FirebaseDataExportRepository {
+  _StubVotes({required super.authRepository, this.rows, this.foreign = 0})
+    : super(firestore: FakeFirebaseFirestore());
+
+  final int? rows;
+  final int foreign;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportLiveMenuVotesByUser(
+    String userId, {
+    int maxDocuments = 500,
+  }) async {
+    if (rows == null) throw StateError('ballots probe failed for $userId');
+    return [
+      for (var i = 0; i < rows!.clamp(0, maxDocuments); i++)
+        {
+          'menu_id': 'm$i',
+          'parent_collection': i < foreign
+              ? 'realtime_menus'
+              : FirestoreCollections.realtimeResources,
+          'data': <String, dynamic>{'userId': userId},
+        },
+    ];
+  }
 }
 
 void main() {
@@ -292,4 +323,211 @@ void main() {
       expect(section['error'], 'Live menus could not be exported.');
     },
   );
+
+  group('the user\'s own ballots (BUT-2118)', () {
+    Map<String, dynamic> dish(String id, String ownerId, String name) => {
+      'id': id,
+      'title': 'Rätt $id',
+      'socialData': {'ownerId': ownerId, 'ownerDisplayName': name},
+      'realtimeData': {
+        'lastEditedByUserId': ownerId,
+        'lastEditedByDisplayName': name,
+      },
+    };
+
+    Future<void> seedBallot(String menuId, MenuBallot ballot) => firestore
+        .collection(FirestoreCollections.realtimeResources)
+        .doc(menuId)
+        .collection(FirestoreCollections.liveMenuVotes)
+        .doc(ballot.userId)
+        .set(ballot.toFirestore());
+
+    StartedVote started(String id, List<VoteOption> options) => StartedVote(
+      id: id,
+      options: options,
+      deadline: DateTime(2026, 10, 10, 20, 15),
+      createdAt: DateTime(2026, 10, 9, 20, 15),
+    );
+
+    List<Map<String, dynamic>> rowsOf(Map<String, dynamic> section) =>
+        (section['live_menu_votes'] as List).cast<Map<String, dynamic>>();
+
+    test('only the user\'s own documents on live menus are exported', () async {
+      await seedBallot('m1', MenuBallot(userId: _me, ballots: {'v': 'a'}));
+      await seedBallot('m2', MenuBallot(userId: _owner, ballots: {'v': 'b'}));
+      // A `votes` collection under some other parent is not this section's,
+      // even when its document names the user.
+      await firestore
+          .collection('conversations')
+          .doc('c1')
+          .collection(FirestoreCollections.liveMenuVotes)
+          .doc(_me)
+          .set(MenuBallot(userId: _me, ballots: {'v': 'x'}).toFirestore());
+
+      final section = await export.exportVotes(_me);
+
+      expect(section['total_count'], 1);
+      expect(rowsOf(section).map((r) => r['menu_id']), ['m1']);
+      expect((rowsOf(section).single['data'] as Map)['ballots'], {'v': 'a'});
+      expect(section.containsKey('error'), isFalse);
+      expect(section.containsKey('truncated'), isFalse);
+      expect(section['note'], contains('not included'));
+    });
+
+    test('a menu the user has left is still exported', () async {
+      await seedBallot(
+        'left-menu',
+        MenuBallot(userId: _me, ballots: {'v': 'a'}),
+      );
+
+      expect(
+        rowsOf(await export.exportVotes(_me)).single['menu_id'],
+        'left-menu',
+      );
+    });
+
+    test('other people\'s names come out of every dish, the user\'s own and '
+        'every uid stay', () async {
+      await seedBallot(
+        'm1',
+        MenuBallot(
+          userId: _me,
+          started: {
+            'Middag#0': started('v1', [
+              VoteOption(id: 'a', dish: dish('d1', _owner, 'Olle')),
+              VoteOption(id: 'b', dish: dish('d2', _me, 'Jag')),
+            ]),
+          },
+          proposals: {
+            'v9': VoteOption(id: 'c', dish: dish('d3', _stranger, 'Sven')),
+          },
+          ballots: {'v1': 'a'},
+        ),
+      );
+
+      final data = (rowsOf(await export.exportVotes(_me)).single['data'] as Map)
+          .cast<String, dynamic>();
+      final options =
+          (((data['started'] as Map)['Middag#0'] as Map)['options'] as List)
+              .cast<Map<String, dynamic>>();
+      final theirs = options.first['dish'] as Map;
+      final mine = options.last['dish'] as Map;
+      final proposed = ((data['proposals'] as Map)['v9'] as Map)['dish'] as Map;
+
+      expect(
+        (theirs['socialData'] as Map).containsKey('ownerDisplayName'),
+        isFalse,
+      );
+      expect(
+        (theirs['realtimeData'] as Map).containsKey('lastEditedByDisplayName'),
+        isFalse,
+      );
+      expect((theirs['socialData'] as Map)['ownerId'], _owner);
+      expect(
+        (proposed['socialData'] as Map).containsKey('ownerDisplayName'),
+        isFalse,
+      );
+      expect((proposed['socialData'] as Map)['ownerId'], _stranger);
+      expect((mine['socialData'] as Map)['ownerDisplayName'], 'Jag');
+      expect((mine['realtimeData'] as Map)['lastEditedByDisplayName'], 'Jag');
+      expect(data['ballots'], {'v1': 'a'});
+      expect(data['userId'], _me);
+    });
+
+    test(
+      'the section encodes as JSON: stamps are strings, not Timestamps',
+      () async {
+        await seedBallot(
+          'm1',
+          MenuBallot(
+            userId: _me,
+            started: {
+              'Middag#0': started('v1', [
+                VoteOption(id: 'a', dish: dish('d', _me, 'Jag')),
+              ]),
+            },
+            resolved: {
+              'v1': VoteResolution(
+                outcome: VoteOutcome.winner,
+                optionId: 'a',
+                at: DateTime(2026, 10, 9, 21),
+              ),
+            },
+          ),
+        );
+
+        final section = await export.exportVotes(_me);
+
+        expect(() => json.encode(section), returnsNormally);
+        final data = rowsOf(section).single['data'] as Map;
+        final vote = (data['started'] as Map)['Middag#0'] as Map;
+        expect(vote['deadline'], isA<String>());
+        expect(
+          (data['resolved'] as Map)['v1'],
+          containsPair('outcome', 'winner'),
+        );
+      },
+    );
+
+    test(
+      'a user who never voted gets an empty section, not an error',
+      () async {
+        final section = await export.exportVotes(_me);
+
+        expect(section['total_count'], 0);
+        expect(section.containsKey('live_menu_votes'), isTrue);
+        expect(rowsOf(section), isEmpty);
+        expect(section.containsKey('error'), isFalse);
+        expect(section.containsKey('error_code'), isFalse);
+      },
+    );
+
+    test('one row over the cap marks the section truncated, exactly the cap '
+        'does not', () async {
+      final atCap = await LiveMenuExport(
+        _StubVotes(authRepository: auth, rows: 500),
+      ).exportVotes(_me);
+      final over = await LiveMenuExport(
+        _StubVotes(authRepository: auth, rows: 501),
+      ).exportVotes(_me);
+
+      expect(atCap.containsKey('truncated'), isFalse);
+      expect(atCap['total_count'], 500);
+      expect(over['truncated'], isTrue);
+      expect(over['total_count'], 500);
+    });
+
+    test('rows under another parent still count towards the cap', () async {
+      final section = await LiveMenuExport(
+        _StubVotes(authRepository: auth, rows: 501, foreign: 3),
+      ).exportVotes(_me);
+
+      expect(section['truncated'], isTrue);
+      expect(section['total_count'], 497);
+    });
+
+    test(
+      'a failed read gives the stable error, never the raw exception',
+      () async {
+        final section = await LiveMenuExport(
+          _StubVotes(authRepository: auth),
+        ).exportVotes(_me);
+
+        expect(section['error_code'], 'live-menu-votes-export-failed');
+        expect(section['error'], 'Live menu votes could not be exported.');
+        expect(section.containsKey('live_menu_votes'), isFalse);
+        expect(json.encode(section), isNot(contains('ballots probe failed')));
+      },
+    );
+
+    test('asking for another person\'s ballots returns none of them', () async {
+      await seedBallot('m1', MenuBallot(userId: _owner, ballots: {'v': 'b'}));
+
+      final section = await export.exportVotes(_owner);
+
+      expect(section['error_code'], 'live-menu-votes-export-failed');
+      expect(section.containsKey('live_menu_votes'), isFalse);
+      expect(json.encode(section), isNot(contains('"b"')));
+    });
+  });
 }

@@ -295,6 +295,29 @@ export async function probeResidualData(
       errName: err instanceof Error ? err.name : typeof err,
     });
   }
+  // BUT-2118: live-menu ballots. `deleteLiveMenuVotes` declines above its cap
+  // and reports the step incomplete; this leg stays loud in that case and
+  // while the collection-group index builds (FAILED_PRECONDITION lands in the
+  // catch). It reads the deleter's own rows, so a `votes` document under
+  // another parent is never counted.
+  try {
+    const rows = await liveMenuBallotRows(db, uid);
+    const count = rows === null ? 1 : rows.length;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual live-menu ballots", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: votes", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
   // BUT-2046: the erased uid as a REPORTER, on rows under OTHER people's
   // moderation records, and their OWN moderation record's rows. Two legs
   // because two deleters, per this file's rule that the deleter stays a strict
@@ -4709,6 +4732,8 @@ export async function deleteRealtimeResources(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  const votesCleared = await deleteLiveMenuVotes(db, uid);
+
   const owned = await db
     .collection(Collections.realtimeResources)
     .where("ownerId", "==", uid)
@@ -4717,7 +4742,85 @@ export async function deleteRealtimeResources(
 
   await scrubLastEditor(db, Collections.realtimeResources, uid);
   await removeRealtimeParticipation(db, Collections.realtimeResources, uid);
+  return votesCleared;
+}
+
+export const MAX_LIVE_MENU_VOTE_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2118: the person's own ballot documents,
+ * `realtime_resources/{menuId}/votes/{uid}`, on every live menu, including
+ * menus they have LEFT. That last case is why this is a collection-group
+ * query on `userId` and not a walk over the menus the roster sweep finds: a
+ * leaver is no longer in `participantIds`, and their document stays until its
+ * TTL. Owned menus lose all their ballots through
+ * [deleteRealtimeDocsWithChildren]; this leg may delete the owner's own
+ * document there too, which is harmless.
+ *
+ * Filtered on the parent collection, because the collection id `votes` is
+ * shared with the legacy `realtime_menus/{id}/votes` documents; the legacy
+ * uid-in-a-map residue stays with [removeVoteEntries].
+ *
+ * A failed chunk makes the step report failure rather than a clean one, and
+ * the menu legs after it still run. Capped like the poll-vote sweep; the leg
+ * in `probeResidualData` reads the same rows.
+ */
+export async function deleteLiveMenuVotes(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const ballots = await liveMenuBallotRows(db, uid);
+  if (ballots === null) {
+    logger.error(
+      "[deletion-cascade] implausible live-menu ballot count; not sweeping",
+      { uid_prefix: uid.slice(0, 6) },
+    );
+    return false;
+  }
+  try {
+    await commitInChunks(
+      db,
+      ballots,
+      (batch, doc) => batch.delete(doc.ref),
+      { label: "deleteLiveMenuVotes", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] live-menu ballot sweep failed", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
   return true;
+}
+
+/** True for `realtime_resources/{id}`, and for nothing nested deeper. */
+function isLiveMenuParent(ref: admin.firestore.DocumentReference): boolean {
+  return (
+    ref.parent.id === Collections.realtimeResources && ref.parent.parent === null
+  );
+}
+
+/**
+ * The erased user's ballot documents, found by collection group and kept only
+ * under a top-level `realtime_resources` document. `null` when the read
+ * exceeds the cap.
+ */
+async function liveMenuBallotRows(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<admin.firestore.QueryDocumentSnapshot[] | null> {
+  const snap = await db
+    .collectionGroup(Collections.liveMenuVotes)
+    .where("userId", "==", uid)
+    .limit(MAX_LIVE_MENU_VOTE_SWEEP_ROWS + 1)
+    .get();
+  if (snap.size > MAX_LIVE_MENU_VOTE_SWEEP_ROWS) return null;
+  return snap.docs.filter((doc) => {
+    const parent = doc.ref.parent.parent;
+    return parent !== null && isLiveMenuParent(parent);
+  });
 }
 
 /**
@@ -4726,8 +4829,7 @@ export async function deleteRealtimeResources(
  *
  * `realtime_menus/{menuId}/votes/{voteId}` is NOT uid-keyed by document id
  * despite what the rules comment suggests: the doc id is the slot's vote id and
- * the ballot is a MAP, `votes: {userId -> optionId}`, written by
- * `FirebaseMenuVotingRepository.castVote` as `votes.$userId`. So the deleted
+ * the ballot is a MAP, `votes: {userId -> optionId}`. So the deleted
  * user's uid survives one level below the document the participation sweep
  * cleans, on a menu that continues to exist for its owner.
  *

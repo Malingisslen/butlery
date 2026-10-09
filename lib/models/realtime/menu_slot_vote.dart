@@ -1,126 +1,75 @@
-/// Menu slot vote model for collaborative menu decision-making.
+/// A vote on one menu slot, derived from everyone's ballot documents.
 
 // lib/models/realtime/menu_slot_vote.dart
 
 import 'package:clock/clock.dart';
-import 'package:butlery/core/types/app_timestamp.dart';
-import 'package:butlery/core/utils/serialization_utils.dart';
-import 'package:uuid/uuid.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 
-/// A single vote option — a recipe proposed for a menu slot.
-class VoteOption {
-  final String id;
-  final String recipeId;
-  final String recipeName;
-  final String? recipeImageUrl;
-  final String suggestedByUserId;
+export 'package:butlery/models/realtime/menu_ballot.dart';
 
-  const VoteOption({
-    required this.id,
-    required this.recipeId,
-    required this.recipeName,
-    this.recipeImageUrl,
-    required this.suggestedByUserId,
-  });
+/// Where a vote stands. A vote that ran out is NOT settled: nothing decides
+/// at the deadline (produktregler 4.8), so the two expired states are their
+/// own states, waiting for the person who started it.
+enum SlotVoteState { open, expiredWithVotes, expiredEmpty, decided, released }
 
-  Map<String, dynamic> toFirestore() => {
-    'id': id,
-    'recipeId': recipeId,
-    'recipeName': recipeName,
-    'recipeImageUrl': recipeImageUrl,
-    'suggestedByUserId': suggestedByUserId,
-  };
-
-  factory VoteOption.fromMap(Map<String, dynamic> data) => VoteOption(
-    id: SerializationUtils.safeString(data, 'id'),
-    recipeId: SerializationUtils.safeString(data, 'recipeId'),
-    recipeName: SerializationUtils.safeString(data, 'recipeName'),
-    recipeImageUrl: SerializationUtils.safeNullableString(
-      data,
-      'recipeImageUrl',
-    ),
-    suggestedByUserId: SerializationUtils.safeString(data, 'suggestedByUserId'),
-  );
-}
-
-/// A vote on a menu slot — multiple recipe alternatives, household members vote.
+/// One slot's vote as everyone sees it: the starter's options plus everyone's
+/// proposals, and one ballot per person. Built by [deriveAll]; never stored.
 class MenuSlotVote {
   final String id;
-  final String menuId;
   final String category;
   final int slotIndex;
+  final String starterId;
   final List<VoteOption> alternatives;
-  final Map<String, String> votes; // userId -> optionId
+
+  /// Ballots that name one of [alternatives], keyed by voter.
+  final Map<String, String> votes;
+
   final DateTime deadline;
-  final bool isResolved;
-  final String? winningOptionId;
-  final String createdByUserId;
   final DateTime createdAt;
+  final VoteResolution? resolution;
+
+  /// An expired vote nobody settled is dropped from view after this long, so
+  /// a starter who never comes back does not leave a card on the menu for
+  /// good. The slot itself was never locked.
+  static const Duration hideAfterExpiry = Duration(days: 7);
 
   const MenuSlotVote({
     required this.id,
-    required this.menuId,
     required this.category,
     required this.slotIndex,
+    required this.starterId,
     required this.alternatives,
     this.votes = const {},
     required this.deadline,
-    this.isResolved = false,
-    this.winningOptionId,
-    required this.createdByUserId,
     required this.createdAt,
+    this.resolution,
   });
 
-  factory MenuSlotVote.create({
-    required String menuId,
-    required String category,
-    required int slotIndex,
-    required List<VoteOption> alternatives,
-    required Duration votingWindow,
-    required String createdByUserId,
-  }) {
-    return MenuSlotVote(
-      id: const Uuid().v4(),
-      menuId: menuId,
-      category: category,
-      slotIndex: slotIndex,
-      alternatives: alternatives,
-      deadline: clock.now().add(votingWindow),
-      createdByUserId: createdByUserId,
-      createdAt: clock.now(),
-    );
-  }
+  String get slotKey => MenuBallot.slotKey(category, slotIndex);
 
-  MenuSlotVote copyWith({
-    List<VoteOption>? alternatives,
-    Map<String, String>? votes,
-    DateTime? deadline,
-    bool? isResolved,
-    String? winningOptionId,
-  }) {
-    return MenuSlotVote(
-      id: id,
-      menuId: menuId,
-      category: category,
-      slotIndex: slotIndex,
-      alternatives: alternatives ?? this.alternatives,
-      votes: votes ?? this.votes,
-      deadline: deadline ?? this.deadline,
-      isResolved: isResolved ?? this.isResolved,
-      winningOptionId: winningOptionId ?? this.winningOptionId,
-      createdByUserId: createdByUserId,
-      createdAt: createdAt,
-    );
-  }
-
-  // --- Computed getters ---
-
+  bool get isResolved => resolution != null;
   bool get isExpired => clock.now().isAfter(deadline);
   bool get isActive => !isResolved && !isExpired;
+  bool get isStale =>
+      !isResolved && clock.now().isAfter(deadline.add(hideAfterExpiry));
+
+  SlotVoteState get state {
+    final r = resolution;
+    if (r != null) {
+      return r.outcome == VoteOutcome.winner
+          ? SlotVoteState.decided
+          : SlotVoteState.released;
+    }
+    if (!isExpired) return SlotVoteState.open;
+    return votes.isEmpty
+        ? SlotVoteState.expiredEmpty
+        : SlotVoteState.expiredWithVotes;
+  }
+
+  bool isStarter(String userId) => userId == starterId;
   bool hasVoted(String userId) => votes.containsKey(userId);
   int get totalVotes => votes.length;
 
-  /// Tally votes per option.
   Map<String, int> get tallies {
     final counts = <String, int>{};
     for (final optionId in votes.values) {
@@ -129,90 +78,90 @@ class MenuSlotVote {
     return counts;
   }
 
-  /// The option with the most votes (null if no votes).
-  ///
-  /// Tie-break is deterministic: on equal counts the option whose id sorts
-  /// first wins. Without the secondary key the leader could flip between reads
-  /// purely on map iteration order, so two clients viewing the same tied vote
-  /// could disagree on who's "leading".
-  VoteOption? get leadingOption {
-    if (votes.isEmpty) return null;
-    final sorted = tallies.entries.toList()
-      ..sort((a, b) {
-        final byCount = b.value.compareTo(a.value);
-        if (byCount != 0) return byCount;
-        return a.key.compareTo(b.key);
-      });
-    final leadingId = sorted.first.key;
-    try {
-      return alternatives.firstWhere((o) => o.id == leadingId);
-    } on StateError {
-      return null;
-    }
+  /// Every option with the highest count. More than one is a tie, which the
+  /// app never breaks on its own: only the starter decides it.
+  List<VoteOption> get leaders {
+    final counts = tallies;
+    if (counts.isEmpty) return const [];
+    final top = counts.values.reduce((a, b) => a > b ? a : b);
+    return [
+      for (final o in alternatives)
+        if (counts[o.id] == top) o,
+    ];
   }
 
-  /// The resolved winner option.
+  bool get isTie => leaders.length > 1;
+  VoteOption? get clearWinner => leaders.length == 1 ? leaders.first : null;
+
+  VoteOption? optionById(String id) {
+    for (final o in alternatives) {
+      if (o.id == id) return o;
+    }
+    return null;
+  }
+
   VoteOption? get winningOption {
-    if (winningOptionId == null) return null;
-    try {
-      return alternatives.firstWhere((o) => o.id == winningOptionId);
-    } on StateError {
-      return null;
-    }
+    final id = resolution?.optionId;
+    return id == null ? null : optionById(id);
   }
 
-  // --- Serialization ---
-
-  Map<String, dynamic> toFirestore() => {
-    'menuId': menuId,
-    'category': category,
-    'slotIndex': slotIndex,
-    'alternatives': alternatives.map((o) => o.toFirestore()).toList(),
-    'votes': votes,
-    'deadline': AppTimestamp.fromDateTime(deadline).toFirestore(),
-    'isResolved': isResolved,
-    'winningOptionId': winningOptionId,
-    'createdByUserId': createdByUserId,
-    'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
-  };
-
-  factory MenuSlotVote.fromMap(String id, Map<String, dynamic> data) {
-    final alternativesList =
-        (data['alternatives'] as List<dynamic>?)
-            ?.map((e) => VoteOption.fromMap(e as Map<String, dynamic>))
-            .toList() ??
-        [];
-
-    final votesMap = <String, String>{};
-    if (data['votes'] is Map) {
-      (data['votes'] as Map).forEach((key, value) {
-        votesMap[key.toString()] = value.toString();
-      });
+  /// The votes on the menu, from the ballot documents of the people now on
+  /// it. A person who left stops counting: their vote, their proposals and
+  /// any vote they started drop out together. A ballot naming an option that
+  /// is not on the vote is ignored, so a stray write cannot add a choice.
+  static List<MenuSlotVote> deriveAll(
+    Iterable<MenuBallot> documents,
+    Set<String> participantIds,
+  ) {
+    final current = [
+      for (final d in documents)
+        if (participantIds.contains(d.userId)) d,
+    ];
+    final out = <MenuSlotVote>[];
+    for (final starter in current) {
+      for (final entry in starter.started.entries) {
+        final slot = _parseSlotKey(entry.key);
+        if (slot == null) continue;
+        final started = entry.value;
+        final options = <VoteOption>[...started.options];
+        final seen = {for (final o in options) o.id};
+        for (final d in current) {
+          final proposal = d.proposals[started.id];
+          if (proposal != null && seen.add(proposal.id)) options.add(proposal);
+        }
+        final votes = <String, String>{
+          for (final d in current)
+            if (d.ballots[started.id] case final choice?)
+              if (seen.contains(choice)) d.userId: choice,
+        };
+        out.add(
+          MenuSlotVote(
+            id: started.id,
+            category: slot.$1,
+            slotIndex: slot.$2,
+            starterId: starter.userId,
+            alternatives: options,
+            votes: votes,
+            deadline: started.deadline,
+            createdAt: started.createdAt,
+            resolution: starter.resolved[started.id],
+          ),
+        );
+      }
     }
+    return out;
+  }
 
-    return MenuSlotVote(
-      id: id,
-      menuId: SerializationUtils.safeString(data, 'menuId'),
-      category: SerializationUtils.safeString(data, 'category'),
-      slotIndex: SerializationUtils.safeInt(data, 'slotIndex'),
-      alternatives: alternativesList,
-      votes: votesMap,
-      deadline: SerializationUtils.parseRequiredDateTimeValue(data['deadline']),
-      isResolved: SerializationUtils.safeBool(data, 'isResolved'),
-      winningOptionId: SerializationUtils.safeNullableString(
-        data,
-        'winningOptionId',
-      ),
-      createdByUserId: SerializationUtils.safeString(data, 'createdByUserId'),
-      createdAt: SerializationUtils.parseRequiredDateTimeValue(
-        data['createdAt'],
-      ),
-    );
+  static (String, int)? _parseSlotKey(String key) {
+    final cut = key.lastIndexOf('#');
+    if (cut <= 0) return null;
+    final index = int.tryParse(key.substring(cut + 1));
+    if (index == null || index < 0) return null;
+    return (key.substring(0, cut), index);
   }
 
   @override
   String toString() =>
-      'MenuSlotVote(id: $id, menu: $menuId, $category[$slotIndex], '
-      '${alternatives.length} options, ${votes.length} votes, '
-      'resolved: $isResolved)';
+      'MenuSlotVote(id: $id, $category[$slotIndex], '
+      '${alternatives.length} options, ${votes.length} votes, $state)';
 }

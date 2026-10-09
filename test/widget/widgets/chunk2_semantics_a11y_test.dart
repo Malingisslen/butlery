@@ -31,26 +31,15 @@ void main() {
   MenuSlotVote buildVote({Map<String, String> votes = const {}}) {
     return MenuSlotVote(
       id: 'v1',
-      menuId: 'm1',
       category: 'middag',
       slotIndex: 0,
+      starterId: 'me',
       alternatives: const [
-        VoteOption(
-          id: 'a1',
-          recipeId: 'r1',
-          recipeName: 'Pannkakor',
-          suggestedByUserId: 'me',
-        ),
-        VoteOption(
-          id: 'a2',
-          recipeId: 'r2',
-          recipeName: 'Pasta',
-          suggestedByUserId: 'me',
-        ),
+        VoteOption(id: 'a1', dish: {'id': 'r1', 'title': 'Pannkakor'}),
+        VoteOption(id: 'a2', dish: {'id': 'r2', 'title': 'Pasta'}),
       ],
       votes: votes,
       deadline: DateTime.now().add(const Duration(hours: 24)),
-      createdByUserId: 'me',
       createdAt: DateTime.now(),
     );
   }
@@ -151,7 +140,7 @@ void main() {
       );
 
       expect(
-        find.bySemanticsLabel(RegExp(r'Pannkakor, vald')),
+        find.bySemanticsLabel(RegExp(r'Pannkakor, din röst\.')),
         findsWidgets,
       );
       handle.dispose();

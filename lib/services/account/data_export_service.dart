@@ -293,6 +293,8 @@ class DataExportService extends BaseService {
       'moderation_counters': _socialManager.exportModerationCounters(userId),
       'pings': _socialManager.exportPings(userId),
       'live_menus': _contentManager.exportLiveMenus(userId),
+      // BUT-2118: erased with the account by the cascade, so exported.
+      'live_menu_votes': _contentManager.exportLiveMenuVotes(userId),
       'ingredient_suggestions': _contentManager.exportIngredientSuggestions(
         userId,
       ),

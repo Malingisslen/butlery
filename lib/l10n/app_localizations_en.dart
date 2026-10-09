@@ -5203,6 +5203,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuVoteNoAlternatives => 'No suggestions yet';
 
   @override
+  String get menuVoteQuestion => 'What will it be?';
+
+  @override
+  String menuVoteClosesInHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Closes in $count hours',
+      one: 'Closes in 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuVoteClosesSoon => 'Closes within an hour';
+
+  @override
+  String menuVoteLateOption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added late: $count had already voted',
+      one: 'Added late: 1 had already voted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuVoteProposeOther => 'Suggest something else';
+
+  @override
+  String get menuVoteDecide => 'Decide';
+
+  @override
+  String menuVoteDecideFor(String recipeName) {
+    return 'Choose $recipeName';
+  }
+
+  @override
+  String get menuVoteTieTitle => 'A tie, needs a decision';
+
+  @override
+  String get menuVoteTieStarterBody =>
+      'The app does not pick a winner on a tie. You started the vote, so you choose.';
+
+  @override
+  String get menuVoteWaitingOnStarter =>
+      'Waiting for the person who started the vote.';
+
+  @override
+  String get menuVoteGiveADay => 'Give it a day';
+
+  @override
+  String get menuVoteDecideAnyway => 'Decide anyway';
+
+  @override
+  String get menuVoteReopen => 'Open again';
+
+  @override
+  String get menuVoteRelease => 'Let the slot go';
+
+  @override
+  String get menuVoteNobodyVoted => 'Nobody voted';
+
+  @override
+  String get menuVoteNobodyVotedBody =>
+      'This is not a tie but a suggestion nobody took up. No dish is put on the slot because of it.';
+
+  @override
+  String get menuVoteApplyFailed => 'The winner could not be added to the menu';
+
+  @override
+  String get menuVoteSaveFailed => 'The vote could not be saved';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Check your internet connection and try again.';
 
@@ -13212,7 +13287,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recipes moved to the trash for 30 days';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes moved to the trash for 30 days',
+      one: '1 recipe moved to the trash for 30 days',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14704,7 +14785,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String a11yMenuVoteOptionSelected(String name) {
-    return '$name, selected. Tap to change vote.';
+    return '$name, your vote.';
   }
 
   @override
@@ -17962,12 +18043,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String trashRestoreSelected(int count) {
-    return 'Restore $count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restore $count recipes',
+      one: 'Restore 1 recipe',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashDeleteSelected(int count) {
-    return 'Delete $count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes',
+      one: 'Delete 1 recipe',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -18040,22 +18133,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String trashFailOffline(int count) {
-    return '$count recipes were not done because you are offline.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were not done because you are offline.',
+      one: '1 recipe was not done because you are offline.',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashFailExpired(int count) {
-    return '$count recipes had already expired.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes had already expired.',
+      one: '1 recipe had already expired.',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashFailGone(int count) {
-    return '$count recipes were no longer in the trash.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were no longer in the trash.',
+      one: '1 recipe was no longer in the trash.',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashFailFailed(int count) {
-    return '$count recipes could not be done. Try again.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes could not be done. Try again.',
+      one: '1 recipe could not be done. Try again.',
+    );
+    return '$_temp0';
   }
 
   @override

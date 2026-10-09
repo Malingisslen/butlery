@@ -34,7 +34,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatefulWidget {
   final String? initialText;
-  final String? sourceUrl;
 
   /// BUT-928: overall OCR confidence (0.0-1.0) when [initialText] came from
   /// the photo-import OCR step — re-surfaces the preview badge here so the
@@ -44,7 +43,6 @@ class FranSocialaMedierView extends StatefulWidget {
   const FranSocialaMedierView({
     super.key,
     this.initialText,
-    this.sourceUrl,
     this.ocrConfidence,
   });
 
@@ -59,9 +57,6 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<TextImportViewModel>();
-    if (widget.sourceUrl != null) {
-      _viewModel.setSourceUrl(widget.sourceUrl!);
-    }
   }
 
   @override
@@ -76,7 +71,6 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
       value: _viewModel,
       child: _FranSocialaMedierViewContent(
         initialText: widget.initialText,
-        sourceUrl: widget.sourceUrl,
         ocrConfidence: widget.ocrConfidence,
       ),
     );
@@ -85,12 +79,10 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
 
 class _FranSocialaMedierViewContent extends StatefulWidget {
   final String? initialText;
-  final String? sourceUrl;
   final double? ocrConfidence;
 
   const _FranSocialaMedierViewContent({
     this.initialText,
-    this.sourceUrl,
     this.ocrConfidence,
   });
 
@@ -162,8 +154,7 @@ class _FranSocialaMedierViewContentState
   Future<void> _parseAndNavigate(BuildContext context) async {
     final viewModel = context.read<TextImportViewModel>();
 
-    // BUT-1037: cheap recipe-likeness gate — warn before spending a paid LLM
-    // parse on text that clearly isn't a recipe. The user can always override,
+    // BUT-1037: cheap recipe-likeness gate. The user can always override,
     // so edge-case recipes are never blocked.
     if (!RecipeTextHeuristic.looksLikeRecipe(viewModel.inputText)) {
       final proceed = await _confirmNonRecipeImport(context);
@@ -275,7 +266,7 @@ class _FranSocialaMedierViewContentState
 
   /// BUT-1037: non-blocking confirm shown when the pasted text fails the
   /// recipe-likeness heuristic. Returns true if the user chooses to import
-  /// anyway (proceed to the paid LLM parse), false to back out.
+  /// anyway, false to back out.
   Future<bool> _confirmNonRecipeImport(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,

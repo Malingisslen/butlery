@@ -402,6 +402,8 @@ class ExportPaginationHelper {
     // BUT-2114: comment likes. The read is a collection group, so this caps
     // the query, not the exported rows.
     'comment_likes': 1000,
+    // BUT-2118: one ballot document per live menu the user voted on.
+    'live_menu_votes': 500,
   };
 
   /// Get export limit for content type

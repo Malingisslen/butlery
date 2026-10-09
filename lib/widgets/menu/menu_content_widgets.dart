@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -20,12 +19,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
-import 'package:butlery/widgets/menu/menu_vote_card.dart';
-import 'package:butlery/widgets/menu/suggest_alternative_sheet.dart';
-import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
@@ -466,29 +461,13 @@ class MenuContentWidgets {
               );
             },
           ),
-          // Show vote card if active vote exists for this slot
-          if (votingViewModel case final vvm?) ...[
-            Builder(
-              builder: (context) {
-                final vote = vvm.getVoteForSlot(category, i);
-                if (vote == null) return const SizedBox.shrink();
-                final userId = ServiceLocator.get<PermissionService>()
-                    .currentUserId
-                    .orEmpty();
-                return Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: AppDimensions.space4,
-                  ),
-                  child: MenuVoteCard(
-                    vote: vote,
-                    currentUserId: userId,
-                    onVote: (optionId) => vvm.castVote(vote.id, optionId),
-                    onResolve: () => vvm.resolveVote(vote.id),
-                  ),
-                );
-              },
+          if (votingViewModel case final vvm?)
+            MenuSlotVoteSection(
+              voting: vvm,
+              menu: viewModel,
+              category: category,
+              slotIndex: i,
             ),
-          ],
         ],
       ],
     );
@@ -676,72 +655,13 @@ class _MenuRecipeCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   // Vote button (collaborative menus only)
-                  if (votingViewModel != null) ...[
-                    Material(
-                      color: cs.surface,
-                      borderRadius: BorderRadius.zero,
-                      child: Semantics(
-                        label: context.l10n.a11yMenuSuggestAlternative(
-                          recipe.title,
-                        ),
-                        button: true,
-                        child: PressFill(
-                          surface: PressSurface.base,
-                          child: InkWell(
-                            onTap: () async {
-                              final pool = await viewModel
-                                  .getAvailableRecipesAsync();
-                              if (!context.mounted) return;
-                              final selectedRecipe =
-                                  await SuggestAlternativeSheet.show(
-                                    context,
-                                    availableRecipes: pool,
-                                    excludeRecipeIds: [recipe.id],
-                                  );
-                              if (selectedRecipe != null) {
-                                final userId =
-                                    ServiceLocator.get<PermissionService>()
-                                        .currentUserId ??
-                                    '';
-                                final currentOption = VoteOption(
-                                  id: recipe.id,
-                                  recipeId: recipe.id,
-                                  recipeName: recipe.title,
-                                  recipeImageUrl: recipe.imageUrls.isNotEmpty
-                                      ? recipe.imageUrls.first
-                                      : null,
-                                  suggestedByUserId: userId,
-                                );
-                                final newOption = VoteOption(
-                                  id: selectedRecipe.id,
-                                  recipeId: selectedRecipe.id,
-                                  recipeName: selectedRecipe.title,
-                                  recipeImageUrl:
-                                      selectedRecipe.imageUrls.isNotEmpty
-                                      ? selectedRecipe.imageUrls.first
-                                      : null,
-                                  suggestedByUserId: userId,
-                                );
-                                votingViewModel!.createVote(
-                                  category: category,
-                                  slotIndex: slotIndex,
-                                  alternatives: [currentOption, newOption],
-                                );
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(
-                                AppDimensions.spacingXs,
-                              ),
-                              child: ButleryIcon(
-                                ButleryIcons.vote,
-                                size: AppDimensions.iconSizeS,
-                                color: cs.onSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                  if (votingViewModel case final vvm?) ...[
+                    MenuStartVoteButton(
+                      voting: vvm,
+                      menu: viewModel,
+                      recipe: recipe,
+                      category: category,
+                      slotIndex: slotIndex,
                     ),
                     const SizedBox(width: AppDimensions.space4),
                   ],

@@ -191,6 +191,10 @@ void main() {
       expect(ExportPaginationHelper.exportLimits['comment_likes'], 1000);
     });
 
+    test('the live-menu-votes cap is declared', () {
+      expect(ExportPaginationHelper.exportLimits['live_menu_votes'], 500);
+    });
+
     test('the trash cap is declared', () {
       expect(ExportPaginationHelper.exportLimits['user_trash'], 200);
     });

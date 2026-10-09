@@ -1,5 +1,6 @@
 // lib/services/account/export/live_menu_export.dart
 
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
@@ -73,6 +74,92 @@ class LiveMenuExport {
         'error_code': 'live-menus-export-failed',
       };
     }
+  }
+
+  /// BUT-2118: the user's own ballot documents: the votes they started, the
+  /// dishes they proposed, what they voted for and how they settled their
+  /// votes. Other people's ballots are not here; a vote's options are dishes
+  /// in the menu's shape, so other people's names come out of them as they do
+  /// from the menu.
+  Future<Map<String, dynamic>> exportVotes(String userId) async {
+    const note =
+        'Your own votes on live menus. Who else voted, and for what, is not '
+        'included.';
+    try {
+      final rows = await ExportPaginationHelper.fetchCapped(
+        type: 'live_menu_votes',
+        fetch: (max) =>
+            _exports.exportLiveMenuVotesByUser(userId, maxDocuments: max),
+      );
+      final ballots = [
+        for (final row in rows.items)
+          if (row['parent_collection'] ==
+              FirestoreCollections.realtimeResources)
+            row,
+      ];
+      return {
+        'total_count': ballots.length,
+        'live_menu_votes': [
+          for (final row in ballots)
+            {
+              'menu_id': row['menu_id'],
+              'data': minimiseBallot(
+                (row['data'] as Map).cast<String, dynamic>(),
+                userId,
+              ),
+            },
+        ],
+        'note': note,
+        if (rows.truncated) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export menu votes', e);
+      return {
+        'error': 'Live menu votes could not be exported.',
+        'error_code': 'live-menu-votes-export-failed',
+        'note': note,
+      };
+    }
+  }
+
+  /// The JSON-safe ballot document with other people's names removed from
+  /// every option's dish.
+  static Map<String, dynamic> minimiseBallot(
+    Map<String, dynamic> source,
+    String userId,
+  ) {
+    Map<String, dynamic> option(Object? o) {
+      final copy = Map<String, dynamic>.from(o is Map ? o : const {});
+      final dish = copy['dish'];
+      if (dish is Map) {
+        copy['dish'] = _minimiseDish(dish.cast<String, dynamic>(), userId);
+      }
+      return copy;
+    }
+
+    final copy = Map<String, dynamic>.from(source);
+    final started = copy['started'];
+    if (started is Map) {
+      copy['started'] = {
+        for (final e in started.entries)
+          if (e.value is Map)
+            e.key.toString(): {
+              ...(e.value as Map).cast<String, dynamic>(),
+              'options': [
+                for (final o
+                    in ((e.value as Map)['options'] as List? ?? const []))
+                  option(o),
+              ],
+            },
+      };
+    }
+    final proposals = copy['proposals'];
+    if (proposals is Map) {
+      copy['proposals'] = {
+        for (final e in proposals.entries) e.key.toString(): option(e.value),
+      };
+    }
+    return sanitizeForJson(copy) as Map<String, dynamic>;
   }
 
   /// The JSON-safe menu document with other people's names removed at both
