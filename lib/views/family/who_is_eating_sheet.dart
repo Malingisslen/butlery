@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
@@ -204,6 +205,13 @@ class _WhoIsEatingSheet extends StatelessWidget {
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
+                // On a phone the app-wide "!" feedback button floats over
+                // this list at the same right edge, so without this inset it
+                // covers a row's checkbox (BUT-2261). The buttons below sit
+                // lower than it and keep the full width.
+                padding: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.minTouchTarget + AppDimensions.paddingS,
+                ),
                 itemCount: vm.roster.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, i) {
