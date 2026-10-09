@@ -49,7 +49,6 @@ import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
-import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
@@ -208,13 +207,6 @@ void main() {
       // permission service's Auth-derived 'Anna' above.
       final profile = TestServiceLocator.get<UserService>() as MockUserService;
       when(() => profile.attributionDisplayName).thenReturn('Anna i appen');
-
-      // MenuCollaborationRepository is fetched lazily by `collaborative`
-      // getter — register a default mock so the getter doesn't blow up if
-      // a test touches it.
-      TestServiceLocator.registerMock<MenuCollaborationRepository>(
-        MockMenuCollaborationRepository(),
-      );
 
       // Production ServiceLocator delegates to TestServiceLocator via
       // MockDIContainer; required because UnifiedMenuService reads
@@ -791,90 +783,12 @@ void main() {
     });
 
     // ---------------------------------------------------------------------
-    // BUT-1142: collaborative-ops DI seam
-    // ---------------------------------------------------------------------
-    group('BUT-1142: collaborative-ops DI seam', () {
-      /// Proves: when a MenuCollaborationRepository is passed via the
-      /// constructor seam, _initializeCollaborativeOperations() uses it
-      /// instead of looking up via ServiceLocator. The "throw on lookup"
-      /// stub registered below ensures the test fails loudly if the
-      /// ServiceLocator path is hit by accident.
-      test('uses ctor override instead of ServiceLocator lookup', () async {
-        // Register a stub that throws if ServiceLocator path is used.
-        TestServiceLocator.registerMock<MenuCollaborationRepository>(
-          _ThrowingMenuCollaborationRepository(),
-        );
-
-        final fakeRepo = _RecordingMenuCollaborationRepository();
-        final overrideService = UnifiedMenuService(
-          firestoreRepository: firestoreRepo,
-          menuCollaborationRepository: fakeRepo,
-        );
-
-        try {
-          // Touching `collaborative` triggers _initializeCollaborativeOperations.
-          // If the override seam works, the fake is wired in and called below.
-          // If broken, the ServiceLocator stub throws -> test fails.
-          final result = await overrideService.collaborative
-              .enableMenuCollaboration(
-                menuId: 'm-1',
-                collaboratorIds: const ['u-1'],
-              );
-
-          expect(
-            result,
-            isTrue,
-            reason: 'fake should return its configured success value',
-          );
-          expect(
-            fakeRepo.enableCollaborationCalls.length,
-            1,
-            reason: 'override path was not used — ctor seam is broken',
-          );
-          expect(fakeRepo.enableCollaborationCalls.single.menuId, 'm-1');
-        } finally {
-          overrideService.dispose();
-        }
-      });
-
-      /// Proves: errors thrown by the override repository propagate out
-      /// through the collaborative operations layer (no swallowing). This
-      /// is the contract callers rely on when surfacing failures to UI.
-      test('propagates errors from override repository', () async {
-        TestServiceLocator.registerMock<MenuCollaborationRepository>(
-          _ThrowingMenuCollaborationRepository(),
-        );
-
-        final fakeRepo = _RecordingMenuCollaborationRepository()
-          ..throwOnEnable = StateError('boom');
-        final overrideService = UnifiedMenuService(
-          firestoreRepository: firestoreRepo,
-          menuCollaborationRepository: fakeRepo,
-        );
-
-        try {
-          await expectLater(
-            overrideService.collaborative.enableMenuCollaboration(
-              menuId: 'm-err',
-              collaboratorIds: const ['u-1'],
-            ),
-            throwsA(isA<StateError>()),
-          );
-          expect(fakeRepo.enableCollaborationCalls.length, 1);
-        } finally {
-          overrideService.dispose();
-        }
-      });
-    });
-
-    // ---------------------------------------------------------------------
     // BUT-1153: PermissionService DI seam (currentUserId getter)
     // ---------------------------------------------------------------------
     group('BUT-1153: PermissionService DI seam', () {
       /// Proves: when a PermissionService is passed via the ctor seam,
       /// the `currentUserId` getter consults
-      /// the override rather than the ServiceLocator. Matches the BUT-1142
-      /// pattern; sealed the last remaining ServiceLocator-lookup hole.
+      /// the override rather than the ServiceLocator.
       test(
         'currentUserId uses the ctor override; the name is the profile\'s',
         () {
@@ -966,16 +880,16 @@ void main() {
     // dispose
     // ---------------------------------------------------------------------
     group('dispose', () {
-      /// Proves: calling notifyListeners (via triggerNotification) after
+      /// Proves: calling notifyListeners after
       /// dispose does NOT throw. A real "racing with dispose" bug would
       /// blow up on the closed subject.
-      test('triggerNotification after dispose is a no-op', () async {
+      test('notifyListeners after dispose is a no-op', () async {
         await service.initialize();
 
         service.dispose();
 
         // Must not throw.
-        expect(() => service.triggerNotification(), returnsNormally);
+        expect(() => service.notifyListeners(), returnsNormally);
 
         // Reassign so tearDown's dispose() is on a fresh instance and
         // doesn't double-close the subject.
@@ -983,58 +897,6 @@ void main() {
       });
     });
   });
-}
-
-/// Records every call to enableCollaboration and supports configurable
-/// throwing. Unused methods inherit Fake's noSuchMethod (loud failure) so
-/// any accidental code path will surface immediately.
-class _RecordingMenuCollaborationRepository extends Fake
-    implements MenuCollaborationRepository {
-  final List<({String menuId, List<String> collaboratorIds})>
-  enableCollaborationCalls = [];
-  Object? throwOnEnable;
-
-  @override
-  Future<bool> enableCollaboration({
-    required String menuId,
-    required List<String> collaboratorIds,
-    Map<String, String>? collaboratorDisplayNames,
-  }) async {
-    enableCollaborationCalls.add((
-      menuId: menuId,
-      collaboratorIds: collaboratorIds,
-    ));
-    final err = throwOnEnable;
-    if (err != null) {
-      throw err;
-    }
-    return true;
-  }
-
-  @override
-  void startCollaborationListener(
-    String menuId,
-    Function(SharedMenu) onUpdate,
-  ) {}
-
-  @override
-  void disposeAllListeners() {}
-}
-
-/// Sentinel repository that screams if the ServiceLocator lookup path is
-/// hit — used to prove the ctor override seam routes around it.
-class _ThrowingMenuCollaborationRepository extends Fake
-    implements MenuCollaborationRepository {
-  @override
-  Future<bool> enableCollaboration({
-    required String menuId,
-    required List<String> collaboratorIds,
-    Map<String, String>? collaboratorDisplayNames,
-  }) async {
-    throw StateError(
-      'ServiceLocator path used — ctor override seam is broken (BUT-1142).',
-    );
-  }
 }
 
 /// Minimal PermissionService fake for BUT-1153 — exposes the two getters

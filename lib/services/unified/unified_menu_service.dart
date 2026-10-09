@@ -9,7 +9,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
@@ -23,8 +22,6 @@ import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.da
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 
-// Operations modules
-import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
@@ -57,7 +54,6 @@ class MenuImportResult {
 /// **Modular Coordination Architecture:**
 /// This service coordinates between focused modules with clear responsibilities:
 /// - **[MenuService]**: Basic menu generation, natural language processing, and meal planning
-/// - **[CollaborativeMenuOperations]**: Real-time collaborative menu planning and social features
 /// **Unified API Benefits:**
 /// - **Single Entry Point**: Unified interface for all menu operations reducing complexity for ViewModels
 /// - **Coordinated Operations**: Seamless integration between personal and collaborative menu features
@@ -73,11 +69,6 @@ class MenuImportResult {
 /// await menuService.initialize();
 /// // Personal menu operations
 /// final menu = await menuService.generateMenuFromPrompt('tre frukoster och två middagar', recipes);
-/// // Collaborative menu planning
-/// await menuService.collaborative.enableMenuCollaboration(
-///   menuId: menuId,
-///   collaboratorIds: ['user1', 'user2'],
-/// );
 /// ```
 class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
@@ -92,16 +83,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   // wiring leaves these null so behaviour is unchanged.
   final UserService? _userServiceOverride;
   final RealtimeMenuService? _realtimeMenuServiceOverride;
-  final MenuCollaborationRepository? _menuCollaborationRepositoryOverride;
   final PermissionService? _permissionServiceOverride;
-
-  // Operations modules
-  CollaborativeMenuOperations? _collaborative;
-
-  /// Get collaborative operations with lazy initialization
-  CollaborativeMenuOperations get collaborative {
-    return _collaborative ??= _initializeCollaborativeOperations();
-  }
 
   // State
   final List<SharedMenu> _menus = [];
@@ -142,7 +124,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     MenuService? menuService,
     UserService? userService,
     RealtimeMenuService? realtimeMenuService,
-    MenuCollaborationRepository? menuCollaborationRepository,
     PermissionService? permissionService,
   }) : _firestoreRepository =
            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
@@ -151,7 +132,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
                .firestore,
        _userServiceOverride = userService,
        _realtimeMenuServiceOverride = realtimeMenuService,
-       _menuCollaborationRepositoryOverride = menuCollaborationRepository,
        _permissionServiceOverride = permissionService {
     // Initialize core menu service (override-aware for testability)
     _menuService = menuService ?? MenuService();
@@ -159,22 +139,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     // Initialize SharedMenu repository (override-aware for testability)
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
-
-    AppLogger.info(
-      '✅ UnifiedMenuService created - collaborative operations will initialize on first use',
-    );
   }
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
-  CollaborativeMenuOperations _initializeCollaborativeOperations() {
-    AppLogger.debug('Initializing collaborative menu operations');
-    return CollaborativeMenuOperations(
-      notifyListeners: triggerNotification,
-      repository:
-          _menuCollaborationRepositoryOverride ??
-          ServiceLocator.get<MenuCollaborationRepository>(),
-    );
-  }
 
   /// Initialize the unified menu service
   Future<void> initialize() async {
@@ -311,11 +278,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         notifyListeners();
       }
     });
-  }
-
-  /// Trigger notification to listeners (for operations classes)
-  void triggerNotification() {
-    notifyListeners();
   }
 
   /// Generate a menu from Swedish natural language prompt
