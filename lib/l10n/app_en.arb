@@ -9202,7 +9202,7 @@
   "viewModeList": "List View",
   "imageCropTitle": "Crop image",
   "bulkDeleteConfirmMessage": "The selected recipes will be removed.",
-  "bulkDeleteSuccess": "{count} recipes moved to the trash for 30 days",
+  "bulkDeleteSuccess": "{count, plural, =1{1 recipe moved to the trash for 30 days} other{{count} recipes moved to the trash for 30 days}}",
   "@bulkDeleteSuccess": {
     "placeholders": {
       "count": {
@@ -13788,8 +13788,8 @@
   "trashEmptyBody": "Deleted recipes stay here for 30 days.",
   "trashDaysLeft": "{count, plural, =0{Expires today} =1{1 day left} other{{count} days left}}",
   "trashSelectedCount": "{count} selected",
-  "trashRestoreSelected": "Restore {count} recipes",
-  "trashDeleteSelected": "Delete {count} recipes",
+  "trashRestoreSelected": "{count, plural, =1{Restore 1 recipe} other{Restore {count} recipes}}",
+  "trashDeleteSelected": "{count, plural, =1{Delete 1 recipe} other{Delete {count} recipes}}",
   "trashEmptyAction": "Empty the trash",
   "trashDeleteConfirmTitle": "Delete for good?",
   "trashDeleteConfirmBody": "{count, plural, =1{The recipe is deleted for good. This cannot be undone.} other{{count} recipes are deleted for good. This cannot be undone.}}",
@@ -13803,10 +13803,10 @@
   "trashFailedNothingChanged": "Something went wrong. Nothing was changed.",
   "trashPartialSummary": "{done} of {total} done.",
   "trashPartialNoneDone": "Nothing was changed.",
-  "trashFailOffline": "{count} recipes were not done because you are offline.",
-  "trashFailExpired": "{count} recipes had already expired.",
-  "trashFailGone": "{count} recipes were no longer in the trash.",
-  "trashFailFailed": "{count} recipes could not be done. Try again.",
+  "trashFailOffline": "{count, plural, =1{1 recipe was not done because you are offline.} other{{count} recipes were not done because you are offline.}}",
+  "trashFailExpired": "{count, plural, =1{1 recipe had already expired.} other{{count} recipes had already expired.}}",
+  "trashFailGone": "{count, plural, =1{1 recipe was no longer in the trash.} other{{count} recipes were no longer in the trash.}}",
+  "trashFailFailed": "{count, plural, =1{1 recipe could not be done. Try again.} other{{count} recipes could not be done. Try again.}}",
   "weekMenuPlanningCancel": "Cancel planning",
   "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save."
 }

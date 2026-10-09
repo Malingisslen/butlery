@@ -13212,7 +13212,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recipes moved to the trash for 30 days';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes moved to the trash for 30 days',
+      one: '1 recipe moved to the trash for 30 days',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -17962,12 +17968,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String trashRestoreSelected(int count) {
-    return 'Restore $count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restore $count recipes',
+      one: 'Restore 1 recipe',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashDeleteSelected(int count) {
-    return 'Delete $count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes',
+      one: 'Delete 1 recipe',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -18040,22 +18058,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String trashFailOffline(int count) {
-    return '$count recipes were not done because you are offline.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were not done because you are offline.',
+      one: '1 recipe was not done because you are offline.',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashFailExpired(int count) {
-    return '$count recipes had already expired.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes had already expired.',
+      one: '1 recipe had already expired.',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashFailGone(int count) {
-    return '$count recipes were no longer in the trash.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were no longer in the trash.',
+      one: '1 recipe was no longer in the trash.',
+    );
+    return '$_temp0';
   }
 
   @override
   String trashFailFailed(int count) {
-    return '$count recipes could not be done. Try again.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes could not be done. Try again.',
+      one: '1 recipe could not be done. Try again.',
+    );
+    return '$_temp0';
   }
 
   @override
