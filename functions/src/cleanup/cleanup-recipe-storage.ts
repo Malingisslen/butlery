@@ -6,7 +6,8 @@
  * files do not accumulate, except while the recipe sits in the trash
  * (BUT-907): the app moves a deleted recipe to `users/{uid}/trash/{recipeId}`
  * in the same batch that deletes it, and the photos stay for "Återställ".
- * `onTrashItemDeleted` removes them once that copy is gone.
+ * `onTrashItemDeleted` removes them once that copy is gone. Other people's
+ * comments, ratings, cook snaps and shares go too (`recipe-reference-cleanup`).
  *
  * Trigger path: users/{userId}/recipes/{recipeId}
  * Event: onDelete
@@ -21,6 +22,10 @@ import {
   PhotoBucket,
   recipePhotoUrls,
 } from "./storage-path-guard";
+import {
+  cleanupRecipeReferences,
+  ReferenceCleanupDb,
+} from "./recipe-reference-cleanup";
 
 /**
  * How close the trash copy's `deletedAt` must be to the recipe's deletion for
@@ -163,20 +168,55 @@ export async function handleRecipeDeleted(
   return "deleted";
 }
 
+/**
+ * The trigger's body: the photos, then other people's content on the recipe.
+ * Each step that throws is logged and does not stop the other.
+ */
+export async function onRecipeDeletedEvent(
+  deps: CleanupDeps & { refs: ReferenceCleanupDb },
+  userId: string,
+  recipeId: string,
+  data: Record<string, unknown> | undefined,
+  deletedAtMs: number,
+  nowMs: number,
+): Promise<void> {
+  try {
+    await handleRecipeDeleted(deps, userId, recipeId, data, deletedAtMs);
+  } catch (err) {
+    logger.error("[onRecipeDeleted] photo cleanup failed", {
+      recipeId,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  try {
+    await cleanupRecipeReferences(deps.refs, userId, recipeId, nowMs);
+  } catch (err) {
+    logger.error("[onRecipeDeleted] reference cleanup failed", {
+      recipeId,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+}
+
 export const onRecipeDeleted = onDocumentDeleted(
-  "users/{userId}/recipes/{recipeId}",
+  // Room for `MAX_REFERENCE_PAGES` of every collection, which the 60 s
+  // default is not.
+  { document: "users/{userId}/recipes/{recipeId}", timeoutSeconds: 300 },
   async (event) => {
     const { userId, recipeId } = event.params;
     const deletedAtMs = Date.parse(event.time);
-    await handleRecipeDeleted(
+    const db = admin.firestore();
+    await onRecipeDeletedEvent(
       {
-        db: admin.firestore() as unknown as CleanupDb,
+        db: db as unknown as CleanupDb,
         bucket: admin.storage().bucket(),
+        refs: db as unknown as ReferenceCleanupDb,
       },
       userId,
       recipeId,
       event.data?.data(),
       Number.isFinite(deletedAtMs) ? deletedAtMs : Date.now(),
+      Date.now(),
     );
   },
 );
