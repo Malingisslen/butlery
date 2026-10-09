@@ -4604,7 +4604,7 @@
     {
       "id": "flow-menu-3",
       "label": "Samarbeta om menyn",
-      "description": "Byggd men bara delvis hopkopplad: realtidsredigering av en delad meny och röstning per menyplats finns som fungerande kod, men ingen levande vy instansierar dem längre — importflödet kopplar en användare till en realtidsmeny, men landar sedan i den vanliga solo-vyn utan synk. Konfliktbannern fungerar generellt i appen men visar aldrig menyredigeringens egna konflikter eftersom den filtrerar på fel dokument-id för just menyer. BUT-1736 (2026-07-30): det visningsnamn som PERSISTERAS på menydokumentet (ownerDisplayName, lastEditedByDisplayName) och som alla deltagare läser hämtas nu från profilen (UserService.profileDisplayName) i stället för Auth-handtaget via PermissionService — Auth-namnet är det juridiska namnet på Google-/Apple-kontot, som användaren inte valt att visa och som varken profilpropageringen (on-profile-updated) eller raderingskaskaden når. Går namnet inte att lösa stämplas den lokaliserade okänd-användare-etiketten, aldrig ett Auth-namn.",
+      "description": "En delad meny som användaren gått med i öppnas levande i den vanliga veckomenyn (Routes.realtimeMenu med menyns id): MenuViewModel startar en MenuLiveSession som äger RealtimeMenuViewModel, byt rätt och slumpa om skrivs till realtidsmenyn, promptfältet, Rensa, Ladda sparad och kalendervyn visas inte, och en deltagare utan redigeringsrätt kan inte byta. Konfliktbannern i veckomenyn och i förhandsvisningen filtrerar på realtidsmenyns id. Sparade menyer läser realtime_resources och äldre realtime_menus. Röstning per menyplats finns som kod men ingen vy instansierar den, och reglerna nekar varje röst (mätt 2026-10-09). BUT-1736 (2026-07-30): det visningsnamn som PERSISTERAS på menydokumentet (ownerDisplayName, lastEditedByDisplayName) och som alla deltagare läser hämtas nu från profilen (UserService.profileDisplayName) i stället för Auth-handtaget via PermissionService — Auth-namnet är det juridiska namnet på Google-/Apple-kontot, som användaren inte valt att visa och som varken profilpropageringen (on-profile-updated) eller raderingskaskaden når. Går namnet inte att lösa stämplas den lokaliserade okänd-användare-etiketten, aldrig ett Auth-namn.",
       "features": [
         "MENU-07",
         "MENU-08",
@@ -4649,18 +4649,30 @@
         {
           "from": "v-menu-preview",
           "to": "v-veckomeny",
-          "payload": "navigera till Routes.realtimeMenu efter import",
+          "payload": "navigera till Routes.realtimeMenu med menyns id efter import; veckomenyn öppnas i levande läge",
           "transport": "navigation",
-          "verified": true,
-          "status": "dormant"
+          "verified": true
+        },
+        {
+          "from": "v-veckomeny",
+          "to": "vm-menu",
+          "payload": "startLiveMenu(menuId): levande läge; byt rätt och slumpa om skrivs genom MenuLiveSession",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-menu",
+          "to": "vm-realtime-menu",
+          "payload": "MenuLiveSession äger RealtimeMenuViewModel och speglar menuWithOptimisticChanges in i veckomenyn",
+          "transport": "method call",
+          "verified": true
         },
         {
           "from": "vm-realtime-menu",
           "to": "svc-realtime-menu",
           "payload": "startWatching(menuId): ström av kategori-, recept- och deltagarändringar för liveredigering",
           "transport": "onSnapshot stream",
-          "verified": true,
-          "status": "dormant"
+          "verified": true
         },
         {
           "from": "vm-menu-voting",
@@ -4689,10 +4701,23 @@
         {
           "from": "svc-realtime-sync",
           "to": "v-menu-preview",
-          "payload": "ConflictBanner ytar tyst konfliktlösning (last-write-wins) vid samtidig redigering",
+          "payload": "ConflictBanner(filterDocId: realtimeMenuId) ytar konfliktlösning (last-write-wins) vid samtidig redigering",
           "transport": "onSnapshot stream",
-          "verified": true,
-          "status": "dormant"
+          "verified": true
+        },
+        {
+          "from": "svc-realtime-sync",
+          "to": "v-veckomeny",
+          "payload": "ConflictBanner(filterDocId: menyns id) i levande läge",
+          "transport": "onSnapshot stream",
+          "verified": true
+        },
+        {
+          "from": "svc-unified-menu",
+          "to": "ds-realtime-resources",
+          "payload": "sparade menyer: delade menyer där användaren är deltagare (participantIds), plus äldre realtime_menus",
+          "transport": "Firestore query",
+          "verified": true
         }
       ],
       "area": "meny & inköp"

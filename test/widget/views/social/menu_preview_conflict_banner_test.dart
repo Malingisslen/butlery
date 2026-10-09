@@ -145,4 +145,45 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'a collaborative menu filters on the live menu id, not the invitation id',
+    (tester) async {
+      late String bannerMessage;
+      final collaborative = SharedMenu(
+        id: 'invitation-1',
+        sharedByUserId: 'u1',
+        sharedByDisplayName: 'Anna',
+        menuTitle: 'Veckomeny',
+        menuSnapshot: const {},
+        allowCollaboration: true,
+        realtimeMenuId: 'live-1',
+      );
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child:
+              ChangeNotifierProvider<SharedContentCoordinatorViewModel>.value(
+                value: coordinator,
+                child: Builder(
+                  builder: (context) {
+                    bannerMessage = context.l10n.conflictBannerTitleWeek;
+                    return MenuPreviewView(sharedMenu: collaborative);
+                  },
+                ),
+              ),
+        ),
+      );
+      await tester.pump();
+
+      conflicts.add(_event(docId: 'invitation-1'));
+      await tester.pumpAndSettle();
+      expect(find.text(bannerMessage), findsNothing);
+
+      conflicts.add(_event(docId: 'live-1'));
+      await tester.pumpAndSettle();
+      expect(find.text(bannerMessage), findsOneWidget);
+    },
+  );
 }

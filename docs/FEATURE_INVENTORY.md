@@ -658,11 +658,11 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Test coverage:** Verified — `menu_shopping_list_generator_test.dart`, `menu_shopping_aggregator_test.dart`, `menu_to_shopping_journey_test.dart`. *(Manual additions don't survive regeneration.)*
 
 #### MENU-07: Real-time collaborative menu editing
-- **Entry:** `/realtime-menu`.
+- **Entry:** `/realtime-menu` with the menu id (`Routes.realtimeMenu`): the weekly-menu view in live mode, reached by joining a collaborative menu from its preview, or from a joined menu in "Delat med mig".
 - **User story:** As a household member, I want to edit a shared menu live alongside others so that we can plan together in real time.
-- **Expected behavior:** Streams the menu; add/remove/move/reorder/clear/regenerate apply optimistically then reconcile. Tracks participants, connection status, and permission gating. Owners manage participants, basic info, delete, or make a personal copy.
+- **Expected behavior:** Streams the menu; add/remove/move/reorder/clear/regenerate apply optimistically then reconcile. Tracks participants, connection status, and permission gating. Owners manage participants, basic info, delete, or make a personal copy. In the weekly-menu view, live mode writes swap and regenerate-section to the shared menu, hides the prompt, "Rensa", "Ladda sparad" and the calendar, disables swapping for read-only participants, and shows the menu's conflict banner.
 - **Edge cases:** Updates blocked when no menu / no permission / offline (distinct errors); offline pauses watching and auto-resumes; optimistic changes cleared when the authoritative update lands.
-- **Test coverage:** Verified — `realtime_menu_viewmodel_test.dart`, `realtime_menu_operations_test.dart`, `realtime_menu_state_test.dart`, `realtime_menu_service_test.dart`, `realtime_stream_manager_test.dart`.
+- **Test coverage:** Verified — `realtime_menu_viewmodel_test.dart`, `realtime_menu_operations_test.dart`, `realtime_menu_state_test.dart`, `realtime_menu_service_test.dart`, `realtime_stream_manager_test.dart`, `menu_live_session_test.dart`, `veckomeny_live_menu_test.dart`.
 
 #### MENU-08: Menu slot voting
 - **Entry:** Per-slot vote UI inside a collaborative menu.

@@ -32,6 +32,7 @@ import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_generation_run.dart';
 import 'package:butlery/viewmodels/menu/menu_draft_manager.dart';
+import 'package:butlery/viewmodels/menu/menu_live_session.dart';
 
 export 'package:butlery/viewmodels/menu/menu_generation_run.dart'
     show MenuGenerationEnd;
@@ -102,6 +103,8 @@ class MenuNoMatchOutcome {
   final List<String> constraints;
 }
 
+typedef MenuMapSink = void Function(Map<String, List<Recipe>> menu);
+
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
@@ -131,6 +134,8 @@ class MenuViewModel extends BaseViewModel {
   late final MenuStorage _storage;
   late final MenuSocialManager _socialManager;
   late final MenuDraftManager _drafts;
+  MenuLiveSession? _live;
+  final MenuLiveSession Function(MenuMapSink onMenu)? _liveSessionFactory;
   final MenuGenerationRuns<_MenuScreen> _runs = MenuGenerationRuns();
   late final VoidCallback _onStateChanged;
 
@@ -141,7 +146,9 @@ class MenuViewModel extends BaseViewModel {
     AnalyticsService? analyticsService,
     WeeklyMenuDraftStore? draftStore,
     String? Function()? draftOwnerId,
-  }) : _recipeService =
+    MenuLiveSession Function(MenuMapSink onMenu)? liveSessionFactory,
+  }) : _liveSessionFactory = liveSessionFactory,
+       _recipeService =
            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
        _menuService = menuService ?? ServiceLocator.get<MenuService>(),
        _analyticsService =
@@ -346,6 +353,7 @@ class MenuViewModel extends BaseViewModel {
   /// );
   /// ```
   Future<MenuGenerationEnd> generateMenu(String prompt) async {
+    _leaveLiveMenu();
     if (!_stateManager.validatePrompt(prompt)) {
       _stateManager.setError(AppLocale.current.errorEnterMenuDescription);
       return MenuGenerationEnd.rejected;
@@ -505,6 +513,7 @@ class MenuViewModel extends BaseViewModel {
   /// Returns how many dishes were dropped, or null when nothing was
   /// restored.
   Future<int?> restoreDraft() async {
+    _leaveLiveMenu();
     final restored = await _drafts.restore();
     if (_isDisposed || restored == null) return null;
     _requestedByMealType = restored.menu.isEmpty
@@ -539,16 +548,19 @@ class MenuViewModel extends BaseViewModel {
   /// draft.
   Future<void> markDraftSaved() => _drafts.markSaved();
 
-  Future<void> _recordDraftEdit() => _drafts.recordEdit(
-    prompt: lastPrompt,
-    menu: menu,
-    requestedByMealType: _requestedByMealType,
-  );
+  // A draft is personal and must not capture a shared menu.
+  Future<void> _recordDraftEdit() => isLiveMenu
+      ? Future<void>.value()
+      : _drafts.recordEdit(
+          prompt: lastPrompt,
+          menu: menu,
+          requestedByMealType: _requestedByMealType,
+        );
 
   /// Regenerates specific menu section with AI-powered recipe replacement and state coordination.
   /// Re-rolls one section using the original prompt constraints.
   Future<void> regenerateSection(String section) async {
-    if (!hasMenu) return;
+    if (!hasMenu || !canEditMenu) return;
 
     final run = _runs.start(_screenNow());
     _stateManager.setGenerating(true);
@@ -566,7 +578,11 @@ class MenuViewModel extends BaseViewModel {
       );
 
       if (newRecipes != null) {
-        _stateManager.updateMenuSection(section, newRecipes);
+        if (isLiveMenu) {
+          await _live!.writeSection(section, newRecipes);
+        } else {
+          _stateManager.updateMenuSection(section, newRecipes);
+        }
         _stateManager.clearErrorAfterSuccess();
         unawaited(_recordDraftEdit());
       }
@@ -589,7 +605,7 @@ class MenuViewModel extends BaseViewModel {
   /// When no replacement is found, [SwapResult.recipe] is null and
   /// [SwapResult.exhaustedMessage] contains an informative message.
   Future<SwapResult> swapRecipe(Recipe recipe, String category) async {
-    if (!hasMenu) {
+    if (!hasMenu || !canEditMenu) {
       return SwapResult(
         recipe: null,
         alternativesRemaining: 0,
@@ -610,9 +626,24 @@ class MenuViewModel extends BaseViewModel {
     final updatedRecipes = List<Recipe>.from(menu[category] ?? []);
     final index = updatedRecipes.indexWhere((r) => r.id == recipe.id);
     if (index != -1) {
+      final before = menu[category];
       updatedRecipes[index] = result.recipe!;
       _stateManager.updateMenuSection(category, updatedRecipes);
       unawaited(_recordDraftEdit());
+      if (isLiveMenu) {
+        try {
+          await _live!.replaceRecipe(category, index, result.recipe!);
+        } catch (e) {
+          // A snapshot that arrived meanwhile has replaced the list, and must stay.
+          if (before != null && identical(menu[category], updatedRecipes)) {
+            _stateManager.updateMenuSection(category, before);
+          }
+          _stateManager.handleOperationError(
+            AppLocale.current.errorCouldNotUpdate(category),
+            e,
+          );
+        }
+      }
     }
 
     return result;
@@ -638,6 +669,7 @@ class MenuViewModel extends BaseViewModel {
   /// Delegates to MenuStateManager for complete menu state cleanup
   /// enabling fresh menu generation and state reset functionality.
   void clearMenu() {
+    _leaveLiveMenu();
     _requestedByMealType = const {};
     _noMatch = null;
     _stateManager.clearMenu();
@@ -659,11 +691,36 @@ class MenuViewModel extends BaseViewModel {
   /// Loads menu content from a SharedMenu for viewing/editing.
   /// Used when navigating to VeckomenyView with a shared menu from social features.
   void loadFromSharedMenu(SharedMenu sharedMenu) {
+    _leaveLiveMenu();
     _requestedByMealType = const {};
     _forgetPoolStats();
     _drafts.stopTracking();
     _stateManager.setMenu(sharedMenu.menuSnapshot);
     AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
+  }
+
+  bool get isLiveMenu => _live?.isLive ?? false;
+  String? get liveMenuId => _live?.resourceId;
+
+  /// Not live: the user's own menu, always editable. Live: the viewer's role.
+  bool get canEditMenu => !isLiveMenu || _live!.canEdit;
+
+  Future<void> startLiveMenu(String resourceId) async {
+    _requestedByMealType = const {};
+    _forgetPoolStats();
+    _drafts.stopTracking();
+    _live ??= (_liveSessionFactory ?? (sink) => MenuLiveSession(onMenu: sink))(
+      (menu) {
+        if (!_isDisposed) _stateManager.setMenu(menu);
+      },
+    );
+    await _live!.start(resourceId);
+  }
+
+  // Putting another menu on screen ends the live session first, so its edits
+  // are never written into the shared menu.
+  void _leaveLiveMenu() {
+    if (isLiveMenu) unawaited(_live!.stop());
   }
 
   /// Saves menu with comprehensive metadata and optional social sharing coordination.
@@ -794,6 +851,7 @@ class MenuViewModel extends BaseViewModel {
   /// }
   /// ```
   Future<bool> loadSavedMenu(String menuKey) async {
+    _leaveLiveMenu();
     try {
       // Try loading from local storage first
       final localMenuData = await _storage.loadMenuByKey(menuKey);
@@ -1002,6 +1060,7 @@ class MenuViewModel extends BaseViewModel {
   void dispose() {
     _isDisposed = true;
     _runs.cancel();
+    _live?.dispose();
     _stateManager.removeListener(_onStateChanged);
     _stateManager.dispose();
     _recipeServiceSubscription?.cancel();

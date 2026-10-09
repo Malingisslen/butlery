@@ -231,45 +231,58 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         }
       }
 
-      // Also load collaborative menus where user is a participant
-      // Bug fix: Without this, collaborative menus the user joined don't appear in saved menus
-      try {
-        final realtimeMenusSnapshot = await _firestore
-            .collection('realtime_menus')
-            .where('participantIds', arrayContains: userId)
-            .get();
+      // Joined collaborative menus: live ones in realtime_resources, plus the
+      // legacy realtime_menus collection the app no longer writes.
+      final seenIds = _menus.map((m) => m.id).toSet();
+      for (final collection in const ['realtime_resources', 'realtime_menus']) {
+        try {
+          final snapshot = await _firestore
+              .collection(collection)
+              .where('participantIds', arrayContains: userId)
+              .get();
 
-        for (final doc in realtimeMenusSnapshot.docs) {
-          try {
-            final data = doc.data();
-            // Convert realtime menu to SharedMenu for display
-            // Skip if user is the owner (already loaded in menus collection)
-            if (data['ownerId'] != userId && data['menuSnapshot'] != null) {
-              // BUT-2216: read the dishes and title with the model's own
-              // parser, which knows how RealtimeMenuData stores them.
-              final content = RealtimeMenuData.fromFirestore(data);
-              final menu = SharedMenu(
-                id: doc.id,
-                menuSnapshot: content.menuSnapshot,
-                menuTitle: content.menuTitle.isNotEmpty
-                    ? content.menuTitle
-                    : AppLocale.current.labelCollaborativeMenu,
-                sharedByUserId: (data['ownerId'] as String?).orEmpty(),
-                sharedByDisplayName: data['ownerDisplayName'] as String? ?? '?',
-                sharedAt:
-                    (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
-                allowCollaboration: true,
-                realtimeMenuId: doc.id,
-              );
-              _menus.add(menu);
+          for (final doc in snapshot.docs) {
+            try {
+              final data = doc.data();
+              // realtime_resources holds other resource types too; filtering
+              // here avoids a second where clause and its composite index.
+              if (collection == 'realtime_resources' &&
+                  data['type'] != 'menu') {
+                continue;
+              }
+              // Skip if user is the owner (already loaded in menus collection)
+              if (data['ownerId'] != userId &&
+                  data['menuSnapshot'] != null &&
+                  seenIds.add(doc.id)) {
+                // BUT-2216: read the dishes and title with the model's own
+                // parser, which knows how RealtimeMenuData stores them.
+                final content = RealtimeMenuData.fromFirestore(data);
+                _menus.add(
+                  SharedMenu(
+                    id: doc.id,
+                    menuSnapshot: content.menuSnapshot,
+                    menuTitle: content.menuTitle.isNotEmpty
+                        ? content.menuTitle
+                        : AppLocale.current.labelCollaborativeMenu,
+                    sharedByUserId: (data['ownerId'] as String?).orEmpty(),
+                    sharedByDisplayName:
+                        data['ownerDisplayName'] as String? ?? '?',
+                    sharedAt:
+                        (data['createdAt'] as Timestamp?)?.toDate() ??
+                        clock.now(),
+                    allowCollaboration: true,
+                    realtimeMenuId: doc.id,
+                  ),
+                );
+              }
+            } catch (e) {
+              AppLogger.error('Error parsing realtime menu ${doc.id}', e);
             }
-          } catch (e) {
-            AppLogger.error('Error parsing realtime menu ${doc.id}', e);
           }
+        } catch (e) {
+          AppLogger.warning('Could not load collaborative menus: $e');
+          // Non-critical - continue with owned menus
         }
-      } catch (e) {
-        AppLogger.warning('Could not load collaborative menus: $e');
-        // Non-critical - continue with owned menus
       }
 
       AppLogger.info('Loaded ${_menus.length} menus (including collaborative)');

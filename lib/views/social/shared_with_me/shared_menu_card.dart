@@ -1,5 +1,7 @@
 // lib/views/social/shared_with_me/shared_menu_card.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -13,12 +15,52 @@ import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// SharedMenuCard - Card for displaying shared menus
 /// Displays shared menu information with action buttons.
 class SharedMenuCard {
+  // A collaborative menu the user has joined opens live. An invitation not yet
+  // joined opens the preview, whose join step adds them as a participant.
+  static void _open(
+    BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
+    SharedMenu sharedMenu,
+    bool isRead,
+  ) {
+    if (!isRead) {
+      viewModel.menuViewModel.markAsViewed(sharedMenu);
+    }
+    final liveId =
+        sharedMenu.allowCollaboration &&
+            viewModel.menuViewModel.isMenuImported(sharedMenu)
+        ? sharedMenu.realtimeMenuId
+        : null;
+    if (liveId != null) {
+      unawaited(
+        Navigator.pushNamed(
+          context,
+          Routes.realtimeMenu,
+          arguments: {'menuId': liveId},
+        ),
+      );
+      return;
+    }
+    unawaited(
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: viewModel,
+            child: MenuPreviewView(sharedMenu: sharedMenu),
+          ),
+        ),
+      ),
+    );
+  }
+
   static Widget build(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
@@ -39,20 +81,7 @@ class SharedMenuCard {
           surface: PressSurface.base,
           child: InkWell(
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            onTap: () {
-              if (!isRead) {
-                viewModel.menuViewModel.markAsViewed(sharedMenu);
-              }
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider.value(
-                    value: viewModel,
-                    child: MenuPreviewView(sharedMenu: sharedMenu),
-                  ),
-                ),
-              );
-            },
+            onTap: () => _open(context, viewModel, sharedMenu, isRead),
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
@@ -274,20 +303,7 @@ class SharedMenuCard {
             context,
             label: context.l10n.commonView,
             icon: ButleryIcons.eye,
-            onPressed: () {
-              if (!isRead) {
-                viewModel.menuViewModel.markAsViewed(sharedMenu);
-              }
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider.value(
-                    value: viewModel,
-                    child: MenuPreviewView(sharedMenu: sharedMenu),
-                  ),
-                ),
-              );
-            },
+            onPressed: () => _open(context, viewModel, sharedMenu, isRead),
           ),
         ),
         const SizedBox(width: AppDimensions.space4),

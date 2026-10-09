@@ -78,7 +78,9 @@ class MenuPreviewView extends StatelessWidget {
                 // BUT-1162: surface silent collaborative-edit conflict
                 // resolutions on this shared menu (drop-in; idle-collapses).
                 SliverToBoxAdapter(
-                  child: ConflictBanner(filterDocId: sharedMenu.id),
+                  child: ConflictBanner(
+                    filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
+                  ),
                 ),
                 _buildMenuHeader(context),
                 _buildMenuContent(context),

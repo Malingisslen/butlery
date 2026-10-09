@@ -293,12 +293,10 @@ class AppRouter {
           );
 
         case Routes.realtimeMenu:
-          // Navigate to VeckomenyView for collaborative menu
-          // The realtime menu ID is passed in arguments for future enhancement
-          // Deferred: VeckomenyView does not yet sync with realtime menus.
-          // Current implementation uses separate realtime menu views.
           return _buildRoute(
-            const vecko.VeckomenyView(),
+            vecko.VeckomenyView(
+              realtimeMenuId: liveMenuIdFrom(settings.arguments),
+            ),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -654,6 +652,13 @@ class AppRouter {
       },
       transitionDuration: AppMotion.standard,
     );
+  }
+
+  @visibleForTesting
+  static String? liveMenuIdFrom(Object? arguments) {
+    if (arguments is! Map) return null;
+    final id = arguments['menuId'];
+    return id is String && id.isNotEmpty ? id : null;
   }
 
   /// Check if user is authenticated
