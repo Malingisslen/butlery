@@ -125,12 +125,13 @@ class _TimerChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final label = entry.label.isEmpty ? time : entry.label;
 
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: AppDimensions.spacingSm),
       child: Semantics(
-        label: context.l10n.a11yActiveTimer(label, time),
+        label: entry.label.isEmpty
+            ? context.l10n.a11yActiveTimerUnnamed
+            : context.l10n.a11yActiveTimer(entry.label),
         button: true,
         // Square design language — no border radius.
         child: GestureDetector(

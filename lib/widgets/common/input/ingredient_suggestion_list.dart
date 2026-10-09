@@ -34,7 +34,7 @@ class IngredientSuggestionList extends StatelessWidget {
         itemBuilder: (context, index) {
           final ingredient = results[index];
           return Semantics(
-            label: context.l10n.a11yAddIngredient(ingredient.swedish),
+            label: context.l10n.a11yAddIngredient,
             button: true,
             child: Material(
               type: MaterialType.transparency,

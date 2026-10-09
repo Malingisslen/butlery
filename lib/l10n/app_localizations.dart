@@ -13537,18 +13537,6 @@ abstract class AppLocalizations {
   /// **'{count} borttagna'**
   String shoppingItemsRemovedUndoMessage(int count);
 
-  /// No description provided for @a11yTagSelected.
-  ///
-  /// In sv, this message translates to:
-  /// **'{tagName}, vald. Dubbeltryck för att ta bort.'**
-  String a11yTagSelected(String tagName);
-
-  /// No description provided for @a11yTagUnselected.
-  ///
-  /// In sv, this message translates to:
-  /// **'{tagName}. Dubbeltryck för att välja.'**
-  String a11yTagUnselected(String tagName);
-
   /// No description provided for @a11ySharedShoppingList.
   ///
   /// In sv, this message translates to:
@@ -13558,7 +13546,7 @@ abstract class AppLocalizations {
   /// No description provided for @a11yPrimaryImageTap.
   ///
   /// In sv, this message translates to:
-  /// **'Primär bild, tryck för att visa fullstorlek'**
+  /// **'Tryck för att visa fullstorlek'**
   String get a11yPrimaryImageTap;
 
   /// No description provided for @a11ySelectAsPrimary.
@@ -13573,11 +13561,11 @@ abstract class AppLocalizations {
   /// **'Lägg till bild'**
   String get a11yAddImage;
 
-  /// No description provided for @a11yRemoveImage.
+  /// Semantics label for the add-image slot in the image grid; the visible text carries the action and the remaining count.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort bild'**
-  String get a11yRemoveImage;
+  /// **'Bild'**
+  String get a11yAddImageSlot;
 
   /// No description provided for @a11yViewFullSizeImage.
   ///
@@ -13732,8 +13720,8 @@ abstract class AppLocalizations {
   /// No description provided for @a11yShowMore.
   ///
   /// In sv, this message translates to:
-  /// **'Visa {count} till'**
-  String a11yShowMore(int count);
+  /// **'Visa fler'**
+  String get a11yShowMore;
 
   /// No description provided for @a11yEditItem.
   ///
@@ -22517,17 +22505,11 @@ abstract class AppLocalizations {
   /// **'Textavläsning klar'**
   String get a11yOcrComplete;
 
-  /// No description provided for @a11yCookingModeIngredient.
-  ///
-  /// In sv, this message translates to:
-  /// **'{ingredient}'**
-  String a11yCookingModeIngredient(String ingredient);
-
   /// No description provided for @a11yCookingModeStep.
   ///
   /// In sv, this message translates to:
-  /// **'Steg {step}: {instruction}'**
-  String a11yCookingModeStep(int step, String instruction);
+  /// **'Steg'**
+  String get a11yCookingModeStep;
 
   /// No description provided for @tooltipShowPassword.
   ///
@@ -24020,8 +24002,14 @@ abstract class AppLocalizations {
   /// BUT-1242: screen-reader label for one chip in the active-timers overview.
   ///
   /// In sv, this message translates to:
-  /// **'Timer {label}: {time} kvar'**
-  String a11yActiveTimer(String label, String time);
+  /// **'Timer {label}: tid kvar'**
+  String a11yActiveTimer(String label);
+
+  /// BUT-1953: screen-reader label for an active-timers chip whose timer has no name; the remaining time is the visible text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timer: tid kvar'**
+  String get a11yActiveTimerUnnamed;
 
   /// BUT-406: pause-button label on the step timer widget.
   ///
@@ -24449,23 +24437,11 @@ abstract class AppLocalizations {
   /// **'Svara på kommentar'**
   String get a11yCommentReplyAction;
 
-  /// Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.
-  ///
-  /// In sv, this message translates to:
-  /// **'{label}'**
-  String a11yBulkUploadAction(String label);
-
   /// Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).
   ///
   /// In sv, this message translates to:
   /// **'{label}'**
   String a11yEditImageAction(String label);
-
-  /// Semantics label for the empty-state image picker tap target.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till bild, tryck för att välja'**
-  String get a11yEmptyImageStateAdd;
 
   /// Semantics label for the image picker open tap target.
   ///
@@ -24596,8 +24572,8 @@ abstract class AppLocalizations {
   /// Semantics label for an ingredient suggestion row in the autocomplete list.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till {name}'**
-  String a11yAddIngredient(String name);
+  /// **'Lägg till'**
+  String get a11yAddIngredient;
 
   /// Semantics label for an unselected quick-filter chip on a list view.
   ///
@@ -24620,7 +24596,7 @@ abstract class AppLocalizations {
   /// Semantics label for the replace-with-substitute action in the cooking-mode substitution sheet.
   ///
   /// In sv, this message translates to:
-  /// **'Byt ut mot {name} i receptet'**
+  /// **'Ersättare: {name}'**
   String a11yReplaceWithSubstitute(String name);
 
   /// No description provided for @a11yShareTabSwitch.
@@ -24746,20 +24722,20 @@ abstract class AppLocalizations {
   /// Semantics label for the comments-section toggle. Expanded/collapsed state is announced separately via Semantics(toggled:).
   ///
   /// In sv, this message translates to:
-  /// **'Kommentarer'**
+  /// **'Visa eller dölj'**
   String get a11yCommentsToggle;
 
   /// Semantics label for tapping an ingredient row to open its substitution sheet.
   ///
   /// In sv, this message translates to:
-  /// **'Visa substitut för {ingredient}'**
-  String a11yShowSubstitutionsFor(String ingredient);
+  /// **'Visa substitut'**
+  String get a11yShowSubstitutionsFor;
 
   /// Semantics label for tapping an instruction row to toggle its completion.
   ///
   /// In sv, this message translates to:
-  /// **'Markera steg {step} som klart eller oavslutat'**
-  String a11yToggleStepDone(int step);
+  /// **'Markera som klart eller oavslutat'**
+  String get a11yToggleStepDone;
 
   /// Semantics label for the close icon next to the user's own recipe rating.
   ///
@@ -24776,14 +24752,14 @@ abstract class AppLocalizations {
   /// Semantics label for the cooking-mode instruction text where long-press opens a step timer.
   ///
   /// In sv, this message translates to:
-  /// **'Steg {step}, långtryck för att starta timer'**
-  String a11yCookingStepLongPressTimer(int step);
+  /// **'Långtryck för att starta timer'**
+  String get a11yCookingStepLongPressTimer;
 
   /// Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).
   ///
   /// In sv, this message translates to:
-  /// **'Starta timer: {phrase}'**
-  String a11yStartTimerForPhrase(String phrase);
+  /// **'Starta timer'**
+  String get a11yStartTimerForPhrase;
 
   /// Semantics label for the archived-conversations expand/collapse row in the messaging list.
   ///
@@ -25040,8 +25016,8 @@ abstract class AppLocalizations {
   /// BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.
   ///
   /// In sv, this message translates to:
-  /// **'Öppna relaterat recept: {title}'**
-  String a11yRelatedRecipeThumbnail(String title);
+  /// **'Öppna relaterat recept'**
+  String get a11yRelatedRecipeThumbnail;
 
   /// No description provided for @familyTitle.
   ///
@@ -25502,8 +25478,8 @@ abstract class AppLocalizations {
   /// No description provided for @a11yPooledHouseholdPill.
   ///
   /// In sv, this message translates to:
-  /// **'Ditt köks betyg {rating}'**
-  String a11yPooledHouseholdPill(String rating);
+  /// **'Ditt köks betyg'**
+  String get a11yPooledHouseholdPill;
 
   /// No description provided for @familyRatingProxyEntered.
   ///

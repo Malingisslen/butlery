@@ -91,7 +91,11 @@ class _RecipeHeroButtonState extends State<RecipeHeroButton> {
         ? Semantics(
             label: context.l10n.a11yHeroButton(tooltip),
             button: true,
-            child: Tooltip(message: tooltip, child: tappable),
+            child: Tooltip(
+              message: tooltip,
+              excludeFromSemantics: true,
+              child: tappable,
+            ),
           )
         : tappable;
     return labelled;

@@ -55,10 +55,11 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Lägg till Mjölk')),
-          findsOneWidget,
-        );
+        final row = find.bySemanticsLabel(RegExp(r'^Lägg till'));
+        expect(row, findsOneWidget);
+        expect(announcedLines(tester, row), contains('Mjölk'));
+        expectNothingAnnouncedTwice(tester, row);
+        expectActivatable(tester, row);
         handle.dispose();
       },
     );
@@ -162,10 +163,10 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Byt ut mot yoghurt i receptet')),
-          findsOneWidget,
-        );
+        final replace = find.bySemanticsLabel(RegExp(r'Ersättare: yoghurt'));
+        expect(replace, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, replace);
+        expectActivatable(tester, replace);
         handle.dispose();
       },
     );
