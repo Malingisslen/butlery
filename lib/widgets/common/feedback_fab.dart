@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/observers/feedback_route_observer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -78,10 +79,13 @@ class _FeedbackAwareScaffoldMessengerState extends ScaffoldMessengerState {
 }
 
 /// Square "!" button positioned at bottom-right that opens a feedback form.
-/// Only visible when the user is authenticated, and hidden while a snackbar
-/// is up.
+/// Only visible when the user is authenticated, and hidden while a snackbar,
+/// dialog or sheet is up and in cooking mode (produktregler.md § 18.1).
 class FeedbackFAB extends StatefulWidget {
-  const FeedbackFAB({super.key});
+  const FeedbackFAB({super.key, this.routeObserver});
+
+  /// Defaults to the observer registered on the app's navigator.
+  final FeedbackRouteObserver? routeObserver;
 
   @override
   State<FeedbackFAB> createState() => _FeedbackFABState();
@@ -105,12 +109,21 @@ class _FeedbackFABState extends State<FeedbackFAB> {
       context,
     );
     return ListenableBuilder(
-      listenable: Listenable.merge([authService, ?openSnackBars]),
+      listenable: Listenable.merge([
+        authService,
+        ?openSnackBars,
+        (widget.routeObserver ?? appFeedbackRouteObserver).suppressed,
+      ]),
       builder: (context, _) {
         if (!authService.isAuthenticated) {
           return const SizedBox.shrink();
         }
         if ((openSnackBars?.value ?? 0) > 0) {
+          return const SizedBox.shrink();
+        }
+        if ((widget.routeObserver ?? appFeedbackRouteObserver)
+            .suppressed
+            .value) {
           return const SizedBox.shrink();
         }
 
