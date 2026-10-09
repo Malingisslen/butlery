@@ -15,6 +15,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -34,6 +35,7 @@ import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/views/cooking_mode_view.dart';
+import 'package:butlery/widgets/cooking/voice_assist_button.dart';
 
 import '../infrastructure/factories/recipe_factory.dart';
 import '../infrastructure/mocks/production_mocks.dart';
@@ -478,6 +480,41 @@ void main() {
         },
       );
     }
+
+    testWidgets('a 420 px wide window stacks the panels: "Nästa steg" '
+        'stays whole and clear of the mic (BUT-2261)', (tester) async {
+      // A split screen or narrow browser: too narrow for the side-by-side
+      // panels, and nothing rotates it.
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(420, 900);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        host(
+          (_) => CookingModeView(recipe: _recipe(), effects: _FakeEffects()),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      // Stacked: the ingredients sit above the steps, not beside them.
+      expect(
+        tester.getRect(find.textContaining('blandfärs')).bottom,
+        lessThanOrEqualTo(tester.getRect(find.text('Fräs löken.')).top),
+      );
+      final label = find.descendant(
+        of: find.byKey(const ValueKey('cooking-mode-next-step')),
+        matching: find.text(sv.cookingModeNextStep),
+      );
+      final paragraph = tester.renderObject<RenderParagraph>(label);
+      expect(paragraph.didExceedMaxLines, isFalse);
+
+      final button = tester.getRect(
+        find.byKey(const ValueKey('cooking-mode-next-step')),
+      );
+      final mic = tester.getRect(find.byType(VoiceAssistButton));
+      expect(button.overlaps(mic), isFalse);
+    });
 
     testWidgets('a rotation keeps the step and the running timer', (
       tester,
