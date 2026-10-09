@@ -292,6 +292,7 @@ async function run(): Promise<void> {
     "import_health",
     "ops",
     "parsing_corrections",
+    "rating_reads",
     "recipes",
   ]);
   const scan = scanAnalyticsWriters(readFunctionsSources());
