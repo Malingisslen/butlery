@@ -2,6 +2,7 @@
 
 // lib/views/fran_sociala_medier_view.dart
 
+import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -217,6 +218,8 @@ class _FranSocialaMedierViewContentState
         arguments: {
           'initialRecipe': viewModel.parsedRecipe,
           'isTemplate': true,
+          ManualEntryRoute.importedWithoutIngredientsKey:
+              parsed != null && ManualEntryRoute.hasNoIngredients(parsed),
         },
       );
     } else if (context.mounted && viewModel.hasError) {

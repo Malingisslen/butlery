@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 import 'package:butlery/l10n/app_localizations.dart';
@@ -111,6 +112,59 @@ void main() {
     expect(editor.name, Routes.manualEntry);
     final args = editor.arguments! as Map<String, Object?>;
     expect(args['initialRecipe'], same(recipe));
+    expect(
+      args[ManualEntryRoute.importedWithoutIngredientsKey],
+      isFalse,
+    );
     expect(find.text('editor'), findsOneWidget);
+  });
+
+  // BUT-2285: an import that found no ingredient lines tells the form so, and
+  // the form explains the empty list instead of only greying out save.
+  testWidgets('an import with only blank ingredient lines flags the editor', (
+    tester,
+  ) async {
+    final recipe = Recipe(
+      core: RecipeCore(
+        id: '',
+        title: 'Pannkakor',
+        description: '',
+        ingredients: const ['  '],
+        instructions: const ['Vispa ihop.'],
+        mealType: 'Middag',
+        sourceUrl: link,
+      ),
+      type: RecipeType.personal,
+    );
+    when(
+      () =>
+          importManager.autoImport(link, onProgress: any(named: 'onProgress')),
+    ).thenAnswer((_) async => ImportManagerResult.success(recipe));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
+        home: const SmartImportView(initialUrl: link),
+        onGenerateRoute: (settings) {
+          pushed.add(settings);
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => const Scaffold(body: Text('editor')),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('test-smart-import-url')));
+    await tester.pumpAndSettle();
+
+    final editor = pushed.single;
+    expect(editor.name, Routes.manualEntry);
+    final args = editor.arguments! as Map<String, Object?>;
+    expect(args[ManualEntryRoute.importedWithoutIngredientsKey], isTrue);
   });
 }

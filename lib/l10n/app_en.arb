@@ -13704,5 +13704,9 @@
       }
     }
   },
-  "shoppingAddToListHeading": "Add to list"
+  "shoppingAddToListHeading": "Add to list",
+  "recipeImportNoIngredientsNotice": "We found no ingredients. Add them yourself below.",
+  "@recipeImportNoIngredientsNotice": {
+    "description": "BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists."
+  }
 }
