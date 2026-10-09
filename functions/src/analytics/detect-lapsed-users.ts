@@ -10,9 +10,10 @@
  * SHA-256(uid:thresholdType) bucket — see `./winback-variant.ts`.
  *
  * Firestore writes:
- *   /analytics/lapsed_users/events/{auto}        — lapsed user event
- *   /users/{userId}/notifications/{auto}         — win-back notification
+ *   /analytics/lapsed_users/events/{uid}_{type}_{lastActiveAt ms} — lapsed user event
+ *   /users/{userId}/notifications/winback_{type}_{lastActiveAt ms} — win-back notification
  *   /users/{userId}                              — merge: lastWinBack* fields
+ *   /_internal/lapsed_users_cursor               — per-threshold resume point
  *
  * The `lastWinBack*` fields on the user doc are the bridge to the FA
  * dashboard: the client reads them at session start and forwards the
@@ -35,30 +36,23 @@
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
-import { BATCH_LIMIT } from "../shared/batch-update";
-import { buildNotificationPayload } from "../shared/notification-payload";
 import { evaluateSendGate } from "../shared/notification-gate";
 import { recordNotificationSendEvent } from "../shared/notification-send-events";
-import {
-  resolveWinbackVariant,
-  fetchWinbackCopy,
-  DEFAULT_VARIANTS,
-} from "./winback-variant";
+import { resolveWinbackVariant, fetchWinbackCopy } from "./winback-variant";
 import {
   resolveContextualWinbackCopy,
   type ContextualCopy,
 } from "./winback-context";
+import {
+  processLapsedPage,
+  type LapsedThreshold,
+  type PageResult,
+} from "./lapsed-users-page";
 
 const getDb = () => admin.firestore();
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
-
-/** BUT-1428: how long an un-attributed win-back send keeps its bridge fields
- *  protected from a later threshold overwrite. Matches the client-side
- *  attribution window — a send older than this is assumed never converted and
- *  is safe to overwrite. */
-const WINBACK_ATTRIBUTION_WINDOW_MS = 7 * MS_PER_DAY;
 
 /** BUT-1567: on the very first run (no stored cursor) we don't want to sweep
  *  every dormant user who ever crossed a threshold in one giant backfill.
@@ -72,10 +66,27 @@ const DEFAULT_CURSOR_LOOKBACK_MS = MS_PER_DAY;
  *  own subcollections). */
 const CURSOR_DOC = { collection: "analytics", doc: "lapsed_users" } as const;
 
-interface LapsedThreshold {
-  days: number;
-  type: string;
-}
+/**
+ * BUT-1671: where each threshold's window resumes, one `lastActiveAt`
+ * Timestamp per threshold type. A timestamp and never a uid: a full page is
+ * extended with every user sharing its last `lastActiveAt`, so the next page
+ * can start strictly after it. Kept off `analytics/lapsed_users`, whose
+ * fields the reset prune limits to `lastRunAt`.
+ */
+export const THRESHOLD_CURSOR_DOC = "_internal/lapsed_users_cursor";
+
+/** Users per page, before the tie group at the page's last `lastActiveAt` joins it. */
+const PAGE_SIZE = 100;
+
+/**
+ * BUT-1671: wall clock one run pages for, split evenly across the thresholds
+ * (an earlier threshold that drains early leaves its time to the next). A
+ * threshold stops between pages once its share is spent and the next run
+ * continues from its cursor, so a backlog drains over several days instead of
+ * growing one unbounded read. Must stay below this task's budget in the daily
+ * chain, which is asserted in `maintenance-dispatchers.test.ts`.
+ */
+export const LAPSED_RUN_BUDGET_MS = 20_000;
 
 const THRESHOLDS: LapsedThreshold[] = [
   { days: 7, type: "win_back_mild" },
@@ -105,6 +116,10 @@ export interface RunDeps {
   gate?: typeof evaluateSendGate;
   /** Override send-event recording. */
   recordEvent?: typeof recordNotificationSendEvent;
+  /** Paging budget and its clock, so the deferral branch is testable. */
+  runBudgetMs?: number;
+  clock?: () => number;
+  pageSize?: number;
 }
 
 export interface RunResult {
@@ -143,6 +158,20 @@ export async function runDetectLapsedUsers(
   const recordEvent = deps.recordEvent ?? recordNotificationSendEvent;
 
   logger.info("detect_lapsed_users_start");
+  const runBudgetMs = deps.runBudgetMs ?? LAPSED_RUN_BUDGET_MS;
+  const clock = deps.clock ?? Date.now;
+  const pageSize = deps.pageSize ?? PAGE_SIZE;
+  const startedAt = clock();
+  const pageDeps = {
+    db,
+    now,
+    resolveVariant,
+    fetchCopy,
+    resolveContext,
+    sendPush,
+    gate,
+    recordEvent,
+  };
 
   // BUT-1567: read the last-run cursor. The old predicate matched a fixed
   // ±12h band centred on each threshold, so a run that was skipped (outage,
@@ -152,278 +181,146 @@ export async function runDetectLapsedUsers(
   // catching irregular users the point-in-time band missed. First run (no
   // cursor) falls back to a bounded one-interval lookback.
   const cursorRef = db.collection(CURSOR_DOC.collection).doc(CURSOR_DOC.doc);
-  const cursorSnap = await cursorRef.get();
+  const thresholdCursorRef = db.doc(THRESHOLD_CURSOR_DOC);
+  const [cursorSnap, thresholdCursorSnap] = await Promise.all([
+    cursorRef.get(),
+    thresholdCursorRef.get(),
+  ]);
   const storedCursor = cursorSnap.exists
     ? (cursorSnap.data()?.lastRunAt as admin.firestore.Timestamp | undefined)
     : undefined;
   const lastRunMs = storedCursor?.toMillis() ?? nowMs - DEFAULT_CURSOR_LOOKBACK_MS;
+  const thresholdCursors = (thresholdCursorSnap.exists
+    ? thresholdCursorSnap.data()
+    : undefined) ?? {};
 
   let totalDetected = 0;
   let totalPushSuccess = 0;
   let totalPushSkippedOptOut = 0;
   let totalPushSkippedQuietHours = 0;
+  let allDrained = true;
 
-  for (const threshold of THRESHOLDS) {
+  for (const [index, threshold] of THRESHOLDS.entries()) {
     // A user has crossed the N-day inactivity threshold once their last
     // activity is older than N days: lastActiveAt <= now - N*days. To catch
     // every crosser exactly once — including those from a skipped run — pick
     // only users who were NOT yet past the threshold at the previous run:
     // window = (lastRun - N*days, now - N*days]. The upper bound is inclusive
     // (just-crossed) and the lower bound exclusive (already handled last run,
-    // so no double-notify).
+    // so no double-notify). BUT-1671: the lower bound is this threshold's own
+    // cursor when one is stored, which is where its previous page ended.
     const crossedByNow = admin.firestore.Timestamp.fromMillis(
       nowMs - threshold.days * MS_PER_DAY,
     );
-    const alreadyCrossedAtLastRun = admin.firestore.Timestamp.fromMillis(
-      lastRunMs - threshold.days * MS_PER_DAY,
-    );
+    // The stored Timestamp is used as read, never rebuilt from millis: the
+    // bound is exclusive, and dropping its sub-millisecond part would let the
+    // users at exactly that instant through a second time.
+    const storedBound = thresholdCursors[threshold.type] as
+      | admin.firestore.Timestamp
+      | undefined;
+    let lowerBound =
+      typeof storedBound?.toMillis === "function"
+        ? storedBound
+        : admin.firestore.Timestamp.fromMillis(
+            lastRunMs - threshold.days * MS_PER_DAY,
+          );
+    const thresholdDeadline =
+      startedAt + (runBudgetMs * (index + 1)) / THRESHOLDS.length;
+    const setCursor =
+      (bound: admin.firestore.Timestamp) =>
+      (batch: admin.firestore.WriteBatch): void => {
+        batch.set(thresholdCursorRef, { [threshold.type]: bound }, { merge: true });
+      };
 
     // Degenerate window (cursor at/after now — clock moved backwards, or a
     // duplicate same-instant run) → nothing newly crossed; skip.
-    if (alreadyCrossedAtLastRun.toMillis() >= crossedByNow.toMillis()) {
+    if (lowerBound.toMillis() >= crossedByNow.toMillis()) {
       logger.info("lapsed_window_empty", { days: threshold.days });
       continue;
     }
 
-    const usersSnapshot = await db
-      .collection("users")
-      .where("lastActiveAt", ">", alreadyCrossedAtLastRun)
-      .where("lastActiveAt", "<=", crossedByNow)
-      .get();
-
-    if (usersSnapshot.empty) {
-      logger.info("no_users_lapsed", { days: threshold.days });
-      continue;
-    }
-
-    // Resolve variant + copy per user up-front so the batch write can
-    // include the variant on the analytics row + notification doc.
-    interface PerUser {
-      userId: string;
-      variant: string;
-      title: string;
-      body: string;
-      /** BUT-934: signal that produced contextual copy, or null if generic. */
-      contextKey: string | null;
-      /** BUT-1428: the user's existing `lastWinBackSentAt`, if any, so the
-       *  bridge write can avoid clobbering a still-un-attributed earlier send. */
-      existingWinBackSentAt?: admin.firestore.Timestamp;
-    }
-    const perUser: PerUser[] = [];
-    for (const userDoc of usersSnapshot.docs) {
-      const variant = resolveVariant(userDoc.id, threshold.type);
-      const data = userDoc.data();
-      const existingWinBackSentAt = data.lastWinBackSentAt as
-        | admin.firestore.Timestamp
-        | undefined;
-      // BUT-934: try contextual copy first; fall back to the A/B variant
-      // copy when no signal applies. The variant is still recorded so the
-      // deterministic bucket is preserved; contextKey marks contextual
-      // sends as a separate cohort in analytics.
-      const context = await resolveContext(userDoc.id, data);
-      if (context) {
-        perUser.push({
-          userId: userDoc.id,
-          variant,
-          title: context.title,
-          body: context.body,
-          contextKey: context.contextKey,
-          existingWinBackSentAt,
-        });
-      } else {
-        const { title, body } = await fetchCopy(threshold.type, variant);
-        perUser.push({
-          userId: userDoc.id,
-          variant,
-          title,
-          body,
-          contextKey: null,
-          existingWinBackSentAt,
-        });
-      }
-    }
-
-    let batch = db.batch();
-    let batchCount = 0;
-    let thresholdCount = 0;
-
-    // 3 ops per user: analytics event + notification doc + user doc merge
-    // (the user-doc merge is the BUT-688 bridge-field write picked up by
-    // the client-side WinbackAttributionService). Reserve under the 500
-    // cap.
-    const OPS_PER_USER = 3;
-
-    for (const u of perUser) {
-      const eventRef = db
-        .collection("analytics")
-        .doc("lapsed_users")
-        .collection("events")
-        .doc();
-      batch.set(eventRef, {
-        userId: u.userId,
-        daysInactive: threshold.days,
-        detectedAt: now,
-        notificationSent: true,
-        variant: u.variant,
-        contextKey: u.contextKey,
-      });
-      batchCount++;
-
-      const notificationRef = db
+    const totals: PageResult[] = [];
+    let drained = false;
+    for (let pages = 0; ; pages++) {
+      if (pages > 0 && clock() >= thresholdDeadline) break;
+      const page = await db
         .collection("users")
-        .doc(u.userId)
-        .collection("notifications")
-        .doc();
-      batch.set(notificationRef, {
-        type: threshold.type,
-        message: u.body,
-        bodyShown: u.body,
-        variant: u.variant,
-        contextKey: u.contextKey,
-        createdAt: now,
-        read: false,
-      });
-      batchCount++;
-
-      // Bridge to client-side ExperimentAssignment (BUT-657). The client
-      // reads these on session start and stamps `exp_winback_copy` onto
-      // the FA user property.
-      //
-      // BUT-1428: skip the overwrite while an earlier send is still
-      // un-attributed and inside its window — otherwise the client's
-      // single-attribution latch would credit the conversion to this later
-      // variant and bias the A/B. Presence of `lastWinBackSentAt` means the
-      // client hasn't attributed yet (it clears the fields on attribution).
-      const prevSentAtMs = u.existingWinBackSentAt?.toMillis();
-      const earlierSendStillPending =
-        prevSentAtMs != null &&
-        nowMs - prevSentAtMs < WINBACK_ATTRIBUTION_WINDOW_MS;
-
-      if (earlierSendStillPending) {
-        logger.info("winback_bridge_skipped_pending_attribution", {
-          bucket: threshold.type,
-        });
+        .where("lastActiveAt", ">", lowerBound)
+        .where("lastActiveAt", "<=", crossedByNow)
+        .orderBy("lastActiveAt")
+        .limit(pageSize)
+        .get();
+      let docs = page.docs;
+      let pageBound = crossedByNow;
+      if (docs.length === pageSize) {
+        // Everyone sharing the page's last timestamp joins this page, so the
+        // next page can start strictly after it without a uid tie-breaker.
+        pageBound = docs[docs.length - 1].data()
+          .lastActiveAt as admin.firestore.Timestamp;
+        const ties = await db
+          .collection("users")
+          .where("lastActiveAt", "==", pageBound)
+          .get();
+        const seen = new Set(docs.map((d) => d.id));
+        docs = [...docs, ...ties.docs.filter((d) => !seen.has(d.id))];
       } else {
-        const userRef = db.collection("users").doc(u.userId);
-        batch.set(
-          userRef,
-          {
-            lastWinBackVariant: u.variant,
-            lastWinBackBucket: threshold.type,
-            lastWinBackChannel: "push",
-            lastWinBackSentAt: now,
-          },
-          { merge: true },
-        );
-        batchCount++;
+        drained = true;
       }
 
-      thresholdCount++;
-
-      if (batchCount >= BATCH_LIMIT - OPS_PER_USER) {
+      if (docs.length === 0) {
+        const batch = db.batch();
+        setCursor(pageBound)(batch);
         await batch.commit();
-        batch = db.batch();
-        batchCount = 0;
+      } else {
+        totals.push(
+          await processLapsedPage(pageDeps, threshold, docs, setCursor(pageBound)),
+        );
       }
+      lowerBound = pageBound;
+      if (drained) break;
     }
+    if (!drained) allDrained = false;
 
-    if (batchCount > 0) {
-      await batch.commit();
-    }
-
-    // Send FCM pushes. Concurrent batches of 10. Routes through the
-    // preference-aware helper + send gate so users who opted out, or
-    // who are inside their quiet-hours window, are NOT pinged. The
-    // win-back notification doc is still written above — the gate is
-    // on the push only, not on the in-app entry.
-    let pushSuccessCount = 0;
-    let pushSkippedOptOut = 0;
-    let pushSkippedQuietHours = 0;
-    for (let i = 0; i < perUser.length; i += 10) {
-      const chunk = perUser.slice(i, i + 10);
-      const results = await Promise.allSettled(
-        chunk.map(async (u) => {
-          const data = buildNotificationPayload({
-            route: "/winback",
-            targetId: "",
-            notificationType: threshold.type,
-            additionalData: {
-              type: threshold.type,
-              variant: u.variant,
-            },
-          });
-          const decision = await gate({
-            userId: u.userId,
-            notificationType: threshold.type,
-            payload: { title: u.title, body: u.body, data },
-          });
-          if (decision.action !== "proceed") {
-            return { sent: false, reason: decision.action } as const;
-          }
-          const result = await sendPush(
-            u.userId,
-            { title: u.title, body: u.body },
-            "reEngagement",
-            data,
-          );
-          if (result.sent) {
-            await recordEvent({
-              userId: u.userId,
-              notificationType: threshold.type,
-              channel: "fcm",
-            });
-          }
-          return result;
-        }),
-      );
-      for (const result of results) {
-        if (result.status !== "fulfilled") continue;
-        if (result.value.sent) {
-          pushSuccessCount++;
-        } else if (
-          result.value.reason === "quiet_hours" ||
-          result.value.reason === "dropped" ||
-          result.value.reason === "delayed"
-        ) {
-          pushSkippedQuietHours++;
-        } else if (
-          result.value.reason === "opted_out" ||
-          result.value.reason === "master_disabled" ||
-          result.value.reason === "type_disabled"
-        ) {
-          pushSkippedOptOut++;
-        }
-      }
-    }
-
-    totalDetected += thresholdCount;
+    const detected = sum(totals, (t) => t.detected);
+    const pushSuccessCount = sum(totals, (t) => t.pushSuccess);
+    const pushSkippedOptOut = sum(totals, (t) => t.pushSkippedOptOut);
+    const pushSkippedQuietHours = sum(totals, (t) => t.pushSkippedQuietHours);
+    totalDetected += detected;
     totalPushSuccess += pushSuccessCount;
     totalPushSkippedOptOut += pushSkippedOptOut;
     totalPushSkippedQuietHours += pushSkippedQuietHours;
 
+    if (detected === 0) {
+      logger.info("no_users_lapsed", { days: threshold.days, drained });
+      continue;
+    }
     logger.info("lapsed_threshold_processed", {
       days: threshold.days,
       thresholdType: threshold.type,
-      detected: thresholdCount,
+      detected,
+      drained,
       pushDelivered: pushSuccessCount,
       pushOptedOut: pushSkippedOptOut,
       pushQuietHours: pushSkippedQuietHours,
       // Variant distribution for sanity checks. With a uniform hash and
       // 2 variants, expect ~50/50.
-      variantBreakdown: countVariants(perUser),
+      variantBreakdown: mergeCounts(totals.map((t) => t.variantBreakdown)),
       // BUT-934: how many sends used each contextual signal vs generic.
-      contextBreakdown: countContexts(perUser),
+      contextBreakdown: mergeCounts(totals.map((t) => t.contextBreakdown)),
     });
   }
 
-  // BUT-1567: advance the cursor only after every threshold has been
-  // processed. If a threshold threw, we never reach here and the cursor
-  // stays put, so the next run re-covers the gap — deliberately favouring
-  // occasional re-coverage over silently missing a lapse.
-  await cursorRef.set({ lastRunAt: now }, { merge: true });
+  // BUT-1567: advance the cursor only after every threshold has drained its
+  // window. If a threshold threw, or stopped on its budget, the cursor stays
+  // put; the thresholds' own cursors (BUT-1671) are what keep a re-run from
+  // re-covering the pages already done.
+  if (allDrained) {
+    await cursorRef.set({ lastRunAt: now }, { merge: true });
+  }
 
   logger.info("detect_lapsed_users_complete", {
     totalDetected,
+    allDrained,
     pushSuccess: totalPushSuccess,
     pushSkippedOptOut: totalPushSkippedOptOut,
     pushSkippedQuietHours: totalPushSkippedQuietHours,
@@ -437,24 +334,16 @@ export async function runDetectLapsedUsers(
   };
 }
 
-function countVariants(
-  perUser: { variant: string }[],
-): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const v of DEFAULT_VARIANTS) out[v] = 0;
-  for (const u of perUser) {
-    out[u.variant] = (out[u.variant] ?? 0) + 1;
-  }
-  return out;
+function sum<T>(items: T[], pick: (item: T) => number): number {
+  return items.reduce((acc, item) => acc + pick(item), 0);
 }
 
-function countContexts(
-  perUser: { contextKey: string | null }[],
+function mergeCounts(
+  counts: Record<string, number>[],
 ): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const u of perUser) {
-    const key = u.contextKey ?? "generic";
-    out[key] = (out[key] ?? 0) + 1;
+  for (const c of counts) {
+    for (const [key, n] of Object.entries(c)) out[key] = (out[key] ?? 0) + n;
   }
   return out;
 }

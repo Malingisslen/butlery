@@ -84,14 +84,6 @@ import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
  * because `recipeMethodSnapshot` was slow is the wrong trade. Its send time
  * moves 05:00 → ~06:00 UTC, which is 08:00 Swedish summer time — still outside
  * quiet hours, but the exact minute now varies with the tasks ahead of it.
- *
- * KNOWN, ACCEPTED, TICKETED SEPARATELY: `runDetectLapsedUsers` commits
- * notification batches per threshold but advances its resume cursor only at the
- * very end (BUT-1567, deliberate). A run raced out mid-threshold leaves
- * committed notification docs behind an un-advanced cursor, and the next run
- * re-sends. Moving it earlier shrinks the window; the real fix is a
- * deterministic per-user/threshold/day notification doc id, which is a
- * data-semantics change and does not belong in a mechanical trigger merge.
  */
 export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   // BUT-2046 follow-up. FIRST, not last: this is the only thing that ends a
