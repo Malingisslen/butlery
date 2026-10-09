@@ -157,6 +157,9 @@ const ADMIN_UID = "admin-uid";
   code is fine.
 
 ### Emulator, harness & CI gotchas
+- On a fresh sandbox `ensure-firestore-emulator.sh` exits 1 ("firebase CLI not found") and
+  `functions/node_modules` is absent: `npm i -g firebase-tools` and `npm ci` in `functions/`,
+  then re-run the hook (BUT-2114).
 - The emulator PERSISTS DATA ACROSS `npm run` invocations — suffix create-allow doc ids
   with a per-run token, or a second local run silently becomes update-not-create and
   fails wrong. CI is unaffected (fresh emulator per job); "fails locally, green in CI"

@@ -4,7 +4,7 @@
  *
  * The `members` wildcard already has its own dedicated suite
  * (`members-collection-group-rules.test.ts`, BUT-463). This suite covers the
- * remaining six catch-all wildcards that gate reads on an owner FIELD/LIST (or,
+ * remaining catch-all wildcards that gate reads on an owner FIELD/LIST (or,
  * for `engagements`, the owner DOC-ID) — each one silently trusts that every
  * present AND future subcollection of that name carries the expected owner shape:
  *
@@ -13,6 +13,7 @@
  *   {path=**}/comments/{commentId}  → allow read,delete if resource.data.commentedBy == auth.uid
  *   {path=**}/ratings/{ratingId}    → allow read,delete if resource.data.ratedBy   == auth.uid
  *   {path=**}/recipes/{recipeId}    → allow read  if isAdmin()   (admin-only, not owner-shaped)
+ *   {path=**}/likes/{likeId}        → allow read  if resource.data.userId == auth.uid (BUT-2114)
  *   {path=**}/pings/{pingId}        → allow read,delete if resource.data.fromUserId == auth.uid
  *                                                          || resource.data.toUserId == auth.uid
  *
@@ -246,6 +247,155 @@ test("recipes: unauthenticated request denied", async () => {
   await seed(`cg_wild/rec3/recipes/x`, { title: "Soppa" });
   const ctx = env.unauthenticatedContext();
   await assertFails(ctx.firestore().doc(`cg_wild/rec3/recipes/x`).get());
+});
+
+// ── likes: gate is resource.data.userId == auth.uid (read only, BUT-2114) ──
+// The Art. 15 export reads `collectionGroup('likes').where('userId', ==, uid)`
+// (FirebaseDataExportRepository.exportLikesByUser). `recipe_comments` has a
+// nested `likes` rule; `cook_snaps` has none.
+
+function likeBody(userId: string): Record<string, unknown> {
+  return { userId, likedAt: new Date() };
+}
+
+async function seedLikes(): Promise<void> {
+  await seed(`recipe_comments/cgl_c1/likes/${OWNER}`, likeBody(OWNER));
+  await seed(`recipe_comments/cgl_c1/likes/${OTHER}`, likeBody(OTHER));
+  await seed(`cook_snaps/cgl_s1/likes/${OWNER}`, likeBody(OWNER));
+  await seed(`cook_snaps/cgl_s1/likes/${OTHER}`, likeBody(OTHER));
+}
+
+// L1: the production read shape, filtered and limited as the repository sends it.
+test("likes: owner's filtered collection-group query returns their rows under recipe_comments AND cook_snaps", async () => {
+  await seedLikes();
+  const ctx = env.authenticatedContext(OWNER);
+  const snap = await assertSucceeds(
+    ctx.firestore().collectionGroup("likes")
+      .where("userId", "==", OWNER).limit(1000).get()
+  );
+  const paths = snap.docs.map((d) => d.ref.path);
+  for (const want of [
+    `recipe_comments/cgl_c1/likes/${OWNER}`,
+    `cook_snaps/cgl_s1/likes/${OWNER}`,
+  ]) {
+    if (!paths.includes(want)) {
+      throw new Error(`expected ${want} in ${JSON.stringify(paths)}`);
+    }
+  }
+  if (snap.docs.some((d) => d.data().userId !== OWNER)) {
+    throw new Error(`foreign row returned: ${JSON.stringify(paths)}`);
+  }
+});
+
+// L2
+test("likes: a collection-group query filtered on ANOTHER uid is refused", async () => {
+  await seedLikes();
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().collectionGroup("likes").where("userId", "==", OTHER).get()
+  );
+});
+
+// L3
+test("likes: an UNFILTERED collection-group query is refused", async () => {
+  await seedLikes();
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().collectionGroup("likes").get());
+});
+
+// L4
+test("likes: unauthenticated filtered collection-group query is refused", async () => {
+  await seedLikes();
+  const ctx = env.unauthenticatedContext();
+  await assertFails(
+    ctx.firestore().collectionGroup("likes").where("userId", "==", OWNER).get()
+  );
+});
+
+// L5: the doc id equals the caller's uid, so this also pins that the gate is
+// the FIELD, not the id.
+test("likes: a row LACKING userId is denied, even when its id is the caller's uid", async () => {
+  await seed(`cg_wild/l5/likes/${OWNER}`, { likedAt: new Date() });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/l5/likes/${OWNER}`).get());
+});
+
+// L6: fail-closed control for L5, L7 and the write denies below.
+test("likes: owner reads their own row on a novel parent path", async () => {
+  await seed(`cg_wild/l6/likes/${OWNER}`, likeBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(ctx.firestore().doc(`cg_wild/l6/likes/${OWNER}`).get());
+});
+
+// L7
+test("likes: FOREIGN-owner row on a novel parent path is denied", async () => {
+  await seed(`cg_wild/l7/likes/${OTHER}`, likeBody(OTHER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/l7/likes/${OTHER}`).get());
+});
+
+// L8
+test("likes: the catch-all is READ-ONLY — owner cannot CREATE their own like on a novel path", async () => {
+  const p = `foo/l8/likes/${OWNER}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const s = await ctx.firestore().doc(p).get();
+    if (s.exists) throw new Error(`${p} must be absent so this lands on create`);
+  });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(p).set(likeBody(OWNER)));
+});
+
+// L9
+test("likes: the catch-all is READ-ONLY — owner cannot DELETE their own like on a novel path", async () => {
+  await seed(`foo/l9/likes/${OWNER}`, likeBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`foo/l9/likes/${OWNER}`).delete());
+});
+
+// L10
+test("likes: the catch-all is READ-ONLY — owner cannot UPDATE their own like on a novel path", async () => {
+  await seed(`foo/l10/likes/${OWNER}`, likeBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().doc(`foo/l10/likes/${OWNER}`).update({ likedAt: new Date() })
+  );
+});
+
+// L11: cook_snaps has no nested likes rule, so no client write reaches its rows.
+test("likes: owner cannot DELETE their own like under cook_snaps", async () => {
+  await seedLikes();
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().doc(`cook_snaps/cgl_s1/likes/${OWNER}`).delete()
+  );
+});
+
+// L12
+test("likes: a stranger cannot get another user's like under cook_snaps", async () => {
+  await seedLikes();
+  const ctx = env.authenticatedContext(OTHER);
+  await assertFails(
+    ctx.firestore().doc(`cook_snaps/cgl_s1/likes/${OWNER}`).get()
+  );
+});
+
+// L13: unchanged behaviour of the nested recipe_comments rule.
+test("likes: direct get of ANOTHER user's comment like is still allowed (nested rule)", async () => {
+  await seedLikes();
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx.firestore().doc(`recipe_comments/cgl_c1/likes/${OTHER}`).get()
+  );
+});
+
+// L14: hasUserLikedComment gets the caller's like id whether or not it exists.
+test("likes: get of an ABSENT own comment like is still allowed (nested rule)", async () => {
+  const p = `recipe_comments/cgl_c2/likes/${OWNER}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(p).delete();
+  });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(ctx.firestore().doc(p).get());
 });
 
 // ── pings: gate is fromUserId == uid OR toUserId == uid (read, delete) ──

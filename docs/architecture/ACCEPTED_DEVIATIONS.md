@@ -5887,3 +5887,21 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   filter and report for it is the ticket's own recommendation, taken as this change's default.
   **What she was NOT shown:** a count of stored rows holding a review; this change was made
   without Firestore credentials.
+
+- **SUPERSEDES "Comment likes are erased but not exported (BUT-2112, 2026-09-19)" and the
+  BUT-2115 line "The requester's own reactions on other people's comments are not in the
+  bundle; they go with comment likes in BUT-2114" (BUT-2114, 2026-10-09).** The Art. 15
+  bundle has a `comment_likes` section: the requester's rows from the `likes` collection
+  group whose parent is a top-level `recipe_comments` document, each as the comment id and
+  `likedAt`. The read is admitted by `match /{path=**}/likes/{likeId}`, read only and only
+  where `userId` is the caller. Reactions on other people's comments are still not
+  exported, and the section's note says so; that is BUT-2318.
+
+- **`hashUid` stays unsalted `sha256(uid)` cut to 12 hex characters (BUT-2139, Malin
+  2026-10-09).** Anyone holding a list of uids can hash each one and match it to a
+  `system_events` row, so the value hides an uid from someone holding only the rows, not
+  from someone who also holds the user list. Kept because the rows are admin-read only, no
+  client can write them, `rate_limit_violation` rows are deleted after 90 days, and the
+  repeat-offender correlation (BUT-2138) needs the same hash across rows. A salt or a
+  per-purpose key would break that correlation for every existing row. Never describe the
+  value as anonymous: it is a pseudonym.

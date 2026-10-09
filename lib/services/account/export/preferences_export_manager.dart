@@ -6,6 +6,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson, sanitizeTimestamp;
+import 'package:butlery/services/account/export/isolated_section_reads.dart';
 
 /// Handles export of user preferences: settings, notifications.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -164,46 +165,31 @@ class PreferencesExportManager {
   Future<Map<String, dynamic>> exportAccountSubcollections(
     String userId,
   ) async {
-    final section = <String, dynamic>{};
-    var attemptedLegs = 0;
-    var failedLegs = 0;
+    final reads = IsolatedSectionReads(logTag: _logTag);
 
-    /// One collection, isolated. On failure it emits its own error keys and no
-    /// list at all — an empty list beside a failure marker reads as "you have
-    /// none of these", which is a stronger and possibly false claim than "this
-    /// lookup did not complete".
+    /// One collection, isolated by [IsolatedSectionReads].
     Future<void> readLeg(
       String key,
       String limitType,
       Future<List<Map<String, dynamic>>> Function(int maxDocuments) fetch,
     ) async {
-      attemptedLegs++;
-      try {
-        final page = await ExportPaginationHelper.fetchCapped(
-          type: limitType,
-          fetch: fetch,
-        );
-        section[key] = sanitizeForJson(page.items);
-        if (page.truncated) {
-          // Per collection, not one flag for the section: three collections
-          // that grow at different rates share this section, and a single
-          // `truncated` cannot say WHICH of them lost rows. A nested
-          // `*_truncated` makes the whole SECTION appear in
-          // `truncated_collections`; which collection was clipped is stated
-          // here and only here, which is the reason to name it per collection.
-          section['${key}_truncated'] = true;
-          section['${key}_note'] =
-              'Limited to the first '
-              '${ExportPaginationHelper.getLimitForType(limitType)} rows.';
-        }
-      } catch (e) {
-        failedLegs++;
-        app_logger.AppLogger.error(
-          '[$_logTag] Failed to export account subcollection $key',
-          e,
-        );
-        section['${key}_error'] = 'Could not export $key.';
-        section['${key}_error_code'] = '$key-export-failed';
+      final page = await reads.read(
+        key,
+        () => ExportPaginationHelper.fetchCapped(type: limitType, fetch: fetch),
+      );
+      if (page == null) return;
+      reads.section[key] = sanitizeForJson(page.items);
+      if (page.truncated) {
+        // Per collection, not one flag for the section: three collections
+        // that grow at different rates share this section, and a single
+        // `truncated` cannot say WHICH of them lost rows. A nested
+        // `*_truncated` makes the whole SECTION appear in
+        // `truncated_collections`; which collection was clipped is stated
+        // here and only here, which is the reason to name it per collection.
+        reads.section['${key}_truncated'] = true;
+        reads.section['${key}_note'] =
+            'Limited to the first '
+            '${ExportPaginationHelper.getLimitForType(limitType)} rows.';
       }
     }
 
@@ -229,27 +215,12 @@ class PreferencesExportManager {
     );
 
     return {
-      ...section,
-      // `DataExportService` reads these two keys as DIFFERENT claims, and the
-      // difference is the whole point of isolating the reads: `error_code`
-      // alone warns that the section may be incomplete and points at it, while
-      // `error` says the section could not be exported at all. Setting `error`
-      // for one failed leg would tell the data subject that two collections
-      // they did receive are missing.
-      // Counted, not the literal 3: a fourth collection added to this section
-      // would otherwise disable the outright-failure branch forever, and no
-      // test would redden — the section would report "may be incomplete" for a
-      // bundle where every read failed.
-      //
-      // Two tokens, because one saying "partial" over a section where every
-      // read failed contradicts the sentence `DataExportService` renders beside
-      // it.
-      if (failedLegs > 0 && failedLegs < attemptedLegs)
-        'error_code': 'account-subcollections-partial-export-failure',
-      if (failedLegs > 0 && failedLegs == attemptedLegs) ...{
-        'error': 'Could not export account subcollections.',
-        'error_code': 'account-subcollections-export-failed',
-      },
+      ...reads.section,
+      ...reads.outcome(
+        partialCode: 'account-subcollections-partial-export-failure',
+        failedCode: 'account-subcollections-export-failed',
+        failedMessage: 'Could not export account subcollections.',
+      ),
       // Art. 12(1): an exemption the data subject cannot see is not a
       // minimisation decision, it is an undisclosed gap. The names are
       // spelled out because "some technical data" tells the reader nothing
@@ -412,25 +383,45 @@ class PreferencesExportManager {
 
   /// Export notification preferences
   /// User's notification settings and preferences.
+  ///
+  /// BUT-2008: the preferences document and the token read are isolated, so a
+  /// refusal on one no longer discards the other. A failed leg emits none of
+  /// the keys derived from it — `preferences_exist: false` or
+  /// `fcm_token_registered: false` beside a failure would be a claim about the
+  /// user that the lookup never answered.
   Future<Map<String, dynamic>> exportNotificationPreferences(
     String userId,
   ) async {
-    try {
-      final prefs = await _exports.exportNotificationPreferences(userId);
-      // BUT-1990: reads the same field-filtered query as `exportFcmTokens`. The
-      // `user_fcm_tokens/{userId}` doc fetch that stood here could not match a
-      // real document, so `fcm_token_registered` was false for every user who
-      // had ever registered a device.
-      final tokens = await _exports.exportFcmTokensForUser(userId);
+    final reads = IsolatedSectionReads(logTag: _logTag);
 
+    final prefs = await reads.read(
+      'preferences',
+      () async => (await _exports.exportNotificationPreferences(userId),),
+    );
+    if (prefs != null) {
+      reads.section['preferences'] = prefs.$1 != null
+          ? sanitizeForJson(prefs.$1)
+          : null;
+      reads.section['preferences_exist'] = prefs.$1 != null;
+    }
+
+    // BUT-1990: reads the same field-filtered query as `exportFcmTokens`. The
+    // `user_fcm_tokens/{userId}` doc fetch that stood here could not match a
+    // real document, so `fcm_token_registered` was false for every user who
+    // had ever registered a device.
+    final tokens = await reads.read(
+      'fcm_tokens',
+      () => _exports.exportFcmTokensForUser(userId),
+    );
+    if (tokens != null) {
       // `lastUpdated` is the field the writers actually write
       // (`FcmTokenManager._saveTokenToFirestore`,
-      // `FirebaseDeviceRepository.updateTokenTimestamp`, and the schema comment
-      // in `functions/src/shared/fcm-tokens.ts`). The `updatedAt` this read
-      // before belonged to no writer, so the value was null for every user —
-      // the same never-answers defect BUT-1990 removed one field over.
-      // `lastSeen` is the fallback because the device-info write refreshes only
-      // that one.
+      // `FirebaseDeviceRepository.updateTokenTimestamp`, and the schema
+      // comment in `functions/src/shared/fcm-tokens.ts`). The `updatedAt` this
+      // read before belonged to no writer, so the value was null for every
+      // user — the same never-answers defect BUT-1990 removed one field over.
+      // `lastSeen` is the fallback because the device-info write refreshes
+      // only that one.
       DateTime? newest;
       for (final row in tokens) {
         final stamp = row['lastUpdated'] ?? row['lastSeen'];
@@ -438,25 +429,29 @@ class PreferencesExportManager {
         final at = stamp.toDate();
         if (newest == null || at.isAfter(newest)) newest = at;
       }
-      final fcmTokenUpdatedAt = sanitizeTimestamp(newest);
+      reads.section['fcm_token_registered'] = tokens.isNotEmpty;
+      reads.section['fcm_token_updated_at'] = sanitizeTimestamp(newest);
+    }
 
+    if (reads.allFailed) {
       return {
-        'preferences': prefs != null ? sanitizeForJson(prefs) : null,
-        'preferences_exist': prefs != null,
-        'fcm_token_registered': tokens.isNotEmpty,
-        'fcm_token_updated_at': fcmTokenUpdatedAt,
-        'note': 'FCM token is not included for security reasons',
-      };
-    } catch (e) {
-      return {
-        ..._failed(
-          'notification preferences',
-          'notification-preferences-export-failed',
-          e,
+        ...reads.outcome(
+          partialCode: 'notification-preferences-partial-export-failure',
+          failedCode: 'notification-preferences-export-failed',
+          failedMessage: 'Could not export notification preferences.',
         ),
         'note': 'Notification preferences may not be available',
       };
     }
+    return {
+      ...reads.section,
+      ...reads.outcome(
+        partialCode: 'notification-preferences-partial-export-failure',
+        failedCode: 'notification-preferences-export-failed',
+        failedMessage: 'Could not export notification preferences.',
+      ),
+      'note': 'FCM token is not included for security reasons',
+    };
   }
 
   /// Export FCM token metadata (token value redacted for security)
@@ -480,23 +475,44 @@ class PreferencesExportManager {
     }
   }
 
-  /// Export shopping category preferences and list category orders
+  /// Export shopping category preferences and list category orders.
+  ///
+  /// BUT-2008: the two reads are isolated. BUT-1701: each is capped at the
+  /// repository default it already rode, with the N+1 probe, so a clip is
+  /// stated instead of passing as complete.
   Future<Map<String, dynamic>> exportCategoryPreferences(String userId) async {
-    try {
-      final catPrefs = await _exports.exportCategoryPreferences(userId);
-      final listOrders = await _exports.exportListCategoryOrders(userId);
+    final reads = IsolatedSectionReads(logTag: _logTag);
 
-      return {
-        'category_preferences': catPrefs.map(sanitizeForJson).toList(),
-        'list_category_orders': listOrders.map(sanitizeForJson).toList(),
-      };
-    } catch (e) {
-      return _failed(
-        'category preferences',
-        'category-preferences-export-failed',
-        e,
+    Future<void> leg(
+      String key,
+      Future<List<Map<String, dynamic>>> Function(int maxDocuments) fetch,
+    ) async {
+      final page = await reads.read(
+        key,
+        () => ExportPaginationHelper.fetchCapped(type: key, fetch: fetch),
       );
+      if (page == null) return;
+      reads.section[key] = page.items.map(sanitizeForJson).toList();
+      if (page.truncated) reads.section['truncated'] = true;
     }
+
+    await leg(
+      'category_preferences',
+      (max) => _exports.exportCategoryPreferences(userId, maxDocuments: max),
+    );
+    await leg(
+      'list_category_orders',
+      (max) => _exports.exportListCategoryOrders(userId, maxDocuments: max),
+    );
+
+    return {
+      ...reads.section,
+      ...reads.outcome(
+        partialCode: 'category-preferences-partial-export-failure',
+        failedCode: 'category-preferences-export-failed',
+        failedMessage: 'Could not export category preferences.',
+      ),
+    };
   }
 
   /// BUT-1450: Export notification-history records (notifications the user
@@ -588,46 +604,59 @@ class PreferencesExportManager {
   /// user's data actually is, and the human-readable notification is in
   /// notification_history (joined via notificationId). See
   /// `.claude/rules/accepted-deviations.md`.
+  ///
+  /// BUT-2008: the two legs are isolated, so a refusal on one keeps the other.
+  /// A failed leg contributes no rows and no `*_count`.
   Future<Map<String, dynamic>> exportNotificationDelivery(
     String userId,
   ) async {
-    try {
-      // Each leg carries the cap independently, so each gets its own N+1 probe
-      // and the section is truncated when EITHER leg clipped (BUT-1662).
-      final sent = await ExportPaginationHelper.fetchCapped(
+    final reads = IsolatedSectionReads(logTag: _logTag);
+    // Each leg carries the cap independently, so each gets its own N+1 probe
+    // and the section is truncated when EITHER leg clipped (BUT-1662).
+    final sent = await reads.read(
+      'notification_delivery_sent',
+      () => ExportPaginationHelper.fetchCapped(
         type: 'notification_delivery',
         fetch: (max) =>
             _exports.exportNotificationDeliverySent(userId, maxDocuments: max),
-      );
-      final received = await ExportPaginationHelper.fetchCapped(
+      ),
+    );
+    final received = await reads.read(
+      'notification_delivery_received',
+      () => ExportPaginationHelper.fetchCapped(
         type: 'notification_delivery',
         fetch: (max) => _exports.exportNotificationDeliveryReceived(
           userId,
           maxDocuments: max,
         ),
-      );
-      // De-dupe by doc id — a self-targeted notification can match both queries.
-      final byId = <String, Map<String, dynamic>>{};
-      for (final e in [...sent.items, ...received.items]) {
-        byId[e['id'] as String] = {
-          'id': e['id'],
-          'data': sanitizeForJson(e['data']),
-        };
-      }
-      final merged = byId.values.toList();
-      return {
-        'notification_delivery': merged,
-        'total_count': merged.length,
-        'sent_count': sent.length,
-        'received_count': received.length,
-        if (sent.truncated || received.truncated) 'truncated': true,
+      ),
+    );
+
+    final outcome = reads.outcome(
+      partialCode: 'notification-delivery-partial-export-failure',
+      failedCode: 'notification-delivery-export-failed',
+      failedMessage: 'Could not export notification delivery.',
+    );
+    if (reads.allFailed) return outcome;
+
+    // De-dupe by doc id — a self-targeted notification can match both queries.
+    final byId = <String, Map<String, dynamic>>{};
+    for (final e in [...?sent?.items, ...?received?.items]) {
+      byId[e['id'] as String] = {
+        'id': e['id'],
+        'data': sanitizeForJson(e['data']),
       };
-    } catch (e) {
-      return _failed(
-        'notification delivery',
-        'notification-delivery-export-failed',
-        e,
-      );
     }
+    final merged = byId.values.toList();
+    return {
+      ...reads.section,
+      ...outcome,
+      'notification_delivery': merged,
+      'total_count': merged.length,
+      if (sent != null) 'sent_count': sent.length,
+      if (received != null) 'received_count': received.length,
+      if ((sent?.truncated ?? false) || (received?.truncated ?? false))
+        'truncated': true,
+    };
   }
 }
