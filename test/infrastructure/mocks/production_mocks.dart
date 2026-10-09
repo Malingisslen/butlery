@@ -34,7 +34,6 @@ import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 // ReactionsRepository removed - dead code
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
-import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -3258,29 +3257,6 @@ class MockNotificationRepository extends Mock {
   }
 }
 
-class MockMenuCollaborationRepository extends Mock
-    implements MenuCollaborationRepository {
-  // State-backed no-ops. See MockAnalyticsService note — returning a real
-  // value is necessary for Future<bool>-typed methods that Mocktail cannot
-  // default-supply. Tests that need failure paths should configure state
-  // or define a local Mock for the specific test case.
-  @override
-  Future<bool> enableCollaboration({
-    required String menuId,
-    required List<String> collaboratorIds,
-    Map<String, String>? collaboratorDisplayNames,
-  }) async => true;
-
-  @override
-  void startCollaborationListener(
-    String menuId,
-    Function(SharedMenu) onUpdate,
-  ) {}
-
-  @override
-  void disposeAllListeners() {}
-}
-
 // ✅ REMOVED: Duplicate MockLegacyNotificationRepository - keeping the complete version
 /// Mock implementation of ImageValidator - ⭐ FIXED: Implements correct interface
 class MockImageValidator extends Mock implements ImageValidator {
@@ -4509,8 +4485,7 @@ class MockParticipantTracker extends Mock implements ParticipantTracker {
   @override
   List<String> get recentlyActiveParticipants => _onlineParticipants;
 
-  // State-backed no-ops. Same rationale as MockMenuCollaborationRepository —
-  // the concrete returns supply non-null values for getters/return types
+  // State-backed no-ops. The concrete returns supply non-null values for getters/return types
   // that Mocktail cannot default-fill; they don't block `when()` stubs in
   // practice because no test attempts that pattern.
   @override

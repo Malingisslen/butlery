@@ -21,6 +21,9 @@ import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/category_preferences.dart';
+import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
+import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -38,6 +41,9 @@ class _MockAnalyticsService extends Mock implements AnalyticsService {}
 class _MockAnalyticsRepository extends Mock implements AnalyticsRepository {}
 
 class _MockConsentServiceForAnalytics extends Mock implements ConsentService {}
+
+class _MockCategoryPreferencesRepository extends Mock
+    implements CategoryPreferencesRepository {}
 
 /// Fake connectivity source with real ChangeNotifier semantics so the VM's
 /// `addListener` subscription actually fires when connectivity flips. Overrides
@@ -1261,6 +1267,38 @@ void main() {
             'toggle fires on unchecking too; counting that as a check-off '
             'inflated the metric and made the funnel unreadable',
       );
+    });
+  });
+
+  // BUT-2137: the add-item dialog suggests the category the user once moved
+  // an item to. This runs the real preferences module, loaded the way the
+  // service loads it, so a passthrough that reads the wrong thing reddens.
+  group('savedCategoryFor (BUT-2137)', () {
+    setUp(() async {
+      final repository = _MockCategoryPreferencesRepository();
+      when(repository.getPreferences).thenAnswer(
+        (_) async => CategoryPreferences(
+          itemCategoryOverrides: const {'mjölk': ShoppingCategory.drinks},
+        ),
+      );
+      final preferences = ShoppingCategoryPreferencesModule(
+        repository: repository,
+      );
+      await preferences.load();
+      when(
+        () => mockShoppingService.categoryPreferences,
+      ).thenReturn(preferences);
+    });
+
+    test('returns the saved category, whatever the casing', () {
+      expect(
+        viewModel.savedCategoryFor(' Mjölk '),
+        ShoppingCategory.drinks,
+      );
+    });
+
+    test('returns null for an item with nothing saved', () {
+      expect(viewModel.savedCategoryFor('Kaffe'), isNull);
     });
   });
 }

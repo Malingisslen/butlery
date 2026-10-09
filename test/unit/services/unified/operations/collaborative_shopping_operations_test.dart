@@ -1131,9 +1131,8 @@ void main() {
 
       test('removeMember refuses the caller their own uid', () async {
         // BUT-1718 deleted the `isRemovingSelf` bypass that used to sit here:
-        // it let a member past the manage-members check and into a write the
-        // client guards and `firestore.rules` both refuse, worded as a missing
-        // edit permission. Self-removal is `leaveList`.
+        // it let a member past the manage-members check and into a write.
+        // Self-removal is `leaveList`.
         //
         // The actor is a non-owner ADMIN, and that is the whole fixture: an
         // ordinary member is refused by `canManageMembers` one line below, so
@@ -1171,6 +1170,75 @@ void main() {
           () => mockParentService.updateSharedListMembership(any(), any()),
         );
         verifyNever(() => mockParentService.leaveSharedList(any(), any()));
+      });
+
+      // BUT-2013: the actor is a non-owner ADMIN, who clears
+      // `canManageMembers`, so only the owner-target refusal can stop these.
+      void seatAdminCaller() {
+        mockParentService.setShoppingState(
+          collaborativeLists: [testCollaborativeList, testSharedList],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_456',
+          currentUserDisplayName: 'Other User',
+        );
+        mockPermissionService.setPermissionState(
+          isAuthenticated: true,
+          currentUserId: 'user_456',
+          permissions: {
+            'collab_list_1': {
+              ResourcePermission.owner: false,
+              ResourcePermission.admin: true,
+              ResourcePermission.write: true,
+              ResourcePermission.editor: true,
+              ResourcePermission.read: true,
+              ResourcePermission.viewer: true,
+            },
+          },
+        );
+      }
+
+      test('an admin cannot remove the owner', () async {
+        seatAdminCaller();
+
+        final result = await operations.removeMember(
+          listId: 'collab_list_1',
+          userId: 'user_123',
+        );
+
+        expect(result, isFalse);
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
+      });
+
+      test('an admin cannot change the owner\'s permission', () async {
+        seatAdminCaller();
+
+        final result = await operations.updateMemberPermission(
+          listId: 'collab_list_1',
+          userId: 'user_123',
+          permission: SharedListPermission.view,
+          viewedBase: testCollaborativeList,
+        );
+
+        expect(result, isFalse);
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
+      });
+
+      test('an admin can remove a member who is not the owner', () async {
+        seatAdminCaller();
+
+        final result = await operations.removeMember(
+          listId: 'collab_list_1',
+          userId: 'user_789',
+        );
+
+        expect(result, isTrue);
+        verify(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        ).called(1);
       });
 
       test('should not allow owner to leave list', () async {
