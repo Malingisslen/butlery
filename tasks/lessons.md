@@ -4702,3 +4702,9 @@ Date: 2026-10-09
 Trigger: BUT-1958, en raderad gruppchatt som byggs upp igen. Första versionen satte alla i `chat_groups.memberIds` i den nya konversationen och sade i kommentaren att ingen ny sätts, så minderårigspärren har inget att avgöra. cloud-functions-specialist visade att premissen var falsk: `enforceGroupMinorMembership` försöker ta bort en utesluten minderårig i en transaktion som uppdaterar konversationen, får NOT_FOUND när den är raderad, sväljer det som "lönlöst" och rullar därmed tillbaka borttagningen ur `memberIds` utan nytt försök. Återuppbyggnaden hade alltså satt tillbaka just den person spärren redan dömt ut.
 Rule: Innan en ändring återskapar ett dokument som kan ha raderats, grep efter varje hanterare på samma väg som behandlar NOT_FOUND (grpc 5) som "klart". Deras beslut kan ha fastnat halvvägs; döm om i samma ändring och skriv till det dokument som triggar hanteraren så att den körs igen.
 Example: 2026-10-09 — 51a69dc, `restoreConversation` kör `computeBlockedMembers` före sättningen och gör `tx.update(groupRef, { updatedAt })`.
+
+### En citerad teststräng ändras på båda sidor samtidigt (2026-10-09)
+Date: 2026-10-09
+Trigger: BUT-2157 (#619). claim-lint vägrade radnummer i ny text, så commiten tog bort `:97` och `:188` ur två testnamn som citeras i `test/fixtures/design/transition_census.json`. Själva testerna behöll de gamla namnen. Census-kontrollen i `flow_transition_coverage_test.dart` söker citatet som delsträng i testfilen, hittade dem inte, och views-sviten blev röd i CI. Att lägga tillbaka radnumren i census stoppades av samma claim-lint.
+Rule: En sträng som en annan fil citerar ordagrant (census, fixtur, register) binder två filer. Ändras den på ena sidan, ändra den andra i samma commit (här byttes testnamnen), och kör testet som jämför dem innan push.
+Example: 2026-10-09 — 4fe513b, de två testen bytte namn; flow_transition_coverage_test och design_migration_census_test gröna.
