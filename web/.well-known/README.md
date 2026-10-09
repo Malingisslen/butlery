@@ -6,6 +6,9 @@ These files must be served from `https://butlery.app/.well-known/`.
   Asset Links). Unblocks `autoVerify=true` in `AndroidManifest.xml`.
 - `apple-app-site-association` — iOS universal links. Unblocks the
   `applinks:butlery.app` entitlement. **No file extension.**
+- `security.txt` — RFC 9116 contact for security researchers. Its `Expires`
+  date must stay in the future (at most a year out); the workflow below
+  refuses to publish an expired one.
 
 The `Deploy app link files` workflow publishes them on
 `butlery-app-1.web.app` and `butlery-app-1.firebaseapp.com`; the second is

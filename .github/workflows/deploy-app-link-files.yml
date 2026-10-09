@@ -1,8 +1,10 @@
 # Publishes web/.well-known/ (the files that let the "glömt lösenord" link and
 # other app links open the app, BUT-2170) on the live `app` Hosting site
 # WITHOUT republishing the web app: tools/hosting/patch_live_files.py clones
-# the live version and swaps only these two files. Rollback = re-release the
-# previous version in the Firebase console (Hosting → release history).
+# the live version and swaps only these files. security.txt (RFC 9116,
+# BUT-1522) rides along: it tells security researchers where to report a
+# vulnerability. Rollback = re-release the previous version in the Firebase
+# console (Hosting → release history).
 name: Deploy app link files
 
 on:
@@ -35,6 +37,19 @@ jobs:
             echo "::error::A placeholder is still in web/.well-known/." >&2
             exit 1
           fi
+          # RFC 9116: a security.txt past its Expires date must be treated as
+          # stale, so never publish one that already is.
+          python3 - <<'PY'
+          import datetime, re
+          text = open("web/.well-known/security.txt").read()
+          assert re.search(r"^Contact: mailto:", text, re.M), "security.txt has no Contact"
+          m = re.search(r"^Expires: (\S+)$", text, re.M)
+          assert m, "security.txt has no Expires"
+          expires = datetime.datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+          now = datetime.datetime.now(datetime.timezone.utc)
+          assert expires > now, f"security.txt expired {m.group(1)}: move Expires forward (at most a year)"
+          assert expires <= now + datetime.timedelta(days=366), f"security.txt Expires {m.group(1)} is more than a year out"
+          PY
 
       - name: Patch the live site
         env:
@@ -49,7 +64,8 @@ jobs:
             --site butlery-app-1 --key "$RUNNER_TEMP/sa.json" \
             ${{ inputs.dry_run && '--dry-run' || '' }} \
             /.well-known/assetlinks.json=web/.well-known/assetlinks.json \
-            /.well-known/apple-app-site-association=web/.well-known/apple-app-site-association
+            /.well-known/apple-app-site-association=web/.well-known/apple-app-site-association \
+            /.well-known/security.txt=web/.well-known/security.txt
           rm -f "$RUNNER_TEMP/sa.json"
 
       - name: Check what the site serves
@@ -58,5 +74,6 @@ jobs:
           for host in butlery-app-1.firebaseapp.com butlery-app-1.web.app; do
             curl -fsS "https://$host/.well-known/assetlinks.json" | grep -q D5:5E:2C
             curl -fsS "https://$host/.well-known/apple-app-site-association" | grep -q F6SFW9MP8T
+            curl -fsS "https://$host/.well-known/security.txt" | grep -q "^Contact: mailto:security@butlery.se"
             echo "$host serves the new files"
           done

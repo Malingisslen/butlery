@@ -45,7 +45,7 @@ enum ReportStatus {
 /// Version stamp matching `assets/legal/community_guidelines_{sv,en}.md`.
 /// Bump on every guideline edit so historical reports cite the version that
 /// was in force when the user submitted.
-const String kCurrentGuidelineVersion = '2026-02-28';
+const String kCurrentGuidelineVersion = '2026-10-09';
 
 /// Represents a user-submitted content report for moderation.
 class ContentReport {
