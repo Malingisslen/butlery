@@ -5,6 +5,7 @@
 /// Scaffold or app bar. Wrap in a parent that provides layout chrome.
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
@@ -264,6 +265,7 @@ class _PantrySection extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          trailing: const ButleryExpansionChevron(),
           initiallyExpanded: initiallyExpanded,
           iconColor: cs.onSurfaceVariant,
           collapsedIconColor: cs.onSurfaceVariant,

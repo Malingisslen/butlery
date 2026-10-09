@@ -1,5 +1,6 @@
 // lib/widgets/common/friends/category_selection_widgets.dart
 
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 // AppColors import removed - using theme-aware colors
@@ -367,6 +368,7 @@ class CategorySelectionWidgets {
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
         child: ExpansionTile(
+          trailing: const ButleryExpansionChevron(),
           title: Text(
             selectedCategoryIds.isEmpty
                 ? (hint ?? context.l10n.friendSelectCategories)
