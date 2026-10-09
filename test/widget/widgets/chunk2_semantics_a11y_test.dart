@@ -85,10 +85,10 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'Rösta på Pannkakor')),
-        findsWidgets,
-      );
+      final option = find.bySemanticsLabel(RegExp(r'^Rösta\nPannkakor'));
+      expect(option, findsOneWidget);
+      expectActivatable(tester, option);
+      expectNothingAnnouncedTwice(tester, option);
       handle.dispose();
     });
 
@@ -139,10 +139,9 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'Pannkakor, din röst\.')),
-        findsWidgets,
-      );
+      final option = find.bySemanticsLabel(RegExp(r'^Din röst\nPannkakor'));
+      expect(option, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, option);
       handle.dispose();
     });
 
@@ -169,10 +168,11 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Förbättra menyprompten')),
-          findsWidgets,
-        );
+        final link = find.bySemanticsLabel(RegExp(r'^Förbättra menyprompten'));
+        expect(link, findsOneWidget);
+        expectActivatable(tester, link);
+        expect(announcedLines(tester, link), ['Förbättra menyprompten']);
+        expectNothingAnnouncedTwice(tester, link);
         handle.dispose();
       },
     );

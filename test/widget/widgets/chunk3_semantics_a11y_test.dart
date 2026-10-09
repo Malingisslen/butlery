@@ -82,10 +82,10 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Filtrera på Favoriter')),
-          findsWidgets,
-        );
+        final chip = find.bySemanticsLabel(RegExp(r'^Filtrera\nFavoriter'));
+        expect(chip, findsOneWidget);
+        expectActivatable(tester, chip);
+        expectNothingAnnouncedTwice(tester, chip);
         handle.dispose();
       },
     );
@@ -108,10 +108,9 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Favoriter, valt filter')),
-          findsWidgets,
-        );
+        final chip = find.bySemanticsLabel(RegExp(r'^Valt filter\nFavoriter'));
+        expect(chip, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, chip);
         handle.dispose();
       },
     );

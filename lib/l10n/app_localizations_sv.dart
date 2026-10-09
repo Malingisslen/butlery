@@ -161,9 +161,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yPantrySelectItem(String itemName) {
-    return '$itemName, tryck för att markera';
-  }
+  String get a11yPantrySelectItem => 'Markera';
 
   @override
   String slotSpillHeading(int placed, int count) {
@@ -338,14 +336,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yPlacementTrayCard(String recipe) {
-    return 'Välj $recipe';
-  }
+  String get a11yPlacementTrayCard => 'Välj';
 
   @override
-  String a11yPlacementRemoveEntry(String recipe) {
-    return 'Ta bort $recipe från rutan';
-  }
+  String get a11yPlacementRemoveEntry => 'Ta bort från rutan';
 
   @override
   String get bulkAddToMenu => 'Lägg till i veckomeny';
@@ -8093,9 +8087,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yShareExternally => 'Dela externt';
 
   @override
-  String get a11yAddItem => 'Lägg till vara';
-
-  @override
   String get a11yAddFriend => 'Lägg till vän';
 
   @override
@@ -8115,24 +8106,16 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yShoppingItemChecked(String itemText) {
-    return '$itemText, avbockad, tryck för att bocka av';
-  }
+  String get a11yShoppingItemChecked => 'Avbockad, tryck för att ångra';
 
   @override
-  String a11yShoppingItemUnchecked(String itemText) {
-    return '$itemText, tryck för att bocka av';
-  }
+  String get a11yShoppingItemUnchecked => 'Bocka av';
 
   @override
-  String a11yShoppingSelectItem(String itemText) {
-    return '$itemText, tryck för att markera';
-  }
+  String get a11yShoppingSelectItem => 'Markera';
 
   @override
-  String a11yShoppingReorderHandle(String itemName) {
-    return '$itemName, dra för att flytta kategori';
-  }
+  String get a11yShoppingReorderHandle => 'Dra för att flytta kategori';
 
   @override
   String shoppingItemsRemovedUndoMessage(int count) {
@@ -8216,19 +8199,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yFriend => 'Vän';
 
   @override
-  String a11yFilterTag(String tagName, String status) {
-    return 'Filtrera på $tagName, $status';
+  String a11yFilterTag(String tagName) {
+    return 'Filtrera på $tagName';
   }
 
   @override
-  String get a11yActive => 'aktiv';
-
-  @override
-  String get a11yInactive => 'inaktiv';
-
-  @override
-  String a11yExcludeTag(String tagName, String status) {
-    return 'Exkludera $tagName, $status';
+  String a11yExcludeTag(String tagName) {
+    return 'Exkludera $tagName';
   }
 
   @override
@@ -8261,11 +8238,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yRemoveProfileImage => 'Ta bort profilbild';
-
-  @override
-  String a11yMenu(String title) {
-    return 'Meny: $title';
-  }
 
   @override
   String get filterBreakfast => 'Frukost';
@@ -14144,9 +14116,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get weeklyMenuMoveFailed => 'Kunde inte flytta recepten';
 
   @override
-  String a11yWeeklyMenuSelectEntry(String recipe) {
-    return 'Välj $recipe för att flytta';
-  }
+  String get a11yWeeklyMenuSelectEntry => 'Välj för att flytta';
 
   @override
   String get pantrySectionExpiring => 'Går ut snart';
@@ -14699,9 +14669,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeVisibilityPublic => 'Offentligt';
 
   @override
-  String a11yMenuRecipeOpen(String title) {
-    return '$title, tryck för att öppna receptet';
-  }
+  String get a11yMenuRecipeOpen => 'Öppna receptet';
 
   @override
   String a11yMenuSectionRegenerate(String category) {
@@ -14728,22 +14696,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yConversationOpen => 'Öppna konversationen';
 
   @override
-  String a11yMenuVoteOption(String name) {
-    return 'Rösta på $name';
-  }
+  String get a11yMenuVoteOption => 'Rösta';
 
   @override
-  String a11yMenuVoteOptionSelected(String name) {
-    return '$name, din röst.';
-  }
+  String get a11yMenuVoteOptionSelected => 'Din röst';
 
   @override
   String get a11yPingAcknowledge => 'Bekräfta notis';
 
   @override
-  String a11yMenuPlanRecipeOpen(String title) {
-    return '$title, tryck för att öppna receptet';
-  }
+  String get a11yMenuPlanRecipeOpen => 'Öppna receptet';
 
   @override
   String a11yMenuPlanOvrigtAddMore(String day) {
@@ -14757,14 +14719,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yAddIngredient => 'Lägg till';
 
   @override
-  String a11yQuickFilter(String label) {
-    return 'Filtrera på $label';
-  }
+  String get a11yQuickFilter => 'Filtrera';
 
   @override
-  String a11yQuickFilterSelected(String label) {
-    return '$label, valt filter';
-  }
+  String get a11yQuickFilterSelected => 'Valt filter';
 
   @override
   String get a11yHeirloomScanOpenFullscreen =>
@@ -14782,12 +14740,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yPantryAddItem => 'Lägg till ny vara';
 
   @override
-  String a11yPantryEditItem(String itemName) {
-    return '$itemName, tryck för att redigera';
-  }
+  String get a11yPantryEditItem => 'Redigera';
 
   @override
-  String get a11yPantryPickExpiry => 'Välj utgångsdatum';
+  String get a11yPantryPickExpiry => 'Öppna kalendern';
 
   @override
   String a11yDraftRecoverTile(String title) {
@@ -14888,9 +14844,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Avfärda varning om importkvalitet';
 
   @override
-  String a11yToggleShoppingCategory(String category) {
-    return 'Kategori $category';
-  }
+  String get a11yToggleShoppingCategory => 'Kategori';
 
   @override
   String shoppingCategoryProgress(int completed, int total) {
@@ -14898,12 +14852,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleEmptyCategories => 'Övriga kategorier';
-
-  @override
-  String a11yWeeklyMenuViewModeToggle(String label) {
-    return '$label';
-  }
+  String get a11yToggleEmptyCategories => 'Visa eller dölj';
 
   @override
   String get a11yPollVoteOption => 'Rösta';

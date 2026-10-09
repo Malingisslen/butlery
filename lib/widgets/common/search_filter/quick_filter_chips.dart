@@ -209,8 +209,8 @@ class _QuickChipState extends State<_QuickChip> {
         color: Colors.transparent,
         child: Semantics(
           label: isSelected
-              ? context.l10n.a11yQuickFilterSelected(label)
-              : context.l10n.a11yQuickFilter(label),
+              ? context.l10n.a11yQuickFilterSelected
+              : context.l10n.a11yQuickFilter,
           button: true,
           selected: isSelected,
           child: InkWell(

@@ -413,9 +413,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           },
           builder: (context, candidateData, rejectedData) {
             return Semantics(
-              label: context.l10n.a11yToggleShoppingCategory(
-                ShoppingCategory.displayName(category),
-              ),
+              label: context.l10n.a11yToggleShoppingCategory,
               button: true,
               toggled: !isCollapsed,
               child: GestureDetector(

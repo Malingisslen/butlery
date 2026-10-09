@@ -94,8 +94,8 @@ class PantryItemCard extends StatelessWidget {
     // selecting); otherwise tap edits and long-press enters selection.
     final tappable = Semantics(
       label: selectionMode
-          ? context.l10n.a11yPantrySelectItem(item.ingredientName)
-          : context.l10n.a11yPantryEditItem(item.ingredientName),
+          ? context.l10n.a11yPantrySelectItem
+          : context.l10n.a11yPantryEditItem,
       button: true,
       selected: selectionMode ? selected : null,
       child: Material(

@@ -168,9 +168,6 @@ class ShoppingAppBar {
     // BUT-403: `btn-add-shopping-item` identifier for browser a11y queries.
     return Semantics(
       identifier: 'btn-add-shopping-item',
-      label: context.l10n.a11yAddItem,
-      button: true,
-      enabled: true,
       // The list's one saffron action (Skarmar v12 del 2 #inkop draws the
       // add button in saffron; Komponentark v1:843-844). The hero's colours
       // (action.primary / text.onActionPrimary, pressed action.primaryPressed

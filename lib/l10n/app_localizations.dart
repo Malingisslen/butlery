@@ -389,8 +389,8 @@ abstract class AppLocalizations {
   /// BUT-948: screen-reader label for a pantry row while in multi-select mode.
   ///
   /// In sv, this message translates to:
-  /// **'{itemName}, tryck för att markera'**
-  String a11yPantrySelectItem(String itemName);
+  /// **'Markera'**
+  String get a11yPantrySelectItem;
 
   /// BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day
   ///
@@ -575,14 +575,14 @@ abstract class AppLocalizations {
   /// BUT-1241: a11y label for a tray recipe card in placement mode.
   ///
   /// In sv, this message translates to:
-  /// **'Välj {recipe}'**
-  String a11yPlacementTrayCard(String recipe);
+  /// **'Välj'**
+  String get a11yPlacementTrayCard;
 
   /// BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort {recipe} från rutan'**
-  String a11yPlacementRemoveEntry(String recipe);
+  /// **'Ta bort från rutan'**
+  String get a11yPlacementRemoveEntry;
 
   /// BUT-1013: selection-app-bar tooltip for the bulk-add-to-menu action.
   ///
@@ -13477,12 +13477,6 @@ abstract class AppLocalizations {
   /// **'Dela externt'**
   String get a11yShareExternally;
 
-  /// No description provided for @a11yAddItem.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till vara'**
-  String get a11yAddItem;
-
   /// No description provided for @a11yAddFriend.
   ///
   /// In sv, this message translates to:
@@ -13504,26 +13498,26 @@ abstract class AppLocalizations {
   /// No description provided for @a11yShoppingItemChecked.
   ///
   /// In sv, this message translates to:
-  /// **'{itemText}, avbockad, tryck för att bocka av'**
-  String a11yShoppingItemChecked(String itemText);
+  /// **'Avbockad, tryck för att ångra'**
+  String get a11yShoppingItemChecked;
 
   /// No description provided for @a11yShoppingItemUnchecked.
   ///
   /// In sv, this message translates to:
-  /// **'{itemText}, tryck för att bocka av'**
-  String a11yShoppingItemUnchecked(String itemText);
+  /// **'Bocka av'**
+  String get a11yShoppingItemUnchecked;
 
   /// BUT-948: screen-reader label for a shopping row while in multi-select mode.
   ///
   /// In sv, this message translates to:
-  /// **'{itemText}, tryck för att markera'**
-  String a11yShoppingSelectItem(String itemText);
+  /// **'Markera'**
+  String get a11yShoppingSelectItem;
 
   /// BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories.
   ///
   /// In sv, this message translates to:
-  /// **'{itemName}, dra för att flytta kategori'**
-  String a11yShoppingReorderHandle(String itemName);
+  /// **'Dra för att flytta kategori'**
+  String get a11yShoppingReorderHandle;
 
   /// BUT-948: snackbar after bulk multi-select delete of shopping items; pairs with commonUndo.
   ///
@@ -13672,26 +13666,14 @@ abstract class AppLocalizations {
   /// No description provided for @a11yFilterTag.
   ///
   /// In sv, this message translates to:
-  /// **'Filtrera på {tagName}, {status}'**
-  String a11yFilterTag(String tagName, String status);
-
-  /// No description provided for @a11yActive.
-  ///
-  /// In sv, this message translates to:
-  /// **'aktiv'**
-  String get a11yActive;
-
-  /// No description provided for @a11yInactive.
-  ///
-  /// In sv, this message translates to:
-  /// **'inaktiv'**
-  String get a11yInactive;
+  /// **'Filtrera på {tagName}'**
+  String a11yFilterTag(String tagName);
 
   /// No description provided for @a11yExcludeTag.
   ///
   /// In sv, this message translates to:
-  /// **'Exkludera {tagName}, {status}'**
-  String a11yExcludeTag(String tagName, String status);
+  /// **'Exkludera {tagName}'**
+  String a11yExcludeTag(String tagName);
 
   /// No description provided for @a11yAllergenStatusRow.
   ///
@@ -13746,12 +13728,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort profilbild'**
   String get a11yRemoveProfileImage;
-
-  /// No description provided for @a11yMenu.
-  ///
-  /// In sv, this message translates to:
-  /// **'Meny: {title}'**
-  String a11yMenu(String title);
 
   /// No description provided for @filterBreakfast.
   ///
@@ -23564,8 +23540,8 @@ abstract class AppLocalizations {
   /// No description provided for @a11yWeeklyMenuSelectEntry.
   ///
   /// In sv, this message translates to:
-  /// **'Välj {recipe} för att flytta'**
-  String a11yWeeklyMenuSelectEntry(String recipe);
+  /// **'Välj för att flytta'**
+  String get a11yWeeklyMenuSelectEntry;
 
   /// No description provided for @pantrySectionExpiring.
   ///
@@ -24482,8 +24458,8 @@ abstract class AppLocalizations {
   /// Semantics label for the menu recipe row tap target.
   ///
   /// In sv, this message translates to:
-  /// **'{title}, tryck för att öppna receptet'**
-  String a11yMenuRecipeOpen(String title);
+  /// **'Öppna receptet'**
+  String get a11yMenuRecipeOpen;
 
   /// Semantics label for the regenerate-section button on menu section header.
   ///
@@ -24524,14 +24500,14 @@ abstract class AppLocalizations {
   /// Semantics label for a menu vote option tile.
   ///
   /// In sv, this message translates to:
-  /// **'Rösta på {name}'**
-  String a11yMenuVoteOption(String name);
+  /// **'Rösta'**
+  String get a11yMenuVoteOption;
 
   /// Semantics label for a menu vote option that is currently selected.
   ///
   /// In sv, this message translates to:
-  /// **'{name}, din röst.'**
-  String a11yMenuVoteOptionSelected(String name);
+  /// **'Din röst'**
+  String get a11yMenuVoteOptionSelected;
 
   /// No description provided for @a11yPingAcknowledge.
   ///
@@ -24542,8 +24518,8 @@ abstract class AppLocalizations {
   /// Semantics label for an assigned recipe cell in the calendar weekly menu.
   ///
   /// In sv, this message translates to:
-  /// **'{title}, tryck för att öppna receptet'**
-  String a11yMenuPlanRecipeOpen(String title);
+  /// **'Öppna receptet'**
+  String get a11yMenuPlanRecipeOpen;
 
   /// Semantics label for the add-more row inside the ovrigt cell of the weekly menu.
   ///
@@ -24566,14 +24542,14 @@ abstract class AppLocalizations {
   /// Semantics label for an unselected quick-filter chip on a list view.
   ///
   /// In sv, this message translates to:
-  /// **'Filtrera på {label}'**
-  String a11yQuickFilter(String label);
+  /// **'Filtrera'**
+  String get a11yQuickFilter;
 
   /// Semantics label for a selected quick-filter chip on a list view.
   ///
   /// In sv, this message translates to:
-  /// **'{label}, valt filter'**
-  String a11yQuickFilterSelected(String label);
+  /// **'Valt filter'**
+  String get a11yQuickFilterSelected;
 
   /// Semantics label for the tap surface over the heirloom scan image on recipe detail.
   ///
@@ -24602,13 +24578,13 @@ abstract class AppLocalizations {
   /// Semantics label for a tappable pantry item card row.
   ///
   /// In sv, this message translates to:
-  /// **'{itemName}, tryck för att redigera'**
-  String a11yPantryEditItem(String itemName);
+  /// **'Redigera'**
+  String get a11yPantryEditItem;
 
   /// Semantics label for the expiry-date picker tile in the add-pantry-item sheet.
   ///
   /// In sv, this message translates to:
-  /// **'Välj utgångsdatum'**
+  /// **'Öppna kalendern'**
   String get a11yPantryPickExpiry;
 
   /// Semantics label for a tappable draft recovery list tile.
@@ -24776,8 +24752,8 @@ abstract class AppLocalizations {
   /// Semantics label for the collapsible category header in the shopping list.
   ///
   /// In sv, this message translates to:
-  /// **'Kategori {category}'**
-  String a11yToggleShoppingCategory(String category);
+  /// **'Kategori'**
+  String get a11yToggleShoppingCategory;
 
   /// The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).
   ///
@@ -24788,14 +24764,8 @@ abstract class AppLocalizations {
   /// Semantics label for the show/hide empty categories row in the shopping list.
   ///
   /// In sv, this message translates to:
-  /// **'Övriga kategorier'**
+  /// **'Visa eller dölj'**
   String get a11yToggleEmptyCategories;
-
-  /// Semantics label for the list/calendar view-mode toggle in the weekly menu.
-  ///
-  /// In sv, this message translates to:
-  /// **'{label}'**
-  String a11yWeeklyMenuViewModeToggle(String label);
 
   /// No description provided for @a11yPollVoteOption.
   ///

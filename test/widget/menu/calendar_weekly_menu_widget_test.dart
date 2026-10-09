@@ -6,6 +6,8 @@
 library;
 
 import 'package:clock/clock.dart';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -35,6 +37,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
 import '../golden/golden_helper.dart';
+import '../../test_support/semantics_announcement.dart';
 
 class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
   // BUT-2215: the week menu listens from its constructor.
@@ -1089,6 +1092,107 @@ void main() {
         await tester.pumpAndSettle();
         return vm;
       }
+
+      testWidgets('a planned dish is named once and can be activated', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await pumpOneEntryWeek(tester);
+
+        final dish = find.bySemanticsLabel(RegExp(r'^Öppna receptet'));
+        expect(dish, findsOneWidget);
+        expectActivatable(tester, dish);
+        expectNothingAnnouncedTwice(tester, dish);
+        handle.dispose();
+      });
+
+      testWidgets('a dish in selection mode says "Välj för att flytta" once, '
+          'still reaches the recipe name, and exposes its selected state', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        final vm = await pumpOneEntryWeek(tester);
+        vm.beginSelection();
+        await tester.pumpAndSettle();
+
+        final dish = find.bySemanticsLabel(RegExp(r'^Välj för att flytta'));
+        expect(dish, findsOneWidget);
+        final lines = announcedLines(tester, dish);
+        expect(
+          lines.where((l) => l == 'Välj för att flytta'),
+          hasLength(1),
+          reason: '$lines',
+        );
+        expect(
+          lines.where((l) => l.contains('pasta')),
+          hasLength(1),
+          reason: 'the recipe name comes from the cell text, once: $lines',
+        );
+        expectNothingAnnouncedTwice(tester, dish);
+        expectActivatable(tester, dish);
+        expect(
+          tester
+              .getSemantics(dish)
+              .getSemanticsData()
+              .flagsCollection
+              .isSelected,
+          ui.Tristate.isFalse,
+        );
+
+        await tester.tap(find.text('pasta'));
+        await tester.pumpAndSettle();
+
+        expect(
+          tester
+              .getSemantics(dish)
+              .getSemanticsData()
+              .flagsCollection
+              .isSelected,
+          ui.Tristate.isTrue,
+        );
+        handle.dispose();
+      });
+
+      testWidgets('the övrigt add-more row announces its action only, not the '
+          'visible "+ lägg till"', (tester) async {
+        final handle = tester.ensureSemantics();
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        final plan = _plan(
+          weekStart: weekStart,
+          entries: [
+            _entry(
+              day: DayOfWeek.mon,
+              slot: MealSlot.ovrigt,
+              id: 'mon-o',
+              recipeId: 'r-smoothie',
+              title: 'Smoothie',
+            ),
+          ],
+        );
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+
+        final addMore = find.bySemanticsLabel(
+          RegExp(r'^Lägg till mer i övrigt'),
+        );
+        expect(addMore, findsOneWidget);
+        expectActivatable(tester, addMore);
+        final lines = announcedLines(tester, addMore);
+        expect(lines, hasLength(1), reason: '$lines');
+        expect(lines, isNot(contains('+ lägg till')));
+        handle.dispose();
+      });
 
       final from = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
 

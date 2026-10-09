@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 void main() {
   group('VeckomenyViewModeToggle', () {
@@ -71,6 +72,26 @@ void main() {
         tester.getSemantics(find.bySemanticsLabel('Kalender')),
         containsSemantics(isSelected: false, isButton: true),
       );
+      handle.dispose();
+    });
+
+    testWidgets('each tab can be activated by a screen reader and is named '
+        'once', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: VeckomenyViewModeToggle(
+            mode: VeckomenyViewMode.lista,
+            onSelect: (_) {},
+          ),
+        ),
+      );
+
+      for (final label in ['Lista', 'Kalender']) {
+        final tab = find.bySemanticsLabel(label);
+        expectActivatable(tester, tab);
+        expectNothingAnnouncedTwice(tester, tab);
+      }
       handle.dispose();
     });
 

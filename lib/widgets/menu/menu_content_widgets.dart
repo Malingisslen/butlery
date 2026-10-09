@@ -588,7 +588,7 @@ class _MenuRecipeCard extends StatelessWidget {
       child: Material(
         color: cs.surfaceContainerHighest,
         child: Semantics(
-          label: context.l10n.a11yMenuRecipeOpen(recipe.title),
+          label: context.l10n.a11yMenuRecipeOpen,
           button: true,
           child: InkWell(
             onTap: onTap,

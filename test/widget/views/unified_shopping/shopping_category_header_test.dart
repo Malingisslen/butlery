@@ -2,6 +2,8 @@
 // :881-884 light, :986-989 dark). An uppercase overline over a hairline, with
 // "N av M" at the right, and no category-coloured plate behind it.
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +17,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dar
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/factories/shopping_list_factory.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _MockVm extends Mock implements UnifiedShoppingViewModel {}
 
@@ -121,6 +124,53 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('a heading is a toggle that names the category once', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pump(tester, _vm(items));
+
+    final heading = find.bySemanticsLabel(RegExp(r'^Kategori\n')).first;
+    expectActivatable(tester, heading);
+    expectNothingAnnouncedTwice(tester, heading);
+    handle.dispose();
+  });
+
+  testWidgets('the empty-categories toggle says what a tap does, reads its '
+      'visible text once, and exposes its toggled state', (tester) async {
+    final handle = tester.ensureSemantics();
+    await _pump(tester, _vm(items));
+
+    final toggle = find.bySemanticsLabel(RegExp('^Visa eller dölj'));
+    expect(toggle, findsOneWidget);
+    final lines = announcedLines(tester, toggle);
+    expect(
+      lines.where((l) => l == 'Visa eller dölj'),
+      hasLength(1),
+      reason: '$lines',
+    );
+    expect(
+      lines.where((l) => l == 'Övriga kategorier'),
+      hasLength(1),
+      reason: 'the visible text is the noun and is read once: $lines',
+    );
+    expectNothingAnnouncedTwice(tester, toggle);
+    expectActivatable(tester, toggle);
+    expect(
+      tester.getSemantics(toggle).getSemanticsData().flagsCollection.isToggled,
+      ui.Tristate.isFalse,
+    );
+
+    await tester.tap(find.text('Övriga kategorier'));
+    await tester.pump();
+
+    expect(
+      tester.getSemantics(toggle).getSemanticsData().flagsCollection.isToggled,
+      ui.Tristate.isTrue,
+    );
+    handle.dispose();
   });
 
   testWidgets('the English count reads "N of M"', (tester) async {
