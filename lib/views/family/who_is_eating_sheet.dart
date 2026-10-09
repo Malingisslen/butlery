@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -163,6 +164,11 @@ class _WhoIsEatingSheet extends StatelessWidget {
     final vm = context.watch<WhoIsEatingViewModel>();
     final cs = Theme.of(context).colorScheme;
     final canConfirm = config.allowEmpty || vm.selectedCount > 0;
+    // Over the whole roster, so two members with the same initials do not
+    // share an avatar.
+    final initials = distinctInitials([
+      for (final m in vm.roster) m.displayName,
+    ]);
 
     return SafeArea(
       child: Padding(
@@ -218,6 +224,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                   final member = vm.roster[i];
                   return _DinerToggleRow(
                     member: member,
+                    initials: initials[i],
                     selected: vm.isSelected(member.memberId),
                     onTap: () => vm.toggle(member.memberId),
                   );
@@ -291,11 +298,13 @@ class _WhoIsEatingSheet extends StatelessWidget {
 /// One toggleable roster member row inside the picker.
 class _DinerToggleRow extends StatelessWidget {
   final HouseholdRosterMember member;
+  final String initials;
   final bool selected;
   final VoidCallback onTap;
 
   const _DinerToggleRow({
     required this.member,
+    required this.initials,
     required this.selected,
     required this.onTap,
   });
@@ -353,6 +362,7 @@ class _DinerToggleRow extends StatelessWidget {
                   children: [
                     FamilyAvatar(
                       name: member.displayName,
+                      initials: initials,
                       color: parseAvatarColor(context, member.avatarColor),
                       size: 40,
                     ),
