@@ -497,6 +497,24 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  /// "Ja" on the first-checkoff prompt (BUT-2257).
+  ///
+  /// The tick that opened the prompt went through [toggleItemBought] while the
+  /// preference was still off, so the pantry step skipped it. It runs here for
+  /// that row, once the preference is on, unless the row was un-ticked or
+  /// removed while the dialog was open.
+  Future<void> acceptPantryAutoAdd(String itemId) async {
+    await setAutoAddToPantry(true);
+    final item = activeList?.items.where((i) => i.id == itemId).firstOrNull;
+    final userId = currentUserId;
+    if (item == null || !item.bought || userId == null) return;
+    await _checkoffPantryService?.onItemCheckedOff(
+      userId,
+      item,
+      wasBought: false,
+    );
+  }
+
   /// Record that the first-checkoff prompt has been shown so it never re-nags.
   Future<void> markPantryAutoAddPrompted() async {
     await _userService?.markPantryAutoAddPrompted();
