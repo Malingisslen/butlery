@@ -392,6 +392,54 @@ abstract class AppLocalizations {
   /// **'{itemName}, tryck för att markera'**
   String a11yPantrySelectItem(String itemName);
 
+  /// BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed, plural, =0{Inga lediga platser} =1{En plats} other{{placed} platser}}, {count} recept'**
+  String slotSpillHeading(int placed, int count);
+
+  /// BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)
+  ///
+  /// In sv, this message translates to:
+  /// **'{rest, plural, =1{Ett recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med det, sedan skriver jag.} other{{rest} recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med dem, sedan skriver jag.}}'**
+  String slotSpillBody(int rest, int week, String names);
+
+  /// BUT-2153: place what fits now and the rest from Monday of the next week
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg {placed} nu, {rest} i v. {week}'**
+  String slotSpillNextWeek(int placed, int rest, int week);
+
+  /// BUT-2153: nothing fits in the chosen week, so place all of them from Monday of the next week
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg alla i v. {week}'**
+  String slotSpillAllNextWeek(int week);
+
+  /// BUT-2153: close the panel and pick another start in the slot picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj fler platser'**
+  String get slotSpillChooseMore;
+
+  /// BUT-2153: place only the recipes that fit and leave the rest out
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed, plural, =1{Lägg bara det första} other{Lägg bara de {placed}}}'**
+  String slotSpillPlaceOnly(int placed);
+
+  /// BUT-2153: receipt after placing what fit and the rest in the next week
+  ///
+  /// In sv, this message translates to:
+  /// **'{added} recept i veckan, {next} i v. {week}'**
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week);
+
+  /// BUT-2153: the first week was saved but writing the rest into the next week failed
+  ///
+  /// In sv, this message translates to:
+  /// **'{added} recept lades i veckan. Resten kunde inte läggas i v. {week}.'**
+  String bulkAddToMenuNextWeekFailed(int added, int week);
+
   /// BUT-1029: SlotPickerDialog header title.
   ///
   /// In sv, this message translates to:

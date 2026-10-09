@@ -166,6 +166,65 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String slotSpillHeading(int placed, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: '$placed platser',
+      one: 'En plats',
+      zero: 'Inga lediga platser',
+    );
+    return '$_temp0, $count recept';
+  }
+
+  @override
+  String slotSpillBody(int rest, int week, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rest,
+      locale: localeName,
+      other:
+          '$rest recept får inte plats i vecka $week: $names. Välj vad som ska hända med dem, sedan skriver jag.',
+      one:
+          'Ett recept får inte plats i vecka $week: $names. Välj vad som ska hända med det, sedan skriver jag.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String slotSpillNextWeek(int placed, int rest, int week) {
+    return 'Lägg $placed nu, $rest i v. $week';
+  }
+
+  @override
+  String slotSpillAllNextWeek(int week) {
+    return 'Lägg alla i v. $week';
+  }
+
+  @override
+  String get slotSpillChooseMore => 'Välj fler platser';
+
+  @override
+  String slotSpillPlaceOnly(int placed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: 'Lägg bara de $placed',
+      one: 'Lägg bara det första',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week) {
+    return '$added recept i veckan, $next i v. $week';
+  }
+
+  @override
+  String bulkAddToMenuNextWeekFailed(int added, int week) {
+    return '$added recept lades i veckan. Resten kunde inte läggas i v. $week.';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Välj plats i veckomenyn';
 
   @override

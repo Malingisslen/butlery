@@ -100,6 +100,67 @@
       }
     }
   },
+  "slotSpillHeading": "{placed, plural, =0{No free places} =1{One place} other{{placed} places}}, {count} recipes",
+  "@slotSpillHeading": {
+    "description": "BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day",
+    "placeholders": {
+      "placed": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
+  "slotSpillBody": "{rest, plural, =1{One recipe does not fit in week {week}: {names}. Choose what happens to it, then I will write.} other{{rest} recipes do not fit in week {week}: {names}. Choose what happens to them, then I will write.}}",
+  "@slotSpillBody": {
+    "description": "BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)",
+    "placeholders": {
+      "rest": {"type": "int"},
+      "week": {"type": "int"},
+      "names": {"type": "String"}
+    }
+  },
+  "slotSpillNextWeek": "Add {placed} now, {rest} in wk {week}",
+  "@slotSpillNextWeek": {
+    "description": "BUT-2153: place what fits now and the rest from Monday of the next week",
+    "placeholders": {
+      "placed": {"type": "int"},
+      "rest": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
+  "slotSpillAllNextWeek": "Add all in wk {week}",
+  "@slotSpillAllNextWeek": {
+    "description": "BUT-2153: nothing fits in the chosen week, so place all of them from Monday of the next week",
+    "placeholders": {
+      "week": {"type": "int"}
+    }
+  },
+  "slotSpillChooseMore": "Choose more places",
+  "@slotSpillChooseMore": {
+    "description": "BUT-2153: close the panel and pick another start in the slot picker"
+  },
+  "slotSpillPlaceOnly": "{placed, plural, =1{Add only the first} other{Add only those {placed}}}",
+  "@slotSpillPlaceOnly": {
+    "description": "BUT-2153: place only the recipes that fit and leave the rest out",
+    "placeholders": {
+      "placed": {"type": "int"}
+    }
+  },
+  "bulkAddToMenuSuccessTwoWeeks": "{added} recipes this week, {next} in wk {week}",
+  "@bulkAddToMenuSuccessTwoWeeks": {
+    "description": "BUT-2153: receipt after placing what fit and the rest in the next week",
+    "placeholders": {
+      "added": {"type": "int"},
+      "next": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
+  "bulkAddToMenuNextWeekFailed": "{added} recipes added this week. The rest could not be added to wk {week}.",
+  "@bulkAddToMenuNextWeekFailed": {
+    "description": "BUT-2153: the first week was saved but writing the rest into the next week failed",
+    "placeholders": {
+      "added": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
   "slotPickerDialogTitle": "Pick a menu slot",
   "@slotPickerDialogTitle": {
     "description": "BUT-1029: SlotPickerDialog header title."

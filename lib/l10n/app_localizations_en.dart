@@ -166,6 +166,65 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String slotSpillHeading(int placed, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: '$placed places',
+      one: 'One place',
+      zero: 'No free places',
+    );
+    return '$_temp0, $count recipes';
+  }
+
+  @override
+  String slotSpillBody(int rest, int week, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rest,
+      locale: localeName,
+      other:
+          '$rest recipes do not fit in week $week: $names. Choose what happens to them, then I will write.',
+      one:
+          'One recipe does not fit in week $week: $names. Choose what happens to it, then I will write.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String slotSpillNextWeek(int placed, int rest, int week) {
+    return 'Add $placed now, $rest in wk $week';
+  }
+
+  @override
+  String slotSpillAllNextWeek(int week) {
+    return 'Add all in wk $week';
+  }
+
+  @override
+  String get slotSpillChooseMore => 'Choose more places';
+
+  @override
+  String slotSpillPlaceOnly(int placed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: 'Add only those $placed',
+      one: 'Add only the first',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week) {
+    return '$added recipes this week, $next in wk $week';
+  }
+
+  @override
+  String bulkAddToMenuNextWeekFailed(int added, int week) {
+    return '$added recipes added this week. The rest could not be added to wk $week.';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Pick a menu slot';
 
   @override
