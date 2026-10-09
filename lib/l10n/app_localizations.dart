@@ -3008,7 +3008,7 @@ abstract class AppLocalizations {
   /// **'Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.'**
   String get householdAllergenOffBodyGeneric;
 
-  /// BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted
+  /// BUT-1663/BUT-1820: warning shown when at least one household member's profile could not be read, so the named allergens cannot be trusted. It appears appended to the household-filter opt-out dialog, as a row above the generated menu, and under the menu generation error
   ///
   /// In sv, this message translates to:
   /// **'Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.'**
@@ -29164,6 +29164,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenordet är bytt. Logga in med det nya.'**
   String get passwordResetDoneNotice;
+
+  /// BUT-2308: snackbar after a recipe's ingredients were added to a shopping list; its action is Visa.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara tillagd i \"{listName}\"} other{{count} varor tillagda i \"{listName}\"}}'**
+  String shoppingItemsAddedToListSnack(int count, String listName);
+
+  /// No description provided for @shoppingAddToListHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i lista'**
+  String get shoppingAddToListHeading;
 }
 
 class _AppLocalizationsDelegate
