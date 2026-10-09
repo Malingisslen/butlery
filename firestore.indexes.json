@@ -525,6 +525,24 @@
       ]
     },
     {
+      "collectionGroup": "recipes",
+      "fieldPath": "core.id",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "recipes",
+      "fieldPath": "id",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "friend_categories",
       "fieldPath": "friendUserIds",
       "indexes": [
