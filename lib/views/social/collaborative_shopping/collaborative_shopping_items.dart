@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Focused widget for collaborative shopping items list (BUT-238 redesign).
@@ -497,7 +498,7 @@ class _CollaborativeItemCard extends StatelessWidget {
     if (item.assignedToUserId != null) {
       widgets.add(
         _AssigneeBadge(
-          displayName: item.assignedToDisplayName ?? '?',
+          initials: _assigneeInitials(),
           isSelf: item.assignedToUserId == viewModel.currentUserId,
         ),
       );
@@ -522,6 +523,20 @@ class _CollaborativeItemCard extends StatelessWidget {
     return Row(mainAxisSize: MainAxisSize.min, children: widgets);
   }
 
+  // Over every assignee on the list, done or not, so two people with the
+  // same initials do not share a badge.
+  String _assigneeInitials() {
+    final names = <String>{
+      for (final i in [
+        ...viewModel.activeItems,
+        ...viewModel.completedItemsList,
+      ])
+        if (i.assignedToUserId != null) i.assignedToDisplayName.orEmpty(),
+    }.toList();
+    final own = item.assignedToDisplayName.orEmpty();
+    return distinctInitials(names)[names.indexOf(own)];
+  }
+
   Future<void> _handleClaimAction(
     BuildContext context, {
     required bool release,
@@ -543,15 +558,14 @@ class _CollaborativeItemCard extends StatelessWidget {
 }
 
 class _AssigneeBadge extends StatelessWidget {
-  final String displayName;
+  final String initials;
   final bool isSelf;
 
-  const _AssigneeBadge({required this.displayName, required this.isSelf});
+  const _AssigneeBadge({required this.initials, required this.isSelf});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final initials = _initials(displayName);
     final bg = isSelf ? cs.primary : cs.secondary;
     final fg = isSelf ? cs.onPrimary : cs.onSecondary;
     return Container(
@@ -571,16 +585,5 @@ class _AssigneeBadge extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static String _initials(String name) {
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return '?';
-    final parts = trimmed.split(RegExp(r'\s+'));
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
-        .toUpperCase();
   }
 }
