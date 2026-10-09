@@ -214,24 +214,26 @@ void main() {
       'known failure (BUT-2163 = A)', () {
     const file = 'test/fixtures/design/transition_census.json';
     final source = CensusSource('.').read(file)!;
-    const id = 'TR::FLOW::03::foto-ocr::otolkad-text';
     final fixture = jsonDecode(source) as Map<String, dynamic>;
+    // Staged from any row, so the case keeps working once no row is MISSING.
     final entry = (fixture['entries'] as List)
         .cast<Map<String, dynamic>>()
-        .singleWhere((e) => e['id'] == id);
-    expect(entry['status'], isNot('RESTING'));
-    entry['status'] = 'RESTING';
-    final v = census['verdict']! as Map;
-    final after =
-        buildCensus(
-              CensusSource('.', overrides: {file: jsonEncode(fixture)}),
-            )['verdict']!
-            as Map;
+        .first;
+    Map verdictWith(String status) {
+      entry['status'] = status;
+      return buildCensus(
+            CensusSource('.', overrides: {file: jsonEncode(fixture)}),
+          )['verdict']!
+          as Map;
+    }
+
+    final missing = verdictWith('MISSING');
+    final resting = verdictWith('RESTING');
     expect(
-      after['resting_transitions'],
-      (v['resting_transitions']! as int) + 1,
+      resting['resting_transitions'],
+      (missing['resting_transitions']! as int) + 1,
     );
-    expect(after['known_failures'], (v['known_failures']! as int) - 1);
+    expect(resting['known_failures'], (missing['known_failures']! as int) - 1);
   });
 
   test('two runs give byte-identical output', () {
