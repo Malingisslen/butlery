@@ -11,6 +11,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -242,27 +243,24 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
             final data = doc.data();
             // Convert realtime menu to SharedMenu for display
             // Skip if user is the owner (already loaded in menus collection)
-            if (data['ownerId'] != userId) {
-              final menuSnapshotData =
-                  data['menuSnapshot'] as Map<String, dynamic>?;
-              if (menuSnapshotData != null) {
-                final menu = SharedMenu(
-                  id: doc.id,
-                  menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
-                  menuTitle:
-                      menuSnapshotData['title'] as String? ??
-                      AppLocale.current.labelCollaborativeMenu,
-                  sharedByUserId: (data['ownerId'] as String?).orEmpty(),
-                  sharedByDisplayName:
-                      data['ownerDisplayName'] as String? ?? '?',
-                  sharedAt:
-                      (data['createdAt'] as Timestamp?)?.toDate() ??
-                      clock.now(),
-                  allowCollaboration: true,
-                  realtimeMenuId: doc.id,
-                );
-                _menus.add(menu);
-              }
+            if (data['ownerId'] != userId && data['menuSnapshot'] != null) {
+              // BUT-2216: read the dishes and title with the model's own
+              // parser, which knows how RealtimeMenuData stores them.
+              final content = RealtimeMenuData.fromFirestore(data);
+              final menu = SharedMenu(
+                id: doc.id,
+                menuSnapshot: content.menuSnapshot,
+                menuTitle: content.menuTitle.isNotEmpty
+                    ? content.menuTitle
+                    : AppLocale.current.labelCollaborativeMenu,
+                sharedByUserId: (data['ownerId'] as String?).orEmpty(),
+                sharedByDisplayName: data['ownerDisplayName'] as String? ?? '?',
+                sharedAt:
+                    (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
+                allowCollaboration: true,
+                realtimeMenuId: doc.id,
+              );
+              _menus.add(menu);
             }
           } catch (e) {
             AppLogger.error('Error parsing realtime menu ${doc.id}', e);
@@ -279,31 +277,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       AppLogger.error('Failed to load menus', e);
       throw Exception('Failed to load menus: $e');
     }
-  }
-
-  /// Parse menu snapshot from Firestore data
-  Map<String, List<Recipe>> _parseMenuSnapshot(
-    Map<String, dynamic> menuSnapshot,
-  ) {
-    final result = <String, List<Recipe>>{};
-    final categories =
-        menuSnapshot['categories'] as Map<String, dynamic>? ?? {};
-
-    for (final entry in categories.entries) {
-      final recipes = <Recipe>[];
-      final recipeList = entry.value as List<dynamic>? ?? [];
-      for (final recipeData in recipeList) {
-        try {
-          if (recipeData is Map<String, dynamic>) {
-            recipes.add(Recipe.fromJson(recipeData));
-          }
-        } catch (e) {
-          AppLogger.warning('Error parsing recipe in menu snapshot: $e');
-        }
-      }
-      result[entry.key] = recipes;
-    }
-    return result;
   }
 
   /// Refresh menus from Firebase (bypasses initialization guard)
@@ -657,10 +630,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         await _sharedMenuRepository.markAsImported(sharedMenuId, userId);
 
         AppLogger.success('✅ Menu imported successfully with attribution');
-        return MenuImportResult(
-          menuId: importedMenuId,
-          isCollaborative: false,
-        );
+        return MenuImportResult(menuId: importedMenuId, isCollaborative: false);
       } catch (e) {
         AppLogger.error('Failed to import shared menu: $e');
         return null;
