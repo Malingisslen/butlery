@@ -90,9 +90,8 @@ Lapsed users:
   joined to the page, so the cursor is a TIMESTAMP only and never holds a uid. The
   per-threshold cursors live in `_internal/lapsed_users_cursor` (`<type>: Timestamp`), not
   on `analytics/lapsed_users`, whose fields the reset prune restricts to `lastRunAt`. Each
-  page's analytics rows, notification docs, bridge fields and cursor commit in ONE batch;
-  pushes go after the commit. A drained window, an empty one and a degenerate one all
-  store the window's upper bound. Without a stored per-threshold cursor the bound is
+  page's analytics rows, notification docs, bridge fields and cursor commit before its
+  pushes. A drained window and an empty one store the window's upper bound. Without a stored per-threshold cursor the bound is
   `lastRunAt - N days` as today, so the first deploy neither re-sends nor skips.
   `lastRunAt` is still written when all thresholds drain. The dispatcher's "KNOWN,
   ACCEPTED, TICKETED SEPARATELY" paragraph's "advances its resume cursor only at the very

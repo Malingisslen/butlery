@@ -413,7 +413,12 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
     "Debounce markers for rating and pooled-rating aggregation " +
     "(shared/debounce-queue.ts). `allow read, write: if false` for every " +
     "client, no uid, and a marker's only effect is to suppress a duplicate " +
-    "recompute for a few seconds — worthless to delete and harmless to keep.",
+    "recompute for a few seconds — worthless to delete and harmless to keep. " +
+    "Also the resume cursors of two sweeps (BUT-1671): `family_purge_cursor` " +
+    "(`lastHouseholdId`, `passStartedAt`, `updatedAt`; " +
+    "family/purge-dormant-family-data.ts) and `lapsed_users_cursor` (one " +
+    "Timestamp per win-back threshold; analytics/detect-lapsed-users.ts). " +
+    "Neither holds a uid; deleting one restarts that sweep's pass.",
 
   // --- Collections with no writer on any of the three surfaces -----------
   //
