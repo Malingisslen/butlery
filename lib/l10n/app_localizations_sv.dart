@@ -8155,9 +8155,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11ySharedShoppingList(String listName) {
-    return 'Delad inköpslista: $listName';
-  }
+  String get a11ySharedShoppingList => 'Delad inköpslista';
 
   @override
   String get a11yPrimaryImageTap =>
@@ -8228,17 +8226,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yChangeProfileImage => 'Ändra profilbild';
 
   @override
-  String a11yShoppingList(String name) {
-    return 'Inköpslista: $name';
-  }
+  String get a11yShoppingList => 'Inköpslista';
 
   @override
-  String a11yFriend(String name) {
-    return 'Vän: $name';
-  }
-
-  @override
-  String get a11yFriendRequest => 'Vänförfrågan';
+  String get a11yFriend => 'Vän';
 
   @override
   String a11yFilterTag(String tagName, String status) {
@@ -8281,14 +8272,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11ySharedRecipe(String title) {
-    return 'Delat recept: $title';
-  }
+  String get a11ySharedRecipe => 'Delat recept';
 
   @override
-  String a11ySharedMenu(String title) {
-    return 'Delad meny: $title';
-  }
+  String get a11ySharedMenu => 'Delad meny';
 
   @override
   String get a11yRemoveProfileImage => 'Ta bort profilbild';
@@ -8824,9 +8811,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yBlockedUserSelect(String name) {
-    return 'Markera blockerad användare $name';
-  }
+  String get a11yBlockedUserSelect => 'Markera blockerad användare';
 
   @override
   String get retagFetchingRecipes => 'Hämtar recept …';
@@ -14785,9 +14770,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yConversationOpen(String name) {
-    return 'Konversation med $name, tryck för att öppna';
-  }
+  String get a11yConversationOpen => 'Öppna konversationen';
 
   @override
   String a11yMenuVoteOption(String name) {
@@ -14800,9 +14783,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yPingAcknowledge(String name) {
-    return 'Bekräfta notis från $name';
-  }
+  String get a11yPingAcknowledge => 'Bekräfta notis';
 
   @override
   String a11yMenuPlanRecipeOpen(String title) {
@@ -14842,9 +14823,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yShareTabSwitch(String label) {
-    return 'Visa $label';
-  }
+  String get a11yShareTabSwitch => 'Visa';
 
   @override
   String get a11yPantryAddItem => 'Lägg till ny vara';
@@ -14863,15 +14842,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yShareModeStaticCopy => 'Statisk kopia, tryck för att välja';
+  String get a11yShareModeOption => 'Tryck för att välja';
 
   @override
-  String get a11yShareModeRealtime => 'Realtidsdelning, tryck för att välja';
-
-  @override
-  String a11yFriendRequestIncoming(String name) {
-    return 'Vänförfrågan från $name, tryck för att markera';
-  }
+  String get a11yFriendRequestIncoming => 'Vänförfrågan, tryck för att markera';
 
   @override
   String a11yAcceptFriendRequestFrom(String name) {
@@ -14884,48 +14858,29 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yFriendRequestSent(String name) {
-    return 'Skickad förfrågan till $name, tryck för att markera';
-  }
+  String get a11yFriendRequestSent =>
+      'Skickad förfrågan, tryck för att markera';
 
   @override
-  String a11yFeedFilter(String label) {
-    return 'Filtrera flödet på $label';
-  }
+  String get a11yFeedFilter => 'Filtrera flödet';
 
   @override
-  String a11yFeedRecipePreview(String title) {
-    return 'Visa receptet $title';
-  }
+  String get a11yFeedRecipePreview => 'Visa receptet';
 
   @override
-  String a11yPublicProfileRecipeCard(String title) {
-    return 'Öppna receptet $title';
-  }
+  String get a11yPublicProfileRecipeCard => 'Öppna receptet';
 
   @override
-  String get a11yBlockedUsersToggle =>
-      'Blockerade användare, tryck för att visa eller dölja listan';
+  String get a11yBlockedUsersToggle => 'Visa eller dölj listan';
 
   @override
-  String a11yInvitationTargetCard(String name) {
-    return 'Bjud in $name';
-  }
+  String get a11yInvitationTargetCard => 'Bjud in';
 
   @override
-  String a11yPermissionsBanner(String description) {
-    return 'Behörighet: $description';
-  }
+  String get a11yPermissionsBanner => 'Behörighet';
 
   @override
-  String a11yCollaborativeBanner(String title, String subtitle) {
-    return '$title, $subtitle';
-  }
-
-  @override
-  String a11yEmojiPicker(String emoji) {
-    return 'Välj $emoji som ikon';
-  }
+  String get a11yEmojiPicker => 'Välj som ikon';
 
   @override
   String a11yRemoveIngredientChip(String label) {
@@ -14972,7 +14927,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yArchivedConversationsToggle => 'Arkiverade konversationer';
+  String get a11yArchivedConversationsToggle =>
+      'Visa eller dölj konversationerna';
 
   @override
   String get a11yRecipeImageFullscreen => 'Visa receptbild i fullskärm';
@@ -15005,17 +14961,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yPollVoteOption(String label) {
-    return 'Rösta på $label';
-  }
+  String get a11yPollVoteOption => 'Rösta';
 
   @override
   String a11yPollRecipeThumbnail(String title) {
     return 'Visa receptet $title';
   }
-
-  @override
-  String get a11yPingComposeSend => 'Skicka notis';
 
   @override
   String get cookingModeSubstitutionApplied => 'Ingrediens utbytt';
@@ -15278,9 +15229,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get whoAteSkip => 'hoppa över';
 
   @override
-  String a11yToggleDiner(String name) {
-    return 'Växla om $name åt';
-  }
+  String get a11yToggleDiner => 'Markera';
 
   @override
   String get menuPresenceSheetTitle => 'vem är hemma?';
@@ -15427,12 +15376,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleRatingBreakdown => 'Visa eller dölj betygsöversikt';
+  String get a11yToggleRatingBreakdown => 'Visa eller dölj översikten';
 
   @override
-  String a11yEditMemberRating(String name) {
-    return 'Ändra betyg för $name';
-  }
+  String get a11yEditMemberRating => 'Ändra betyg';
 
   @override
   String get deepLinkExpired =>

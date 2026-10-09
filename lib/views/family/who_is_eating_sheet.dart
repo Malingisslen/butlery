@@ -325,7 +325,7 @@ class _DinerToggleRow extends StatelessWidget {
     return Semantics(
       button: true,
       toggled: selected,
-      label: context.l10n.a11yToggleDiner(member.displayName),
+      label: context.l10n.a11yToggleDiner,
       child: Material(
         type: MaterialType.transparency,
         child: PressFill(

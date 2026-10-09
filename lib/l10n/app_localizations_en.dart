@@ -8144,9 +8144,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11ySharedShoppingList(String listName) {
-    return 'Shared shopping list: $listName';
-  }
+  String get a11ySharedShoppingList => 'Shared shopping list';
 
   @override
   String get a11yPrimaryImageTap => 'Primary image, tap to view full size';
@@ -8216,17 +8214,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yChangeProfileImage => 'Change profile image';
 
   @override
-  String a11yShoppingList(String name) {
-    return 'Shopping list: $name';
-  }
+  String get a11yShoppingList => 'Shopping list';
 
   @override
-  String a11yFriend(String name) {
-    return 'Friend: $name';
-  }
-
-  @override
-  String get a11yFriendRequest => 'Friend request';
+  String get a11yFriend => 'Friend';
 
   @override
   String a11yFilterTag(String tagName, String status) {
@@ -8269,14 +8260,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11ySharedRecipe(String title) {
-    return 'Shared recipe: $title';
-  }
+  String get a11ySharedRecipe => 'Shared recipe';
 
   @override
-  String a11ySharedMenu(String title) {
-    return 'Shared menu: $title';
-  }
+  String get a11ySharedMenu => 'Shared menu';
 
   @override
   String get a11yRemoveProfileImage => 'Remove profile image';
@@ -8815,9 +8802,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yBlockedUserSelect(String name) {
-    return 'Select blocked user $name';
-  }
+  String get a11yBlockedUserSelect => 'Select blocked user';
 
   @override
   String get retagFetchingRecipes => 'Fetching recipes …';
@@ -14764,9 +14749,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yConversationOpen(String name) {
-    return 'Conversation with $name, tap to open';
-  }
+  String get a11yConversationOpen => 'Open conversation';
 
   @override
   String a11yMenuVoteOption(String name) {
@@ -14779,9 +14762,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yPingAcknowledge(String name) {
-    return 'Acknowledge notification from $name';
-  }
+  String get a11yPingAcknowledge => 'Acknowledge notification';
 
   @override
   String a11yMenuPlanRecipeOpen(String title) {
@@ -14821,9 +14802,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yShareTabSwitch(String label) {
-    return 'Show $label';
-  }
+  String get a11yShareTabSwitch => 'Show';
 
   @override
   String get a11yPantryAddItem => 'Add new item';
@@ -14842,15 +14821,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yShareModeStaticCopy => 'Static copy, press to select';
+  String get a11yShareModeOption => 'Press to select';
 
   @override
-  String get a11yShareModeRealtime => 'Realtime sharing, press to select';
-
-  @override
-  String a11yFriendRequestIncoming(String name) {
-    return 'Friend request from $name, press to select';
-  }
+  String get a11yFriendRequestIncoming => 'Friend request, press to select';
 
   @override
   String a11yAcceptFriendRequestFrom(String name) {
@@ -14863,48 +14837,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yFriendRequestSent(String name) {
-    return 'Sent request to $name, press to select';
-  }
+  String get a11yFriendRequestSent => 'Sent request, press to select';
 
   @override
-  String a11yFeedFilter(String label) {
-    return 'Filter feed by $label';
-  }
+  String get a11yFeedFilter => 'Filter the feed';
 
   @override
-  String a11yFeedRecipePreview(String title) {
-    return 'Open recipe $title';
-  }
+  String get a11yFeedRecipePreview => 'Open recipe';
 
   @override
-  String a11yPublicProfileRecipeCard(String title) {
-    return 'Open recipe $title';
-  }
+  String get a11yPublicProfileRecipeCard => 'Open recipe';
 
   @override
-  String get a11yBlockedUsersToggle =>
-      'Blocked users, press to expand or collapse the list';
+  String get a11yBlockedUsersToggle => 'Show or hide the list';
 
   @override
-  String a11yInvitationTargetCard(String name) {
-    return 'Invite $name';
-  }
+  String get a11yInvitationTargetCard => 'Invite';
 
   @override
-  String a11yPermissionsBanner(String description) {
-    return 'Permission: $description';
-  }
+  String get a11yPermissionsBanner => 'Permission';
 
   @override
-  String a11yCollaborativeBanner(String title, String subtitle) {
-    return '$title, $subtitle';
-  }
-
-  @override
-  String a11yEmojiPicker(String emoji) {
-    return 'Select $emoji as icon';
-  }
+  String get a11yEmojiPicker => 'Select as icon';
 
   @override
   String a11yRemoveIngredientChip(String label) {
@@ -14951,7 +14905,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yArchivedConversationsToggle => 'Archived conversations';
+  String get a11yArchivedConversationsToggle =>
+      'Show or hide the conversations';
 
   @override
   String get a11yRecipeImageFullscreen => 'Show recipe image in fullscreen';
@@ -14983,17 +14938,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yPollVoteOption(String label) {
-    return 'Vote for $label';
-  }
+  String get a11yPollVoteOption => 'Vote';
 
   @override
   String a11yPollRecipeThumbnail(String title) {
     return 'Open recipe $title';
   }
-
-  @override
-  String get a11yPingComposeSend => 'Send ping';
 
   @override
   String get cookingModeSubstitutionApplied => 'Ingredient swapped';
@@ -15256,9 +15206,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whoAteSkip => 'skip';
 
   @override
-  String a11yToggleDiner(String name) {
-    return 'Toggle whether $name ate';
-  }
+  String get a11yToggleDiner => 'Mark';
 
   @override
   String get menuPresenceSheetTitle => 'who\'s home?';
@@ -15405,12 +15353,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleRatingBreakdown => 'Show or hide rating breakdown';
+  String get a11yToggleRatingBreakdown => 'Show or hide the overview';
 
   @override
-  String a11yEditMemberRating(String name) {
-    return 'Edit rating for $name';
-  }
+  String get a11yEditMemberRating => 'Edit rating';
 
   @override
   String get deepLinkExpired =>

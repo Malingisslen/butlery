@@ -19,6 +19,7 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   setUpAll(() async {
@@ -49,10 +50,10 @@ void main() {
         );
 
         // Prefix matcher because the description text suffix is locale-driven.
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Behörighet: ')),
-          findsOneWidget,
-        );
+        final banner = find.bySemanticsLabel(RegExp(r'^Behörighet\n'));
+        expect(banner, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, banner);
+        expectActivatable(tester, banner);
         handle.dispose();
       },
     );
@@ -78,10 +79,10 @@ void main() {
         );
 
         // The first emoji is the selected one and exposes the select label.
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Välj .+ som ikon')),
-          findsWidgets,
-        );
+        final emoji = find.bySemanticsLabel(RegExp(r'^Välj som ikon\n'));
+        expect(emoji, findsWidgets);
+        expectNothingAnnouncedTwice(tester, emoji.first);
+        expectActivatable(tester, emoji.first);
         handle.dispose();
       },
     );

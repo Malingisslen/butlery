@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import '../../../infrastructure/helpers/ink_fill.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -180,13 +181,18 @@ void main() {
   group('FriendCard - semantics', () {
     testWidgets('exposes localized friend semantics label', (tester) async {
       final handle = tester.ensureSemantics();
-      await tester.pumpWidget(_wrap(FriendCard(user: _user())));
-      // Swedish a11yFriend template: "Vän: {name}". Semantics may merge
-      // descendant text into the label, so match by prefix.
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Vän: Anna Andersson')),
-        findsAtLeastNWidgets(1),
+      await tester.pumpWidget(
+        _wrap(FriendCard(user: _user(), onTap: () {})),
       );
+      // The label names the role only; the name comes from the visible text.
+      // The avatar's own "Profilbild för <name>" label is outside this fix, so
+      // the whole-node duplicate check is not applicable here.
+      final node = find.bySemanticsLabel(RegExp(r'^Vän\n'));
+      expect(node, findsAtLeastNWidgets(1));
+      final lines = announcedLines(tester, node.first);
+      expect(lines.where((l) => l.startsWith('Vän')), ['Vän']);
+      expect(lines.where((l) => l == 'Anna Andersson'), hasLength(1));
+      expectActivatable(tester, node.first);
       handle.dispose();
     });
   });

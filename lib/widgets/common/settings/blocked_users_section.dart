@@ -411,7 +411,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     // Long-press anywhere on a tile enters selection; in selection mode a tap
     // toggles. Wrapped in Semantics per the tap-target a11y rule.
     return Semantics(
-      label: context.l10n.a11yBlockedUserSelect(displayName),
+      label: context.l10n.a11yBlockedUserSelect,
       button: true,
       selected: _selectionMode ? isSelected : null,
       child: PressFill(

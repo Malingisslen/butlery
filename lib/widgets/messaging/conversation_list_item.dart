@@ -90,9 +90,7 @@ class ConversationListItem extends StatelessWidget {
           ),
         ),
         child: Semantics(
-          label: context.l10n.a11yConversationOpen(
-            conversation.getDisplayTitle(currentUserId),
-          ),
+          label: context.l10n.a11yConversationOpen,
           button: true,
           child: PressFill(
             surface: PressSurface.base,

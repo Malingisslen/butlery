@@ -149,7 +149,7 @@ class ShareTargetSelectionEnhanced {
     final isSelected = selectedTab == type;
 
     return Semantics(
-      label: context.l10n.a11yShareTabSwitch(label),
+      label: context.l10n.a11yShareTabSwitch,
       button: true,
       selected: isSelected,
       child: GestureDetector(
