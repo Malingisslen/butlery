@@ -115,4 +115,37 @@ void main() {
     expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget);
     expect(find.textContaining(keepFailed), findsOneWidget);
   });
+
+  group('the other version won (BUT-2153 del 3)', () {
+    testWidgets('"Använd deras version" clears the queued notice and writes '
+        'nothing', (tester) async {
+      final event = _queueEvent();
+      await open(tester, event);
+
+      await tester.tap(
+        find.byKey(const ValueKey('conflictDiff.acceptTheirs')),
+      );
+      await tester.pumpAndSettle();
+
+      verify(() => service.clearQueuedConflict('r1')).called(1);
+      verifyNever(() => service.keepQueuedRecipe(any()));
+      verifyNever(() => service.recoverLocalVersion<RealtimeResource>(any()));
+      expect(find.text('open'), findsOneWidget);
+    });
+
+    testWidgets('"Stäng utan att skriva över" leaves the notice pending', (
+      tester,
+    ) async {
+      await open(tester, _queueEvent());
+
+      await tester.tap(
+        find.byKey(const ValueKey('conflictDiff.closeWithoutOverwrite')),
+      );
+      await tester.pumpAndSettle();
+
+      verifyNever(() => service.clearQueuedConflict(any()));
+      verifyNever(() => service.keepQueuedRecipe(any()));
+      expect(find.text('open'), findsOneWidget);
+    });
+  });
 }

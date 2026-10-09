@@ -3278,23 +3278,6 @@ class MockMenuCollaborationRepository extends Mock
   ) {}
 
   @override
-  Future<bool> addRecipeToMenu({
-    required String menuId,
-    required String category,
-    required Recipe recipe,
-    String? suggestedBy,
-    String? suggestion,
-  }) async => true;
-
-  @override
-  Future<bool> removeRecipeFromMenu({
-    required String menuId,
-    required String category,
-    required String recipeId,
-    String? reason,
-  }) async => true;
-
-  @override
   void disposeAllListeners() {}
 }
 

@@ -135,29 +135,6 @@ void main() {
 
           expect(success, isTrue);
         });
-
-        test('should add recipe to collaborative menu', () async {
-          final success = await collaborativeOps.addRecipeToCollaborativeMenu(
-            menuId: 'menu-1',
-            category: 'Huvudrätt',
-            recipe: testRecipe,
-            suggestion: 'Perfekt för helgen!',
-          );
-
-          expect(success, isTrue);
-        });
-
-        test('should remove recipe from collaborative menu', () async {
-          final success = await collaborativeOps
-              .removeRecipeFromCollaborativeMenu(
-                menuId: 'menu-1',
-                category: 'Huvudrätt',
-                recipeId: 'test-recipe-1',
-                reason: 'Changed plans',
-              );
-
-          expect(success, isTrue);
-        });
       });
 
       group('Resource Management', () {

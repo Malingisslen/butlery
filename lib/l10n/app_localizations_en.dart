@@ -16004,6 +16004,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conflictDiffUseTheirs => 'Use their version';
 
   @override
+  String get conflictDiffCloseWithoutOverwrite => 'Close without overwriting';
+
+  @override
   String get conflictDiffUsedTheirs => 'Their version applies now';
 
   @override
