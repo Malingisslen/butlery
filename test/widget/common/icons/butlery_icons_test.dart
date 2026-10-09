@@ -52,12 +52,12 @@ void main() {
       expect(files, {for (final e in _entries()) '${e['name']}.svg'});
     });
 
-    test('icons.json counts 123 masters, one file each', () {
+    test('icons.json counts 125 masters, one file each', () {
       final entries = _entries();
-      expect(entries, hasLength(123));
+      expect(entries, hasLength(125));
       expect(
         (_manifest()['counts'] as Map)['total'],
-        123,
+        125,
       );
       for (final e in entries) {
         expect(File('$_masters/${e['name']}.svg').existsSync(), isTrue);

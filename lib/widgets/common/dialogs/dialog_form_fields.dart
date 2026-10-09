@@ -369,6 +369,7 @@ class DialogFormFields {
       child: PressFill(
         surface: PressSurface.base,
         child: DropdownButtonFormField<T>(
+          icon: const ButleryIcon(ButleryIcons.chevronDown),
           iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
           iconDisabledColor: AppModeColors.textDisabled(
             Theme.of(context).brightness,

@@ -228,6 +228,9 @@ function renderType() {
     L.push('    fontWeight: ' + fw(r.weight) + ',');
     if (r.tracking) L.push('    letterSpacing: ' + parseFloat(r.tracking) + ',');
     L.push('    height: ' + r.lineHeight + ',');
+    // Butlery Sans defaults to tabular figures, so proportional figures must be
+    // requested explicitly; tabular is the exception for columns of numbers.
+    L.push('    fontFeatures: [' + (r.figures === 'tabular' ? 'FontFeature.tabularFigures()' : 'FontFeature.proportionalFigures()') + '],');
     L.push('  );');
     L.push('');
   }

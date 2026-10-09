@@ -1,5 +1,7 @@
 // lib/widgets/common/search_filter_widget.dart - FACADE PATTERN
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -442,6 +444,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                     _searchController.text = query;
                     widget.onHistoryTap?.call(query);
                   },
+                  deleteIcon: const ButleryIcon(ButleryIcons.x),
                   onDeleted: widget.onHistoryRemove != null
                       ? () => widget.onHistoryRemove!(query)
                       : null,

@@ -138,6 +138,7 @@ class PortionScalerUI {
                   '$currentPortions',
                   style: AppTextStyles.titleLarge.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                   textAlign: TextAlign.center,
                 ),

@@ -266,9 +266,7 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
     required VoidCallback onToggle,
   }) {
     return IconButton(
-      // One glyph for both states until design draws the second one
-      // (P7-U08 open question); the tooltip carries the state.
-      icon: const ButleryIcon(ButleryIcons.eye),
+      icon: ButleryIcon(obscured ? ButleryIcons.eye : ButleryIcons.eyeOff),
       tooltip: obscured
           ? context.l10n.tooltipShowPassword
           : context.l10n.tooltipHidePassword,

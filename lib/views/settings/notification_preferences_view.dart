@@ -402,6 +402,7 @@ class _NotificationPreferencesViewState
             child: PressFill(
               surface: PressSurface.base,
               child: DropdownButton<DigestFrequency>(
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
                 iconEnabledColor: Theme.of(
                   context,
                 ).colorScheme.onSurfaceVariant,
@@ -592,6 +593,8 @@ class _NotificationPreferencesViewState
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
+      switchToInputEntryModeIcon: const ButleryIcon(ButleryIcons.pencil),
+      switchToTimerEntryModeIcon: const ButleryIcon(ButleryIcons.clock),
     );
 
     if (picked != null && mounted) {
