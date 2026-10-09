@@ -142,7 +142,9 @@ class ConversationListItem extends StatelessWidget {
                               ),
                               const SizedBox(width: AppDimensions.paddingS),
                               Text(
-                                conversation.formattedLastActivity,
+                                conversation.formattedLastActivityFor(
+                                  currentUserId,
+                                ),
                                 style: _hasUnreadMessages
                                     ? AppTextStyles.labelSmall.copyWith(
                                         color: cs.onSurface,
