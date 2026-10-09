@@ -10,6 +10,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -374,28 +375,54 @@ class _GroupDetailViewState extends State<GroupDetailView>
       return;
     }
 
-    // Handle ownership transfer scenario
+    // An owner leaves by handing the group to a member, which the server does
+    // in one step together with the leave.
     if (decision.requiresOwnershipTransfer) {
       final newOwner = await OwnershipTransferDialog.show(
         context: context,
         group: group,
         availableMembers: decision.availableNewOwners,
       );
+      if (newOwner == null || !mounted) return;
 
-      if (newOwner == null) {
-        // User cancelled - don't leave group
-        return;
-      }
+      final shouldLeave = await CommonDialogActions.showLeaveGroupConfirmation(
+        context: context,
+        groupName: group.name,
+      );
+      if (shouldLeave != true || !mounted) return;
 
-      // Transfer ownership via ViewModel
-      final transferSuccess = await _viewModel.transferGroupOwnership(newOwner);
-      if (!transferSuccess && mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.groupCouldNotTransferOwnership,
-        );
-        return;
+      final outcome = await _viewModel.handOverGroup(newOwner);
+      if (!mounted) return;
+      switch (outcome) {
+        case GroupHandOverOutcome.done:
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.groupOwnershipTransferredAndLeft,
+          );
+          Navigator.pushReplacementNamed(
+            context,
+            '/friends',
+            arguments: {'tabIndex': 1},
+          );
+        case GroupHandOverOutcome.newOwnerNotInHousehold:
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.groupHandOverNotInHousehold(
+              newOwner.displayName,
+            ),
+          );
+        case GroupHandOverOutcome.unavailable:
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.groupHandOverUnavailable,
+          );
+        case GroupHandOverOutcome.failed:
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.groupCouldNotTransferOwnership,
+          );
       }
+      return;
     }
 
     // Standard leave confirmation
@@ -410,12 +437,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       final success = await _viewModel.leaveGroup();
 
       if (success && mounted) {
-        SnackBarUtils.showSuccess(
-          context,
-          decision.requiresOwnershipTransfer
-              ? context.l10n.groupOwnershipTransferredAndLeft
-              : context.l10n.groupYouLeftGroup,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.groupYouLeftGroup);
         // Navigate to groups tab
         Navigator.pushReplacementNamed(
           context,

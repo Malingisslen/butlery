@@ -5798,6 +5798,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not transfer ownership. Try again.';
 
   @override
+  String groupHandOverNotInHousehold(String name) {
+    return '$name is not in the group\'s household, so they cannot take over the group.';
+  }
+
+  @override
+  String get groupHandOverUnavailable =>
+      'The group cannot be handed over right now.';
+
+  @override
   String groupDeleted(String name) {
     return 'Group \"$name\" has been deleted';
   }

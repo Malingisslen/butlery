@@ -199,6 +199,7 @@ export { findUserByEmail } from "./social/find-user-by-email";
 // household, and the trigger removes anyone the group no longer holds, with
 // their allergen share. Household membership is written only here.
 export { joinGroupHousehold } from "./family/join-group-household";
+export { handOverGroup } from "./groups/hand-over-group";
 export { onHouseholdGroupWritten } from "./family/on-household-group-written";
 
 // BUT-1629: the only path by which a minor can become searchable. The rules

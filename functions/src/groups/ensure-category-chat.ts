@@ -206,12 +206,6 @@ export async function ensureCategoryChatWithDeps(
 
   const categorySnap = await categoryRef.get();
   if (!categorySnap.exists) {
-    // Includes the transferred-group case: `transferOwnership` moves the
-    // `ownerId` FIELD and leaves the document under the old owner's path, so a
-    // transferred category is not found here. Those groups are already
-    // un-editable by their new owner for the same reason: `firestore.rules`
-    // reads the path segment. The poll, however, DID work before this change,
-    // because the old path never read the category at all — BUT-1924.
     throw notAllowed();
   }
   const categoryData = categorySnap.data() as admin.firestore.DocumentData;

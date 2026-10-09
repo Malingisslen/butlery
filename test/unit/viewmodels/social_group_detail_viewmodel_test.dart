@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -121,8 +124,8 @@ void main() {
       ).thenAnswer((_) async => true);
 
       when(
-        () => mockCategoryRepo.transferOwnership(any(), any(), any()),
-      ).thenAnswer((_) async {});
+        () => mockCategoryRepo.handOverGroup(any(), any()),
+      ).thenAnswer((_) async => GroupHandOverOutcome.done);
 
       viewModel = SocialGroupDetailViewModel(
         groupId: testGroupId,
@@ -416,30 +419,77 @@ void main() {
       });
     });
 
-    group('transferGroupOwnership', () {
-      test('successfully transfers ownership', () async {
-        await viewModel.loadGroupData();
-        final result = await viewModel.transferGroupOwnership(otherMember);
+    group('handOverGroup', () {
+      test(
+        'done clears the loaded group, notifies and sends the ids',
+        () async {
+          await viewModel.loadGroupData();
+          expect(viewModel.group, isNotNull);
+          var notifications = 0;
+          viewModel.addListener(() => notifications++);
 
-        expect(result, isTrue);
-        verify(
-          () => mockCategoryRepo.transferOwnership(
-            testUserId,
-            testGroupId,
-            otherUserId,
-          ),
-        ).called(1);
-      });
+          final outcome = await viewModel.handOverGroup(otherMember);
 
-      test('returns false when transfer fails', () async {
+          expect(outcome, GroupHandOverOutcome.done);
+          expect(viewModel.group, isNull);
+          expect(notifications, greaterThanOrEqualTo(1));
+          verify(
+            () => mockCategoryRepo.handOverGroup(testGroupId, otherUserId),
+          ).called(1);
+        },
+      );
+
+      for (final refused in [
+        GroupHandOverOutcome.newOwnerNotInHousehold,
+        GroupHandOverOutcome.unavailable,
+        GroupHandOverOutcome.failed,
+      ]) {
+        test('$refused is returned and keeps the group loaded', () async {
+          when(
+            () => mockCategoryRepo.handOverGroup(any(), any()),
+          ).thenAnswer((_) async => refused);
+          await viewModel.loadGroupData();
+
+          final outcome = await viewModel.handOverGroup(otherMember);
+
+          expect(outcome, refused);
+          expect(viewModel.group?.id, testGroupId);
+        });
+      }
+
+      test(
+        'a throwing repository reads as failed and keeps the group',
+        () async {
+          when(
+            () => mockCategoryRepo.handOverGroup(any(), any()),
+          ).thenThrow(Exception('boom'));
+          await viewModel.loadGroupData();
+
+          final outcome = await viewModel.handOverGroup(otherMember);
+
+          expect(outcome, GroupHandOverOutcome.failed);
+          expect(viewModel.group?.id, testGroupId);
+        },
+      );
+
+      test('a done arriving after the screen closed does not notify', () async {
+        final answer = Completer<GroupHandOverOutcome>();
         when(
-          () => mockCategoryRepo.transferOwnership(any(), any(), any()),
-        ).thenThrow(Exception('Transfer failed'));
+          () => mockCategoryRepo.handOverGroup(any(), any()),
+        ).thenAnswer((_) => answer.future);
+        final closing = SocialGroupDetailViewModel(
+          groupId: testGroupId,
+          friendsService: mockFriendsService,
+          userService: mockUserService,
+          permissionService: mockPermissionService,
+        );
+        await closing.loadGroupData();
 
-        await viewModel.loadGroupData();
-        final result = await viewModel.transferGroupOwnership(otherMember);
+        final pending = closing.handOverGroup(otherMember);
+        closing.dispose();
+        answer.complete(GroupHandOverOutcome.done);
 
-        expect(result, isFalse);
+        expect(await pending, GroupHandOverOutcome.done);
       });
 
       test('throws StateError when group is null', () async {
@@ -450,7 +500,7 @@ void main() {
         await viewModel.loadGroupData();
 
         expect(
-          () => viewModel.transferGroupOwnership(otherMember),
+          () => viewModel.handOverGroup(otherMember),
           throwsA(isA<StateError>()),
         );
       });

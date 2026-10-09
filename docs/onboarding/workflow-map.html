@@ -5702,15 +5702,15 @@
         {
           "from": "vm-social-group-detail",
           "to": "repo-friend-category",
-          "payload": "transferOwnership (transaktion) \u2014 b\u00e5da \u00e4garvalen erbjuds inte alls n\u00e4r medlemsl\u00e4sningen misslyckats (rosterIncomplete)",
+          "payload": "handOverGroup (\u00e4garen l\u00e4mnar genom att l\u00e4mna \u00f6ver) \u2014 b\u00e5da \u00e4garvalen erbjuds inte alls n\u00e4r medlemsl\u00e4sningen misslyckats (rosterIncomplete)",
           "transport": "call",
           "verified": true
         },
         {
           "from": "repo-friend-category",
           "to": "ds-friend-categories",
-          "payload": "ownerId uppdaterad atomärt",
-          "transport": "write",
+          "payload": "callable handOverGroup flyttar gruppen till nya ägarens konto",
+          "transport": "callable CF",
           "verified": true
         }
       ],

@@ -6244,3 +6244,12 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - L4 (unauth filtered query) killed by no mutant: masked `isAuthenticated()`, as on `blocks`.
 - No writer of `cook_snaps/{id}/likes` in lib/ or functions/src (only cascade test fixtures); the cook_snaps parent in L1 is a fixture of a shape no client can write (catch-all denies; no nested rule).
 - rules-coverage-report --base HEAD: new block 9/9 exercised, new-block gate OK. test:rules:all 58/59; only comment-images-storage failed (Storage emulator 9199 not running).
+
+## 2026-10-09 — BUT-2321 `users/{uid}/friend_categories`: transfer limb removed, create binds `ownerId == userId`
+- Rules diff: the owner-only `affectedKeys().hasOnly(['ownerId','updatedAt'])` update limb deleted (handover is now the `handOverGroup` callable, Admin SDK move to the new owner's path); `allow create` gained `&& request.resource.data.ownerId == userId`.
+- Tests added to `friend-categories-rules.test.ts` (suite 17/17): MO1/MO2 member ownerId-takeover deny + updatedAt-only control (same member, doc, seed); OC1-OC4 owner create own-ownerId allow, foreign-ownerId deny, missing-ownerId deny, stranger deny — all on ONE doc id with a rules-disabled delete + absence assertion before each; OU1/OU2 owner ownerId+updatedAt deny vs name+updatedAt allow on the same re-seeded doc. Added the PROBE_RULES_PATH/PROBE_PROJECT_ID seam, keeping the literal `PROJECT_ID` const for coverage-report discovery.
+- Mutants (env-var seam, block-sliced regex, 1 match each, firestore.rules md5 e6c1b571 unchanged throughout):
+  readd transfer limb -> 16/17 kills OU1; drop create ownerId conjunct -> 15/17 kills OC2+OC3; drop 'ownerId' from cannotModify -> 16/17 kills OU1; widen member hasOnly with 'ownerId' -> 16/17 kills MO1; create isOwner->isAuthenticated -> 16/17 kills OC4; owner update limb -> false -> 14/17 kills OU2 + the two bulk owner allows.
+- OU1 is killed by BOTH re-adding the limb and dropping 'ownerId' from cannotModify: it guards the pair (limb absent AND key immutable), each alone attributable.
+- Writers checked: every client create goes through `FriendCategory.toFirestore()` with `ownerId: currentUserId` and `saveCategory(category.ownerId, …)` only when caller == ownerId; `moderation-rules` FC2 builder carries ownerId. Siblings: collection-group-wildcards 42/42, chat-groups 27/27, moderation 18/18.
+- Core card hit the 15,000 cap adding the friend_categories map row; the create-side `hasOnly` bullet moved verbatim to the vacuity chapter.

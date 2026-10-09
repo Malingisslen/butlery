@@ -78,7 +78,7 @@ function rosterRow(
 
 /**
  * Admins at birth. Anyone named who is not a member is dropped rather than
- * seated: `adminIds` is immutable afterwards, so an admin who is not in
+ * seated: an admin who is not in
  * `memberIds` would be a permanent right nobody can revoke and no rule can see.
  * An empty result falls back to the creator, who is always a member.
  */
@@ -153,8 +153,7 @@ export function stageGroupCreation(
   tx.set(groupRef, {
     name,
     memberIds,
-    // `adminIds` is fixed at birth and immutable afterwards: firestore.rules
-    // permits no client write to it and no callable changes it. Promoting or
+    // firestore.rules permits no client write to `adminIds`, and only `handOverGroup` moves the owner's seat. Promoting or
     // demoting an admin is a feature that does not exist yet; when it is built
     // it needs its own gated callable, not a widened update rule (that is
     // precisely the metadata.creatorId smuggling BUT-1788 had to close once

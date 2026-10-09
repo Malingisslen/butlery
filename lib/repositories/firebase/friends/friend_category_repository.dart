@@ -2,9 +2,11 @@
 /// Uses user-scoped subcollections (`users/{userId}/friend_categories`) for data isolation.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -15,9 +17,20 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     super.firestore,
     AuthRepository? authRepository,
     super.timestampProvider,
-  }) : super(
+    FirebaseFunctions? functions,
+  }) : _injectedFunctions = functions,
+       super(
          authRepository: authRepository ?? FirebaseAuthRepository(),
        );
+
+  /// Resolved lazily so constructing the repository never calls
+  /// `FirebaseFunctions.instanceFor`, which throws in unit tests that do not
+  /// initialise Firebase.
+  final FirebaseFunctions? _injectedFunctions;
+  FirebaseFunctions? _functionsCache;
+  FirebaseFunctions get _functions => _functionsCache ??=
+      (_injectedFunctions ??
+      FirebaseFunctions.instanceFor(region: 'europe-west1'));
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
       firestore
@@ -327,50 +340,83 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     }
   }
 
-  /// Atomically transfer group ownership via Firestore transaction.
-  /// Only the current owner can initiate a transfer. The transaction verifies
-  /// ownership hasn't changed since read (prevents TOCTOU race conditions).
-  Future<void> transferOwnership(
-    String currentOwnerId,
+  /// Hands the current user's group to [newOwnerId], a member, and takes the
+  /// current user out of it. The server moves the group to the new owner's
+  /// account, because the account a group is stored under is its owner.
+  Future<GroupHandOverOutcome> handOverGroup(
     String categoryId,
     String newOwnerId,
   ) async {
     final currentUser = requireCurrentUserId();
-    if (currentUser != currentOwnerId) {
-      throw PermissionDeniedException(
-        'Only the current owner can transfer ownership',
-      );
-    }
-
-    final docRef = _categoriesRef(currentOwnerId).doc(categoryId);
-
-    await firestore.runTransaction((transaction) async {
-      final snapshot = await transaction.get(docRef);
-      if (!snapshot.exists) {
-        throw ResourceNotFoundException(
-          'Group not found',
-          resourceType: 'friend_category',
-          resourceId: categoryId,
+    // The server decides ownership by where the group is stored, the app by
+    // its `ownerId` field; a group moved by the old field-only transfer
+    // passes the second and fails the first.
+    final stored = await _storedUnder(currentUser, categoryId);
+    if (stored != true) {
+      if (stored == false) {
+        _logHandOver(
+          currentUser,
+          categoryId,
+          granted: false,
+          code: 'not-stored-under-caller',
         );
       }
-
-      final category = FriendCategory.fromMap(snapshot.id, snapshot.data()!);
-      if (category.ownerId != currentUser) {
-        throw PermissionDeniedException('Ownership has already changed');
+      return GroupHandOverOutcome.failed;
+    }
+    try {
+      await _functions.httpsCallable('handOverGroup').call<Object?>(
+        <String, dynamic>{'groupId': categoryId, 'newOwnerId': newOwnerId},
+      );
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code == 'failed-precondition') {
+        _logHandOver(currentUser, categoryId, granted: false, code: e.code);
+        return e.message == 'new-owner-not-in-household'
+            ? GroupHandOverOutcome.newOwnerNotInHousehold
+            : GroupHandOverOutcome.unavailable;
       }
+      // The answer can be lost after the server committed.
+      if (await _storedUnder(currentUser, categoryId) == false) {
+        _logHandOver(currentUser, categoryId, granted: true);
+        return GroupHandOverOutcome.done;
+      }
+      AppLogger.warning('Group handover not done: ${e.code}');
+      if (e.code == 'permission-denied' || e.code == 'invalid-argument') {
+        _logHandOver(currentUser, categoryId, granted: false, code: e.code);
+      }
+      return GroupHandOverOutcome.failed;
+    }
 
-      transaction.update(docRef, {
-        'ownerId': newOwnerId,
-        'updatedAt': timestampProvider.serverTimestamp(),
-      });
-    });
+    _logHandOver(currentUser, categoryId, granted: true);
+    return GroupHandOverOutcome.done;
+  }
 
+  /// Null when the server could not be asked: offline, a cached answer could
+  /// call a group gone that is not.
+  Future<bool?> _storedUnder(String userId, String categoryId) async {
+    try {
+      final doc = await _categoriesRef(
+        userId,
+      ).doc(categoryId).get(const GetOptions(source: Source.server));
+      return doc.exists;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _logHandOver(
+    String userId,
+    String categoryId, {
+    required bool granted,
+    String? code,
+  }) {
     logPermissionCheck(
-      userId: currentUser,
+      userId: userId,
       resource: 'friend_category',
-      operation: 'transfer_ownership',
-      granted: true,
-      details: 'Category: $categoryId, From: $currentOwnerId, To: $newOwnerId',
+      operation: 'hand_over_group',
+      granted: granted,
+      details: code == null
+          ? 'Category: $categoryId'
+          : 'Category: $categoryId, code: $code',
     );
   }
 

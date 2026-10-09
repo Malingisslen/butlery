@@ -160,6 +160,12 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 5,
     refillIntervalMs: 60000,
   },
+  // BUT-2321. A handover moves one group.
+  handOverGroup: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
   // BUT-1856. Same numbers as `createChatGroup` on purpose: this callable can
   // create a group and does so through `createChatGroupWithDeps`, bypassing the
   // create bucket entirely, so anything looser here would quietly raise the
