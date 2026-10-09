@@ -31,12 +31,14 @@ void main() {
     // the user could actually read.
     for (final lang in ['sv', 'en']) {
       test('community_guidelines_$lang.md carries the current version', () {
-        final text =
-            File('assets/legal/community_guidelines_$lang.md').readAsStringSync();
+        final text = File(
+          'assets/legal/community_guidelines_$lang.md',
+        ).readAsStringSync();
         expect(
-          RegExp(r'^Version: (\S+)$', multiLine: true)
-              .firstMatch(text)
-              ?.group(1),
+          RegExp(
+            r'^Version: (\S+)$',
+            multiLine: true,
+          ).firstMatch(text)?.group(1),
           kCurrentGuidelineVersion,
         );
       });
