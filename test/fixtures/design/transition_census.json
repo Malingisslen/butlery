@@ -588,11 +588,11 @@
       "flow": "05",
       "status": "TESTED",
       "test_file": "test/views/permission_downgrade_flow05_test.dart",
-      "test_name": "the notice carries Stäng (content-style-guide.md:97)",
+      "test_name": "the notice carries Stäng (content-style-guide.md)",
       "tests": [
         {
           "file": "test/views/permission_downgrade_flow05_test.dart",
-          "name": "the notice carries Stäng (content-style-guide.md:97)",
+          "name": "the notice carries Stäng (content-style-guide.md)",
           "group": "revoked or expired link (PQ-13 = A)"
         },
         {
@@ -1337,7 +1337,7 @@
         },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
-          "name": "is the six steps of produktregler.md:188, in order"
+          "name": "is the six steps of produktregler.md, in order"
         },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
@@ -1498,10 +1498,15 @@
           "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
           "name": "Börja om closes the question and keeps the draft",
           "group": "TR::FLOW::08::utkast::aterupptagning"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "an unsaved suggestion outlives the screen and comes back whole on the next opening",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md:848 says a button names its goal and Fortsätt is not one."
+      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md says a button names its goal and Fortsätt is not one. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
     },
     {
       "id": "TR::FLOW::08::utkast::avbryt-behaller",
@@ -1514,10 +1519,15 @@
           "file": "test/views/flows/flow_08_transitions_test.dart",
           "name": "leaving the editor without saving keeps the draft, and the next opening offers it with what was written",
           "group": "TR::FLOW::08::utkast::avbryt-behaller"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "an unsaved suggestion outlives the screen and comes back whole on the next opening",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "New test on the real auto-save manager."
+      "reason": "New test on the real auto-save manager. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
     },
     {
       "id": "TR::FLOW::08::utkast::livstid-utgangen",
@@ -1533,10 +1543,15 @@
         {
           "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
           "name": "purges stale drafts from payload AND metadata"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "a draft untouched for more than 30 days is not offered and is deleted",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (D-01: 30 days since the last change)."
+      "reason": "Existing tests (D-01: 30 days since the last change). BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
     },
     {
       "id": "TR::FLOW::08::utkast::skapas",
@@ -1577,10 +1592,15 @@
           "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
           "name": "Ångra after Släng keeps the draft",
           "group": "TR::FLOW::08::utkast::slang-raderar"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "discarding deletes the draft once the undo window closes; undo keeps it",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft."
+      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
     },
     {
       "id": "TR::FLOW::08::utkast::utloggning-raderar",
@@ -1596,10 +1616,20 @@
         {
           "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
           "name": "clearDraftsFor removes the account's drafts and the index"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "signing out yourself deletes the draft",
+          "group": "BUT-2157 week menu draft"
+        },
+        {
+          "file": "test/unit/services/auth_service_test.dart",
+          "name": "rensas vid manuell utloggning, inte vid automatisk",
+          "group": "week tray at logout"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests."
+      "reason": "Existing tests. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
     },
     {
       "id": "TR::FLOW::08::utloggning-med-ko::blockeras",

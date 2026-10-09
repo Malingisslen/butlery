@@ -14307,5 +14307,13 @@
         "type": "int"
       }
     }
+  },
+  "weekMenuPlanningCancel": "Avbryt planeringen",
+  "@weekMenuPlanningCancel": {
+    "description": "BUT-2157: outlined button under the planning panel that stops a week generation (Skarmar v12 del 1 #veckogenererarpanel)."
+  },
+  "weekMenuPlanningCancelNote": "Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.",
+  "@weekMenuPlanningCancelNote": {
+    "description": "BUT-2157: the note under Avbryt planeringen (Q1 = B, Malin). Generation is not incremental, so cancelling keeps the earlier unsaved suggestion and never writes the week."
   }
 }

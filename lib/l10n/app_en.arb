@@ -13740,5 +13740,7 @@
   "trashFailOffline": "{count} recipes were not done because you are offline.",
   "trashFailExpired": "{count} recipes had already expired.",
   "trashFailGone": "{count} recipes were no longer in the trash.",
-  "trashFailFailed": "{count} recipes could not be done. Try again."
+  "trashFailFailed": "{count} recipes could not be done. Try again.",
+  "weekMenuPlanningCancel": "Cancel planning",
+  "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save."
 }

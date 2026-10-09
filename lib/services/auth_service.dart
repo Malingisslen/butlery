@@ -20,6 +20,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:get_it/get_it.dart';
 
@@ -277,13 +278,14 @@ class AuthService extends ChangeNotifier
   /// [logoutDueToInactivity] and [forceSignOut] do not call this. The one
   /// user-initiated path that runs through [logoutDueToInactivity], "Logga ut
   /// nu" in the timeout warning, calls it separately
-  /// (SessionTimeoutService.forceLogout). Neither store is the offline queue,
+  /// (SessionTimeoutService.forceLogout). No store here is the offline queue,
   /// which no sign-out clears by itself (produktregler.md:193, :833).
-  /// Best-effort: both stores log and never throw.
+  /// Best-effort: every store logs and never throws.
   static Future<void> clearDeviceDraftsOnExplicitSignOut(
     String? userId,
   ) async {
     await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
+    await WeeklyMenuDraftStore.clearAll(userId: userId);
     await RecipeFormAutoSaveManager.clearDraftsFor(userId);
   }
 

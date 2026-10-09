@@ -18022,4 +18022,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String trashFailFailed(int count) {
     return '$count recept gick inte att klara. Försök igen.';
   }
+
+  @override
+  String get weekMenuPlanningCancel => 'Avbryt planeringen';
+
+  @override
+  String get weekMenuPlanningCancelNote =>
+      'Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.';
 }

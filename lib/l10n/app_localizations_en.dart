@@ -17999,4 +17999,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String trashFailFailed(int count) {
     return '$count recipes could not be done. Try again.';
   }
+
+  @override
+  String get weekMenuPlanningCancel => 'Cancel planning';
+
+  @override
+  String get weekMenuPlanningCancelNote =>
+      'Cancelling keeps your latest suggestion. Nothing is overwritten until you save.';
 }

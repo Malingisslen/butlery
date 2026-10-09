@@ -16,6 +16,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -288,10 +289,13 @@ void main() {
     // out herself, and survives an automatic logout.
     group('week tray at logout', () {
       final trayKey = WeeklyMenuOverflowTrayStore.keyFor('u1');
+      // BUT-2157: the week generation's draft follows the same rule.
+      final draftKey = WeeklyMenuDraftStore.keyFor('u1');
 
       setUp(() {
         SharedPreferences.setMockInitialValues({
           trayKey: '{"kept":true}',
+          draftKey: '{"kept":true}',
           'unrelated_key': 'stays',
         });
         when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
@@ -301,14 +305,17 @@ void main() {
         await authService.logoutDueToInactivity();
         var prefs = await SharedPreferences.getInstance();
         expect(prefs.getString(trayKey), isNotNull);
+        expect(prefs.getString(draftKey), isNotNull);
 
         await authService.forceSignOut();
         prefs = await SharedPreferences.getInstance();
         expect(prefs.getString(trayKey), isNotNull);
+        expect(prefs.getString(draftKey), isNotNull);
 
         await authService.signOut();
         prefs = await SharedPreferences.getInstance();
         expect(prefs.getString(trayKey), isNull);
+        expect(prefs.getString(draftKey), isNull);
         expect(prefs.getString('unrelated_key'), 'stays');
       });
 

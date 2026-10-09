@@ -247,8 +247,7 @@ class _VeckomenyCookingSessionCardState
 /// After [slowAfter] (6 s) the status line changes to "Det tar längre tid än
 /// vanligt" in the same view (flows-roles-budget.md:33;
 /// fas2/block288-uxfrysning.json TR::FLOW::01::genererar::6-10-s REQUIRED;
-/// ux-beslut.json D-03, "$bevarat"). The drawn "Avbryt planeringen" is not
-/// here yet: MenuViewModel has no way to stop a generation.
+/// ux-beslut.json D-03, "$bevarat").
 class VeckomenyGeneratingOverlay extends StatefulWidget {
   const VeckomenyGeneratingOverlay({
     super.key,
