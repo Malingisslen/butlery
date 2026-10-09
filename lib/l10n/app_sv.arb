@@ -14046,5 +14046,18 @@
   "passwordResetDoneNotice": "Lösenordet är bytt. Logga in med det nya.",
   "@passwordResetDoneNotice": {
     "description": "BUT-2170: notice on the sign-in screen after a reset (decision B1)."
-  }
+  },
+  "shoppingItemsAddedToListSnack": "{count, plural, =1{1 vara tillagd i \"{listName}\"} other{{count} varor tillagda i \"{listName}\"}}",
+  "@shoppingItemsAddedToListSnack": {
+    "description": "BUT-2308: snackbar after a recipe's ingredients were added to a shopping list; its action is Visa.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddToListHeading": "Lägg i lista"
 }

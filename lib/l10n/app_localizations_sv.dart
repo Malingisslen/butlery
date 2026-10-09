@@ -17798,4 +17798,18 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get passwordResetDoneNotice =>
       'Lösenordet är bytt. Logga in med det nya.';
+
+  @override
+  String shoppingItemsAddedToListSnack(int count, String listName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor tillagda i \"$listName\"',
+      one: '1 vara tillagd i \"$listName\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingAddToListHeading => 'Lägg i lista';
 }

@@ -17779,4 +17779,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get passwordResetDoneNotice =>
       'Your password has been changed. Log in with the new one.';
+
+  @override
+  String shoppingItemsAddedToListSnack(int count, String listName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items added to \"$listName\"',
+      one: '1 item added to \"$listName\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingAddToListHeading => 'Add to list';
 }

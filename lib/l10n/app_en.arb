@@ -13630,5 +13630,17 @@
   "setNewPasswordRequestNew": "Send a new link",
   "setNewPasswordClose": "Close",
   "setNewPasswordSavedOther": "The password for {email} has been changed.",
-  "passwordResetDoneNotice": "Your password has been changed. Log in with the new one."
+  "passwordResetDoneNotice": "Your password has been changed. Log in with the new one.",
+  "shoppingItemsAddedToListSnack": "{count, plural, =1{1 item added to \"{listName}\"} other{{count} items added to \"{listName}\"}}",
+  "@shoppingItemsAddedToListSnack": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddToListHeading": "Add to list"
 }
