@@ -22,6 +22,8 @@
  *     overwrite rather than duplicate.
  * Re-throwing for retry is therefore safe.
  *
+ * It also keeps a text copy of the reported content (`moderation/report-evidence.ts`).
+ *
  * The moderator is notified by a log-based alert policy
  * (`infrastructure/alerting/setup-gcp-alerts.sh`), not by email from here.
  */
@@ -29,6 +31,7 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { captureReportEvidence } from "../moderation/report-evidence";
 
 const db = admin.firestore();
 
@@ -223,13 +226,20 @@ export const onReportCreated = onDocumentCreated(
       reason: report.reason,
     });
 
-    try {
-      await processReport(db, { reportId, eventId: event.id, report });
-
-      logger.info(`Report ${reportId} processed successfully`);
-    } catch (error) {
-      logger.error(`Failed to process report ${reportId}:`, error);
-      throw error; // Idempotent, so a re-delivery is safe.
+    // BUT-1842: the text copy runs beside the strike, not before it, so a slow
+    // capture cannot spend the strike's time budget.
+    const [evidence, processed] = await Promise.allSettled([
+      captureReportEvidence(db, reportId),
+      processReport(db, { reportId, eventId: event.id, report }),
+    ]);
+    if (evidence.status === "fulfilled") {
+      logger.info("report_evidence", { reportId, outcome: evidence.value });
     }
+
+    if (processed.status === "rejected") {
+      logger.error(`Failed to process report ${reportId}:`, processed.reason);
+      throw processed.reason; // Idempotent, so a re-delivery is safe.
+    }
+    logger.info(`Report ${reportId} processed successfully`);
   },
 );

@@ -144,6 +144,14 @@ const TARGETS: {
     stamp:
       /collection\(CHILD\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\./,
   },
+  // BUT-1842 — the moderator's text copy of reported content; Malin's 180-day cap.
+  {
+    group: "report_evidence",
+    field: "expireAt",
+    retention: "180d",
+    writer: "functions/src/moderation/report-evidence.ts",
+    stamp: /expireAt:\s*expireAtFrom\(now\)/,
+  },
   {
     group: "system_ip_audit_caps",
     field: "expireAt",
@@ -250,6 +258,7 @@ const EXPECTED_TTL_GROUPS = [
   "notification_send_events",
   "overwritten_versions",
   "parse_events",
+  "report_evidence",
   "report_history",
   "report_processing_markers",
   "rate_limits",

@@ -209,6 +209,9 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // Keyed by the report's event id, one marker per report. `reports` is
   // already listed above, so these would outlive what they mark.
   { name: "report_processing_markers" },
+  // BUT-1842: a text copy per report, keyed by the report id; it would outlive
+  // the `reports` it belongs to.
+  { name: "report_evidence" },
   // Uid-carrying suggestions (`userId` field, client-creatable per
   // firestore.rules; no screen in the app produces one). The cascade reaches it
   // (`deleteIngredientSuggestions`, with a probe leg), so this script and a
