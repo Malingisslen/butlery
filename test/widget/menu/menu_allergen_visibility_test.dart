@@ -40,6 +40,7 @@ void main() {
     when(() => vm.hasError).thenReturn(false);
     when(() => vm.hasMenu).thenReturn(true);
     when(() => vm.isGenerating).thenReturn(false);
+    when(() => vm.canEditMenu).thenReturn(true);
     when(() => vm.menu).thenReturn({
       'middag': [recipe],
     });
