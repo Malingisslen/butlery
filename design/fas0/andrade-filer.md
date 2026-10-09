@@ -28,13 +28,12 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=821-->
+<!--manifest:files=820-->
 
 ## Reporoten
 
 | Fil | SHA-256 |
 |---|---|
-| `.github/workflows/verify.yml` | `769074037ab42d6b1c074d57e5be02152b14d353e1f512ea2fe3cd2d2945a87b` |
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
 | `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
@@ -78,7 +77,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg` | `f490e61aa99d9be40b17682446167037ba153f21e0049fd164e2ab9bb91edb6b` |
 | `FONT-VERSION.txt` | `b9b7731a213a7f4ae7d36bb8a5bdbb9ebd91c4dd093b8d08443d3a397e92cbcf` |
 | `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
-| `NULAGE.md` | `e9f179ba0e3661514953a8f7a3ea80ec3dc1a3b98da14739423a97fb888fd458` |
+| `NULAGE.md` | `294da55911010d13117571455b3acfc1ed799bab7083f9e7e8f9ed308857a748` |
 | `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
 | `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
 | `artifacts.json` | `c631797a965d29c126347fcb50c3fb48876c26456067094b5d099e3530dd8b37` |
@@ -257,7 +256,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
-| `fas2/BLOCK287.md` | `5b5277854647f2e76aec1dadf9e76e59197f2e5d71fe0eac107cb612aad0e9d3` |
+| `fas2/BLOCK287.md` | `355e922c4dfb45736f07bf80d5722ca32315ecb81c233a198733504b5410753b` |
 | `fas2/adjudikering-a2.json` | `084535efca041f49fdad760516974d6eccb126cd230d003f792068d916817575` |
 | `fas2/adjudikeringspilot.json` | `1a7e249624fcd14e3477680639037f41ff712c011d541fff31b5ca03be9292c1` |
 | `fas2/affordans-negativa-prov.json` | `0139902066163acbd2accef31395fd9b3a081b1387c5e651255c17abf72701a5` |
@@ -628,7 +627,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/applicability-fixtures.mjs` | `7d6308092307738f80f89dd3bb96238c6f4e1362a235b8fa0db2b770b1545fc6` |
 | `tools/applicability-planner.mjs` | `593b1407c81730418c13de8516a43090ca6d4e4bbccb0bc76722b2c8806d6600` |
 | `tools/artifact-contract.mjs` | `04b506fe6cb2f281de72bf389fa7382fbf68063dabb971f8ce84fe93363e7712` |
-| `tools/authored-theme.mjs` | `b4877b3a95d252f93bc1452d6f8d8ab330aa6f7a4c3922e8c5e705721fc4ea70` |
+| `tools/authored-theme.mjs` | `1ae4bfdeac249a0b043c1bae4ccb7fe1fd67f1f546cf4fde1c8a6ca8570ef71f` |
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/bl01-ankarmigrering.mjs` | `08bb3c1e2a170978c94ea1452aef09b079a9573e968302c5490060e69fe4ecd9` |
 | `tools/bl01-elementindex.mjs` | `9c1e52ae76fdeb17e6c43cba2a93da6ca56d11bdfe55e400418ffeb92d708ec4` |
@@ -672,7 +671,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/block287/slutfrysning.mjs` | `04b76abaf7e0cbf192ca485fadcd345eafa75f7dbadfe3d5deeb14e13ef1bf6c` |
 | `tools/block288/uxfrysning.mjs` | `79e27eeabf12bfc06e9fc4e918af2bdea74eb0c251116c8f408e401ad17e7944` |
 | `tools/block288/uxprov.mjs` | `8e160724d5f5205ac4441f0ae6e790587375c558752292ecc51342b7c8b3bc75` |
-| `tools/block289/visuellfrysning.mjs` | `ae4a8610aaa9e6a7a048d79544789cec0e8b689035dfa3da58414cecde9df2b5` |
+| `tools/block289/visuellfrysning.mjs` | `6975d2b6ba27529f917582a7b4428b0c161ee7af913f49d3a7ce78dfa7e77f6d` |
 | `tools/block289/visuellprov.mjs` | `09be22f4d3104cb086becad67d7d4bb4caa7c5ee727d459f370980b24b2b06ce` |
 | `tools/box-graphics-fixtures.mjs` | `a95e370c6e800a2e73c53f4495a7248f81503f847c8e7f4eaa6d21fdeb98a44f` |
 | `tools/box-graphics.mjs` | `82764c68d7538f1a0c752332a6ba67efe856bc1e67d6a9b3ab562e72f19184bb` |
@@ -748,7 +747,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/low-contrast-planner-fixtures.mjs` | `33026e3536e6582e41c448e7f267179574e6f5bfcb38feaff47c412e98d5c848` |
 | `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
-| `tools/metatest.mjs` | `d5f23414ef38bcbe7f9613fee384bd5e11ae25931ce44b1178176b4dbda97d81` |
+| `tools/metatest.mjs` | `979b23fefb01bed9a4e02f1b4c7fcede68bf04b537abd24ce64e663c40447f93` |
 | `tools/neighbour-verdict-fixtures.mjs` | `9213c5b11b4ad57ffe74457f22ee9fb52c44766a041b4ec2f9911c623a7c4d5a` |
 | `tools/nontext-applicability.mjs` | `3118ca77ea81d13d09ca10767b20b5ce50ce56f01460f660d08227da974356d0` |
 | `tools/nontext-baseline.mjs` | `fb4d2d2ece6d055865ff2b9aea6fd6de5e5e2ed880ed4e504769ac0d9ddf039b` |

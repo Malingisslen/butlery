@@ -24,6 +24,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
+
 // ---------------------------------------------------------------------------
 // Inputs
 
@@ -68,16 +70,16 @@ const retired = 'RETIRED';
 const unparsed = 'UNPARSED';
 
 const _transitionFixture = 'test/fixtures/design/transition_census.json';
-const _transitionSource = 'test/fixtures/design/block288-overgangar.json';
+const _transitionSource = 'design/fas2/block288-uxfrysning.json';
 const _statesFixture = 'test/fixtures/design/ux-beteende-53.json';
 const _stateFindings = 'test/views/design_states/known_state_findings.dart';
 const _a11yFindings = 'test/views/design_states/known_a11y_findings.dart';
 const _interactionFixture = 'test/widget/design_states/interaction_census.json';
 const _interactionFindings =
     'test/widget/design_states/known_interaction_findings.dart';
-const _contrastFixture = 'test/fixtures/design/contrast_pairs.json';
+const _contrastFixture = 'design/tokens.json';
 const _contrastTest = 'test/unit/theme/contrast_pairs_test.dart';
-const _tokenFixture = 'test/fixtures/design/tokens-semantic.json';
+const _tokenFixture = 'design/tokens.json';
 const _tokenTest = 'test/unit/theme/token_parity_test.dart';
 const _iconCensus = 'test/architecture/icon_census_test.dart';
 
@@ -701,7 +703,9 @@ Map<String, Object?> _transitions(CensusSource src, List<_Finding> out) {
     'status': present,
     'file': _transitionFixture,
     'required': entries.length,
-    'required_in_block288': source?['TRANSITIONS_REQUIRED'],
+    'required_in_block288': (source?['overgangar'] as List?)
+        ?.where((r) => (r as Map)['STATUS'] == 'REQUIRED')
+        .length,
     'by_status': _countBy(entries.map((e) => e['status'] as String)),
     'not_done': notDone,
     'resting': resting,
@@ -841,7 +845,7 @@ Map<String, Object?> _contrast(CensusSource src, List<_Finding> out) {
   return {
     'status': present,
     'file': _contrastFixture,
-    'tokens_sha256': (fixture['source'] as Map)['sha256'],
+    'tokens_sha256': _sha256(src.read(_contrastFixture)!),
     'pairs': pairs,
     'measured_in_both_modes': pairs - list.length,
     'unmeasurable': list,
@@ -908,7 +912,8 @@ Map<String, Object?> _tokens(CensusSource src, List<_Finding> out) {
   final semantic = fixture['semantic'] as Map<String, dynamic>;
   final ladder = [
     for (final steps in (fixture['opacityLadder'] as Map).values)
-      for (final s in steps as List) (s as num).toDouble(),
+      if (steps is List)
+        for (final s in steps) (s as num).toDouble(),
   ];
   final onLadder = <String>[];
   final offLadder = <String>[];
@@ -939,7 +944,7 @@ Map<String, Object?> _tokens(CensusSource src, List<_Finding> out) {
     'file': _tokenFixture,
     'parity_test': gaps.found ? _tokenTest : notPresent,
     'tokens_version': fixture['version'],
-    'tokens_sha256': (fixture['source'] as Map)['sha256'],
+    'tokens_sha256': _sha256(src.read(_tokenFixture)!),
     'generated_light_tokens_version': header
         .firstMatch(src.read('lib/theme/app_colors.dart') ?? '')
         ?.group(1),
@@ -1583,3 +1588,5 @@ Future<void> main(List<String> args) async {
     ..writeln('migration complete: ${v['migration_complete']}')
     ..writeln('wrote $out');
 }
+
+String _sha256(String text) => sha256.convert(utf8.encode(text)).toString();

@@ -1,7 +1,6 @@
 /// P7-U08: the Butlery icon family register (beslutslogg.md:9, B-02).
 ///
-/// - The masters in assets/icons are byte-identical to the design system's
-///   (hash list icon_masters.sha256, taken from the design repository).
+/// - design/assets/icons holds exactly one master per icons.json entry.
 /// - Every ButleryIcons member maps to an icons.json entry and embeds that
 ///   entry's master exactly (the app-side counterpart of T-05), and every
 ///   icons.json entry has a member.
@@ -15,12 +14,13 @@ import 'dart:io';
 
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _masters = 'design/assets/icons';
+
 Map<String, dynamic> _manifest() =>
-    jsonDecode(File('assets/icons/icons.json').readAsStringSync())
+    jsonDecode(File('design/icons.json').readAsStringSync())
         as Map<String, dynamic>;
 
 List<Map<String, dynamic>> _entries() {
@@ -43,28 +43,13 @@ ButleryGlyphPainter _painterOf(WidgetTester tester) {
 
 void main() {
   group('masters', () {
-    test('every master is byte-identical to the design system hash list', () {
-      final lines = File(
-        'test/widget/common/icons/icon_masters.sha256',
-      ).readAsLinesSync().where((l) => l.trim().isNotEmpty);
-      final expected = {
-        for (final l in lines)
-          l.trim().split(RegExp(r'\s+')).last: l.trim().split(
-            RegExp(r'\s+'),
-          )[0],
-      };
-      final files = Directory('assets/icons')
+    test('the masters folder holds exactly the icons.json entries', () {
+      final files = Directory(_masters)
           .listSync()
           .whereType<File>()
           .map((f) => f.uri.pathSegments.last)
           .toSet();
-      expect(files, expected.keys.toSet());
-      for (final name in expected.keys) {
-        final digest = sha256
-            .convert(File('assets/icons/$name').readAsBytesSync())
-            .toString();
-        expect(digest, expected[name], reason: name);
-      }
+      expect(files, {for (final e in _entries()) '${e['name']}.svg'});
     });
 
     test('icons.json counts 123 masters, one file each', () {
@@ -75,7 +60,7 @@ void main() {
         123,
       );
       for (final e in entries) {
-        expect(File('assets/icons/${e['name']}.svg').existsSync(), isTrue);
+        expect(File('$_masters/${e['name']}.svg').existsSync(), isTrue);
       }
     });
   });
@@ -87,7 +72,7 @@ void main() {
         expect(byName.keys, contains(g.name), reason: '$g has no entry');
         expect(
           g.svg,
-          File('assets/icons/${g.name}.svg').readAsStringSync(),
+          File('$_masters/${g.name}.svg').readAsStringSync(),
           reason: '$g does not embed its master',
         );
         expect(g.meaning, byName[g.name]!['meaning'] ?? g.name);

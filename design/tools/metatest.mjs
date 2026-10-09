@@ -1373,10 +1373,15 @@ group('M-38', () => {
 group('M-39', () => {
     const problems = [];
     const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
-    const WF = '.github/workflows/verify.yml';
+    // BUT-2202: workflowen ligger i appens repo, ett steg upp från design/.
+    // En leverans byggs utanför repot, så CI pekar ut den med
+    // BUTLERY_CI_WORKFLOW.
+    const WF = process.env.BUTLERY_CI_WORKFLOW || '../.github/workflows/design-system.yml';
     if (!existsSync(WF)) { t('M-39 · CI-jobbets körordning', false, WF + ' saknas'); return; }
     const y = readFileSync(WF, 'utf8');
-    const job = y.slice(y.indexOf('  fas1-gate:'), y.indexOf('  content-baseline:'));
+    const start = y.indexOf('  fas1-gate:');
+    const next = y.slice(start + 1).search(/^  [\w-]+:$/m);
+    const job = next < 0 ? y.slice(start) : y.slice(start, start + 1 + next);
     const steps = [...job.matchAll(/^      - name: (.+)$/gm)].map(m => m[1]);
     const at = re => steps.findIndex(s => re.test(s));
 

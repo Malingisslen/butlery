@@ -4,7 +4,7 @@ Den här filen säger var arbetet står **i dag**. Den är kort med avsikt: om d
 läser äldre sessioner, arbetsplaner eller granskningsanteckningar först får du
 en föråldrad bild.
 
-Senast uppdaterad: 2026-10-05.
+Senast uppdaterad: 2026-10-09.
 
 ---
 
@@ -39,8 +39,12 @@ frysningen.
 
 ## Migrationen till appen
 
-Appen ligger i ett **eget repo**, `C:\Butlery\butlery`. Den är byggd *mot*
-ritningen, inte *ur* den; enda avsedda kopplingen är de genererade temafilerna.
+Designsystemet ligger sedan 2026-10-09 i **appens repo**, i mappen `design/`
+(BUT-2202), med hela historiken från `Malingisslen/butlery-design-system`.
+Appen är byggd *mot* ritningen, inte *ur* den; de avsedda kopplingarna är
+temafilerna, som `tools/design_theme.dart` i appen skriver ur generatorerna
+här, och ikonmastrarna i `design/assets/icons/`, som appen läser direkt. Proven körs
+i appens CI-flöde *Design system*.
 
 Migrationen är **82 enheter i 8 paket**, mekaniskt härledda.
 

@@ -246,7 +246,7 @@ export function bygg(rot) {
     const vantade = new Set([...kontrakt.appColorsDark.members, ...kontrakt.appColorsDark.aliases]);
     for (const n of morkaNamn) if (!vantade.has(n)) fel.push('MORK_OKONTRAKTERAD:' + n);
     morkPopulation = morkaNamn.slice().sort();
-    if (/class AppColorsDark/.test(las('lib/theme/app_colors.dart'))) fel.push('LAGEN_HOPBLANDADE');
+    if (/class AppColorsDark\b/.test(las('lib/theme/app_colors.dart'))) fel.push('LAGEN_HOPBLANDADE');
   }
 
   const bindning = {

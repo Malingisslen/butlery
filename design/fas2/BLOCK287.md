@@ -213,7 +213,7 @@ skrivas. Saknas den faller skrivplansbygget stängt.
 * Låta ett kvarliggande krav bevisa att ett element är en kontroll. Ordningen är
   alltid: källbevis → semantisk klass → krav.
 * Skriva i produktkällan innan produktskrivningsgrinden öppnats.
-* Kopiera skrivplanen rakt in i applikationsrepot `C:Butleryutlery`. Det är
+* Kopiera skrivplanen rakt in i applikationsrepot `C:\Butlery\butlery`. Det är
   ett separat repo med egen historik. Underlaget här är ritningens, inte appens.
 
 ---
@@ -230,7 +230,7 @@ konstruktion pekar på det källhuvud frysningen byggdes ur. Kedjan reproducerar
 sig också byteidentiskt med omvänd filordning. Företrädarens manifest validerar
 inte längre som aktuellt.
 
-Ritningens underlag är alltså klart. Applikationen är det inte: `C:Butleryutlery`
+Ritningens underlag är alltså klart. Applikationen är det inte: `C:\Butlery\butlery`
 är ett separat repo som ännu inte är granskat mot den här frysningen.
 
 Nästa steg är en läsande granskning tvärs de två repona, följd av en separat

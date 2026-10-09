@@ -186,10 +186,6 @@ flutter:
     # byte-identical from the design system. ButleryLockup embeds the same
     # text; test/widget/common/brand/butlery_lockup_test.dart checks both.
     - assets/brand/
-    # P7-U08: the Butlery icon family masters and their inventory, copied
-    # byte-identical from the design system (B-02). ButleryIcons embeds the
-    # same text; test/widget/common/icons/butlery_icons_test.dart checks both.
-    - assets/icons/
     # OFL 1.1 condition 2: the notices and licence must reach whoever gets the
     # font. The binaries are bundled through `fonts:` below; these texts are
     # read by LicensesView (Settings → About Butlery → Licences).
