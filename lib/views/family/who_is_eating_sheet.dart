@@ -209,8 +209,8 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 // this list at the same right edge, so without this inset it
                 // covers a row's checkbox (BUT-2261). The buttons below sit
                 // lower than it and keep the full width.
-                padding: const EdgeInsets.only(
-                  right: AppDimensions.minTouchTarget + AppDimensions.paddingS,
+                padding: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.minTouchTarget + AppDimensions.paddingS,
                 ),
                 itemCount: vm.roster.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
