@@ -898,6 +898,82 @@ void main() {
       expect(notified, greaterThanOrEqualTo(1));
     });
 
+    group('acceptPantryAutoAdd (BUT-2257)', () {
+      void seedItem({required bool bought}) {
+        mockShoppingService.setShoppingState(
+          lists: [
+            ShoppingListFactory.build(
+              id: testListId,
+              ownerId: testUserId,
+              items: [
+                ShoppingListFactory.buildItem(
+                  id: 'item-1',
+                  name: 'Mjolk',
+                  bought: bought,
+                ),
+              ],
+            ),
+          ],
+          activeListId: testListId,
+          isInitialized: true,
+          currentUserId: testUserId,
+        );
+      }
+
+      test('turns the preference on, then puts the ticked row in the pantry '
+          'as a fresh check-off', () async {
+        seedItem(bought: true);
+
+        await viewModel.acceptPantryAutoAdd('item-1');
+
+        verifyInOrder([
+          () => mockUserService.setAutoAddToPantry(true),
+          () => mockCheckoff.onItemCheckedOff(
+            testUserId,
+            any(
+              that: isA<UnifiedShoppingItem>().having(
+                (i) => i.id,
+                'id',
+                'item-1',
+              ),
+            ),
+            wasBought: false,
+          ),
+        ]);
+      });
+
+      test('a row un-ticked while the prompt was open stays out of the '
+          'pantry', () async {
+        seedItem(bought: false);
+
+        await viewModel.acceptPantryAutoAdd('item-1');
+
+        verify(() => mockUserService.setAutoAddToPantry(true)).called(1);
+        verifyNever(
+          () => mockCheckoff.onItemCheckedOff(
+            any(),
+            any(),
+            wasBought: any(named: 'wasBought'),
+          ),
+        );
+      });
+
+      test('a row removed while the prompt was open stays out of the '
+          'pantry', () async {
+        seedItem(bought: true);
+
+        await viewModel.acceptPantryAutoAdd('item-gone');
+
+        verifyNever(
+          () => mockCheckoff.onItemCheckedOff(
+            any(),
+            any(),
+            wasBought: any(named: 'wasBought'),
+          ),
+        );
+      });
+    });
+
     test('markPantryAutoAddPrompted persists and notifies listeners', () async {
       var notified = 0;
       viewModel.addListener(() => notified++);

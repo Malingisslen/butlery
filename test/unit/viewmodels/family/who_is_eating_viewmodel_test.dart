@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/diner_profile.dart';
+import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/firebase/firebase_cook_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
@@ -310,5 +311,79 @@ void main() {
         );
       },
     );
+  });
+
+  group('BUT-2274 joined someone else\'s household', () {
+    const bertil = 'user-bertil';
+
+    // Bertil's household, linked to his household-marked group, with Malin
+    // in it: it outranks her own unlinked one, so it becomes her active one.
+    Future<String> joinBertilsHousehold() async {
+      final joined = Household(
+        id: 'hh-bertil',
+        name: 'Bertils hushåll',
+        members: [
+          HouseholdMember(
+            userId: bertil,
+            permission: SharedListPermission.admin,
+            addedAt: DateTime(2026),
+          ),
+          HouseholdMember(
+            userId: _malin,
+            permission: SharedListPermission.edit,
+            addedAt: DateTime(2026),
+          ),
+        ],
+        createdBy: bertil,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        sourceGroupId: 'group-bertil',
+        sourceGroupOwnerId: bertil,
+      );
+      await fs
+          .collection(FirestoreCollections.households)
+          .doc(joined.id)
+          .set(joined.toFirestore());
+      expect(
+        (await householdRepo.getActiveForUser(_malin))?.id,
+        joined.id,
+        reason: 'precondition: the joined household is the active one',
+      );
+      return joined.id;
+    }
+
+    test('on the menu\'s presence flow, her own household\'s diner can '
+        'still be ticked', () async {
+      final ownDiner = await addGuest('Lillan');
+      await joinBertilsHousehold();
+
+      final vm = WhoIsEatingViewModel();
+      await vm.load(seedMemberIds: [ownDiner], allowCreateHousehold: false);
+
+      expect(vm.hasError, isFalse);
+      expect(
+        vm.roster.map((m) => m.memberId),
+        containsAll([bertil, _malin, ownDiner]),
+      );
+      expect(
+        vm.roster.where((m) => m.memberId == _malin),
+        hasLength(1),
+        reason: 'Malin is on both rosters but is one person',
+      );
+      expect(vm.isSelected(ownDiner), isTrue);
+    });
+
+    test('the cook log offers only the active household, the one the family '
+        'rating that follows it rates against', () async {
+      final ownDiner = await addGuest('Lillan');
+      await joinBertilsHousehold();
+
+      final vm = WhoIsEatingViewModel();
+      await vm.load();
+
+      expect(vm.hasError, isFalse);
+      expect(vm.roster.map((m) => m.memberId), containsAll([bertil, _malin]));
+      expect(vm.roster.map((m) => m.memberId), isNot(contains(ownDiner)));
+    });
   });
 }
