@@ -113,7 +113,7 @@ Conversation _directConversation({
 Conversation _groupConversation({
   required String id,
   required String title,
-  String groupId = 'chat-group-77',
+  String? groupId = 'chat-group-77',
 }) {
   final created = DateTime(2026, 6, 2, 12);
   return Conversation(
@@ -531,6 +531,8 @@ void main() {
         await tester.longPress(find.byType(ConversationListItem));
         await tester.pumpAndSettle();
 
+        expect(find.text('Lämna grupp'), findsOneWidget);
+
         namedRoutes.clear();
         recorder.pushed.clear(); // drop the bottom sheet's own route
         await tester.tap(find.text('Gruppinformation'));
@@ -569,6 +571,31 @@ void main() {
           find.byType(ConversationsListView, skipOffstage: false),
           findsOneWidget,
         );
+      },
+    );
+
+    testWidgets(
+      'a group conversation without a chat group offers no Lämna gruppen',
+      (tester) async {
+        // A legacy group conversation: `isGroup` set, `groupId` never written.
+        // Leaving it reaches `leaveGroup`, which throws without a chat group.
+        await pumpView(tester);
+        await tester.pump();
+
+        conversationsController.add([
+          _groupConversation(
+            id: conversationId,
+            title: 'Gamla gänget',
+            groupId: null,
+          ),
+        ]);
+        await tester.pumpAndSettle();
+
+        await tester.longPress(find.byType(ConversationListItem));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Gruppinformation'), findsOneWidget);
+        expect(find.text('Lämna grupp'), findsNothing);
       },
     );
 
