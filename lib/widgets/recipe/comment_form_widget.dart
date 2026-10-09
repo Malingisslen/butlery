@@ -332,6 +332,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 icon: const ButleryIcon(ButleryIcons.camera),
               ),
             IconButton(
+              tooltip: context.l10n.commonSend,
               onPressed: _canSend ? _onSendPressed : null,
               // Busy: the plate line in the button's place, never a
               // spinner (Grafisk manual v6:209).
