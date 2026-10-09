@@ -56,8 +56,6 @@ void main() {
     });
   });
 
-  // The header's view-mode toggle overflows to the right at this text size on
-  // its own, so the planning panel is judged by what overflows at the bottom.
   Future<void> cancelPlanningAt(
     WidgetTester tester, {
     required Size screen,
@@ -81,11 +79,9 @@ void main() {
       FlutterError.onError = previous;
 
       expect(
-        reported.where(
-          (r) => r.contains('overflowed') && r.contains('on the bottom'),
-        ),
+        reported.where((r) => r.contains('overflowed')),
         isEmpty,
-        reason: 'something in the planning view overflows at the bottom',
+        reason: 'something in the planning view overflows',
       );
 
       final cancel = find.byKey(VeckomenyPlanningCancelFooter.buttonKey);
@@ -113,6 +109,25 @@ void main() {
       tester,
       screen: const Size(400, 900),
       textScale: 2.0,
+    );
+  });
+
+  // BUT-2341: on a small phone the page top took the whole height.
+  testWidgets('on a 320 x 568 phone at the largest text size the cancel '
+      'button is scrolled into view and cancels the planning', (tester) async {
+    await cancelPlanningAt(
+      tester,
+      screen: const Size(320, 568),
+      textScale: 2.0,
+    );
+  });
+
+  testWidgets('on a 320 x 568 phone at 150 % text the cancel button is '
+      'scrolled into view and cancels the planning', (tester) async {
+    await cancelPlanningAt(
+      tester,
+      screen: const Size(320, 568),
+      textScale: 1.5,
     );
   });
 }
