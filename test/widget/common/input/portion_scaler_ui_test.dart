@@ -98,6 +98,25 @@ void main() {
       expect(find.text('4'), findsOneWidget);
     });
 
+    // BUT-2310: the app sets proportional figures by default; the counter
+    // keeps tabular ones so the row does not shift as the number changes.
+    testWidgets('the portion count uses tabular figures', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const _Host(
+            currentPortions: 4,
+            originalPortions: 4,
+            convertToSwedish: false,
+            hasAmericanUnits: false,
+          ),
+        ),
+      );
+      expect(
+        tester.widget<Text>(find.text('4')).style?.fontFeatures,
+        contains(const FontFeature.tabularFigures()),
+      );
+    });
+
     testWidgets('renders + and - icon buttons', (tester) async {
       await tester.pumpWidget(
         _wrap(
