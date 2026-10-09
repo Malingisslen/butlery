@@ -281,10 +281,23 @@ class ShoppingItemOperationsModule {
     String listId,
     List<UnifiedShoppingItem> items,
   ) async {
-    final uid = requireCurrentUserId();
-
     // Verify list exists and user has access
     final list = await _requireList(listId);
+    await addItemsBatchToList(list, items);
+  }
+
+  /// [addItemsBatch] for a caller that already holds [list] — the repository's
+  /// `create`, straight after writing it.
+  ///
+  /// BUT-1743: re-reading by id probes the SHARED collection first, and for a
+  /// personal list's id the rules deny that read, so every personal list
+  /// created with items paid a denied read and logged a permission warning.
+  Future<void> addItemsBatchToList(
+    UnifiedShoppingList list,
+    List<UnifiedShoppingItem> items,
+  ) async {
+    final uid = requireCurrentUserId();
+    final listId = list.id;
 
     if (items.isEmpty) return;
 

@@ -5,7 +5,7 @@
 /// **Architecture:**
 /// - Main ViewModel: Service coordination, list management, error handling
 /// - ShoppingAnalyticsManager: Insights, statistics, export functionality
-/// - ShoppingItemOperationsManager: Search, grouping, bulk operations
+/// - ShoppingItemOperationsManager: Search, grouping
 /// **Usage:**
 /// ```dart
 /// final viewModel = UnifiedShoppingViewModel();

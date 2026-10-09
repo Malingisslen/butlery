@@ -570,10 +570,9 @@ void main() {
     });
 
     /// BUT-1681: this is the path "lägg till receptets ingredienser" really
-    /// takes, and
-    /// it emitted nothing at all. It now emits ONE event carrying the source
-    /// and the row count — not one per row, which for a 20-ingredient recipe
-    /// would be 20x the analytics cost for the same answer.
+    /// takes. It emits ONE event carrying the source and the row count — not
+    /// one per row, which for a 20-ingredient recipe would be 20x the
+    /// analytics cost for the same answer.
     test('a recipe bulk-add emits one tagged item-added event', () async {
       final loggedEvents = registerAnalyticsSpy();
       final listId = await service.createPersonalList('L');
