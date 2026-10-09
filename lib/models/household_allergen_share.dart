@@ -113,6 +113,16 @@ class HouseholdAllergenShare {
   /// actual path. "Fixing" this to read the path instead would turn that check
   /// into a tautology and the forgery test into a vacuous one.
   factory HouseholdAllergenShare.fromMap(String id, Map<String, dynamic> data) {
+    final migrated = UserAllergenPreferences.migrateLegacyDietary(
+      allergens: SerializationUtils.safeStringList(
+        data,
+        'trackedAllergens',
+      ).map(UserAllergenPreferences.normalizeAllergenKey).toSet(),
+      dietary: SerializationUtils.safeStringList(
+        data,
+        'trackedDietary',
+      ).map(UserAllergenPreferences.normalizeAllergenKey).toSet(),
+    );
     return HouseholdAllergenShare(
       householdId: SerializationUtils.safeString(data, 'householdId'),
       userId: SerializationUtils.safeString(data, 'userId'),
@@ -123,14 +133,8 @@ class HouseholdAllergenShare {
       // Normalised the way every other allergen read normalises: a legacy
       // ASCII `mjolk` that stayed raw would match nothing downstream, so the
       // allergen would disappear instead of failing loud.
-      trackedAllergens: SerializationUtils.safeStringList(
-        data,
-        'trackedAllergens',
-      ).map(UserAllergenPreferences.normalizeAllergenKey).toSet(),
-      trackedDietary: SerializationUtils.safeStringList(
-        data,
-        'trackedDietary',
-      ).map(UserAllergenPreferences.normalizeAllergenKey).toSet(),
+      trackedAllergens: migrated.allergens,
+      trackedDietary: migrated.dietary,
       // Fails SAFE: a missing flag means "exclude unverified recipes", the
       // cautious reading, matching the degraded household path.
       includeUnknownInMenu: SerializationUtils.safeBool(
