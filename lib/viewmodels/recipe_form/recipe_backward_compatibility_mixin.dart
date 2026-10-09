@@ -246,9 +246,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     return permissionManager.editModeEnum;
   }
 
-  /// Check if in edit mode
-  bool get isEditMode => permissionManager.canEdit;
-
   /// Function getter for adding image URL
   Function(String) get addImageUrlFunc => addImageFromUrl;
 
