@@ -309,6 +309,8 @@ class _AuthViewState extends State<AuthView> {
                   controller: _passwordController,
                   focusNode: _passwordFocus,
                   obscureText: !viewModel.isPasswordVisible,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _handleSubmit(viewModel),
                   enabled: !viewModel.isLoading,
                   decoration: _inputDecoration(
                     hint: viewModel.isLoginMode
@@ -682,7 +684,22 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
+  // Set synchronously: the viewmodel's busy flag only turns on after the
+  // service's first await, so a double tap or Enter plus a tap would otherwise
+  // run the whole submit (and the login navigation) twice.
+  bool _submitting = false;
+
   Future<void> _handleSubmit(AuthViewModel viewModel) async {
+    if (_submitting) return;
+    _submitting = true;
+    try {
+      await _runSubmit(viewModel);
+    } finally {
+      _submitting = false;
+    }
+  }
+
+  Future<void> _runSubmit(AuthViewModel viewModel) async {
     viewModel.clearError();
 
     if (!_submitAttempted) setState(() => _submitAttempted = true);

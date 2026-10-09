@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -19,35 +20,13 @@ class OnboardingAllergenPage extends StatefulWidget {
 class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
   bool _showAll = false;
 
-  /// Primary allergens (most common, always visible).
-  static const List<String> _primaryAllergens = [
-    'gluten',
-    'mjölk',
-    'nötter',
-    'ägg',
-    'soja',
-    'fisk',
-    'skaldjur',
-    'sesam',
-  ];
+  static const List<String> _primaryAllergens =
+      AllergenPreferenceOptions.primaryAllergenKeys;
 
-  /// Extended allergens (remaining EU-14 + lactose).
-  static const List<String> _extendedAllergens = [
-    'laktos',
-    'selleri',
-    'senap',
-    'lupin',
-    'sulfiter',
-    'jordnötter',
-    'trädnötter',
-    'kräftdjur',
-    'blötdjur',
-  ];
-
-  /// All allergens combined (precomputed to avoid per-build allocation).
-  static const List<String> _allAllergens = [
-    ..._primaryAllergens,
-    ..._extendedAllergens,
+  /// Everything Settings offers beyond the primary ones, from the same list.
+  static final List<String> _allAllergens = [
+    ...AllergenPreferenceOptions.primaryAllergenKeys,
+    ...AllergenPreferenceOptions.extendedAllergenKeys,
   ];
 
   static String _allergenLabel(BuildContext context, String key) {
@@ -70,7 +49,7 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
       'trädnötter' => l10n.onboardingAllergenTreeNut,
       'kräftdjur' => l10n.onboardingAllergenCrustacean,
       'blötdjur' => l10n.onboardingAllergenMollusc,
-      _ => key,
+      _ => AllergenPreferenceOptions.getAllergenLabel(key),
     };
   }
 

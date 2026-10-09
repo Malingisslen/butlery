@@ -16,8 +16,6 @@ class OnboardingDietaryPage extends StatelessWidget {
     'vegetarisk',
     'vegansk',
     'pescetarian',
-    'glutenfri',
-    'laktosfri',
     'halalanpassad',
     'kosheranpassad',
   ];
@@ -28,8 +26,6 @@ class OnboardingDietaryPage extends StatelessWidget {
       'vegetarisk' => l10n.onboardingDietaryVegetarian,
       'vegansk' => l10n.onboardingDietaryVegan,
       'pescetarian' => l10n.onboardingDietaryPescetarian,
-      'glutenfri' => l10n.onboardingDietaryGlutenFree,
-      'laktosfri' => l10n.onboardingDietaryLactoseFree,
       'halalanpassad' => l10n.onboardingDietaryHalal,
       'kosheranpassad' => l10n.onboardingDietaryKosher,
       _ => key,
@@ -42,8 +38,6 @@ class OnboardingDietaryPage extends StatelessWidget {
       'vegetarisk' => l10n.onboardingDietaryVegetarianDesc,
       'vegansk' => l10n.onboardingDietaryVeganDesc,
       'pescetarian' => l10n.onboardingDietaryPescetarianDesc,
-      'glutenfri' => l10n.onboardingDietaryGlutenFreeDesc,
-      'laktosfri' => l10n.onboardingDietaryLactoseFreeDesc,
       'halalanpassad' => l10n.onboardingDietaryHalalDesc,
       'kosheranpassad' => l10n.onboardingDietaryKosherDesc,
       _ => '',
@@ -56,7 +50,7 @@ class OnboardingDietaryPage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     // Scrollable so landscape phones (~360dp height) don't overflow the
-    // 7 dietary cards + title block. Portrait already fits — scroll is a no-op.
+    // the dietary cards + title block. Portrait already fits — scroll is a no-op.
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.layoutMarginOf(context),
