@@ -40227,3 +40227,13 @@ New `test/widget/widgets/menu/menu_slot_vote_section_test.dart`: real `MenuVotin
 - 320x568 text 2.0, measured with the fix in place: header Column (veckomeny_view.dart body Column) overflowed 115 px bottom, panel scroll viewport 0 high, cancel rect top at 1050 on a 568 screen. Same size with Align restored: only the header overflow reported. At 1.5 the viewport was 29 high. The view-mode toggle overflows 93 px to the right at 320 and 61 at 360 by itself. The small-phone test is committed as a named skip.
 - Generator cancel after later awaits: checks after pool, recent ids and scoring context each killed by a dedicated case; the pantry read is the observable that separates the recent-ids check from the scoring-context check (otherwise the later check subsumes it). The generator resolves PantryService through the PRODUCTION ServiceLocator, so the group needs prod.ServiceLocator.initialize(DIContainer()).
 
+### 2026-10-09 — BUT-2157 week-menu draft resume card tests (trigger: new widget semantics, writer/reader twin filter, arch guard)
+New: `test/unit/models/menu/weekly_menu_draft_test.dart` (4), `test/widget/menu/veckomeny_draft_resume_card_test.dart` (13), `test/views/flows/veckomeny_draft_resume_test.dart` (11, draft seeded through `WeeklyMenuDraftStore` over `setMockInitialValues`, whole test inside `withClock(Clock.fixed(flowMonday))`). Touched: `menu_viewmodel_cancel_draft_test.dart` (+3, now 16) and `flow_08_transitions_test.dart` (the reopen step asserted `Middag 1` findsNothing, which the real card now falsifies; the card is asserted instead). Findings for production (lib/ untouched): `veckomeny_draft_resume_card.dart` `?? ''` in `dayNames` fails `architecture_test.dart` "no raw `?? ''`" (BUT-581); the day-cell labels merge into one card node that is also `isHeader`. Equivalent mutant: dropping `recipe.title.isNotEmpty` in `_write` stays green through `store.load` because `fromJson` drops empty names; pinned with the raw JSON. A weekday set test is rotation-blind: `DateTime(2024,1,2+day)` kept it green until the test compared x positions.
+Retired verbatim from widgets-ui to make room:
+- **A blanket `FlutterError.onError = (_) {}` near `matchesGoldenFile` makes every golden a PERMANENT
+  PASS** — the comparator reports by THROWING, `runAsync` catches it and returns `null`, and `null`
+  is the matcher's word for "matched". The on-disk symptom is a golden whose DIMENSIONS disagree with
+  the helper's pinned surface. Filter on `details.library == 'image resource service'` instead.
+  Pinning the FILTER is not pinning the CALL SITE — the durable guard is a source lint in
+  `test/architecture/`, which must strip comments first. **Re-check every claim written while a check
+  was silenced** (BUT-1931).

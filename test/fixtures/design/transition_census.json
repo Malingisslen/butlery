@@ -1506,7 +1506,7 @@
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md says a button names its goal and Fortsätt is not one. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
+      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md says a button names its goal and Fortsätt is not one. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::avbryt-behaller",
@@ -1527,7 +1527,7 @@
         }
       ],
       "ticket": null,
-      "reason": "New test on the real auto-save manager. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
+      "reason": "New test on the real auto-save manager. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::livstid-utgangen",
@@ -1551,7 +1551,7 @@
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (D-01: 30 days since the last change). BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
+      "reason": "Existing tests (D-01: 30 days since the last change). BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::skapas",
@@ -1600,7 +1600,7 @@
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
+      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::utloggning-raderar",
@@ -1629,7 +1629,7 @@
         }
       ],
       "ticket": null,
-      "reason": "Existing tests. BUT-2157: the week generation's draft is covered on the real week menu too (no resume prompt is drawn yet, so the restore and discard steps run on the screen's MenuViewModel)."
+      "reason": "Existing tests. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utloggning-med-ko::blockeras",
