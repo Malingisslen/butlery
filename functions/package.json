@@ -120,6 +120,7 @@
     "test:cleanup-system-events": "ts-node src/__tests__/cleanup-system-events.test.ts",
     "test:cleanup-recipe-storage": "ts-node src/__tests__/cleanup-recipe-storage.test.ts",
     "test:cleanup-trash-storage": "ts-node src/__tests__/cleanup-trash-storage.test.ts",
+    "test:cleanup-row-images": "ts-node src/__tests__/cleanup-row-images.test.ts",
     "test:recipe-reference-cleanup": "ts-node src/__tests__/recipe-reference-cleanup.test.ts",
     "test:export-audit-logs": "ts-node src/__tests__/export-audit-logs.test.ts",
     "test:export-mfa-recovery-data": "ts-node src/__tests__/export-mfa-recovery-data.test.ts",
