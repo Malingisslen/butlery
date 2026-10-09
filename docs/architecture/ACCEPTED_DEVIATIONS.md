@@ -5916,6 +5916,9 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   the text, the copy is the only version left and is still withheld. The moderation-counters
   section's `data_minimisation` says a copy may be kept and why it is not included.
   Awaiting Malin's confirmation on the decision card in the BUT-1842 thread.
+- **Resolved 2026-10-09 — Malin:** the copy stays out of the reported person's Art. 15
+  bundle, and the privacy policy's retention table names it before it is switched on.
+  Retires "Awaiting Malin's confirmation on the decision card in the BUT-1842 thread."
 - **Known gaps, not built here:** no preserve state that would keep a serious case's copy
   past 180 days; a closed report records no outcome of the moderator's action once its copy
   is gone; report creation has no server-side throttle, so each report now also costs one
