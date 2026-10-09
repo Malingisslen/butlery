@@ -29176,6 +29176,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lägg i lista'**
   String get shoppingAddToListHeading;
+
+  /// BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade inga ingredienser. Lägg till dem själv nedan.'**
+  String get recipeImportNoIngredientsNotice;
 }
 
 class _AppLocalizationsDelegate

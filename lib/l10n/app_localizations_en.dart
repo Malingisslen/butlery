@@ -17793,4 +17793,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingAddToListHeading => 'Add to list';
+
+  @override
+  String get recipeImportNoIngredientsNotice =>
+      'We found no ingredients. Add them yourself below.';
 }

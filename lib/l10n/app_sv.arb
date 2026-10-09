@@ -14059,5 +14059,9 @@
       }
     }
   },
-  "shoppingAddToListHeading": "Lägg i lista"
+  "shoppingAddToListHeading": "Lägg i lista",
+  "recipeImportNoIngredientsNotice": "Vi hittade inga ingredienser. Lägg till dem själv nedan.",
+  "@recipeImportNoIngredientsNotice": {
+    "description": "BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists."
+  }
 }

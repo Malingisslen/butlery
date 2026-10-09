@@ -17812,4 +17812,8 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingAddToListHeading => 'Lägg i lista';
+
+  @override
+  String get recipeImportNoIngredientsNotice =>
+      'Vi hittade inga ingredienser. Lägg till dem själv nedan.';
 }
