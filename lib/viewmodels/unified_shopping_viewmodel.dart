@@ -653,6 +653,10 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     );
   }
 
+  /// The category the user once moved [itemName] to, or null.
+  String? savedCategoryFor(String itemName) =>
+      _shoppingService.categoryPreferences.getUserCategoryOverride(itemName);
+
   /// Move an item to a different category (updates item + saves user override)
   Future<bool> moveItemToCategory(String itemId, String newCategory) async {
     if (!canEditActiveList) return false;
