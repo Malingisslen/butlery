@@ -85,7 +85,7 @@ class EmojiSelector extends StatelessWidget {
                 final isSelected = emoji == selectedEmoji;
 
                 return Semantics(
-                  label: context.l10n.a11yEmojiPicker(emoji),
+                  label: context.l10n.a11yEmojiPicker,
                   button: true,
                   selected: isSelected,
                   child: GestureDetector(

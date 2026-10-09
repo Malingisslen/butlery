@@ -13552,8 +13552,8 @@ abstract class AppLocalizations {
   /// No description provided for @a11ySharedShoppingList.
   ///
   /// In sv, this message translates to:
-  /// **'Delad inköpslista: {listName}'**
-  String a11ySharedShoppingList(String listName);
+  /// **'Delad inköpslista'**
+  String get a11ySharedShoppingList;
 
   /// No description provided for @a11yPrimaryImageTap.
   ///
@@ -13678,20 +13678,14 @@ abstract class AppLocalizations {
   /// No description provided for @a11yShoppingList.
   ///
   /// In sv, this message translates to:
-  /// **'Inköpslista: {name}'**
-  String a11yShoppingList(String name);
+  /// **'Inköpslista'**
+  String get a11yShoppingList;
 
   /// No description provided for @a11yFriend.
   ///
   /// In sv, this message translates to:
-  /// **'Vän: {name}'**
-  String a11yFriend(String name);
-
-  /// No description provided for @a11yFriendRequest.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänförfrågan'**
-  String get a11yFriendRequest;
+  /// **'Vän'**
+  String get a11yFriend;
 
   /// No description provided for @a11yFilterTag.
   ///
@@ -13756,14 +13750,14 @@ abstract class AppLocalizations {
   /// No description provided for @a11ySharedRecipe.
   ///
   /// In sv, this message translates to:
-  /// **'Delat recept: {title}'**
-  String a11ySharedRecipe(String title);
+  /// **'Delat recept'**
+  String get a11ySharedRecipe;
 
   /// No description provided for @a11ySharedMenu.
   ///
   /// In sv, this message translates to:
-  /// **'Delad meny: {title}'**
-  String a11ySharedMenu(String title);
+  /// **'Delad meny'**
+  String get a11ySharedMenu;
 
   /// No description provided for @a11yRemoveProfileImage.
   ///
@@ -14746,8 +14740,8 @@ abstract class AppLocalizations {
   /// No description provided for @a11yBlockedUserSelect.
   ///
   /// In sv, this message translates to:
-  /// **'Markera blockerad användare {name}'**
-  String a11yBlockedUserSelect(String name);
+  /// **'Markera blockerad användare'**
+  String get a11yBlockedUserSelect;
 
   /// No description provided for @retagFetchingRecipes.
   ///
@@ -24557,11 +24551,11 @@ abstract class AppLocalizations {
   /// **'Matlagningsbild av {name}, långtryck för alternativ'**
   String a11yCookSnapOptions(String name);
 
-  /// Semantics label for a conversation list item.
+  /// No description provided for @a11yConversationOpen.
   ///
   /// In sv, this message translates to:
-  /// **'Konversation med {name}, tryck för att öppna'**
-  String a11yConversationOpen(String name);
+  /// **'Öppna konversationen'**
+  String get a11yConversationOpen;
 
   /// Semantics label for a menu vote option tile.
   ///
@@ -24575,11 +24569,11 @@ abstract class AppLocalizations {
   /// **'{name}, din röst.'**
   String a11yMenuVoteOptionSelected(String name);
 
-  /// Semantics label for the activity-ping acknowledge row.
+  /// No description provided for @a11yPingAcknowledge.
   ///
   /// In sv, this message translates to:
-  /// **'Bekräfta notis från {name}'**
-  String a11yPingAcknowledge(String name);
+  /// **'Bekräfta notis'**
+  String get a11yPingAcknowledge;
 
   /// Semantics label for an assigned recipe cell in the calendar weekly menu.
   ///
@@ -24629,11 +24623,11 @@ abstract class AppLocalizations {
   /// **'Byt ut mot {name} i receptet'**
   String a11yReplaceWithSubstitute(String name);
 
-  /// Semantics label for the friends/groups tab buttons in the share-target picker.
+  /// No description provided for @a11yShareTabSwitch.
   ///
   /// In sv, this message translates to:
-  /// **'Visa {label}'**
-  String a11yShareTabSwitch(String label);
+  /// **'Visa'**
+  String get a11yShareTabSwitch;
 
   /// Semantics label for the add-pantry-item floating action button on the pantry view.
   ///
@@ -24659,23 +24653,17 @@ abstract class AppLocalizations {
   /// **'{title}, tryck för att återställa'**
   String a11yDraftRecoverTile(String title);
 
-  /// Semantics label for the static-copy share-mode option in the universal share dialog.
+  /// No description provided for @a11yShareModeOption.
   ///
   /// In sv, this message translates to:
-  /// **'Statisk kopia, tryck för att välja'**
-  String get a11yShareModeStaticCopy;
+  /// **'Tryck för att välja'**
+  String get a11yShareModeOption;
 
-  /// Semantics label for the realtime sharing option in the universal share dialog.
+  /// No description provided for @a11yFriendRequestIncoming.
   ///
   /// In sv, this message translates to:
-  /// **'Realtidsdelning, tryck för att välja'**
-  String get a11yShareModeRealtime;
-
-  /// Semantics label for an incoming friend-request card row.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänförfrågan från {name}, tryck för att markera'**
-  String a11yFriendRequestIncoming(String name);
+  /// **'Vänförfrågan, tryck för att markera'**
+  String get a11yFriendRequestIncoming;
 
   /// Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.
   ///
@@ -24689,59 +24677,53 @@ abstract class AppLocalizations {
   /// **'Avböj {name}'**
   String a11yDeclineFriendRequestFrom(String name);
 
-  /// Semantics label for a sent friend-request card row.
+  /// No description provided for @a11yFriendRequestSent.
   ///
   /// In sv, this message translates to:
-  /// **'Skickad förfrågan till {name}, tryck för att markera'**
-  String a11yFriendRequestSent(String name);
+  /// **'Skickad förfrågan, tryck för att markera'**
+  String get a11yFriendRequestSent;
 
-  /// Semantics label for a feed filter chip in the friends activity feed.
+  /// No description provided for @a11yFeedFilter.
   ///
   /// In sv, this message translates to:
-  /// **'Filtrera flödet på {label}'**
-  String a11yFeedFilter(String label);
+  /// **'Filtrera flödet'**
+  String get a11yFeedFilter;
 
-  /// Semantics label for the recipe preview tile inside an activity feed event card.
+  /// No description provided for @a11yFeedRecipePreview.
   ///
   /// In sv, this message translates to:
-  /// **'Visa receptet {title}'**
-  String a11yFeedRecipePreview(String title);
+  /// **'Visa receptet'**
+  String get a11yFeedRecipePreview;
 
-  /// Semantics label for a recipe card on a public profile view.
+  /// No description provided for @a11yPublicProfileRecipeCard.
   ///
   /// In sv, this message translates to:
-  /// **'Öppna receptet {title}'**
-  String a11yPublicProfileRecipeCard(String title);
+  /// **'Öppna receptet'**
+  String get a11yPublicProfileRecipeCard;
 
   /// Semantics label for the collapsible header of the blocked users section in privacy settings.
   ///
   /// In sv, this message translates to:
-  /// **'Blockerade användare, tryck för att visa eller dölja listan'**
+  /// **'Visa eller dölj listan'**
   String get a11yBlockedUsersToggle;
 
-  /// Semantics label for an invitation target card (friend or group) in the invite picker.
+  /// No description provided for @a11yInvitationTargetCard.
   ///
   /// In sv, this message translates to:
-  /// **'Bjud in {name}'**
-  String a11yInvitationTargetCard(String name);
+  /// **'Bjud in'**
+  String get a11yInvitationTargetCard;
 
-  /// Semantics label for the collaborative permissions banner on a recipe or menu.
+  /// No description provided for @a11yPermissionsBanner.
   ///
   /// In sv, this message translates to:
-  /// **'Behörighet: {description}'**
-  String a11yPermissionsBanner(String description);
+  /// **'Behörighet'**
+  String get a11yPermissionsBanner;
 
-  /// Semantics label for the collaborative-context banner showing title + subtitle.
+  /// No description provided for @a11yEmojiPicker.
   ///
   /// In sv, this message translates to:
-  /// **'{title}, {subtitle}'**
-  String a11yCollaborativeBanner(String title, String subtitle);
-
-  /// Semantics label for an emoji option in the group icon picker.
-  ///
-  /// In sv, this message translates to:
-  /// **'Välj {emoji} som ikon'**
-  String a11yEmojiPicker(String emoji);
+  /// **'Välj som ikon'**
+  String get a11yEmojiPicker;
 
   /// Semantics label for the close icon on an ingredient chip in the search input.
   ///
@@ -24806,7 +24788,7 @@ abstract class AppLocalizations {
   /// Semantics label for the archived-conversations expand/collapse row in the messaging list.
   ///
   /// In sv, this message translates to:
-  /// **'Arkiverade konversationer'**
+  /// **'Visa eller dölj konversationerna'**
   String get a11yArchivedConversationsToggle;
 
   /// Semantics label for the recipe detail hero image which opens a fullscreen viewer when tapped.
@@ -24851,23 +24833,17 @@ abstract class AppLocalizations {
   /// **'{label}'**
   String a11yWeeklyMenuViewModeToggle(String label);
 
-  /// Semantics label for a poll option tap target in chat messages.
+  /// No description provided for @a11yPollVoteOption.
   ///
   /// In sv, this message translates to:
-  /// **'Rösta på {label}'**
-  String a11yPollVoteOption(String label);
+  /// **'Rösta'**
+  String get a11yPollVoteOption;
 
   /// Semantics label for the recipe thumbnail tappable in poll options.
   ///
   /// In sv, this message translates to:
   /// **'Visa receptet {title}'**
   String a11yPollRecipeThumbnail(String title);
-
-  /// Semantics label for the send button in the ping compose sheet.
-  ///
-  /// In sv, this message translates to:
-  /// **'Skicka notis'**
-  String get a11yPingComposeSend;
 
   /// Snackbar confirming an ingredient substitution was saved to the recipe during cooking mode.
   ///
@@ -25316,8 +25292,8 @@ abstract class AppLocalizations {
   /// No description provided for @a11yToggleDiner.
   ///
   /// In sv, this message translates to:
-  /// **'Växla om {name} åt'**
-  String a11yToggleDiner(String name);
+  /// **'Markera'**
+  String get a11yToggleDiner;
 
   /// No description provided for @menuPresenceSheetTitle.
   ///
@@ -25538,14 +25514,14 @@ abstract class AppLocalizations {
   /// No description provided for @a11yToggleRatingBreakdown.
   ///
   /// In sv, this message translates to:
-  /// **'Visa eller dölj betygsöversikt'**
+  /// **'Visa eller dölj översikten'**
   String get a11yToggleRatingBreakdown;
 
   /// No description provided for @a11yEditMemberRating.
   ///
   /// In sv, this message translates to:
-  /// **'Ändra betyg för {name}'**
-  String a11yEditMemberRating(String name);
+  /// **'Ändra betyg'**
+  String get a11yEditMemberRating;
 
   /// Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143).
   ///

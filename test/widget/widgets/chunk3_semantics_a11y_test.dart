@@ -22,6 +22,7 @@ import 'package:butlery/widgets/recipe/heirloom_section.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   setUpAll(() async {
@@ -196,10 +197,10 @@ void main() {
 
         // Tab labels render their visible text inside the Semantics wrapper.
         // Both "Vänner" and "Grupper" tabs should expose a switch label.
-        expect(
-          find.bySemanticsLabel(RegExp(r'Visa ')),
-          findsWidgets,
-        );
+        final tab = find.bySemanticsLabel(RegExp(r'^Visa\nVänner'));
+        expect(tab, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, tab);
+        expectActivatable(tester, tab);
         handle.dispose();
       },
     );

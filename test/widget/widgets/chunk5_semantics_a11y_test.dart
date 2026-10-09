@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/social_components/social_builder_componen
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   setUpAll(() async {
@@ -55,10 +56,9 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Bjud in Anna')),
-          findsOneWidget,
-        );
+        final card = find.bySemanticsLabel(RegExp(r'^Bjud in\nAnna'));
+        expect(card, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, card);
         handle.dispose();
       },
     );
@@ -88,10 +88,9 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Bjud in Familjen')),
-          findsOneWidget,
-        );
+        final card = find.bySemanticsLabel(RegExp(r'^Bjud in\nFamiljen'));
+        expect(card, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, card);
         handle.dispose();
       },
     );

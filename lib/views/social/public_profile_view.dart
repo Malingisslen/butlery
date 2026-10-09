@@ -385,7 +385,7 @@ class _PublicRecipeCard extends StatelessWidget {
       child: CardContent(
         padding: EdgeInsets.zero,
         child: Semantics(
-          label: context.l10n.a11yPublicProfileRecipeCard(recipe.title),
+          label: context.l10n.a11yPublicProfileRecipeCard,
           button: true,
           child: InkWell(
             onTap: () {

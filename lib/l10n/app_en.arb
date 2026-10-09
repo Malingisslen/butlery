@@ -5704,14 +5704,7 @@
       }
     }
   },
-  "a11ySharedShoppingList": "Shared shopping list: {listName}",
-  "@a11ySharedShoppingList": {
-    "placeholders": {
-      "listName": {
-        "type": "String"
-      }
-    }
-  },
+  "a11ySharedShoppingList": "Shared shopping list",
   "a11yPrimaryImageTap": "Primary image, tap to view full size",
   "a11ySelectAsPrimary": "Select as primary image",
   "a11yAddImage": "Add image",
@@ -5765,23 +5758,8 @@
     "description": "BUT-902."
   },
   "a11yChangeProfileImage": "Change profile image",
-  "a11yShoppingList": "Shopping list: {name}",
-  "@a11yShoppingList": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriend": "Friend: {name}",
-  "@a11yFriend": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriendRequest": "Friend request",
+  "a11yShoppingList": "Shopping list",
+  "a11yFriend": "Friend",
   "a11yFilterTag": "Filter by {tagName}, {status}",
   "@a11yFilterTag": {
     "placeholders": {
@@ -5833,22 +5811,8 @@
       }
     }
   },
-  "a11ySharedRecipe": "Shared recipe: {title}",
-  "@a11ySharedRecipe": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11ySharedMenu": "Shared menu: {title}",
-  "@a11ySharedMenu": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
+  "a11ySharedRecipe": "Shared recipe",
+  "a11ySharedMenu": "Shared menu",
   "a11yRemoveProfileImage": "Remove profile image",
   "a11yMenu": "Menu: {title}",
   "@a11yMenu": {
@@ -6168,14 +6132,7 @@
       }
     }
   },
-  "a11yBlockedUserSelect": "Select blocked user {name}",
-  "@a11yBlockedUserSelect": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yBlockedUserSelect": "Select blocked user",
   "retagFetchingRecipes": "Fetching recipes …",
   "retagRetaggingRecipes": "Retagging recipes",
   "retagRetaggingProgress": "Retagging {current} of {total} recipes...",
@@ -10582,15 +10539,7 @@
       }
     }
   },
-  "a11yConversationOpen": "Conversation with {name}, tap to open",
-  "@a11yConversationOpen": {
-    "description": "Semantics label for a conversation list item.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yConversationOpen": "Open conversation",
   "a11yMenuVoteOption": "Vote for {name}",
   "@a11yMenuVoteOption": {
     "description": "Semantics label for a menu vote option tile.",
@@ -10609,15 +10558,7 @@
       }
     }
   },
-  "a11yPingAcknowledge": "Acknowledge notification from {name}",
-  "@a11yPingAcknowledge": {
-    "description": "Semantics label for the activity-ping acknowledge row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPingAcknowledge": "Acknowledge notification",
   "a11yMenuPlanRecipeOpen": "{title}, tap to open the recipe",
   "@a11yMenuPlanRecipeOpen": {
     "description": "Semantics label for an assigned recipe cell in the calendar weekly menu.",
@@ -10680,15 +10621,7 @@
       }
     }
   },
-  "a11yShareTabSwitch": "Show {label}",
-  "@a11yShareTabSwitch": {
-    "description": "Semantics label for the friends/groups tab buttons in the share-target picker.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareTabSwitch": "Show",
   "a11yPantryAddItem": "Add new item",
   "@a11yPantryAddItem": {
     "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
@@ -10715,23 +10648,8 @@
       }
     }
   },
-  "a11yShareModeStaticCopy": "Static copy, press to select",
-  "@a11yShareModeStaticCopy": {
-    "description": "Semantics label for the static-copy share-mode option in the universal share dialog."
-  },
-  "a11yShareModeRealtime": "Realtime sharing, press to select",
-  "@a11yShareModeRealtime": {
-    "description": "Semantics label for the realtime sharing option in the universal share dialog."
-  },
-  "a11yFriendRequestIncoming": "Friend request from {name}, press to select",
-  "@a11yFriendRequestIncoming": {
-    "description": "Semantics label for an incoming friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareModeOption": "Press to select",
+  "a11yFriendRequestIncoming": "Friend request, press to select",
   "a11yAcceptFriendRequestFrom": "Accept {name}",
   "@a11yAcceptFriendRequestFrom": {
     "description": "Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.",
@@ -10750,85 +10668,17 @@
       }
     }
   },
-  "a11yFriendRequestSent": "Sent request to {name}, press to select",
-  "@a11yFriendRequestSent": {
-    "description": "Semantics label for a sent friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedFilter": "Filter feed by {label}",
-  "@a11yFeedFilter": {
-    "description": "Semantics label for a feed filter chip in the friends activity feed.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedRecipePreview": "Open recipe {title}",
-  "@a11yFeedRecipePreview": {
-    "description": "Semantics label for the recipe preview tile inside an activity feed event card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPublicProfileRecipeCard": "Open recipe {title}",
-  "@a11yPublicProfileRecipeCard": {
-    "description": "Semantics label for a recipe card on a public profile view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yBlockedUsersToggle": "Blocked users, press to expand or collapse the list",
+  "a11yFriendRequestSent": "Sent request, press to select",
+  "a11yFeedFilter": "Filter the feed",
+  "a11yFeedRecipePreview": "Open recipe",
+  "a11yPublicProfileRecipeCard": "Open recipe",
+  "a11yBlockedUsersToggle": "Show or hide the list",
   "@a11yBlockedUsersToggle": {
     "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
   },
-  "a11yInvitationTargetCard": "Invite {name}",
-  "@a11yInvitationTargetCard": {
-    "description": "Semantics label for an invitation target card (friend or group) in the invite picker.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPermissionsBanner": "Permission: {description}",
-  "@a11yPermissionsBanner": {
-    "description": "Semantics label for the collaborative permissions banner on a recipe or menu.",
-    "placeholders": {
-      "description": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yCollaborativeBanner": "{title}, {subtitle}",
-  "@a11yCollaborativeBanner": {
-    "description": "Semantics label for the collaborative-context banner showing title + subtitle.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "subtitle": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yEmojiPicker": "Select {emoji} as icon",
-  "@a11yEmojiPicker": {
-    "description": "Semantics label for an emoji option in the group icon picker.",
-    "placeholders": {
-      "emoji": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yInvitationTargetCard": "Invite",
+  "a11yPermissionsBanner": "Permission",
+  "a11yEmojiPicker": "Select as icon",
   "a11yRemoveIngredientChip": "Remove {label}",
   "@a11yRemoveIngredientChip": {
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
@@ -10907,7 +10757,7 @@
       }
     }
   },
-  "a11yArchivedConversationsToggle": "Archived conversations",
+  "a11yArchivedConversationsToggle": "Show or hide the conversations",
   "@a11yArchivedConversationsToggle": {
     "description": "Semantics label for the archived-conversations expand/collapse row in the messaging list."
   },
@@ -10962,15 +10812,7 @@
       }
     }
   },
-  "a11yPollVoteOption": "Vote for {label}",
-  "@a11yPollVoteOption": {
-    "description": "Semantics label for a poll option tap target in chat messages.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPollVoteOption": "Vote",
   "a11yPollRecipeThumbnail": "Open recipe {title}",
   "@a11yPollRecipeThumbnail": {
     "description": "Semantics label for the recipe thumbnail tappable in poll options.",
@@ -10979,10 +10821,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yPingComposeSend": "Send ping",
-  "@a11yPingComposeSend": {
-    "description": "Semantics label for the send button in the ping compose sheet."
   },
   "cookingModeSubstitutionApplied": "Ingredient swapped",
   "@cookingModeSubstitutionApplied": {
@@ -11219,14 +11057,7 @@
     }
   },
   "whoAteSkip": "skip",
-  "a11yToggleDiner": "Toggle whether {name} ate",
-  "@a11yToggleDiner": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleDiner": "Mark",
   "menuPresenceSheetTitle": "who's home?",
   "menuPresenceThisMeal": "this meal",
   "menuPresenceWholeDay": "whole day",
@@ -11387,15 +11218,8 @@
       }
     }
   },
-  "a11yToggleRatingBreakdown": "Show or hide rating breakdown",
-  "a11yEditMemberRating": "Edit rating for {name}",
-  "@a11yEditMemberRating": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleRatingBreakdown": "Show or hide the overview",
+  "a11yEditMemberRating": "Edit rating",
   "deepLinkExpired": "This link is no longer valid. Ask the person who shared it for a new one.",
   "deepLinkUnavailable": "This content is no longer available.",
   "familyDislikesSectionTitle": "disliked ingredients",

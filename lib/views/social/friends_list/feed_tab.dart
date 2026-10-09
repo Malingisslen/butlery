@@ -153,7 +153,7 @@ class FeedTab {
   ) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yFeedFilter(label),
+      label: context.l10n.a11yFeedFilter,
       button: true,
       selected: selected,
       child: GestureDetector(
@@ -323,7 +323,7 @@ class FeedTab {
   static Widget _buildRecipePreview(BuildContext context, ActivityEvent event) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yFeedRecipePreview(event.recipeTitle),
+      label: context.l10n.a11yFeedRecipePreview,
       button: true,
       child: GestureDetector(
         onTap: () => _navigateToRecipe(context, event),

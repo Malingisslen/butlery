@@ -184,7 +184,7 @@ class PollMessageWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Semantics(
-        label: context.l10n.a11yPollVoteOption(option.text),
+        label: context.l10n.a11yPollVoteOption,
         button: true,
         selected: hasVoted,
         enabled: poll.isActive,

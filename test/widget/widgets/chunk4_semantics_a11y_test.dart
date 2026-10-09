@@ -33,6 +33,7 @@ import 'package:butlery/widgets/recipe/draft_recovery_dialog.dart'
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 class _MockPantryViewModel extends Mock implements PantryViewModel {}
 
@@ -190,18 +191,18 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(
-            RegExp(r'^Statisk kopia, tryck för att välja'),
-          ),
-          findsOneWidget,
+        final staticCopy = find.bySemanticsLabel(
+          RegExp(r'^Tryck för att välja\nStatisk kopia'),
         );
-        expect(
-          find.bySemanticsLabel(
-            RegExp(r'^Realtidsdelning, tryck för att välja'),
-          ),
-          findsOneWidget,
+        final realtime = find.bySemanticsLabel(
+          RegExp(r'^Tryck för att välja\nRealtidsdelning'),
         );
+        expect(staticCopy, findsOneWidget);
+        expect(realtime, findsOneWidget);
+        for (final node in [staticCopy, realtime]) {
+          expectNothingAnnouncedTwice(tester, node);
+          expectActivatable(tester, node);
+        }
         handle.dispose();
       },
     );

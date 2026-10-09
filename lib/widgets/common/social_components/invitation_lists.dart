@@ -181,9 +181,7 @@ class InvitationLists {
             width: itemWidth,
             child: Card(
               child: Semantics(
-                label: context.l10n.a11yInvitationTargetCard(
-                  target.displayName,
-                ),
+                label: context.l10n.a11yInvitationTargetCard,
                 button: true,
                 enabled: onTargetTap != null,
                 child: InkWell(
@@ -242,7 +240,7 @@ class InvitationLists {
         final target = targets[index];
         return Card(
           child: Semantics(
-            label: context.l10n.a11yInvitationTargetCard(target.displayName),
+            label: context.l10n.a11yInvitationTargetCard,
             button: true,
             enabled: onTargetTap != null,
             child: InkWell(

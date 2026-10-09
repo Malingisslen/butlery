@@ -72,7 +72,7 @@ class FriendCard extends StatelessWidget {
         child: Material(
           type: MaterialType.transparency,
           child: Semantics(
-            label: context.l10n.a11yFriend(user.displayName),
+            label: context.l10n.a11yFriend,
             button: true,
             child: InkWell(
               onTap: onTap,
@@ -252,7 +252,6 @@ class FriendRequestCard extends StatelessWidget {
       child: Material(
         type: MaterialType.transparency,
         child: Semantics(
-          label: context.l10n.a11yFriendRequest,
           button: true,
           child: Material(
             type: MaterialType.transparency,

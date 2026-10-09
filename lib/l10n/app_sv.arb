@@ -5738,14 +5738,7 @@
       }
     }
   },
-  "a11ySharedShoppingList": "Delad inköpslista: {listName}",
-  "@a11ySharedShoppingList": {
-    "placeholders": {
-      "listName": {
-        "type": "String"
-      }
-    }
-  },
+  "a11ySharedShoppingList": "Delad inköpslista",
   "a11yPrimaryImageTap": "Primär bild, tryck för att visa fullstorlek",
   "a11ySelectAsPrimary": "Välj som primär bild",
   "a11yAddImage": "Lägg till bild",
@@ -5799,23 +5792,8 @@
     "description": "BUT-902: screen-reader label for the avatar online-status indicator when the user is offline."
   },
   "a11yChangeProfileImage": "Ändra profilbild",
-  "a11yShoppingList": "Inköpslista: {name}",
-  "@a11yShoppingList": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriend": "Vän: {name}",
-  "@a11yFriend": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriendRequest": "Vänförfrågan",
+  "a11yShoppingList": "Inköpslista",
+  "a11yFriend": "Vän",
   "a11yFilterTag": "Filtrera på {tagName}, {status}",
   "@a11yFilterTag": {
     "placeholders": {
@@ -5867,22 +5845,8 @@
       }
     }
   },
-  "a11ySharedRecipe": "Delat recept: {title}",
-  "@a11ySharedRecipe": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11ySharedMenu": "Delad meny: {title}",
-  "@a11ySharedMenu": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
+  "a11ySharedRecipe": "Delat recept",
+  "a11ySharedMenu": "Delad meny",
   "a11yRemoveProfileImage": "Ta bort profilbild",
   "a11yMenu": "Meny: {title}",
   "@a11yMenu": {
@@ -6202,14 +6166,7 @@
       }
     }
   },
-  "a11yBlockedUserSelect": "Markera blockerad användare {name}",
-  "@a11yBlockedUserSelect": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yBlockedUserSelect": "Markera blockerad användare",
   "retagFetchingRecipes": "Hämtar recept …",
   "retagRetaggingRecipes": "Omtaggar recept",
   "retagRetaggingProgress": "Omtaggar {current} av {total} recept...",
@@ -10701,15 +10658,7 @@
       }
     }
   },
-  "a11yConversationOpen": "Konversation med {name}, tryck för att öppna",
-  "@a11yConversationOpen": {
-    "description": "Semantics label for a conversation list item.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yConversationOpen": "Öppna konversationen",
   "a11yMenuVoteOption": "Rösta på {name}",
   "@a11yMenuVoteOption": {
     "description": "Semantics label for a menu vote option tile.",
@@ -10728,15 +10677,7 @@
       }
     }
   },
-  "a11yPingAcknowledge": "Bekräfta notis från {name}",
-  "@a11yPingAcknowledge": {
-    "description": "Semantics label for the activity-ping acknowledge row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPingAcknowledge": "Bekräfta notis",
   "a11yMenuPlanRecipeOpen": "{title}, tryck för att öppna receptet",
   "@a11yMenuPlanRecipeOpen": {
     "description": "Semantics label for an assigned recipe cell in the calendar weekly menu.",
@@ -10799,15 +10740,7 @@
       }
     }
   },
-  "a11yShareTabSwitch": "Visa {label}",
-  "@a11yShareTabSwitch": {
-    "description": "Semantics label for the friends/groups tab buttons in the share-target picker.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareTabSwitch": "Visa",
   "a11yPantryAddItem": "Lägg till ny vara",
   "@a11yPantryAddItem": {
     "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
@@ -10834,23 +10767,8 @@
       }
     }
   },
-  "a11yShareModeStaticCopy": "Statisk kopia, tryck för att välja",
-  "@a11yShareModeStaticCopy": {
-    "description": "Semantics label for the static-copy share-mode option in the universal share dialog."
-  },
-  "a11yShareModeRealtime": "Realtidsdelning, tryck för att välja",
-  "@a11yShareModeRealtime": {
-    "description": "Semantics label for the realtime sharing option in the universal share dialog."
-  },
-  "a11yFriendRequestIncoming": "Vänförfrågan från {name}, tryck för att markera",
-  "@a11yFriendRequestIncoming": {
-    "description": "Semantics label for an incoming friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareModeOption": "Tryck för att välja",
+  "a11yFriendRequestIncoming": "Vänförfrågan, tryck för att markera",
   "a11yAcceptFriendRequestFrom": "Acceptera {name}",
   "@a11yAcceptFriendRequestFrom": {
     "description": "Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.",
@@ -10869,85 +10787,17 @@
       }
     }
   },
-  "a11yFriendRequestSent": "Skickad förfrågan till {name}, tryck för att markera",
-  "@a11yFriendRequestSent": {
-    "description": "Semantics label for a sent friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedFilter": "Filtrera flödet på {label}",
-  "@a11yFeedFilter": {
-    "description": "Semantics label for a feed filter chip in the friends activity feed.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedRecipePreview": "Visa receptet {title}",
-  "@a11yFeedRecipePreview": {
-    "description": "Semantics label for the recipe preview tile inside an activity feed event card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPublicProfileRecipeCard": "Öppna receptet {title}",
-  "@a11yPublicProfileRecipeCard": {
-    "description": "Semantics label for a recipe card on a public profile view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yBlockedUsersToggle": "Blockerade användare, tryck för att visa eller dölja listan",
+  "a11yFriendRequestSent": "Skickad förfrågan, tryck för att markera",
+  "a11yFeedFilter": "Filtrera flödet",
+  "a11yFeedRecipePreview": "Visa receptet",
+  "a11yPublicProfileRecipeCard": "Öppna receptet",
+  "a11yBlockedUsersToggle": "Visa eller dölj listan",
   "@a11yBlockedUsersToggle": {
     "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
   },
-  "a11yInvitationTargetCard": "Bjud in {name}",
-  "@a11yInvitationTargetCard": {
-    "description": "Semantics label for an invitation target card (friend or group) in the invite picker.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPermissionsBanner": "Behörighet: {description}",
-  "@a11yPermissionsBanner": {
-    "description": "Semantics label for the collaborative permissions banner on a recipe or menu.",
-    "placeholders": {
-      "description": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yCollaborativeBanner": "{title}, {subtitle}",
-  "@a11yCollaborativeBanner": {
-    "description": "Semantics label for the collaborative-context banner showing title + subtitle.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "subtitle": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yEmojiPicker": "Välj {emoji} som ikon",
-  "@a11yEmojiPicker": {
-    "description": "Semantics label for an emoji option in the group icon picker.",
-    "placeholders": {
-      "emoji": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yInvitationTargetCard": "Bjud in",
+  "a11yPermissionsBanner": "Behörighet",
+  "a11yEmojiPicker": "Välj som ikon",
   "a11yRemoveIngredientChip": "Ta bort {label}",
   "@a11yRemoveIngredientChip": {
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
@@ -11026,7 +10876,7 @@
       }
     }
   },
-  "a11yArchivedConversationsToggle": "Arkiverade konversationer",
+  "a11yArchivedConversationsToggle": "Visa eller dölj konversationerna",
   "@a11yArchivedConversationsToggle": {
     "description": "Semantics label for the archived-conversations expand/collapse row in the messaging list."
   },
@@ -11081,15 +10931,7 @@
       }
     }
   },
-  "a11yPollVoteOption": "Rösta på {label}",
-  "@a11yPollVoteOption": {
-    "description": "Semantics label for a poll option tap target in chat messages.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPollVoteOption": "Rösta",
   "a11yPollRecipeThumbnail": "Visa receptet {title}",
   "@a11yPollRecipeThumbnail": {
     "description": "Semantics label for the recipe thumbnail tappable in poll options.",
@@ -11098,10 +10940,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yPingComposeSend": "Skicka notis",
-  "@a11yPingComposeSend": {
-    "description": "Semantics label for the send button in the ping compose sheet."
   },
   "cookingModeSubstitutionApplied": "Ingrediens utbytt",
   "@cookingModeSubstitutionApplied": {
@@ -11338,14 +11176,7 @@
     }
   },
   "whoAteSkip": "hoppa över",
-  "a11yToggleDiner": "Växla om {name} åt",
-  "@a11yToggleDiner": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleDiner": "Markera",
   "menuPresenceSheetTitle": "vem är hemma?",
   "menuPresenceThisMeal": "denna måltid",
   "menuPresenceWholeDay": "hela dagen",
@@ -11506,15 +11337,8 @@
       }
     }
   },
-  "a11yToggleRatingBreakdown": "Visa eller dölj betygsöversikt",
-  "a11yEditMemberRating": "Ändra betyg för {name}",
-  "@a11yEditMemberRating": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleRatingBreakdown": "Visa eller dölj översikten",
+  "a11yEditMemberRating": "Ändra betyg",
   "deepLinkExpired": "Länken gäller inte längre. Be den som delade om en ny.",
   "@deepLinkExpired": {
     "description": "Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143)."

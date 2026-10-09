@@ -92,7 +92,6 @@ class CollaborativeStatusWidgets {
             ),
           ),
           child: Semantics(
-            label: builderContext.l10n.a11yCollaborativeBanner(title, subtitle),
             button: onTap != null,
             child: InkWell(
               onTap: onTap,

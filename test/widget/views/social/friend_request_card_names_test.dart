@@ -13,6 +13,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _MockFriendsVm extends Mock implements FriendsViewModel {}
 
@@ -105,6 +106,25 @@ void main() {
 
     _expectNamed(tester, 'Accept');
     _expectNamed(tester, 'Decline');
+    handle.dispose();
+  });
+
+  testWidgets('the card says what it does and reads the name once', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pump(tester);
+
+    final card = find.bySemanticsLabel(
+      RegExp(r'^Vänförfrågan, tryck för att markera\n'),
+    );
+    expect(card, findsOneWidget);
+    // The avatar's own "Profilbild för <name>" line is a separate duplicate
+    // outside this label, so only the label's own lines are checked.
+    final lines = announcedLines(tester, card);
+    expect(lines.where((l) => l == _name), hasLength(1));
+    expect(lines.where((l) => l.contains('från')), isEmpty);
+    expectActivatable(tester, card);
     handle.dispose();
   });
 }

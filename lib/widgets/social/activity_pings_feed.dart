@@ -376,7 +376,7 @@ class _FeedRow extends StatelessWidget {
 
     if (onAcknowledge == null) return child;
     return Semantics(
-      label: context.l10n.a11yPingAcknowledge(actorName),
+      label: context.l10n.a11yPingAcknowledge,
       button: true,
       child: Material(
         type: MaterialType.transparency,
