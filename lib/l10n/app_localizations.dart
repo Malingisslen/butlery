@@ -29614,6 +29614,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.'**
   String get weekMenuPlanningCancelNote;
+
+  /// BUT-2221: privacy toggle title. Off by default.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa mitt namn på mina rätter i delade menyer'**
+  String get privacyShowNameOnDishesTitle;
+
+  /// BUT-2221: toggle subtitle. States the retroactive scope and the 30-minute profile cache (UserService._cacheDurationMinutes).
+  ///
+  /// In sv, this message translates to:
+  /// **'Den som öppnar en meny du har delat kan se vilka rätter som är dina och gå till din profil. Gäller alla menyer du har delat, även äldre. Stänger du av försvinner namnet inom 30 minuter.'**
+  String get privacyShowNameOnDishesSubtitle;
+
+  /// BUT-2221: subtitle in place of the description when the account is a minor; the toggle is disabled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte tillgängligt för konton under 18 år.'**
+  String get privacyShowNameOnDishesMinor;
+
+  /// BUT-2221: the line under a dish in a shared menu naming who made it. 'Recept av' rather than 'Av' so it is not confused with 'Delad av'.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept av {name}'**
+  String menuDishCreatorCredit(String name);
+
+  /// BUT-2221: screen-reader action on the creator line; the visible 'Recept av {name}' carries the name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna profilen'**
+  String get a11yOpenCreatorProfile;
+
+  /// BUT-2221: snackbar when the opt-in write fails or is refused.
+  ///
+  /// In sv, this message translates to:
+  /// **'Valet om ditt namn på rätter kunde inte sparas. Försök igen.'**
+  String get errorCouldNotSaveDishCredit;
 }
 
 class _AppLocalizationsDelegate

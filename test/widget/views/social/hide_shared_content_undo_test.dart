@@ -20,7 +20,9 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/undo_window.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
@@ -29,6 +31,7 @@ import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart'
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockCoordinator extends Mock
     implements SharedContentCoordinatorViewModel {}
@@ -38,6 +41,8 @@ class _MockRecipeViewModel extends Mock implements SharedRecipeViewModel {}
 class _MockMenuViewModel extends Mock implements SharedMenuViewModel {}
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
+
+class _FakeUserService extends Fake implements UserService {}
 
 class _FakeSharedRecipe extends Fake implements SharedRecipe {}
 
@@ -78,6 +83,11 @@ void main() {
       () => realtime.conflictStream,
     ).thenAnswer((_) => const Stream.empty());
     GetIt.instance.registerSingleton<RealtimeSyncService>(realtime);
+    // MenuPreviewView builds a MenuDishCreditViewModel that resolves both.
+    GetIt.instance.registerSingleton<UserService>(_FakeUserService());
+    GetIt.instance.registerSingleton<PermissionService>(
+      FakePermissionService()..setPermissionState(currentUserId: 'viewer'),
+    );
     prod.ServiceLocator.initialize(DIContainer());
 
     recipes = _MockRecipeViewModel();

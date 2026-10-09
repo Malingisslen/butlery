@@ -14469,5 +14469,34 @@
   "weekMenuPlanningCancelNote": "Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.",
   "@weekMenuPlanningCancelNote": {
     "description": "BUT-2157: the note under Avbryt planeringen (Q1 = B, Malin). Generation is not incremental, so cancelling keeps the earlier unsaved suggestion and never writes the week."
+  },
+  "privacyShowNameOnDishesTitle": "Visa mitt namn på mina rätter i delade menyer",
+  "@privacyShowNameOnDishesTitle": {
+    "description": "BUT-2221: privacy toggle title. Off by default."
+  },
+  "privacyShowNameOnDishesSubtitle": "Den som öppnar en meny du har delat kan se vilka rätter som är dina och gå till din profil. Gäller alla menyer du har delat, även äldre. Stänger du av försvinner namnet inom 30 minuter.",
+  "@privacyShowNameOnDishesSubtitle": {
+    "description": "BUT-2221: toggle subtitle. States the retroactive scope and the 30-minute profile cache (UserService._cacheDurationMinutes)."
+  },
+  "privacyShowNameOnDishesMinor": "Inte tillgängligt för konton under 18 år.",
+  "@privacyShowNameOnDishesMinor": {
+    "description": "BUT-2221: subtitle in place of the description when the account is a minor; the toggle is disabled."
+  },
+  "menuDishCreatorCredit": "Recept av {name}",
+  "@menuDishCreatorCredit": {
+    "description": "BUT-2221: the line under a dish in a shared menu naming who made it. 'Recept av' rather than 'Av' so it is not confused with 'Delad av'.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yOpenCreatorProfile": "Öppna profilen",
+  "@a11yOpenCreatorProfile": {
+    "description": "BUT-2221: screen-reader action on the creator line; the visible 'Recept av {name}' carries the name."
+  },
+  "errorCouldNotSaveDishCredit": "Valet om ditt namn på rätter kunde inte sparas. Försök igen.",
+  "@errorCouldNotSaveDishCredit": {
+    "description": "BUT-2221: snackbar when the opt-in write fails or is refused."
   }
 }

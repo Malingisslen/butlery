@@ -6002,3 +6002,27 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
   to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
   the rules cannot read the options, which live in the starter's document.
+
+## BUT-2221 — the creator's name on dishes in shared menus (2026-10-09)
+
+- **Only the sharer's own dishes carry a name.** `MenuDishCreditViewModel` runs with
+  `DishCreditScope.sharerOnly`: a dish is credited only when its `createdBy` equals the
+  menu's `sharedByUserId`, which the `shared_content` rules pin to the account that created
+  the share. A member can write any `createdBy` into `menuSnapshot`, which the rules do not
+  check dish by dish, so `everyCreator` would let a hand-built client put an opted-in adult's
+  name and profile link on any dish; there is no report path for a menu dish. Security,
+  Trust & Safety and Privacy asked for that path before the wider scope ships.
+- **Turning it off is not instant.** Viewers read the profile through
+  `UserService.getUserProfiles`, which keeps a profile in memory for
+  `_cacheDurationMinutes` (30); offline, Firestore can answer from its own cache for longer.
+  The toggle's text says 30 minutes.
+- **A block in the other direction hides nothing** (BUT-2018): the line is left out for a
+  creator the viewer blocked, and the app does not know who blocked the viewer.
+- **The consent record is the flag and the time of its last change, not a history.**
+  `public_profiles` rules require `showNameOnSharedDishesChangedAt == request.time` whenever
+  either key changes, and `FirebaseUserRepository.setShowNameOnSharedDishes` is their only
+  writer; earlier changes are not kept. Both keys are in the Art. 15 bundle with the rest of
+  the profile document.
+- **Nothing clears a stored `true` if `isMinor` is set later.** The rules only refuse setting
+  it to `true` without the `ageCompliant` claim, a `users` document and `isMinor != true`;
+  a viewer cannot read `isMinor`.

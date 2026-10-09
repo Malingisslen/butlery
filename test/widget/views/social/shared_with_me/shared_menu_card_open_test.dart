@@ -12,13 +12,16 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
 
 import '../../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockCoordinator extends Mock
     implements SharedContentCoordinatorViewModel {}
@@ -26,6 +29,8 @@ class _MockCoordinator extends Mock
 class _MockMenuViewModel extends Mock implements SharedMenuViewModel {}
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
+
+class _FakeUserService extends Fake implements UserService {}
 
 class _FakeSharedMenu extends Fake implements SharedMenu {}
 
@@ -53,6 +58,11 @@ void main() {
       () => realtime.conflictStream,
     ).thenAnswer((_) => const Stream.empty());
     GetIt.instance.registerSingleton<RealtimeSyncService>(realtime);
+    // MenuPreviewView builds a MenuDishCreditViewModel that resolves both.
+    GetIt.instance.registerSingleton<UserService>(_FakeUserService());
+    GetIt.instance.registerSingleton<PermissionService>(
+      FakePermissionService()..setPermissionState(currentUserId: 'viewer'),
+    );
     prod.ServiceLocator.initialize(DIContainer());
 
     menus = _MockMenuViewModel();

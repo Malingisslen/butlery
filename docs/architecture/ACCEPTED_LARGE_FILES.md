@@ -40,7 +40,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `realtime_recipe.dart` | 573 | Realtime collaboration recipe model |
 | `ingredient_data.dart` | 530 | Ingredient data model — nutritional properties, Swedish/English names |
 | `shared_recipe.dart` | 572 | Shared recipe model with denormalized metadata and copy-on-write mixins |
-| `user_profile.dart` | 774 | Core user profile model — social fields, settings, notification prefs, serialization. Row refreshed 2026-07-25 (was recorded at 663). |
+| `user_profile.dart` | 820 | Core user profile model — social fields, settings, notification prefs, serialization. Row refreshed 2026-07-25 (was recorded at 663). |
 
 ## Infrastructure Mixins
 
@@ -65,7 +65,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_recipe_repository.dart` | 1064 | Recipe CRUD + sync/caching — module-extracted (tag/query/gdpr-export ops) per BUT-536 (was 931, drifted to 1104, now 998) |
 | `base_shared_content_repository.dart` | 818 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 647 | Storage operations — upload, resize, cache |
-| `firebase_user_repository.dart` | 910 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
+| `firebase_user_repository.dart` | 935 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
 | `firebase_ingredient_repository.dart` | 562 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 510 | Explicit facade coordinating three focused sub-repositories |
 | `firebase_data_export_repository.dart` | 1297 | Read-only GDPR export gateway — funnels residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. +94 from BUT-1774/1775/1798 (shared_content legs repointed, and the shopping-list leg that had never been exported at all). +69 from BUT-1832 (the per-poll vote probe, its read budget and its failure logging). +26 from BUT-1957 (the `users/{uid}/notifications` export leg). +72 from BUT-1992 (three `users/{uid}` export legs the deletion cascade already erased, and the settings read widened from one document to its collection). Row refreshed 2026-09-16 (BUT-1693 added the household-allergen-share export leg). Row refreshed 2026-10-09 (BUT-1701 `countConversations`, BUT-2114 `exportLikesByUser`). +18 from BUT-907 (the `users/{uid}/trash` export leg). |
@@ -96,7 +96,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
-| `user_service.dart` | 1116 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
+| `user_service.dart` | 1148 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 1266 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1188 | Text-based recipe import strategy. Row refreshed 2026-10-08: recorded 1038, measured 1156 before BUT-2158 and 1188 after it passed per-line confidences to the import snapshot. |
 | `friends_management_operations.dart` | 687 | Add/remove/block friends operations |
@@ -252,7 +252,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `performance_monitoring_service.dart` | 516 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 568 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
 | `fcm_service.dart` | 728 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
-| `user_profile_viewmodel.dart` | 561 | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
+| `user_profile_viewmodel.dart` | 582 | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
 | `recipe_detail_metadata.dart` | 508 | Inline metadata row (time, portions, rating, badges) — one cohesive widget plus its state |
 | `shopping_list_operations.dart` | 506 | Static dialog builders for shopping-list management on a namespace class with no state, plus the private `_ConvertToCollaborativeDialog` widget and its state. The two conversion dialogs share `_warnConversionIncomplete` |
 

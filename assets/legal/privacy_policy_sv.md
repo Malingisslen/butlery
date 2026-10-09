@@ -113,6 +113,10 @@ Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom E
 
 Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar — även de som går med senare — se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
 
+**Ditt namn på rätter i delade menyer (om du har samtyckt):**
+
+Om du slår på "Visa mitt namn på mina rätter i delade menyer" ser den som öppnar en meny du har delat ditt namn under de rätter du själv har gjort, med en länk till din offentliga profil. Det gäller alla menyer du har delat, även äldre. Valet bygger på ditt **samtycke (art. 6.1 a)**, är avstängt som standard och kan inte slås på av den som är under 18 år. Vi sparar valet och tidpunkten då du senast ändrade det på din offentliga profil, och båda ingår i din dataexport. Stänger du av valet försvinner namnet inom 30 minuter. Inget namn sparas i menyerna.
+
 ### 5.3 Gemensamma betyg ("Butlery-betyget") – berättigat intresse, inte samtycke
 
 När du betygsätter ett recept (betyget "alla", 1–5 stjärnor) sammanförs det med

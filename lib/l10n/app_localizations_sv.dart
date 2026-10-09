@@ -18162,4 +18162,28 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get weekMenuPlanningCancelNote =>
       'Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.';
+
+  @override
+  String get privacyShowNameOnDishesTitle =>
+      'Visa mitt namn på mina rätter i delade menyer';
+
+  @override
+  String get privacyShowNameOnDishesSubtitle =>
+      'Den som öppnar en meny du har delat kan se vilka rätter som är dina och gå till din profil. Gäller alla menyer du har delat, även äldre. Stänger du av försvinner namnet inom 30 minuter.';
+
+  @override
+  String get privacyShowNameOnDishesMinor =>
+      'Inte tillgängligt för konton under 18 år.';
+
+  @override
+  String menuDishCreatorCredit(String name) {
+    return 'Recept av $name';
+  }
+
+  @override
+  String get a11yOpenCreatorProfile => 'Öppna profilen';
+
+  @override
+  String get errorCouldNotSaveDishCredit =>
+      'Valet om ditt namn på rätter kunde inte sparas. Försök igen.';
 }

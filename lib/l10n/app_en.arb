@@ -13895,5 +13895,18 @@
   "trashFailGone": "{count} recipes were no longer in the trash.",
   "trashFailFailed": "{count} recipes could not be done. Try again.",
   "weekMenuPlanningCancel": "Cancel planning",
-  "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save."
+  "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save.",
+  "privacyShowNameOnDishesTitle": "Show my name on my dishes in shared menus",
+  "privacyShowNameOnDishesSubtitle": "Anyone who opens a menu you have shared can see which dishes are yours and go to your profile. Applies to every menu you have shared, older ones too. If you turn it off, your name disappears within 30 minutes.",
+  "privacyShowNameOnDishesMinor": "Not available for accounts under 18.",
+  "menuDishCreatorCredit": "Recipe by {name}",
+  "@menuDishCreatorCredit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yOpenCreatorProfile": "Open profile",
+  "errorCouldNotSaveDishCredit": "Your choice about showing your name on dishes could not be saved. Please try again."
 }

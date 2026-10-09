@@ -1,5 +1,5 @@
 // Privacy settings section extracted from user_profile_edit_view.dart to keep
-// the parent under the 634-line baseline. Pure relocation — no logic changes.
+// the parent under the 634-line baseline.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/social/activity_event.dart';
@@ -12,8 +12,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
-/// Four privacy toggles: search visibility, email search, online status,
-/// activity feed.
 class PrivacySettingsSection extends StatelessWidget {
   final UserProfileViewModel viewModel;
 
@@ -81,6 +79,34 @@ class PrivacySettingsSection extends StatelessWidget {
                 value: viewModel.showOnlineStatus,
                 onChanged: viewModel.updateShowOnlineStatus,
                 secondary: const ButleryIcon(ButleryIcons.eye),
+              ),
+              const Divider(height: 1),
+              // BUT-2221: written at once, like the minor search opt-in; a
+              // minor sees it switched off with the reason as its subtitle.
+              SwitchListTile(
+                title: Text(context.l10n.privacyShowNameOnDishesTitle),
+                subtitle: Text(
+                  viewModel.isMinor
+                      ? context.l10n.privacyShowNameOnDishesMinor
+                      : context.l10n.privacyShowNameOnDishesSubtitle,
+                ),
+                value: viewModel.showNameOnSharedDishes,
+                onChanged: viewModel.isMinor
+                    ? null
+                    : (value) async {
+                        final ok = await viewModel.setShowNameOnSharedDishes(
+                          value,
+                        );
+                        if (!ok && context.mounted) {
+                          SnackBarUtils.showFailure(
+                            context,
+                            what:
+                                viewModel.error ??
+                                context.l10n.errorCouldNotSaveDishCredit,
+                          );
+                        }
+                      },
+                secondary: const ButleryIcon(ButleryIcons.user),
               ),
               const Divider(height: 1),
               SwitchListTile(

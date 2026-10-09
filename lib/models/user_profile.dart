@@ -56,6 +56,14 @@ class UserProfile with JsonSerializableMixin {
   /// suppresses that one event type; the master toggle still gates everything.
   final Map<String, bool> activityFeedEventTypes;
 
+  /// BUT-2221: opt-in to having this name and a profile link shown under the
+  /// dishes this user made, on shared menus others open. Default false, and an
+  /// absent field reads false. Written only by
+  /// [UserRepository.setShowNameOnSharedDishes] together with a server
+  /// timestamp, never by a profile save, so a stale device cannot revive it.
+  final bool showNameOnSharedDishes;
+  final DateTime? showNameOnSharedDishesChangedAt;
+
   /// BUT-1220: whether the one-time "your activity is now visible to friends"
   /// hint has already been shown. Flipped true after the first event is
   /// broadcast so the nudge fires exactly once. Defaults false.
@@ -155,6 +163,8 @@ class UserProfile with JsonSerializableMixin {
     this.showOnlineStatus = true,
     this.shareActivityToFeed = true,
     this.activityFeedEventTypes = const {},
+    this.showNameOnSharedDishes = false,
+    this.showNameOnSharedDishesChangedAt,
     this.hasSeenActivityFeedHint = false,
     this.autoAddBoughtToPantry = false,
     this.useHouseholdAllergens = true,
@@ -223,6 +233,8 @@ class UserProfile with JsonSerializableMixin {
     bool? showOnlineStatus,
     bool? shareActivityToFeed,
     Map<String, bool>? activityFeedEventTypes,
+    bool? showNameOnSharedDishes,
+    Object? showNameOnSharedDishesChangedAt = _sentinel,
     bool? hasSeenActivityFeedHint,
     bool? autoAddBoughtToPantry,
     bool? useHouseholdAllergens,
@@ -261,6 +273,12 @@ class UserProfile with JsonSerializableMixin {
       shareActivityToFeed: shareActivityToFeed ?? this.shareActivityToFeed,
       activityFeedEventTypes:
           activityFeedEventTypes ?? this.activityFeedEventTypes,
+      showNameOnSharedDishes:
+          showNameOnSharedDishes ?? this.showNameOnSharedDishes,
+      showNameOnSharedDishesChangedAt:
+          showNameOnSharedDishesChangedAt == _sentinel
+          ? this.showNameOnSharedDishesChangedAt
+          : showNameOnSharedDishesChangedAt as DateTime?,
       hasSeenActivityFeedHint:
           hasSeenActivityFeedHint ?? this.hasSeenActivityFeedHint,
       autoAddBoughtToPantry:
@@ -487,6 +505,10 @@ class UserProfile with JsonSerializableMixin {
       'showOnlineStatus': showOnlineStatus,
       'shareActivityToFeed': shareActivityToFeed,
       'activityFeedEventTypes': activityFeedEventTypes,
+      'showNameOnSharedDishes': showNameOnSharedDishes,
+      'showNameOnSharedDishesChangedAt': showNameOnSharedDishesChangedAt != null
+          ? serializeDateTime(showNameOnSharedDishesChangedAt!)
+          : null,
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
       'useHouseholdAllergens': useHouseholdAllergens,
@@ -555,6 +577,14 @@ class UserProfile with JsonSerializableMixin {
         defaultValue: true,
       ),
       activityFeedEventTypes: _readActivityFeedEventTypes(data),
+      showNameOnSharedDishes: utils.SerializationUtils.safeBool(
+        data,
+        'showNameOnSharedDishes',
+      ),
+      showNameOnSharedDishesChangedAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'showNameOnSharedDishesChangedAt',
+      ),
       hasSeenActivityFeedHint: utils.SerializationUtils.safeBool(
         data,
         'hasSeenActivityFeedHint',
@@ -657,6 +687,14 @@ class UserProfile with JsonSerializableMixin {
         defaultValue: true,
       ),
       activityFeedEventTypes: _readActivityFeedEventTypes(json),
+      showNameOnSharedDishes: utils.SerializationUtils.safeBool(
+        json,
+        'showNameOnSharedDishes',
+      ),
+      showNameOnSharedDishesChangedAt:
+          utils.SerializationUtils.parseDateTimeValue(
+            json['showNameOnSharedDishesChangedAt'],
+          ),
       hasSeenActivityFeedHint: utils.SerializationUtils.safeBool(
         json,
         'hasSeenActivityFeedHint',
