@@ -4,10 +4,14 @@
 # MANUAL ONLY (workflow_dispatch), behind the `production` environment's
 # reviewer gate like deploy-hosting.yml.
 #
-# Signing is Xcode's automatic, cloud-managed signing driven by an App Store
-# Connect API key: no certificate or provisioning profile is stored in the
-# repo or in secrets. The key needs the Admin role, because creating the cloud
-# distribution certificate is an Admin permission.
+# Signing: Xcode's automatic signing archives with a development identity, and
+# a development profile needs a registered device, which this team does not
+# have (BUT-2333). So each run makes its own App Store signing files through
+# the App Store Connect API (a fresh key, a distribution certificate and an
+# App Store profile) and revokes that certificate when it ends, as Malin chose
+# on 2026-10-09. No certificate or profile is stored in the repo or in
+# secrets. The key needs the Admin role, because creating a distribution
+# certificate is an Admin permission.
 #
 # Secrets used:
 #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY  App Store Connect API key
@@ -110,21 +114,39 @@ jobs:
             --dart-define-from-file=.env \
             --build-number=${{ github.run_number }}
 
-      - name: Archive (signed)
+      - name: Install the signing tools
+        run: pip3 install --break-system-packages codemagic-cli-tools==0.69.1
+
+      # A fresh key means a fresh certificate; the revoke step at the end
+      # keeps the team under Apple's limit on distribution certificates.
+      # use-profiles switches only the Runner target to manual signing with
+      # the new profile, on this runner's checkout.
+      - name: Create this run's signing files
         env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.ASC_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          export APP_STORE_CONNECT_PRIVATE_KEY="@file:$ASC_KEY_PATH"
+          CERT_KEY="$RUNNER_TEMP/dist_cert_key.pem"
+          openssl genrsa -out "$CERT_KEY" 2048
+          echo "CERT_KEY=$CERT_KEY" >> "$GITHUB_ENV"
+          keychain initialize
+          app-store-connect fetch-signing-files se.butlery.app \
+            --platform IOS --type IOS_APP_STORE \
+            --certificate-key "@file:$CERT_KEY" --create
+          keychain add-certificates
+          xcode-project use-profiles --project ios/Runner.xcodeproj \
+            --export-options-plist "$RUNNER_TEMP/export_options.plist" \
+            --custom-export-options '{"destination": "upload", "manageAppVersionAndBuildNumber": false, "uploadSymbols": true}'
+
+      - name: Archive (signed)
         run: |
           xcodebuild archive \
             -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath build/ios/Runner.xcarchive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            -archivePath build/ios/Runner.xcarchive
 
       - name: Export and upload to App Store Connect
         env:
@@ -133,9 +155,8 @@ jobs:
         run: |
           xcodebuild -exportArchive \
             -archivePath build/ios/Runner.xcarchive \
-            -exportOptionsPlist ios/exportOptions-appstore.plist \
+            -exportOptionsPlist "$RUNNER_TEMP/export_options.plist" \
             -exportPath build/ios/export \
-            -allowProvisioningUpdates \
             -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID"
@@ -149,6 +170,40 @@ jobs:
           path: build/debug-info
           retention-days: 90
 
-      - name: Remove the key file
+      - name: Revoke this run's certificate
+        if: always() && env.CERT_KEY != ''
+        env:
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.ASC_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        # Through the library, not `certificates list --json`: the CLI prints
+        # the team's whole list before filtering it by key, so its JSON would
+        # name every distribution certificate, not just this run's.
+        run: |
+          python3 - <<'PY'
+          import os
+          from codemagic.apple.app_store_connect import IssuerId, KeyIdentifier
+          from codemagic.apple.resources import ProfileType
+          from codemagic.models import PrivateKey
+          from codemagic.tools import AppStoreConnect
+
+          asc = AppStoreConnect(
+              KeyIdentifier(os.environ["APP_STORE_CONNECT_KEY_IDENTIFIER"]),
+              IssuerId(os.environ["APP_STORE_CONNECT_ISSUER_ID"]),
+              open(os.environ["ASC_KEY_PATH"]).read(),
+          )
+          key = PrivateKey.from_buffer(open(os.environ["CERT_KEY"]).read())
+          mine = asc.list_certificates(
+              profile_type=ProfileType.IOS_APP_STORE,
+              certificate_key=key,
+              should_print=False,
+          )
+          if len(mine) > 1:
+              raise SystemExit(f"{len(mine)} certificates match this run's new key; revoking none.")
+          for certificate in mine:
+              asc.delete_certificate(certificate.id)
+              print(f"Revoked {certificate.id}")
+          PY
+
+      - name: Remove the key files
         if: always()
-        run: rm -f "$RUNNER_TEMP"/AuthKey_*.p8
+        run: rm -f "$RUNNER_TEMP"/AuthKey_*.p8 "$RUNNER_TEMP"/dist_cert_key.pem
