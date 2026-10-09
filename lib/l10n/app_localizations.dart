@@ -26459,6 +26459,30 @@ abstract class AppLocalizations {
   /// **'Kunde inte tas bort – ändringen sparades inte'**
   String get groupMemberRemoveNotSaved;
 
+  /// BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du får inte längre ändra gruppen'**
+  String get groupMemberRemoveFailedNoPermission;
+
+  /// BUT-2153: reason under a member's name when the removal could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen sparades inte'**
+  String get groupMemberRemoveFailedNotSaved;
+
+  /// BUT-2153: reason under a member's name when the group no longer exists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen finns inte längre'**
+  String get groupMemberRemoveFailedGroupMissing;
+
+  /// BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}, vald, kunde inte tas bort'**
+  String a11yMemberRemoveFailed(String name);
+
   /// P5-U33: failure when no selected member could be removed.
   ///
   /// In sv, this message translates to:

@@ -92,6 +92,7 @@ void main() {
     ThemeData? theme,
     List<GroupInvitation> pendingInvitations = const [],
     Map<String, String> inviteeNames = const {},
+    List<UserProfile>? roster,
   }) async {
     tester.view.physicalSize = const Size(900, 2400);
     tester.view.devicePixelRatio = 1.0;
@@ -112,7 +113,7 @@ void main() {
             child: Builder(
               builder: (ctx) => GroupMembersList.build(
                 ctx,
-                members: members,
+                members: roster ?? members,
                 pendingInvitations: pendingInvitations,
                 inviteeNames: inviteeNames,
                 group: _group(),
@@ -151,11 +152,11 @@ void main() {
   testWidgets('one of two went: the outcome names who did not and why, she '
       'stays selected and the mode stays open', (tester) async {
     when(
-      () => categories.removeFriendFromCategory('johan', 'g1'),
-    ).thenAnswer((_) async => true);
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
     when(
-      () => categories.removeFriendFromCategory('sara', 'g1'),
-    ).thenAnswer((_) async => false);
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
 
     await pumpList(tester);
     await selectBothAndRemove(tester);
@@ -201,11 +202,11 @@ void main() {
     tester,
   ) async {
     when(
-      () => categories.removeFriendFromCategory('johan', 'g1'),
-    ).thenAnswer((_) async => true);
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
     when(
-      () => categories.removeFriendFromCategory('sara', 'g1'),
-    ).thenAnswer((_) async => false);
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
 
     await pumpList(tester);
     await selectBothAndRemove(tester);
@@ -224,11 +225,11 @@ void main() {
     tester,
   ) async {
     when(
-      () => categories.removeFriendFromCategory('johan', 'g1'),
-    ).thenAnswer((_) async => true);
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
     when(
-      () => categories.removeFriendFromCategory('sara', 'g1'),
-    ).thenAnswer((_) async => false);
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
 
     await pumpList(tester);
     await selectBothAndRemove(tester);
@@ -246,8 +247,8 @@ void main() {
     tester,
   ) async {
     when(
-      () => categories.removeFriendFromCategory(any(), 'g1'),
-    ).thenAnswer((_) async => false);
+      () => categories.removeFriendFromCategoryWithReason(any(), 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
 
     await pumpList(tester);
     await selectBothAndRemove(tester);
@@ -265,8 +266,8 @@ void main() {
     tester,
   ) async {
     when(
-      () => categories.removeFriendFromCategory(any(), 'g1'),
-    ).thenAnswer((_) async => true);
+      () => categories.removeFriendFromCategoryWithReason(any(), 'g1'),
+    ).thenAnswer((_) async => null);
 
     await pumpList(tester);
     await selectBothAndRemove(tester);
@@ -280,11 +281,11 @@ void main() {
     tester,
   ) async {
     when(
-      () => categories.removeFriendFromCategory('johan', 'g1'),
-    ).thenAnswer((_) async => true);
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
     when(
-      () => categories.removeFriendFromCategory('sara', 'g1'),
-    ).thenAnswer((_) async => false);
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
 
     await pumpList(tester, theme: AppTheme.darkTheme);
     await selectBothAndRemove(tester);
@@ -321,5 +322,219 @@ void main() {
     expect(find.text('Ina Inbjuden'), findsOneWidget);
     expect(find.text('Fel Person'), findsNothing);
     expect(find.text('Skickad'), findsOneWidget);
+  });
+
+  final saraRowFinder = find.widgetWithText(ListTile, 'Sara Ek');
+
+  Border rowEdge(WidgetTester tester) =>
+      tester.widget<ListTile>(saraRowFinder).shape! as Border;
+
+  testWidgets('the failed row shows its reason under the name and an error '
+      'edge instead of the selected border', (tester) async {
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
+
+    await pumpList(tester);
+    await selectBothAndRemove(tester);
+
+    final cs = AppTheme.lightTheme.colorScheme;
+    final reason = find.descendant(
+      of: saraRowFinder,
+      matching: find.text('Ändringen sparades inte'),
+    );
+    expect(reason, findsOneWidget);
+    expect(tester.widget<Text>(reason).style!.color, cs.error);
+    final edge = rowEdge(tester);
+    expect(edge.top.color, cs.error);
+    expect(edge.top.width, 1.5);
+    // Johan is gone from the roster only after the parent reloads; the
+    // list under test keeps its fixed members, so he is still drawn, not
+    // failed, and keeps no error edge.
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Johan Lind'),
+        matching: find.text('Ändringen sparades inte'),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('the error edge reads in dark mode', (tester) async {
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
+
+    await pumpList(tester, theme: AppTheme.darkTheme);
+    await selectBothAndRemove(tester);
+
+    final cs = AppTheme.darkTheme.colorScheme;
+    final edge = rowEdge(tester);
+    expect(edge.top.color, cs.error);
+    expect(edge.top.width, 1.5);
+    final reason = find.descendant(
+      of: saraRowFinder,
+      matching: find.text('Ändringen sparades inte'),
+    );
+    expect(tester.widget<Text>(reason).style!.color, cs.error);
+  });
+
+  testWidgets('the failed row announces name, selected and failed, then the '
+      'reason, with the name said once', (tester) async {
+    final handle = tester.ensureSemantics();
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
+
+    await pumpList(tester);
+    await selectBothAndRemove(tester);
+
+    final node = tester.getSemantics(
+      find.descendant(
+        of: saraRowFinder,
+        matching: find.text('Ändringen sparades inte'),
+      ),
+    );
+    expect(
+      node.label.replaceAll('\n', ' '),
+      'Sara Ek, vald, kunde inte tas bort Ändringen sparades inte',
+    );
+    handle.dispose();
+  });
+
+  testWidgets('a noPermission failure shows its own text in the row and in '
+      'the outcome', (tester) async {
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.noPermission);
+
+    await pumpList(tester);
+    await selectBothAndRemove(tester);
+
+    expect(
+      find.descendant(
+        of: saraRowFinder,
+        matching: find.text('Du får inte längre ändra gruppen'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(PartialOutcome.itemKey('sara')),
+        matching: find.text('Du får inte längre ändra gruppen'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('ändringen sparades inte'), findsNothing);
+  });
+
+  testWidgets('a thrown error counts as notSaved', (tester) async {
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenThrow(StateError('boom'));
+
+    await pumpList(tester);
+    await selectBothAndRemove(tester);
+
+    expect(
+      find.descendant(
+        of: saraRowFinder,
+        matching: find.text('Ändringen sparades inte'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a groupMissing failure shows its own text in the row and in '
+      'the outcome', (tester) async {
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason('sara', 'g1'),
+    ).thenAnswer((_) async => MemberRemovalFailure.groupMissing);
+
+    await pumpList(tester);
+    await selectBothAndRemove(tester);
+
+    expect(
+      find.descendant(
+        of: saraRowFinder,
+        matching: find.text('Gruppen finns inte längre'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(PartialOutcome.itemKey('sara')),
+        matching: find.text('Gruppen finns inte längre'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a failed member unticked while another stays ticked loses the '
+      'error edge and the reason', (tester) async {
+    when(
+      () => categories.removeFriendFromCategoryWithReason('johan', 'g1'),
+    ).thenAnswer((_) async => null);
+    when(
+      () => categories.removeFriendFromCategoryWithReason(
+        any(that: isIn(['sara', 'anna'])),
+        'g1',
+      ),
+    ).thenAnswer((_) async => MemberRemovalFailure.notSaved);
+
+    await pumpList(tester, roster: [...members, _profile('anna', 'Anna Berg')]);
+    await tester.tap(find.byKey(const ValueKey('group-members-select-enter')));
+    await tester.pump();
+    for (final name in ['Johan Lind', 'Sara Ek', 'Anna Berg']) {
+      await tester.tap(find.text(name));
+      await tester.pump();
+    }
+    await tester.tap(find.text('Ta bort markerade (3)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ta bort'));
+    await tester.pumpAndSettle();
+
+    final annaReason = find.descendant(
+      of: find.widgetWithText(ListTile, 'Anna Berg'),
+      matching: find.text('Ändringen sparades inte'),
+    );
+    expect(annaReason, findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ListTile, 'Anna Berg'));
+    await tester.pump();
+
+    // Sara is still ticked, so the outcome stays open.
+    expect(find.text('1 valda'), findsOneWidget);
+    expect(annaReason, findsNothing);
+    final cs = AppTheme.lightTheme.colorScheme;
+    final annaShape = tester
+        .widget<ListTile>(find.widgetWithText(ListTile, 'Anna Berg'))
+        .shape;
+    expect(annaShape is Border && annaShape.top.color == cs.error, isFalse);
+    expect(
+      find.descendant(
+        of: saraRowFinder,
+        matching: find.text('Ändringen sparades inte'),
+      ),
+      findsOneWidget,
+    );
   });
 }

@@ -15928,6 +15928,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not be removed — the change was not saved';
 
   @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'You can no longer change the group';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'The change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing =>
+      'The group no longer exists';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, selected, could not be removed';
+  }
+
+  @override
   String get groupMembersRemoveNone =>
       'None of the selected members could be removed.';
 

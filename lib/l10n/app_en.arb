@@ -11961,6 +11961,27 @@
   "@groupMemberRemoveNotSaved": {
     "description": "P5-U33: reason on a member row in the partial outcome."
   },
+  "groupMemberRemoveFailedNoPermission": "You can no longer change the group",
+  "@groupMemberRemoveFailedNoPermission": {
+    "description": "BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group."
+  },
+  "groupMemberRemoveFailedNotSaved": "The change was not saved",
+  "@groupMemberRemoveFailedNotSaved": {
+    "description": "BUT-2153: reason under a member's name when the removal could not be saved."
+  },
+  "groupMemberRemoveFailedGroupMissing": "The group no longer exists",
+  "@groupMemberRemoveFailedGroupMissing": {
+    "description": "BUT-2153: reason under a member's name when the group no longer exists."
+  },
+  "a11yMemberRemoveFailed": "{name}, selected, could not be removed",
+  "@a11yMemberRemoveFailed": {
+    "description": "BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "groupMembersRemoveNone": "None of the selected members could be removed.",
   "@groupMembersRemoveNone": {
     "description": "P5-U33: failure when no selected member could be removed."

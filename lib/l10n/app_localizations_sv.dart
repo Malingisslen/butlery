@@ -15953,6 +15953,21 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte tas bort – ändringen sparades inte';
 
   @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'Du får inte längre ändra gruppen';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'Ändringen sparades inte';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing => 'Gruppen finns inte längre';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, vald, kunde inte tas bort';
+  }
+
+  @override
   String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';
 
   @override
