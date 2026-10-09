@@ -74,6 +74,14 @@ abstract class BaseSharedContentRepository<T>
 
   /// Decrement unread counter for a user (call when viewing content)
   Future<void> decrementUnreadCounter(String userId) async {
+    // Outside the best-effort catch below: the rules refuse another user's
+    // counter (BUT-2100), and swallowing that refusal would leave the badge
+    // silently stuck instead of failing the caller that passed the wrong uid.
+    if (userId != requireCurrentUserId()) {
+      throw PermissionDeniedException(
+        'Cannot decrement the unread count for another user',
+      );
+    }
     try {
       final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
       // Use a transaction to ensure we don't go below 0
