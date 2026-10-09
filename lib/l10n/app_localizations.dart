@@ -8665,6 +8665,120 @@ abstract class AppLocalizations {
   /// **'Inga förslag ännu'**
   String get menuVoteNoAlternatives;
 
+  /// Heading of an open vote on a menu slot.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad blir det?'**
+  String get menuVoteQuestion;
+
+  /// Time left on an open menu vote, in whole hours.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Stänger om 1 timme} other{Stänger om {count} timmar}}'**
+  String menuVoteClosesInHours(int count);
+
+  /// Shown when less than an hour is left on a menu vote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stänger inom en timme'**
+  String get menuVoteClosesSoon;
+
+  /// Said before a person votes: a cast vote is final (produktregler 4.8).
+  ///
+  /// In sv, this message translates to:
+  /// **'Din röst går inte att ändra. Läs igenom alternativen innan du väljer, också det som lades till sist.'**
+  String get menuVoteLockedNotice;
+
+  /// Marks an option added after people had voted.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Tillagd sent: 1 hade redan röstat} other{Tillagd sent: {count} hade redan röstat}}'**
+  String menuVoteLateOption(int count);
+
+  /// Adds another dish to an open vote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå något annat'**
+  String get menuVoteProposeOther;
+
+  /// The starter settles a vote with a clear winner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avgör'**
+  String get menuVoteDecide;
+
+  /// The starter breaks a tie by choosing this dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {recipeName}'**
+  String menuVoteDecideFor(String recipeName);
+
+  /// Heading when two or more options have the most votes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Oavgjort, kräver ett beslut'**
+  String get menuVoteTieTitle;
+
+  /// Shown to the person who started a tied vote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appen utser ingen vinnare på ett lika resultat. Du startade rösten, så du väljer.'**
+  String get menuVoteTieStarterBody;
+
+  /// Shown to others while a tied or expired vote waits on its starter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar på den som startade rösten.'**
+  String get menuVoteWaitingOnStarter;
+
+  /// Extends a tied vote by 24 hours.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ge det ett dygn'**
+  String get menuVoteGiveADay;
+
+  /// Settles an expired vote on the votes cast.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avgör ändå'**
+  String get menuVoteDecideAnyway;
+
+  /// Reopens an expired vote for another 24 hours.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna igen'**
+  String get menuVoteReopen;
+
+  /// Drops a vote and leaves the dish on the slot as it is.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släpp platsen'**
+  String get menuVoteRelease;
+
+  /// Heading of an expired vote with no votes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen röstade'**
+  String get menuVoteNobodyVoted;
+
+  /// Explains an expired vote with no votes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är inget oavgjort resultat, utan ett förslag ingen tog i. Ingen rätt läggs på platsen av det.'**
+  String get menuVoteNobodyVotedBody;
+
+  /// Error when writing a vote's winner into the menu failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vinnaren kunde inte läggas in i menyn'**
+  String get menuVoteApplyFailed;
+
+  /// Error when starting, adding to, casting or settling a menu vote failed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösten kunde inte sparas'**
+  String get menuVoteSaveFailed;
+
   /// No description provided for @invitationCheckConnectionAndRetry.
   ///
   /// In sv, this message translates to:
@@ -24482,7 +24596,7 @@ abstract class AppLocalizations {
   /// Semantics label for a menu vote option that is currently selected.
   ///
   /// In sv, this message translates to:
-  /// **'{name}, vald. Tryck för att ändra röst.'**
+  /// **'{name}, din röst.'**
   String a11yMenuVoteOptionSelected(String name);
 
   /// Semantics label for the activity-ping acknowledge row.

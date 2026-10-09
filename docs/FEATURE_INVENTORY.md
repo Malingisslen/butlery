@@ -665,10 +665,10 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Test coverage:** Verified — `realtime_menu_viewmodel_test.dart`, `realtime_menu_operations_test.dart`, `realtime_menu_state_test.dart`, `realtime_menu_service_test.dart`, `realtime_stream_manager_test.dart`, `menu_live_session_test.dart`, `veckomeny_live_menu_test.dart`.
 
 #### MENU-08: Menu slot voting
-- **Entry:** Per-slot vote UI inside a collaborative menu.
+- **Entry:** The vote button on a dish, and the vote card under it, in the weekly menu's live mode (a shared menu).
 - **User story:** As a group member, I want to start a vote between recipe alternatives for a slot and cast my vote so that the group decides democratically what to cook.
-- **Expected behavior:** Subscribes to live votes; create a vote on a (category, slot) with alternatives + a window (default 24h); members vote, add alternatives, resolve to a winner. Splits active/resolved.
-- **Edge cases:** No active vote → null (StateError caught); subscription cancels prior + guards disposed.
+- **Expected behavior:** Each person's starts, proposals, ballots and settlements live in their own document, `realtime_resources/{menuId}/votes/{uid}` (BUT-2118); the votes are derived from everyone's documents, counting only people on the menu now. Starting, proposing and settling need an edit role; anyone on the menu votes, once, and the card says so before the vote. The window is 24 hours; nothing decides at the deadline, and a tie is settled only by the person who started the vote. The winner goes into the menu as a swap.
+- **Edge cases:** Options added after voting began are marked with how many had already voted; an expired vote nobody settled is hidden after 7 days; a settled vote shows for 24 hours; a ballot naming an unknown option, or from someone who left, is not counted.
 - **Test coverage:** Verified — `menu_voting_viewmodel_test.dart`, `menu_slot_vote_test.dart`.
 
 #### MENU-09: Collaborative-edit conflict resolution + diff/recovery

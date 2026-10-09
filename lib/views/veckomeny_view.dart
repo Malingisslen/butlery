@@ -809,6 +809,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                                 : MenuContentWidgets.buildMenuContent(
                                     context,
                                     viewModel: viewModel,
+                                    votingViewModel: viewModel.votingViewModel,
                                     onRetry: _promptController.text.isNotEmpty
                                         ? () => unawaited(_generateMenu())
                                         : null,

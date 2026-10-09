@@ -33,6 +33,7 @@ import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_generation_run.dart';
 import 'package:butlery/viewmodels/menu/menu_draft_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_live_session.dart';
+import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 
 export 'package:butlery/viewmodels/menu/menu_generation_run.dart'
     show MenuGenerationEnd;
@@ -701,6 +702,7 @@ class MenuViewModel extends BaseViewModel {
 
   bool get isLiveMenu => _live?.isLive ?? false;
   String? get liveMenuId => _live?.resourceId;
+  MenuVotingViewModel? get votingViewModel => _live?.voting;
 
   /// Not live: the user's own menu, always editable. Live: the viewer's role.
   bool get canEditMenu => !isLiveMenu || _live!.canEdit;

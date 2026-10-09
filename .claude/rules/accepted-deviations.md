@@ -234,3 +234,4 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - A vote option is a dish from the proposer's recipes, written by an editor and read by the menu's participants with no content filter and no report path, the same as `menuSnapshot` (BUT-2118, 2026-10-09)
 - Participants can read each other's ballot documents; showing counts and never who voted for what is a view choice, so the app never calls the vote anonymous (BUT-2118, 2026-10-09)
 - A participant who leaves a live menu keeps their ballot document until its TTL or their account's erasure; it is not counted while they are off the roster (BUT-2118, 2026-10-09)
+- A live-menu ballot is written in a transaction, so it cannot be written offline: the write is refused and the vote card reports the failure. A refused write is logged, not audited; the repository is built without an audit repository (BUT-2118, 2026-10-09)

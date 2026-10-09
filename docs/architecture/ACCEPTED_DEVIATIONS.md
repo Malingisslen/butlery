@@ -5991,3 +5991,8 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   removes them from `participantIds`, which stops their starts, proposals and ballots counting;
   the document itself goes with the TTL (`expireAt`, set 60 days ahead on each write) or the
   account deletion cascade, which sweeps every menu.
+- **A ballot needs a connection.** `updateOwnBallot` reads and writes the person's document in
+  one transaction, and Firestore refuses a transaction offline, so nothing is queued; the vote
+  card shows the failure and the person tries again. A refused write is logged only:
+  `collaboration_module.dart` builds `FirebaseMenuVotingRepository` without an audit
+  repository.

@@ -5203,6 +5203,84 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuVoteNoAlternatives => 'Inga förslag ännu';
 
   @override
+  String get menuVoteQuestion => 'Vad blir det?';
+
+  @override
+  String menuVoteClosesInHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Stänger om $count timmar',
+      one: 'Stänger om 1 timme',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuVoteClosesSoon => 'Stänger inom en timme';
+
+  @override
+  String get menuVoteLockedNotice =>
+      'Din röst går inte att ändra. Läs igenom alternativen innan du väljer, också det som lades till sist.';
+
+  @override
+  String menuVoteLateOption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tillagd sent: $count hade redan röstat',
+      one: 'Tillagd sent: 1 hade redan röstat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuVoteProposeOther => 'Föreslå något annat';
+
+  @override
+  String get menuVoteDecide => 'Avgör';
+
+  @override
+  String menuVoteDecideFor(String recipeName) {
+    return 'Välj $recipeName';
+  }
+
+  @override
+  String get menuVoteTieTitle => 'Oavgjort, kräver ett beslut';
+
+  @override
+  String get menuVoteTieStarterBody =>
+      'Appen utser ingen vinnare på ett lika resultat. Du startade rösten, så du väljer.';
+
+  @override
+  String get menuVoteWaitingOnStarter => 'Väntar på den som startade rösten.';
+
+  @override
+  String get menuVoteGiveADay => 'Ge det ett dygn';
+
+  @override
+  String get menuVoteDecideAnyway => 'Avgör ändå';
+
+  @override
+  String get menuVoteReopen => 'Öppna igen';
+
+  @override
+  String get menuVoteRelease => 'Släpp platsen';
+
+  @override
+  String get menuVoteNobodyVoted => 'Ingen röstade';
+
+  @override
+  String get menuVoteNobodyVotedBody =>
+      'Det här är inget oavgjort resultat, utan ett förslag ingen tog i. Ingen rätt läggs på platsen av det.';
+
+  @override
+  String get menuVoteApplyFailed => 'Vinnaren kunde inte läggas in i menyn';
+
+  @override
+  String get menuVoteSaveFailed => 'Rösten kunde inte sparas';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Kontrollera din internetanslutning och försök igen.';
 
@@ -14732,7 +14810,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String a11yMenuVoteOptionSelected(String name) {
-    return '$name, vald. Tryck för att ändra röst.';
+    return '$name, din röst.';
   }
 
   @override
