@@ -353,10 +353,6 @@
       }
     }
   },
-  "bulkAddToMenuOverflowedAction": "Put the rest in next week",
-  "@bulkAddToMenuOverflowedAction": {
-    "description": "BUT-1034."
-  },
   "bulkAddToMenuSuccessNextWeek": "{count} recipes added to next week",
   "@bulkAddToMenuSuccessNextWeek": {
     "placeholders": {
@@ -3652,7 +3648,6 @@
   "invitationTryDifferentSearch": "Try searching with different words or check the spelling.",
   "loadingNoContent": "No content",
   "menuCommentLabel": "Comment (optional)",
-  "menuDeleteConfirmation": "Are you sure you want to delete this menu?",
   "menuDeletedSuccess": "Menu \"{name}\" deleted",
   "@menuDeletedSuccess": {
     "placeholders": {
@@ -3662,7 +3657,6 @@
     }
   },
   "menuDeleteFailed": "Could not delete menu",
-  "menuDeleteTitle": "Delete menu",
   "menuLoadedSuccess": "Menu \"{name}\" loaded.",
   "@menuLoadedSuccess": {
     "placeholders": {
