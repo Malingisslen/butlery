@@ -24113,6 +24113,66 @@ abstract class AppLocalizations {
   /// **'Anmälarens konto är raderat'**
   String get moderatorReporterErased;
 
+  /// Heading of the saved text copy section on a moderation report card (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparad kopia'**
+  String get moderatorEvidenceHeading;
+
+  /// Heading of the saved text copy section when the capture time is known (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparad kopia · {time}'**
+  String moderatorEvidenceHeadingAt(String time);
+
+  /// Shown when the saved copy was cut at the server's length limit (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten är förkortad'**
+  String get moderatorEvidenceTruncated;
+
+  /// Always shown under a saved copy so moderators know images are not kept (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara text sparas, inte bilder'**
+  String get moderatorEvidenceTextOnly;
+
+  /// No copy: the reported content no longer existed at capture (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet fanns inte kvar när anmälan kom in'**
+  String get moderatorEvidenceMissing;
+
+  /// No copy: the reporter had no read access to the content (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kopia: anmälaren kunde inte se innehållet'**
+  String get moderatorEvidenceNotVisible;
+
+  /// No copy: the content owner differs from the reported owner (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kopia: innehållet tillhör inte den anmälda'**
+  String get moderatorEvidenceOwnerMismatch;
+
+  /// No copy: the report type or reference is not supported (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kopia för den här typen av anmälan'**
+  String get moderatorEvidenceUnsupported;
+
+  /// No copy: capture failed, or the outcome is unknown to this app version (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopian kunde inte sparas'**
+  String get moderatorEvidenceFailed;
+
+  /// No evidence document for this report (BUT-1842).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kopia sparad'**
+  String get moderatorEvidenceNone;
+
   /// BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor.
   ///
   /// In sv, this message translates to:

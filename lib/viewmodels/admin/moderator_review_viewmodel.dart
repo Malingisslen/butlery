@@ -5,8 +5,29 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+
+/// What the review card knows about a report's saved text copy.
+sealed class ReportEvidenceState {
+  const ReportEvidenceState();
+}
+
+/// Lookup pending or failed (a failure is retried on the next emission).
+class ReportEvidenceLoading extends ReportEvidenceState {
+  const ReportEvidenceLoading();
+}
+
+/// No document.
+class ReportEvidenceNone extends ReportEvidenceState {
+  const ReportEvidenceNone();
+}
+
+class ReportEvidenceLoaded extends ReportEvidenceState {
+  final ReportEvidence evidence;
+  const ReportEvidenceLoaded(this.evidence);
+}
 
 /// ViewModel powering the admin-only moderator review screen.
 ///
@@ -26,6 +47,10 @@ class ModeratorReviewViewModel extends BaseViewModel {
   final Map<String, bool> _minorOwners = {};
   final Set<String> _minorLookupsInFlight = {};
 
+  /// Resolved per report id.
+  final Map<String, ReportEvidenceState> _evidence = {};
+  final Set<String> _evidenceLookupsInFlight = {};
+
   ModeratorReviewViewModel({ReportService? reportService})
     : _reportService = reportService ?? ServiceLocator.get<ReportService>();
 
@@ -42,6 +67,7 @@ class ModeratorReviewViewModel extends BaseViewModel {
         setLoading(false);
         notifyListeners();
         _resolveMinorOwners(list);
+        _resolveEvidence(list);
       },
       onError: (Object err) {
         if (isDisposed) return;
@@ -72,6 +98,47 @@ class ModeratorReviewViewModel extends BaseViewModel {
   /// `false` while the lookup is pending or when the report has no owner.
   bool isMinorOwner(ContentReport report) =>
       _minorOwners[report.contentOwnerId] ?? false;
+
+  ReportEvidenceState evidenceFor(ContentReport report) =>
+      _evidence[report.id] ?? const ReportEvidenceLoading();
+
+  Future<void> _resolveEvidence(List<ContentReport> reports) async {
+    final pending = reports
+        .map((r) => r.id)
+        .where(
+          (id) =>
+              id.isNotEmpty &&
+              // No document yet is asked again: the server writes the copy
+              // seconds after the report appears on this stream.
+              _evidence[id] is! ReportEvidenceLoaded &&
+              !_evidenceLookupsInFlight.contains(id),
+        )
+        .toSet();
+    if (pending.isEmpty) return;
+    _evidenceLookupsInFlight.addAll(pending);
+
+    final resolved = await Future.wait(
+      pending.map(
+        (id) async => (id, await _reportService.getReportEvidence(id)),
+      ),
+    );
+    if (isDisposed) return;
+
+    var any = false;
+    for (final (id, result) in resolved) {
+      _evidenceLookupsInFlight.remove(id);
+      // A failed lookup is left unresolved so the next emission retries it.
+      if (result == null) continue;
+      final evidence = result.evidence;
+      final next = evidence == null
+          ? const ReportEvidenceNone()
+          : ReportEvidenceLoaded(evidence);
+      if (_evidence[id].runtimeType == next.runtimeType) continue;
+      _evidence[id] = next;
+      any = true;
+    }
+    if (any) notifyListeners();
+  }
 
   Future<void> _resolveMinorOwners(List<ContentReport> reports) async {
     final pending = reports

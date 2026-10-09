@@ -49,6 +49,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -456,6 +457,116 @@ void main() {
         await service.isMinorAccount('u-cache'),
         isTrue,
         reason: 'served from the 30-minute cache, not re-read',
+      );
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // getReportEvidence (BUT-1842) — admin-only text copy of reported content
+  // ──────────────────────────────────────────────────────────────────
+  group('getReportEvidence', () {
+    setUp(() => fakeAuth.setAuthState(userId: adminUid));
+
+    test(
+      'a missing document is (evidence: null), not a failed lookup',
+      () async {
+        final result = await service.getReportEvidence('r-none');
+
+        expect(result, isNotNull);
+        expect(result!.evidence, isNull);
+      },
+    );
+
+    test('parses the document in report_evidence/{id}', () async {
+      await fakeFirestore
+          .collection(FirestoreCollections.reportEvidence)
+          .doc('r1')
+          .set({
+            'outcome': 'captured',
+            'truncated': true,
+            'text': {'title': 'Hej', 'description': 'Beskrivning'},
+          });
+      // Same id in another collection must not be read.
+      await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('r1')
+          .set(
+            {
+              'outcome': 'missing',
+              'text': {'title': 'Fel samling'},
+            },
+          );
+
+      final evidence = (await service.getReportEvidence('r1'))!.evidence!;
+
+      expect(evidence.reportId, 'r1');
+      expect(evidence.outcome, EvidenceOutcome.captured);
+      expect(evidence.truncated, isTrue);
+      expect(evidence.text, [('title', 'Hej'), ('description', 'Beskrivning')]);
+    });
+
+    test(
+      'null (retryable), not (evidence: null), when the read FAILS',
+      () async {
+        final repo = _MockFirestoreRepository();
+        final collection = _MockCollectionReference();
+        final doc = _MockDocumentReference();
+        when(
+          () => repo.collection(FirestoreCollections.reportEvidence),
+        ).thenReturn(collection);
+        when(() => collection.doc(any())).thenReturn(doc);
+        when(doc.get).thenThrow(
+          FirebaseException(plugin: 'firestore', code: 'permission-denied'),
+        );
+        final erroringService = ReportService(
+          reportRepository: mockReportRepo,
+          authRepository: fakeAuth,
+          firestoreRepository: repo,
+        );
+
+        expect(await erroringService.getReportEvidence('r1'), isNull);
+      },
+    );
+
+    test('a failure is not cached: the second call reads again', () async {
+      final repo = _MockFirestoreRepository();
+      final collection = _MockCollectionReference();
+      final doc = _MockDocumentReference();
+      when(
+        () => repo.collection(FirestoreCollections.reportEvidence),
+      ).thenReturn(collection);
+      when(() => collection.doc(any())).thenReturn(doc);
+      when(doc.get).thenThrow(
+        FirebaseException(plugin: 'firestore', code: 'unavailable'),
+      );
+      final flaky = ReportService(
+        reportRepository: mockReportRepo,
+        authRepository: fakeAuth,
+        firestoreRepository: repo,
+      );
+
+      expect(await flaky.getReportEvidence('r1'), isNull);
+      expect(await flaky.getReportEvidence('r1'), isNull);
+
+      verify(doc.get).called(2);
+    });
+
+    test('a success is cached within the 1-minute window', () async {
+      final evidenceDocs = fakeFirestore.collection(
+        FirestoreCollections.reportEvidence,
+      );
+      await evidenceDocs.doc('r1').set({'outcome': 'missing'});
+      expect(
+        (await service.getReportEvidence('r1'))!.evidence!.outcome,
+        EvidenceOutcome.missing,
+      );
+
+      await evidenceDocs.doc('r1').set({'outcome': 'captured'});
+
+      expect(
+        (await service.getReportEvidence('r1'))!.evidence!.outcome,
+        EvidenceOutcome.missing,
+        reason: 'served from the cache, not re-read',
       );
     });
   });

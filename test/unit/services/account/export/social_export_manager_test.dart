@@ -240,6 +240,8 @@ void main() {
         section['data_minimisation'],
         contains('Who reported you is not included'),
       );
+      expect(section['data_minimisation'], contains('text copy'));
+      expect(section['data_minimisation'], contains('180 days'));
       expect(section.containsKey('error'), isFalse);
     });
 

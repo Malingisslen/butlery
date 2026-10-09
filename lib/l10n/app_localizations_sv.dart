@@ -14438,6 +14438,42 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moderatorReporterErased => 'Anmälarens konto är raderat';
 
   @override
+  String get moderatorEvidenceHeading => 'Sparad kopia';
+
+  @override
+  String moderatorEvidenceHeadingAt(String time) {
+    return 'Sparad kopia · $time';
+  }
+
+  @override
+  String get moderatorEvidenceTruncated => 'Texten är förkortad';
+
+  @override
+  String get moderatorEvidenceTextOnly => 'Bara text sparas, inte bilder';
+
+  @override
+  String get moderatorEvidenceMissing =>
+      'Innehållet fanns inte kvar när anmälan kom in';
+
+  @override
+  String get moderatorEvidenceNotVisible =>
+      'Ingen kopia: anmälaren kunde inte se innehållet';
+
+  @override
+  String get moderatorEvidenceOwnerMismatch =>
+      'Ingen kopia: innehållet tillhör inte den anmälda';
+
+  @override
+  String get moderatorEvidenceUnsupported =>
+      'Ingen kopia för den här typen av anmälan';
+
+  @override
+  String get moderatorEvidenceFailed => 'Kopian kunde inte sparas';
+
+  @override
+  String get moderatorEvidenceNone => 'Ingen kopia sparad';
+
+  @override
   String get moderatorMinorAccountBadge => 'Minderårigt konto';
 
   @override
