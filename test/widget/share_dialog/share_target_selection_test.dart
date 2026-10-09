@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
+import 'package:butlery/widgets/common/share_dialog/share_target_selection_enhanced.dart';
 import 'package:butlery/models/user_profile.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   group('ShareTargetSelection Widget Tests', () {
@@ -160,5 +162,78 @@ void main() {
         expect(dividers.map((d) => d.color).toSet(), {edge});
       });
     }
+
+    group('friend row announcement', () {
+      final now = DateTime(2026, 1, 1);
+      final anna = UserProfile(
+        uid: 'anna',
+        displayName: 'Anna Lindgren',
+        email: 'anna@example.com',
+        joinedAt: now,
+        lastActiveAt: now,
+      );
+
+      void expectNameOnce(WidgetTester tester) {
+        final row = find.widgetWithText(ListTile, 'Anna Lindgren');
+        final lines = announcedLines(tester, row);
+        expect(
+          lines.where((l) => l == 'Anna Lindgren'),
+          hasLength(1),
+          reason: '$lines',
+        );
+        expect(lines.where((l) => l.contains('Profilbild')), isEmpty);
+        expectActivatable(tester, row);
+      }
+
+      testWidgets('plain list: name once, no avatar caption, activatable', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ShareTargetSelection.build(
+                context,
+                [anna],
+                <String>{},
+                '',
+                (_) {},
+                (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expectNameOnce(tester);
+        handle.dispose();
+      });
+
+      testWidgets('enhanced friends tab: name once, no avatar caption, '
+          'activatable', (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ShareTargetSelectionEnhanced.build(
+                context,
+                ShareTargetType.friends,
+                [anna],
+                const [],
+                <String>{},
+                <String>{},
+                '',
+                (_) {},
+                (_) {},
+                (_) {},
+                (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expectNameOnce(tester);
+        handle.dispose();
+      });
+    });
   });
 }

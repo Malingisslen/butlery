@@ -40237,3 +40237,6 @@ Retired verbatim from widgets-ui to make room:
   Pinning the FILTER is not pinning the CALL SITE — the durable guard is a source lint in
   `test/architecture/`, which must strip comments first. **Re-check every claim written while a check
   was silenced** (BUT-1931).
+
+### 2026-10-09 — BUT-1953 semantics pins: finder types and loading-state pump
+Seven staged label changes pinned in five test files. Each assertion probed red (create-group chip avatar label, quiet-hours tile restating caption, auth toggle onPressed null while loading and tooltip arms, ButleryLink isLink and no-label exclusion, slot cell day restated, TagStatusBadge info tap). Item 7 probed on the test side only (announceName false to true) because lib avatar files were in use by a parallel agent, so avatar forwarding through UserDisplayWidgets itself was not mutated. Finder-type split: announcedLines takes Finder, tester.semantics.tap takes SemanticsFinder. Loading-state auth view cannot pumpAndSettle.

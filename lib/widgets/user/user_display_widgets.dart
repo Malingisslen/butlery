@@ -24,6 +24,7 @@ class UserDisplayWidgets {
     Color? textColor,
     bool showStatus = false,
     bool isOnline = false,
+    bool announceName = true,
   }) => UserAvatarWidgets.avatar(
     imageUrl: imageUrl,
     displayName: displayName,
@@ -35,6 +36,7 @@ class UserDisplayWidgets {
     textColor: textColor,
     showStatus: showStatus,
     isOnline: isOnline,
+    announceName: announceName,
   );
 
   static Widget editableAvatar({

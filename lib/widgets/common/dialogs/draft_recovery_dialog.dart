@@ -133,7 +133,7 @@ class DraftRecoveryDialog extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Semantics(
-        label: context.l10n.a11yDraftRecoverTile(draftTitle),
+        label: context.l10n.a11yDraftRecoverTile,
         button: true,
         child: InkWell(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),

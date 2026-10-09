@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import '../../infrastructure/helpers/ink_fill.dart';
 
@@ -279,6 +280,33 @@ void main() {
         reason: 'a successful retry restores the placeable grid',
       );
     });
+  });
+
+  testWidgets('a slot cell announces the action and its day once, and can '
+      'be activated', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpHost(
+      tester,
+      open: (context) => showSlotPickerDialog(context),
+      onResult: (_) {},
+    );
+
+    final cell = find.bySemanticsLabel(RegExp(r'Välj lunch[\s\S]*mån'));
+    expect(cell, findsOneWidget);
+    final lines = announcedLines(tester, cell);
+    expect(
+      lines.where((l) => l == 'Välj lunch'),
+      hasLength(1),
+      reason: '$lines',
+    );
+    expect(
+      lines.where((l) => l.contains('mån')),
+      hasLength(1),
+      reason: '$lines',
+    );
+    expectNothingAnnouncedTwice(tester, cell);
+    expectActivatable(tester, cell);
+    handle.dispose();
   });
 
   group('single-select mode (BUT-1029 regression)', () {

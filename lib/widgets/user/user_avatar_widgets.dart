@@ -20,6 +20,10 @@ class UserAvatarWidgets {
   ///
   /// [explicitSize] overrides [size] when non-null — escape hatch for
   /// callers that need a pixel value the [ImageSize] enum doesn't carry.
+  ///
+  /// [announceName] adds "Profilbild för NAME" to the semantics. Pass false
+  /// where the name is visible beside the avatar in the same node, which would
+  /// otherwise read it twice.
   static Widget avatar({
     String? imageUrl,
     required String displayName,
@@ -32,6 +36,7 @@ class UserAvatarWidgets {
     Color? textColor,
     bool showStatus = false,
     bool isOnline = false,
+    bool announceName = true,
   }) {
     return Builder(
       builder: (context) {
@@ -128,21 +133,25 @@ class UserAvatarWidgets {
             ? Material(
                 color: Colors.transparent,
                 child: Semantics(
-                  label: context.l10n.a11yProfileImage(displayName),
+                  label: announceName
+                      ? context.l10n.a11yProfileImage(displayName)
+                      : null,
                   button: true,
                   child: PressScale(onTap: onTap, child: avatarWidget),
                 ),
               )
+            : announceName
             // BUT-908: also label the non-tappable avatar so screen readers
             // announce the person's name instead of a generic "image".
             // image:true + excludeSemantics:true keeps the inner Container
             // from leaking a duplicate "image" announcement.
-            : Semantics(
+            ? Semantics(
                 label: context.l10n.a11yProfileImage(displayName),
                 image: true,
                 excludeSemantics: true,
                 child: avatarWidget,
-              );
+              )
+            : avatarWidget;
       },
     );
   }
@@ -257,11 +266,15 @@ class UserAvatarWidgets {
         color: backgroundColor,
       ),
       child: Center(
-        child: initialsOrFallback(
-          initials: initials,
-          fontSize: fontSize,
-          color: textColor,
-          baseStyle: AppTextStyles.bodyLargeBold.copyWith(letterSpacing: 0.5),
+        // Initials restate the name, which is announced by the avatar label
+        // or by the visible name beside it.
+        child: ExcludeSemantics(
+          child: initialsOrFallback(
+            initials: initials,
+            fontSize: fontSize,
+            color: textColor,
+            baseStyle: AppTextStyles.bodyLargeBold.copyWith(letterSpacing: 0.5),
+          ),
         ),
       ),
     );

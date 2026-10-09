@@ -131,10 +131,11 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Bullar, tryck för att återställa')),
-          findsOneWidget,
-        );
+        final tile = find.bySemanticsLabel(RegExp(r'^Återställ\n'));
+        expect(tile, findsOneWidget);
+        expect(announcedLines(tester, tile), contains('Bullar'));
+        expectNothingAnnouncedTwice(tester, tile);
+        expectActivatable(tester, tile);
         handle.dispose();
       },
     );
@@ -162,12 +163,11 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(
-            RegExp(r'^Köttbullar, tryck för att återställa'),
-          ),
-          findsOneWidget,
-        );
+        final tile = find.bySemanticsLabel(RegExp(r'^Återställ\n'));
+        expect(tile, findsOneWidget);
+        expect(announcedLines(tester, tile), contains('Köttbullar'));
+        expectNothingAnnouncedTwice(tester, tile);
+        expectActivatable(tester, tile);
         handle.dispose();
       },
     );

@@ -66,9 +66,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yBlockGroupMember => 'Block';
 
   @override
-  String a11yRequiredFieldSuffix(String label) {
-    return '$label (required)';
-  }
+  String get a11yRequiredFieldSuffix => 'Required';
 
   @override
   String get maintenanceModeTitle => 'Maintenance mode';
@@ -242,8 +240,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11ySlotPickerCell(String day, String slot) {
-    return 'Pick $day $slot';
+  String a11ySlotPickerCell(String slot) {
+    return 'Pick $slot';
   }
 
   @override
@@ -4559,9 +4557,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importAiSuggested => 'Butlery\'s suggestion';
 
   @override
-  String get importAiSuggestedA11y => 'Butlery\'s suggestion';
-
-  @override
   String get importNoLinesToShow => 'No lines to show';
 
   @override
@@ -8067,21 +8062,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yNavigationLandmark => 'Main navigation';
 
   @override
-  String get a11yShareWithFriends => 'Share with friends';
-
-  @override
-  String get a11yNoItemsToShare => 'No items to share';
-
-  @override
-  String get a11yShareExternally => 'Share externally';
-
-  @override
   String get a11yAddFriend => 'Add friend';
 
   @override
-  String a11yTagStatusInfo(String status) {
-    return 'More information about $status';
-  }
+  String get a11yTagStatusInfo => 'More information';
 
   @override
   String a11yRateStars(int count) {
@@ -8705,12 +8689,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messagingFailed => 'Failed';
-
-  @override
-  String get a11ySelected => 'selected';
-
-  @override
-  String get a11yNotSelected => 'not selected';
 
   @override
   String get blockedUsersUnblockTitle => 'Unblock user?';
@@ -14726,9 +14704,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yPantryPickExpiry => 'Open the calendar';
 
   @override
-  String a11yDraftRecoverTile(String title) {
-    return '$title, press to restore';
-  }
+  String get a11yDraftRecoverTile => 'Restore';
 
   @override
   String get a11yShareModeOption => 'Press to select';
@@ -14796,9 +14772,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yRemoveOwnRating => 'Remove my rating';
 
   @override
-  String a11yPickTime(String label, String time) {
-    return 'Pick $label: current time $time';
-  }
+  String get a11yPickTime => 'Pick time';
 
   @override
   String get a11yCookingStepLongPressTimer => 'Long-press to start timer';

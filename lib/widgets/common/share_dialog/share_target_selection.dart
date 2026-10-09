@@ -123,6 +123,7 @@ class ShareTargetSelection {
             imageUrl: friend.avatarUrl,
             displayName: friend.displayName,
             size: ImageSize.small,
+            announceName: false,
           ),
           title: Text(
             friend.displayName,

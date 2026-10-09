@@ -274,6 +274,7 @@ class _NotificationPreferencesViewState
             child: Semantics(
               button: true,
               label: l10n.a11yOpenSystemSettings,
+              onTap: _openSystemSettings,
               excludeSemantics: true,
               child: TextButton(
                 key: const ValueKey('notification-system-off-open'),
@@ -551,7 +552,7 @@ class _NotificationPreferencesViewState
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: context.l10n.a11yPickTime(label, time),
+      label: context.l10n.a11yPickTime,
       button: true,
       child: PressFill(
         surface: PressSurface.base,

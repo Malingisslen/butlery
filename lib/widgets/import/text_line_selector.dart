@@ -38,7 +38,7 @@ class TextLineSelector extends StatelessWidget {
 
   /// BUT-931: lines Butlery's local heuristic detector suggested (vs. lines the
   /// user typed/selected themselves). When a line is in this set it gets a
-  /// "Butlerys förslag" chip and an a11y provenance hint, so the user can tell
+  /// "Butlerys förslag" chip, so the user can tell
   /// suggested content apart from their own. Labelled "Butlery's suggestion"
   /// rather than "AI" because detection is a rule-based heuristic, not an LLM.
   final Set<int> aiSuggestedIndices;
@@ -276,10 +276,8 @@ class _LineItem extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Semantics(
-          label: isAiSuggested
-              ? '${text.trim()}, ${context.l10n.importAiSuggestedA11y}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}'
-              : '${text.trim()}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}',
           button: true,
+          selected: isSelected,
           child: PressFill(
             surface: isSelected ? PressSurface.raised : PressSurface.base,
             child: InkWell(
