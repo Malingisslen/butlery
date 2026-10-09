@@ -99,6 +99,7 @@ class MenuShoppingMergeLine {
     required this.category,
     required this.sourceCount,
     this.mark = MenuShoppingPantryMark.none,
+    this.extraAmounts = const [],
   });
 
   final String name;
@@ -111,6 +112,9 @@ class MenuShoppingMergeLine {
   /// How many recipe lines went into the row.
   final int sourceCount;
   final MenuShoppingPantryMark mark;
+
+  /// BUT-2304: amounts in units that could not join [unit].
+  final List<({double amount, String unit})> extraAmounts;
 }
 
 /// P6-U02: what "Lägg till N varor" will do, computed before anything is
@@ -265,6 +269,7 @@ class MenuShoppingMergePlanner {
     category: row.category,
     sourceCount: row.sourceCount,
     mark: mark,
+    extraAmounts: row.extraAmounts,
   );
 
   /// Q4-03: the same deduction for one row outside a merge (the recipe's
@@ -325,6 +330,11 @@ class MenuShoppingMergePlanner {
   static _Deduction _deduct(AggregatedShoppingItem row, List<PantryItem> at) {
     if (at.any((p) => p.expiryStatus == PantryExpiryStatus.expired)) {
       return const _Marked(MenuShoppingPantryMark.checkDate);
+    }
+    // BUT-2304: several amounts in unconvertible units cannot be deducted in
+    // one unit.
+    if (row.extraAmounts.isNotEmpty) {
+      return const _Marked(MenuShoppingPantryMark.maybeAtHome);
     }
     final need = row.amount;
     if (need == null || need <= 0) {
