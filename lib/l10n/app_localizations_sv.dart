@@ -16570,6 +16570,36 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String weekMenuDraftResumeTitle(String when) {
+    return 'Påbörjad veckomeny från $when';
+  }
+
+  @override
+  String weekMenuDraftDaysDone(int count) {
+    return '$count av 7 dagar klara';
+  }
+
+  @override
+  String get weekMenuDraftDayEmpty => 'ingen rätt';
+
+  @override
+  String weekMenuDraftDropped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rätter passar inte längre och togs bort',
+      one: '1 rätt passar inte längre och togs bort',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekMenuDraftRestoreFailed => 'Veckomenyn kunde inte återställas';
+
+  @override
+  String get weekMenuDraftRestoreFailedKept => 'Utkastet finns kvar.';
+
+  @override
   String draftTimeLeftHours(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

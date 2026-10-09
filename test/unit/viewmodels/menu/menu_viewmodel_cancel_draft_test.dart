@@ -12,6 +12,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:clock/clock.dart';
 
@@ -116,6 +117,13 @@ Recipe _dinner(String id, {TagResult? tags}) {
   return (tags == null ? builder : builder.withTagResult(tags)).build();
 }
 
+Recipe _dish(String id, String title) => RecipeBuilder()
+    .withId(id)
+    .withTitle(title)
+    .withMealType('Middag')
+    .withTagResult(_nuts(TriState.free))
+    .build();
+
 TagResult _nuts(TriState status) => TagResult(
   tags: const {},
   allergenStatus: {'nötter': status},
@@ -192,6 +200,11 @@ void main() {
   });
 
   tearDown(() => vm.dispose());
+
+  Future<WeeklyMenuDraft?> storedDraftObject() async {
+    await pumpEventQueue();
+    return WeeklyMenuDraftStore().load('u1');
+  }
 
   Future<String?> storedDraft() async {
     await pumpEventQueue();
@@ -682,6 +695,107 @@ void main() {
       vm.hideDraft();
       await vm.discardDraft(hidden);
       expect(await storedDraft(), isNull);
+    });
+  });
+
+  group('the draft carries dish names for the resume card', () {
+    final soupDish = _dish('r-soup', 'Ärtsoppa');
+    final stewDish = _dish('r-stew', 'Oxgryta');
+    final nameless = _dish('r-nameless', '');
+
+    setUp(() {
+      recipes.setRecipeState(
+        recipes: [soupDish, stewDish, nameless],
+        currentUserId: 'u1',
+        currentUserDisplayName: 'T',
+        isInitialized: true,
+        isLoading: false,
+        error: null,
+      );
+    });
+
+    test('a generation keeps the title of each recorded dish under its id '
+        'and leaves out an empty title', () async {
+      await generate('tre middagar', {
+        'Middag': [soupDish, nameless, stewDish],
+      });
+
+      final draft = await storedDraftObject();
+
+      expect(draft!.recipeNames, {'r-soup': 'Ärtsoppa', 'r-stew': 'Oxgryta'});
+      expect(
+        draft.recipeIdsByMealType['Middag'],
+        [
+          'r-soup',
+          'r-nameless',
+          'r-stew',
+        ],
+        reason: 'the nameless dish is still in the draft, only unnamed',
+      );
+
+      // The reader drops an empty name too, so only the stored JSON can say
+      // the writer left it out.
+      final stored = jsonDecode((await storedDraft())!) as Map<String, Object?>;
+      expect(stored['names'], {'r-soup': 'Ärtsoppa', 'r-stew': 'Oxgryta'});
+    });
+
+    test('a swap rewrites the names to the dishes now in the menu', () async {
+      recipes.setRecipeState(
+        recipes: [soupDish, stewDish],
+        currentUserId: 'u1',
+        currentUserDisplayName: 'T',
+        isInitialized: true,
+        isLoading: false,
+        error: null,
+      );
+      await generate('en middag', {
+        'Middag': [soupDish],
+      });
+      expect((await storedDraftObject())!.recipeNames, {
+        'r-soup': 'Ärtsoppa',
+      });
+
+      final swapped = await vm.swapRecipe(soupDish, 'Middag');
+      expect(swapped.recipe, stewDish);
+
+      expect((await storedDraftObject())!.recipeNames, {
+        'r-stew': 'Oxgryta',
+      });
+    });
+
+    test('a restore that dropped a dish writes back the names of the kept '
+        'ones only', () async {
+      await generate('två middagar', {
+        'Middag': [soupDish, stewDish],
+      });
+      await pumpEventQueue();
+      vm.dispose();
+
+      // The stew was deleted since.
+      recipes.setRecipeState(
+        recipes: [soupDish, nameless],
+        currentUserId: 'u1',
+        currentUserDisplayName: 'T',
+        isInitialized: true,
+        isLoading: false,
+        error: null,
+      );
+      vm = MenuViewModel(
+        recipeService: recipes,
+        menuService: menuService,
+        analyticsService: analytics,
+      );
+      await vm.checkForDraft();
+      expect(vm.pendingDraft!.recipeNames, {
+        'r-soup': 'Ärtsoppa',
+        'r-stew': 'Oxgryta',
+      });
+
+      expect(await vm.restoreDraft(), 1);
+
+      final rewritten = await storedDraftObject();
+      expect(rewritten!.recipeIdsByMealType['Middag'], ['r-soup']);
+      expect(rewritten.recipeNames, {'r-soup': 'Ärtsoppa'});
     });
   });
 }

@@ -39,6 +39,7 @@ import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
+import 'package:butlery/widgets/menu/veckomeny_draft_resume_card.dart';
 import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
@@ -112,6 +113,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     } else if (widget.sharedMenu != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<MenuViewModel>().loadFromSharedMenu(widget.sharedMenu!);
+      });
+    } else {
+      // BUT-2157: a kept week draft is offered only on the user's own menu.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(context.read<MenuViewModel>().checkForDraft());
       });
     }
   }
@@ -388,6 +394,70 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       ),
     );
     return result ?? false;
+  }
+
+  bool _restoringDraft = false;
+
+  /// BUT-2157: the draft comes back in Lista, where the suggestion is shown
+  /// and placed from, with its prompt.
+  Future<void> _restoreDraft() async {
+    final menuVm = context.read<MenuViewModel>();
+    setState(() => _restoringDraft = true);
+    final dropped = await menuVm.restoreDraft();
+    if (!mounted) return;
+    setState(() => _restoringDraft = false);
+    if (dropped == null) {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.weekMenuDraftRestoreFailed,
+        preserved: context.l10n.weekMenuDraftRestoreFailedKept,
+      );
+      return;
+    }
+    _promptController.text = menuVm.lastPrompt;
+    await _setViewMode(VeckomenyViewMode.lista);
+    if (!mounted || dropped == 0) return;
+    SnackBarUtils.showInfo(context, context.l10n.weekMenuDraftDropped(dropped));
+  }
+
+  void _discardDraft() {
+    final menuVm = context.read<MenuViewModel>();
+    final draft = menuVm.hideDraft();
+    if (draft == null) return;
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.draftsDiscarded(1),
+      onUndo: () => menuVm.undoDiscardDraft(draft),
+      onCommit: () => menuVm.discardDraft(draft),
+    );
+  }
+
+  /// Shown while the screen holds no menu and no run, and the visible week
+  /// is known to be empty. It steps aside while the keyboard is up, as the
+  /// placement footer does: the card sits above the prompt in a part of the
+  /// body that does not scroll.
+  Widget? _buildDraftCard(BuildContext context, MenuViewModel viewModel) {
+    final draft = viewModel.pendingDraft;
+    if (draft == null ||
+        MediaQuery.viewInsetsOf(context).bottom > 0 ||
+        widget.realtimeMenuId != null ||
+        viewModel.hasMenu ||
+        viewModel.isGenerating ||
+        context.watch<WeeklyMenuPlanViewModel>().plannedDishCount != 0) {
+      return null;
+    }
+    return Padding(
+      padding: AppDimensions.responsiveHorizontalPadding(
+        context,
+      ).add(const EdgeInsets.only(top: AppDimensions.spacingSm)),
+      child: VeckomenyDraftResumeCard(
+        draft: draft,
+        now: clock.now(),
+        restoring: _restoringDraft,
+        onRestore: () => unawaited(_restoreDraft()),
+        onDiscard: _discardDraft,
+      ),
+    );
   }
 
   void _clearMenu() {
@@ -699,6 +769,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             const FamilyPresenceBar(),
             // BUT-408: live cooking session card for the user's groups.
             const VeckomenyCookingSessionCard(),
+            ?_buildDraftCard(context, viewModel),
             // A new generation would overwrite the menu for everyone.
             if (widget.realtimeMenuId == null)
               Padding(

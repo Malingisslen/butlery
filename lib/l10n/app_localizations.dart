@@ -27191,6 +27191,42 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{finns kvar i 1 dag} other{finns kvar i {count} dagar}}'**
   String draftTimeLeftDays(int count);
 
+  /// No description provided for @weekMenuDraftResumeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Påbörjad veckomeny från {when}'**
+  String weekMenuDraftResumeTitle(String when);
+
+  /// No description provided for @weekMenuDraftDaysDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} av 7 dagar klara'**
+  String weekMenuDraftDaysDone(int count);
+
+  /// No description provided for @weekMenuDraftDayEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'ingen rätt'**
+  String get weekMenuDraftDayEmpty;
+
+  /// No description provided for @weekMenuDraftDropped.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rätt passar inte längre och togs bort} other{{count} rätter passar inte längre och togs bort}}'**
+  String weekMenuDraftDropped(int count);
+
+  /// No description provided for @weekMenuDraftRestoreFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckomenyn kunde inte återställas'**
+  String get weekMenuDraftRestoreFailed;
+
+  /// No description provided for @weekMenuDraftRestoreFailedKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utkastet finns kvar.'**
+  String get weekMenuDraftRestoreFailedKept;
+
   /// No description provided for @draftTimeLeftHours.
   ///
   /// In sv, this message translates to:

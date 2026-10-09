@@ -12773,6 +12773,33 @@
       }
     }
   },
+  "weekMenuDraftResumeTitle": "Påbörjad veckomeny från {when}",
+  "@weekMenuDraftResumeTitle": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "weekMenuDraftDaysDone": "{count} av 7 dagar klara",
+  "@weekMenuDraftDaysDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftDayEmpty": "ingen rätt",
+  "weekMenuDraftDropped": "{count, plural, =1{1 rätt passar inte längre och togs bort} other{{count} rätter passar inte längre och togs bort}}",
+  "@weekMenuDraftDropped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftRestoreFailed": "Veckomenyn kunde inte återställas",
+  "weekMenuDraftRestoreFailedKept": "Utkastet finns kvar.",
   "draftTimeLeftHours": "{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}",
   "@draftTimeLeftHours": {
     "placeholders": {
