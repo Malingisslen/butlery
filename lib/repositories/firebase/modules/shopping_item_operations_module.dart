@@ -179,20 +179,6 @@ class ShoppingItemOperationsModule {
   ///    awaited, so the first write of a day pays one extra round trip.) The
   ///    cost of swallowing: a systematic failure degrades the metric quietly,
   ///    and nothing alerts on this warning today. Stated, not assumed covered.
-  ///
-  /// KNOWN EDGE, not fixed here: a parent document that is MISSING `updatedAt`
-  /// parses as `clock.now()` — `UnifiedShoppingList.fromMap` resolves it via
-  /// `safeRequiredDateTime` with no `defaultValue`, and BUT-1755 deliberately
-  /// gave the deterministic sentinel to `createdAt` only. So [known] reads as
-  /// "today", this short-circuits, and such a list is never stamped. The guard
-  /// fails toward NOT writing, which is the failure this ticket exists to
-  /// remove. It is narrow — `toFirestore()` always emits the field, so only a
-  /// legacy or hand-written document can be missing it, and such a document is
-  /// already invisible to the probe's range query — and the fix belongs at the
-  /// parse seam rather than behind a fuzzy "is this timestamp suspiciously
-  /// close to now" heuristic here, which would re-bill a write on every rapid
-  /// successive tick. Tracked as BUT-1790 rather than widened into BUT-1755's
-  /// deliberately-scoped decision.
   Future<void> _touchPersonalListDay(
     String uid,
     String listId,
