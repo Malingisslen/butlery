@@ -456,7 +456,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         widget.realtimeMenuId != null ||
         !viewModel.hasMenu ||
         viewModel.isGenerating ||
-        viewModel.hasError) {
+        viewModel.hasError ||
+        // BUT-2275: the Scaffold lifts the body over the keyboard but not
+        // this slot, so the buttons would sit unreachable under it.
+        MediaQuery.viewInsetsOf(context).bottom > 0) {
       return null;
     }
     return MenuPlacementChoiceFooter(
@@ -756,8 +759,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                     // text in the content area, never an overlay over the
                     // view (Skarmar v12 del 1 #veckogenererarpanel;
                     // ux-beslut.json D-03).
-                    ? Align(
-                        alignment: Alignment.topCenter,
+                    ? SingleChildScrollView(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

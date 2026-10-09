@@ -46,25 +46,29 @@ class MenuPlacementChoiceFooter extends StatelessWidget {
         AppDimensions.spacingMd,
         AppDimensions.spacingMd,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.menuPlaceAutoButton,
-            icon: ButleryIcons.calendar,
-            onPressed: onPlaceAuto,
-            isLoading: isPlacing,
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          ActionButtons.outlinedButton(
-            context,
-            label: context.l10n.menuPlaceManualButton,
-            icon: ButleryIcons.hand,
-            onPressed: onPlaceManual,
-          ),
-        ],
+      // BUT-2275: the bottom slot runs under the home indicator.
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ActionButtons.primaryButton(
+              context,
+              label: context.l10n.menuPlaceAutoButton,
+              icon: ButleryIcons.calendar,
+              onPressed: onPlaceAuto,
+              isLoading: isPlacing,
+            ),
+            const SizedBox(height: AppDimensions.spacingSm),
+            ActionButtons.outlinedButton(
+              context,
+              label: context.l10n.menuPlaceManualButton,
+              icon: ButleryIcons.hand,
+              onPressed: onPlaceManual,
+            ),
+          ],
+        ),
       ),
     );
   }

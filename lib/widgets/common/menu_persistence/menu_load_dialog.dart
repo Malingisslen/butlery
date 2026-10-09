@@ -293,17 +293,22 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       });
     }
 
+    // The sheet may be closed before the delete commits; the root navigator
+    // outlives it, so a failure still reaches the user.
+    final rootContext = Navigator.of(context, rootNavigator: true).context;
     SnackBarUtils.showUndoDeferred(
       context,
       context.l10n.menuDeletedSuccess((menu.name as String?).orEmpty()),
       onUndo: restore,
       onCommit: () async {
         final success = await widget.viewModel.deleteSavedMenu(menu.key);
-        if (success || !mounted) return;
+        if (success) return;
+        final target = mounted ? context : rootContext;
+        if (!target.mounted) return;
         restore();
         SnackBarUtils.showFailure(
-          context,
-          what: widget.viewModel.error ?? context.l10n.menuDeleteFailed,
+          target,
+          what: widget.viewModel.error ?? target.l10n.menuDeleteFailed,
         );
       },
     );
