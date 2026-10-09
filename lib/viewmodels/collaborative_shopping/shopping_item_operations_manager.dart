@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -103,7 +104,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         name: itemName.trim(),
         amount: 1.0,
         unit: '',
-        category: AppLocale.current.categoryOther,
+        category: ShoppingCategory.other,
       );
 
       if (id != null) {
