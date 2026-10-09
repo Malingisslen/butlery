@@ -89,7 +89,10 @@
   caller); Art. 17 for the same collection is covered by the deletion cascade; and the
   deleted-symbol sweep reaches the TEST FILE'S OWN HEADER DOCSTRING and any plan/rules
   comment naming it — those survive the compiler and become false coverage claims. Prove
-  "zero callers" with `git log -S` on the writer, not just today's grep.
+  "zero callers" with `git log -S` on the writer, not just today's grep — but run
+  `git rev-parse --is-shallow-repository` first: in a shallow clone `-S` stops at the graft
+  and its silence proves nothing, so put the history claim in `notVerified` and ask for a
+  live-data count of the field the writer stamped (rows it left are what Art. 17 must reach).
 - An OPT-IN named-parameter guard defaults every EXISTING caller into the restricted branch
   (silent no-op) — ship a named METHOD on the interface instead, with its own exception
   type and a caller that honours the result (ADR-002).

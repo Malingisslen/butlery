@@ -11116,6 +11116,30 @@ assert the draft key). Not verified: whether an in-flight generation finishing a
 sign-out can re-write the cleared draft (depends on currentUserProfile being null by then).
 Verdict: pass.
 
+## 2026-10-09 — BUT-2334 gate review: deleting FirebaseMenuCollaborationRepository (closed by removal)
+
+Scope: deleted firebase_menu_collaboration_repository.dart, menu_collaboration_repository.dart,
+collaborative_menu_operations.dart and its repository test; edited unified_menu_service.dart
+(collaborative getter, ctor seam, triggerNotification removed), collaboration_module.dart (DI
+registration removed), production_mocks.dart (MockMenuCollaborationRepository removed),
+menu_operations_test.dart, unified_menu_service_test.dart. The deleted enableCollaboration did
+`shared_content/{menuId}.update(...)` with no owner check, stamping allowCollaboration,
+collaboratorIds, collaboratorDisplayNames, collaborationEnabledAt, collaborationEnabledBy and
+collaborationSettings. Verified: a grep of lib/, functions/src, firestore.rules, test/, tools,
+scripts, .github, docs, tasks and .claude found no surviving reference except unrelated
+names and the append-only archives; no rule, CF or lib reader references those six fields; the
+shared_content update rule already requires owner or isSharedMember (stranger refused at the
+server), so the deletion narrows nothing server-side; the live path (createMenuInvitation ->
+RealtimeMenuService.createRealtimeMenu, _loadMenus over realtime_resources/realtime_menus) is
+untouched; dispose never called the deleted ops' dispose. flutter analyze on the five changed
+files: clean. Not verified: historical callers — the clone is shallow
+(`--is-shallow-repository` true), so `git log -S "enableMenuCollaboration("` stopped at the
+graft; and whether any live shared_content row carries collaborationEnabledBy/collaboratorIds
+(uids no erasure step targets by name). Lesson merged into the repo-guards-audit
+"closed by REMOVAL" bullet. Second round re-read both edited files after the dangling
+"Matches the BUT-1142 pattern" sentence was struck and the ctor's trailing blank line was formatted
+away. Verdict: pass.
+
 ## 2026-10-09 — BUT-1700: admin analytics repositories rethrow failed reads
 
 Superseded in `firebase-backend-security.repo-guards-audit.knowledge.md`, "Admin-only
