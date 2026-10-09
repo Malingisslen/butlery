@@ -9251,6 +9251,183 @@ async function scenario_commentSweepFailures(): Promise<void> {
 }
 
 /**
+ * Stages a row deleted between the scrub's query and its commit: the first
+ * batch that writes `path` deletes it and rejects with NOT_FOUND, applying
+ * nothing, as a real atomic batch does. Every later batch that updates a
+ * missing row is rejected the same way, so retrying the stale snapshot fails
+ * where re-reading succeeds. Returns the commit attempts.
+ */
+function deleteDuringFirstCommit(store: FakeFirestore, path: string): {
+  commits: number;
+} {
+  const seen = { commits: 0 };
+  let raced = false;
+  const db = store as unknown as Record<string, unknown>;
+  const realBatch = db.batch as () => Record<string, unknown>;
+  db.batch = () => {
+    const b = realBatch.call(store);
+    const paths: string[] = [];
+    const realUpdate = b.update as (ref: { path: string }, d: unknown) => void;
+    b.update = (ref: { path: string }, data: unknown) => {
+      paths.push(ref.path);
+      realUpdate.call(b, ref, data);
+    };
+    const realCommit = b.commit as () => Promise<void>;
+    b.commit = async () => {
+      seen.commits++;
+      if (!raced && paths.includes(path)) {
+        raced = true;
+        const [collection, id] = path.split("/");
+        await asDb(store).collection(collection).doc(id).delete();
+        throw Object.assign(new Error(`no document to update: ${path}`), {
+          code: 5,
+        });
+      }
+      const missing = paths.find((p) => !store.has(p));
+      if (missing !== undefined) {
+        throw Object.assign(new Error(`no document to update: ${missing}`), {
+          code: 5,
+        });
+      }
+      return realCommit.call(b);
+    };
+    return b;
+  };
+  return seen;
+}
+
+/**
+ * BUT-2338: a comment or rating deleted mid-scrub (its recipe deleted by
+ * `onRecipeDeleted`, or its author deleting it) costs one re-read, not the
+ * step: the second query no longer returns it and the rest are scrubbed.
+ */
+async function scenario_scrubsSurviveARowDeletedMidCommit(): Promise<void> {
+  const {
+    scrubCommentSharedWith,
+    scrubCommentReactions,
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+
+  const share = new FakeFirestore();
+  share.set("recipe_comments/gone", { authorId: OTHER, sharedWithUserIds: [UID] });
+  share.set("recipe_comments/kept", {
+    authorId: OTHER,
+    sharedWithUserIds: [UID, THIRD],
+  });
+  const shareRace = deleteDuringFirstCommit(share, "recipe_comments/gone");
+  check(
+    "a comment deleted mid-scrub does not fail the share-list scrub",
+    (await scrubCommentSharedWith(asDb(share), UID)) === true,
+  );
+  check(
+    "…the other comment is scrubbed on the second pass",
+    JSON.stringify(share.get("recipe_comments/kept")?.sharedWithUserIds) ===
+      JSON.stringify([THIRD]),
+    JSON.stringify(share.get("recipe_comments/kept")),
+  );
+  check(
+    "…after exactly one retry",
+    shareRace.commits === 2,
+    `commits: ${shareRace.commits}`,
+  );
+
+  const reactions = new FakeFirestore();
+  reactions.set("recipe_comments/gone", {
+    authorId: OTHER,
+    reactions: { heart: [UID] },
+  });
+  reactions.set("recipe_comments/kept", {
+    authorId: OTHER,
+    reactions: { heart: [UID, THIRD] },
+  });
+  deleteDuringFirstCommit(reactions, "recipe_comments/gone");
+  check(
+    "a comment deleted mid-scrub does not fail the reactions scrub",
+    (await scrubCommentReactions(asDb(reactions), UID)) === true,
+  );
+  check(
+    "…the other comment loses the erased uid's reaction",
+    JSON.stringify(
+      (reactions.get("recipe_comments/kept")?.reactions as DocData)?.heart,
+    ) === JSON.stringify([THIRD]),
+    JSON.stringify(reactions.get("recipe_comments/kept")),
+  );
+
+  const rating = new FakeFirestore();
+  rating.set("recipe_ratings/gone", { userId: OTHER, recipeOwnerId: UID, rating: 1 });
+  rating.set("recipe_ratings/kept", { userId: THIRD, recipeOwnerId: UID, rating: 2 });
+  deleteDuringFirstCommit(rating, "recipe_ratings/gone");
+  check(
+    "a rating deleted mid-scrub does not fail the rating owner scrub",
+    (await scrubRatingRecipeOwner(asDb(rating), UID)) === true,
+  );
+  check(
+    "…the other rating loses the owner stamp",
+    !("recipeOwnerId" in (rating.get("recipe_ratings/kept") ?? {})),
+    JSON.stringify(rating.get("recipe_ratings/kept")),
+  );
+}
+
+/**
+ * BUT-2338: the retry is one re-read on NOT_FOUND and nothing more. A
+ * NOT_FOUND that comes back on the second pass fails the step, and any other
+ * code fails it without a retry.
+ */
+async function scenario_scrubRetryIsBounded(): Promise<void> {
+  const {
+    scrubCommentSharedWith,
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+
+  const stuck = new FakeFirestore();
+  stuck.set("recipe_comments/x", { authorId: OTHER, sharedWithUserIds: [UID] });
+  stuck.batchFailures.set("recipe_comments/x", 5);
+  check(
+    "a NOT_FOUND on both passes fails the share-list scrub",
+    (await scrubCommentSharedWith(asDb(stuck), UID)) === false,
+  );
+
+  const stuckRating = new FakeFirestore();
+  stuckRating.set("recipe_ratings/x", { userId: OTHER, recipeOwnerId: UID });
+  stuckRating.batchFailures.set("recipe_ratings/x", 5);
+  check(
+    "a NOT_FOUND on both passes fails the rating owner scrub",
+    (await scrubRatingRecipeOwner(asDb(stuckRating), UID)) === false,
+  );
+
+  const internal = new FakeFirestore();
+  internal.set("recipe_comments/x", { authorId: OTHER, sharedWithUserIds: [UID] });
+  internal.batchFailures.set("recipe_comments/x", 13);
+  let reads = 0;
+  const db = internal as unknown as Record<string, unknown>;
+  const realCollection = db.collection as (name: string) => Record<string, unknown>;
+  db.collection = (name: string) => {
+    const coll = realCollection.call(internal, name);
+    const realWhere = coll.where as (...a: unknown[]) => Record<string, unknown>;
+    coll.where = (...a: unknown[]) => {
+      const q = realWhere.apply(coll, a);
+      const realLimit = q.limit as (n: number) => Record<string, unknown>;
+      q.limit = (n: number) => {
+        const lq = realLimit.call(q, n);
+        const realGet = lq.get as () => Promise<unknown>;
+        lq.get = () => {
+          reads++;
+          return realGet.call(lq);
+        };
+        return lq;
+      };
+      return q;
+    };
+    return coll;
+  };
+  check(
+    "any other code fails the scrub",
+    (await scrubCommentSharedWith(asDb(internal), UID)) === false,
+  );
+  check("…without a second read", reads === 1, `reads: ${reads}`);
+}
+
+/**
  * BUT-2112: each of the three probe legs fires on its own residue and stays
  * quiet on a neighbour's. Every dirty store holds nothing else of the user's,
  * so only the leg under test can fire.
@@ -10116,6 +10293,8 @@ async function main(): Promise<void> {
   await scenario_implausibleCommentSweepsDecline();
   await scenario_commentSweepsRunAtTheCap();
   await scenario_commentSweepFailures();
+  await scenario_scrubsSurviveARowDeletedMidCommit();
+  await scenario_scrubRetryIsBounded();
   await scenario_probeSeesLeftoverCommentTraces();
   await scenario_commentReactionsLoseOnlyTheErasedUid();
   await scenario_implausibleReactionSweepDeclines();
