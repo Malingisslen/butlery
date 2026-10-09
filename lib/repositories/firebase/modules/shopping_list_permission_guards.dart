@@ -59,6 +59,9 @@ class ShoppingListPermissionGuards {
   })
   validateRequiredFields;
 
+  /// `memberPermissions.size() <= 200` in the rule's admin limb.
+  static const int maxMembers = 200;
+
   ShoppingListPermissionGuards({
     required this.logPermissionCheck,
     required this.validateUpdatePermission,
@@ -66,7 +69,7 @@ class ShoppingListPermissionGuards {
   });
 
   /// Throws [PermissionDeniedException] if a non-owner's whole-list write would
-  /// change who owns the list or what anyone's permission is.
+  /// change who owns the list.
   ///
   /// Both write paths take their payload from the caller — an entity for
   /// `updateCollaborativeList`, a mutator for `mutateCollaborativeList` — so
@@ -116,8 +119,25 @@ class ShoppingListPermissionGuards {
     );
     if (!rewritesOwner && !rewritesMembers && !rewritesCreatedAt) return;
 
+    // BUT-2013, the rule's `adminManagesMembers()`: an admin may change the
+    // member map as the owner may, except the owner's own entry, absent
+    // included, and past the rule's 200-key bound.
+    final isAdmin = stored.memberPermissions[uid] == SharedListPermission.admin;
+    final rewritesOwnerEntry =
+        proposed.memberPermissions[stored.ownerId] !=
+        stored.memberPermissions[stored.ownerId];
+    if (isAdmin &&
+        !rewritesOwner &&
+        !rewritesCreatedAt &&
+        !rewritesOwnerEntry &&
+        proposed.memberPermissions.length <= maxMembers) {
+      return;
+    }
+
     final field = rewritesOwner
         ? 'ownerId'
+        : isAdmin && rewritesOwnerEntry
+        ? "the owner's memberPermissions entry"
         : rewritesMembers
         ? 'memberPermissions'
         : 'createdAt';
@@ -126,7 +146,9 @@ class ShoppingListPermissionGuards {
       resource: 'collaborative_shopping_list',
       operation: 'update',
       granted: false,
-      details: 'List: ${proposed.id}, non-owner attempted to rewrite $field',
+      details:
+          'List: ${proposed.id}, ${isAdmin ? 'admin' : 'non-owner'} '
+          'attempted to rewrite $field',
     );
     throw PermissionDeniedException(
       'User $uid may not change ownership, member permissions or the creation '

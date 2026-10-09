@@ -5942,6 +5942,16 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   per-purpose key would break that correlation for every existing row. Never describe the
   value as anonymous: it is a pseudonym.
 
+## BUT-2013 — list admins (2026-10-09)
+
+- **A non-owner `admin` on a shared shopping list may seat any uid, as the owner may
+  (BUT-2013, 2026-10-09).** `adminManagesMembers()` checks no friendship and no block on the
+  keys it admits, so the admin population now shares the owner's exposure recorded in the
+  BUT-2169 line ("a hand-rolled client can write `memberPermissions` across a block"). The
+  map is bounded at 200 keys. **Malin's call, 2026-09-05** (in BUT-2013): an admin may do
+  everything the owner can with members, more admins included, and nothing to the owner.
+  Rules cannot iterate the keys a write adds, which is why no friendship check rides on it.
+
 ## BUT-907 — the trash for deleted recipes (2026-10-09)
 
 - **An app older than BUT-907 does not use the trash (R1).** It deletes the recipe's photos

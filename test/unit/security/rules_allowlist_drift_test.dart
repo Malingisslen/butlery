@@ -896,7 +896,7 @@ void main() {
     // nothing says so — which is precisely how the five drifts of 2026-08-12
     // happened, one silent omission at a time.
     // Scope: `keys().hasOnly` only. The rest are `affectedKeys().hasOnly`
-    // update restrictions, one `values().hasOnly`, and set differences.
+    // update restrictions, `values().hasOnly`, and set differences.
     //
     // One is a READ gate, not a write allowlist: `user_moderation`
     // permits the subject's read only while the document's key set is exactly
@@ -947,9 +947,13 @@ void main() {
     // BUT-2321 removed the friend_categories field-only ownership transfer:
     // one affectedKeys().hasOnly(['ownerId', 'updatedAt']), a diff
     // restriction outside the payload comparison.
+    // BUT-2013 added `adminManagesMembers()` on unified_shared_shopping_lists:
+    // one `memberPermissions.values().hasOnly(['view', 'edit', 'admin'])`, a
+    // bound on the map's VALUES rather than a payload key set, so outside the
+    // writer comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      48,
+      49,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
