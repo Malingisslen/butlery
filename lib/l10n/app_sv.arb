@@ -3839,7 +3839,7 @@
     }
   },
   "groupInvitationSent": "Skickad",
-  "groupInvitationsSent": "{count} inbjudningar skickade",
+  "groupInvitationsSent": "{count, plural, =1{1 inbjudan skickad} other{{count} inbjudningar skickade}}",
   "@groupInvitationsSent": {
     "placeholders": {
       "count": {
@@ -4510,7 +4510,7 @@
     }
   },
   "groupLeaveGroup": "Lämna grupp",
-  "groupMemberCount": "{count} personer",
+  "groupMemberCount": "{count, plural, =1{1 person} other{{count} personer}}",
   "@groupMemberCount": {
     "placeholders": {
       "count": {
@@ -10744,6 +10744,15 @@
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
     "placeholders": {
       "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRemoveMember": "Ta bort {name}",
+  "@a11yRemoveMember": {
+    "description": "Screen-reader label for the remove button on a chosen member chip",
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }

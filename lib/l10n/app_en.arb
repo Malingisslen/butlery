@@ -3833,7 +3833,7 @@
     }
   },
   "groupInvitationSent": "Sent",
-  "groupInvitationsSent": "{count} invitations sent",
+  "groupInvitationsSent": "{count, plural, =1{1 invitation sent} other{{count} invitations sent}}",
   "@groupInvitationsSent": {
     "placeholders": {
       "count": {
@@ -4489,7 +4489,7 @@
     }
   },
   "groupLeaveGroup": "Leave group",
-  "groupMemberCount": "{count} people",
+  "groupMemberCount": "{count, plural, =1{1 person} other{{count} people}}",
   "@groupMemberCount": {
     "placeholders": {
       "count": {
@@ -10626,6 +10626,15 @@
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
     "placeholders": {
       "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRemoveMember": "Remove {name}",
+  "@a11yRemoveMember": {
+    "description": "Screen-reader label for the remove button on a chosen member chip",
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }

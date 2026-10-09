@@ -5745,7 +5745,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count invitations sent';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations sent',
+      one: '1 invitation sent',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6685,7 +6691,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count people';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14708,6 +14720,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11yRemoveIngredientChip(String label) {
     return 'Remove $label';
+  }
+
+  @override
+  String a11yRemoveMember(String name) {
+    return 'Remove $name';
   }
 
   @override

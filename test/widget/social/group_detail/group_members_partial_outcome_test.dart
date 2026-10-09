@@ -16,6 +16,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
@@ -86,7 +87,12 @@ void main() {
     _profile('sara', 'Sara Ek'),
   ];
 
-  Future<void> pumpList(WidgetTester tester, {ThemeData? theme}) async {
+  Future<void> pumpList(
+    WidgetTester tester, {
+    ThemeData? theme,
+    List<GroupInvitation> pendingInvitations = const [],
+    Map<String, String> inviteeNames = const {},
+  }) async {
     tester.view.physicalSize = const Size(900, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -107,7 +113,8 @@ void main() {
               builder: (ctx) => GroupMembersList.build(
                 ctx,
                 members: members,
-                pendingInvitations: const [],
+                pendingInvitations: pendingInvitations,
+                inviteeNames: inviteeNames,
                 group: _group(),
                 onAddMembers: () {},
                 onMemberRemoved: () => reloads++,
@@ -289,5 +296,30 @@ void main() {
     final decoration = box.decoration as BoxDecoration;
     expect(decoration.color, cs.surfaceContainerHighest);
     expect((decoration.border! as Border).left.color, cs.secondary);
+  });
+
+  // BUT-2261: each pending row is looked up by its INVITEE.
+  testWidgets('a pending row names its invitee, or says Skickad without one', (
+    tester,
+  ) async {
+    GroupInvitation to(String uid) => GroupInvitation(
+      id: 'inv-$uid',
+      groupId: 'g',
+      groupName: 'Matlaget',
+      groupEmoji: 'party',
+      fromUserId: 'owner-uid',
+      fromUserName: 'Malin Gisslén',
+      toUserId: uid,
+    );
+
+    await pumpList(
+      tester,
+      pendingInvitations: [to('ina'), to('okand')],
+      inviteeNames: {'ina': 'Ina Inbjuden', 'owner-uid': 'Fel Person'},
+    );
+
+    expect(find.text('Ina Inbjuden'), findsOneWidget);
+    expect(find.text('Fel Person'), findsNothing);
+    expect(find.text('Skickad'), findsOneWidget);
   });
 }

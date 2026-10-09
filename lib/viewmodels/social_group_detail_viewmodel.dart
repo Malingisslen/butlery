@@ -88,6 +88,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   List<UserProfile> _members = [];
   Set<String> _unresolvedMemberIds = {};
   List<GroupInvitation> _pendingInvitations = [];
+  Map<String, String> _inviteeNames = {};
   StreamSubscription<GroupEventType>? _eventSubscription;
   DateTime? _lastRefresh;
 
@@ -119,6 +120,10 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   /// List of pending invitations for this group.
   List<GroupInvitation> get pendingInvitations =>
       List.unmodifiable(_pendingInvitations);
+
+  /// Display name per invitee uid, for the pending-invitation rows. An
+  /// invitee whose profile could not be read is absent.
+  Map<String, String> get inviteeNames => Map.unmodifiable(_inviteeNames);
 
   /// Whether group data is currently loading.
   @override
@@ -270,12 +275,27 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         _pendingInvitations = _friendsService.sentInvitations
             .where((i) => i.groupId == groupId && i.isPending)
             .toList();
+        _inviteeNames = await _loadInviteeNames(_pendingInvitations);
       } else {
         _members = [];
         _unresolvedMemberIds = {};
         _pendingInvitations = [];
+        _inviteeNames = {};
       }
     });
+  }
+
+  Future<Map<String, String>> _loadInviteeNames(
+    List<GroupInvitation> invitations,
+  ) async {
+    if (invitations.isEmpty) return {};
+    final batch = await _userService.getUserProfiles(
+      invitations.map((i) => i.toUserId).toSet().toList(),
+    );
+    return {
+      for (final profile in batch.profiles)
+        if (profile.displayName.isNotEmpty) profile.uid: profile.displayName,
+    };
   }
 
   /// Refresh group data (pull-to-refresh). Always forces network fetch.

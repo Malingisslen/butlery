@@ -9664,7 +9664,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupInvitationsSent.
   ///
   /// In sv, this message translates to:
-  /// **'{count} inbjudningar skickade'**
+  /// **'{count, plural, =1{1 inbjudan skickad} other{{count} inbjudningar skickade}}'**
   String groupInvitationsSent(int count);
 
   /// No description provided for @groupInvitationsSentSuccess.
@@ -11248,7 +11248,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupMemberCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} personer'**
+  /// **'{count, plural, =1{1 person} other{{count} personer}}'**
   String groupMemberCount(int count);
 
   /// No description provided for @groupMembers.
@@ -24526,6 +24526,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort {label}'**
   String a11yRemoveIngredientChip(String label);
+
+  /// Screen-reader label for the remove button on a chosen member chip
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name}'**
+  String a11yRemoveMember(String name);
 
   /// Semantics label for tapping the fullscreen image to toggle the app bar.
   ///

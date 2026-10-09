@@ -31,6 +31,7 @@ class GroupMembersList {
     BuildContext context, {
     required List<UserProfile> members,
     required List<GroupInvitation> pendingInvitations,
+    Map<String, String> inviteeNames = const {},
     required FriendCategory group,
     required VoidCallback onAddMembers,
     required VoidCallback onMemberRemoved,
@@ -39,6 +40,7 @@ class GroupMembersList {
     return _GroupMembersListView(
       members: members,
       pendingInvitations: pendingInvitations,
+      inviteeNames: inviteeNames,
       group: group,
       onAddMembers: onAddMembers,
       onMemberRemoved: onMemberRemoved,
@@ -51,6 +53,7 @@ class _GroupMembersListView extends StatefulWidget {
   const _GroupMembersListView({
     required this.members,
     required this.pendingInvitations,
+    required this.inviteeNames,
     required this.group,
     required this.onAddMembers,
     required this.onMemberRemoved,
@@ -59,6 +62,7 @@ class _GroupMembersListView extends StatefulWidget {
 
   final List<UserProfile> members;
   final List<GroupInvitation> pendingInvitations;
+  final Map<String, String> inviteeNames;
   final FriendCategory group;
   final VoidCallback onAddMembers;
   final VoidCallback onMemberRemoved;
@@ -291,6 +295,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
                   context,
                   invitation,
                   widget.onInvitationCancelled,
+                  inviteeName: widget.inviteeNames[invitation.toUserId],
                 ),
               );
             },
