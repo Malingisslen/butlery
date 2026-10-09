@@ -2,8 +2,7 @@
 // "mjölk", get "dairy" filled in for you — had no coverage.
 //
 // The suggester is a private class inside `shopping_item_dialogs.dart` and
-// stays private: since BUT-1890 it is a two-line delegation to
-// `IngredientCategorizer` serving exactly one caller, and widening it to public
+// stays private: widening it to public
 // purely so a test can import it would trade a real production API for test
 // convenience. So each case drives it through that one caller, and reads the
 // field the user sees.
@@ -146,6 +145,41 @@ void main() {
 
     testWidgets('an empty name suggests nothing', (tester) async {
       expect(await suggestionFor(tester, ''), isEmpty);
+    });
+  });
+
+  // BUT-2137: a category the user once moved an item to is saved per item
+  // name. The engine knows 'Mjölk' as dairy, so these cases fail if the saved
+  // category is looked up anywhere but before the engine.
+  group('a category saved for the item wins over the engine', () {
+    testWidgets('a saved category replaces the engine answer', (tester) async {
+      when(() => viewModel.savedCategoryFor(any())).thenReturn(null);
+      when(
+        () => viewModel.savedCategoryFor('mjölk'),
+      ).thenReturn(ShoppingCategory.drinks);
+
+      expect(await suggestionFor(tester, 'Mjölk'), ShoppingCategory.drinks);
+    });
+
+    testWidgets('a name with nothing saved keeps the engine answer', (
+      tester,
+    ) async {
+      when(() => viewModel.savedCategoryFor(any())).thenReturn(null);
+      when(
+        () => viewModel.savedCategoryFor('kaffe'),
+      ).thenReturn(ShoppingCategory.snacks);
+
+      expect(await suggestionFor(tester, 'Mjölk'), ShoppingCategory.dairy);
+    });
+
+    testWidgets('a saved category is suggested for a name the engine lacks', (
+      tester,
+    ) async {
+      when(
+        () => viewModel.savedCategoryFor('diskmedel'),
+      ).thenReturn(ShoppingCategory.pantry);
+
+      expect(await suggestionFor(tester, 'Diskmedel'), ShoppingCategory.pantry);
     });
   });
 
