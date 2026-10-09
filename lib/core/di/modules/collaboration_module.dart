@@ -8,8 +8,6 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
@@ -58,7 +56,6 @@ class CollaborationModule implements DIModule {
     RecipeSuggestionService,
     RealtimeMenuService,
     UnifiedShoppingService,
-    MenuCollaborationRepository,
     ShoppingRepository,
     CategoryPreferencesRepository,
     MenuVotingRepository,
@@ -213,12 +210,6 @@ class CollaborationModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
-      container.registerLazySingleton<MenuCollaborationRepository>(
-        () => FirebaseMenuCollaborationRepository(
-          authRepository: container<AuthRepository>(),
-        ),
-      );
-
       container.registerLazySingleton<ShoppingRepository>(
         () => FirebaseShoppingRepository(
           authRepository: container<AuthRepository>(),
