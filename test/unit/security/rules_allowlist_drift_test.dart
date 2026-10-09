@@ -947,9 +947,12 @@ void main() {
     // BUT-2321 removed the friend_categories field-only ownership transfer:
     // one affectedKeys().hasOnly(['ownerId', 'updatedAt']), a diff
     // restriction outside the payload comparison.
+    // BUT-2013 added `adminManagesMembers()` on unified_shared_shopping_lists:
+    // one values().hasOnly(['view', 'edit', 'admin']) over the member map's
+    // permission levels, a value check rather than a key allowlist.
     expect(
       'hasOnly('.allMatches(rules).length,
-      48,
+      49,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

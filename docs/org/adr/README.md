@@ -46,6 +46,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0027](ADR-0027-list-admins-manage-members.md) — A shared-list admin may manage members as the owner may, never the owner; the map is bounded at 200 keys; no friendship check on added keys; CTO priority order (2026-10-09).
 - [ADR-0026](ADR-0026-an-admin-may-delete-a-trash-copy-but-not-read-it.md) — An admin may delete a recipe's trash copy but not read it, so a recipe reported after its owner deleted it cannot be restored; user safety over the DBA's owner-only delete (2026-10-09).
 - [ADR-0025](ADR-0025-pooled-rating-event-storage-shape.md) — Pooled-rating events live in `users/{uid}/canonical_rating_events/{poolKey}` (frozen key, doc-ID dedupe), not as a field on recipe_ratings; CTO ruled data-integrity/correctness > cost (2026-07-02).
 - [ADR-0022](ADR-0022-a-reporters-erasure-keeps-an-open-case.md) — A reporter's account deletion keeps an open case's report without their uid but with their free text (Trust & Safety over the plan), treats the remainder as the reporter's personal data (DPO) so they get the Art. 12(4) notice, and deletes it on close or after 180 days — all Malin's calls; supersedes ADR-0016 for open cases (2026-09-18).

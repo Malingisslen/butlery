@@ -136,8 +136,7 @@ class ListMemberOperations {
     }
 
     // BUT-1718: a self-removal is [leaveList], not this. This method writes
-    // through the ordinary membership seam, which the client guards and
-    // `firestore.rules` both refuse to every non-owner — so the bypass that
+    // through the ordinary membership seam — so the bypass that
     // used to sit here ("removing yourself needs no manage right") let a member
     // past this check and into a refusal worded as a missing edit permission.
     if (_getCurrentUserId() == userId) {
@@ -150,8 +149,8 @@ class ListMemberOperations {
       return false;
     }
 
-    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) &&
-        ServiceLocator.get<PermissionService>().currentUserId == userId) {
+    // BUT-2013: an admin may manage everyone but the owner.
+    if (userId == list.ownerId) {
       AppLogger.error('Cannot remove owner from list');
       return false;
     }
@@ -213,8 +212,7 @@ class ListMemberOperations {
       return false;
     }
 
-    if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId) &&
-        ServiceLocator.get<PermissionService>().currentUserId == userId) {
+    if (userId == list.ownerId) {
       AppLogger.error('Cannot change owner permission');
       return false;
     }

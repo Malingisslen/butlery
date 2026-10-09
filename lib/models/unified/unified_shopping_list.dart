@@ -100,8 +100,8 @@ enum SharedListPermission {
   view, // Kan bara se listan
   /// Edit permission, can add, remove, and modify items in the list.
   edit, // Can add/remove items
-  /// Administrative permission, can manage permissions and delete the list.
-  admin, // Can edit permissions and delete list
+  /// Administrative permission, can manage permissions.
+  admin, // Can edit permissions
 }
 
 /// Comprehensive unified shopping list with triple-mode support and collaborative features.
