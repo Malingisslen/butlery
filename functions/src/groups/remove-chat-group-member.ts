@@ -33,7 +33,7 @@ import {
 } from "./group-menu-access";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
-import { tryClearRoster } from "../messaging/enforce-group-minor-membership";
+import { tryClearRoster } from "../messaging/roster-cleanup";
 import { stageMemberRemoval } from "./chat-group-writes";
 import {
   writeGroupSystemMessage,
