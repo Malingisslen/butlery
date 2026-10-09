@@ -1,446 +1,618 @@
+/// What a live menu's vote cards show and what the starter can do with them
+/// (BUT-2118). The service is mocked at its edge; the derivation from ballot
+/// documents is the real one.
+library;
+
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
-import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
-import 'package:butlery/services/menu_voting_service.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
+import 'package:butlery/services/menu_voting_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 
-import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/factories/mock_factory.dart';
+import '../../infrastructure/factories/recipe_factory.dart';
+import '../../test_support/base_unit_test.dart';
 
-// Mock for MenuVotingService (not in production_mocks)
 class MockMenuVotingService extends Mock implements MenuVotingService {}
 
-// Fake for VoteOption (needed for any() matchers)
-class FakeVoteOption extends Fake implements VoteOption {}
+class FakeMenuSlotVote extends Fake implements MenuSlotVote {}
+
+final _now = DateTime.utc(2026, 10, 9, 12);
+const _menuId = 'menu-1';
+const _me = 'me';
+
+VoteOption _opt(String id) =>
+    VoteOption(id: id, dish: {'id': 'recipe-$id', 'title': 'Dish $id'});
+
+StartedVote _started(
+  String id, {
+  Duration untilDeadline = const Duration(hours: 24),
+  DateTime? createdAt,
+}) => StartedVote(
+  id: id,
+  options: [_opt('a'), _opt('b')],
+  deadline: _now.add(untilDeadline),
+  createdAt: createdAt ?? _now,
+);
+
+MenuBallot _ballot(
+  String userId, {
+  Map<String, StartedVote> started = const {},
+  Map<String, VoteOption> proposals = const {},
+  Map<String, String> ballots = const {},
+  Map<String, VoteResolution> resolved = const {},
+}) => MenuBallot(
+  userId: userId,
+  started: started,
+  proposals: proposals,
+  ballots: ballots,
+  resolved: resolved,
+);
 
 void main() {
-  group('MenuVotingViewModel', () {
-    late MenuVotingViewModel viewModel;
-    late MockMenuVotingService mockVotingService;
-    late StreamController<List<MenuSlotVote>> votesStreamController;
+  late MockMenuVotingService service;
+  late StreamController<List<MenuBallot>> ballots;
+  late List<String> applied;
+  late Object? applyError;
+  late List<String> order;
+  late MenuVotingViewModel vm;
 
-    const testMenuId = 'menu-123';
+  setUpAll(() async {
+    await BaseUnitTest.setupUnit();
+    registerFallbackValue(FakeMenuSlotVote());
+    registerFallbackValue(RecipeFactory.build(id: 'fallback'));
+  });
 
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-      registerFallbackValue(FakeVoteOption());
-      registerFallbackValue(const Duration(hours: 24));
-      registerFallbackValue(<VoteOption>[]);
+  setUp(() async {
+    await TestServiceLocator.initialize();
+    production.ServiceLocator.initialize(DIContainer());
+    TestServiceLocator.registerMock<PermissionService>(
+      MockFactory.createPermissionService(currentUserId: _me),
+    );
+
+    service = MockMenuVotingService();
+    ballots = StreamController<List<MenuBallot>>.broadcast();
+    when(() => service.watchBallots(_menuId)).thenAnswer((_) => ballots.stream);
+    applied = [];
+    order = [];
+    applyError = null;
+    when(() => service.recordWinner(any(), any(), any())).thenAnswer((_) async {
+      order.add('recordWinner');
+      return true;
     });
 
-    setUp(() async {
-      await TestServiceLocator.initialize();
-      production.ServiceLocator.initialize(DIContainer());
+    vm = MenuVotingViewModel(
+      menuId: _menuId,
+      votingService: service,
+      applyDish: (category, slot, dish) async {
+        order.add('applyDish');
+        if (applyError != null) throw applyError!;
+        applied.add('$category#$slot:${dish.id}');
+      },
+    );
+  });
 
-      mockVotingService = MockMenuVotingService();
-      votesStreamController = StreamController<List<MenuSlotVote>>.broadcast();
+  tearDown(() async {
+    if (!vm.isDisposed) vm.dispose();
+    await ballots.close();
+    await TestServiceLocator.reset();
+    BaseUnitTest.resetMocks();
+  });
 
-      TestServiceLocator.registerMock<MenuVotingService>(mockVotingService);
+  Future<void> deliver(
+    List<MenuBallot> docs, {
+    Set<String> people = const {_me, 'anna', 'bo'},
+  }) async {
+    vm.subscribe();
+    vm.setParticipants(people);
+    ballots.add(docs);
+    await pumpEventQueue();
+  }
 
-      viewModel = MenuVotingViewModel(menuId: testMenuId);
+  MenuSlotVote only() => vm.allVotes.single;
+
+  group('what the menu shows', () {
+    test('derives votes from the ballots and the roster, and tells its '
+        'listeners', () async {
+      var notified = 0;
+      vm.addListener(() => notified++);
+
+      await deliver([
+        _ballot(_me, started: {'Middag#0': _started('v1')}),
+        _ballot('anna', ballots: {'v1': 'a'}),
+        _ballot('stranger', ballots: {'v1': 'b'}),
+      ]);
+
+      expect(only().id, 'v1');
+      expect(only().votes, {'anna': 'a'});
+      expect(notified, greaterThanOrEqualTo(2));
     });
 
-    tearDown(() async {
-      if (!viewModel.isDisposed) viewModel.dispose();
-      await votesStreamController.close();
-      await TestServiceLocator.reset();
-      BaseUnitTest.resetMocks();
+    test('a failing ballot stream leaves the votes as they were and keeps '
+        'listening', () async {
+      await deliver([
+        _ballot(_me, started: {'Middag#0': _started('v1')}),
+      ]);
+      expect(only().id, 'v1');
+
+      ballots.addError(StateError('stream failed'));
+      await pumpEventQueue();
+
+      expect(only().id, 'v1');
+
+      ballots.add([
+        _ballot(_me, started: {'Middag#1': _started('v2')}),
+      ]);
+      await pumpEventQueue();
+
+      expect(only().id, 'v2');
     });
 
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
+    test(
+      'a change to the roster re-counts the votes already received',
+      () async {
+        await deliver([
+          _ballot(_me, started: {'Middag#0': _started('v1')}),
+          _ballot('anna', ballots: {'v1': 'a'}),
+        ]);
+        expect(only().votes, {'anna': 'a'});
+
+        vm.setParticipants({_me});
+
+        expect(only().votes, isEmpty);
+      },
+    );
+
+    test('an unchanged roster does not notify again', () async {
+      await deliver([]);
+      var notified = 0;
+      vm.addListener(() => notified++);
+
+      vm.setParticipants({'bo', 'anna', _me});
+
+      expect(notified, 0);
     });
 
-    // -- Initial state --
+    test('nothing is counted before the roster is known', () async {
+      vm.subscribe();
+      ballots.add([
+        _ballot(_me, started: {'Middag#0': _started('v1')}),
+      ]);
+      await pumpEventQueue();
 
-    test('should start with empty votes and no loading', () {
-      // Behavior: a freshly created VM has no votes and is not loading
-      expect(viewModel.allVotes, isEmpty);
-      expect(viewModel.activeVotes, isEmpty);
-      expect(viewModel.resolvedVotes, isEmpty);
-      expect(viewModel.isLoading, false);
+      expect(vm.allVotes, isEmpty);
     });
 
-    // -- subscribe() --
+    test('a slot shows its newest vote, and not another slot\'s', () async {
+      await deliver([
+        _ballot(
+          _me,
+          started: {
+            'Middag#0': _started(
+              'old',
+              createdAt: _now.subtract(const Duration(hours: 5)),
+            ),
+            'Middag#1': _started('other-slot'),
+          },
+        ),
+        _ballot(
+          'anna',
+          started: {
+            'Middag#0': _started(
+              'new',
+              createdAt: _now.subtract(const Duration(hours: 1)),
+            ),
+          },
+        ),
+      ]);
 
-    group('subscribe', () {
-      test('should receive votes from service stream', () async {
-        // Behavior: subscribing connects the VM to the service stream
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => votesStreamController.stream);
-
-        final vote = _createActiveVote();
-
-        viewModel.subscribe();
-        votesStreamController.add([vote]);
-
-        // Let the stream event propagate
-        await Future.delayed(Duration.zero);
-
-        expect(viewModel.allVotes, hasLength(1));
-        expect(viewModel.allVotes.first.id, vote.id);
+      withClock(Clock.fixed(_now), () {
+        expect(vm.voteForSlot('Middag', 0)!.id, 'new');
+        expect(vm.voteForSlot('Middag', 1)!.id, 'other-slot');
+        expect(vm.voteForSlot('Middag', 2), isNull);
+        expect(vm.voteForSlot('Lunch', 0), isNull);
       });
+    });
 
-      test('should update activeVotes when stream emits active votes', () async {
-        // Behavior: activeVotes filters to only non-resolved, non-expired votes
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => votesStreamController.stream);
+    test('a released vote leaves the slot', () async {
+      await deliver([
+        _ballot(
+          _me,
+          started: {'Middag#0': _started('v1')},
+          resolved: {
+            'v1': VoteResolution(outcome: VoteOutcome.released, at: _now),
+          },
+        ),
+      ]);
 
-        final activeVote = _createActiveVote();
-        final resolvedVote = _createResolvedVote();
-
-        viewModel.subscribe();
-        votesStreamController.add([activeVote, resolvedVote]);
-        await Future.delayed(Duration.zero);
-
-        expect(viewModel.activeVotes, hasLength(1));
-        expect(viewModel.activeVotes.first.id, activeVote.id);
-      });
-
-      test(
-        'should update resolvedVotes when stream emits resolved votes',
-        () async {
-          // Behavior: resolvedVotes filters to only resolved votes
-          when(
-            () => mockVotingService.watchVotesForMenu(testMenuId),
-          ).thenAnswer((_) => votesStreamController.stream);
-
-          final resolvedVote = _createResolvedVote();
-
-          viewModel.subscribe();
-          votesStreamController.add([resolvedVote]);
-          await Future.delayed(Duration.zero);
-
-          expect(viewModel.resolvedVotes, hasLength(1));
-          expect(viewModel.resolvedVotes.first.id, resolvedVote.id);
-        },
-      );
-
-      test('should cancel previous subscription on re-subscribe', () async {
-        // Behavior: calling subscribe() twice cancels the first stream
-        final controller1 = StreamController<List<MenuSlotVote>>.broadcast();
-        final controller2 = StreamController<List<MenuSlotVote>>.broadcast();
-
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => controller1.stream);
-        viewModel.subscribe();
-
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => controller2.stream);
-        viewModel.subscribe();
-
-        // Emit on the old controller - should not update
-        controller1.add([_createActiveVote()]);
-        await Future.delayed(Duration.zero);
-        expect(viewModel.allVotes, isEmpty);
-
-        // Emit on the new controller - should update
-        final vote = _createActiveVote(id: 'new-vote');
-        controller2.add([vote]);
-        await Future.delayed(Duration.zero);
-        expect(viewModel.allVotes, hasLength(1));
-        expect(viewModel.allVotes.first.id, 'new-vote');
-
-        await controller1.close();
-        await controller2.close();
-      });
-
-      test('should not update state after dispose', () async {
-        // Behavior: isDisposed guard prevents state mutation after dispose
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => votesStreamController.stream);
-
-        viewModel.subscribe();
-        viewModel.dispose();
-
-        // Emit after dispose - should not crash or update state
-        votesStreamController.add([_createActiveVote()]);
-        await Future.delayed(Duration.zero);
-
-        expect(viewModel.allVotes, isEmpty);
+      withClock(Clock.fixed(_now), () {
+        expect(vm.voteForSlot('Middag', 0), isNull);
       });
     });
 
-    // -- createVote() --
-
-    group('createVote', () {
-      test('should delegate to service and return true on success', () async {
-        // Behavior: createVote passes all parameters to the service
-        final alternatives = [
-          _createVoteOption(id: 'opt-1', recipeName: 'Pasta'),
-          _createVoteOption(id: 'opt-2', recipeName: 'Pizza'),
-        ];
-
-        when(
-          () => mockVotingService.createVote(
-            menuId: testMenuId,
-            category: 'dinner',
-            slotIndex: 0,
-            alternatives: alternatives,
-            votingWindow: const Duration(hours: 12),
+    test(
+      'a decided vote stays for a day after it was settled, then goes',
+      () async {
+        await deliver([
+          _ballot(
+            _me,
+            started: {'Middag#0': _started('v1')},
+            resolved: {
+              'v1': VoteResolution(
+                outcome: VoteOutcome.winner,
+                optionId: 'a',
+                at: _now,
+              ),
+            },
           ),
-        ).thenAnswer((_) async => _createActiveVote());
+        ]);
 
-        final result = await viewModel.createVote(
-          category: 'dinner',
-          slotIndex: 0,
-          alternatives: alternatives,
-          votingWindow: const Duration(hours: 12),
+        final goesAt = _now.add(MenuVotingViewModel.showDecidedFor);
+        withClock(
+          Clock.fixed(goesAt.subtract(const Duration(seconds: 1))),
+          () => expect(vm.voteForSlot('Middag', 0), isNotNull),
         );
-
-        expect(result, true);
-        verify(
-          () => mockVotingService.createVote(
-            menuId: testMenuId,
-            category: 'dinner',
-            slotIndex: 0,
-            alternatives: alternatives,
-            votingWindow: const Duration(hours: 12),
-          ),
-        ).called(1);
-      });
-
-      test('should return false when service returns null', () async {
-        // Behavior: null from service means vote creation failed
-        when(
-          () => mockVotingService.createVote(
-            menuId: any(named: 'menuId'),
-            category: any(named: 'category'),
-            slotIndex: any(named: 'slotIndex'),
-            alternatives: any(named: 'alternatives'),
-            votingWindow: any(named: 'votingWindow'),
-          ),
-        ).thenAnswer((_) async => null);
-
-        final result = await viewModel.createVote(
-          category: 'lunch',
-          slotIndex: 1,
-          alternatives: [],
+        withClock(
+          Clock.fixed(goesAt),
+          () => expect(vm.voteForSlot('Middag', 0), isNull),
         );
+      },
+    );
 
-        expect(result, false);
+    test(
+      'an expired vote nobody settled waits for a week, then is hidden',
+      () async {
+        await deliver([
+          _ballot(
+            _me,
+            started: {'Middag#0': _started('v1', untilDeadline: Duration.zero)},
+          ),
+          _ballot('anna', ballots: {'v1': 'a'}),
+        ]);
+
+        withClock(Clock.fixed(_now.add(const Duration(days: 6))), () {
+          expect(
+            vm.voteForSlot('Middag', 0)!.state,
+            SlotVoteState.expiredWithVotes,
+          );
+        });
+        withClock(Clock.fixed(_now.add(const Duration(days: 8))), () {
+          expect(vm.voteForSlot('Middag', 0), isNull);
+        });
+      },
+    );
+
+    test('only running votes are active', () async {
+      await deliver([
+        _ballot(
+          _me,
+          started: {
+            'Middag#0': _started('open'),
+            'Middag#1': _started('ran-out', untilDeadline: Duration.zero),
+          },
+        ),
+      ]);
+
+      withClock(Clock.fixed(_now.add(const Duration(hours: 1))), () {
+        expect(vm.activeVotes.map((v) => v.id), ['open']);
       });
     });
 
-    // -- castVote() --
+    test('knows whether I have already added a dish to a vote', () async {
+      await deliver([
+        _ballot('anna', started: {'Middag#0': _started('v1')}),
+      ]);
+      expect(vm.hasProposed(only()), isFalse);
 
-    group('castVote', () {
-      test('should delegate to service with correct parameters', () async {
-        // Behavior: castVote forwards menuId, voteId, optionId to service
-        when(
-          () => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'),
-        ).thenAnswer((_) async => true);
+      ballots.add([
+        _ballot('anna', started: {'Middag#0': _started('v1')}),
+        _ballot(_me, proposals: {'v1': _opt('d')}),
+        _ballot('bo', proposals: {'v2': _opt('e')}),
+      ]);
+      await pumpEventQueue();
 
-        final result = await viewModel.castVote('vote-1', 'option-1');
+      expect(vm.hasProposed(only()), isTrue);
+    });
 
-        expect(result, true);
-        verify(
-          () => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'),
-        ).called(1);
-      });
+    test('a dish someone else added is not mine', () async {
+      await deliver([
+        _ballot('anna', started: {'Middag#0': _started('v1')}),
+        _ballot('bo', proposals: {'v1': _opt('d')}),
+      ]);
 
-      test('should return false when service returns false', () async {
-        // Behavior: failed vote cast propagates false
-        when(
-          () => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'),
-        ).thenAnswer((_) async => false);
+      expect(vm.hasProposed(only()), isFalse);
+    });
+  });
 
-        final result = await viewModel.castVote('vote-1', 'option-1');
-        expect(result, false);
+  group('canStartVote', () {
+    Future<void> slotWith(
+      StartedVote started, {
+      VoteResolution? resolution,
+      Map<String, String> votes = const {},
+    }) => deliver([
+      _ballot(
+        _me,
+        started: {'Middag#0': started},
+        resolved: {started.id: ?resolution},
+      ),
+      _ballot('anna', ballots: votes),
+    ]);
+
+    test('is open on a slot with no vote', () async {
+      await deliver([]);
+
+      withClock(Clock.fixed(_now), () {
+        expect(vm.canStartVote('Middag', 0), isTrue);
       });
     });
 
-    // -- resolveVote() --
+    test(
+      'is closed while a vote runs and while one waits on its starter',
+      () async {
+        await slotWith(_started('v1'));
+        withClock(Clock.fixed(_now), () {
+          expect(vm.canStartVote('Middag', 0), isFalse);
+        });
 
-    group('resolveVote', () {
-      test('should delegate to service with correct parameters', () async {
-        // Behavior: resolveVote forwards menuId and voteId to service
-        when(
-          () => mockVotingService.resolveVote(testMenuId, 'vote-1'),
-        ).thenAnswer((_) async => true);
+        await slotWith(_started('v1', untilDeadline: Duration.zero));
+        withClock(Clock.fixed(_now.add(const Duration(hours: 1))), () {
+          expect(
+            vm.canStartVote('Middag', 0),
+            isFalse,
+            reason: 'expired with nobody voting still waits to be released',
+          );
+        });
+      },
+    );
 
-        final result = await viewModel.resolveVote('vote-1');
-
-        expect(result, true);
-        verify(
-          () => mockVotingService.resolveVote(testMenuId, 'vote-1'),
-        ).called(1);
-      });
-
-      test('should return false when service returns false', () async {
-        // Behavior: failed resolution propagates false
-        when(
-          () => mockVotingService.resolveVote(testMenuId, 'vote-1'),
-        ).thenAnswer((_) async => false);
-
-        final result = await viewModel.resolveVote('vote-1');
-        expect(result, false);
-      });
-    });
-
-    // -- addAlternative() --
-
-    group('addAlternative', () {
-      test('should delegate to service with correct parameters', () async {
-        // Behavior: addAlternative forwards menuId, voteId, and option to service
-        final option = _createVoteOption(id: 'opt-new', recipeName: 'Sushi');
-
-        when(
-          () => mockVotingService.addAlternative(testMenuId, 'vote-1', option),
-        ).thenAnswer((_) async => true);
-
-        final result = await viewModel.addAlternative('vote-1', option);
-
-        expect(result, true);
-        verify(
-          () => mockVotingService.addAlternative(testMenuId, 'vote-1', option),
-        ).called(1);
-      });
-    });
-
-    // -- getVoteForSlot() --
-
-    group('getVoteForSlot', () {
-      test(
-        'should return matching active vote for category and slot',
-        () async {
-          // Behavior: finds the active vote matching category + slotIndex
-          when(
-            () => mockVotingService.watchVotesForMenu(testMenuId),
-          ).thenAnswer((_) => votesStreamController.stream);
-
-          final vote = _createActiveVote(category: 'dinner', slotIndex: 2);
-
-          viewModel.subscribe();
-          votesStreamController.add([vote]);
-          await Future.delayed(Duration.zero);
-
-          final found = viewModel.getVoteForSlot('dinner', 2);
-          expect(found, isNotNull);
-          expect(found!.id, vote.id);
-        },
+    test('is open again once the vote is decided or released', () async {
+      await slotWith(
+        _started('v1'),
+        resolution: VoteResolution(
+          outcome: VoteOutcome.winner,
+          optionId: 'a',
+          at: _now,
+        ),
       );
-
-      test('should return null when no matching vote exists', () async {
-        // Behavior: returns null for non-matching slot
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => votesStreamController.stream);
-
-        viewModel.subscribe();
-        votesStreamController.add([_createActiveVote()]);
-        await Future.delayed(Duration.zero);
-
-        final found = viewModel.getVoteForSlot('breakfast', 99);
-        expect(found, isNull);
+      withClock(Clock.fixed(_now), () {
+        expect(vm.canStartVote('Middag', 0), isTrue);
       });
 
-      test('should return null when no votes loaded', () {
-        // Behavior: empty state returns null
-        final found = viewModel.getVoteForSlot('dinner', 0);
-        expect(found, isNull);
-      });
-
-      test('should not return resolved votes', () async {
-        // Behavior: getVoteForSlot only returns active (not resolved) votes
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => votesStreamController.stream);
-
-        final resolved = _createResolvedVote(category: 'dinner', slotIndex: 0);
-
-        viewModel.subscribe();
-        votesStreamController.add([resolved]);
-        await Future.delayed(Duration.zero);
-
-        final found = viewModel.getVoteForSlot('dinner', 0);
-        expect(found, isNull);
-      });
-    });
-
-    // -- dispose() --
-
-    group('dispose', () {
-      test('should cancel stream subscription on dispose', () async {
-        // Behavior: disposing the VM cancels the stream to prevent leaks
-        when(
-          () => mockVotingService.watchVotesForMenu(testMenuId),
-        ).thenAnswer((_) => votesStreamController.stream);
-
-        viewModel.subscribe();
-        viewModel.dispose();
-
-        // After dispose, emitting should not cause issues
-        votesStreamController.add([_createActiveVote()]);
-        await Future.delayed(Duration.zero);
-
-        expect(viewModel.isDisposed, true);
-        expect(viewModel.allVotes, isEmpty);
+      await slotWith(
+        _started('v1'),
+        resolution: VoteResolution(outcome: VoteOutcome.released, at: _now),
+      );
+      withClock(Clock.fixed(_now), () {
+        expect(vm.canStartVote('Middag', 0), isTrue);
       });
     });
   });
-}
 
-// -- Test data helpers --
+  group('startVote', () {
+    final current = RecipeFactory.build(id: 'now', title: 'Nu');
+    final proposal = RecipeFactory.build(id: 'next', title: 'Nästa');
 
-MenuSlotVote _createActiveVote({
-  String id = 'vote-1',
-  String category = 'dinner',
-  int slotIndex = 0,
-}) {
-  return MenuSlotVote(
-    id: id,
-    menuId: 'menu-123',
-    category: category,
-    slotIndex: slotIndex,
-    alternatives: [
-      _createVoteOption(id: 'opt-1', recipeName: 'Pasta'),
-    ],
-    deadline: DateTime.now().add(const Duration(hours: 24)),
-    isResolved: false,
-    createdByUserId: 'user-1',
-    createdAt: DateTime.now(),
-  );
-}
+    void stubStart() => when(
+      () => service.startVote(
+        menuId: any(named: 'menuId'),
+        category: any(named: 'category'),
+        slotIndex: any(named: 'slotIndex'),
+        current: any(named: 'current'),
+        proposal: any(named: 'proposal'),
+      ),
+    ).thenAnswer((_) async => true);
 
-MenuSlotVote _createResolvedVote({
-  String id = 'vote-resolved',
-  String category = 'dinner',
-  int slotIndex = 0,
-}) {
-  return MenuSlotVote(
-    id: id,
-    menuId: 'menu-123',
-    category: category,
-    slotIndex: slotIndex,
-    alternatives: [
-      _createVoteOption(id: 'opt-1', recipeName: 'Pasta'),
-    ],
-    deadline: DateTime.now().add(const Duration(hours: 24)),
-    isResolved: true,
-    winningOptionId: 'opt-1',
-    createdByUserId: 'user-1',
-    createdAt: DateTime.now(),
-  );
-}
+    test('is passed on to the service when the slot is free', () async {
+      stubStart();
+      await deliver([]);
 
-VoteOption _createVoteOption({
-  required String id,
-  required String recipeName,
-}) {
-  return VoteOption(
-    id: id,
-    recipeId: 'recipe-$id',
-    recipeName: recipeName,
-    suggestedByUserId: 'user-1',
-  );
+      final ok = await withClock(
+        Clock.fixed(_now),
+        () => vm.startVote(
+          category: 'Middag',
+          slotIndex: 1,
+          current: current,
+          proposal: proposal,
+        ),
+      );
+
+      expect(ok, isTrue);
+      verify(
+        () => service.startVote(
+          menuId: _menuId,
+          category: 'Middag',
+          slotIndex: 1,
+          current: current,
+          proposal: proposal,
+        ),
+      ).called(1);
+    });
+
+    test('is refused, without a write, while a vote is running', () async {
+      stubStart();
+      await deliver([
+        _ballot(_me, started: {'Middag#1': _started('v1')}),
+      ]);
+
+      final ok = await withClock(
+        Clock.fixed(_now),
+        () => vm.startVote(
+          category: 'Middag',
+          slotIndex: 1,
+          current: current,
+          proposal: proposal,
+        ),
+      );
+
+      expect(ok, isFalse);
+      verifyNever(
+        () => service.startVote(
+          menuId: any(named: 'menuId'),
+          category: any(named: 'category'),
+          slotIndex: any(named: 'slotIndex'),
+          current: any(named: 'current'),
+          proposal: any(named: 'proposal'),
+        ),
+      );
+    });
+  });
+
+  group('voting, proposing, reopening and releasing', () {
+    test('each goes to the service for this menu', () async {
+      when(
+        () => service.castVote(any(), any(), any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => service.propose(any(), any(), any()),
+      ).thenAnswer((_) async => true);
+      when(() => service.reopen(any(), any())).thenAnswer((_) async => true);
+      when(() => service.release(any(), any())).thenAnswer((_) async => true);
+      await deliver([
+        _ballot(_me, started: {'Middag#0': _started('v1')}),
+      ]);
+      final vote = only();
+      final dish = RecipeFactory.build(id: 'x');
+
+      expect(await vm.castVote(vote, 'a'), isTrue);
+      expect(await vm.propose(vote, dish), isTrue);
+      expect(await vm.reopen(vote), isTrue);
+      expect(await vm.release(vote), isTrue);
+
+      verify(() => service.castVote(_menuId, vote, 'a')).called(1);
+      verify(() => service.propose(_menuId, vote, dish)).called(1);
+      verify(() => service.reopen(_menuId, vote)).called(1);
+      verify(() => service.release(_menuId, vote)).called(1);
+    });
+  });
+
+  group('settle', () {
+    Future<MenuSlotVote> myVote({String starter = _me}) async {
+      await deliver(
+        [
+          _ballot(starter, started: {'Middag#2': _started('v1')}),
+        ],
+        people: {_me, 'anna', 'bo', 'other'},
+      );
+      return only();
+    }
+
+    test(
+      'puts the dish on the slot first and records the winner after',
+      () async {
+        final vote = await myVote();
+
+        final ok = await vm.settle(vote, 'b');
+
+        expect(ok, isTrue);
+        expect(applied, ['Middag#2:recipe-b']);
+        expect(order, ['applyDish', 'recordWinner']);
+        verify(() => service.recordWinner(_menuId, vote, 'b')).called(1);
+      },
+    );
+
+    test(
+      'a failed menu write records nothing and reports the failure',
+      () async {
+        applyError = StateError('menu write refused');
+        final vote = await myVote();
+
+        final ok = await vm.settle(vote, 'a');
+
+        expect(ok, isFalse);
+        expect(order, ['applyDish']);
+        verifyNever(() => service.recordWinner(any(), any(), any()));
+        expect(vm.error, AppLocale.current.menuVoteApplyFailed);
+        expect(vm.hasError, isTrue);
+      },
+    );
+
+    test('a winner the service will not record is not reported as settled, '
+        'though the dish is already on the slot', () async {
+      when(() => service.recordWinner(any(), any(), any())).thenAnswer((
+        _,
+      ) async {
+        order.add('recordWinner');
+        return false;
+      });
+      final vote = await myVote();
+
+      final ok = await vm.settle(vote, 'b');
+
+      expect(ok, isFalse);
+      expect(
+        order,
+        ['applyDish', 'recordWinner'],
+        reason: 'the refusal came from recording, not from an earlier guard',
+      );
+      expect(applied, ['Middag#2:recipe-b']);
+    });
+
+    test('someone who did not start the vote cannot settle it', () async {
+      final vote = await myVote(starter: 'other');
+
+      final ok = await vm.settle(vote, 'a');
+
+      expect(ok, isFalse);
+      expect(order, isEmpty);
+      verifyNever(() => service.recordWinner(any(), any(), any()));
+    });
+
+    test('an option that is not on the vote cannot be settled on', () async {
+      final vote = await myVote();
+
+      final ok = await vm.settle(vote, 'not-an-option');
+
+      expect(ok, isFalse);
+      expect(order, isEmpty);
+    });
+
+    test('without a way to write to the menu nothing is recorded', () async {
+      final bare = MenuVotingViewModel(
+        menuId: _menuId,
+        votingService: service,
+      );
+      addTearDown(bare.dispose);
+      final vote = await myVote();
+
+      final ok = await bare.settle(vote, 'a');
+
+      expect(ok, isFalse);
+      verifyNever(() => service.recordWinner(any(), any(), any()));
+    });
+  });
+
+  group('dispose', () {
+    test('stops listening to the ballots', () async {
+      await deliver([]);
+      expect(ballots.hasListener, isTrue);
+
+      vm.dispose();
+      await pumpEventQueue();
+
+      expect(ballots.hasListener, isFalse);
+    });
+
+    test('subscribing again replaces the earlier subscription', () async {
+      final second = StreamController<List<MenuBallot>>.broadcast();
+      addTearDown(second.close);
+      vm.subscribe();
+      when(
+        () => service.watchBallots(_menuId),
+      ).thenAnswer((_) => second.stream);
+
+      vm.subscribe();
+
+      expect(ballots.hasListener, isFalse);
+      expect(second.hasListener, isTrue);
+    });
+  });
 }

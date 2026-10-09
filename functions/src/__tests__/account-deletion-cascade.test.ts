@@ -9552,6 +9552,209 @@ async function scenario_commentLikeIndexIsDeclared(): Promise<void> {
 }
 
 /**
+ * BUT-2118: the erased user's live-menu ballot documents go on every menu,
+ * including one they LEFT (no longer in `participantIds`), and nothing else
+ * does: another participant's ballot, the legacy `realtime_menus` vote shape
+ * and a `votes` document under some other parent all stay.
+ */
+async function scenario_liveMenuBallotsAreDeleted(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/${OTHER}_joined`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "viewer" },
+    participantIds: [OTHER, UID],
+  });
+  db.set(`realtime_resources/${OTHER}_joined/votes/${UID}`, {
+    userId: UID,
+    ballots: { "vote-1": "opt-a" },
+  });
+  db.set(`realtime_resources/${OTHER}_joined/votes/${OTHER}`, {
+    userId: OTHER,
+    ballots: { "vote-1": "opt-b" },
+  });
+  db.set(`realtime_resources/${OTHER}_left`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner" },
+    participantIds: [OTHER],
+  });
+  db.set(`realtime_resources/${OTHER}_left/votes/${UID}`, {
+    userId: UID,
+    proposals: { "vote-2": { id: "opt-c" } },
+  });
+  db.set("realtime_menus/legacy/votes/slot-1", {
+    userId: UID,
+    votes: { [UID]: "opt-a" },
+  });
+  db.set(`elsewhere/x/votes/${UID}`, { userId: UID });
+  db.set(`x/y/realtime_resources/z/votes/${UID}`, { userId: UID });
+
+  const ok = await deleteRealtimeResources(asDb(db), UID);
+
+  check("the live-menu step reports success", ok === true);
+  check(
+    "the ballot on a menu the user is still in is deleted",
+    db.get(`realtime_resources/${OTHER}_joined/votes/${UID}`) === undefined,
+  );
+  check(
+    "the ballot on a menu the user LEFT is deleted",
+    db.get(`realtime_resources/${OTHER}_left/votes/${UID}`) === undefined,
+  );
+  check(
+    "another participant's ballot stays",
+    db.get(`realtime_resources/${OTHER}_joined/votes/${OTHER}`) !== undefined,
+  );
+  check(
+    "the legacy realtime_menus vote document is not this leg's",
+    db.get("realtime_menus/legacy/votes/slot-1") !== undefined,
+  );
+  check(
+    "a `votes` document under another parent collection stays",
+    db.get(`elsewhere/x/votes/${UID}`) !== undefined,
+  );
+  check(
+    "a `votes` document under a nested realtime_resources stays",
+    db.get(`x/y/realtime_resources/z/votes/${UID}`) !== undefined,
+  );
+}
+
+/** BUT-2118: above the cap the sweep declines and reports itself incomplete. */
+async function scenario_implausibleLiveMenuBallotCountDeclines(): Promise<void> {
+  const {
+    deleteLiveMenuVotes,
+    MAX_LIVE_MENU_VOTE_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  for (let i = 0; i <= MAX_LIVE_MENU_VOTE_SWEEP_ROWS; i++) {
+    db.set(`realtime_resources/m${i}/votes/${UID}`, { userId: UID });
+  }
+
+  const ok = await deleteLiveMenuVotes(asDb(db), UID);
+
+  check("an implausible ballot count makes the step report failure", ok === false);
+  check(
+    "nothing is deleted when the sweep declines",
+    db.get(`realtime_resources/m0/votes/${UID}`) !== undefined,
+  );
+
+  const atCap = new FakeFirestore();
+  for (let i = 0; i < MAX_LIVE_MENU_VOTE_SWEEP_ROWS; i++) {
+    atCap.set(`realtime_resources/m${i}/votes/${UID}`, { userId: UID });
+  }
+  const atCapOk = await deleteLiveMenuVotes(asDb(atCap), UID);
+  check(
+    "exactly at the cap the sweep runs",
+    atCapOk === true &&
+      atCap.get(`realtime_resources/m0/votes/${UID}`) === undefined,
+  );
+}
+
+/**
+ * BUT-2118: a rejected chunk fails the step without throwing, so the menu
+ * legs after it still run.
+ */
+async function scenario_failedLiveMenuBallotChunkFailsTheStep(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/m1/votes/${UID}`, { userId: UID });
+  db.batchFailures.set(`realtime_resources/m1/votes/${UID}`, 13);
+  db.set(`realtime_resources/m2`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "viewer" },
+    participantIds: [OTHER, UID],
+  });
+
+  const ok = await deleteRealtimeResources(asDb(db), UID);
+
+  check("a rejected ballot chunk makes the step report failure", ok === false);
+  check(
+    "the roster leg still runs after a failed ballot sweep",
+    !((db.get("realtime_resources/m2")?.participantIds as string[]) ?? []).includes(UID),
+  );
+  check(
+    "the ballot is still there for the probe to find",
+    db.get(`realtime_resources/m1/votes/${UID}`) !== undefined,
+  );
+}
+
+/** BUT-2118: the probe sees a ballot document left behind. */
+async function scenario_probeSeesLeftoverLiveMenuBallot(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const dirty = new FakeFirestore();
+  dirty.set(`realtime_resources/m1/votes/${UID}`, { userId: UID });
+  const dirtyResult = emptyResult();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a surviving live-menu ballot is reported as residual",
+    sawResidual(dirtyResult),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+
+  // Above the cap the sweep declines, so the probe must still report.
+  const { MAX_LIVE_MENU_VOTE_SWEEP_ROWS } = require("../account/account-deletion-cascade");
+  const overCap = new FakeFirestore();
+  for (let i = 0; i <= MAX_LIVE_MENU_VOTE_SWEEP_ROWS; i++) {
+    overCap.set(`realtime_resources/m${i}/votes/${UID}`, { userId: UID });
+  }
+  const overCapResult = emptyResult();
+  await probeResidualData(asDb(overCap), UID, overCapResult);
+  check(
+    "a ballot count above the sweep cap is reported as residual",
+    sawResidual(overCapResult),
+    `failed: ${JSON.stringify(overCapResult.failedCollections)}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set(`realtime_resources/m1/votes/${OTHER}`, { userId: OTHER });
+  // A `votes` document elsewhere naming the user is not the deleter's, so the
+  // probe must not count it either, or the erasure could never come back clean.
+  clean.set(`realtime_menus/m1/votes/${OTHER}`, { userId: UID });
+  clean.set(`elsewhere/x/votes/${UID}`, { userId: UID });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "someone else's ballot, or a `votes` document under another parent, does not make the probe fire",
+    !sawResidual(cleanResult),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2118: the sweep and its probe are collection-group queries on `userId`,
+ * which need a COLLECTION_GROUP single-field index or fail FAILED_PRECONDITION.
+ */
+async function scenario_liveMenuVoteIndexIsDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const indexes = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      indexes?: { order?: string; queryScope?: string }[];
+    }[];
+  };
+  const override = (indexes.fieldOverrides ?? []).find(
+    (o) => o.collectionGroup === "votes" && o.fieldPath === "userId",
+  );
+  check(
+    "votes.userId has a COLLECTION_GROUP single-field index declared",
+    (override?.indexes ?? []).some(
+      (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
+    ),
+    `override: ${JSON.stringify(override)}`,
+  );
+}
+
+/**
  * BUT-2272: a shared recipe of someone else's loses the erased uid from both
  * `memberPermissions` and `grants`, and every other member keeps both. The
  * erased user's own recipe is not written to. A viewer is stored as 0, which
@@ -9919,6 +10122,11 @@ async function main(): Promise<void> {
   await scenario_probeSeesLeftoverReactions();
   await scenario_reactionKeysAgreeAcrossRulesAppAndCascade();
   await scenario_commentLikeIndexIsDeclared();
+  await scenario_liveMenuBallotsAreDeleted();
+  await scenario_implausibleLiveMenuBallotCountDeclines();
+  await scenario_failedLiveMenuBallotChunkFailsTheStep();
+  await scenario_probeSeesLeftoverLiveMenuBallot();
+  await scenario_liveMenuVoteIndexIsDeclared();
   await scenario_blockHeldShareLosesOnlyTheErasedUid();
   await scenario_recipeMemberKeyIsRemoved();
   await scenario_ownRecipesAreDeletedNotScrubbed();

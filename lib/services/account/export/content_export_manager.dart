@@ -262,6 +262,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportLiveMenus(String userId) =>
       LiveMenuExport(_exports).export(userId);
 
+  Future<Map<String, dynamic>> exportLiveMenuVotes(String userId) =>
+      LiveMenuExport(_exports).exportVotes(userId);
+
   /// Export all personal tags with embedded rules (GDPR Article 20).
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {
     try {

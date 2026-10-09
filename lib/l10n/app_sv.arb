@@ -3527,6 +3527,93 @@
   },
   "menuVoteExpired": "Omröstningen har gått ut",
   "menuVoteNoAlternatives": "Inga förslag ännu",
+  "menuVoteQuestion": "Vad blir det?",
+  "@menuVoteQuestion": {
+    "description": "Heading of an open vote on a menu slot."
+  },
+  "menuVoteClosesInHours": "{count, plural, =1{Stänger om 1 timme} other{Stänger om {count} timmar}}",
+  "@menuVoteClosesInHours": {
+    "description": "Time left on an open menu vote, in whole hours.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuVoteClosesSoon": "Stänger inom en timme",
+  "@menuVoteClosesSoon": {
+    "description": "Shown when less than an hour is left on a menu vote."
+  },
+  "menuVoteLateOption": "{count, plural, =1{Tillagd sent: 1 hade redan röstat} other{Tillagd sent: {count} hade redan röstat}}",
+  "@menuVoteLateOption": {
+    "description": "Marks an option added after people had voted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuVoteProposeOther": "Föreslå något annat",
+  "@menuVoteProposeOther": {
+    "description": "Adds another dish to an open vote."
+  },
+  "menuVoteDecide": "Avgör",
+  "@menuVoteDecide": {
+    "description": "The starter settles a vote with a clear winner."
+  },
+  "menuVoteDecideFor": "Välj {recipeName}",
+  "@menuVoteDecideFor": {
+    "description": "The starter breaks a tie by choosing this dish.",
+    "placeholders": {
+      "recipeName": {
+        "type": "String"
+      }
+    }
+  },
+  "menuVoteTieTitle": "Oavgjort, kräver ett beslut",
+  "@menuVoteTieTitle": {
+    "description": "Heading when two or more options have the most votes."
+  },
+  "menuVoteTieStarterBody": "Appen utser ingen vinnare på ett lika resultat. Du startade rösten, så du väljer.",
+  "@menuVoteTieStarterBody": {
+    "description": "Shown to the person who started a tied vote."
+  },
+  "menuVoteWaitingOnStarter": "Väntar på den som startade rösten.",
+  "@menuVoteWaitingOnStarter": {
+    "description": "Shown to others while a tied or expired vote waits on its starter."
+  },
+  "menuVoteGiveADay": "Ge det ett dygn",
+  "@menuVoteGiveADay": {
+    "description": "Extends a tied vote by 24 hours."
+  },
+  "menuVoteDecideAnyway": "Avgör ändå",
+  "@menuVoteDecideAnyway": {
+    "description": "Settles an expired vote on the votes cast."
+  },
+  "menuVoteReopen": "Öppna igen",
+  "@menuVoteReopen": {
+    "description": "Reopens an expired vote for another 24 hours."
+  },
+  "menuVoteRelease": "Släpp platsen",
+  "@menuVoteRelease": {
+    "description": "Drops a vote and leaves the dish on the slot as it is."
+  },
+  "menuVoteNobodyVoted": "Ingen röstade",
+  "@menuVoteNobodyVoted": {
+    "description": "Heading of an expired vote with no votes."
+  },
+  "menuVoteNobodyVotedBody": "Det här är inget oavgjort resultat, utan ett förslag ingen tog i. Ingen rätt läggs på platsen av det.",
+  "@menuVoteNobodyVotedBody": {
+    "description": "Explains an expired vote with no votes."
+  },
+  "menuVoteApplyFailed": "Vinnaren kunde inte läggas in i menyn",
+  "@menuVoteApplyFailed": {
+    "description": "Error when writing a vote's winner into the menu failed."
+  },
+  "menuVoteSaveFailed": "Rösten kunde inte sparas",
+  "@menuVoteSaveFailed": {
+    "description": "Error when starting, adding to, casting or settling a menu vote failed."
+  },
   "invitationCheckConnectionAndRetry": "Kontrollera din internetanslutning och försök igen.",
   "invitationCurrentItem": "Aktuell: {item}",
   "@invitationCurrentItem": {
@@ -10638,7 +10725,7 @@
       }
     }
   },
-  "a11yMenuVoteOptionSelected": "{name}, vald. Tryck för att ändra röst.",
+  "a11yMenuVoteOptionSelected": "{name}, din röst.",
   "@a11yMenuVoteOptionSelected": {
     "description": "Semantics label for a menu vote option that is currently selected.",
     "placeholders": {

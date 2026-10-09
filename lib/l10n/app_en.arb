@@ -3521,6 +3521,93 @@
   },
   "menuVoteExpired": "Voting has expired",
   "menuVoteNoAlternatives": "No suggestions yet",
+  "menuVoteQuestion": "What will it be?",
+  "@menuVoteQuestion": {
+    "description": "Heading of an open vote on a menu slot."
+  },
+  "menuVoteClosesInHours": "{count, plural, =1{Closes in 1 hour} other{Closes in {count} hours}}",
+  "@menuVoteClosesInHours": {
+    "description": "Time left on an open menu vote, in whole hours.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuVoteClosesSoon": "Closes within an hour",
+  "@menuVoteClosesSoon": {
+    "description": "Shown when less than an hour is left on a menu vote."
+  },
+  "menuVoteLateOption": "{count, plural, =1{Added late: 1 had already voted} other{Added late: {count} had already voted}}",
+  "@menuVoteLateOption": {
+    "description": "Marks an option added after people had voted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuVoteProposeOther": "Suggest something else",
+  "@menuVoteProposeOther": {
+    "description": "Adds another dish to an open vote."
+  },
+  "menuVoteDecide": "Decide",
+  "@menuVoteDecide": {
+    "description": "The starter settles a vote with a clear winner."
+  },
+  "menuVoteDecideFor": "Choose {recipeName}",
+  "@menuVoteDecideFor": {
+    "description": "The starter breaks a tie by choosing this dish.",
+    "placeholders": {
+      "recipeName": {
+        "type": "String"
+      }
+    }
+  },
+  "menuVoteTieTitle": "A tie, needs a decision",
+  "@menuVoteTieTitle": {
+    "description": "Heading when two or more options have the most votes."
+  },
+  "menuVoteTieStarterBody": "The app does not pick a winner on a tie. You started the vote, so you choose.",
+  "@menuVoteTieStarterBody": {
+    "description": "Shown to the person who started a tied vote."
+  },
+  "menuVoteWaitingOnStarter": "Waiting for the person who started the vote.",
+  "@menuVoteWaitingOnStarter": {
+    "description": "Shown to others while a tied or expired vote waits on its starter."
+  },
+  "menuVoteGiveADay": "Give it a day",
+  "@menuVoteGiveADay": {
+    "description": "Extends a tied vote by 24 hours."
+  },
+  "menuVoteDecideAnyway": "Decide anyway",
+  "@menuVoteDecideAnyway": {
+    "description": "Settles an expired vote on the votes cast."
+  },
+  "menuVoteReopen": "Open again",
+  "@menuVoteReopen": {
+    "description": "Reopens an expired vote for another 24 hours."
+  },
+  "menuVoteRelease": "Let the slot go",
+  "@menuVoteRelease": {
+    "description": "Drops a vote and leaves the dish on the slot as it is."
+  },
+  "menuVoteNobodyVoted": "Nobody voted",
+  "@menuVoteNobodyVoted": {
+    "description": "Heading of an expired vote with no votes."
+  },
+  "menuVoteNobodyVotedBody": "This is not a tie but a suggestion nobody took up. No dish is put on the slot because of it.",
+  "@menuVoteNobodyVotedBody": {
+    "description": "Explains an expired vote with no votes."
+  },
+  "menuVoteApplyFailed": "The winner could not be added to the menu",
+  "@menuVoteApplyFailed": {
+    "description": "Error when writing a vote's winner into the menu failed."
+  },
+  "menuVoteSaveFailed": "The vote could not be saved",
+  "@menuVoteSaveFailed": {
+    "description": "Error when starting, adding to, casting or settling a menu vote failed."
+  },
   "invitationCheckConnectionAndRetry": "Check your internet connection and try again.",
   "invitationCurrentItem": "Current: {item}",
   "@invitationCurrentItem": {
@@ -10519,7 +10606,7 @@
       }
     }
   },
-  "a11yMenuVoteOptionSelected": "{name}, selected. Tap to change vote.",
+  "a11yMenuVoteOptionSelected": "{name}, your vote.",
   "@a11yMenuVoteOptionSelected": {
     "description": "Semantics label for a menu vote option that is currently selected.",
     "placeholders": {

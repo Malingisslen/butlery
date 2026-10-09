@@ -134,6 +134,49 @@ test(
   }
 );
 
+// BUT-2118: `votes` is also the collection id of live-menu ballots, which the
+// account erasure finds by collection group on `userId`. A legacy vote naming
+// someone else would sit in that person's erasure for good.
+test(
+  "BUT-2118: a legacy vote whose userId names someone else is refused",
+  async () => {
+    // Test 1 left this document behind; a create is what is being tested.
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx
+        .firestore()
+        .doc(`realtime_menus/${MENU_ID}/votes/${PARTICIPANT_UID}`)
+        .delete();
+    });
+    const ctx = env.authenticatedContext(PARTICIPANT_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`realtime_menus/${MENU_ID}/votes/${PARTICIPANT_UID}`)
+        .set({ userId: OWNER_UID, choice: "tacos", createdAt: new Date() })
+    );
+  }
+);
+
+test(
+  "BUT-2118: a legacy vote without userId is still allowed",
+  async () => {
+    // Test 1 left this document behind; a create is what is being tested.
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx
+        .firestore()
+        .doc(`realtime_menus/${MENU_ID}/votes/${PARTICIPANT_UID}`)
+        .delete();
+    });
+    const ctx = env.authenticatedContext(PARTICIPANT_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`realtime_menus/${MENU_ID}/votes/${PARTICIPANT_UID}`)
+        .set({ choice: "tacos", createdAt: new Date() })
+    );
+  }
+);
+
 // Test 4: vote owner can update their own vote (re-vote / change choice).
 // Realtime menus are collaborative; the UI lets users change their vote
 // while the menu is open.

@@ -13,8 +13,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/router/app_router.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu_voting_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -32,7 +34,12 @@ class _MockSync extends Mock implements RealtimeSyncService {}
 
 class _MockMenuService extends Mock implements RealtimeMenuService {}
 
-class _FakeLiveMenu extends Fake implements RealtimeMenu {}
+class _MockVotingService extends Mock implements MenuVotingService {}
+
+class _FakeLiveMenu extends Fake implements RealtimeMenu {
+  @override
+  List<String> get participantIds => const ['me'];
+}
 
 class _FakeRealtimeVm extends ChangeNotifier
     with Fake
@@ -79,6 +86,11 @@ void main() {
     GetIt.instance.registerSingleton<RealtimeSyncService>(sync);
     GetIt.instance.registerSingleton<RealtimeMenuService>(_MockMenuService());
     TestServiceLocator.registerFactory<RealtimeMenuViewModel>(() => realtime);
+    final voting = _MockVotingService();
+    when(
+      () => voting.watchBallots(any()),
+    ).thenAnswer((_) => const Stream<List<MenuBallot>>.empty());
+    GetIt.instance.registerSingleton<MenuVotingService>(voting);
   });
 
   tearDown(() async {
@@ -175,12 +187,12 @@ void main() {
     expect(find.byIcon(ButleryIcons.shoppingCart), findsOneWidget);
   });
 
-  testWidgets('a viewer can neither swap nor regenerate, an editor can', (
-    tester,
-  ) async {
+  testWidgets('a viewer can neither swap, regenerate nor start a vote, an '
+      'editor can', (tester) async {
     await openLive(tester);
     expect(tapEnabled(tester, ButleryIcons.swapHorizontal), isTrue);
     expect(tapEnabled(tester, ButleryIcons.refreshCw), isTrue);
+    expect(tapEnabled(tester, ButleryIcons.vote), isTrue);
 
     realtime.deliver({
       'Middag': [flowDinner(1)],
@@ -189,6 +201,7 @@ void main() {
 
     expect(tapEnabled(tester, ButleryIcons.swapHorizontal), isFalse);
     expect(tapEnabled(tester, ButleryIcons.refreshCw), isFalse);
+    expect(tapEnabled(tester, ButleryIcons.vote), isFalse);
   });
 
   testWidgets('a personal menu still has the prompt and no banner', (
