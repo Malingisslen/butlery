@@ -505,6 +505,14 @@ jobs:
           echo "::error::Post-deploy smoke gate FAILED — one or more expected functions are missing after a settle + retry. The deploy may have partially failed on the backend even though the firebase CLI exited 0. NOTE: auto-rollback does NOT run from here — its \`if:\` has no status-check function, so GitHub ANDs an implicit success() that is already false. Check the Cloud Run revisions by hand." >&2
           exit 1
 
+      # TTL policies ride in firestore.indexes.json (`"ttl": true`), and the
+      # firebase CLI does not say whether Firestore accepted one. This prints
+      # the live list so the run log answers it. Read-only; a new policy shows
+      # CREATING for a while before ACTIVE.
+      - name: List Firestore TTL policies
+        if: env.DEPLOY_TARGET == 'indexes' || env.DEPLOY_TARGET == 'all'
+        run: gcloud firestore fields ttls list --project butlery-app-1
+
       # ─── AUTO-ROLLBACK ON FAILED DEPLOY (BUT-1424) ───────────────────────────
       #
       # Runs ONLY when the Deploy step or the post-deploy smoke gate failed — NOT
