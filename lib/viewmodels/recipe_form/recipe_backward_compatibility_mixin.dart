@@ -158,6 +158,15 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     notifyListeners();
   }
 
+  /// Auto-add after the last line gets text. Reads the manager, not the
+  /// widget's controller list (a copy per build), so a second change before
+  /// the rebuild finds an empty last line and adds nothing.
+  void ensureTrailingIngredientLine() {
+    final values = state.ingredientsManager.values;
+    if (values.isNotEmpty && values.last.trim().isEmpty) return;
+    addIngredient();
+  }
+
   /// Remove ingredient at index
   void removeIngredient(int index) {
     state.removeIngredientLine(index);
@@ -205,6 +214,13 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     }
     state.instructionsManager.add('');
     notifyListeners();
+  }
+
+  /// Instruction twin of [ensureTrailingIngredientLine].
+  void ensureTrailingInstructionLine() {
+    final values = state.instructionsManager.values;
+    if (values.isNotEmpty && values.last.trim().isEmpty) return;
+    addInstruction();
   }
 
   /// Remove instruction at index

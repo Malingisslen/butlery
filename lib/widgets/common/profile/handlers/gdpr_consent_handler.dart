@@ -70,10 +70,16 @@ class GdprConsentHandler {
   }
 
   /// Handle data export - GDPR Article 20.
-  static Future<void> handleExportData(BuildContext context) async {
+  ///
+  /// [closeModal] is false from a plain page such as Inställningar, where
+  /// popping would close the page itself (same contract as
+  /// BackupRestoreHandler, BUT-2150).
+  static Future<void> handleExportData(
+    BuildContext context, {
+    bool closeModal = true,
+  }) async {
     try {
-      // Close the profile menu modal first
-      Navigator.pop(context);
+      if (closeModal) Navigator.pop(context);
 
       // Get data export service
       final exportService = ServiceLocator.get<DataExportService>();

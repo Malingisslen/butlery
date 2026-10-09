@@ -92,4 +92,18 @@ void main() {
     expect(find.textContaining('Exception'), findsNothing);
     expect(find.textContaining('DataExportService'), findsNothing);
   });
+
+  testWidgets('from a plain page (Inställningar) the export does not pop '
+      'the page it was opened from (BUT-2302)', (tester) async {
+    final context = await _pumpHome(tester);
+    // Close the sheet _pumpHome opened: Inställningar has none.
+    Navigator.pop(context);
+    await tester.pumpAndSettle();
+
+    await GdprConsentHandler.handleExportData(context, closeModal: false);
+    await tester.pumpAndSettle();
+
+    expect(find.text('hem'), findsOneWidget);
+    expect(find.text(sv.profileDataExportOpenFailed), findsOneWidget);
+  });
 }
