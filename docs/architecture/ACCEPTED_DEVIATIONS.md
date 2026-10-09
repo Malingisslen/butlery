@@ -5888,6 +5888,42 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   **What she was NOT shown:** a count of stored rows holding a review; this change was made
   without Firestore credentials.
 
+## BUT-1842 — a report keeps a text copy of what it names (2026-10-09)
+
+- **The server keeps a text copy of reported content after its author edits or deletes it
+  (Malin, 2026-10-09, "Spara kopia").** `captureReportEvidence`
+  (`functions/src/moderation/report-evidence.ts`), called from `onReportCreated`, writes
+  `report_evidence/{reportId}`: the listed text fields of the reported document, inside a
+  64 KB budget (`truncated: true` when cut), and an `outcome`. No images, no `reporterId`.
+  `firestore.rules`: admin read, no client write.
+- **A copy is kept only for content the reporter could read.** The capture mirrors each read
+  rule from the reporter's side (recipe `socialData.memberPermissions`, comment
+  `recipeOwnerId`/`sharedWithUserIds`, message conversation `participantIds`, matbild
+  `friends/{reporter}` plus `visibility == 'sameAsRecipe'`, group `friendUserIds`, profile
+  any signed-in account with `contentId == contentOwnerId`), and checks the author field
+  where the path does not pin the owner. Otherwise it stores the outcome and no text. A
+  message in a GROUP is checked on membership only, not on BUT-1838's `memberSince` cut-off.
+- **Deletion is one trigger plus a TTL.** `onReportEvidenceLifecycle` deletes the copy when
+  its report is deleted, newly closed, or its `contentOwnerId` changes. The reported
+  person's erasure nulls that field (`anonymizeReportsByContentOwnerWithDb`), so the copy
+  follows the report's own anonymisation, and a held erasure keeps both. `expireAt` is
+  capture + 180 days and is NOT extended by an erasure hold; the TTL deletes asynchronously,
+  so "180 days" is a ceiling with up to about a day's lag. A report filed before this change
+  has no copy.
+- **Not in the reported person's Art. 15 bundle, on Art. 15(4).** The copy together with the
+  report names which content was reported, which identifies the reporter for a message in
+  a conversation of two. The weaker part: when the author has edited or deleted
+  the text, the copy is the only version left and is still withheld. The moderation-counters
+  section's `data_minimisation` says a copy may be kept and why it is not included.
+  Awaiting Malin's confirmation on the decision card in the BUT-1842 thread.
+- **Resolved 2026-10-09 — Malin:** the copy stays out of the reported person's Art. 15
+  bundle, and the privacy policy's retention table names it before it is switched on.
+  Retires "Awaiting Malin's confirmation on the decision card in the BUT-1842 thread."
+- **Known gaps, not built here:** no preserve state that would keep a serious case's copy
+  past 180 days; a closed report records no outcome of the moderator's action once its copy
+  is gone; report creation has no server-side throttle, so each report now also costs one
+  capture.
+
 - **SUPERSEDES "Comment likes are erased but not exported (BUT-2112, 2026-09-19)" and the
   BUT-2115 line "The requester's own reactions on other people's comments are not in the
   bundle; they go with comment likes in BUT-2114" (BUT-2114, 2026-10-09).** The Art. 15

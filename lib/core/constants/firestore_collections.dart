@@ -76,6 +76,8 @@ abstract final class FirestoreCollections {
   static const String connectivityTest = 'connectivity_test';
   static const String butleryArchive = 'butlery_archive';
   static const String reports = 'reports';
+  // BUT-1842: server-written text copy of reported content; admin read only.
+  static const String reportEvidence = 'report_evidence';
   static const String notificationHistory = 'notification_history';
   static const String notificationBatches = 'notification_batches';
   static const String notificationDelivery = 'notification_delivery';

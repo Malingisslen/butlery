@@ -7,6 +7,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -202,6 +203,25 @@ class ReportService extends BaseService {
               .whereType<ContentReport>()
               .toList(),
         );
+  }
+
+  /// The admin-only text copy saved when [reportId] was filed.
+  ///
+  /// Returns `(evidence: null)` for a report with NO document and `null`
+  /// when the lookup itself FAILED, so the caller can retry instead of
+  /// showing "no copy" for a blip. A failure is not cached.
+  Future<({ReportEvidence? evidence})?> getReportEvidence(String reportId) {
+    return getCachedOrExecute<({ReportEvidence? evidence})>(
+      'reportEvidence_$reportId',
+      () async {
+        final snap = await _firestore
+            .collection(FirestoreCollections.reportEvidence)
+            .doc(reportId)
+            .get();
+        return (evidence: ReportEvidence.fromFirestore(snap));
+      },
+      cacheDuration: const Duration(minutes: 1),
+    );
   }
 
   /// Whether [userId]'s account is flagged as a minor. Reads the

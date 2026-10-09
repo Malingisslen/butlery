@@ -410,6 +410,47 @@ test(
   }
 );
 
+// BUT-1842: the text copy of reported content is the moderator's alone.
+async function seedEvidence(id: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`report_evidence/${id}`).set({
+      reportId: id,
+      contentType: "message",
+      contentId: "m1",
+      contentOwnerId: USER_B_UID,
+      outcome: "captured",
+      text: { content: "hej" },
+    });
+  });
+}
+
+test("an admin can read a report's text copy", async () => {
+  await seedEvidence("ev-admin");
+  await assertSucceeds(
+    env.authenticatedContext(ADMIN_UID).firestore().doc("report_evidence/ev-admin").get(),
+  );
+});
+
+test("neither the reported person nor anyone else can read a text copy", async () => {
+  await seedEvidence("ev-read");
+  for (const uid of [USER_A_UID, USER_B_UID]) {
+    await assertFails(
+      env.authenticatedContext(uid).firestore().doc("report_evidence/ev-read").get(),
+    );
+  }
+  await assertFails(env.unauthenticatedContext().firestore().doc("report_evidence/ev-read").get());
+});
+
+test("no client writes a text copy, an admin included", async () => {
+  await seedEvidence("ev-write");
+  for (const uid of [ADMIN_UID, USER_A_UID]) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertFails(db.doc(`report_evidence/new-${uid}`).set({ outcome: "captured" }));
+    await assertFails(db.doc("report_evidence/ev-write").update({ outcome: "missing" }));
+    await assertFails(db.doc("report_evidence/ev-write").delete());
+  }
+});
+
 // ----- BUT-2154: the app's reason ids, and a retry under the same id -----
 
 // The ids `ReportReason.offered` sends (lib/models/social/report_reason.dart).

@@ -16,6 +16,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 
@@ -51,6 +52,9 @@ void main() {
       when(
         () => mockService.deleteReportedContent(any()),
       ).thenAnswer((_) async => true);
+      when(
+        () => mockService.getReportEvidence(any()),
+      ).thenAnswer((_) async => (evidence: null));
       vm = ModeratorReviewViewModel(reportService: mockService);
     });
 
@@ -236,6 +240,141 @@ void main() {
       },
     );
 
+    group('saved evidence (BUT-1842)', () {
+      setUp(() {
+        when(
+          () => mockService.isMinorAccount(any()),
+        ).thenAnswer((_) async => false);
+      });
+
+      test('a Loaded copy is asked once; a None is asked again on the next '
+          'emission and can turn into Loaded', () async {
+        final withCopy = _report(contentType: ContentType.recipe);
+        final late = ContentReport(
+          id: 'r-late',
+          reporterId: 'x',
+          contentType: ContentType.comment,
+          contentId: 'c2',
+          reason: 'spam',
+          createdAt: DateTime(2026, 4, 26),
+        );
+        final evidence = const ReportEvidence(
+          reportId: 'r1',
+          outcome: EvidenceOutcome.captured,
+          text: [('title', 'Hej')],
+        );
+        final lateEvidence = const ReportEvidence(
+          reportId: 'r-late',
+          outcome: EvidenceOutcome.captured,
+          text: [('text', 'Sent')],
+        );
+        final controller = StreamController<List<ContentReport>>();
+        addTearDown(controller.close);
+        when(
+          () => mockService.watchOpenReports(),
+        ).thenAnswer((_) => controller.stream);
+        when(
+          () => mockService.getReportEvidence('r1'),
+        ).thenAnswer((_) async => (evidence: evidence));
+        var lateCalls = 0;
+        when(() => mockService.getReportEvidence('r-late')).thenAnswer(
+          (_) async =>
+              lateCalls++ == 0 ? (evidence: null) : (evidence: lateEvidence),
+        );
+
+        expect(vm.evidenceFor(withCopy), isA<ReportEvidenceLoading>());
+        vm.startListening();
+        controller.add([withCopy, late]);
+        await pumpEventQueue();
+
+        expect(vm.evidenceFor(withCopy), isA<ReportEvidenceLoaded>());
+        expect(vm.evidenceFor(late), isA<ReportEvidenceNone>());
+
+        controller.add([withCopy, late]);
+        await pumpEventQueue();
+
+        final loaded = vm.evidenceFor(withCopy);
+        expect((loaded as ReportEvidenceLoaded).evidence, same(evidence));
+        final turned = vm.evidenceFor(late);
+        expect(turned, isA<ReportEvidenceLoaded>());
+        expect((turned as ReportEvidenceLoaded).evidence, same(lateEvidence));
+        verify(() => mockService.getReportEvidence('r1')).called(1);
+        verify(() => mockService.getReportEvidence('r-late')).called(2);
+      });
+
+      test('notifies when evidence resolves, not when a re-asked None stays '
+          'None', () async {
+        final report = _report(contentType: ContentType.recipe);
+        final controller = StreamController<List<ContentReport>>();
+        addTearDown(controller.close);
+        when(
+          () => mockService.watchOpenReports(),
+        ).thenAnswer((_) => controller.stream);
+        when(
+          () => mockService.getReportEvidence('r1'),
+        ).thenAnswer((_) async => (evidence: null));
+
+        var notifications = 0;
+        vm.startListening();
+        controller.add([report]);
+        await pumpEventQueue();
+        vm.addListener(() => notifications++);
+
+        // The emission itself notifies (the list changed); a re-asked None
+        // that stays None must add nothing on top of that baseline.
+        controller.add([report]);
+        await pumpEventQueue();
+        verify(() => mockService.getReportEvidence('r1')).called(2);
+        final baseline = notifications;
+        expect(baseline, greaterThan(0));
+
+        when(() => mockService.getReportEvidence('r1')).thenAnswer(
+          (_) async => (
+            evidence: const ReportEvidence(
+              reportId: 'r1',
+              outcome: EvidenceOutcome.captured,
+            ),
+          ),
+        );
+        notifications = 0;
+        controller.add([report]);
+        await pumpEventQueue();
+
+        expect(vm.evidenceFor(report), isA<ReportEvidenceLoaded>());
+        expect(
+          notifications,
+          baseline + 1,
+          reason: 'resolving None to Loaded notifies once more',
+        );
+      });
+
+      test(
+        'a failed lookup stays loading and is retried on re-emission',
+        () async {
+          final report = _report(contentType: ContentType.recipe);
+          final controller = StreamController<List<ContentReport>>();
+          addTearDown(controller.close);
+          when(
+            () => mockService.watchOpenReports(),
+          ).thenAnswer((_) => controller.stream);
+          var call = 0;
+          when(() => mockService.getReportEvidence('r1')).thenAnswer(
+            (_) async => call++ == 0 ? null : (evidence: null),
+          );
+
+          vm.startListening();
+          controller.add([report]);
+          await pumpEventQueue();
+          expect(vm.evidenceFor(report), isA<ReportEvidenceLoading>());
+
+          controller.add([report]);
+          await pumpEventQueue();
+          expect(vm.evidenceFor(report), isA<ReportEvidenceNone>());
+          verify(() => mockService.getReportEvidence('r1')).called(2);
+        },
+      );
+    });
+
     test('isReversibleAction is true only for profile reports', () {
       expect(
         vm.isReversibleAction(_report(contentType: ContentType.profile)),
@@ -278,6 +417,9 @@ void main() {
       when(
         () => mockService.isMinorAccount(any()),
       ).thenAnswer((_) async => false);
+      when(
+        () => mockService.getReportEvidence(any()),
+      ).thenAnswer((_) async => (evidence: null));
       vm = ModeratorReviewViewModel(reportService: mockService);
     });
 

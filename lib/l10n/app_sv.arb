@@ -10349,6 +10349,51 @@
   "@moderatorReporterErased": {
     "description": "Shown in place of the reporter line when the reporter deleted their account while the case was open; the report is kept without their id."
   },
+  "moderatorEvidenceHeading": "Sparad kopia",
+  "@moderatorEvidenceHeading": {
+    "description": "Heading of the saved text copy section on a moderation report card (BUT-1842)."
+  },
+  "moderatorEvidenceHeadingAt": "Sparad kopia · {time}",
+  "@moderatorEvidenceHeadingAt": {
+    "description": "Heading of the saved text copy section when the capture time is known (BUT-1842).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorEvidenceTruncated": "Texten är förkortad",
+  "@moderatorEvidenceTruncated": {
+    "description": "Shown when the saved copy was cut at the server's length limit (BUT-1842)."
+  },
+  "moderatorEvidenceTextOnly": "Bara text sparas, inte bilder",
+  "@moderatorEvidenceTextOnly": {
+    "description": "Always shown under a saved copy so moderators know images are not kept (BUT-1842)."
+  },
+  "moderatorEvidenceMissing": "Innehållet fanns inte kvar när anmälan kom in",
+  "@moderatorEvidenceMissing": {
+    "description": "No copy: the reported content no longer existed at capture (BUT-1842)."
+  },
+  "moderatorEvidenceNotVisible": "Ingen kopia: anmälaren kunde inte se innehållet",
+  "@moderatorEvidenceNotVisible": {
+    "description": "No copy: the reporter had no read access to the content (BUT-1842)."
+  },
+  "moderatorEvidenceOwnerMismatch": "Ingen kopia: innehållet tillhör inte den anmälda",
+  "@moderatorEvidenceOwnerMismatch": {
+    "description": "No copy: the content owner differs from the reported owner (BUT-1842)."
+  },
+  "moderatorEvidenceUnsupported": "Ingen kopia för den här typen av anmälan",
+  "@moderatorEvidenceUnsupported": {
+    "description": "No copy: the report type or reference is not supported (BUT-1842)."
+  },
+  "moderatorEvidenceFailed": "Kopian kunde inte sparas",
+  "@moderatorEvidenceFailed": {
+    "description": "No copy: capture failed, or the outcome is unknown to this app version (BUT-1842)."
+  },
+  "moderatorEvidenceNone": "Ingen kopia sparad",
+  "@moderatorEvidenceNone": {
+    "description": "No evidence document for this report (BUT-1842)."
+  },
   "moderatorMinorAccountBadge": "Minderårigt konto",
   "@moderatorMinorAccountBadge": {
     "description": "BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor."

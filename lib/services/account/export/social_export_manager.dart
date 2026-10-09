@@ -701,7 +701,11 @@ class SocialExportManager with SocialExportRedaction {
             'This shows how many times your content has been reported by other '
             'people, and when it last happened. Who reported you is not '
             'included: that is information about them, and disclosing it would '
-            'expose someone who used a safety feature.',
+            'expose someone who used a safety feature. When something you '
+            'wrote is reported, a text copy of it may be kept for the '
+            'moderator until the case is closed, and for at most 180 days; it '
+            'is not included here, because it would show which content was '
+            'reported and so who reported it.',
       };
     } catch (e) {
       app_logger.AppLogger.error(

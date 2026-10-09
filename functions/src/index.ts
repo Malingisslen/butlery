@@ -303,6 +303,7 @@ export { onAdminGranted, onAdminRevoked } from "./admin/sync-admin-claim";
 
 // Content Moderation - Report processing
 export { onReportCreated } from "./feedback/on-report-created";
+export { onReportEvidenceLifecycle } from "./moderation/on-report-evidence-lifecycle";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {

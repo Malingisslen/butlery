@@ -14493,6 +14493,41 @@ class AppLocalizationsEn extends AppLocalizations {
       'The reporter\'s account has been deleted';
 
   @override
+  String get moderatorEvidenceHeading => 'Saved copy';
+
+  @override
+  String moderatorEvidenceHeadingAt(String time) {
+    return 'Saved copy · $time';
+  }
+
+  @override
+  String get moderatorEvidenceTruncated => 'The text is shortened';
+
+  @override
+  String get moderatorEvidenceTextOnly => 'Only text is saved, not images';
+
+  @override
+  String get moderatorEvidenceMissing =>
+      'The content was already gone when the report came in';
+
+  @override
+  String get moderatorEvidenceNotVisible =>
+      'No copy: the reporter could not see the content';
+
+  @override
+  String get moderatorEvidenceOwnerMismatch =>
+      'No copy: the content does not belong to the reported person';
+
+  @override
+  String get moderatorEvidenceUnsupported => 'No copy for this kind of report';
+
+  @override
+  String get moderatorEvidenceFailed => 'The copy could not be saved';
+
+  @override
+  String get moderatorEvidenceNone => 'No copy saved';
+
+  @override
   String get moderatorMinorAccountBadge => 'Minor account';
 
   @override

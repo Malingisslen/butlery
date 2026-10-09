@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 9, 2026
-**Version:** 1.4.0
+**Version:** 1.5.0
 
 ---
 
@@ -226,8 +226,9 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Security logs | 90 days | Legitimate interest |
 | Deletion audit logs | 180 days | GDPR accountability |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
+| Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
 
-After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible.
+After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible. Exception: data in an open report case is kept until the case is closed, at most 180 days.
 
 ---
 
@@ -246,7 +247,7 @@ You have the following rights under GDPR:
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
 - Delete your account and all your data
 - **How:** Profile > Account Management > Delete account
-- **Note:** We delete ALL your data permanently
+- **Note:** We delete ALL your data permanently, except data in an open report case, which is kept until the case is closed, at most 180 days
 
 ### 9.4 Right to data portability (Art. 20)
 - Export all your data in machine-readable format (JSON)
@@ -342,7 +343,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 6, 2026
+**Last change:** October 9, 2026
 **Version history:** Available upon request
 
 ---

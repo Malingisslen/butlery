@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 9 oktober 2026
-**Version:** 1.4.0
+**Version:** 1.5.0
 
 ---
 
@@ -227,8 +227,9 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
+| Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
 
-Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig.
+Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 
 ---
 
@@ -247,7 +248,7 @@ Du har följande rättigheter enligt GDPR:
 ### 9.3 Rätt till radering (Art. 17 - "Rätten att bli glömd")
 - Radera ditt konto och alla dina uppgifter
 - **Hur:** Profil → Kontohantering → Radera konto
-- **Obs:** Vi raderar ALLA dina uppgifter permanent
+- **Obs:** Vi raderar ALLA dina uppgifter permanent, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar
 
 ### 9.4 Rätt till dataportabilitet (Art. 20)
 - Exportera alla dina uppgifter i maskinläsbart format (JSON)
@@ -343,7 +344,7 @@ Vid väsentliga ändringar:
 - 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 6 oktober 2026
+**Senaste ändring:** 9 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

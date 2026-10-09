@@ -3849,6 +3849,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // BUT-1842: the server's text copy of reported content. Moderators only;
+    // it is written by Cloud Functions alone.
+    match /report_evidence/{reportId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ========================================
     // ADMINS - Moderator allow-list (seeded server-side only)
     // ========================================
