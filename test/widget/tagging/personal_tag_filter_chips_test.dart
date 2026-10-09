@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.d
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/semantics_announcement.dart';
 
 PersonalTag _tag(String id, String name) {
   final now = DateTime(2026, 1, 1);
@@ -58,6 +59,32 @@ void main() {
         (c) => c.selected,
       );
       expect(selectedChip.showCheckmark, isTrue);
+    });
+
+    testWidgets('each chip is one screen-reader stop that names the action '
+        'once and can be activated', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: PersonalTagFilterChipsWidget(
+            tags: testTags,
+            selectedTagIds: const {'tag-1'},
+            onToggle: (_) {},
+            showExcludeSection: true,
+            onExcludeToggle: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      for (final label in ['Filtrera på Favoriter', 'Exkludera Favoriter']) {
+        final chip = find.bySemanticsLabel(label);
+        expect(chip, findsOneWidget);
+        expectActivatable(tester, chip);
+        expectNothingAnnouncedTwice(tester, chip);
+      }
+      handle.dispose();
     });
 
     testWidgets('tapping a chip calls onToggle with correct tag ID', (

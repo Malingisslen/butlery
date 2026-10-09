@@ -125,10 +125,8 @@ class VeckomenyViewModeToggle extends StatelessWidget
   }) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yWeeklyMenuViewModeToggle(label),
       button: true,
       selected: active,
-      excludeSemantics: true,
       child: ButleryControlFocus(
         child: PressFill(
           surface: PressSurface.base,

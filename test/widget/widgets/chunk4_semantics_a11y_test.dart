@@ -75,10 +75,10 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Mjölk, tryck för att redigera')),
-          findsOneWidget,
-        );
+        final row = find.bySemanticsLabel(RegExp(r'^Redigera\nMjölk'));
+        expect(row, findsOneWidget);
+        expectActivatable(tester, row);
+        expectNothingAnnouncedTwice(tester, row);
         handle.dispose();
       },
     );
@@ -103,10 +103,10 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Välj utgångsdatum')),
-          findsOneWidget,
-        );
+        final tile = find.bySemanticsLabel(RegExp(r'^Öppna kalendern'));
+        expect(tile, findsOneWidget);
+        expectActivatable(tester, tile);
+        expectNothingAnnouncedTwice(tester, tile);
         handle.dispose();
       },
     );

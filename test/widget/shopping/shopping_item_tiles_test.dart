@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   group('ShoppingItemTiles Widget Tests', () {
@@ -595,6 +596,35 @@ void main() {
         // Labels mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
         expect(find.bySemanticsLabel('Redigera Mjölk'), findsOneWidget);
         expect(find.bySemanticsLabel('Ta bort Mjölk'), findsOneWidget);
+      });
+
+      testWidgets('the row says what a tap does, once, in both states', (
+        WidgetTester tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        for (final (item, done, verb) in [
+          (basicItem, false, 'Bocka av'),
+          (completedItem, true, 'Avbockad, tryck för att ångra'),
+        ]) {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: ShoppingItemTile(
+                item: item,
+                isCompleted: done,
+                onItemTap: (_) {},
+                onEditItem: (_) {},
+                onDeleteItem: (_) {},
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final row = find.bySemanticsLabel(RegExp('^$verb'));
+          expect(row, findsOneWidget);
+          expectActivatable(tester, row);
+          expectNothingAnnouncedTwice(tester, row);
+        }
+        handle.dispose();
       });
 
       testWidgets('maintains minimum touch target size', (

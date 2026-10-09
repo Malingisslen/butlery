@@ -355,8 +355,8 @@ class _OptionRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Semantics(
         label: isSelected
-            ? context.l10n.a11yMenuVoteOptionSelected(option.recipeName)
-            : context.l10n.a11yMenuVoteOption(option.recipeName),
+            ? context.l10n.a11yMenuVoteOptionSelected
+            : context.l10n.a11yMenuVoteOption,
         button: true,
         enabled: onTap != null,
         selected: isSelected,
