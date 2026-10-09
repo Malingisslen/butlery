@@ -3663,11 +3663,13 @@ export async function scrubRatingRecipeOwner(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const snap = await db
-    .collection("recipe_ratings")
-    .where("recipeOwnerId", "==", uid)
-    .limit(MAX_RATING_OWNER_SWEEP_ROWS + 1)
-    .get();
+  const read = () =>
+    db
+      .collection("recipe_ratings")
+      .where("recipeOwnerId", "==", uid)
+      .limit(MAX_RATING_OWNER_SWEEP_ROWS + 1)
+      .get();
+  const snap = await read();
 
   if (snap.size > MAX_RATING_OWNER_SWEEP_ROWS) {
     logger.error(
@@ -3679,15 +3681,13 @@ export async function scrubRatingRecipeOwner(
   if (snap.empty) return true;
 
   try {
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
-      snap.docs,
-      (batch, doc) => {
-        batch.update(doc.ref, {
-          recipeOwnerId: admin.firestore.FieldValue.delete(),
-        });
-      },
-      { label: "scrubRatingRecipeOwner", strict: true },
+      snap,
+      read,
+      MAX_RATING_OWNER_SWEEP_ROWS,
+      { recipeOwnerId: admin.firestore.FieldValue.delete() },
+      "scrubRatingRecipeOwner",
     );
   } catch (err) {
     logger.error("[deletion-cascade] rating owner scrub failed", {
@@ -3704,6 +3704,44 @@ export async function scrubRatingRecipeOwner(
     rows: snap.size,
   });
   return true;
+}
+
+/**
+ * BUT-2338: a strict scrub over rows other people can delete — a comment or
+ * rating whose recipe `onRecipeDeleted` cleans up, or whose author removes it.
+ * One such delete between the read and the commit rejects the whole chunk with
+ * NOT_FOUND, so a NOT_FOUND re-reads once and writes what is still there. Any
+ * other failure, a second one, or a re-read over the cap throws.
+ */
+async function scrubWithOneReread(
+  db: admin.firestore.Firestore,
+  first: admin.firestore.QuerySnapshot,
+  read: () => Promise<admin.firestore.QuerySnapshot>,
+  cap: number,
+  update: Record<string, unknown>,
+  label: string,
+): Promise<void> {
+  const write = (docs: admin.firestore.QueryDocumentSnapshot[]) =>
+    commitInChunks(
+      db,
+      docs,
+      (batch, doc) => {
+        batch.update(doc.ref, update);
+      },
+      { label, strict: true },
+    );
+
+  try {
+    await write(first.docs);
+    return;
+  } catch (err) {
+    if ((err as { code?: number | string }).code !== 5) throw err;
+  }
+  const again = await read();
+  if (again.size > cap) {
+    throw new Error(`${label}: re-read over the cap (${again.size})`);
+  }
+  await write(again.docs);
 }
 
 /**
@@ -3727,11 +3765,13 @@ async function scrubCommentField(
   update: Record<string, unknown>,
   label: string,
 ): Promise<boolean> {
-  const snap = await db
-    .collection("recipe_comments")
-    .where(query.field, query.op, uid)
-    .limit(query.cap + 1)
-    .get();
+  const read = () =>
+    db
+      .collection("recipe_comments")
+      .where(query.field, query.op, uid)
+      .limit(query.cap + 1)
+      .get();
+  const snap = await read();
 
   if (snap.size > query.cap) {
     logger.error(`[deletion-cascade] implausible ${label} count; not sweeping`, {
@@ -3743,14 +3783,7 @@ async function scrubCommentField(
   if (snap.empty) return true;
 
   try {
-    await commitInChunks(
-      db,
-      snap.docs,
-      (batch, doc) => {
-        batch.update(doc.ref, update);
-      },
-      { label, strict: true },
-    );
+    await scrubWithOneReread(db, snap, read, query.cap, update, label);
   } catch (err) {
     logger.error(`[deletion-cascade] ${label} failed`, {
       uid_prefix: uid.slice(0, 6),
