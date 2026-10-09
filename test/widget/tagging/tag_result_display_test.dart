@@ -7,6 +7,8 @@ import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 import '../../infrastructure/helpers/tagging_test_helper.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 
 void main() {
   group('TagResultDisplay', () {
@@ -263,6 +265,75 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(AllergenDisclaimer), findsOneWidget);
+    });
+
+    // BUT-1821: warning text on paper takes text.warning; the gold warning
+    // token is for icons only.
+    testWidgets('the unknown-ingredients text is text.warning', (
+      tester,
+    ) async {
+      final result = TaggingTestHelper.createTagResult(
+        allergenStatus: {'gluten': TriState.free},
+        coverage: 0.8,
+        unknownIngredients: ['unknown1'],
+        generatorVersion: '2.0.0',
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: TagResultDisplay(tagResult: result),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final row = find.ancestor(
+        of: find.byIcon(ButleryIcons.triangleAlert),
+        matching: find.byType(Row),
+      );
+      final text = tester.widget<Text>(
+        find.descendant(of: row.first, matching: find.byType(Text)),
+      );
+      expect(text.style?.color, AppColors.textWarning);
+    });
+
+    testWidgets('a mid coverage percentage is text.warning', (tester) async {
+      final result = TaggingTestHelper.createTagResult(
+        allergenStatus: {'gluten': TriState.free},
+        coverage: 0.5,
+        generatorVersion: '2.0.0',
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: TagResultDisplay(tagResult: result, showCoverage: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final text = tester.widget<Text>(find.text('50%'));
+      expect(text.style?.color, AppColors.textWarning);
+    });
+
+    testWidgets('the unverified-ingredients warning text is text.warning', (
+      tester,
+    ) async {
+      final result = TaggingTestHelper.createTagResult(
+        hasDraftIngredients: true,
+        generatorVersion: '2.0.0',
+      );
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: TagResultDisplay(tagResult: result),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final warning = find.byType(InlineWarning);
+      final text = tester.widget<Text>(
+        find.descendant(of: warning, matching: find.byType(Text)),
+      );
+      expect(text.style?.color, AppColors.textWarning);
     });
   });
 }

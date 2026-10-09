@@ -120,4 +120,23 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(ButleryIcon), findsOneWidget);
   });
+
+  // BUT-1821: an icon-only token (warning) on the icon, a text token on the
+  // text; one colour for both could not express that.
+  testWidgets('textColor colours the text and leaves the icon on color', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const InlineWarning(
+          icon: ButleryIcons.info,
+          color: Colors.amber,
+          textColor: Colors.brown,
+          text: 'split',
+        ),
+      ),
+    );
+    expect(tester.widget<Text>(find.text('split')).style!.color, Colors.brown);
+    expect(tester.widget<Icon>(find.byType(ButleryIcon)).color, Colors.amber);
+  });
 }
