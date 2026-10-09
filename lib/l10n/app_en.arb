@@ -1407,6 +1407,10 @@
   },
   "settingsSectionNotifications": "Notifications",
   "settingsSectionAccount": "Account & security",
+  "settingsSectionPrivacy": "Privacy and data",
+  "@settingsSectionPrivacy": {
+    "description": "Settings hub section heading for privacy policy, consent and data export (BUT-2261)"
+  },
   "settingsSectionAbout": "About",
   "settingsSectionLanguage": "Language",
   "settingsLanguageTitle": "Language",

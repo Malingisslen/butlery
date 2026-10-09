@@ -3158,6 +3158,12 @@ abstract class AppLocalizations {
   /// **'Konto & säkerhet'**
   String get settingsSectionAccount;
 
+  /// Settings hub section heading for privacy policy, consent and data export (BUT-2261)
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet och data'**
+  String get settingsSectionPrivacy;
+
   /// No description provided for @settingsSectionAbout.
   ///
   /// In sv, this message translates to:

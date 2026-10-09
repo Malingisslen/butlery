@@ -125,17 +125,6 @@ class SettingsHubView extends StatelessWidget {
                     closeModal: false,
                   ),
                 ),
-                // BUT-2302: the GDPR export was reachable only from the
-                // profile sheet.
-                _SettingsTile(
-                  icon: ButleryIcons.export,
-                  title: context.l10n.profileExportData,
-                  subtitle: context.l10n.profileExportDataSubtitle,
-                  onTap: () => GdprConsentHandler.handleExportData(
-                    context,
-                    closeModal: false,
-                  ),
-                ),
                 // BUT-913: GDPR-required Sign-out + Delete-Account surfaces.
                 // Handlers already exist on AuthActionHandler (used by
                 // ProfileMenu bottom-sheet) — this just makes them findable
@@ -149,6 +138,35 @@ class SettingsHubView extends StatelessWidget {
                   icon: ButleryIcons.trash2,
                   title: context.l10n.profileDeleteAccount,
                   onTap: () => AuthActionHandler.handleDeleteAccount(context),
+                ),
+                const SizedBox(height: AppDimensions.spacingMd),
+                // BUT-2261: people look for these under Inställningar, not only in
+                // the profile menu.
+                _SectionHeader(title: context.l10n.settingsSectionPrivacy),
+                _SettingsTile(
+                  icon: ButleryIcons.shield,
+                  title: context.l10n.profilePrivacyPolicy,
+                  onTap: () => GdprConsentHandler.handlePrivacyPolicy(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                _SettingsTile(
+                  icon: ButleryIcons.shield,
+                  title: context.l10n.profileManageConsent,
+                  onTap: () => GdprConsentHandler.handleManageConsent(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                _SettingsTile(
+                  icon: ButleryIcons.export,
+                  title: context.l10n.profileExportData,
+                  subtitle: context.l10n.profileExportDataSubtitle,
+                  onTap: () => GdprConsentHandler.handleExportData(
+                    context,
+                    closeModal: false,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionLanguage),
