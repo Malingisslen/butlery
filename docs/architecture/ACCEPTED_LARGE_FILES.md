@@ -89,15 +89,15 @@ Already modular services or well-organized modules within service facades. Furth
 | File | Lines | Reason |
 |------|-------|--------|
 | `personal_recipe_module.dart` | 1,100 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
-| `unified_recipe_service.dart` | 1172 | Service facade coordinating 4 modules |
+| `unified_recipe_service.dart` | 1174 | Service facade coordinating 4 modules |
 | `import_manager.dart` | 1,283 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 706 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 720 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
-| `user_service.dart` | 1098 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
-| `messaging_service.dart` | 1251 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
+| `user_service.dart` | 1116 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
+| `messaging_service.dart` | 1266 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1188 | Text-based recipe import strategy. Row refreshed 2026-10-08: recorded 1038, measured 1156 before BUT-2158 and 1188 after it passed per-line confidences to the import snapshot. |
 | `friends_management_operations.dart` | 687 | Add/remove/block friends operations |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |
@@ -108,11 +108,11 @@ Already modular services or well-organized modules within service facades. Furth
 | `personal_shopping_operations.dart` | 610 | Personal shopping list CRUD |
 | `fcm_service.dart` | 728 | FCM push notification service |
 | `social_recipe_sharing_service.dart` | 520 | The universal-share-dialog path: resolves friend categories to members, converts personal → collaborative, and writes the secondary `shared_content` row with bounded self-heal (BUT-1503). Crossed 500 in BUT-1797 (+56): the `grantsByUserId` attribution captured before the member union, and the two `RecipeShareGrants.forShare`/`mergeCategoryIds` call sites. The grant algebra itself was deliberately lifted OUT to `recipe_share_grants.dart` rather than kept here. Splitting the remaining group-resolution half would separate the union from the attribution it exists to preserve. |
-| `recipe_sharing_manager.dart` | 815 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
+| `recipe_sharing_manager.dart` | 817 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
-| `unified_shopping_service.dart` | 888 | Shopping service facade. BUT-2140 added the restore module's wiring and two delegates; the restore logic lives in `shopping_restore_module.dart`. |
+| `unified_shopping_service.dart` | 883 | Shopping service facade. BUT-2140 added the restore module's wiring and two delegates; the restore logic lives in `shopping_restore_module.dart`. |
 | `shopping_item_management_module.dart` | 588 | Per-item facade over the active list (add, merge-add, edit, remove, tick), each with its optimistic local change and rollback. Was 556 with no row when BUT-2140 PR 3 added the two copies the repository needs for the 30-day restore (`before`, `removed`); the bulk actions already went to `shopping_bulk_item_module.dart`. |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 643 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
@@ -125,7 +125,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `recipe_persistence_manager.dart` | 518 | Focused manager for atomic save/fork/delete delegated from form VM |
 | `shared_shopping_viewmodel.dart` | 514 | Specialized sub-VM inheriting base; single domain (shopping collaboration) |
 | `notification_batch_manager.dart` | 512 | Single-concern module: batching + spam-prevention only |
-| `social_menu_operations.dart` | 552 | SRP module: social menu sharing only (explicit "does not contain" comment) |
+| `social_menu_operations.dart` | 551 | SRP module: social menu sharing only (explicit "does not contain" comment) |
 | `text_import_viewmodel.dart` | 508 | Thin VM extending base + mixin; actual logic is in ImportManager |
 | `social_engagement_metrics.dart` | 508 | SRP module: engagement calculation only (explicit "does not contain" comment) |
 | `url_import_strategy.dart` | 619 | Single multi-tier URL extraction strategy; coherent pipeline |

@@ -102,6 +102,21 @@ class UserService extends ChangeNotifier
     return (profileName != null && profileName.isNotEmpty) ? profileName : null;
   }
 
+  /// [profileDisplayName] for a writer whose field cannot be left empty: the
+  /// localized "unknown user" label instead of null, never the Auth name
+  /// (BUT-2009).
+  String get attributionDisplayName =>
+      profileDisplayName ?? AppLocale.current.displayUnknownUser;
+
+  /// The profile picture and NOTHING else — the Firebase Auth `photoURL` is the
+  /// Google/Apple account picture, which the user never chose to show in the
+  /// app (BUT-2009). Null when the profile has none, so a writer stores the
+  /// field absent rather than an empty string a reader would take for a URL.
+  String? get profileAvatarUrl {
+    final url = _currentUserProfile?.avatarUrl;
+    return (url != null && url.isNotEmpty) ? url : null;
+  }
+
   /// Display name with Firebase Auth fallback for pre-profile-load state.
   ///
   /// For DISPLAY only. Anything that persists the name as attribution must use

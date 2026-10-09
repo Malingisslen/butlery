@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -29,6 +31,7 @@ void main() {
 
   const testUserId = 'test-user-123';
   const testUserName = 'Test User';
+  const testProfileName = 'Profil Test';
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -50,6 +53,13 @@ void main() {
       defaultHasPermission: true,
     );
     TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
+
+    // BUT-2009: the saved menu names the PROFILE, which differs from the
+    // permission service's Auth-derived [testUserName].
+    when(
+      () => (TestServiceLocator.get<UserService>() as MockUserService)
+          .attributionDisplayName,
+    ).thenReturn(testProfileName);
 
     // Get the Firestore repository from TestServiceLocator
     mockFirestoreRepo =
@@ -90,6 +100,12 @@ void main() {
       );
 
       expect(docId, isNotEmpty);
+      final saved = await mockFirestoreRepo.firestore
+          .collection('menus')
+          .doc(docId)
+          .get();
+      expect(saved.data()!['sharedByDisplayName'], testProfileName);
+      expect(saved.data()!['sharedByUserId'], testUserId);
     });
 
     test('should save menu with trimmed name and comment', () async {

@@ -40212,3 +40212,9 @@ Added tests: PresenceOverview expanded grid, calendar slot with explicit presenc
 - **A guard wrapping [spacer + a child that self-collapses to `SizedBox.shrink()`] is pinned ONLY by
   `find.byType(<ChildWidget>)`** — the child-CONTENT assertion is vacuous, because deleting the guard
   rebuilds the child, which draws nothing and leaves the dead spacer (BUT-1869).
+
+### 2026-10-09 — BUT-2009 attribution writers: new non-null getter on a mocktail service
+- Trigger: `UserService.attributionDisplayName` (non-null String) added; every suite whose writer reaches it through a `MockUserService` that did not stub it got `type 'Null' is not a subtype of type 'String'`, and inside `safeExecute`/`executeServiceOperation` that surfaced as an unrelated `false`/`null` result (unified_recipe_service, unified_menu_service, menu_storage, menu_viewmodel — the last only found by widening the run to `test/unit/viewmodels`).
+- Fixture rule used: profile name and Auth name are DIFFERENT literals in every writer test; probes (Auth read reintroduced in message_sending_operations, firebase_comments_repository, social_menu_operations avatar, menu_storage, menu collaboration) each went red, run twice, restored with cmp.
+- `Recipe.copyWith` accepts `lastEditedByDisplayName` but never stores it (only `RecipeRealtimeData` has the field), so the recipe-update stamp is unobservable; the service getter is pinned instead.
+- `received_menus` records carry no avatar (only the `shared_content` doc does), so the avatar assertion is on `shared_content` only.

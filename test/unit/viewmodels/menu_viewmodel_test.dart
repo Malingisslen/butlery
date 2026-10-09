@@ -125,6 +125,10 @@ void main() {
       // default. Default to empty prefs (no filtering) for the baseline
       // tests; the BUT-1317 group overrides this per-test.
       mockUserService = MockUserService();
+      // BUT-2009: MenuStorage stamps the saved menu with the profile name.
+      when(
+        () => mockUserService.attributionDisplayName,
+      ).thenReturn('Test User');
       stubOwnPreferences(
         mockUserService,
         const UserAllergenPreferences(

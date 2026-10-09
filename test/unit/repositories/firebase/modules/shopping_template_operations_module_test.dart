@@ -22,6 +22,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_template_operations_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/attribution_source.dart';
 
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -86,7 +87,11 @@ ShoppingTemplateOperationsModule _module(
   if (authRepo == null) {
     when(() => auth.currentUser).thenReturn(FakeUser(displayName: 'Alice'));
   }
+  // BUT-2009: the profile name differs from the Auth user's 'Alice'.
+  final userService = MockUserService();
+  when(() => userService.attributionDisplayName).thenReturn('Profil Alice');
   return ShoppingTemplateOperationsModule(
+    attribution: AttributionSource(userService: () => userService),
     firestore: firestore,
     authRepository: auth,
     templatesRef: firestore.collection(_templatesPath),
@@ -153,6 +158,7 @@ void main() {
       final data = doc.data()!;
       expect(data['name'], 'Veckomall'); // trimmed
       expect(data['ownerId'], _userId);
+      expect(data['ownerDisplayName'], 'Profil Alice');
       expect(data['originalListId'], source.id);
       expect((data['items'] as List), hasLength(2));
       expect((data['metadata'] as Map)['itemCount'], 2);
@@ -393,6 +399,7 @@ void main() {
         expect(newId, isNotEmpty);
         expect(calls.single.entity.name, 'Min nya lista'); // trimmed
         expect(calls.single.entity.ownerId, _userId);
+        expect(calls.single.entity.ownerDisplayName, 'Profil Alice');
         expect(calls.single.entity.items.map((i) => i.name).toSet(), {
           'Mjölk',
           'Bröd',

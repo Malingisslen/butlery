@@ -87,11 +87,10 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
     final currentUser = _permissionService.currentUser;
     if (currentUser == null) return;
 
-    // Prefer the richer UserService profile (displayName may be edited there)
-    // and fall back to PermissionService's auth-derived value if unavailable.
-    final profile = _userService.currentUserProfile;
-    final displayName = profile?.displayName ?? currentUser.displayName;
-    final avatarUrl = profile?.avatarUrl ?? currentUser.avatarUrl;
+    // BUT-2009: the profile only — the Auth values are the Google/Apple
+    // account's, and group members read this session.
+    final displayName = _userService.attributionDisplayName;
+    final avatarUrl = _userService.profileAvatarUrl;
 
     final groups = _resolveGroups(currentUser.uid);
     if (groups.isEmpty) return; // Solo cook — nothing to broadcast.

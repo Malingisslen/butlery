@@ -51,6 +51,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 
@@ -202,6 +203,11 @@ void main() {
         currentUserId: 'user-1',
         userDisplayName: 'Anna',
       );
+
+      // BUT-2009: attribution is the PROFILE name, which differs from the
+      // permission service's Auth-derived 'Anna' above.
+      final profile = TestServiceLocator.get<UserService>() as MockUserService;
+      when(() => profile.attributionDisplayName).thenReturn('Anna i appen');
 
       // MenuCollaborationRepository is fetched lazily by `collaborative`
       // getter — register a default mock so the getter doesn't blow up if
@@ -492,6 +498,8 @@ void main() {
               .get();
           expect(snap.exists, isTrue);
           expect(snap.data()!['menuTitle'], 'Weekly plan');
+          // BUT-2009: the profile name, not the Auth-derived 'Anna'.
+          expect(snap.data()!['sharedByDisplayName'], 'Anna i appen');
           // In-memory side
           expect(service.menus.length, 1);
           expect(service.menus.first.id, menuId);
@@ -806,38 +814,42 @@ void main() {
     });
 
     // ---------------------------------------------------------------------
-    // BUT-1153: PermissionService DI seam (currentUserId/DisplayName getters)
+    // BUT-1153: PermissionService DI seam (currentUserId getter)
     // ---------------------------------------------------------------------
     group('BUT-1153: PermissionService DI seam', () {
       /// Proves: when a PermissionService is passed via the ctor seam,
-      /// the `currentUserId` and `currentUserDisplayName` getters consult
+      /// the `currentUserId` getter consults
       /// the override rather than the ServiceLocator. Matches the BUT-1142
       /// pattern; sealed the last remaining ServiceLocator-lookup hole.
-      test('currentUserId + currentUserDisplayName use ctor override', () {
-        final fakePerms = _FakePermissionService(
-          userId: 'override-user-123',
-          displayName: 'Override User',
-        );
-        final overrideService = UnifiedMenuService(
-          firestoreRepository: firestoreRepo,
-          permissionService: fakePerms,
-        );
+      test(
+        'currentUserId uses the ctor override; the name is the profile\'s',
+        () {
+          final fakePerms = _FakePermissionService(
+            userId: 'override-user-123',
+            displayName: 'Override User',
+          );
+          final overrideService = UnifiedMenuService(
+            firestoreRepository: firestoreRepo,
+            permissionService: fakePerms,
+          );
 
-        try {
-          expect(
-            overrideService.currentUserId,
-            equals('override-user-123'),
-            reason: 'override path was not used — ctor seam is broken',
-          );
-          expect(
-            overrideService.currentUserDisplayName,
-            equals('Override User'),
-            reason: 'displayName override path was not used',
-          );
-        } finally {
-          overrideService.dispose();
-        }
-      });
+          try {
+            expect(
+              overrideService.currentUserId,
+              equals('override-user-123'),
+              reason: 'override path was not used — ctor seam is broken',
+            );
+            expect(
+              overrideService.currentUserDisplayName,
+              equals('Anna i appen'),
+              reason:
+                  'BUT-2009: attribution is the profile, not PermissionService',
+            );
+          } finally {
+            overrideService.dispose();
+          }
+        },
+      );
     });
 
     group('BUT-2271: a menu shared to a group names the group', () {

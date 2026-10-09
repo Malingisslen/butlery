@@ -1,5 +1,6 @@
 // lib/repositories/firebase/firebase_comments_repository.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
@@ -25,6 +26,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     implements CommentsRepository {
   final RecipeAccessValidator? _recipeAccessValidator;
   final RecipeOwnershipResolver? _recipeOwnershipResolver;
+  final AttributionSource _attribution;
 
   FirebaseCommentsRepository({
     super.firestore,
@@ -33,8 +35,10 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     super.timestampProvider,
     RecipeAccessValidator? recipeAccessValidator,
     RecipeOwnershipResolver? recipeOwnershipResolver,
+    AttributionSource? attribution,
   }) : _recipeAccessValidator = recipeAccessValidator,
-       _recipeOwnershipResolver = recipeOwnershipResolver;
+       _recipeOwnershipResolver = recipeOwnershipResolver,
+       _attribution = attribution ?? AttributionSource();
 
   @override
   String get collectionName => FirestoreCollections.recipeComments;
@@ -174,8 +178,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       );
     }
 
-    // Get the actual display name from the current user
-    final displayName = authRepository.currentUser?.displayName ?? 'Anonymous';
+    final displayName = _attribution.displayName;
 
     // BUT-458: Resolve the recipe-ownership snapshot so we can denormalize
     // onto the comment doc. Failures are non-blocking — the comment still
