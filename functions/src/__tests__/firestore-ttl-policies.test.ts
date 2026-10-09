@@ -236,6 +236,16 @@ const TARGETS: {
     writer: "lib/models/trash_item.dart",
     stamp: /'expireAt':\s*Timestamp\.fromDate\(expireAt\)/,
   },
+  // BUT-2118 — one person's ballot document on a live menu. One writer: the
+  // repository's `toFirestore`, which stamps it 60 days ahead on every write;
+  // firestore.rules caps it at 91 days ahead.
+  {
+    group: "votes",
+    field: "expireAt",
+    retention: "60d",
+    writer: "lib/repositories/firebase/firebase_menu_voting_repository.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
+  },
 ];
 
 /**
@@ -278,6 +288,7 @@ const EXPECTED_TTL_GROUPS = [
   "system_ip_audit_caps",
   "trash",
   "views",
+  "votes",
 ].sort();
 
 function ttlPoliciesDeclared(): void {

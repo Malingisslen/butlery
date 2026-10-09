@@ -5951,7 +5951,7 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   map is bounded at 200 keys. **Malin's call, 2026-09-05** (in BUT-2013): an admin may do
   everything the owner can with members, more admins included, and nothing to the owner.
   Rules cannot iterate the keys a write adds, which is why no friendship check rides on it.
-  Panel record: `docs/org/adr/ADR-0027-list-admins-manage-members.md`.
+  Panel record: `docs/org/adr/ADR-0028-list-admins-manage-members.md`.
 
 ## BUT-907 — the trash for deleted recipes (2026-10-09)
 
@@ -5977,3 +5977,39 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   combined with the 30-day arithmetic in a rule; the rule allows an hour either way, the
   shape `overwritten_versions` already has. The copy and the delete are one batch, so a
   refused copy refuses the delete, which before BUT-907 did not depend on the clock.
+
+## BUT-2118 — live-menu votes as one document per person (2026-10-09)
+
+- **The vote's timing and settling are app rules.** `realtime_resources/{id}/votes/{uid}` is
+  checked by the rules for its keys, `userId`, `updatedAt == request.time`, `expireAt` at most
+  91 days ahead, the size of each map, the edit role for `started`, `proposals` and `resolved`,
+  and ballots that cannot be changed or withdrawn. The 24-hour window, reopening, that only the
+  starter settles, and the shape of each option are not checked there: the rules cannot iterate
+  a map's values, and a document is bounded at 1 MiB.
+- **SUPERSEDES the scope of the BUT-2017 votes line.** That line names
+  `realtime_menus/{id}/votes`; the same gate (the caller's mirror, fail-open on a missing
+  mirror, one direction) now also covers `realtime_resources/{id}/votes` on create and update.
+  BUT-2169 left live menus untouched, so a blocked person's options and votes are shown like
+  the menu's dishes are.
+- **Options carry free text with no filter and no report path.** An option is
+  `recipe.toMenuDish()` from the proposer's recipes, written only by a participant with an
+  edit role and read only by the menu's participants: the same writers and readers as
+  `menuSnapshot`, which has neither either. Trust & Safety asked for this to be written down.
+- **Ballot secrecy is a view.** Any participant can read every ballot document on the menu.
+  The card shows counts and never who voted for what (produktregler 4.8), and no string calls
+  the vote anonymous.
+- **A leaver's ballot document stays until its TTL or their erasure.** Leaving a live menu
+  removes them from `participantIds`, which stops their starts, proposals and ballots counting;
+  the document itself goes with the TTL (`expireAt`, set 60 days ahead on each write) or the
+  account deletion cascade, which sweeps every menu.
+- **A ballot needs a connection.** `updateOwnBallot` reads and writes the person's document in
+  one transaction, and Firestore refuses a transaction offline, so nothing is queued; the vote
+  card shows the failure and the person tries again. A refused write is logged only:
+  `collaboration_module.dart` builds `FirebaseMenuVotingRepository` without an audit
+  repository.
+- **SUPERSEDES "ballots that cannot be changed or withdrawn" (Malin 2026-10-09).** The rules'
+  `ballotKeysKept()` refuses an update that removes a key from `ballots` and allows one
+  that changes a key's value; `castVote` moves a ballot to another option while the vote is
+  active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
+  to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
+  the rules cannot read the options, which live in the starter's document.

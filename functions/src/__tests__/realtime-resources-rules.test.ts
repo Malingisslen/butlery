@@ -21,6 +21,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-rt-resources";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -307,6 +308,300 @@ test("realtime_recipes is denied to its owner, every verb", async () => {
     db
       .doc(`realtime_recipes/legacy-1/presence/${OWNER_UID}`)
       .set({ userId: OWNER_UID })
+  );
+});
+
+// ---- votes (BUT-2118): one ballot document per person and menu ----
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function voteRef(uid: string, voteUid = uid) {
+  return env
+    .authenticatedContext(uid)
+    .firestore()
+    .doc(`realtime_resources/${MENU_ID}/votes/${voteUid}`);
+}
+
+// The shape FirebaseMenuVotingRepository writes: `updatedAt` is the server
+// time and `expireAt` sits inside the 91-day TTL window.
+function ballotDoc(
+  uid: string,
+  overrides: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    userId: uid,
+    started: {},
+    proposals: {},
+    ballots: {},
+    resolved: {},
+    updatedAt: serverTimestamp(),
+    expireAt: new Date(Date.now() + 90 * DAY_MS),
+    ...overrides,
+  };
+}
+
+const STARTED = {
+  "middag#0": {
+    id: "vote-1",
+    options: [
+      { id: "opt-a", dish: { id: "r1", title: "Svamppasta" }, votersBefore: 0 },
+      { id: "opt-b", dish: { id: "r2", title: "Ugnslax" }, votersBefore: 0 },
+    ],
+    deadline: new Date(Date.now() + DAY_MS),
+    createdAt: new Date(),
+  },
+};
+
+async function seedBallot(uid: string, data: Record<string, unknown>) {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`realtime_resources/${MENU_ID}/votes/${uid}`).set({
+      userId: uid,
+      started: {},
+      proposals: {},
+      ballots: {},
+      resolved: {},
+      updatedAt: new Date(),
+      expireAt: new Date(Date.now() + 30 * DAY_MS),
+      ...data,
+    });
+  });
+}
+
+async function seedMirror(uid: string, blockers: string[]): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${uid}/block_mirror/current`).set({
+      blockedByUserIds: blockers,
+      sourceRev: 1,
+      truncated: false,
+      updatedAt: new Date("2026-10-09T00:00:00Z"),
+    });
+  });
+}
+
+test("votes: a viewer casts a ballot in their own document", async () => {
+  await assertSucceeds(
+    voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-a" } }))
+  );
+});
+
+// The erasure and the export find ballot documents by `userId`, so a
+// document naming someone else would land in their Art. 15 bundle.
+test("votes: a ballot document naming someone else as its owner is refused", async () => {
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { userId: EDITOR_UID, ballots: { "vote-1": "opt-a" } })
+    )
+  );
+});
+
+test("votes: an editor starts a vote", async () => {
+  await assertSucceeds(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { started: STARTED })));
+});
+
+test("votes: a viewer cannot start a vote", async () => {
+  await assertFails(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { started: STARTED })));
+});
+
+test("votes: a viewer cannot propose or settle on create", async () => {
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { proposals: { "vote-1": { id: "opt-c" } } })
+    )
+  );
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { resolved: { "vote-1": { outcome: "released" } } })
+    )
+  );
+});
+
+test("votes: a viewer cannot add a proposal by update; an editor can", async () => {
+  await seedBallot(VIEWER_UID, { ballots: {} });
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { proposals: { "vote-1": { id: "opt-c" } } })
+    )
+  );
+  await seedBallot(EDITOR_UID, { ballots: {} });
+  await assertSucceeds(
+    voteRef(EDITOR_UID).set(
+      ballotDoc(EDITOR_UID, { proposals: { "vote-1": { id: "opt-c" } } })
+    )
+  );
+});
+
+test("votes: nobody writes another person's document", async () => {
+  await assertFails(voteRef(EDITOR_UID, VIEWER_UID).set(ballotDoc(EDITOR_UID)));
+  await assertFails(voteRef(EDITOR_UID, VIEWER_UID).set(ballotDoc(VIEWER_UID)));
+});
+
+// An UPDATE: the target exists, and the payload names the writer, so only
+// the document id differs from the writer's own.
+test("votes: nobody overwrites another participant's existing document", async () => {
+  await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
+  await assertFails(
+    voteRef(EDITOR_UID, VIEWER_UID).set(
+      ballotDoc(EDITOR_UID, { ballots: { "vote-1": "opt-a" } })
+    )
+  );
+});
+
+// One deny per agenda map: `proposals` has its own above.
+test("votes: a viewer cannot start or settle a vote by update", async () => {
+  await seedBallot(VIEWER_UID, { ballots: {} });
+  await assertFails(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { started: STARTED })));
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, {
+        resolved: { "vote-1": { outcome: "released", at: new Date() } },
+      })
+    )
+  );
+});
+
+// A mirror naming someone off the menu blocks nothing, on update as on create.
+test("votes: a block by someone outside the menu does not stop an update", async () => {
+  await seedMirror(VIEWER_UID, [STRANGER_UID]);
+  await seedBallot(VIEWER_UID, { ballots: {} });
+  await assertSucceeds(
+    voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-a" } }))
+  );
+});
+
+test("votes: a stranger cannot vote or read", async () => {
+  await assertFails(voteRef(STRANGER_UID).set(ballotDoc(STRANGER_UID)));
+  await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
+  await assertFails(voteRef(STRANGER_UID, VIEWER_UID).get());
+});
+
+test("votes: a participant reads another participant's document", async () => {
+  await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
+  await assertSucceeds(voteRef(EDITOR_UID, VIEWER_UID).get());
+});
+
+test("votes: a key outside the allowlist is refused", async () => {
+  await assertFails(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { note: "x" })));
+});
+
+test("votes: a client-chosen updatedAt is refused", async () => {
+  await assertFails(
+    voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { updatedAt: new Date() }))
+  );
+});
+
+test("votes: expireAt beyond 91 days or in the past is refused", async () => {
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { expireAt: new Date(Date.now() + 92 * DAY_MS) })
+    )
+  );
+  await assertFails(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { expireAt: new Date(Date.now() - DAY_MS) })
+    )
+  );
+});
+
+test("votes: a map that is not a map, or too large, is refused", async () => {
+  await assertFails(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: null })));
+  const tooMany: Record<string, string> = {};
+  for (let i = 0; i < 101; i++) tooMany[`vote-${i}`] = "opt-a";
+  await assertFails(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: tooMany })));
+  const slots: Record<string, unknown> = {};
+  for (let i = 0; i < 29; i++) slots[`middag#${i}`] = STARTED["middag#0"];
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { started: slots })));
+  // Each agenda map is checked on its own; the editor may write all three.
+  const hundredAndOne: Record<string, unknown> = {};
+  for (let i = 0; i < 101; i++) hundredAndOne[`vote-${i}`] = { id: `opt-${i}` };
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { proposals: hundredAndOne })));
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { resolved: hundredAndOne })));
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { started: null })));
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { proposals: null })));
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { resolved: null })));
+  // A string has a size too, so only the type check refuses these.
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { started: "x" })));
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { proposals: "x" })));
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID, { resolved: "x" })));
+});
+
+test("votes: a ballot on a new vote is added to an existing document", async () => {
+  await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
+  await assertSucceeds(
+    voteRef(VIEWER_UID).set(
+      ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-a", "vote-2": "opt-x" } })
+    )
+  );
+});
+
+// A document written before a key existed has no `started`; adding the
+// empty map is not starting a vote.
+test("votes: a viewer's ballot is added to a document stored without the agenda maps", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`realtime_resources/${MENU_ID}/votes/${VIEWER_UID}`).set({
+      userId: VIEWER_UID,
+      ballots: {},
+      updatedAt: new Date(),
+      expireAt: new Date(Date.now() + 30 * DAY_MS),
+    });
+  });
+  await assertSucceeds(
+    voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-a" } }))
+  );
+});
+
+test("votes: a cast ballot can be moved to another option", async () => {
+  await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
+  await assertSucceeds(
+    voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-b" } }))
+  );
+});
+
+test("votes: a cast ballot cannot be withdrawn, by update or by delete", async () => {
+  await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
+  await assertFails(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: {} })));
+  await assertFails(voteRef(VIEWER_UID).delete());
+});
+
+test("votes: a document without ballots can be deleted by its owner only", async () => {
+  await seedBallot(EDITOR_UID, { started: STARTED, ballots: {} });
+  await assertFails(voteRef(VIEWER_UID, EDITOR_UID).delete());
+  await assertSucceeds(voteRef(EDITOR_UID).delete());
+});
+
+test("votes: a participant someone on the menu blocked cannot create or update", async () => {
+  await seedBallot(VIEWER_UID, { ballots: {} });
+  await seedMirror(VIEWER_UID, [OWNER_UID]);
+  await assertFails(
+    voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-a" } }))
+  );
+  await seedMirror(EDITOR_UID, [OWNER_UID]);
+  await assertFails(voteRef(EDITOR_UID).set(ballotDoc(EDITOR_UID)));
+});
+
+test("votes: a block by someone outside the menu does not stop the vote", async () => {
+  await seedMirror(VIEWER_UID, [STRANGER_UID]);
+  await assertSucceeds(voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID)));
+});
+
+// The mirror exists, so the gate reaches `hasAny(participantIds)`; a missing
+// roster is an evaluation error there, which denies.
+test("votes: a menu without participantIds denies (no fail-open default)", async () => {
+  await seedMirror(OWNER_UID, [STRANGER_UID]);
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const d = menuDoc();
+    delete d.participantIds;
+    await ctx.firestore().doc(`realtime_resources/${MENU_ID}`).set(d);
+  });
+  await assertFails(voteRef(OWNER_UID).set(ballotDoc(OWNER_UID)));
+});
+
+test("votes: no document is written under a menu that does not exist", async () => {
+  await assertFails(
+    env
+      .authenticatedContext(OWNER_UID)
+      .firestore()
+      .doc(`realtime_resources/${OWNER_UID}_missing/votes/${OWNER_UID}`)
+      .set(ballotDoc(OWNER_UID))
   );
 });
 

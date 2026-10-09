@@ -1,4 +1,4 @@
-# ADR-0027: List admins manage members
+# ADR-0028: List admins manage members
 
 - **Date:** 2026-10-09
 - **Status:** Decided (CTO priority order)

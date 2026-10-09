@@ -29,6 +29,11 @@ abstract final class FirestoreCollections {
   static const String feedback = 'feedback';
   static const String presence = 'presence';
   static const String realtimeResources = 'realtime_resources';
+
+  /// Subcollection of `realtime_resources/{menuId}`: one ballot document per
+  /// person, doc id == uid (BUT-2118). The Art. 17 sweep queries it as a
+  /// collection group under the same name (`Collections.liveMenuVotes`).
+  static const String liveMenuVotes = 'votes';
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';
   static const String recipeSocialStats = 'recipe_social_stats';

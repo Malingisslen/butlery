@@ -73,7 +73,9 @@ enum ExportResourceType {
   // (Art. 15 ⊇ Art. 17: the cascade erases them with either account).
   recipeSuggestions('recipe_suggestions'),
   // BUT-2114: the user's own likes, read by collection group.
-  likes('likes')
+  likes('likes'),
+  // BUT-2118: the user's own ballot documents on live menus.
+  liveMenuVotes('live_menu_votes')
   ;
 
   const ExportResourceType(this.tag);
@@ -1160,6 +1162,34 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     ExportResourceType.realtimeResources,
     limit: maxDocuments,
   );
+
+  /// BUT-2118: the user's `votes` documents by collection group, so a live
+  /// menu they left is included. The rows come back unfiltered so a capped
+  /// caller counts what the query returned; the caller keeps the ones whose
+  /// `parent_collection` is `realtime_resources`.
+  Future<List<Map<String, dynamic>>> exportLiveMenuVotesByUser(
+    String userId, {
+    int maxDocuments = 500,
+  }) async {
+    await _guardSelfExport(userId, ExportResourceType.liveMenuVotes);
+    final snapshot = await firestore
+        .collectionGroup(FirestoreCollections.liveMenuVotes)
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+    return snapshot.docs.map((doc) {
+      final menu = doc.reference.parent.parent;
+      return <String, dynamic>{
+        'menu_id': menu?.id,
+        // Null for a parent below the top level, so it never matches a
+        // top-level collection name.
+        'parent_collection': menu?.parent.parent == null
+            ? menu?.parent.id
+            : null,
+        'data': doc.data(),
+      };
+    }).toList();
+  }
 
   // ── BUT-1732: shared shopping lists (Art. 15 ⊇ erased) ──
 

@@ -24,6 +24,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/menu/menu_live_session.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -37,7 +38,39 @@ class _MockService extends Mock implements RealtimeMenuService {}
 
 class _MockMenuService extends Mock implements MenuService {}
 
-class _FakeLiveMenu extends Fake implements RealtimeMenu {}
+class _FakeLiveMenu extends Fake implements RealtimeMenu {
+  _FakeLiveMenu(this.participantIds);
+
+  @override
+  final List<String> participantIds;
+}
+
+/// The votes view model's edge: what the session tells it is recorded.
+class _FakeVoting extends ChangeNotifier
+    with Fake
+    implements MenuVotingViewModel {
+  _FakeVoting(this.menuId, this.applyDish);
+
+  @override
+  final String menuId;
+  @override
+  final ApplyDish? applyDish;
+  int subscribed = 0;
+  int disposed = 0;
+  final List<Set<String>> rosters = [];
+
+  @override
+  void subscribe() => subscribed++;
+
+  @override
+  void setParticipants(Set<String> participantIds) =>
+      rosters.add(participantIds);
+
+  @override
+  void dispose() {
+    if (disposed++ == 0) super.dispose();
+  }
+}
 
 /// The watching view model's edge: what it holds is set by the test.
 class _FakeRealtimeVm extends ChangeNotifier
@@ -65,8 +98,12 @@ class _FakeRealtimeVm extends ChangeNotifier
   @override
   Future<void> stopWatching() async => stopped++;
 
-  void deliver(Map<String, List<Recipe>> next, {bool canEdit = true}) {
-    menu = _FakeLiveMenu();
+  void deliver(
+    Map<String, List<Recipe>> next, {
+    bool canEdit = true,
+    List<String> participants = const ['u1'],
+  }) {
+    menu = _FakeLiveMenu(participants);
     snapshot = next;
     editable = canEdit;
     notifyListeners();
@@ -103,6 +140,14 @@ void main() {
 
   late _FakeRealtimeVm realtime;
   late _MockService service;
+  late List<_FakeVoting> votingCreated;
+
+  MenuVotingViewModel Function(String, ApplyDish) recordingVoting() =>
+      (id, apply) {
+        final voting = _FakeVoting(id, apply);
+        votingCreated.add(voting);
+        return voting;
+      };
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -122,6 +167,7 @@ void main() {
   setUp(() {
     realtime = _FakeRealtimeVm();
     service = _MockService();
+    votingCreated = [];
     when(
       () => service.replaceRecipeInCategory(
         resourceId: any(named: 'resourceId'),
@@ -149,6 +195,7 @@ void main() {
         onMenu: pushed.add,
         realtime: realtime,
         service: service,
+        votingFactory: recordingVoting(),
       );
     });
 
@@ -227,6 +274,103 @@ void main() {
         expect(realtime.disposed, 1);
       },
     );
+
+    group('the votes on the menu', () {
+      test(
+        'start creates and subscribes one view model for the menu',
+        () async {
+          await session.start('m1');
+
+          expect(votingCreated, hasLength(1));
+          expect(session.voting, same(votingCreated.single));
+          expect(votingCreated.single.menuId, 'm1');
+          expect(votingCreated.single.subscribed, 1);
+        },
+      );
+
+      test('a winner is written with the same write a swap makes', () async {
+        await session.start('m1');
+
+        await votingCreated.single.applyDish!('Middag', 2, stew);
+
+        verify(
+          () => service.replaceRecipeInCategory(
+            resourceId: 'm1',
+            categoryName: 'Middag',
+            recipeIndex: 2,
+            newRecipe: stew,
+          ),
+        ).called(1);
+      });
+
+      test('every snapshot tells it who is on the menu now', () async {
+        await session.start('m1');
+
+        realtime.deliver(
+          {
+            'Middag': [soup],
+          },
+          participants: ['u1', 'u2'],
+        );
+        realtime.deliver(
+          {
+            'Middag': [soup],
+          },
+          participants: ['u2'],
+        );
+
+        expect(votingCreated.single.rosters, [
+          {'u1', 'u2'},
+          {'u2'},
+        ]);
+      });
+
+      test('starting the same menu again keeps the view model and its '
+          'subscription', () async {
+        await session.start('m1');
+        await session.start('m1');
+
+        expect(votingCreated, hasLength(1));
+        expect(votingCreated.single.subscribed, 1);
+        expect(votingCreated.single.disposed, 0);
+      });
+
+      test(
+        'starting another menu replaces it and disposes the old one',
+        () async {
+          await session.start('m1');
+          await session.start('m2');
+
+          expect(votingCreated.map((v) => v.menuId), ['m1', 'm2']);
+          expect(votingCreated.first.disposed, 1);
+          expect(votingCreated.last.subscribed, 1);
+          expect(session.voting, same(votingCreated.last));
+        },
+      );
+
+      test('stop disposes it and the session no longer has one', () async {
+        await session.start('m1');
+
+        await session.stop();
+
+        expect(votingCreated.single.disposed, 1);
+        expect(session.voting, isNull);
+        realtime.deliver({
+          'Middag': [soup],
+        });
+        expect(votingCreated.single.rosters, isEmpty);
+      });
+
+      test('dispose disposes it too', () async {
+        await session.start('m1');
+
+        session.dispose();
+        await pumpEventQueue();
+
+        expect(votingCreated.single.disposed, 1);
+        expect(session.voting, isNull);
+      });
+    });
   });
 
   group('MenuViewModel in live mode', () {
@@ -276,8 +420,12 @@ void main() {
         menuService: menuService,
         analyticsService: analytics,
         draftOwnerId: () => 'u1',
-        liveSessionFactory: (sink) =>
-            MenuLiveSession(onMenu: sink, realtime: realtime, service: service),
+        liveSessionFactory: (sink) => MenuLiveSession(
+          onMenu: sink,
+          realtime: realtime,
+          service: service,
+          votingFactory: recordingVoting(),
+        ),
       );
     });
 
