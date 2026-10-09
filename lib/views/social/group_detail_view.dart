@@ -255,7 +255,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       onAskWhatToEat: () => _startMealVotePoll(group),
       onEditGroup: () => _showEditGroupDialog(group),
       onDeleteGroup: () => _showDeleteGroupDialog(group),
-      onLeaveGroup: () => _leaveGroup(group),
+      onLeaveGroup: _viewModel.isResolvingLeave
+          ? null
+          : () => _leaveGroup(group),
     );
   }
 
@@ -343,17 +345,19 @@ class _GroupDetailViewState extends State<GroupDetailView>
   /// ✅ REFACTORED: Leave group with ownership succession handling (MVVM pattern)
   /// Business logic delegated to ViewModel, View handles only UI concerns.
   Future<void> _leaveGroup(FriendCategory group) async {
-    if (!mounted) return;
+    if (!mounted || _viewModel.isResolvingLeave) return;
 
-    // Get decision from ViewModel (business logic)
-    final decision = _viewModel.checkLeaveGroupRequirements();
+    // Get decision from ViewModel (business logic). A refusal is re-read once
+    // inside the call before it comes back as a refusal.
+    final decision = await _viewModel.resolveLeaveGroupRequirements();
+    if (!mounted) return;
 
     // A subset cannot be told apart from a whole group, so neither owner
     // branch may run on one (BUT-2027).
     if (decision.rosterIncomplete) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.groupLeaveRosterIncomplete)),
+        SnackBar(content: Text(context.l10n.groupRosterIncomplete)),
       );
       return;
     }
@@ -579,6 +583,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         context,
         group: group,
         isLoading: _viewModel.isLoading,
+        isResolvingLeave: _viewModel.isResolvingLeave,
         onRefresh: _refreshData,
         onMenuAction: (action) => _handleMenuAction(action, group),
       ),

@@ -16,6 +16,7 @@
 /// comment that merely names a key.
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -42,14 +43,76 @@ void main() {
       expect(end, greaterThan(start), reason: 'branch anchors out of order');
 
       final branch = source.substring(start, end);
-      expect(branch, contains('context.l10n.groupLeaveRosterIncomplete'));
+      expect(branch, contains('context.l10n.groupRosterIncomplete'));
       expect(branch, isNot(contains('context.l10n.errorGeneric')));
     });
 
     test('the Swedish copy names the member read', () {
       expect(
-        AppLocalizationsSv().groupLeaveRosterIncomplete,
+        AppLocalizationsSv().groupRosterIncomplete,
         'Vi kunde inte läsa alla medlemmar. Försök igen.',
+      );
+
+      final arb =
+          jsonDecode(File('lib/l10n/app_sv.arb').readAsStringSync())
+              as Map<String, dynamic>;
+      expect(
+        arb['groupRosterIncomplete'],
+        'Vi kunde inte läsa alla medlemmar. Försök igen.',
+      );
+    });
+
+    test('the block dialog unavailable state uses the same key', () {
+      final source = File(
+        'lib/widgets/messaging/dialogs/block_group_member_dialog.dart',
+      ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
+
+      final start = source.indexOf('if (_failed) {');
+      expect(start, greaterThan(-1), reason: 'the failed branch is gone');
+      final end = source.indexOf('}', source.indexOf('onAction', start));
+      final branch = source.substring(start, end);
+      expect(branch, contains('context.l10n.groupRosterIncomplete'));
+      expect(branch, isNot(contains('context.l10n.errorGeneric')));
+    });
+
+    test('a refused leave re-reads the roster before deciding', () {
+      final source = File(
+        'lib/views/social/group_detail_view.dart',
+      ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
+
+      final start = source.indexOf('Future<void> _leaveGroup(');
+      final end = source.indexOf('if (decision.rosterIncomplete) {', start);
+      expect(start, greaterThan(-1), reason: '_leaveGroup is gone');
+      expect(end, greaterThan(start), reason: 'leave anchors out of order');
+
+      final head = source.substring(start, end);
+      expect(head, contains('_viewModel.isResolvingLeave) return;'));
+      expect(
+        head,
+        contains('await _viewModel.resolveLeaveGroupRequirements()'),
+      );
+      expect(head, isNot(contains('checkLeaveGroupRequirements()')));
+    });
+
+    test('both leave controls are disabled while the roster is re-read', () {
+      final view = File(
+        'lib/views/social/group_detail_view.dart',
+      ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
+      expect(
+        view.replaceAll(RegExp(r'\s+'), ' '),
+        contains('onLeaveGroup: _viewModel.isResolvingLeave ? null'),
+      );
+      expect(view, contains('isResolvingLeave: _viewModel.isResolvingLeave'));
+
+      final appBar = File(
+        'lib/views/social/group_detail/group_detail_app_bar.dart',
+      ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
+      final item = appBar.indexOf("value: 'leave_group'");
+      expect(item, greaterThan(-1), reason: 'the leave menu item is gone');
+      final itemEnd = appBar.indexOf('child:', item);
+      expect(
+        appBar.substring(item, itemEnd),
+        contains('enabled: !isResolvingLeave'),
       );
     });
   });

@@ -91,6 +91,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   Map<String, String> _inviteeNames = {};
   StreamSubscription<GroupEventType>? _eventSubscription;
   DateTime? _lastRefresh;
+  bool _isResolvingLeave = false;
+  bool _disposed = false;
 
   /// Creates ViewModel with required dependencies.
   SocialGroupDetailViewModel({
@@ -116,6 +118,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   /// [checkLeaveGroupRequirements], which refuses to call a group empty on a
   /// subset it cannot vouch for.
   bool get hasUnresolvedMembers => _unresolvedMemberIds.isNotEmpty;
+
+  bool get isResolvingLeave => _isResolvingLeave;
 
   /// List of pending invitations for this group.
   List<GroupInvitation> get pendingInvitations =>
@@ -258,18 +262,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         // is a fact this member list should not hide (BUT-2027). Surfacing
         // it as its own dedicated banner is a UI decision left to a follow-up;
         // `hasUnresolvedMembers` carries the signal rather than dropping it.
-        final memberBatch = await _userService.getUserProfiles(
-          _group!.friendUserIds,
-        );
-        _members = memberBatch.profiles;
-        _unresolvedMemberIds = memberBatch.unavailableIds;
-        if (_unresolvedMemberIds.isNotEmpty) {
-          AppLogger.warning(
-            'SocialGroupDetailViewModel: could not resolve '
-            '${_unresolvedMemberIds.length} member profile(s) for group '
-            '$groupId',
-          );
-        }
+        await _readMemberProfiles();
 
         // Get pending invitations for this group from sent invitations
         _pendingInvitations = _friendsService.sentInvitations
@@ -283,6 +276,21 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         _inviteeNames = {};
       }
     });
+  }
+
+  Future<void> _readMemberProfiles() async {
+    final memberBatch = await _userService.getUserProfiles(
+      _group!.friendUserIds,
+    );
+    _members = memberBatch.profiles;
+    _unresolvedMemberIds = memberBatch.unavailableIds;
+    if (_unresolvedMemberIds.isNotEmpty) {
+      AppLogger.warning(
+        'SocialGroupDetailViewModel: could not resolve '
+        '${_unresolvedMemberIds.length} member profile(s) for group '
+        '$groupId',
+      );
+    }
   }
 
   Future<Map<String, String>> _loadInviteeNames(
@@ -361,6 +369,28 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         availableNewOwners: otherMembers,
       );
     }
+  }
+
+  /// A refusal for an incomplete roster is often a transient read failure, so
+  /// the profiles are read once more before the refusal reaches the user.
+  Future<LeaveGroupDecision> resolveLeaveGroupRequirements() async {
+    final decision = checkLeaveGroupRequirements();
+    if (!decision.rosterIncomplete || _isResolvingLeave) return decision;
+
+    _isResolvingLeave = true;
+    notifyListeners();
+    try {
+      await _readMemberProfiles();
+    } catch (e) {
+      AppLogger.error('Failed to re-read group members before leaving', e);
+    } finally {
+      _isResolvingLeave = false;
+      if (!_disposed) notifyListeners();
+    }
+    // The group can be deleted or the view closed while the read is out; the
+    // first refusal then stands rather than a check on a group that is gone.
+    if (_disposed || _group == null) return decision;
+    return checkLeaveGroupRequirements();
   }
 
   /// Leave the group (after any required ownership transfer).
@@ -583,6 +613,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
 
   @override
   void dispose() {
+    _disposed = true;
     _eventSubscription?.cancel();
     super.dispose();
   }

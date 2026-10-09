@@ -3822,7 +3822,7 @@
     "description": "Shown on a group page when its shared recipes, menus or lists could not be fetched (BUT-2271)."
   },
   "groupCouldNotLoadMembers": "Could not load group members",
-  "groupLeaveRosterIncomplete": "We could not load all group members. Please try again.",
+  "groupRosterIncomplete": "We could not load all group members. Please try again.",
   "groupCouldNotTransferOwnership": "Could not transfer ownership. Try again.",
   "groupDeleted": "Group \"{name}\" has been deleted",
   "@groupDeleted": {
