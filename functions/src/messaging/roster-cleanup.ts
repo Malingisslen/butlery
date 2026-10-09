@@ -31,8 +31,7 @@ export const MAX_GROUP_PARTICIPANTS = 100;
  * `chat_groups` membership — so this bound is not about real groups at all. It
  * bounds the three sources named on [tryClearRoster] below, and nothing
  * upstream filters them: the backstop trigger's [MAX_GROUP_PARTICIPANTS] guard
- * governs the GROUP read fan-out, not the roster path, and BUT-1838 left this
- * trigger no collapse branch to reach the helper through.
+ * governs the GROUP read fan-out, not the roster path.
  *
  * The raw-vs-sanitised distinction that used to be load-bearing here no longer
  * is: the old conversations trigger had to gate on the RAW length because
@@ -40,8 +39,7 @@ export const MAX_GROUP_PARTICIPANTS = 100;
  * the two layers. Rules DO read `chat_groups` membership — the group's read
  * gates on `uid in memberIds` and rename on `adminIds` — but never for a SIZE
  * decision, and no client may write the list at all, so there is no padding
- * attack and no second layer to stay in step with. See the comment on the
- * guard itself.
+ * attack and no second layer to stay in step with.
  */
 export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
 
@@ -137,11 +135,7 @@ export async function tryClearRoster(
       .get();
   } catch (e) {
     // The read is the one `await` here not already covered by a per-delete
-    // catch, and it is exactly the one a "never throws" claim forgets. The
-    // code-5 branch below depends on that claim: its parent is already gone, so
-    // `update()` throws NOT_FOUND on every retry, and a rejection escaping from
-    // here would turn a handled code-5 into the retry loop that branch exists
-    // to prevent.
+    // catch, and it is exactly the one a "never throws" claim forgets.
     logger.error(
       "[enforceGroupMinorMembership] roster read failed; leaving the conversation standing",
       {
