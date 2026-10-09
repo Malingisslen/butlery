@@ -122,15 +122,17 @@ class GroupActionButtons extends StatelessWidget {
               Theme.of(context).colorScheme,
             ),
           ),
-        ] else
-          OutlinedButton.icon(
-            onPressed: onLeaveGroup,
-            icon: const ButleryIcon(ButleryIcons.logOut),
-            label: Text(context.l10n.groupLeaveGroup),
-            style: ComponentThemes.outlinedButtonStyle(
-              Theme.of(context).colorScheme,
-            ),
+          const SizedBox(height: AppDimensions.spacingL),
+        ],
+        // The owner leaves too, by handing the group over (BUT-2321).
+        OutlinedButton.icon(
+          onPressed: onLeaveGroup,
+          icon: const ButleryIcon(ButleryIcons.logOut),
+          label: Text(context.l10n.groupLeaveGroup),
+          style: ComponentThemes.outlinedButtonStyle(
+            Theme.of(context).colorScheme,
           ),
+        ),
       ],
     );
   }

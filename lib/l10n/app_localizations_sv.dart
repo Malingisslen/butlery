@@ -5799,6 +5799,15 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte överföra ägande. Försök igen.';
 
   @override
+  String groupHandOverNotInHousehold(String name) {
+    return '$name är inte med i gruppens hushåll och kan därför inte ta över gruppen.';
+  }
+
+  @override
+  String get groupHandOverUnavailable =>
+      'Gruppen kan inte lämnas över just nu.';
+
+  @override
   String groupDeleted(String name) {
     return 'Gruppen \"$name\" har tagits bort';
   }

@@ -127,21 +127,20 @@ class GroupDetailAppBar {
                 ],
               ),
             ),
-          // Leave group - for regular members
-          if (!isAdmin)
-            ButleryMenuItem(
-              value: 'leave_group',
-              enabled: !isResolvingLeave,
-              child: Row(
-                children: [
-                  // The menu's own text colour: saffron belongs to a view's
-                  // hero action only.
-                  const ButleryIcon(ButleryIcons.logOut),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Text(context.l10n.groupLeaveGroup),
-                ],
-              ),
+          // Leave group - members, and the owner by handing it over
+          ButleryMenuItem(
+            value: 'leave_group',
+            enabled: !isResolvingLeave,
+            child: Row(
+              children: [
+                // The menu's own text colour: saffron belongs to a view's
+                // hero action only.
+                const ButleryIcon(ButleryIcons.logOut),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(context.l10n.groupLeaveGroup),
+              ],
             ),
+          ),
           // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
           if (canReportGroup)
             ButleryMenuItem(

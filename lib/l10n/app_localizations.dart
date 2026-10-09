@@ -9703,6 +9703,18 @@ abstract class AppLocalizations {
   /// **'Kunde inte överföra ägande. Försök igen.'**
   String get groupCouldNotTransferOwnership;
 
+  /// Shown when the chosen new owner is not a member of the household linked to the group (BUT-2321)
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} är inte med i gruppens hushåll och kan därför inte ta över gruppen.'**
+  String groupHandOverNotInHousehold(String name);
+
+  /// No description provided for @groupHandOverUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen kan inte lämnas över just nu.'**
+  String get groupHandOverUnavailable;
+
   /// No description provided for @groupDeleted.
   ///
   /// In sv, this message translates to:

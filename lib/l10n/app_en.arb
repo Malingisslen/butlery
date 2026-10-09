@@ -3889,6 +3889,15 @@
   "groupCouldNotLoadMembers": "Could not load group members",
   "groupRosterIncomplete": "We could not load all group members. Please try again.",
   "groupCouldNotTransferOwnership": "Could not transfer ownership. Try again.",
+  "groupHandOverNotInHousehold": "{name} is not in the group's household, so they cannot take over the group.",
+  "@groupHandOverNotInHousehold": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupHandOverUnavailable": "The group cannot be handed over right now.",
   "groupDeleted": "Group \"{name}\" has been deleted",
   "@groupDeleted": {
     "placeholders": {

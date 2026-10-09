@@ -13,7 +13,7 @@
 ///   group-null-after-load → the view pops itself off the navigator.
 ///
 /// The view's headline behaviour — role-based access control: admins get
-/// edit/delete/add-members, members get leave — lives in the real
+/// edit/delete/add-members, and everyone, owner included, gets leave — lives in the real
 /// [GroupDetailAppBar] facade, gated purely on PermissionService. We exercise
 /// that facade directly with an admin vs. a non-admin PermissionService and
 /// assert the popup-menu items flip. This pins the actual production gate
@@ -219,7 +219,7 @@ void main() {
     // isolation against real production logic.
 
     testWidgets(
-      'as ADMIN the popup offers add-members, edit and delete affordances',
+      'as ADMIN the popup offers add-members, edit, delete and leave affordances',
       (tester) async {
         permissionService.setGroupAdmin(groupId: _groupId, isAdmin: true);
 
@@ -234,13 +234,14 @@ void main() {
         expect(find.text(_menuEditGroup), findsOneWidget);
         expect(find.text(_menuDeleteGroup), findsOneWidget);
 
-        // The member-only "leave" item is NOT offered to an admin.
-        expect(find.text(_menuLeaveGroup), findsNothing);
+        // The owner leaves too (by handing the group over), so leave is
+        // offered to an admin as well.
+        expect(find.text(_menuLeaveGroup), findsOneWidget);
       },
     );
 
     testWidgets(
-      'as a non-admin MEMBER the admin affordances are absent and only leave is offered',
+      'as a non-admin MEMBER the admin affordances are absent and leave is offered',
       (tester) async {
         permissionService.setGroupAdmin(groupId: _groupId, isAdmin: false);
 

@@ -3,7 +3,6 @@
 /// - Group data loading and refresh
 /// - Event subscription management (GroupEventBus)
 /// - Leave group logic with ownership succession
-/// - Ownership transfer coordination
 /// - Permission checks
 /// - Content sharing coordination
 /// **Note**: This is separate from `GroupDetailViewModel` which handles messaging group conversations.
@@ -49,7 +48,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 
 /// Information about ownership succession when owner leaves group.
 /// Used to communicate leave group requirements to the UI.
@@ -427,36 +426,33 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Transfer group ownership to a new owner atomically via Firestore transaction.
-  /// Returns true if ownership transfer succeeded.
-  Future<bool> transferGroupOwnership(UserProfile newOwner) async {
+  /// Hands the group to [newOwner] and leaves it; the server does both in one
+  /// step. On anything but [GroupHandOverOutcome.done] the group is unchanged.
+  Future<GroupHandOverOutcome> handOverGroup(UserProfile newOwner) async {
     if (_group == null) {
-      throw StateError('Cannot transfer ownership without loaded group');
+      throw StateError('Cannot hand over a group that is not loaded');
     }
 
+    final GroupHandOverOutcome outcome;
     try {
-      await executeAsync(() async {
-        AppLogger.info(
-          'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid.maskedUserId}',
-        );
-
-        // Use transactional transfer to prevent TOCTOU race conditions
-        await _friendsService.friendsCategoryRepositoryInternal
-            .transferOwnership(_group!.ownerId, groupId, newOwner.uid);
-
-        // Refresh from authoritative source after transaction completes
-        await loadGroupData();
-
-        AppLogger.success(
-          'Successfully transferred ownership of "${_group!.name}" to ${newOwner.displayName}',
-        );
-      });
-
-      return true;
+      outcome = await _friendsService.friendsCategoryRepositoryInternal
+          .handOverGroup(groupId, newOwner.uid);
     } catch (e) {
-      AppLogger.error('Failed to transfer group ownership', e);
-      return false;
+      AppLogger.error('Failed to hand over group', e);
+      return GroupHandOverOutcome.failed;
     }
+    if (outcome == GroupHandOverOutcome.done) {
+      _group = null;
+      if (!_disposed) notifyListeners();
+      try {
+        await ServiceLocator.tryGet<AnalyticsService>()?.social.logGroupLeft(
+          groupId: groupId,
+        );
+      } catch (e) {
+        AppLogger.warning('Group-left analytics not sent: $e');
+      }
+    }
+    return outcome;
   }
 
   /// Coordinate recipe sharing with this group.
