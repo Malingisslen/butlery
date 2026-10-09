@@ -16,9 +16,9 @@
     "superseded": "Tidigare riktning ”Lucide” är formellt övergiven 2026-07-25. Se beslutslogg B-02 i beslutslogg.md."
   },
   "counts": {
-    "ui": 118,
+    "ui": 120,
     "nav": 5,
-    "total": 123,
+    "total": 125,
     "used": 78,
     "source_date": "2026-08-05"
   },
@@ -477,6 +477,17 @@
       "fill": "none",
       "usages": 9,
       "master_svg": "assets/icons/eye.svg",
+      "status": "levererad"
+    },
+    {
+      "name": "eye-off",
+      "category": "åtgärd",
+      "meaning": "Dölj, göm, visas inte",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/eye-off.svg",
       "status": "levererad"
     },
     {
@@ -1318,6 +1329,17 @@
       "status": "levererad"
     },
     {
+      "name": "volume-off",
+      "category": "åtgärd",
+      "meaning": "Uppläsningen är tystad",
+      "grid": "24×24, live area 20×20",
+      "stroke": "1,75 (≥15 px)",
+      "fill": "none",
+      "usages": 0,
+      "master_svg": "assets/icons/volume-off.svg",
+      "status": "levererad"
+    },
+    {
       "name": "vote",
       "category": "åtgärd",
       "meaning": "Rösta / föreslå alternativ",
@@ -1414,10 +1436,6 @@
       "more-vertical": {
         "variant": "filled",
         "reason": "tre punkter — streck skulle bli ringar"
-      },
-      "play": {
-        "variant": "filled",
-        "reason": "uppspelningstriangeln är massiv i alla plattformskonventioner"
       },
       "star": {
         "variant": "filled",

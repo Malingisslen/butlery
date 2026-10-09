@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=820-->
+<!--manifest:files=822-->
 
 ## Reporoten
 
@@ -38,10 +38,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
-| `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `daded92d6675918a31ee88e9cc1ec60d9b5eed8f6e2b99c11e6bdb11e8a5f35b` |
+| `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `39156f8443bc3b374fdfffefe580897f2e787f5a99c6e7edc3ea42d555dfc8d3` |
 | `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `a7cadebc571fb4ccf0ccc30f04985ac7df00437f57b9f13dbc89b2f65eedd328` |
-| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `28869894c641c62b014d5f81aef79c8d7564baa3c097a51e49b7d0e2d3e65cc7` |
-| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `79e7e6bb195dab45509f00954c4a15631417e7290a226e0ecbb2b1bb0a473d70` |
+| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `598794f627d79730ec584032bf6ada940c7b2ce896ac9a91859400c03903accf` |
+| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `4c6c2b693b0e8b1a77b466459d6684f6d0e4124694f7b4afc1828a0af3ddef25` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `bd24f7477b12796b9b396576a06af133c40f323ef2258b491209b78422f98db3` |
 | `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `3607ccf2815fa9cfb0cf8817cb615e9ac32b19d4b64dd202377b52fbdfe9e020` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `b31a0024cf92edf8ee90e9f31dd3ef69b6ff65e7278ec675e1ede7dbc6ba72a2` |
@@ -103,7 +103,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
 | `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
 | `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
-| `assets/generated/tokens.css` | `7f297d1a6c1431c59c91a4c1fb66414ce5d380f8a24ef283485f65d5dd6aa075` |
+| `assets/generated/tokens.css` | `0f61c4e2d709758ac03daee4e028b381637e7f3517b40de96a92f305e3f13857` |
 | `assets/icons/activity.svg` | `3b7c324df2d719b1fd949a47f4f3c58702576c5c89ecd788b935caa0ae595466` |
 | `assets/icons/archive.svg` | `cf161abb7df09faed9bccb69e17efc0c85b134b4a522d6654c45201e3706467c` |
 | `assets/icons/arrow-down.svg` | `33137ab2d024ba075abba489752df8b44189862491996ffd37375d094fac070d` |
@@ -141,6 +141,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/ellipsis.svg` | `1b8d524aecc99f64de2e274ee8951517f3d37969b760617db347f9671a410605` |
 | `assets/icons/export.svg` | `12fc498ccab1403ecf3bb45fe695cf59d2de101470563df2c147df79fac58586` |
 | `assets/icons/external-link.svg` | `980449be955ec2ea50079046f845d9218631bb79eeccdfdddd288ee5a56c701b` |
+| `assets/icons/eye-off.svg` | `ff0cc718abad46fcac9ea458e80ee150013b3f2bd789dea14ffba531adfbc32f` |
 | `assets/icons/eye.svg` | `e3db961457292ae91a895e7e61143621da90f7e80ca3247eb9c6022f436ae98d` |
 | `assets/icons/file.svg` | `f06efb89b828daec1dca7ef406e8829ec10b3c190c8e86b0bd2de14c15a4a9b4` |
 | `assets/icons/filter.svg` | `f3ebb296b5543ed991d287c335a1a6a52face98a6cdcbbf46d8d7b16bb424260` |
@@ -183,7 +184,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/pencil.svg` | `fe02e1ce7ce066839f7b95d080b3b9990a15f0da6e97a957713771fbf9672565` |
 | `assets/icons/pin.svg` | `65386a798275ec45cd97c474589a7fb3caf6d038378f855899e1c05009525137` |
 | `assets/icons/play-outline.svg` | `870ee9741810d46e4de9b998647e4777714622135f59e022d98fd2bdcd1251fe` |
-| `assets/icons/play.svg` | `c5ad74fdbbbd6163e2dd9dd861bf97bd16669dd1e40340c1187943ddf31b9ccc` |
+| `assets/icons/play.svg` | `8ffcbdfefee6633a14eb7f5bf7177e0ac29a79e075b0ff859d63669e3b266b3e` |
 | `assets/icons/plus.svg` | `91c960cd589b4feb75c4009b7ecc393d7da8c534498d19c33d8eb250bec308d9` |
 | `assets/icons/reaction-add.svg` | `e3d91c36d51c3f2cfb00d598bf602e5e21a559a17d847348e6fae1b08f612e3b` |
 | `assets/icons/refresh-cw.svg` | `686de34b4c51308307815ac94996e2c86ef51e164987f1a4f805f790f0e2e46b` |
@@ -222,6 +223,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/icons/users.svg` | `016591ebbea8ed2a154c543c0a6ee0742d7ed7f7913e7df114632010914d9d87` |
 | `assets/icons/utensils.svg` | `de1d721e3ea3a4808b99d19ecc8527fe4fc3d4739a0d5203886c46d159634bc9` |
 | `assets/icons/video.svg` | `900a6cc3d0c1896eef8571fb96703353255c691fc3970b95db85e7e5ed0caa45` |
+| `assets/icons/volume-off.svg` | `3db4b50ffb9146e78299c79b883d4384486096cbb59a9dcebb9980f1fe6a776c` |
 | `assets/icons/volume.svg` | `0b030431c9b748ebad8d1871ed68a4aedcef63218fbd83b9de14a4780004f145` |
 | `assets/icons/vote.svg` | `f270cd1eb328d1a7c8b0d52a20c1c27c8d736560ea388b930e9ebf5e94a6b573` |
 | `assets/icons/wifi-off.svg` | `90d085f0a8a5c3d805c2e4581764e20353369060bf7f351a922cd73a63b61a90` |
@@ -237,7 +239,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
 | `beslutslogg.md` | `0e87015cad764618bad061e1e254ff83b6755304540103e49489fde5a3253d3a` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
-| `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
+| `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
 | `evidensmatris.md` | `1aa01118fbfbd0ccaab4fe09d771ac9491bead3468faa94169f87c662c32f1e0` |
@@ -587,7 +589,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `flows-roles-budget.md` | `38b013bda4f7ff11ca69fb4d2ca634612ae97a7285745f27cf7c530d83e43cb1` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
-| `icons.json` | `82614fcee6dbc996a351cdc3f523ff40b08d4533e3493b723e35783c5ba2a236` |
+| `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `d8b9683b373a3e142456890d177285c52307ccd433908f30c8e0592b35648431` |
 | `legacy-api-contract.json` | `bb3f02bd93c00c171abbb01e69ef116b380131a0e73e3d36e17565d6fb6320ae` |
@@ -601,10 +603,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `87a235c9ae7d9fef5fe7a69f1634d532a98198e50ed72ac55c5a8c99ac7ad650` |
-| `lib/theme/app_colors_dark.dart` | `3a712f6874b16dc43686517e5af532e3f21da319a2745e717cd753ee6871435c` |
-| `lib/theme/app_text_styles.dart` | `2d522223863aeb2249b782facc71d20cde816cdeb1d95ec53b8b1c860ca5918c` |
-| `lib/theme/butlery_tokens.dart` | `d12990ee41a9d24224036079885c3f2a967e879e33de96102d74017989c70cfa` |
+| `lib/theme/app_colors.dart` | `1cba19fe9039c9c770243315e16b752d3762b100242127d9e3977d2364990f4b` |
+| `lib/theme/app_colors_dark.dart` | `864c54c70136bcb664cd67856f44be5fed1c2f9d58c86eeb2450c4c55daa7265` |
+| `lib/theme/app_text_styles.dart` | `b9dd749d19db50b179fb1c2e9e89196fbb14fbb5bbfef4d7a57a126a71c040b2` |
+| `lib/theme/butlery_tokens.dart` | `04fbdc9c807f4e9d1a4790b63b818496c8a47e83b51031bae3d4c56549473d61` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
@@ -615,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `500482a1bc58f40494369ca94f9a703dd66ba9315756388511617877b953eeeb` |
-| `tokens.json` | `18f913cd45040490c58d38c33aaa42c8171bf89044a4ff1bcfdbaf7757c337bf` |
+| `tokens.json` | `53485237f2f4d9c6f9d9267972cd74886c9bc623221a428f77c9246147adac84` |
 | `tools/README.md` | `759f70a35c33d3ce2824c37ecda40724b3f2e6fcc1ab7b4cf976059f5b872051` |
 | `tools/adjudication-guards-fixtures.mjs` | `e435e8b5df13f07ecfd17ea2baf18a1796b24081d89dcef6352e8584c0c29d37` |
 | `tools/adjudication-pilot-fixtures.mjs` | `91adf41c78e92605e577f4c7f85511d9ccd1226e5b795977b9104e4193604c1f` |
@@ -715,7 +717,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/four-remediation-fixtures.mjs` | `f2e0c1f3634352e1f75d03b5314cba7c9b3c2d454495ca57e2d12070484e54da` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme-dark.mjs` | `7c5527af5f02ac4154a05f9cf74a3e857394a34625f503e845501f57443cabb6` |
-| `tools/gen-app-theme.mjs` | `d781008ffd68188e3218074f4c578ef08d475c395578bb040fa575b548607f22` |
+| `tools/gen-app-theme.mjs` | `2fb6930551f0b5593498d71d41a559cb0bea5e31a21857026ddf3fe8cab243e5` |
 | `tools/gen-artifact-proposal.mjs` | `6f0541b35c99c99e55432cb34d8b6c5188feca7297f728b148ff28bd9bc1b2ef` |
 | `tools/gen-authority.mjs` | `6af83d88709b2ea93d89c22b4d5a4ffceccd0980418a8b126f88b06d8954e32b` |
 | `tools/gen-check.mjs` | `f52d62056ee0b58cb2f718f64a57ce422fa73fd21079e9dc666d5307b51f31d4` |
