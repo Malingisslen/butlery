@@ -226,14 +226,12 @@ class AppRouter {
           // Handle different argument types
           final arguments = settings.arguments;
           String? initialText;
-          String? sourceUrl;
           double? ocrConfidence;
 
           if (arguments is String) {
             initialText = arguments;
           } else if (arguments is Map<String, dynamic>) {
             initialText = arguments['text'] as String?;
-            sourceUrl = arguments['sourceUrl'] as String?;
             // BUT-928: overall OCR confidence from the photo-import preview.
             ocrConfidence = arguments['ocrConfidence'] as double?;
           }
@@ -241,7 +239,6 @@ class AppRouter {
           return _buildRoute(
             FranSocialaMedierView(
               initialText: initialText,
-              sourceUrl: sourceUrl,
               ocrConfidence: ocrConfidence,
             ),
             settings,
