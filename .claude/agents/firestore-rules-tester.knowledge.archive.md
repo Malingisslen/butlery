@@ -6234,3 +6234,13 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Re-review same day after fixes: suite 72/72. Dropping `after.toSet().size() == after.size()` -> 69/72,
   killing exactly the three duplicate denies. key0/2/3/4/5off each 71/72, killing only that key's
   per-key deny.
+
+## 2026-10-09 — BUT-2114 `{path=**}/likes/{likeId}` read-only owner rule (collection-group-wildcards suite)
+- Rule: `allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;`, inserted above the BUT-407 pings block. Tests L1-L14 added to `collection-group-wildcards-rules.test.ts`; suite 42/42.
+- Mutants (in-place on firestore.rules with backup+trap restore, md5 identical after, at the caller's request):
+  m1 `allow read: if isAuthenticated();` -> 37/42, kills L2 (other-uid filter), L3 (unfiltered), L5 (userId missing, id == caller), L7 (foreign novel path), L12 (stranger get under cook_snaps).
+  m2 block deleted -> 40/42, kills L1 (filtered CG query) and L6 (own novel-path get). L13/L14 survive: the nested recipe_comments rule grants them.
+  m3 extra `allow create, update, delete: if isAuthenticated() && request.auth.uid == likeId;` -> 38/42, kills L8/L9/L10/L11 exactly.
+- L4 (unauth filtered query) killed by no mutant: masked `isAuthenticated()`, as on `blocks`.
+- No writer of `cook_snaps/{id}/likes` in lib/ or functions/src (only cascade test fixtures); the cook_snaps parent in L1 is a fixture of a shape no client can write (catch-all denies; no nested rule).
+- rules-coverage-report --base HEAD: new block 9/9 exercised, new-block gate OK. test:rules:all 58/59; only comment-images-storage failed (Storage emulator 9199 not running).

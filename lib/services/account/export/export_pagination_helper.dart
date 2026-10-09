@@ -198,7 +198,11 @@ class ExportPaginationHelper {
     var totalFetched = 0;
 
     while (totalFetched < maxDocuments) {
-      var batchQuery = query.limit(batchSize);
+      // Clamped to what is left, so a cap that is not a multiple of
+      // [batchSize] is not overshot by the last batch.
+      final remaining = maxDocuments - totalFetched;
+      final thisBatch = remaining < batchSize ? remaining : batchSize;
+      var batchQuery = query.limit(thisBatch);
 
       if (lastDoc != null) {
         batchQuery = batchQuery.startAfterDocument(lastDoc);
@@ -219,7 +223,7 @@ class ExportPaginationHelper {
       );
 
       // If batch returned fewer than requested, we've reached the end
-      if (snapshot.docs.length < batchSize) {
+      if (snapshot.docs.length < thisBatch) {
         break;
       }
     }
@@ -384,6 +388,18 @@ class ExportPaginationHelper {
     // are shown. They live 7 days, so 200 is far above a week's use.
     'recipe_suggestions_made': 200,
     'recipe_suggestions_received': 200,
+    // BUT-1701: reads that rode the repository's own default cap with no
+    // truncation signal. Pinned at those defaults, so declaring them adds the
+    // probe without shrinking anyone's export.
+    'friend_categories': 100,
+    'outgoing_blocks': 500,
+    'reports_filed': 500,
+    'pings_sent': 500,
+    'category_preferences': 200,
+    'list_category_orders': 200,
+    // BUT-2114: comment likes. The read is a collection group, so this caps
+    // the query, not the exported rows.
+    'comment_likes': 1000,
   };
 
   /// Get export limit for content type
