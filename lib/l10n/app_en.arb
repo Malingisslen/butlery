@@ -4210,7 +4210,7 @@
   "recipeCouldNotMarkAsCooked": "Could not mark as cooked",
   "recipeCouldNotOpenEditor": "Could not open editor",
   "recipeCouldNotShare": "Could not share recipe",
-  "recipeDeleted": "Recipe deleted",
+  "recipeDeleted": "Recipe moved to the trash for 30 days",
   "recipeMarkedAsCooked": "Recipe marked as cooked today.",
   "recipeAlreadyCookedToday": "Already logged today",
   "recipeShared": "Recipe shared",
@@ -8985,7 +8985,7 @@
       }
     }
   },
-  "recipeDeleteWarning": "The recipe will be permanently deleted.",
+  "recipeDeleteWarning": "The recipe moves to the trash and stays there for 30 days.",
   "shoppingListDeleteWarning": "All items on the list will be removed.",
   "itemDeletedSuccess": "{type} has been deleted",
   "@itemDeletedSuccess": {
@@ -9193,7 +9193,7 @@
   "viewModeList": "List View",
   "imageCropTitle": "Crop image",
   "bulkDeleteConfirmMessage": "The selected recipes will be removed.",
-  "bulkDeleteSuccess": "{count} recipes deleted",
+  "bulkDeleteSuccess": "{count} recipes moved to the trash for 30 days",
   "@bulkDeleteSuccess": {
     "placeholders": {
       "count": {
@@ -13712,5 +13712,33 @@
   "recipeImportNoIngredientsNotice": "We found no ingredients. Add them yourself below.",
   "@recipeImportNoIngredientsNotice": {
     "description": "BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists."
-  }
+  },
+  "trashTitle": "Trash",
+  "trashSelectAll": "Select all",
+  "trashSelectNone": "Deselect all",
+  "trashLoading": "Loading the trash …",
+  "trashLoadFailed": "The trash could not be loaded.",
+  "trashEmptyTitle": "The trash is empty",
+  "trashEmptyBody": "Deleted recipes stay here for 30 days.",
+  "trashDaysLeft": "{count, plural, =0{Expires today} =1{1 day left} other{{count} days left}}",
+  "trashSelectedCount": "{count} selected",
+  "trashRestoreSelected": "Restore {count} recipes",
+  "trashDeleteSelected": "Delete {count} recipes",
+  "trashEmptyAction": "Empty the trash",
+  "trashDeleteConfirmTitle": "Delete for good?",
+  "trashDeleteConfirmBody": "{count, plural, =1{The recipe is deleted for good. This cannot be undone.} other{{count} recipes are deleted for good. This cannot be undone.}}",
+  "trashDeleteConfirmAction": "Delete for good",
+  "trashEmptyConfirmTitle": "Empty the trash?",
+  "trashEmptyConfirmBody": "Every recipe in the trash is deleted for good. This cannot be undone.",
+  "trashRestoredAll": "{count, plural, =1{Restored as private} other{{count} recipes restored as private}}",
+  "trashDeletedAll": "{count, plural, =1{The recipe was deleted for good} other{{count} recipes were deleted for good}}",
+  "trashEmptied": "The trash is empty now",
+  "trashOfflineNothingChanged": "You are offline. Nothing was changed.",
+  "trashFailedNothingChanged": "Something went wrong. Nothing was changed.",
+  "trashPartialSummary": "{done} of {total} done.",
+  "trashPartialNoneDone": "Nothing was changed.",
+  "trashFailOffline": "{count} recipes were not done because you are offline.",
+  "trashFailExpired": "{count} recipes had already expired.",
+  "trashFailGone": "{count} recipes were no longer in the trash.",
+  "trashFailFailed": "{count} recipes could not be done. Try again."
 }

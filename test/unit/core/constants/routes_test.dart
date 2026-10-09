@@ -42,6 +42,18 @@ void main() {
     }
   });
 
+  group('Routes — trash (BUT-907)', () {
+    // A user's deleted recipes are private, so the screen needs a sign-in.
+    test('settingsTrash is valid, auth-gated, and slides from the right', () {
+      expect(Routes.isValidRoute(Routes.settingsTrash), isTrue);
+      expect(Routes.requiresAuth(Routes.settingsTrash), isTrue);
+      expect(
+        Routes.getAnimationType(Routes.settingsTrash),
+        RouteAnimationType.slideFromRight,
+      );
+    });
+  });
+
   group('Routes — invariants (BUT-1412 regression guard)', () {
     test('every bottom-slide (import-modal) route is auth-gated', () {
       // The bottom-slide set is the import/capture modals; every one of them

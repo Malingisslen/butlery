@@ -62,6 +62,7 @@ import 'package:butlery/views/legal/community_guidelines_view.dart';
 // Settings — moderation
 import 'package:butlery/views/settings/my_reports_view.dart';
 import 'package:butlery/views/settings/about_butlery_view.dart';
+import 'package:butlery/views/settings/trash_view.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
 
 // Help
@@ -460,6 +461,13 @@ class AppRouter {
         case Routes.myReports:
           return _buildRoute(
             const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsTrash:
+          return _buildRoute(
+            const TrashView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

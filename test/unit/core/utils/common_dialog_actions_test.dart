@@ -335,7 +335,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Receptet kommer att tas bort permanent.'),
+          find.text(
+            'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.',
+          ),
           findsOneWidget,
         );
       },
@@ -368,7 +370,9 @@ void main() {
       );
       // Negative: the recipe warning must NOT leak into the group dialog.
       expect(
-        find.text('Receptet kommer att tas bort permanent.'),
+        find.text(
+          'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.',
+        ),
         findsNothing,
       );
     });
