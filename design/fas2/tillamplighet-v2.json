@@ -1,0 +1,401 @@
+{
+ "$schema": "butlery-tillamplighet-v2/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "485ca59",
+ "$status": "CUE-COUNT BORTTAGEN, 1001 OMRAKNADE, TVA BESLUT REGISTRERADE — inget skrivet",
+ "$typ": "APPLICABILITY METHOD CORRECTION + 1001 RECOMPUTE.",
+ "A_borttagenRegel": {
+  "regel": "MINST_ANTAL_LEDTRADAR = 2 — \"0/1 ledtrad kan aldrig racka, 2+ kan racka pa antal\"",
+  "varforOgiltig": "SC 1.4.11 vilar pa TILLRACKLIGHET av visuell identifiering, inte pa ett minsta antal signaler.",
+  "ersattMed": "SUFFICIENT_ALTERNATIVE_VISUAL_IDENTIFICATION — en counterfactual i den faktiska scenen, med STYRKA bedomd per forekomst i stallet for antal raknat.",
+  "diagnostik": "Antalet ledtradar redovisas fortfarande, men avgor ingenting.",
+  "verifierat": "Ingen rakningsgrind finns kvar i kallan (GP-20)."
+ },
+ "B_forraKorningen": {
+  "$bevarad": "Fordelningen 337 / 656 / 8 fran 485ca59 ar INTE overskriven. Den star kvar i fas2/tillamplighetsaudit.json och i commiten.",
+  "SUFFICIENT": 337,
+  "UNKNOWN": 656,
+  "REQUIRED": 8
+ },
+ "C_recompute": {
+  "population": 1001,
+  "SUFFICIENT": 0,
+  "REQUIRED_PASS": 0,
+  "REQUIRED_FAIL": 8,
+  "UNKNOWN": 993,
+  "summa": 1001,
+  "$avstamning": "0 + 0 + 8 + 993 = 1001",
+  "$varfor0Sufficient": "Ingen styrkebedomning ar levererad for den har populationen, och styrka far inte raknas fram ur drag. De 337 vilade helt pa den borttagna antalsregeln och faller darfor till UNKNOWN. Det ar fail-closed, inte en forsamring: de var aldrig bedomda."
+ },
+ "D_atta": [
+  {
+   "kontroll": "rcbarvegods|32",
+   "roll": "button",
+   "namn": "Sida 2",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens fyllning",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"1\" (statisk text)",
+    "instruktionstext i narheten"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 1.272,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "rcbarvegods|34",
+   "roll": "button",
+   "namn": "Sida 3",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens fyllning",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"1\" (statisk text)",
+    "instruktionstext i narheten"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 1.272,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "skafferivyn|25",
+   "roll": "button",
+   "namn": "Grädde, 3 deciliter, går ut idag",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens ram",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"går snart ut2\" (statisk text)"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "skafferivyn|30",
+   "roll": "button",
+   "namn": "Färsk basilika, 1 kruka, 2 dagar kvar",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens ram",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"går snart ut2\" (statisk text)"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "skafferivyn|41",
+   "roll": "button",
+   "namn": "Parmesan, 200 gram, bäst före 14 augusti",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens ram",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"kyl7\" (statisk text)"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "skafferivyn|46",
+   "roll": "button",
+   "namn": "Oatly iKaffe, 1 liter, inget datum",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens ram",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"kyl7\" (statisk text)"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "veckokalender|124",
+   "roll": "button",
+   "namn": "Lägg till mer i övrigt på fredag",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens ram",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"övrigt\" (statisk text)"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (10.5px|700|rgb(156, 59, 35)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 1.272,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen."
+  },
+  {
+   "kontroll": "onbimportklar|25",
+   "roll": "textbox",
+   "namn": "Titel",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "undersokDel": "kontrollens ram",
+   "alternativaSignalerSomFaktisktFinns": [
+    "granntext \"Läst från koket.se. Granska oc\" (statisk text)",
+    "instruktionstext i narheten"
+   ],
+   "varforOtillrackliga": "Kontrollens text ar satt EXAKT som den narmaste statiska texten (16px|400|rgb(36, 56, 44)|normal|none), den saknar glyf, och delen ar kontrollens enda malning. Ingen kvarvarande visuell markor skulle visa att objektet ar en kontroll.",
+   "kravd": true,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "FINDING",
+   "$ejCueCount": "Bedomningen anvander ingen rakning av ledtradar. Den vilar pa att INGEN alternativ visuell identifiering finns i scenen.",
+   "$textfalt": "Ramen ar den enda visuella indikationen pa att objektet ar ett inmatningsfalt. Utan den ar det ett textstycke. Klassad REQUIRED utan nagon cue-count-regel, enligt GP-24."
+  }
+ ],
+ "D2_paket": {
+  "status": "REQUIRED_FAIL bekraftat for samtliga 8",
+  "$nasteBlock": [
+   "exakta kallankare",
+   "kandidatpalett",
+   "previews i faktisk scen",
+   "delade eller separata beslutsidentiteter",
+   "regressionspaverkan",
+   "write scope"
+  ],
+  "$forbud": "Inga design- eller fargval gors har. De far inte laggas in som opportunistiska writes i 24-kontrollmigrationen."
+ },
+ "E_dagsruteBeslut": {
+  "beslutsidentitet": "DAY_SLOT_BORDER_APPLICABILITY",
+  "forekomster": [
+   "placera|17",
+   "placera|29",
+   "placera|35",
+   "placera|38",
+   "placera|41"
+  ],
+  "verdikt": "SUPPLEMENTAL_NON_TEXT_VISUAL",
+  "motivering": [
+   "instruktionen att trycka pa en ledig plats",
+   "veckodagsraden",
+   "den synliga texten \"Ledig\"",
+   "placeringen i den aktuella placeringsvyn"
+  ],
+  "$bedomning": "I den faktiska scenen identifieras de lediga placeringsmalen genom den samlade kontexten. Den streckade ramen forstarker affordansen men behovs inte for att identifiera kontrollens narvaro eller operation.",
+  "$ejCueCount": "Beslutet vilar INTE pa antalet signaler.",
+  "matning": {
+   "kvot": 1.414,
+   "farg": "#ccd1c2",
+   "angransande": "#f5f4ed"
+  },
+  "scFynd": "NEJ",
+  "ramensTillamplighet": "supplemental",
+  "$ejPropagering": "Beslutet galler dessa fem forekomster. Det far inte propageras till morka Skapa konto eller till saffranskontrollerna."
+ },
+ "E2_prov": [
+  {
+   "identitet": "placera|17",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "skal": "levererad bedomning: ovrig visuell information identifierar kontrollen",
+   "utfall": "NOT_APPLICABLE"
+  },
+  {
+   "identitet": "placera|29",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "skal": "levererad bedomning: ovrig visuell information identifierar kontrollen",
+   "utfall": "NOT_APPLICABLE"
+  },
+  {
+   "identitet": "placera|35",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "skal": "levererad bedomning: ovrig visuell information identifierar kontrollen",
+   "utfall": "NOT_APPLICABLE"
+  },
+  {
+   "identitet": "placera|38",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "skal": "levererad bedomning: ovrig visuell information identifierar kontrollen",
+   "utfall": "NOT_APPLICABLE"
+  },
+  {
+   "identitet": "placera|41",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "skal": "levererad bedomning: ovrig visuell information identifierar kontrollen",
+   "utfall": "NOT_APPLICABLE"
+  }
+ ],
+ "F_fargbeslut": {
+  "beslutsidentitet": "DAY_SLOT_CONTROL_BORDER_LIGHT",
+  "historik": [
+   {
+    "skede": "cc7bf23 / 0884b25",
+    "kandidat": "#ccd1c2 → #7d897c",
+    "motivering": "kravd barare av kontrollformen, kvot 1.4",
+    "status": "SUPERSEDED — konformansskalet holl inte"
+   },
+   {
+    "skede": "485ca59",
+    "status": "HUMAN_APPROVED_VISUAL_CHOICE · SUSPENDED_FOR_REVALIDATION"
+   },
+   {
+    "skede": "detta block",
+    "status": "SUPERSEDED_AFTER_APPLICABILITY_REVALIDATION"
+   }
+  ],
+  "slutligtBeslut": "KEEP_BASELINE",
+  "fran": "#ccd1c2",
+  "till": "#ccd1c2",
+  "writeScope": 0,
+  "motivering": [
+   "nar ramen inte ar en kravd SC 1.4.11-barare finns inget konformansskal att forstarka den",
+   "baslinjen behaller en lagmald sekundar affordans",
+   "och ger mindre visuell vikt at tomma platser an #7d897c"
+  ],
+  "$typ": "Ett rent designbeslut.",
+  "$kredit": {
+   "konformansremediering": 0,
+   "r04Evidens": 0,
+   "r04Kredit": 0
+  },
+  "$historikBevarad": "Den tidigare #7d897c-beslutshistoriken ar INTE raderad. Den star kvar och ar markerad superseded efter tillamplighetsomvalideringen."
+ },
+ "G_treStatus": {
+  "A_dagsrutor": {
+   "antal": 5,
+   "kvot": 1.414,
+   "tillamplighet": "supplemental",
+   "utfall": "NOT_A_FINDING",
+   "$stangd": "Stangd separat av det manskliga beslutet ovan."
+  },
+  "B_morkSkapaKonto": {
+   "antal": 1,
+   "kvot": 2.982,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "$skal": "Occurrence-specifik sufficiens ar inte bedomd. Dagsrutornas beslut propageras INTE hit."
+  },
+  "C_saffran": {
+   "antal": 4,
+   "kvot": 2.918,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "$skal": "Occurrence-specifik sufficiens ar inte bedomd. Dagsrutornas beslut propageras INTE hit."
+  }
+ },
+ "H_scope": {
+  "antal": 24,
+  "roller": "button",
+  "namnbeslut": "oforandrade",
+  "traffyteplan": "oforandrad",
+  "kallankare": "oforandrade",
+  "census": "1351 → 1375",
+  "forvantadeFargwritesDagsrutor": 0,
+  "$femDeklarationer": "De fem nuvarande #ccd1c2-deklarationerna ska forbli byte-identiska.",
+  "fargankareSomNuUtgar": [
+   {
+    "forekomst": "placera|17",
+    "rad": 179,
+    "omslutandeRadHash": "1807468436cd5944",
+    "$nu": "INGEN SKRIVNING — baslinjen behalls"
+   },
+   {
+    "forekomst": "placera|29",
+    "rad": 181,
+    "omslutandeRadHash": "2f21ee7d0d428037",
+    "$nu": "INGEN SKRIVNING — baslinjen behalls"
+   },
+   {
+    "forekomst": "placera|35",
+    "rad": 183,
+    "omslutandeRadHash": "74e3493be6241312",
+    "$nu": "INGEN SKRIVNING — baslinjen behalls"
+   },
+   {
+    "forekomst": "placera|38",
+    "rad": 184,
+    "omslutandeRadHash": "7976346388e66490",
+    "$nu": "INGEN SKRIVNING — baslinjen behalls"
+   },
+   {
+    "forekomst": "placera|41",
+    "rad": 185,
+    "omslutandeRadHash": "feedc595f1aaba4d",
+    "$nu": "INGEN SKRIVNING — baslinjen behalls"
+   }
+  ]
+ },
+ "I_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "geometriwrites": 0,
+  "a11ywrites": 0,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelarTotalt": 1652,
+  "perBararroll": {
+   "supplemental": 1001,
+   "componentIdentityCarrier": 551,
+   "stateCarrier": 100
+  },
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "bitIdentisk": true
+  },
+  "granskning": {
+   "UNREVIEWED": 2468,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 100,
+   "unresolved": 2584
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0
+ },
+ "J_produktskrivningar": 0,
+ "stopp": []
+}

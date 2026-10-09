@@ -1,0 +1,1386 @@
+[
+ {
+  "roll": "yta-app",
+  "ljus": "#24382c",
+  "dekl": 17,
+  "art": 17,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#dca968",
+  "dekl": 4,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(245,244,237,0.18)",
+  "dekl": 6,
+  "art": 5,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#ce7c1e",
+  "dekl": 104,
+  "art": 66,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#c9d3c4",
+  "dekl": 25,
+  "art": 14,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#24382c",
+  "dekl": 835,
+  "art": 205,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#24382c",
+  "dekl": 283,
+  "art": 141,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#f5f4ed",
+  "dekl": 227,
+  "art": 115,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#627061",
+  "dekl": 604,
+  "art": 162,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#627061",
+  "dekl": 84,
+  "art": 30,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#17251d",
+  "dekl": 54,
+  "art": 44,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#24382c",
+  "dekl": 331,
+  "art": 64,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#f5f4ed",
+  "dekl": 98,
+  "art": 52,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#f5f4ed",
+  "dekl": 310,
+  "art": 135,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#93a48d",
+  "dekl": 35,
+  "art": 13,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#93a48d",
+  "dekl": 62,
+  "art": 26,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#f5f4ed",
+  "dekl": 106,
+  "art": 17,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#e6ead9",
+  "dekl": 250,
+  "art": 130,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#8a5212",
+  "dekl": 48,
+  "art": 33,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#8a5212",
+  "dekl": 28,
+  "art": 21,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#37453a",
+  "dekl": 46,
+  "art": 39,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#24382c",
+  "dekl": 57,
+  "art": 35,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#e09d50",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "rgba(245,244,237,0.35)",
+  "dekl": 12,
+  "art": 4,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#7d897c",
+  "dekl": 473,
+  "art": 55,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#37453a",
+  "dekl": 530,
+  "art": 147,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#24382c",
+  "dekl": 505,
+  "art": 87,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#24382c",
+  "dekl": 380,
+  "art": 119,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#24382c",
+  "dekl": 126,
+  "art": 73,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#ccd1c2",
+  "dekl": 964,
+  "art": 159,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#a15a0a",
+  "dekl": 37,
+  "art": 10,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#d8b784",
+  "dekl": 39,
+  "art": 11,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#3f6b4f",
+  "dekl": 39,
+  "art": 26,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(36,56,44,0.4)",
+  "dekl": 22,
+  "art": 22,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#7d897c",
+  "dekl": 11,
+  "art": 11,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#8a5212",
+  "dekl": 4,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "rgba(245,244,237,0.18)",
+  "dekl": 28,
+  "art": 8,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#f5f4ed",
+  "dekl": 32,
+  "art": 7,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#f5f4ed",
+  "dekl": 106,
+  "art": 57,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(245,244,237,0.6)",
+  "dekl": 2,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#17251d",
+  "dekl": 3,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#9c3b23",
+  "dekl": 11,
+  "art": 11,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#627061",
+  "dekl": 13,
+  "art": 4,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#ccd1c2",
+  "dekl": 47,
+  "art": 27,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#ce7c1e",
+  "dekl": 78,
+  "art": 67,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#17251d",
+  "dekl": 60,
+  "art": 58,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#ce7c1e",
+  "dekl": 13,
+  "art": 9,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#9c3b23",
+  "dekl": 26,
+  "art": 22,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#4a5c43",
+  "dekl": 39,
+  "art": 28,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#24382c",
+  "dekl": 89,
+  "art": 54,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#f5f4ed",
+  "dekl": 142,
+  "art": 35,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#000000",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#dca968",
+  "dekl": 3,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#7d897c",
+  "dekl": 13,
+  "art": 8,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#3f6b4f",
+  "dekl": 12,
+  "art": 12,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#a15a0a",
+  "dekl": 12,
+  "art": 11,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#ccd1c2",
+  "dekl": 456,
+  "art": 48,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#a15a0a",
+  "dekl": 18,
+  "art": 15,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#a15a0a",
+  "dekl": 13,
+  "art": 5,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#627061",
+  "dekl": 28,
+  "art": 21,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#b4bfa6",
+  "dekl": 3,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#7d897c",
+  "dekl": 42,
+  "art": 16,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#627061",
+  "dekl": 49,
+  "art": 20,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#7d897c",
+  "dekl": 18,
+  "art": 9,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "rgba(245,244,237,0.35)",
+  "dekl": 41,
+  "art": 4,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#f5f4ed",
+  "dekl": 110,
+  "art": 78,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#2f4437",
+  "dekl": 4,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#17251d",
+  "dekl": 4,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#8fb89a",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#8fb89a",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "rgba(245,244,237,0.18)",
+  "dekl": 11,
+  "art": 4,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#93a48d",
+  "dekl": 22,
+  "art": 9,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#c9d3c4",
+  "dekl": 10,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#4a5c43",
+  "dekl": 5,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#e6ead9",
+  "dekl": 32,
+  "art": 8,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#a9b2a0",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#3f6b4f",
+  "dekl": 15,
+  "art": 9,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#9c3b23",
+  "dekl": 11,
+  "art": 6,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#93a48d",
+  "dekl": 45,
+  "art": 16,
+  "etablerad": false,
+  "mork": "#f5f4ed"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#5b6959",
+  "dekl": 111,
+  "art": 42,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#7d897c",
+  "dekl": 339,
+  "art": 36,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#9c3b23",
+  "dekl": 9,
+  "art": 7,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#3f6b4f",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#dca968",
+  "dekl": 14,
+  "art": 11,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#9c3b23",
+  "dekl": 39,
+  "art": 20,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#de9078",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#e09d50",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#93a48d",
+  "dekl": 2,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#17251d",
+  "dekl": 18,
+  "art": 17,
+  "etablerad": false,
+  "mork": "#f5f4ed"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#627061",
+  "dekl": 149,
+  "art": 48,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#37453a",
+  "dekl": 21,
+  "art": 13,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#dfe0d6",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#c3c6ba",
+  "dekl": 2,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-app",
+  "ljus": "#17251d",
+  "dekl": 8,
+  "art": 8,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#dca968",
+  "dekl": 4,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#f5f4ed"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#de9078",
+  "dekl": 4,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#de9078",
+  "dekl": 3,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#17251d",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#2f4437",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#a9b2a0",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#de9078",
+  "dekl": 4,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#de9078",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(23,37,29,0.6)",
+  "dekl": 3,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(245,244,237,0.35)",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "rgba(245,244,237,0.4)",
+  "dekl": 28,
+  "art": 3,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#37453a",
+  "dekl": 53,
+  "art": 28,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#9c3b23",
+  "dekl": 32,
+  "art": 26,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#9c3b23",
+  "dekl": 7,
+  "art": 6,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-app",
+  "ljus": "#f5f4ed",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#de9078",
+  "dekl": 4,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#8a5212",
+  "dekl": 23,
+  "art": 14,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#8a5212",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-platshallare",
+  "ljus": "#e6ead9",
+  "dekl": 11,
+  "art": 2,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#e6ead9",
+  "dekl": 92,
+  "art": 41,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#788477",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#5b6959",
+  "dekl": 52,
+  "art": 22,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#5b6959",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#f5f4ed"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#5b6959",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#8fb89a",
+  "dekl": 2,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#a9b2a0",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#dca968",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#c9d3c4",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#4a5c43",
+  "dekl": 8,
+  "art": 5,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#627061",
+  "dekl": 12,
+  "art": 11,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#3f6b4f",
+  "dekl": 16,
+  "art": 11,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#93a48d",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(36,56,44,0.35)",
+  "dekl": 21,
+  "art": 21,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#d8b784",
+  "dekl": 29,
+  "art": 9,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#4a5c50",
+  "dekl": 3,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#a9b2a0",
+  "dekl": 4,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#9c3b23",
+  "dekl": 73,
+  "art": 14,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#8a5212",
+  "dekl": 11,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#37453a",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#5b6959",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "rgba(245,244,237,0.4)",
+  "dekl": 120,
+  "art": 30,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#f2ddd6",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#f0eee2",
+  "dekl": 3,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#4a5c50",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#dfe8dc",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#3f6b4f",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#5b6959",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#37453a",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#e5a08a",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#e5a08a",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#e6ead9",
+  "dekl": 9,
+  "art": 4,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#dca968",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#ccd1c2",
+  "dekl": 6,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(36,56,44,0.6)",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "rgba(245,244,237,0.6)",
+  "dekl": 5,
+  "art": 3,
+  "etablerad": false,
+  "mork": "#93a48d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#e09d50",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#8a5212",
+  "dekl": 8,
+  "art": 5,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#8a5212",
+  "dekl": 6,
+  "art": 2,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "rgba(36,56,44,0.35)",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "rgba(36,56,44,0.18)",
+  "dekl": 12,
+  "art": 4,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "rgba(36,56,44,0.18)",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#4a5c50",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#7d897c",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": true,
+  "mork": "(etablerad)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#d8b784",
+  "dekl": 2,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#3f5145",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#f0eee2",
+  "dekl": 25,
+  "art": 23,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#a15a0a",
+  "dekl": 17,
+  "art": 16,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#3f5145",
+  "dekl": 2,
+  "art": 2,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#ce7c1e",
+  "dekl": 26,
+  "art": 3,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#3f6b4f",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#a15a0a",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#627061",
+  "dekl": 5,
+  "art": 2,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#f7e8d2",
+  "dekl": 6,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#a15a0a",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#dca968",
+  "dekl": 4,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#3f5145",
+  "dekl": 2,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#17251d"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#3f5145",
+  "dekl": 4,
+  "art": 1,
+  "etablerad": false,
+  "mork": "rgba(245,244,237,.35)"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#ce7c1e",
+  "dekl": 1,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#c9d3c4"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#e6ead9",
+  "dekl": 5,
+  "art": 1,
+  "etablerad": false,
+  "mork": "#93a48d"
+ }
+]

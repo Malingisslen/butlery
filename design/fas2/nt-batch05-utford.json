@@ -1,0 +1,176 @@
+{
+ "$schema": "butlery-nt-batch05-utford/1",
+ "$datum": "2026-08-14",
+ "$status": "BATCH-05 UTFORD OCH VERIFIERAD. Fargskrivningsstoppet ater i fullt lage.",
+ "A_beslut": {
+  "beslutsId": "NTR-BATCH05-LIGHT-PROGRESS-FILL-DU-01-E",
+  "beslutsenhet": "DU-01-E",
+  "provenance": "HUMAN_APPROVED",
+  "klassificering": "VISUAL_CHOICE_REQUIRED",
+  "tokenidentitet": "PROGRESS_FILL_GLOBCEREMONI_DU_01_E",
+  "kallidentitet": "globceremoni|8|background-color",
+  "valtVarde": "#d8b784",
+  "tidigareVarde": "#ce7c1e",
+  "kvot": "2.64 → 4.46",
+  "krav": 3,
+  "faktiskTrack": "rgb(63, 81, 69)",
+  "skrivomfang": 1,
+  "produktwrite": "UTFORD 2026-08-14",
+  "R04_COVERAGE_CREDIT": 0
+ },
+ "B_produktwrite": {
+  "typ": "CSS_BOX_NON_TEXT_REMEDIATION",
+  "$ejAuktorisation": "Detta ar INTE en auktorisation att ateruppta ordinarie R-04-implementation.",
+  "andradeDeklarationer": 1,
+  "plats": {
+   "fynd": "BG-033",
+   "skarm": "globceremoni",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "offset": 30237,
+   "fran": "#ce7c1e",
+   "till": "#d8b784"
+  },
+  "kallformFore": "width:64px;height:2px;border-radius:2px;background:#ce7c1e",
+  "kallformEfter": "width:64px;height:2px;border-radius:2px;background:#d8b784",
+  "filsumma": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "langdFore": 126856,
+   "langdEfter": 126856,
+   "shaFore": "e05f0e8c1f230d65",
+   "shaEfter": "036ed6d18335713b",
+   "andrade": 1
+  },
+  "fargbokforing": {
+   "#ce7c1e": -1,
+   "#d8b784": 1,
+   "#3f5145": 0
+  },
+  "orelateradeFargandringar": 0,
+  "globalReplace": false,
+  "$avgransning": "Endast fargvardet i deklarationen bytt. Deklarationen innehall exakt en traff pa den gamla fargen. Sparfargen #3f5145 pa samma rad ar oforandrad."
+ },
+ "C_frusnaKontroller": {
+  "metod": "jamforelse mot en git-worktree pa HEAD fore writen (4dd7464), samma verktyg och samma profiler",
+  "text": true,
+  "historiskIckeText": true,
+  "traffytor": true,
+  "rendering": true,
+  "effekter": true,
+  "identitet": true
+ },
+ "D_grafikmatning": {
+  "population": 34,
+  "populationFore": 34,
+  "kandidatavstamning": "2492 = 2458 + 34",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "findings": {
+   "fore": 2,
+   "efter": 1
+  },
+  "fyndFore": [
+   "BG-020",
+   "BG-033"
+  ],
+  "fyndEfter": [
+   "BG-020"
+  ],
+  "losta": [
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "foreKvot": 2.64,
+    "nyKvot": 4.46,
+    "nyttVarde": "rgb(216, 183, 132)",
+    "produktfel": false
+   }
+  ],
+  "kvarstaende": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "kvot": 1.41,
+    "status": "BLOCKERAD OCH ORORD"
+   }
+  ],
+  "andraRelationerSomAndrats": [],
+  "$forvantan": "2 → 1 var en forvantad reconciliation, inte ett framtvingat mal."
+ },
+ "E_identitet": {
+  "egenBeslutsidentitet": "NTR-BATCH05-LIGHT-PROGRESS-FILL-DU-01-E",
+  "egenTokenidentitet": "PROGRESS_FILL_GLOBCEREMONI_DU_01_E",
+  "egetSkrivomfang": "1 kallrad (globceremoni|8|background-color)",
+  "egenProvenans": "HUMAN_APPROVED / VISUAL_CHOICE_REQUIRED",
+  "andraBeslutMedSammaVarde": [
+   {
+    "beslutsId": "NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+    "tokenidentitet": "PROGRESS_FILL_DU_01_C"
+   },
+   {
+    "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+    "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_DU_01_A",
+    "skarm": "lagatimers"
+   },
+   {
+    "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+    "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_TIMER_DU_02",
+    "skarm": "lagatimers"
+   }
+  ],
+  "delarTokenidentitet": false,
+  "sammanslagen": false,
+  "mappningsevidensFranNumeriskAteranvandning": 0,
+  "$regel": "Samma numeriska varde ar varken sammanslagning eller mappningsevidens."
+ },
+ "F_R04guardrail": {
+  "registerraderAndrade": 0,
+  "registretBitIdentiskt": true,
+  "sha256": {
+   "HEAD": "b89f4dcdef34031c",
+   "nu": "b89f4dcdef34031c"
+  },
+  "morkaVardenAndrade": 0,
+  "nyMappningsevidens": 0,
+  "R04_COVERAGE_CREDIT": 0,
+  "morktVardeArvt": null,
+  "d18_scope": {
+   "token": "--yta-upphojd-d18",
+   "omfattning": {
+    "klass": "KALLIDENTITET",
+    "varde": "start|19|background-color"
+   },
+   "berordaArtefakter": [
+    "start"
+   ],
+   "kallidentitet": "start|19|background-color",
+   "fortfarandeEndastStart": true
+  },
+  "scopeGuard": {
+   "kallidentitet": "globceremoni|8|background-color",
+   "nyckel": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "antalNyckeltraffar": 1,
+   "utfall": "NYCKELTRAFF_UTAN_TACKNING",
+   "tackning": "EJ_TACKT_ANNAN_KALLA",
+   "kredit": 0,
+   "mappningsevidens": false,
+   "morktVarde": null,
+   "tokenidentitet": null,
+   "scopeUtokat": false,
+   "skal": "beslutet ar scopat till kallraden start|19|background-color — forekomsten globceremoni|8|background-color ar en annan kallrad"
+  },
+  "$slutsats": "Sorteringsnyckeln sammanfaller efter skrivningen, men forekomsten faller pa scopelagret. Noll kredit, noll mappningsevidens, inget morkt varde och ingen tokenidentitet lacker till globceremoni."
+ },
+ "G_stoppvillkor": {
+  "utlosta": [],
+  "antal": 0
+ },
+ "H_efterlage": {
+  "BATCH05": "CLOSED / VERIFIED",
+  "grafikbaslinje": "34 / 0 / 1",
+  "endaKvarvarandeFynd": [
+   "BG-020 profil 1.41 BLOCKERAD"
+  ],
+  "fargskrivningsstopp": "ATER I FULLT LAGE",
+  "ordinarieR04": "FORTSATT PAUSAD"
+ }
+}

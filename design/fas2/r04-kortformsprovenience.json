@@ -1,0 +1,49 @@
+{
+ "$regel": "En langform kan malas av en kortform. CSSOM slutar exponera langformen sa fort kortformens varde innehaller var(). Den tomma langformen ar signalen att kortformen vann, aldrig franvaro av deklaration. Kaskaden avgors i ordningen important, specificitet, kallordning; inline behandlas som hogsta specificitet. Gar vinnaren inte att faststalla entydigt: fail closed.",
+ "$arvsregel": "Bara color, fill och stroke arvs. En forfaders bakgrund eller ram kan aldrig vara kallan till ett barns malade farg.",
+ "kategoribyten": {
+  "INLINE -> TOKEN_HOOK": 460,
+  "INHERITED -> TOKEN_HOOK": 698,
+  "INHERITED -> OKAND": 3
+ },
+ "kategoribyten_i_A_batchen": {
+  "INLINE -> TOKEN_HOOK": 42,
+  "INHERITED -> TOKEN_HOOK": 40
+ },
+ "de_tidigare_INHERITED_i_A": {
+  "INHERITED": 15,
+  "TOKEN_HOOK": 40
+ },
+ "beraknade_farger_andrade": 0,
+ "population": {
+  "fore": 13610,
+  "efter": 13610,
+  "nycklar": "identiska"
+ },
+ "fordelning": {
+  "fore": {
+   "INLINE": 9261,
+   "TOKEN_HOOK": 1403,
+   "INHERITED": 1956,
+   "SVG_ATTRIBUTE": 952,
+   "CLASS_RULE": 37,
+   "OKAND": 1
+  },
+  "efter": {
+   "INLINE": 8801,
+   "TOKEN_HOOK": 2561,
+   "INHERITED": 1255,
+   "SVG_ATTRIBUTE": 952,
+   "CLASS_RULE": 37,
+   "OKAND": 4
+  }
+ },
+ "cPopulation": {
+  "kandidater_fore": 173,
+  "kandidater_efter": 173,
+  "cFamiljer_fore": 219,
+  "cFamiljer_efter": 219,
+  "slutsats": "Ingen C-kandidat och ingen C-familj rordes. Samtliga byten ligger i redan migrerade familjer."
+ },
+ "metodprov": 175
+}

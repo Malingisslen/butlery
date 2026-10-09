@@ -1,0 +1,7 @@
+butlery-delivery/1
+Den här filen markerar att ZIP-roten är en LEVERANS, inte en fristående
+repocheckout. fas0/check-manifest.mjs väljer då delivery-läge, där varje
+zip:/-post i manifestet är obligatorisk.
+
+Fas 0.11: auto-läget valde tidigare repo när samtliga sex leveransfiler saknades,
+vilket gav exit 0 för en tömd leverans. Markören gör valet entydigt.

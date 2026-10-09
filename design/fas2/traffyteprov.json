@@ -1,0 +1,99 @@
+{
+ "$schema": "butlery-traffyteprov/1",
+ "kontroll": "CHK-R-02",
+ "godkända": 15,
+ "total": 15,
+ "status": "godkänd",
+ "prov": [
+  {
+   "id": "A",
+   "vad": "self mäts som kontrollens eget renderade element",
+   "ok": true,
+   "diag": "measured {\"w\":48,\"h\":48,\"enhet\":\"css-px\"} basis self"
+  },
+  {
+   "id": "B",
+   "vad": "24 px ikon med explicit utpekad target mäts på targeten",
+   "ok": true,
+   "diag": "measured {\"w\":48,\"h\":48,\"enhet\":\"css-px\"} basis target:b-wrapper"
+  },
+  {
+   "id": "C",
+   "vad": "odeklarerad wrapper väljs ALDRIG heuristiskt",
+   "ok": true,
+   "diag": "unknown · ingen deklaration"
+  },
+  {
+   "id": "D",
+   "vad": "två noder med samma target-id ger unknown, inte ett val",
+   "ok": true,
+   "diag": "unknown · 2 element bär samma target-id \"d-dubbel\" — referensen är inte entydig"
+  },
+  {
+   "id": "E",
+   "vad": "target som saknas i DOM:en ger unknown",
+   "ok": true,
+   "diag": "unknown · deklarerad target \"e-finns-inte\" finns inte i DOM:en"
+  },
+  {
+   "id": "F",
+   "vad": "renderade måttet vinner över den deklarerade avsikten",
+   "ok": true,
+   "diag": "{\"w\":44,\"h\":48,\"enhet\":\"css-px\"} uppfyller 48: false"
+  },
+  {
+   "id": "G",
+   "vad": "separata träffytor unioneras aldrig till en påhittad bounding box",
+   "ok": true,
+   "diag": "unknown · öar 2 · 2 element bär samma target-id \"g-o\" — referensen är inte entydig"
+  },
+  {
+   "id": "H",
+   "vad": "kontroll utanför registrerad artefakt hamnar utanför produktnämnaren",
+   "ok": true,
+   "diag": "utanfor-artefakt"
+  },
+  {
+   "id": "I",
+   "vad": "data-hit utan semantisk roll hör till metadatauniversum, inte R-02",
+   "ok": true,
+   "diag": "1 post(er) · klass metadata-utan-roll"
+  },
+  {
+   "id": "J",
+   "vad": "löptextdeklaration tolkas aldrig heuristiskt",
+   "ok": true,
+   "diag": "unknown · avsikt 48 · mätvärde null"
+  },
+  {
+   "id": "P1",
+   "vad": "ren population passerar alla invarianter och täcker exakt en gång",
+   "ok": true,
+   "diag": "godkänd · klassumma 11 av 11"
+  },
+  {
+   "id": "P2",
+   "vad": "källtext skild från rendering fäller rapporten",
+   "ok": true,
+   "diag": "SOURCE DECLARATIONS 11 != RENDERED 10"
+  },
+  {
+   "id": "P3",
+   "vad": "data-hit-bokföring som inte går ihop fäller rapporten",
+   "ok": true,
+   "diag": "DATA-HIT 9 på kontroller + 1 utan roll = 10 != 13"
+  },
+  {
+   "id": "P4",
+   "vad": "out-of-artifact-poster redovisas och ingår aldrig i produktnämnaren",
+   "ok": true,
+   "diag": "med H: 1 utanför · nämnare 9 · utan H: 0"
+  },
+  {
+   "id": "P5",
+   "vad": "control×viewport får aldrig dela summeringsidentitet med metadata",
+   "ok": true,
+   "diag": "control×viewport och kontrollmetadata har samma tal — de är skilda mätenheter och får aldrig dela summeringsidentitet"
+  }
+ ]
+}

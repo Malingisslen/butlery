@@ -1,0 +1,78 @@
+// F2-R04 · AUTHORED THEME. Enda tillatna sattet att aktivera morkt lage.
+//
+// BAKGRUND. Morkt lage i den har korpusen aktiveras av attributet data-theme
+// pa artefakten. prefers-color-scheme gor ingenting. Ett batchskript satte
+// systemtemat, fick tillbaka ljusa varden och rapporterade dem som morka. Talet
+// blev trovardigt eftersom ingenting i kedjan kravde bevis for att morkret
+// faktiskt intraffat.
+//
+// Darfor: en anropare far ALDRIG anta att morkt galler bara for att den bad om
+// morkt. Tva oberoende sentinels maste halla — attributet OCH ett berknat
+// varde — annars ar korningen ogiltig och ingen conformance-output far skrivas.
+
+export const TEMAN = ['light', 'dark'];
+
+/** Reproducerbart fingeravtryck for en kallmangd. Ordningsoberoende. */
+export function kallfingeravtryck(ids) {
+  const sorterade = [...ids].sort();
+  let h = 2166136261;
+  for (const ch of sorterade.join('\0')) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  return { antal: sorterade.length, unika: new Set(sorterade).size,
+    fingeravtryck: h.toString(16).padStart(8, '0') };
+}
+
+/** Populationsgrind. Forvantad mangd mot faktisk. Fail closed. */
+export function populationsgrind(forvantade, faktiska) {
+  const F = new Set(forvantade), A = new Set(faktiska);
+  const dubbletter = faktiska.filter((x, i) => faktiska.indexOf(x) !== i);
+  const forvantadeBara = [...F].filter(x => !A.has(x));
+  const faktiskaBara = [...A].filter(x => !F.has(x));
+  const ok = forvantadeBara.length === 0 && faktiskaBara.length === 0 && dubbletter.length === 0;
+  return { ok, forvantatAntal: F.size, faktisktAntal: A.size,
+    EXPECTED_ONLY: forvantadeBara, ACTUAL_ONLY: faktiskaBara, dubbletter,
+    fingeravtryck: { forvantat: kallfingeravtryck(forvantade), faktiskt: kallfingeravtryck(faktiska) },
+    skal: ok ? null : 'kallmangden stammer inte: ' + forvantadeBara.length + ' saknas, ' +
+      faktiskaBara.length + ' oväntade, ' + dubbletter.length + ' dubbletter' };
+}
+
+/**
+ * Satter authored tema och BEVISAR att det slog igenom.
+ * Kors i sidan. Returnerar ett explicit resultat, aldrig bara "ok".
+ *
+ * sentinel: { art, ordinal, egenskap, ljus, mork } — ett kant temaberoende
+ * berknat varde. Utan sentinel kan ingen korning godkannas som mork.
+ */
+export const APPLICERA_TEMA = (tema, sentinel) => `(async () => {
+  const TEMA = ${JSON.stringify(tema)};
+  const S = ${JSON.stringify(sentinel)};
+  const las = () => { const it = document.getElementById(S.art);
+    if (!it) return null;
+    const el = [...it.querySelectorAll('*')][S.ordinal];
+    return el ? getComputedStyle(el).getPropertyValue(S.egenskap) : null; };
+  const fore = las();
+  const rorda = [];
+  for (const it of document.querySelectorAll('.sc-item[data-theme-support]')) {
+    const stod = (it.getAttribute('data-theme-support') || '').trim().split(/\\s+/);
+    if (!stod.includes(TEMA)) continue;
+    it.setAttribute('data-theme', TEMA); rorda.push(it.id); }
+  // ATTRIBUTSENTINEL: las tillbaka, lita aldrig pa skrivningen.
+  const attribut = rorda.map(id => document.getElementById(id).getAttribute('data-theme'));
+  const attributOk = attribut.length > 0 && attribut.every(a => a === TEMA);
+  await new Promise(r => requestAnimationFrame(() => r(1)));
+  const efter = las();
+  // BERKNAD SENTINEL: ett kant varde maste faktiskt ha bytt.
+  const vantat = TEMA === 'dark' ? S.mork : S.ljus;
+  const berknadOk = efter !== null && efter === vantat;
+  return { tema: TEMA, rorda, roradaAntal: rorda.length,
+    sentinel: { art: S.art, ordinal: S.ordinal, egenskap: S.egenskap,
+      fore, efter, vantat, bytte: fore !== efter },
+    attributSentinel: attributOk, berknadSentinel: berknadOk,
+    ok: attributOk && berknadOk,
+    skal: attributOk ? (berknadOk ? null :
+      'berknad sentinel visar ' + efter + ', vantat ' + vantat + ' — temat slog inte igenom')
+      : 'data-theme lastes inte tillbaka som ' + TEMA };
+})()`;
+
+/** Den frysta sentinelen for Butlery. Reproducerad i sentineltestet. */
+export const BUTLERY_SENTINEL = { art: 'arkivimport', ordinal: 3, egenskap: 'color',
+  ljus: 'rgb(55, 69, 58)', mork: 'rgb(147, 164, 141)' };

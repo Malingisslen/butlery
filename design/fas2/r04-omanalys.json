@@ -1,0 +1,4314 @@
+{
+ "familjer": [
+  {
+   "art": "start",
+   "familj": "start-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 5,
+   "malande": 5,
+   "ccPoster": 0
+  },
+  {
+   "art": "tomtrecept",
+   "familj": "tomtrecept-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 31,
+   "ccPoster": 1
+  },
+  {
+   "art": "offline",
+   "familj": "offline-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 30,
+   "ccPoster": 2
+  },
+  {
+   "art": "hemrecept",
+   "familj": "hemrecept-414",
+   "klass": "C",
+   "skal": "8 kandidater utan equivalence basis",
+   "kandidater": 27,
+   "malande": 83,
+   "ccPoster": 3
+  },
+  {
+   "art": "sortera",
+   "familj": "sortera-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 40,
+   "ccPoster": 2
+  },
+  {
+   "art": "laga",
+   "familj": "laga-926",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 49,
+   "ccPoster": 4
+  },
+  {
+   "art": "plussheet",
+   "familj": "plussheet-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 38,
+   "ccPoster": 5
+  },
+  {
+   "art": "snabbspara",
+   "familj": "snabbspara-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 31,
+   "ccPoster": 1
+  },
+  {
+   "art": "smartimport",
+   "familj": "smartimport-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 35,
+   "ccPoster": 2
+  },
+  {
+   "art": "skafferi",
+   "familj": "skafferi-414",
+   "klass": "C",
+   "skal": "9 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 63,
+   "ccPoster": 0
+  },
+  {
+   "art": "familj",
+   "familj": "familj-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 55,
+   "ccPoster": 3
+  },
+  {
+   "art": "installningar",
+   "familj": "installningar-414",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 62,
+   "ccPoster": 1
+  },
+  {
+   "art": "notiser",
+   "familj": "notiser-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 41,
+   "ccPoster": 6
+  },
+  {
+   "art": "vemat",
+   "familj": "vemat-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 35,
+   "ccPoster": 3
+  },
+  {
+   "art": "familjebetyg",
+   "familj": "familjebetyg-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 44,
+   "ccPoster": 2
+  },
+  {
+   "art": "placera",
+   "familj": "placera-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 92,
+   "ccPoster": 1
+  },
+  {
+   "art": "kalender",
+   "familj": "kalender-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 100,
+   "ccPoster": 0
+  },
+  {
+   "art": "inkopmerge",
+   "familj": "inkopmerge-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 38,
+   "ccPoster": 0
+  },
+  {
+   "art": "inkopmergeoppen",
+   "familj": "inkopmergeoppen-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 39,
+   "ccPoster": 0
+  },
+  {
+   "art": "onboarding",
+   "familj": "onboarding-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 62,
+   "ccPoster": 0
+  },
+  {
+   "art": "mer",
+   "familj": "mer-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 49,
+   "ccPoster": 0
+  },
+  {
+   "art": "vanner",
+   "familj": "vanner-414",
+   "klass": "C",
+   "skal": "11 kandidater utan equivalence basis",
+   "kandidater": 25,
+   "malande": 84,
+   "ccPoster": 1
+  },
+  {
+   "art": "meddelanden",
+   "familj": "meddelanden-414",
+   "klass": "C",
+   "skal": "10 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 60,
+   "ccPoster": 5
+  },
+  {
+   "art": "menysmak",
+   "familj": "menysmak-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 72,
+   "ccPoster": 1
+  },
+  {
+   "art": "statistik",
+   "familj": "statistik-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 65,
+   "ccPoster": 1
+  },
+  {
+   "art": "skrivsjalv",
+   "familj": "skrivsjalv-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 74,
+   "ccPoster": 4
+  },
+  {
+   "art": "fotoimport",
+   "familj": "fotoimport-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 26,
+   "ccPoster": 3
+  },
+  {
+   "art": "taggar",
+   "familj": "taggar-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 50,
+   "ccPoster": 4
+  },
+  {
+   "art": "allergener",
+   "familj": "allergener-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 76,
+   "ccPoster": 1
+  },
+  {
+   "art": "delatlista",
+   "familj": "delatlista-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 65,
+   "ccPoster": 4
+  },
+  {
+   "art": "delatmedmig",
+   "familj": "delatmedmig-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 41,
+   "ccPoster": 3
+  },
+  {
+   "art": "lagastaende320",
+   "familj": "lagastaende320-322",
+   "klass": "C",
+   "skal": "15 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 46,
+   "ccPoster": 1
+  },
+  {
+   "art": "chatt320",
+   "familj": "chatt320-322",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 45,
+   "ccPoster": 3
+  },
+  {
+   "art": "kontosakerhet",
+   "familj": "kontosakerhet-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 53,
+   "ccPoster": 2
+  },
+  {
+   "art": "grupp",
+   "familj": "grupp-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 91,
+   "ccPoster": 1
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 29,
+   "ccPoster": 3
+  },
+  {
+   "art": "ingredienssok",
+   "familj": "ingredienssok-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 49,
+   "ccPoster": 4
+  },
+  {
+   "art": "notisinstallningar",
+   "familj": "notisinstallningar-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 31,
+   "ccPoster": 1
+  },
+  {
+   "art": "faq",
+   "familj": "faq-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 20,
+   "ccPoster": 6
+  },
+  {
+   "art": "profil",
+   "familj": "profil-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 44,
+   "ccPoster": 2
+  },
+  {
+   "art": "familjeform",
+   "familj": "familjeform-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 75,
+   "ccPoster": 1
+  },
+  {
+   "art": "betygsoversikt",
+   "familj": "betygsoversikt-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 46,
+   "ccPoster": 3
+  },
+  {
+   "art": "forfragningar",
+   "familj": "forfragningar-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 37,
+   "ccPoster": 1
+  },
+  {
+   "art": "vanprofil",
+   "familj": "vanprofil-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 31,
+   "ccPoster": 1
+  },
+  {
+   "art": "publikprofil",
+   "familj": "publikprofil-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 26,
+   "ccPoster": 1
+  },
+  {
+   "art": "laggtillmedlemmar",
+   "familj": "laggtillmedlemmar-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 38,
+   "ccPoster": 2
+  },
+  {
+   "art": "nygruppchatt",
+   "familj": "nygruppchatt-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 38,
+   "ccPoster": 3
+  },
+  {
+   "art": "menyforhands",
+   "familj": "menyforhands-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 32,
+   "ccPoster": 1
+  },
+  {
+   "art": "tadelning",
+   "familj": "tadelning-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 30,
+   "ccPoster": 1
+  },
+  {
+   "art": "nydelatlista",
+   "familj": "nydelatlista-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 39,
+   "ccPoster": 1
+  },
+  {
+   "art": "delatlistor",
+   "familj": "delatlistor-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 46,
+   "ccPoster": 1
+  },
+  {
+   "art": "skafferivara",
+   "familj": "skafferivara-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 48,
+   "ccPoster": 0
+  },
+  {
+   "art": "redigera",
+   "familj": "redigera-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 52,
+   "ccPoster": 6
+  },
+  {
+   "art": "taggdetalj",
+   "familj": "taggdetalj-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 38,
+   "ccPoster": 1
+  },
+  {
+   "art": "aldersgrans",
+   "familj": "aldersgrans-414",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 6,
+   "malande": 6,
+   "ccPoster": 1
+  },
+  {
+   "art": "onboardingimport",
+   "familj": "onboardingimport-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 7,
+   "malande": 24,
+   "ccPoster": 3
+  },
+  {
+   "art": "epostverif",
+   "familj": "epostverif-414",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 4,
+   "malande": 10,
+   "ccPoster": 1
+  },
+  {
+   "art": "mfa",
+   "familj": "mfa-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 56,
+   "ccPoster": 2
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 37,
+   "ccPoster": 1
+  },
+  {
+   "art": "rapporter",
+   "familj": "rapporter-322",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 10,
+   "malande": 35,
+   "ccPoster": 5
+  },
+  {
+   "art": "rapporter412",
+   "familj": "rapporter412-414",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 10,
+   "malande": 35,
+   "ccPoster": 5
+  },
+  {
+   "art": "juridik",
+   "familj": "juridik-322",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 7,
+   "malande": 12,
+   "ccPoster": 1
+  },
+  {
+   "art": "konflikt",
+   "familj": "konflikt-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 40,
+   "ccPoster": 1
+  },
+  {
+   "art": "statetom",
+   "familj": "statetom-322",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 5,
+   "malande": 6,
+   "ccPoster": 0
+  },
+  {
+   "art": "statetom412",
+   "familj": "statetom412-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 5,
+   "malande": 6,
+   "ccPoster": 0
+  },
+  {
+   "art": "dialogradera",
+   "familj": "dialogradera-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 16,
+   "ccPoster": 0
+  },
+  {
+   "art": "dialogosparat",
+   "familj": "dialogosparat-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 17,
+   "ccPoster": 0
+  },
+  {
+   "art": "dialogratelimit",
+   "familj": "dialogratelimit-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 20,
+   "ccPoster": 0
+  },
+  {
+   "art": "delaark",
+   "familj": "delaark-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 35,
+   "ccPoster": 0
+  },
+  {
+   "art": "dialogvara",
+   "familj": "dialogvara-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 52,
+   "ccPoster": 1
+  },
+  {
+   "art": "dialogsparameny",
+   "familj": "dialogsparameny-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 27,
+   "ccPoster": 0
+  },
+  {
+   "art": "snackbars",
+   "familj": "snackbars-450",
+   "klass": "C",
+   "skal": "8 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 23,
+   "ccPoster": 4
+  },
+  {
+   "art": "kontextmeny",
+   "familj": "kontextmeny-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 25,
+   "ccPoster": 6
+  },
+  {
+   "art": "hem360",
+   "familj": "hem360-362",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 50,
+   "ccPoster": 0
+  },
+  {
+   "art": "storsttext",
+   "familj": "storsttext-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 37,
+   "ccPoster": 0
+  },
+  {
+   "art": "tangentbord",
+   "familj": "tangentbord-414",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 89,
+   "ccPoster": 0
+  },
+  {
+   "art": "langavarden",
+   "familj": "langavarden-362",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 56,
+   "ccPoster": 0
+  },
+  {
+   "art": "lagaliggande",
+   "familj": "lagaliggande-926",
+   "klass": "C",
+   "skal": "9 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 33,
+   "ccPoster": 0
+  },
+  {
+   "art": "formularmorkt",
+   "familj": "recepteditor-default-412",
+   "klass": "C",
+   "skal": "16 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 45,
+   "ccPoster": 0
+  },
+  {
+   "art": "arkmorkt",
+   "familj": "bottomark-default-412",
+   "klass": "C",
+   "skal": "10 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 23,
+   "ccPoster": 0
+  },
+  {
+   "art": "okandingrediens",
+   "familj": "okandingrediens-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 39,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoallergi",
+   "familj": "veckoallergi-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 59,
+   "ccPoster": 0
+  },
+  {
+   "art": "utloggningko",
+   "familj": "utloggningko-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 28,
+   "ccPoster": 0
+  },
+  {
+   "art": "utloggningtom",
+   "familj": "utloggningtom-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 16,
+   "ccPoster": 0
+  },
+  {
+   "art": "chattredigerat",
+   "familj": "chattredigerat-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 48,
+   "ccPoster": 0
+  },
+  {
+   "art": "chattmeny",
+   "familj": "chattmeny-414",
+   "klass": "C",
+   "skal": "8 kandidater utan equivalence basis",
+   "kandidater": 24,
+   "malande": 43,
+   "ccPoster": 0
+  },
+  {
+   "art": "safeareaios",
+   "familj": "safeareaios-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 44,
+   "ccPoster": 0
+  },
+  {
+   "art": "safeareaandroid",
+   "familj": "safeareaandroid-414",
+   "klass": "C",
+   "skal": "10 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 45,
+   "ccPoster": 0
+  },
+  {
+   "art": "hemtom",
+   "familj": "hemtom-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 48,
+   "ccPoster": 0
+  },
+  {
+   "art": "hemladdar",
+   "familj": "hemladdar-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 40,
+   "ccPoster": 0
+  },
+  {
+   "art": "hemoffline",
+   "familj": "hemoffline-414",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 25,
+   "malande": 61,
+   "ccPoster": 0
+  },
+  {
+   "art": "hemfel",
+   "familj": "hemfel-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 46,
+   "ccPoster": 0
+  },
+  {
+   "art": "receptkommentarer",
+   "familj": "receptkommentarer-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 38,
+   "ccPoster": 0
+  },
+  {
+   "art": "receptcooksnap",
+   "familj": "receptcooksnap-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 54,
+   "ccPoster": 0
+  },
+  {
+   "art": "receptbildfel",
+   "familj": "receptbildfel-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 39,
+   "ccPoster": 0
+  },
+  {
+   "art": "lagasubst",
+   "familj": "lagasubst-414",
+   "klass": "C",
+   "skal": "14 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 58,
+   "ccPoster": 0
+  },
+  {
+   "art": "lagatimers",
+   "familj": "lagatimers-414",
+   "klass": "C",
+   "skal": "15 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 46,
+   "ccPoster": 0
+  },
+  {
+   "art": "betygvemat",
+   "familj": "betygvemat-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 45,
+   "ccPoster": 0
+  },
+  {
+   "art": "betygperperson",
+   "familj": "betygperperson-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 40,
+   "ccPoster": 0
+  },
+  {
+   "art": "betygsammanslaget",
+   "familj": "betygsammanslaget-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 42,
+   "ccPoster": 0
+  },
+  {
+   "art": "betygvemarket",
+   "familj": "betygvemarket-414",
+   "klass": "C",
+   "skal": "9 kandidater utan equivalence basis",
+   "kandidater": 24,
+   "malande": 61,
+   "ccPoster": 0
+  },
+  {
+   "art": "familjmedlemsamtycke",
+   "familj": "familjmedlemsamtycke-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 26,
+   "malande": 111,
+   "ccPoster": 0
+  },
+  {
+   "art": "bredskal",
+   "familj": "bredskal-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "bredlandskap",
+   "familj": "bredlandskap-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "bredrecept",
+   "familj": "bredrecept-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "bredmeny",
+   "familj": "bredmeny-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "bredinkop",
+   "familj": "bredinkop-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "bredgrans",
+   "familj": "bredgrans-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbnormal",
+   "familj": "vmbnormal-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbtom",
+   "familj": "vmbtom-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbgenererar",
+   "familj": "vmbgenererar-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbomrostning",
+   "familj": "vmbomrostning-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbkonflikt",
+   "familj": "vmbkonflikt-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbdelvis",
+   "familj": "vmbdelvis-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmboffline",
+   "familj": "vmboffline-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "vmbflytta",
+   "familj": "vmbflytta-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcbnormal",
+   "familj": "rcbnormal-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcbportion",
+   "familj": "rcbportion-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcbofullstandigt",
+   "familj": "rcbofullstandigt-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcblaser",
+   "familj": "rcblaser-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcbarvegods",
+   "familj": "rcbarvegods-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcbkommentar",
+   "familj": "rcbkommentar-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "rcboffline",
+   "familj": "rcboffline-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "ikbnormal",
+   "familj": "ikbnormal-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "ikbtom",
+   "familj": "ikbtom-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "ikbdelad",
+   "familj": "ikbdelad-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "ikboffline",
+   "familj": "ikboffline-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "lgbrotation",
+   "familj": "lgbrotation-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "lgbgester",
+   "familj": "lgbgester-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "lgbtimer",
+   "familj": "lgbtimer-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "lgbutan",
+   "familj": "lgbutan-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "inkopkategoriordning",
+   "familj": "inkopkategoriordning-414",
+   "klass": "C",
+   "skal": "13 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 41,
+   "ccPoster": 0
+  },
+  {
+   "art": "inkopkategoribyte",
+   "familj": "inkopkategoribyte-414",
+   "klass": "C",
+   "skal": "8 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 22,
+   "ccPoster": 0
+  },
+  {
+   "art": "inkopbockad",
+   "familj": "inkopbockad-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 49,
+   "ccPoster": 0
+  },
+  {
+   "art": "inkopgenererad",
+   "familj": "inkopgenererad-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 22,
+   "ccPoster": 0
+  },
+  {
+   "art": "skafferivyn",
+   "familj": "skafferivyn-414",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 27,
+   "malande": 60,
+   "ccPoster": 0
+  },
+  {
+   "art": "skafferiflerval",
+   "familj": "skafferiflerval-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 37,
+   "ccPoster": 0
+  },
+  {
+   "art": "skafferilagg",
+   "familj": "skafferilagg-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 59,
+   "ccPoster": 0
+  },
+  {
+   "art": "skafferibas",
+   "familj": "skafferibas-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 33,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatinkorg",
+   "familj": "delatinkorg-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 47,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatvidare",
+   "familj": "delatvidare-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 32,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatlistaaktiv",
+   "familj": "delatlistaaktiv-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 67,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatlamna",
+   "familj": "delatlamna-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 23,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatlamnaagare",
+   "familj": "delatlamnaagare-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 23,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatmindel",
+   "familj": "delatmindel-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 94,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatnarvaro",
+   "familj": "delatnarvaro-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 76,
+   "ccPoster": 0
+  },
+  {
+   "art": "delatclaimkonflikt",
+   "familj": "delatclaimkonflikt-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 52,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoprompt",
+   "familj": "veckoprompt-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 43,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckogenererar",
+   "familj": "veckogenererar-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 22,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckochips",
+   "familj": "veckochips-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 36,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 61,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckodolda",
+   "familj": "veckodolda-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 41,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 29,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckobyt",
+   "familj": "veckobyt-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 26,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoplacering",
+   "familj": "veckoplacering-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 23,
+   "malande": 120,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoplaceringvald",
+   "familj": "veckoplaceringvald-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 90,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoplaceringavbryt",
+   "familj": "veckoplaceringavbryt-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 28,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoautoplacerad",
+   "familj": "veckoautoplacerad-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 23,
+   "malande": 77,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckokalender",
+   "familj": "veckokalender-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 27,
+   "malande": 135,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckonarvaro",
+   "familj": "veckonarvaro-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 27,
+   "malande": 109,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckonarvarooversikt",
+   "familj": "veckonarvarooversikt-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 200,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckooverflow",
+   "familj": "veckooverflow-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 26,
+   "malande": 87,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoflytta",
+   "familj": "veckoflytta-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 118,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoskrivover",
+   "familj": "veckoskrivover-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 34,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckoinkop",
+   "familj": "veckoinkop-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 27,
+   "malande": 71,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckorostning",
+   "familj": "veckorostning-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 60,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckorostlagg",
+   "familj": "veckorostlagg-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 56,
+   "ccPoster": 0
+  },
+  {
+   "art": "veckorostutgang",
+   "familj": "veckorostutgang-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 36,
+   "ccPoster": 0
+  },
+  {
+   "art": "authlogga",
+   "familj": "authlogga-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 33,
+   "ccPoster": 0
+  },
+  {
+   "art": "authskapa",
+   "familj": "authskapa-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 43,
+   "ccPoster": 0
+  },
+  {
+   "art": "authglomt",
+   "familj": "authglomt-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 23,
+   "ccPoster": 0
+  },
+  {
+   "art": "authepostklar",
+   "familj": "authepostklar-462",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 3,
+   "malande": 3,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbalderblock",
+   "familj": "onbalderblock-414",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 7,
+   "malande": 7,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbaldrefel",
+   "familj": "onbaldrefel-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 22,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbvalkommen",
+   "familj": "onbvalkommen-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 15,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbimport",
+   "familj": "onbimport-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 35,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbhoppa",
+   "familj": "onbhoppa-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 8,
+   "malande": 12,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbklar",
+   "familj": "onbklar-462",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 5,
+   "malande": 9,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbateruppta",
+   "familj": "onbateruppta-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 42,
+   "ccPoster": 0
+  },
+  {
+   "art": "onbjamforelse",
+   "familj": "onbjamforelse-panel",
+   "klass": "F",
+   "skal": "themeplikten ar inte positivt avgjord",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "behkamera",
+   "familj": "behkamera-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 17,
+   "ccPoster": 0
+  },
+  {
+   "art": "behfoton",
+   "familj": "behfoton-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 22,
+   "ccPoster": 0
+  },
+  {
+   "art": "behnotiser",
+   "familj": "behnotiser-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 28,
+   "ccPoster": 0
+  },
+  {
+   "art": "behlarm",
+   "familj": "behlarm-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 18,
+   "ccPoster": 0
+  },
+  {
+   "art": "lagatimernotis",
+   "familj": "lagatimernotis-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 21,
+   "ccPoster": 0
+  },
+  {
+   "art": "lagatimerutgangen",
+   "familj": "lagatimerutgangen-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 18,
+   "ccPoster": 0
+  },
+  {
+   "art": "imp2hamtar",
+   "familj": "imp2hamtar-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 38,
+   "ccPoster": 0
+  },
+  {
+   "art": "imp3granska",
+   "familj": "imp3granska-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 41,
+   "ccPoster": 0
+  },
+  {
+   "art": "impassist1",
+   "familj": "impassist1-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 77,
+   "ccPoster": 0
+  },
+  {
+   "art": "impassist2",
+   "familj": "impassist2-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 75,
+   "ccPoster": 0
+  },
+  {
+   "art": "impassist3",
+   "familj": "impassist3-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 88,
+   "ccPoster": 0
+  },
+  {
+   "art": "impassistavbryt",
+   "familj": "impassistavbryt-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 29,
+   "ccPoster": 0
+  },
+  {
+   "art": "impfoto",
+   "familj": "impfoto-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 40,
+   "ccPoster": 0
+  },
+  {
+   "art": "impfil",
+   "familj": "impfil-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 39,
+   "ccPoster": 0
+  },
+  {
+   "art": "impoffline",
+   "familj": "impoffline-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 57,
+   "ccPoster": 0
+  },
+  {
+   "art": "impdubblett",
+   "familj": "impdubblett-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 33,
+   "ccPoster": 0
+  },
+  {
+   "art": "editorutkastval",
+   "familj": "editorutkastval-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 26,
+   "ccPoster": 0
+  },
+  {
+   "art": "editorfelkontrakt",
+   "familj": "editorfelkontrakt-panel",
+   "klass": "F",
+   "skal": "themeplikten ar inte positivt avgjord",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "taggregel",
+   "familj": "taggregel-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 90,
+   "ccPoster": 0
+  },
+  {
+   "art": "kontodelvis",
+   "familj": "kontodelvis-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 31,
+   "ccPoster": 0
+  },
+  {
+   "art": "adminskal",
+   "familj": "adminskal-926",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 64,
+   "ccPoster": 0
+  },
+  {
+   "art": "modrapporter",
+   "familj": "modrapporter-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 74,
+   "ccPoster": 0
+  },
+  {
+   "art": "modminderarig",
+   "familj": "modminderarig-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 37,
+   "ccPoster": 0
+  },
+  {
+   "art": "moddolj",
+   "familj": "moddolj-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 20,
+   "ccPoster": 0
+  },
+  {
+   "art": "modradera",
+   "familj": "modradera-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 24,
+   "ccPoster": 0
+  },
+  {
+   "art": "cooksnapsynlighet",
+   "familj": "cooksnapsynlighet-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 16,
+   "malande": 37,
+   "ccPoster": 0
+  },
+  {
+   "art": "cooksnapgalleri",
+   "familj": "cooksnapgalleri-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 34,
+   "ccPoster": 0
+  },
+  {
+   "art": "vanprofildelning",
+   "familj": "vanprofildelning-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 55,
+   "ccPoster": 0
+  },
+  {
+   "art": "kontosamtycke",
+   "familj": "kontosamtycke-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 46,
+   "ccPoster": 0
+  },
+  {
+   "art": "samtyckeai",
+   "familj": "samtyckeai-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 34,
+   "ccPoster": 0
+  },
+  {
+   "art": "samtyckefornya",
+   "familj": "samtyckefornya-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 24,
+   "ccPoster": 0
+  },
+  {
+   "art": "kontodataexport",
+   "familj": "kontodataexport-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 40,
+   "ccPoster": 0
+  },
+  {
+   "art": "dataexportfel",
+   "familj": "dataexportfel-462",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 17,
+   "ccPoster": 0
+  },
+  {
+   "art": "kontosakerhetsvy",
+   "familj": "kontosakerhetsvy-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 63,
+   "ccPoster": 0
+  },
+  {
+   "art": "kontonotiser",
+   "familj": "kontonotiser-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 54,
+   "ccPoster": 0
+  },
+  {
+   "art": "mfalagg",
+   "familj": "mfalagg-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 36,
+   "ccPoster": 0
+  },
+  {
+   "art": "kontostatistik",
+   "familj": "kontostatistik-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 50,
+   "ccPoster": 0
+  },
+  {
+   "art": "statistikfullstandighet",
+   "familj": "statistikfullstandighet-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 38,
+   "ccPoster": 0
+  },
+  {
+   "art": "globunderhall",
+   "familj": "globunderhall-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 14,
+   "ccPoster": 0
+  },
+  {
+   "art": "globsession",
+   "familj": "globsession-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 24,
+   "ccPoster": 0
+  },
+  {
+   "art": "globsessiontyst",
+   "familj": "globsessiontyst-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 33,
+   "ccPoster": 0
+  },
+  {
+   "art": "globinstallera",
+   "familj": "globinstallera-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 37,
+   "ccPoster": 0
+  },
+  {
+   "art": "globceremoni",
+   "familj": "globceremoni-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 7,
+   "malande": 9,
+   "ccPoster": 0
+  },
+  {
+   "art": "globsvep",
+   "familj": "globsvep-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "flervalingang",
+   "familj": "flervalingang-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 50,
+   "ccPoster": 0
+  },
+  {
+   "art": "flerbar",
+   "familj": "flerbar-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 19,
+   "malande": 55,
+   "ccPoster": 0
+  },
+  {
+   "art": "flertagg",
+   "familj": "flertagg-414",
+   "klass": "C",
+   "skal": "8 kandidater utan equivalence basis",
+   "kandidater": 18,
+   "malande": 49,
+   "ccPoster": 0
+  },
+  {
+   "art": "flermeny",
+   "familj": "flermeny-414",
+   "klass": "C",
+   "skal": "9 kandidater utan equivalence basis",
+   "kandidater": 20,
+   "malande": 78,
+   "ccPoster": 0
+  },
+  {
+   "art": "flertaggsam",
+   "familj": "flertaggsam-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 17,
+   "malande": 49,
+   "ccPoster": 0
+  },
+  {
+   "art": "flergrupp",
+   "familj": "flergrupp-414",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 60,
+   "ccPoster": 0
+  },
+  {
+   "art": "fbknapp",
+   "familj": "fbknapp-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 51,
+   "ccPoster": 0
+  },
+  {
+   "art": "fbformular",
+   "familj": "fbformular-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 63,
+   "ccPoster": 0
+  },
+  {
+   "art": "fbinkorgvy",
+   "familj": "fbinkorgvy-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "fbkortmonster",
+   "familj": "fbkortmonster-panel",
+   "klass": "F",
+   "skal": "themeplikten ar inte positivt avgjord",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  },
+  {
+   "art": "fbanmal",
+   "familj": "fbanmal-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 50,
+   "ccPoster": 0
+  },
+  {
+   "art": "fbblockerade",
+   "familj": "fbblockerade-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 21,
+   "malande": 52,
+   "ccPoster": 0
+  },
+  {
+   "art": "socflode",
+   "familj": "socflode-414",
+   "klass": "C",
+   "skal": "8 kandidater utan equivalence basis",
+   "kandidater": 24,
+   "malande": 77,
+   "ccPoster": 0
+  },
+  {
+   "art": "soctomtingavanner",
+   "familj": "soctomtingavanner-412",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 5,
+   "malande": 5,
+   "ccPoster": 0
+  },
+  {
+   "art": "soctomttyst",
+   "familj": "soctomttyst-412",
+   "klass": "A",
+   "skal": "samtliga kandidater redan etablerade",
+   "kandidater": 4,
+   "malande": 4,
+   "ccPoster": 0
+  },
+  {
+   "art": "socknuff",
+   "familj": "socknuff-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 50,
+   "ccPoster": 0
+  },
+  {
+   "art": "socbegar",
+   "familj": "socbegar-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 17,
+   "ccPoster": 0
+  },
+  {
+   "art": "socintegritet",
+   "familj": "socintegritet-414",
+   "klass": "C",
+   "skal": "6 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 52,
+   "ccPoster": 0
+  },
+  {
+   "art": "socomrostning",
+   "familj": "socomrostning-414",
+   "klass": "C",
+   "skal": "9 kandidater utan equivalence basis",
+   "kandidater": 22,
+   "malande": 46,
+   "ccPoster": 0
+  },
+  {
+   "art": "socreaktion",
+   "familj": "socreaktion-panel",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 45,
+   "ccPoster": 0
+  },
+  {
+   "art": "socgruppinfo",
+   "familj": "socgruppinfo-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 46,
+   "ccPoster": 0
+  },
+  {
+   "art": "socoverlat",
+   "familj": "socoverlat-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 30,
+   "ccPoster": 0
+  },
+  {
+   "art": "socdelatvan",
+   "familj": "socdelatvan-414",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 31,
+   "ccPoster": 0
+  },
+  {
+   "art": "insthushall",
+   "familj": "insthushall-414",
+   "klass": "C",
+   "skal": "5 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 33,
+   "ccPoster": 0
+  },
+  {
+   "art": "instportion",
+   "familj": "instportion-panel",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 9,
+   "malande": 27,
+   "ccPoster": 0
+  },
+  {
+   "art": "jurriktlinjer",
+   "familj": "jurriktlinjer-414",
+   "klass": "C",
+   "skal": "1 kandidater utan equivalence basis",
+   "kandidater": 7,
+   "malande": 23,
+   "ccPoster": 0
+  },
+  {
+   "art": "sokpanel",
+   "familj": "sokpanel-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 24,
+   "malande": 70,
+   "ccPoster": 0
+  },
+  {
+   "art": "admmatning",
+   "familj": "admmatning-panel",
+   "klass": "F",
+   "skal": "themeplikten ar inte positivt avgjord",
+   "kandidater": 18,
+   "malande": 60,
+   "ccPoster": 0
+  },
+  {
+   "art": "admdrift",
+   "familj": "admdrift-panel",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 41,
+   "ccPoster": 0
+  },
+  {
+   "art": "kompbild",
+   "familj": "kompbild-panel",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 15,
+   "malande": 30,
+   "ccPoster": 0
+  },
+  {
+   "art": "kompdubblett",
+   "familj": "kompdubblett-panel",
+   "klass": "C",
+   "skal": "2 kandidater utan equivalence basis",
+   "kandidater": 10,
+   "malande": 47,
+   "ccPoster": 0
+  },
+  {
+   "art": "kompmallar",
+   "familj": "kompmallar-panel",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 11,
+   "malande": 23,
+   "ccPoster": 0
+  },
+  {
+   "art": "komprost",
+   "familj": "komprost-414",
+   "klass": "C",
+   "skal": "7 kandidater utan equivalence basis",
+   "kandidater": 12,
+   "malande": 18,
+   "ccPoster": 0
+  },
+  {
+   "art": "kompsason",
+   "familj": "kompsason-panel",
+   "klass": "F",
+   "skal": "themeplikten ar inte positivt avgjord",
+   "kandidater": 9,
+   "malande": 11,
+   "ccPoster": 0
+  },
+  {
+   "art": "kompkalla",
+   "familj": "kompkalla-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 24,
+   "ccPoster": 0
+  },
+  {
+   "art": "kompkallahel",
+   "familj": "kompkallahel-414",
+   "klass": "C",
+   "skal": "4 kandidater utan equivalence basis",
+   "kandidater": 14,
+   "malande": 24,
+   "ccPoster": 0
+  },
+  {
+   "art": "komparvegods",
+   "familj": "komparvegods-panel",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 13,
+   "malande": 24,
+   "ccPoster": 0
+  },
+  {
+   "art": "installergen",
+   "familj": "installergen-panel",
+   "klass": "C",
+   "skal": "3 kandidater utan equivalence basis",
+   "kandidater": 8,
+   "malande": 14,
+   "ccPoster": 0
+  },
+  {
+   "art": "surfplatta",
+   "familj": "surfplatta-panel",
+   "klass": "F",
+   "skal": "ingen malande deklaration i nagon produktyta",
+   "kandidater": 0,
+   "malande": 0,
+   "ccPoster": 0
+  }
+ ],
+ "kandidater": [
+  {
+   "id": "yta-app|#24382c",
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "dekl": 17,
+   "art": 17,
+   "klass": "B",
+   "mork": "#17251d",
+   "grund": "VERIFIED_TOKEN_HOOK",
+   "evidens": "hooken --surface-app i .sc-phone och .sc-card, verifierad i pilot och 32-batch"
+  },
+  {
+   "id": "text-innehall|#dca968",
+   "roll": "text-innehall",
+   "ljus": "#dca968",
+   "dekl": 4,
+   "art": 4,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "yta-upphojd|rgba(245,244,237,0.18)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(245,244,237,0.18)",
+   "dekl": 6,
+   "art": 5,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#ce7c1e",
+   "roll": "yta-upphojd",
+   "ljus": "#ce7c1e",
+   "dekl": 104,
+   "art": 66,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-innehall|#c9d3c4",
+   "roll": "text-innehall",
+   "ljus": "#c9d3c4",
+   "dekl": 25,
+   "art": 14,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "text-innehall|#24382c",
+   "roll": "text-innehall",
+   "ljus": "#24382c",
+   "dekl": 846,
+   "art": 207,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#24382c",
+   "roll": "yta-upphojd",
+   "ljus": "#24382c",
+   "dekl": 285,
+   "art": 142,
+   "klass": "ateranvand",
+   "mork": "#17251d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#f5f4ed",
+   "roll": "yta-upphojd",
+   "ljus": "#f5f4ed",
+   "dekl": 227,
+   "art": 115,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-innehall|#627061",
+   "roll": "text-innehall",
+   "ljus": "#627061",
+   "dekl": 611,
+   "art": 164,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#627061",
+   "roll": "ikon-fristaende",
+   "ljus": "#627061",
+   "dekl": 85,
+   "art": 31,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "dekl": 56,
+   "art": 45,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "ram-behallare|#24382c",
+   "roll": "ram-behallare",
+   "ljus": "#24382c",
+   "dekl": 331,
+   "art": 64,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#f5f4ed",
+   "roll": "ikon-fristaende",
+   "ljus": "#f5f4ed",
+   "dekl": 98,
+   "art": 52,
+   "klass": "ateranvand",
+   "mork": "#f5f4ed",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#f5f4ed",
+   "roll": "text-innehall",
+   "ljus": "#f5f4ed",
+   "dekl": 313,
+   "art": 136,
+   "klass": "ateranvand",
+   "mork": "#f5f4ed",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#93a48d",
+   "roll": "ikon-fristaende",
+   "ljus": "#93a48d",
+   "dekl": 35,
+   "art": 13,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "text-innehall|#93a48d",
+   "roll": "text-innehall",
+   "ljus": "#93a48d",
+   "dekl": 62,
+   "art": 26,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "ram-behallare|#f5f4ed",
+   "roll": "ram-behallare",
+   "ljus": "#f5f4ed",
+   "dekl": 106,
+   "art": 17,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-upphojd|#e6ead9",
+   "roll": "yta-upphojd",
+   "ljus": "#e6ead9",
+   "dekl": 252,
+   "art": 132,
+   "klass": "ateranvand",
+   "mork": "#17251d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#8a5212",
+   "roll": "text-innehall",
+   "ljus": "#8a5212",
+   "dekl": 48,
+   "art": 33,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#8a5212",
+   "roll": "ikon-fristaende",
+   "ljus": "#8a5212",
+   "dekl": 28,
+   "art": 21,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#37453a",
+   "roll": "ikon-fristaende",
+   "ljus": "#37453a",
+   "dekl": 46,
+   "art": 39,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#24382c",
+   "roll": "ikon-fristaende",
+   "ljus": "#24382c",
+   "dekl": 57,
+   "art": 35,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#e09d50",
+   "roll": "text-innehall",
+   "ljus": "#e09d50",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "ram-behallare|rgba(245,244,237,0.35)",
+   "roll": "ram-behallare",
+   "ljus": "rgba(245,244,237,0.35)",
+   "dekl": 12,
+   "art": 4,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-behallare|#7d897c",
+   "roll": "ram-behallare",
+   "ljus": "#7d897c",
+   "dekl": 473,
+   "art": 55,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#37453a",
+   "roll": "text-innehall",
+   "ljus": "#37453a",
+   "dekl": 543,
+   "art": 149,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-kontroll|#24382c",
+   "roll": "ram-kontroll",
+   "ljus": "#24382c",
+   "dekl": 505,
+   "art": 87,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-kontroll|#24382c",
+   "roll": "text-kontroll",
+   "ljus": "#24382c",
+   "dekl": 380,
+   "art": 119,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#24382c",
+   "roll": "ikon-kontroll",
+   "ljus": "#24382c",
+   "dekl": 126,
+   "art": 73,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-behallare|#ccd1c2",
+   "roll": "ram-behallare",
+   "ljus": "#ccd1c2",
+   "dekl": 974,
+   "art": 161,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.18)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#a15a0a",
+   "roll": "ikon-fristaende",
+   "ljus": "#a15a0a",
+   "dekl": 37,
+   "art": 10,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-behallare|#d8b784",
+   "roll": "ram-behallare",
+   "ljus": "#d8b784",
+   "dekl": 39,
+   "art": 11,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#3f6b4f",
+   "roll": "text-innehall",
+   "ljus": "#3f6b4f",
+   "dekl": 39,
+   "art": 26,
+   "klass": "ateranvand",
+   "mork": "#8fb89a",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|rgba(36,56,44,0.4)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.4)",
+   "dekl": 22,
+   "art": 22,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#7d897c",
+   "roll": "yta-upphojd",
+   "ljus": "#7d897c",
+   "dekl": 11,
+   "art": 11,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#8a5212",
+   "roll": "yta-upphojd",
+   "ljus": "#8a5212",
+   "dekl": 4,
+   "art": 3,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-behallare|rgba(245,244,237,0.18)",
+   "roll": "ram-behallare",
+   "ljus": "rgba(245,244,237,0.18)",
+   "dekl": 28,
+   "art": 8,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-kontroll|#f5f4ed",
+   "roll": "ram-kontroll",
+   "ljus": "#f5f4ed",
+   "dekl": 32,
+   "art": 7,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#f5f4ed",
+   "roll": "text-kontroll",
+   "ljus": "#f5f4ed",
+   "dekl": 106,
+   "art": 57,
+   "klass": "ateranvand",
+   "mork": "#f5f4ed",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|rgba(245,244,237,0.6)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(245,244,237,0.6)",
+   "dekl": 2,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ikon-fristaende|#17251d",
+   "roll": "ikon-fristaende",
+   "ljus": "#17251d",
+   "dekl": 3,
+   "art": 2,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-fristaende|#9c3b23",
+   "roll": "ikon-fristaende",
+   "ljus": "#9c3b23",
+   "dekl": 11,
+   "art": 11,
+   "klass": "ateranvand",
+   "mork": "#de9078",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-behallare|#627061",
+   "roll": "ram-behallare",
+   "ljus": "#627061",
+   "dekl": 13,
+   "art": 4,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "dekl": 50,
+   "art": 28,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "dekl": 78,
+   "art": 67,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "text-kontroll|#17251d",
+   "roll": "text-kontroll",
+   "ljus": "#17251d",
+   "dekl": 60,
+   "art": 58,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-behallare|#ce7c1e",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "dekl": 13,
+   "art": 9,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "text-innehall|#9c3b23",
+   "roll": "text-innehall",
+   "ljus": "#9c3b23",
+   "dekl": 26,
+   "art": 22,
+   "klass": "ateranvand",
+   "mork": "#de9078",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#4a5c43",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "dekl": 39,
+   "art": 28,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#24382c",
+   "roll": "yta-kontroll",
+   "ljus": "#24382c",
+   "dekl": 89,
+   "art": 54,
+   "klass": "ateranvand",
+   "mork": "#17251d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "dekl": 142,
+   "art": 35,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ikon-fristaende|#000000",
+   "roll": "ikon-fristaende",
+   "ljus": "#000000",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-fristaende|#dca968",
+   "roll": "ikon-fristaende",
+   "ljus": "#dca968",
+   "dekl": 3,
+   "art": 2,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-fristaende|#7d897c",
+   "roll": "ikon-fristaende",
+   "ljus": "#7d897c",
+   "dekl": 13,
+   "art": 8,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#3f6b4f",
+   "roll": "ikon-fristaende",
+   "ljus": "#3f6b4f",
+   "dekl": 13,
+   "art": 13,
+   "klass": "ateranvand",
+   "mork": "#8fb89a",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-innehall|#a15a0a",
+   "roll": "text-innehall",
+   "ljus": "#a15a0a",
+   "dekl": 13,
+   "art": 12,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-kontroll|#ccd1c2",
+   "roll": "ram-kontroll",
+   "ljus": "#ccd1c2",
+   "dekl": 456,
+   "art": 48,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.18)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-kontroll|#a15a0a",
+   "roll": "text-kontroll",
+   "ljus": "#a15a0a",
+   "dekl": 18,
+   "art": 15,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#a15a0a",
+   "roll": "ikon-kontroll",
+   "ljus": "#a15a0a",
+   "dekl": 13,
+   "art": 5,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#627061",
+   "roll": "yta-upphojd",
+   "ljus": "#627061",
+   "dekl": 29,
+   "art": 22,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#b4bfa6",
+   "roll": "yta-upphojd",
+   "ljus": "#b4bfa6",
+   "dekl": 5,
+   "art": 4,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ikon-kontroll|#7d897c",
+   "roll": "ikon-kontroll",
+   "ljus": "#7d897c",
+   "dekl": 42,
+   "art": 16,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#627061",
+   "roll": "ikon-kontroll",
+   "ljus": "#627061",
+   "dekl": 49,
+   "art": 20,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "dekl": 18,
+   "art": 9,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|rgba(245,244,237,0.35)",
+   "roll": "ram-kontroll",
+   "ljus": "rgba(245,244,237,0.35)",
+   "dekl": 41,
+   "art": 4,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-kontroll|#f5f4ed",
+   "roll": "ikon-kontroll",
+   "ljus": "#f5f4ed",
+   "dekl": 110,
+   "art": 78,
+   "klass": "ateranvand",
+   "mork": "#f5f4ed",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#2f4437",
+   "roll": "yta-upphojd",
+   "ljus": "#2f4437",
+   "dekl": 4,
+   "art": 3,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#17251d",
+   "roll": "yta-upphojd",
+   "ljus": "#17251d",
+   "dekl": 4,
+   "art": 4,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-innehall|#8fb89a",
+   "roll": "text-innehall",
+   "ljus": "#8fb89a",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "ikon-fristaende|#8fb89a",
+   "roll": "ikon-fristaende",
+   "ljus": "#8fb89a",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-kontroll|rgba(245,244,237,0.18)",
+   "roll": "ram-kontroll",
+   "ljus": "rgba(245,244,237,0.18)",
+   "dekl": 11,
+   "art": 4,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#93a48d",
+   "roll": "text-kontroll",
+   "ljus": "#93a48d",
+   "dekl": 22,
+   "art": 9,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#c9d3c4",
+   "roll": "text-kontroll",
+   "ljus": "#c9d3c4",
+   "dekl": 10,
+   "art": 4,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-innehall|#4a5c43",
+   "roll": "text-innehall",
+   "ljus": "#4a5c43",
+   "dekl": 5,
+   "art": 4,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "ram-behallare|#e6ead9",
+   "roll": "ram-behallare",
+   "ljus": "#e6ead9",
+   "dekl": 35,
+   "art": 9,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-upphojd|#a9b2a0",
+   "roll": "yta-upphojd",
+   "ljus": "#a9b2a0",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#3f6b4f",
+   "roll": "yta-upphojd",
+   "ljus": "#3f6b4f",
+   "dekl": 17,
+   "art": 10,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#9c3b23",
+   "roll": "yta-upphojd",
+   "ljus": "#9c3b23",
+   "dekl": 11,
+   "art": 6,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ikon-kontroll|#93a48d",
+   "roll": "ikon-kontroll",
+   "ljus": "#93a48d",
+   "dekl": 45,
+   "art": 16,
+   "klass": "C",
+   "mork": "#f5f4ed",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-kontroll-b1, ljus #f5f4ed)"
+  },
+  {
+   "id": "text-innehall|#5b6959",
+   "roll": "text-innehall",
+   "ljus": "#5b6959",
+   "dekl": 113,
+   "art": 43,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-kontroll|#7d897c",
+   "roll": "ram-kontroll",
+   "ljus": "#7d897c",
+   "dekl": 339,
+   "art": 36,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#9c3b23",
+   "roll": "yta-kontroll",
+   "ljus": "#9c3b23",
+   "dekl": 9,
+   "art": 7,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-behallare|#3f6b4f",
+   "roll": "ram-behallare",
+   "ljus": "#3f6b4f",
+   "dekl": 2,
+   "art": 2,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-kontroll|#dca968",
+   "roll": "text-kontroll",
+   "ljus": "#dca968",
+   "dekl": 14,
+   "art": 11,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-behallare|#9c3b23",
+   "roll": "ram-behallare",
+   "ljus": "#9c3b23",
+   "dekl": 39,
+   "art": 20,
+   "klass": "ateranvand",
+   "mork": "#de9078",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#de9078",
+   "roll": "ikon-fristaende",
+   "ljus": "#de9078",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-fristaende|#e09d50",
+   "roll": "ikon-fristaende",
+   "ljus": "#e09d50",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-behallare|#93a48d",
+   "roll": "ram-behallare",
+   "ljus": "#93a48d",
+   "dekl": 2,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-kontroll|#17251d",
+   "roll": "ikon-kontroll",
+   "ljus": "#17251d",
+   "dekl": 18,
+   "art": 17,
+   "klass": "C",
+   "mork": "#f5f4ed",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-kontroll-b1, ljus #f5f4ed)"
+  },
+  {
+   "id": "text-kontroll|#627061",
+   "roll": "text-kontroll",
+   "ljus": "#627061",
+   "dekl": 149,
+   "art": 48,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#37453a",
+   "roll": "ikon-kontroll",
+   "ljus": "#37453a",
+   "dekl": 21,
+   "art": 13,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#dfe0d6",
+   "roll": "yta-upphojd",
+   "ljus": "#dfe0d6",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#c3c6ba",
+   "roll": "yta-upphojd",
+   "ljus": "#c3c6ba",
+   "dekl": 2,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-app|#17251d",
+   "roll": "yta-app",
+   "ljus": "#17251d",
+   "dekl": 8,
+   "art": 8,
+   "klass": "B",
+   "mork": "#17251d",
+   "grund": "VERIFIED_TOKEN_HOOK",
+   "evidens": "hooken --surface-app i .sc-phone och .sc-card, verifierad i pilot och 32-batch"
+  },
+  {
+   "id": "ikon-kontroll|#dca968",
+   "roll": "ikon-kontroll",
+   "ljus": "#dca968",
+   "dekl": 4,
+   "art": 4,
+   "klass": "C",
+   "mork": "#f5f4ed",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-kontroll-b1, ljus #f5f4ed)"
+  },
+  {
+   "id": "ram-behallare|#de9078",
+   "roll": "ram-behallare",
+   "ljus": "#de9078",
+   "dekl": 4,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "text-innehall|#de9078",
+   "roll": "text-innehall",
+   "ljus": "#de9078",
+   "dekl": 3,
+   "art": 2,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "yta-kontroll|#17251d",
+   "roll": "yta-kontroll",
+   "ljus": "#17251d",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#2f4437",
+   "roll": "yta-kontroll",
+   "ljus": "#2f4437",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "text-kontroll|#a9b2a0",
+   "roll": "text-kontroll",
+   "ljus": "#a9b2a0",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-kontroll|#de9078",
+   "roll": "ram-kontroll",
+   "ljus": "#de9078",
+   "dekl": 4,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#de9078",
+   "roll": "text-kontroll",
+   "ljus": "#de9078",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-upphojd|rgba(23,37,29,0.6)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(23,37,29,0.6)",
+   "dekl": 3,
+   "art": 3,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|rgba(245,244,237,0.35)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(245,244,237,0.35)",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|rgba(245,244,237,0.4)",
+   "roll": "ram-kontroll",
+   "ljus": "rgba(245,244,237,0.4)",
+   "dekl": 28,
+   "art": 3,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#37453a",
+   "roll": "text-kontroll",
+   "ljus": "#37453a",
+   "dekl": 53,
+   "art": 28,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-kontroll|#9c3b23",
+   "roll": "text-kontroll",
+   "ljus": "#9c3b23",
+   "dekl": 32,
+   "art": 26,
+   "klass": "ateranvand",
+   "mork": "#de9078",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#9c3b23",
+   "roll": "ikon-kontroll",
+   "ljus": "#9c3b23",
+   "dekl": 7,
+   "art": 6,
+   "klass": "ateranvand",
+   "mork": "#de9078",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-app|#f5f4ed",
+   "roll": "yta-app",
+   "ljus": "#f5f4ed",
+   "dekl": 1,
+   "art": 1,
+   "klass": "B",
+   "mork": "#17251d",
+   "grund": "VERIFIED_TOKEN_HOOK",
+   "evidens": "hooken --surface-app i .sc-phone och .sc-card, verifierad i pilot och 32-batch"
+  },
+  {
+   "id": "yta-upphojd|#de9078",
+   "roll": "yta-upphojd",
+   "ljus": "#de9078",
+   "dekl": 4,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-kontroll|#8a5212",
+   "roll": "text-kontroll",
+   "ljus": "#8a5212",
+   "dekl": 23,
+   "art": 14,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#8a5212",
+   "roll": "ikon-kontroll",
+   "ljus": "#8a5212",
+   "dekl": 1,
+   "art": 1,
+   "klass": "ateranvand",
+   "mork": "#dca968",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-platshallare|#e6ead9",
+   "roll": "yta-platshallare",
+   "ljus": "#e6ead9",
+   "dekl": 11,
+   "art": 2,
+   "klass": "ateranvand",
+   "mork": "#17251d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#e6ead9",
+   "roll": "yta-kontroll",
+   "ljus": "#e6ead9",
+   "dekl": 92,
+   "art": 41,
+   "klass": "ateranvand",
+   "mork": "#17251d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-fristaende|#788477",
+   "roll": "ikon-fristaende",
+   "ljus": "#788477",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#5b6959",
+   "roll": "text-kontroll",
+   "ljus": "#5b6959",
+   "dekl": 52,
+   "art": 22,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#5b6959",
+   "roll": "ikon-kontroll",
+   "ljus": "#5b6959",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#f5f4ed",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-kontroll-b1, ljus #f5f4ed)"
+  },
+  {
+   "id": "ikon-fristaende|#5b6959",
+   "roll": "ikon-fristaende",
+   "ljus": "#5b6959",
+   "dekl": 1,
+   "art": 1,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "text-kontroll|#8fb89a",
+   "roll": "text-kontroll",
+   "ljus": "#8fb89a",
+   "dekl": 2,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "text-innehall|#a9b2a0",
+   "roll": "text-innehall",
+   "ljus": "#a9b2a0",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "yta-upphojd|#dca968",
+   "roll": "yta-upphojd",
+   "ljus": "#dca968",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ikon-fristaende|#c9d3c4",
+   "roll": "ikon-fristaende",
+   "ljus": "#c9d3c4",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-kontroll|#4a5c43",
+   "roll": "yta-kontroll",
+   "ljus": "#4a5c43",
+   "dekl": 8,
+   "art": 5,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#627061",
+   "roll": "yta-kontroll",
+   "ljus": "#627061",
+   "dekl": 12,
+   "art": 11,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#3f6b4f",
+   "roll": "yta-kontroll",
+   "ljus": "#3f6b4f",
+   "dekl": 16,
+   "art": 11,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#93a48d",
+   "roll": "yta-kontroll",
+   "ljus": "#93a48d",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|rgba(36,56,44,0.35)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.35)",
+   "dekl": 21,
+   "art": 21,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|#d8b784",
+   "roll": "ram-kontroll",
+   "ljus": "#d8b784",
+   "dekl": 29,
+   "art": 9,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#4a5c50",
+   "roll": "yta-kontroll",
+   "ljus": "#4a5c50",
+   "dekl": 3,
+   "art": 3,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#a9b2a0",
+   "roll": "yta-kontroll",
+   "ljus": "#a9b2a0",
+   "dekl": 4,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|#9c3b23",
+   "roll": "ram-kontroll",
+   "ljus": "#9c3b23",
+   "dekl": 73,
+   "art": 14,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#8a5212",
+   "roll": "yta-kontroll",
+   "ljus": "#8a5212",
+   "dekl": 11,
+   "art": 4,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#37453a",
+   "roll": "yta-kontroll",
+   "ljus": "#37453a",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#5b6959",
+   "roll": "yta-kontroll",
+   "ljus": "#5b6959",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-behallare|rgba(245,244,237,0.4)",
+   "roll": "ram-behallare",
+   "ljus": "rgba(245,244,237,0.4)",
+   "dekl": 120,
+   "art": 30,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-kontroll|#f2ddd6",
+   "roll": "yta-kontroll",
+   "ljus": "#f2ddd6",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|#f0eee2",
+   "roll": "yta-kontroll",
+   "ljus": "#f0eee2",
+   "dekl": 3,
+   "art": 3,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-behallare|#4a5c50",
+   "roll": "ram-behallare",
+   "ljus": "#4a5c50",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-kontroll|#dfe8dc",
+   "roll": "yta-kontroll",
+   "ljus": "#dfe8dc",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "text-kontroll|#3f6b4f",
+   "roll": "text-kontroll",
+   "ljus": "#3f6b4f",
+   "dekl": 1,
+   "art": 1,
+   "klass": "B",
+   "mork": "#8fb89a",
+   "grund": "EXPLICIT_PAIR_TRANSFORM",
+   "evidens": "2 explicita morka par visar transformationen #3f6b4f -> #8fb89a"
+  },
+  {
+   "id": "ram-behallare|#5b6959",
+   "roll": "ram-behallare",
+   "ljus": "#5b6959",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-behallare|#37453a",
+   "roll": "ram-behallare",
+   "ljus": "#37453a",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "text-kontroll|#e5a08a",
+   "roll": "text-kontroll",
+   "ljus": "#e5a08a",
+   "dekl": 1,
+   "art": 1,
+   "klass": "ateranvand",
+   "mork": "#c9d3c4",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ikon-kontroll|#e5a08a",
+   "roll": "ikon-kontroll",
+   "ljus": "#e5a08a",
+   "dekl": 1,
+   "art": 1,
+   "klass": "ateranvand",
+   "mork": "#de9078",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-kontroll|#e6ead9",
+   "roll": "ram-kontroll",
+   "ljus": "#e6ead9",
+   "dekl": 9,
+   "art": 4,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-behallare|#dca968",
+   "roll": "ram-behallare",
+   "ljus": "#dca968",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-kontroll|#ccd1c2",
+   "roll": "yta-kontroll",
+   "ljus": "#ccd1c2",
+   "dekl": 6,
+   "art": 4,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|rgba(36,56,44,0.6)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.6)",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-innehall|rgba(245,244,237,0.6)",
+   "roll": "text-innehall",
+   "ljus": "rgba(245,244,237,0.6)",
+   "dekl": 5,
+   "art": 3,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  },
+  {
+   "id": "text-kontroll|#e09d50",
+   "roll": "text-kontroll",
+   "ljus": "#e09d50",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-behallare|#8a5212",
+   "roll": "ram-behallare",
+   "ljus": "#8a5212",
+   "dekl": 8,
+   "art": 5,
+   "klass": "ateranvand",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "ram-kontroll|#8a5212",
+   "roll": "ram-kontroll",
+   "ljus": "#8a5212",
+   "dekl": 6,
+   "art": 2,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-kontroll|rgba(36,56,44,0.35)",
+   "roll": "yta-kontroll",
+   "ljus": "rgba(36,56,44,0.35)",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|rgba(36,56,44,0.18)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.18)",
+   "dekl": 12,
+   "art": 4,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-kontroll|rgba(36,56,44,0.18)",
+   "roll": "yta-kontroll",
+   "ljus": "rgba(36,56,44,0.18)",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#4a5c50",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c50",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-kontroll|#7d897c",
+   "roll": "text-kontroll",
+   "ljus": "#7d897c",
+   "dekl": 1,
+   "art": 1,
+   "klass": "ateranvand",
+   "mork": "#93a48d",
+   "grund": "IDENTICAL_CANDIDATE",
+   "evidens": "identisk kandidat: samma roll OCH samma ljusvarde"
+  },
+  {
+   "id": "yta-upphojd|#d8b784",
+   "roll": "yta-upphojd",
+   "ljus": "#d8b784",
+   "dekl": 2,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-behallare|#3f5145",
+   "roll": "ram-behallare",
+   "ljus": "#3f5145",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "dekl": 27,
+   "art": 25,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-behallare|#a15a0a",
+   "roll": "ram-behallare",
+   "ljus": "#a15a0a",
+   "dekl": 19,
+   "art": 18,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-behallare-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-upphojd|#3f5145",
+   "roll": "yta-upphojd",
+   "ljus": "#3f5145",
+   "dekl": 2,
+   "art": 2,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|#ce7c1e",
+   "roll": "ram-kontroll",
+   "ljus": "#ce7c1e",
+   "dekl": 26,
+   "art": 3,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-kontroll|#3f6b4f",
+   "roll": "ram-kontroll",
+   "ljus": "#3f6b4f",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-kontroll|#a15a0a",
+   "roll": "ram-kontroll",
+   "ljus": "#a15a0a",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ram-kontroll|#627061",
+   "roll": "ram-kontroll",
+   "ljus": "#627061",
+   "dekl": 5,
+   "art": 2,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-kontroll|#f7e8d2",
+   "roll": "yta-kontroll",
+   "ljus": "#f7e8d2",
+   "dekl": 6,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "yta-upphojd|#a15a0a",
+   "roll": "yta-upphojd",
+   "ljus": "#a15a0a",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|#dca968",
+   "roll": "ram-kontroll",
+   "ljus": "#dca968",
+   "dekl": 4,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-kontroll|#3f5145",
+   "roll": "yta-kontroll",
+   "ljus": "#3f5145",
+   "dekl": 2,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-kontroll-b1, ljus #e6ead9)"
+  },
+  {
+   "id": "ram-kontroll|#3f5145",
+   "roll": "ram-kontroll",
+   "ljus": "#3f5145",
+   "dekl": 4,
+   "art": 1,
+   "klass": "C",
+   "mork": "rgba(245,244,237,.35)",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ram-kontroll-a, ljus #24382c)"
+  },
+  {
+   "id": "ikon-fristaende|#ce7c1e",
+   "roll": "ikon-fristaende",
+   "ljus": "#ce7c1e",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#c9d3c4",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--ikon-fristaende-a, ljus #24382c)"
+  },
+  {
+   "id": "yta-upphojd|#93a48d",
+   "roll": "yta-upphojd",
+   "ljus": "#93a48d",
+   "dekl": 1,
+   "art": 1,
+   "klass": "C",
+   "mork": "#17251d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--yta-upphojd, ljus #e6ead9)"
+  },
+  {
+   "id": "text-innehall|#e6ead9",
+   "roll": "text-innehall",
+   "ljus": "#e6ead9",
+   "dekl": 5,
+   "art": 1,
+   "klass": "C",
+   "mork": "#93a48d",
+   "grund": "ROLE_ONLY_INHERITANCE",
+   "evidens": "endast rollen matchar en etablerad kandidat (--text-innehall-a, ljus #627061)"
+  }
+ ],
+ "wave1": [
+  "aldersgrans",
+  "epostverif",
+  "rapporter",
+  "rapporter412",
+  "authepostklar",
+  "onbalderblock",
+  "soctomttyst"
+ ],
+ "tokens": [],
+ "kategorier": {
+  "TOKEN_HOOK": 35,
+  "WRITABLE": 85,
+  "INHERITED": 15
+ },
+ "deladKalla": {
+  "delade": [],
+  "konflikter": []
+ },
+ "torr": {
+  "writable": 85,
+  "konflikt": 0,
+  "resolved": 64,
+  "covered": 21,
+  "skips": 0,
+  "unresolved": 0
+ }
+}

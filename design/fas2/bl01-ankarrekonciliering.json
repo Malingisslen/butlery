@@ -1,0 +1,3651 @@
+{
+ "$om": "BL-01 · kanonisk ankarvokabular for produktbaslinjen. Ett ankare per semantiskt objekt; pf-a:s vokabular ar avvecklad.",
+ "BL01": "PF_A_AUDITED_CONTENT_WITH_CANONICAL_BLOCK287_ANCHORS",
+ "KALLA": {
+  "PRODUKTINNEHALL": "pf-a 7351ff0 (15 skarmfiler) + beslutslogg.md",
+  "OVRIGT": "52e8a24 (oforandrat)"
+ },
+ "HEAD_CANONICAL_ANCHOR_COUNT": 361,
+ "PF_A_LEGACY_ANCHOR_COUNT": 387,
+ "CANONICAL_ANCHORS_REUSED": 361,
+ "NEW_CANONICAL_ANCHORS_REQUIRED": 37,
+ "PF_A_ANCHORS_RETIRED": 387,
+ "AMBIGUOUS_ANCHOR_MAPPINGS": 0,
+ "UNMAPPED_PF_A_IDENTITY_REFERENCES": 0,
+ "BL01_ANCHOR_COUNT": 398,
+ "METOD": {
+  "ATERANVANDNING": "varje Block-287-ankare placerades pa sitt semantiska objekt i pf-a-innehallet via ankarkartans MIGRATION_LOCATOR; tagg och elementbeskrivning verifierades mot kartan (361/361)",
+  "MYNTNING": "occ- + 12 bokstaver ur sha256(\"BL01-ANCHOR|fil|ram|tagg|text\"); deterministiskt och kollisionsprovat mot bada vokabularen",
+  "AVVECKLING": "samtliga 387 pf-a-attribut borttagna ur kallan"
+ },
+ "PF_A_IDENTITY_MAPPING": [
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-dorvdwnikqrk::varde::5"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-dorvdwnikqrk",
+   "SEMANTIC_OBJECT": "familjebetyg#22 <svg> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-mipgqezzdwol",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-mipgqezzdwol::varde::5"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-gugvajkokxof::varde::4"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-gugvajkokxof",
+   "SEMANTIC_OBJECT": "familjebetyg#36 <svg> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-ihxqjtqtfdem",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-ihxqjtqtfdem::varde::4"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-hisjzrvjixau::varde::5"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-hisjzrvjixau",
+   "SEMANTIC_OBJECT": "familjebetyg#38 <svg> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-edxrezpsaxjr",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-edxrezpsaxjr::varde::5"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::kontosakerhet::objekt::occ-besufcauelfo"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-besufcauelfo",
+   "SEMANTIC_OBJECT": "kontosakerhet#13 <div> \"Byt lösenord\"",
+   "CANONICAL_BL01_ANCHOR": "occ-xkojtuqufgtp",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::kontosakerhet::objekt::occ-xkojtuqufgtp"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-ouajzvxrcasw"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ouajzvxrcasw",
+   "SEMANTIC_OBJECT": "familjeform#11 <div> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-pwhupvljqadv",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-pwhupvljqadv"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-mjvjsgekzreo"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-mjvjsgekzreo",
+   "SEMANTIC_OBJECT": "familjeform#12 <div> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-yljiohxdxkcq",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-yljiohxdxkcq"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-ygnzbukabxki"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ygnzbukabxki",
+   "SEMANTIC_OBJECT": "familjeform#13 <div> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-ivknbmzejysi",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-ivknbmzejysi"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-ujyjkgbacqqi"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ujyjkgbacqqi",
+   "SEMANTIC_OBJECT": "familjeform#14 <div> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-azyjbbrwpocv",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-azyjbbrwpocv"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-agyxplxmnccx"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-agyxplxmnccx",
+   "SEMANTIC_OBJECT": "familjeform#15 <div> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-lmbhpogsgqae",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-lmbhpogsgqae"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-quoboenyzomu"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-quoboenyzomu",
+   "SEMANTIC_OBJECT": "familjeform#16 <div> \"\"",
+   "CANONICAL_BL01_ANCHOR": "occ-lrnlcfwfbgns",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::familjeform::occ::occ-lrnlcfwfbgns"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivara::objekt::occ-mfjcajaaxksh"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-mfjcajaaxksh",
+   "SEMANTIC_OBJECT": "skafferivara#2 <div> \"Lägg till i skafferiet Vara Krossade tomater Tomatpuré Solto\"",
+   "CANONICAL_BL01_ANCHOR": "occ-uvkguxfcmbhy",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivara::objekt::occ-uvkguxfcmbhy"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::taggdetalj::objekt::occ-ykoyhkhryrsy::handling::rule-active"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ykoyhkhryrsy",
+   "SEMANTIC_OBJECT": "taggdetalj#22 <div> \"Innehåller \"rester\" Nyckelord i titel eller beskrivning · ta\"",
+   "CANONICAL_BL01_ANCHOR": "occ-zkqzdtxcczmg",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::taggdetalj::objekt::occ-zkqzdtxcczmg::handling::rule-active"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::taggdetalj::objekt::occ-tqbduhydterb::handling::rule-active"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-tqbduhydterb",
+   "SEMANTIC_OBJECT": "taggdetalj#28 <div> \"Ingrediens: kokt ris Ingrediensregel · taggade 3 recept\"",
+   "CANONICAL_BL01_ANCHOR": "occ-syfymbsfotmx",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::taggdetalj::objekt::occ-syfymbsfotmx::handling::rule-active"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::dialogosparat::objekt::occ-xkdafxyvsvax"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-xkdafxyvsvax",
+   "SEMANTIC_OBJECT": "dialogosparat#2 <div> \"Osparade ändringar Du har ändringar i receptet som inte spar\"",
+   "CANONICAL_BL01_ANCHOR": "occ-prkshjjgwxgq",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::dialogosparat::objekt::occ-prkshjjgwxgq"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::DARK_BORDER::synkko::objekt::occ-xgcheqrlqsic::namn::slang"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-xgcheqrlqsic",
+   "SEMANTIC_OBJECT": "synkko#22 <div> \"Ditt betyg på Citronrisotto Receptet finns inte längre Släng\"",
+   "CANONICAL_BL01_ANCHOR": "occ-qvofqateemdv",
+   "NEW_UNIT_ID": [
+    "RP::DARK_BORDER::synkko::objekt::occ-qvofqateemdv::namn::slang"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::DARK_BORDER::synkko::objekt::occ-eslxqyngnznz::namn::forsok-mindre"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-eslxqyngnznz",
+   "SEMANTIC_OBJECT": "synkko#28 <div> \"Bild till Sommarens grillmarinad Bilden är för stor (14 MB) \"",
+   "CANONICAL_BL01_ANCHOR": "occ-uojsblrdezec",
+   "NEW_UNIT_ID": [
+    "RP::DARK_BORDER::synkko::objekt::occ-uojsblrdezec::namn::forsok-mindre"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-mazfeakrtfpj"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-mazfeakrtfpj",
+   "SEMANTIC_OBJECT": "bredmeny#23 <span> \"N\"",
+   "CANONICAL_BL01_ANCHOR": "occ-grhaphhquonk",
+   "NEW_UNIT_ID": [
+    "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-grhaphhquonk"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-qoluyblcovsd"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-qoluyblcovsd",
+   "SEMANTIC_OBJECT": "bredmeny#36 <span> \"M\"",
+   "CANONICAL_BL01_ANCHOR": "occ-cwjnxpxdjzkf",
+   "NEW_UNIT_ID": [
+    "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-cwjnxpxdjzkf"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-vashdduwiyll"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-vashdduwiyll",
+   "SEMANTIC_OBJECT": "bredmeny#37 <span> \"N\"",
+   "CANONICAL_BL01_ANCHOR": "occ-sfgcwcecirue",
+   "NEW_UNIT_ID": [
+    "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-sfgcwcecirue"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbnormal::objekt::occ-eqzcaesosmmc"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-eqzcaesosmmc",
+   "SEMANTIC_OBJECT": "vmbnormal#55 <span> \"I dagPannbiffar med lök35 minMN+2\"",
+   "CANONICAL_BL01_ANCHOR": "occ-bpfjfyqzchmn",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbnormal::objekt::occ-bpfjfyqzchmn"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-errogqtlhuow"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-errogqtlhuow",
+   "SEMANTIC_OBJECT": "vmbgenererar#49 <span> \"lägger ut …\"",
+   "CANONICAL_BL01_ANCHOR": "occ-tsluxpakagzi",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-tsluxpakagzi"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-wodrvlagfzys"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-wodrvlagfzys",
+   "SEMANTIC_OBJECT": "vmbgenererar#53 <span> \"Linsgrytaskrivs över\"",
+   "CANONICAL_BL01_ANCHOR": "occ-zcvkhygoqvhu",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-zcvkhygoqvhu"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-naitplfvxljq"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-naitplfvxljq",
+   "SEMANTIC_OBJECT": "vmbgenererar#56 <span> \"Ärtsoppaskrivs över\"",
+   "CANONICAL_BL01_ANCHOR": "occ-gocigsjzadfx",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-gocigsjzadfx"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-vcjvlhyjjwht"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-vcjvlhyjjwht",
+   "SEMANTIC_OBJECT": "vmbgenererar#59 <span> \"Rotsakslåda55 minrörs inte\"",
+   "CANONICAL_BL01_ANCHOR": "occ-uygkyhfjgdwo",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbgenererar::objekt::occ-uygkyhfjgdwo"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbomrostning::objekt::occ-dhspetofypdk"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-dhspetofypdk",
+   "SEMANTIC_OBJECT": "vmbomrostning#30 <span> \"I dagPannbiffar med lök35 min\"",
+   "CANONICAL_BL01_ANCHOR": "occ-evkyajxsqpxo",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbomrostning::objekt::occ-evkyajxsqpxo"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbkonflikt::objekt::occ-ivexguznnlcj"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ivexguznnlcj",
+   "SEMANTIC_OBJECT": "vmbkonflikt#26 <span> \"I dagPannbiffar35 min\"",
+   "CANONICAL_BL01_ANCHOR": "occ-gdzoapyloidh",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbkonflikt::objekt::occ-gdzoapyloidh"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbdelvis::objekt::occ-ixkylzajdgbh"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ixkylzajdgbh",
+   "SEMANTIC_OBJECT": "vmbdelvis#51 <span> \"I dag · 3Pannbiffar35 min\"",
+   "CANONICAL_BL01_ANCHOR": "occ-zdffbhbodcvy",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbdelvis::objekt::occ-zdffbhbodcvy"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmboffline::objekt::occ-tchevnnhehgu"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-tchevnnhehgu",
+   "SEMANTIC_OBJECT": "vmboffline#40 <span> \"I dagPannbiffar35 min\"",
+   "CANONICAL_BL01_ANCHOR": "occ-gogmrsagbflu",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmboffline::objekt::occ-gogmrsagbflu"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbflytta::objekt::occ-eodkcmceaozd"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-eodkcmceaozd",
+   "SEMANTIC_OBJECT": "vmbflytta#23 <span> \"I dagPannbiffarbyter plats\"",
+   "CANONICAL_BL01_ANCHOR": "occ-loopoqafmitz",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbflytta::objekt::occ-loopoqafmitz"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbflytta::objekt::occ-rxciktebagpa"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-rxciktebagpa",
+   "SEMANTIC_OBJECT": "vmbflytta#39 <span> \"Ärtsoppaflyttas härifrån\"",
+   "CANONICAL_BL01_ANCHOR": "occ-fdgafpwlpmfq",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbflytta::objekt::occ-fdgafpwlpmfq"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbflytta::objekt::occ-qqskmmwnkgjg"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-qqskmmwnkgjg",
+   "SEMANTIC_OBJECT": "vmbflytta#42 <span> \"Rotsakslådabyter plats med\"",
+   "CANONICAL_BL01_ANCHOR": "occ-rqovggiovqto",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::vmbflytta::objekt::occ-rqovggiovqto"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::HANDOFF_NAME::lgbrotation::handling::increase-text-size::objekt::occ-iufxqcorzias"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-iufxqcorzias",
+   "SEMANTIC_OBJECT": "lgbrotation#3 <span> \"A+\"",
+   "CANONICAL_BL01_ANCHOR": "occ-cavkvtzavgvu",
+   "NEW_UNIT_ID": [
+    "RP::HANDOFF_NAME::lgbrotation::handling::increase-text-size::objekt::occ-cavkvtzavgvu"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::HANDOFF_NAME::lgbrotation::handling::increase-text-size::objekt::occ-yeiviyzswprs"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-yeiviyzswprs",
+   "SEMANTIC_OBJECT": "lgbrotation#29 <span> \"A+\"",
+   "CANONICAL_BL01_ANCHOR": "occ-zymdnuorpoyh",
+   "NEW_UNIT_ID": [
+    "RP::HANDOFF_NAME::lgbrotation::handling::increase-text-size::objekt::occ-zymdnuorpoyh"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivyn::objekt::occ-hgcvgndolxai"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-hgcvgndolxai",
+   "SEMANTIC_OBJECT": "skafferivyn#38 <div> \"frys4\"",
+   "CANONICAL_BL01_ANCHOR": "occ-zdqzwpnngjqp",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivyn::objekt::occ-zdqzwpnngjqp"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivyn::objekt::occ-xajfhzocqokj"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-xajfhzocqokj",
+   "SEMANTIC_OBJECT": "skafferivyn#44 <div> \"skafferi12\"",
+   "CANONICAL_BL01_ANCHOR": "occ-rklxlyptdfrf",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivyn::objekt::occ-rklxlyptdfrf"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivyn::objekt::occ-ovxqmcmooich"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-ovxqmcmooich",
+   "SEMANTIC_OBJECT": "skafferivyn#50 <div> \"kryddhylla9\"",
+   "CANONICAL_BL01_ANCHOR": "occ-nhbvbbsryjth",
+   "NEW_UNIT_ID": [
+    "RP::ROLE_AND_NAME::skafferivyn::objekt::occ-nhbvbbsryjth"
+   ],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  },
+  {
+   "OLD_UNIT_ID": [
+    "(endast handoff) H22 fbanmal#17"
+   ],
+   "OLD_PF_A_ANCHOR": "occ-fdzabbreckim",
+   "SEMANTIC_OBJECT": "fbanmal#2 <div> \"Anmäl det här receptet Berätta vad som är fel. En människa i\"",
+   "CANONICAL_BL01_ANCHOR": "occ-mabdhbksgjro",
+   "NEW_UNIT_ID": [],
+   "REASON": "semantiskt objekt som Block 287 använder som persistent ägaridentitet; pf-a-värdet får inte bli kanoniskt"
+  }
+ ],
+ "ANKARE": [
+  {
+   "ANKARE": "occ-adxeqolfgkbl",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "chatt320",
+   "ordProd": 37,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-agmapdhjnklv",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 11,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-ahkfkhjxbvbj",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "arkivimport",
+   "ordProd": 6,
+   "TAGG": "div",
+   "TEXT": "Pasta alla vodka Instagram · delad i går Importera"
+  },
+  {
+   "ANKARE": "occ-ajujdbzsdoob",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatmedmig",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Krispig halloumisallad från gruppen Söndagsmiddag · i går Spara"
+  },
+  {
+   "ANKARE": "occ-ajvywbeciurw",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Fisk"
+  },
+  {
+   "ANKARE": "occ-almuhwgdhpmd",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "familjebetyg",
+   "ordProd": 46,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-alzbobawxmyh",
+   "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "RAM": "kompmallar",
+   "ordProd": 3,
+   "TAGG": "div",
+   "TEXT": "VeckohandlingDet vi alltid har hemma Använd 14 gånger · 22 varor Använd"
+  },
+  {
+   "ANKARE": "occ-aowlgpqrxbvg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "skrivsjalv",
+   "ordProd": 69,
+   "TAGG": "div",
+   "TEXT": "Bryn köttet i omgångar …"
+  },
+  {
+   "ANKARE": "occ-aqqeeltsbqhg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 6,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-asdzhsrehqim",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbdelvis",
+   "ordProd": 43,
+   "TAGG": "span",
+   "TEXT": "1Torsk30 min"
+  },
+  {
+   "ANKARE": "occ-aukacbsbrdew",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 11,
+   "TAGG": "div",
+   "TEXT": "Recept"
+  },
+  {
+   "ANKARE": "occ-avipznajoxwr",
+   "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "RAM": "socoverlat",
+   "ordProd": 2,
+   "TAGG": "div",
+   "TEXT": "Någon måste äga Matlaget Du är på väg att lämna gruppen. Ägaren är den som kan b"
+  },
+  {
+   "ANKARE": "occ-avrkjctzgznm",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "kontextmeny",
+   "ordProd": 37,
+   "TAGG": "div",
+   "TEXT": "Ta bort"
+  },
+  {
+   "ANKARE": "occ-avtjqdkxkdwl",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "modrapporter",
+   "ordProd": 39,
+   "TAGG": "div",
+   "TEXT": "PROFIL · usr_71f0cny Falskt konto Utger sig för att vara ett företag. Anmäld av "
+  },
+  {
+   "ANKARE": "occ-axcmksbybzgc",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": "Fisk"
+  },
+  {
+   "ANKARE": "occ-aybbjmsqlbdk",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 14,
+   "TAGG": "div",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-aydaadqkwthn",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 23,
+   "TAGG": "span",
+   "TEXT": "Skaldjur"
+  },
+  {
+   "ANKARE": "occ-ayjmwukcnjbo",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delatlistor",
+   "ordProd": 19,
+   "TAGG": "div",
+   "TEXT": "E"
+  },
+  {
+   "ANKARE": "occ-ayspiwrwkpoi",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "receptbildfel",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "250 gkantareller"
+  },
+  {
+   "ANKARE": "occ-azboohiznodw",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferiflerval",
+   "ordProd": 11,
+   "TAGG": "span",
+   "TEXT": "Grädde3 dl"
+  },
+  {
+   "ANKARE": "occ-azyjbbrwpocv",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 14,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-bbdbkhceemju",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nygruppchatt",
+   "ordProd": 30,
+   "TAGG": "div",
+   "TEXT": "J Jonas Ek"
+  },
+  {
+   "ANKARE": "occ-bbgfskjskmvr",
+   "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "RAM": "socgruppinfo",
+   "ordProd": 10,
+   "TAGG": "div",
+   "TEXT": "Samtalets namnMatlaget"
+  },
+  {
+   "ANKARE": "occ-bbztyaoqbmla",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatmedmig",
+   "ordProd": 33,
+   "TAGG": "span",
+   "TEXT": "Spara"
+  },
+  {
+   "ANKARE": "occ-bcvlrrpkramt",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "familj",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "E Ebba, 9 år Allergi: jordnötter"
+  },
+  {
+   "ANKARE": "occ-behsvzlpxqwf",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "grupp",
+   "ordProd": 16,
+   "TAGG": "span",
+   "TEXT": "S"
+  },
+  {
+   "ANKARE": "occ-berchjxobyhp",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notiscentral",
+   "ordProd": 33,
+   "TAGG": "span",
+   "TEXT": "Veckans meny är klarFem rätter, inköpslistan skriven3 d"
+  },
+  {
+   "ANKARE": "occ-bgdfuxcajfdc",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist3",
+   "ordProd": 1,
+   "TAGG": "div",
+   "TEXT": "Hjälp mig tolka3/3"
+  },
+  {
+   "ANKARE": "occ-bgwyvecsgugp",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbgester",
+   "ordProd": 12,
+   "TAGG": "span",
+   "TEXT": "2¼ dl mjölk"
+  },
+  {
+   "ANKARE": "occ-bkkzspjswage",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 7,
+   "TAGG": "span",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-bklubrlagisi",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatlistaaktiv",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-bpfjfyqzchmn",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 55,
+   "TAGG": "span",
+   "TEXT": "I dagPannbiffar med lök35 minMN+2"
+  },
+  {
+   "ANKARE": "occ-bttftcnlzhcz",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 32,
+   "TAGG": "div",
+   "TEXT": "Franskt"
+  },
+  {
+   "ANKARE": "occ-bunhkpqgpatl",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "Jag är vårdnadshavare för Elsa och samtycker till att hennes uppgifter sparas i "
+  },
+  {
+   "ANKARE": "occ-bwlpalngbwpu",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "imparkiv",
+   "ordProd": 10,
+   "TAGG": "span",
+   "TEXT": "Ärtsoppaarkiverat i mars"
+  },
+  {
+   "ANKARE": "occ-bywfflrwhpcn",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 38,
+   "TAGG": "div",
+   "TEXT": "Sill 2 burkar Per"
+  },
+  {
+   "ANKARE": "occ-bzaztmpnlrgy",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delaark",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": "H Hanna Vik"
+  },
+  {
+   "ANKARE": "occ-bzphacqdnszv",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "kontosakerhetsvy",
+   "ordProd": 23,
+   "TAGG": "div",
+   "TEXT": "Byt e-post"
+  },
+  {
+   "ANKARE": "occ-cavkvtzavgvu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbrotation",
+   "ordProd": 3,
+   "TAGG": "span",
+   "TEXT": "A+"
+  },
+  {
+   "ANKARE": "occ-cdtpzvfevoua",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredmeny",
+   "ordProd": 44,
+   "TAGG": "span",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-cfjppeihbrmj",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "vanner",
+   "ordProd": 27,
+   "TAGG": "div",
+   "TEXT": "Öppna receptetSvara Erik"
+  },
+  {
+   "ANKARE": "occ-cfyqxaocphnz",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatlistaaktiv",
+   "ordProd": 48,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-cgddhsuezskm",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbformular",
+   "ordProd": 37,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-cgyypthcirec",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 25,
+   "TAGG": "div",
+   "TEXT": "Jordgubbar 3 l"
+  },
+  {
+   "ANKARE": "occ-cgzsbaofqysd",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbgester",
+   "ordProd": 5,
+   "TAGG": "span",
+   "TEXT": "900 g blandfärs"
+  },
+  {
+   "ANKARE": "occ-cizisunghdtc",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "kontosakerhetsvy",
+   "ordProd": 7,
+   "TAGG": "div",
+   "TEXT": "Byt lösenord"
+  },
+  {
+   "ANKARE": "occ-clfizxkvwnxe",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "arkivimport",
+   "ordProd": 27,
+   "TAGG": "span",
+   "TEXT": "Importera"
+  },
+  {
+   "ANKARE": "occ-cmvmzhvzfpgn",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nygruppchatt",
+   "ordProd": 11,
+   "TAGG": "span",
+   "TEXT": "Erik"
+  },
+  {
+   "ANKARE": "occ-crhvltjuazno",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "imparkiv",
+   "ordProd": 36,
+   "TAGG": "span",
+   "TEXT": "Lasagnearkiverat i december"
+  },
+  {
+   "ANKARE": "occ-cridnnpwamsk",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "arkivimport",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "Importera"
+  },
+  {
+   "ANKARE": "occ-cteqjutirbzm",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist1",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": "3 dl gräddeFÖRSLAG"
+  },
+  {
+   "ANKARE": "occ-cvnfiywqrokp",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "safeareaios",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": "400 gpasta"
+  },
+  {
+   "ANKARE": "occ-cwjnxpxdjzkf",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredmeny",
+   "ordProd": 36,
+   "TAGG": "span",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-czdsfgainbai",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 11,
+   "TAGG": "span",
+   "TEXT": "Mjölk"
+  },
+  {
+   "ANKARE": "occ-dhctaapsxvuk",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferiflerval",
+   "ordProd": 18,
+   "TAGG": "span",
+   "TEXT": "Parmesan200 g"
+  },
+  {
+   "ANKARE": "occ-diitlcvjmqrz",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "kontextmeny",
+   "ordProd": 19,
+   "TAGG": "div",
+   "TEXT": "Redigera"
+  },
+  {
+   "ANKARE": "occ-dirjfdyggiys",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatnarvaro",
+   "ordProd": 37,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-dqfijmfvmmbu",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "receptbildfel",
+   "ordProd": 30,
+   "TAGG": "div",
+   "TEXT": "2 dlgrädde"
+  },
+  {
+   "ANKARE": "occ-dqnjdfoyemnx",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbomrostning",
+   "ordProd": 16,
+   "TAGG": "span",
+   "TEXT": "Fisksoppa35 min"
+  },
+  {
+   "ANKARE": "occ-drvgqbehezsb",
+   "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "RAM": "socflode",
+   "ordProd": 43,
+   "TAGG": "div",
+   "TEXT": "SE Sara Ek satte igång med för 2 timmar sedan Ugnspannkaka"
+  },
+  {
+   "ANKARE": "occ-duflmljhrhyy",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferivyn",
+   "ordProd": 11,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-durbkqquvyzz",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "Meddelanden"
+  },
+  {
+   "ANKARE": "occ-dvoeaesuatei",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemat",
+   "ordProd": 11,
+   "TAGG": "div",
+   "TEXT": "M Maja · du"
+  },
+  {
+   "ANKARE": "occ-dwpfhwplabsr",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatclaimkonflikt",
+   "ordProd": 29,
+   "TAGG": "div",
+   "TEXT": "3 dlgrädde"
+  },
+  {
+   "ANKARE": "occ-dwxjacrhmdyv",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygperperson",
+   "ordProd": 12,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-dxtzbgmkzywa",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 36,
+   "TAGG": "div",
+   "TEXT": "System"
+  },
+  {
+   "ANKARE": "occ-dylcpmjgxcqj",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatmindel",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-ecjmvxknnmmk",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notisrensa",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": "Butlery uppdaterades"
+  },
+  {
+   "ANKARE": "occ-edxrezpsaxjr",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "familjebetyg",
+   "ordProd": 38,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-effojsqozfrh",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 64,
+   "TAGG": "span",
+   "TEXT": "Linsgryta25 minMNils hos pappa"
+  },
+  {
+   "ANKARE": "occ-eforxhockavf",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "cooksnapgalleri",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": "Anna i går"
+  },
+  {
+   "ANKARE": "occ-eollolltmput",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "lagasubst",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "2 kvistartimjanByt"
+  },
+  {
+   "ANKARE": "occ-eowhvihfuelh",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "installningar",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Köpta varor till skafferietLäggs till automatiskt när du bockar av"
+  },
+  {
+   "ANKARE": "occ-epbggchhmnip",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Vegetariskt"
+  },
+  {
+   "ANKARE": "occ-esunrbxqhghe",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 6,
+   "TAGG": "div",
+   "TEXT": "Vänner & förfrågningar"
+  },
+  {
+   "ANKARE": "occ-etddkrbwvhnb",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbomrostning",
+   "ordProd": 34,
+   "TAGG": "span",
+   "TEXT": "RÖSTNINGOavgjort · 2–2Ärtsoppa · TacosRösta"
+  },
+  {
+   "ANKARE": "occ-ethzcqazysrq",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbnormal",
+   "ordProd": 33,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-evkyajxsqpxo",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbomrostning",
+   "ordProd": 30,
+   "TAGG": "span",
+   "TEXT": "I dagPannbiffar med lök35 min"
+  },
+  {
+   "ANKARE": "occ-ezgnmewcyzfa",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "lagasubst",
+   "ordProd": 41,
+   "TAGG": "div",
+   "TEXT": "portabello 200 g · kraftigare smak Ingen ändring i allergenbilden"
+  },
+  {
+   "ANKARE": "occ-fdegclcapgzs",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delatlistor",
+   "ordProd": 20,
+   "TAGG": "div",
+   "TEXT": "H"
+  },
+  {
+   "ANKARE": "occ-fdgafpwlpmfq",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbflytta",
+   "ordProd": 39,
+   "TAGG": "span",
+   "TEXT": "Ärtsoppaflyttas härifrån"
+  },
+  {
+   "ANKARE": "occ-felravaojrkb",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "epostverif",
+   "ordProd": 8,
+   "TAGG": "div",
+   "TEXT": "Skicka igen (42 s)"
+  },
+  {
+   "ANKARE": "occ-fhkvtnxwkenn",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "safeareaandroid",
+   "ordProd": 21,
+   "TAGG": "div",
+   "TEXT": "250 gkantareller"
+  },
+  {
+   "ANKARE": "occ-fmksnftfvgsg",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemarket",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "MMalinVuxen"
+  },
+  {
+   "ANKARE": "occ-fodbqhefmtdj",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostlagg",
+   "ordProd": 37,
+   "TAGG": "span",
+   "TEXT": "TacosTillagd nu — 3 hade redan röstat0"
+  },
+  {
+   "ANKARE": "occ-fodszoipjdju",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbomrostning",
+   "ordProd": 44,
+   "TAGG": "span",
+   "TEXT": "Röstningen gick utingen vann · 1–1Avgör"
+  },
+  {
+   "ANKARE": "occ-fqhinwnvwkmi",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkopflerval",
+   "ordProd": 7,
+   "TAGG": "span",
+   "TEXT": "Gul lök3 st"
+  },
+  {
+   "ANKARE": "occ-fqmeonjykhzs",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikboffline",
+   "ordProd": 16,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-frauktpotikw",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredmeny",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": "I"
+  },
+  {
+   "ANKARE": "occ-fsxmiikimuyr",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 54,
+   "TAGG": "span",
+   "TEXT": "Svamp"
+  },
+  {
+   "ANKARE": "occ-fveglnwjojsk",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "inkopmergeoppen",
+   "ordProd": 32,
+   "TAGG": "div",
+   "TEXT": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor beh"
+  },
+  {
+   "ANKARE": "occ-fzhkckgslhww",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatlasare",
+   "ordProd": 46,
+   "TAGG": "span",
+   "TEXT": "Be om redigeringsrätt"
+  },
+  {
+   "ANKARE": "occ-gdlnkbiyrdwx",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 44,
+   "TAGG": "div",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-gdzoapyloidh",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbkonflikt",
+   "ordProd": 26,
+   "TAGG": "span",
+   "TEXT": "I dagPannbiffar35 min"
+  },
+  {
+   "ANKARE": "occ-gfdnxumwendl",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 30,
+   "TAGG": "div",
+   "TEXT": "Japanskt"
+  },
+  {
+   "ANKARE": "occ-ggqbexodrhfn",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostning",
+   "ordProd": 34,
+   "TAGG": "span",
+   "TEXT": "Krämig svamppasta2 röster"
+  },
+  {
+   "ANKARE": "occ-ggqetqvkhxxh",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notiscentral",
+   "ordProd": 15,
+   "TAGG": "span",
+   "TEXT": "Anna delade ett receptÄrtsoppa med pannkakor2 h"
+  },
+  {
+   "ANKARE": "occ-ghrrjlcgbnln",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkopflerval",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Vitlök1 knippe"
+  },
+  {
+   "ANKARE": "occ-gioeacnxewjj",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbdelvis",
+   "ordProd": 47,
+   "TAGG": "span",
+   "TEXT": "2Kikärtsgryta25 min"
+  },
+  {
+   "ANKARE": "occ-gjulapdkswch",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "ingredienssok",
+   "ordProd": 6,
+   "TAGG": "span",
+   "TEXT": "champinjoner"
+  },
+  {
+   "ANKARE": "occ-gocigsjzadfx",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 56,
+   "TAGG": "span",
+   "TEXT": "Ärtsoppaskrivs över"
+  },
+  {
+   "ANKARE": "occ-goddoniczbpl",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 20,
+   "TAGG": "div",
+   "TEXT": "Ägg"
+  },
+  {
+   "ANKARE": "occ-gogmrsagbflu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmboffline",
+   "ordProd": 40,
+   "TAGG": "span",
+   "TEXT": "I dagPannbiffar35 min"
+  },
+  {
+   "ANKARE": "occ-gpjfsaivoqtg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "inkopmergeoppen",
+   "ordProd": 25,
+   "TAGG": "div",
+   "TEXT": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan "
+  },
+  {
+   "ANKARE": "occ-gpmnfvcoqsop",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "inkopmergeoppen",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot"
+  },
+  {
+   "ANKARE": "occ-gqarefhwwyan",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flerbar",
+   "ordProd": 43,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-gqllplhzqbvq",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbformular",
+   "ordProd": 44,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-grhaphhquonk",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredmeny",
+   "ordProd": 23,
+   "TAGG": "span",
+   "TEXT": "N"
+  },
+  {
+   "ANKARE": "occ-gugplxxaqlne",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist1",
+   "ordProd": 35,
+   "TAGG": "span",
+   "TEXT": "Blanda färsen med ägg och ströbröd."
+  },
+  {
+   "ANKARE": "occ-gvmfszmcblwp",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "betygsoversikt",
+   "ordProd": 10,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-gxghrahhioun",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "laggtillmedlemmar",
+   "ordProd": 12,
+   "TAGG": "div",
+   "TEXT": "E Erik Sandell"
+  },
+  {
+   "ANKARE": "occ-gyhtvrfrpxyh",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "taggexklusiv",
+   "ordProd": 15,
+   "TAGG": "div",
+   "TEXT": "Gruppen Tillfälle tar bara en taggRegeln Helgmiddag matchade också, men Vardagsm"
+  },
+  {
+   "ANKARE": "occ-gzbvmskhflue",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbdelvis",
+   "ordProd": 59,
+   "TAGG": "span",
+   "TEXT": "5Fisksoppa35 min"
+  },
+  {
+   "ANKARE": "occ-hdaskndcqtoa",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbkonflikt",
+   "ordProd": 20,
+   "TAGG": "span",
+   "TEXT": "Fisksoppa35 min"
+  },
+  {
+   "ANKARE": "occ-hdbxsnrkkwzm",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "laggtillmedlemmar",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "P Pelle Åberg"
+  },
+  {
+   "ANKARE": "occ-hegwuenawnhq",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delaark",
+   "ordProd": 2,
+   "TAGG": "div",
+   "TEXT": "Dela Citronrisotto Vänner E Erik Sandell H Hanna Vik Grupper S Söndagsmiddagarna"
+  },
+  {
+   "ANKARE": "occ-helhxncgjkvr",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "hemmorkt",
+   "ordProd": 46,
+   "TAGG": "div",
+   "TEXT": "SönLinsgryta med spetskål"
+  },
+  {
+   "ANKARE": "occ-hgcpvxjfxucx",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist2",
+   "ordProd": 41,
+   "TAGG": "div",
+   "TEXT": "Välj minst en instruktion för att gå vidare.TillbakaNästa"
+  },
+  {
+   "ANKARE": "occ-hhbmxdgnqyqp",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 29,
+   "TAGG": "div",
+   "TEXT": "Färskpotatis 2 kg"
+  },
+  {
+   "ANKARE": "occ-hmaslicwomlw",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "redigera",
+   "ordProd": 36,
+   "TAGG": "div",
+   "TEXT": "3 dl arborioris"
+  },
+  {
+   "ANKARE": "occ-hmzvapywgtmp",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "kalender",
+   "ordProd": 134,
+   "TAGG": "div",
+   "TEXT": "Middag Krämig svamppasta"
+  },
+  {
+   "ANKARE": "occ-hnbcqbbustls",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 14,
+   "TAGG": "div",
+   "TEXT": "Italienskt"
+  },
+  {
+   "ANKARE": "occ-hnhffivabvez",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmboffline",
+   "ordProd": 57,
+   "TAGG": "span",
+   "TEXT": "Ärtsoppa90 min"
+  },
+  {
+   "ANKARE": "occ-hnxliqfuqcxj",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygperperson",
+   "ordProd": 54,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-hocqjpfvjdqg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 33,
+   "TAGG": "div",
+   "TEXT": "Gräddfil 2 st"
+  },
+  {
+   "ANKARE": "occ-hoibxrjeyxte",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "lagasubst",
+   "ordProd": 47,
+   "TAGG": "div",
+   "TEXT": "torkad karljohan 25 g + 2 dl vatten Allergenuppgift saknas — märkningen följer m"
+  },
+  {
+   "ANKARE": "occ-hoyeijvyhfni",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "arkivimport",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "mammas-recept.pdf Fil · uppladdad 2 juli Importera"
+  },
+  {
+   "ANKARE": "occ-huouovqnnzev",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 31,
+   "TAGG": "div",
+   "TEXT": "Jag samtycker till att Elsas allergier sparas och används för att filtrera recep"
+  },
+  {
+   "ANKARE": "occ-huxlwlognuzs",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemat",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "I Ida"
+  },
+  {
+   "ANKARE": "occ-hwctrqytrayp",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "imparkiv",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": "Kanelbullararkiverat i januari"
+  },
+  {
+   "ANKARE": "occ-hznflqburfar",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 38,
+   "TAGG": "span",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-hzpggtdfuxai",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flergrupp",
+   "ordProd": 22,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-iapkvuwcalrn",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbformular",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-idnsubneoyuk",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "modrapporter",
+   "ordProd": 8,
+   "TAGG": "div",
+   "TEXT": "RECEPT · rec_8f21agranskas Stötande bild Bilden visar något annat än mat. Anmäld"
+  },
+  {
+   "ANKARE": "occ-iemjpeuiyhhn",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 76,
+   "TAGG": "span",
+   "TEXT": "NYÄrtsoppa90 minMNI"
+  },
+  {
+   "ANKARE": "occ-igttdajwoygu",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "lagasubst",
+   "ordProd": 35,
+   "TAGG": "div",
+   "TEXT": "champinjoner 250 g · samma mängd Ingen ändring i allergenbilden"
+  },
+  {
+   "ANKARE": "occ-ihoicxjceanv",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "skrivsjalv",
+   "ordProd": 37,
+   "TAGG": "div",
+   "TEXT": "800 g högrev"
+  },
+  {
+   "ANKARE": "occ-ihxqjtqtfdem",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "familjebetyg",
+   "ordProd": 36,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-iiomdcbgckdf",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 47,
+   "TAGG": "div",
+   "TEXT": "Ta med omärkta recept i menyn"
+  },
+  {
+   "ANKARE": "occ-ilidebcxuqlp",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-imaflvduaqco",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "lagamorkt",
+   "ordProd": 4,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-irehtxgnwyvd",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbateruppta",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-irtjvpvvevly",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 16,
+   "TAGG": "div",
+   "TEXT": "Samarbete i realtid"
+  },
+  {
+   "ANKARE": "occ-isbmfslegwha",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 38,
+   "TAGG": "div",
+   "TEXT": "Jag godkänner att Sigrids allergener sparas."
+  },
+  {
+   "ANKARE": "occ-ivknbmzejysi",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-iwwnnycegimv",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 10,
+   "TAGG": "div",
+   "TEXT": "Jordnötter"
+  },
+  {
+   "ANKARE": "occ-iwxkxtjpolqt",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbrotation",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "Mormors köttbullarA+ Portioner6 900 g blandfärs 1,5 st gul lök 1,5 dl ströbröd 1"
+  },
+  {
+   "ANKARE": "occ-izjjgxhtypxj",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delatlistor",
+   "ordProd": 6,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-jbtwkbmrizpg",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygperperson",
+   "ordProd": 33,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-jekixzlgfkan",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "lagastaende",
+   "ordProd": 4,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-jfkjzspijdsw",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 11,
+   "TAGG": "span",
+   "TEXT": "Mjölk"
+  },
+  {
+   "ANKARE": "occ-jfutxtftwnoa",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "installningar",
+   "ordProd": 64,
+   "TAGG": "div",
+   "TEXT": "SpråkSvenska"
+  },
+  {
+   "ANKARE": "occ-jfvtbwwdyrva",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostning",
+   "ordProd": 39,
+   "TAGG": "span",
+   "TEXT": "Ugnslax med potatis1 röst"
+  },
+  {
+   "ANKARE": "occ-jjkwmysxvarb",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbateruppta",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-jjtfqhxdrqog",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "storsttext",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "250 gKantareller"
+  },
+  {
+   "ANKARE": "occ-jlhjiijwxrrc",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "grupp",
+   "ordProd": 11,
+   "TAGG": "span",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-jpcjrxuhlksf",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 14,
+   "TAGG": "div",
+   "TEXT": "Laktos"
+  },
+  {
+   "ANKARE": "occ-jpfjlljpglmt",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatmindel",
+   "ordProd": 26,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-jqpigwzmbqvn",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmboffline",
+   "ordProd": 33,
+   "TAGG": "span",
+   "TEXT": "VÄNTARUgnspannkaka40 min"
+  },
+  {
+   "ANKARE": "occ-juycbwdxktak",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbateruppta",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "Ägg"
+  },
+  {
+   "ANKARE": "occ-jzazdchmzsrh",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbblockerade",
+   "ordProd": 31,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-kajlctktzblm",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "cooksnapgalleri",
+   "ordProd": 14,
+   "TAGG": "span",
+   "TEXT": "3 Du 2 h"
+  },
+  {
+   "ANKARE": "occ-kbioztqlhpab",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredinkop",
+   "ordProd": 14,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-kbngrorjbsow",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "hem360",
+   "ordProd": 36,
+   "TAGG": "div",
+   "TEXT": "Lör · Ugnsbakad rotselleri"
+  },
+  {
+   "ANKARE": "occ-kcxlkdnusfej",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemarket",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": "AAnnaVuxen"
+  },
+  {
+   "ANKARE": "occ-kdncywguayob",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "skafferi",
+   "ordProd": 46,
+   "TAGG": "div",
+   "TEXT": "Kryddhyllan 3"
+  },
+  {
+   "ANKARE": "occ-kiajzvkgxlae",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbdelad",
+   "ordProd": 26,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-kjrnfbjtuhfu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbgester",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "1,5 dl ströbröd"
+  },
+  {
+   "ANKARE": "occ-kkaoaeunqxro",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostlagg",
+   "ordProd": 31,
+   "TAGG": "span",
+   "TEXT": "FiskgratängMalin föreslog1"
+  },
+  {
+   "ANKARE": "occ-kodvypnudshu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbomrostning",
+   "ordProd": 49,
+   "TAGG": "span",
+   "TEXT": "Ärtsoppa90 min"
+  },
+  {
+   "ANKARE": "occ-kpgrazvgsnfe",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 41,
+   "TAGG": "span",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-kqrbngkfkozb",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nydelatlista",
+   "ordProd": 23,
+   "TAGG": "div",
+   "TEXT": "H Hanna Vik"
+  },
+  {
+   "ANKARE": "occ-kyawwwamxgdh",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbdelvis",
+   "ordProd": 63,
+   "TAGG": "span",
+   "TEXT": "6Tacos20 min"
+  },
+  {
+   "ANKARE": "occ-lctdzamyxizr",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkopbockad",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Parmesan80 g"
+  },
+  {
+   "ANKARE": "occ-lftbxhvbpblr",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 52,
+   "TAGG": "div",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-lgaqusfiwktt",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notiscentral",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": "Erik vill bli väni går"
+  },
+  {
+   "ANKARE": "occ-lgnawyseruft",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbkonflikt",
+   "ordProd": 41,
+   "TAGG": "span",
+   "TEXT": "Rotsakslåda55 min"
+  },
+  {
+   "ANKARE": "occ-lhcpgyvlfqmb",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Thailändskt"
+  },
+  {
+   "ANKARE": "occ-lijearfuszmk",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 47,
+   "TAGG": "span",
+   "TEXT": "NYUgnspannkaka40 minMI"
+  },
+  {
+   "ANKARE": "occ-ljkvfjtovwse",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 56,
+   "TAGG": "div",
+   "TEXT": "Soja"
+  },
+  {
+   "ANKARE": "occ-lmbhpogsgqae",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 15,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-lmglqjabhyxd",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "arkivimport",
+   "ordProd": 11,
+   "TAGG": "span",
+   "TEXT": "Importera"
+  },
+  {
+   "ANKARE": "occ-lmksqncismaa",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist1",
+   "ordProd": 23,
+   "TAGG": "span",
+   "TEXT": "1 gul lökFÖRSLAG"
+  },
+  {
+   "ANKARE": "occ-lmwxgesrmgln",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkopflerval",
+   "ordProd": 18,
+   "TAGG": "span",
+   "TEXT": "Karljohansvamp300 g"
+  },
+  {
+   "ANKARE": "occ-lngmkuyxlzib",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatmindel",
+   "ordProd": 63,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-lnynxchospba",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-loopoqafmitz",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbflytta",
+   "ordProd": 23,
+   "TAGG": "span",
+   "TEXT": "I dagPannbiffarbyter plats"
+  },
+  {
+   "ANKARE": "occ-lqpnfjkocctl",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatclaimkonflikt",
+   "ordProd": 20,
+   "TAGG": "div",
+   "TEXT": "250 gchampinjonerTar jag"
+  },
+  {
+   "ANKARE": "occ-lqvhqapddnom",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "redigera",
+   "ordProd": 48,
+   "TAGG": "div",
+   "TEXT": "250 g grön sparris"
+  },
+  {
+   "ANKARE": "occ-lrdmgkmhpjvy",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 25,
+   "TAGG": "span",
+   "TEXT": "Sesam"
+  },
+  {
+   "ANKARE": "occ-lrnlcfwfbgns",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 16,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-luwgowkxjerr",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delatlistor",
+   "ordProd": 30,
+   "TAGG": "div",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-lwxmbadpvbgz",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 41,
+   "TAGG": "span",
+   "TEXT": "NYKikärtsgryta25 min"
+  },
+  {
+   "ANKARE": "occ-lymkspuasjss",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbdelad",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-lyqwvwuhuvfq",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notiscentral",
+   "ordProd": 43,
+   "TAGG": "span",
+   "TEXT": "Butlery uppdateradesLeder inte längre någonstans2 v"
+  },
+  {
+   "ANKARE": "occ-mabdhbksgjro",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbanmal",
+   "ordProd": 2,
+   "TAGG": "div",
+   "TEXT": "Anmäl det här receptet Berätta vad som är fel. En människa i teamet läser din an"
+  },
+  {
+   "ANKARE": "occ-mehwffejxkmd",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist1",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "500 g blandfärsFÖRSLAG"
+  },
+  {
+   "ANKARE": "occ-mfexubdprgge",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "familjebetyg",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-mipgqezzdwol",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "familjebetyg",
+   "ordProd": 22,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-miwhtykpjvlx",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatnarvaro",
+   "ordProd": 47,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-mjhlbxwxnmef",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "safeareaios",
+   "ordProd": 21,
+   "TAGG": "div",
+   "TEXT": "2 dlgrädde"
+  },
+  {
+   "ANKARE": "occ-mqozheenqqbw",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbsenare",
+   "ordProd": 28,
+   "TAGG": "span",
+   "TEXT": "Glutenfritt"
+  },
+  {
+   "ANKARE": "occ-msjmdfuazvic",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nygruppchatt",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "H Hanna Vik"
+  },
+  {
+   "ANKARE": "occ-mwmxzjccttzy",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "safeareaios",
+   "ordProd": 17,
+   "TAGG": "div",
+   "TEXT": "250 gkantareller"
+  },
+  {
+   "ANKARE": "occ-myxkxvkrufym",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "Mexikanskt"
+  },
+  {
+   "ANKARE": "occ-nbiexivguveo",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "A"
+  },
+  {
+   "ANKARE": "occ-nbmipynlsbfm",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "veckoallergi",
+   "ordProd": 49,
+   "TAGG": "span",
+   "TEXT": "Mindre kött · kan släppas"
+  },
+  {
+   "ANKARE": "occ-ncpthulohabv",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "hemmorkt",
+   "ordProd": 34,
+   "TAGG": "div",
+   "TEXT": "FreKrämig svamppasta"
+  },
+  {
+   "ANKARE": "occ-ndgambbwyzbb",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "safeareaandroid",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": "2 stgul lök"
+  },
+  {
+   "ANKARE": "occ-ndtbapgoetir",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "imparkiv",
+   "ordProd": 31,
+   "TAGG": "span",
+   "TEXT": "Pannkakorarkiverat i januari"
+  },
+  {
+   "ANKARE": "occ-nhbvbbsryjth",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferivyn",
+   "ordProd": 50,
+   "TAGG": "div",
+   "TEXT": "kryddhylla9"
+  },
+  {
+   "ANKARE": "occ-nizjmeiyhhtr",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nygruppchatt",
+   "ordProd": 14,
+   "TAGG": "span",
+   "TEXT": "Hanna"
+  },
+  {
+   "ANKARE": "occ-nkwiyfkidzly",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist2",
+   "ordProd": 1,
+   "TAGG": "div",
+   "TEXT": "Hjälp mig tolka2/3"
+  },
+  {
+   "ANKARE": "occ-nqeigmexajpe",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "hemrecept",
+   "ordProd": 20,
+   "TAGG": "span",
+   "TEXT": "Vego"
+  },
+  {
+   "ANKARE": "occ-nsvmlgcgdamx",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nydelatlista",
+   "ordProd": 16,
+   "TAGG": "div",
+   "TEXT": "S Söndagsmiddagarna · grupp, 4 pers"
+  },
+  {
+   "ANKARE": "occ-nudklnapcboz",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nygruppchatt",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "E Erik Sandell"
+  },
+  {
+   "ANKARE": "occ-oajqifmvdwzx",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "familj",
+   "ordProd": 31,
+   "TAGG": "div",
+   "TEXT": "V Vera, 6 år Äter inte fisk"
+  },
+  {
+   "ANKARE": "occ-obfjmqzimeic",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "vanprofildelning",
+   "ordProd": 6,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-obofxectjcac",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "hem360",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "Tors · Krämig svamppasta"
+  },
+  {
+   "ANKARE": "occ-oljalohofqjm",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 31,
+   "TAGG": "div",
+   "TEXT": "Barnfavorit 19 recept"
+  },
+  {
+   "ANKARE": "occ-onayqntglegj",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 42,
+   "TAGG": "div",
+   "TEXT": "Visa i receptdetaljer"
+  },
+  {
+   "ANKARE": "occ-opbxuuhzxzvw",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkoputeslutna",
+   "ordProd": 44,
+   "TAGG": "span",
+   "TEXT": "Karljohansvamp300 g"
+  },
+  {
+   "ANKARE": "occ-ostmpxfjbusd",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "grupp",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "A"
+  },
+  {
+   "ANKARE": "occ-ottvdmqeudqj",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 23,
+   "TAGG": "span",
+   "TEXT": "Skaldjur"
+  },
+  {
+   "ANKARE": "occ-otuieknjrwrw",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "kontosakerhet",
+   "ordProd": 17,
+   "TAGG": "div",
+   "TEXT": "Tvåfaktorsinloggning SMS-kod vid inloggning På"
+  },
+  {
+   "ANKARE": "occ-ougdwvqjaglu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 45,
+   "TAGG": "span",
+   "TEXT": "NYPannbiffar35 min"
+  },
+  {
+   "ANKARE": "occ-ouhxdddyllni",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "Soja"
+  },
+  {
+   "ANKARE": "occ-owwkuuvomhzb",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 59,
+   "TAGG": "span",
+   "TEXT": "Testkök"
+  },
+  {
+   "ANKARE": "occ-pabmcliildak",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostavgor",
+   "ordProd": 25,
+   "TAGG": "span",
+   "TEXT": "Fiskgratäng2"
+  },
+  {
+   "ANKARE": "occ-pcggriolvgsj",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredinkop",
+   "ordProd": 9,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-pgbeegzxlogw",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 25,
+   "TAGG": "div",
+   "TEXT": "Snabbt 28 recept · 1 regel"
+  },
+  {
+   "ANKARE": "occ-pgvkvyabxbwh",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 7,
+   "TAGG": "span",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-pkxdzowrscnf",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delatlistor",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-pmdnbpuvroky",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredinkop",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-pmmjamdhhiva",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 18,
+   "TAGG": "span",
+   "TEXT": "P"
+  },
+  {
+   "ANKARE": "occ-pnltilktxcgj",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 34,
+   "TAGG": "div",
+   "TEXT": "Fläskfritt"
+  },
+  {
+   "ANKARE": "occ-posmgvunjgmz",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": "Fisk"
+  },
+  {
+   "ANKARE": "occ-prerfofhnjiu",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Jag är vårdnadshavare för Sigrid och godkänner att en profil skapas."
+  },
+  {
+   "ANKARE": "occ-prkshjjgwxgq",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "dialogosparat",
+   "ordProd": 2,
+   "TAGG": "div",
+   "TEXT": "Osparade ändringar Du har ändringar i receptet som inte sparats. Vill du spara d"
+  },
+  {
+   "ANKARE": "occ-pvisustlnfur",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist2",
+   "ordProd": 36,
+   "TAGG": "span",
+   "TEXT": "Servera med potatismos.FÖRSLAG"
+  },
+  {
+   "ANKARE": "occ-pvlyyuupbgkm",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostavgor",
+   "ordProd": 21,
+   "TAGG": "span",
+   "TEXT": "Krämig svamppasta2"
+  },
+  {
+   "ANKARE": "occ-pwhupvljqadv",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 11,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-pxahuvgjagrw",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikboffline",
+   "ordProd": 32,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-pyimsmajesan",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 19,
+   "TAGG": "div",
+   "TEXT": "Vego 34 recept · 2 regler"
+  },
+  {
+   "ANKARE": "occ-qabbfovbmonw",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 112,
+   "TAGG": "span",
+   "TEXT": "Pannkakor"
+  },
+  {
+   "ANKARE": "occ-qafbctmnzskr",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemarket",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": "EElsa7–12 år"
+  },
+  {
+   "ANKARE": "occ-qbswrbxipxld",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "chattmorkt",
+   "ordProd": 37,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-qbwglllegarb",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notisrensa",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Anna delade ett recept"
+  },
+  {
+   "ANKARE": "occ-qdvpgtkzmnmj",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatmindel",
+   "ordProd": 31,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-qeljqldhigdq",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 85,
+   "TAGG": "span",
+   "TEXT": "Rotsakslåda55 minMI"
+  },
+  {
+   "ANKARE": "occ-qiosdvonfbwo",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbflytta",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "Fisksoppapasserad"
+  },
+  {
+   "ANKARE": "occ-qipnjqngjgaf",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 58,
+   "TAGG": "span",
+   "TEXT": "Soppa"
+  },
+  {
+   "ANKARE": "occ-qmrmjhbmbawt",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 16,
+   "TAGG": "span",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-qonxpyovvhja",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flervalingang",
+   "ordProd": 27,
+   "TAGG": "div",
+   "TEXT": "Fiskgratäng med dill50 min · sex portioner"
+  },
+  {
+   "ANKARE": "occ-qotmshkmusfe",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "Ägg"
+  },
+  {
+   "ANKARE": "occ-qqdhdrlttebg",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorosthistorik",
+   "ordProd": 18,
+   "TAGG": "span",
+   "TEXT": "tisÄrtsoppa med pannkakorLika röster — Malin avgjordeAVGJORD"
+  },
+  {
+   "ANKARE": "occ-qqmnmnlkhvzy",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbomrostning",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "RÖSTNINGUgnspannkaka leder3 av 5 rösterdu har röstatstänger 17:00"
+  },
+  {
+   "ANKARE": "occ-qqrpnlartrba",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredmeny",
+   "ordProd": 22,
+   "TAGG": "span",
+   "TEXT": "M"
+  },
+  {
+   "ANKARE": "occ-qrdljplzhcgu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 39,
+   "TAGG": "span",
+   "TEXT": "Fisksoppa35 minMNI"
+  },
+  {
+   "ANKARE": "occ-qsrkiimptgeb",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "Gluten"
+  },
+  {
+   "ANKARE": "occ-qtieivlzkzwr",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "arkivimport",
+   "ordProd": 12,
+   "TAGG": "div",
+   "TEXT": "Krispiga smashed potatoes TikTok · delad i tisdags Importera"
+  },
+  {
+   "ANKARE": "occ-qvofqateemdv",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "synkko",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Ditt betyg på Citronrisotto Receptet finns inte längre Släng Släng ändringen"
+  },
+  {
+   "ANKARE": "occ-qvrquswuxxgd",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbnormal",
+   "ordProd": 98,
+   "TAGG": "span",
+   "TEXT": "Rester: fisksoppa"
+  },
+  {
+   "ANKARE": "occ-qykgwnbjyane",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatlistaaktiv",
+   "ordProd": 31,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-rdjhbpaeffcj",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "vemat",
+   "ordProd": 21,
+   "TAGG": "div",
+   "TEXT": "J JonasVuxen"
+  },
+  {
+   "ANKARE": "occ-resryzpdtntg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-rfktvqjciugy",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 42,
+   "TAGG": "span",
+   "TEXT": "Mjölk"
+  },
+  {
+   "ANKARE": "occ-rghvyjzyvhie",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Skaldjur"
+  },
+  {
+   "ANKARE": "occ-rjuqllmkiouu",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "lagastaende320",
+   "ordProd": 4,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-rklxlyptdfrf",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferivyn",
+   "ordProd": 44,
+   "TAGG": "div",
+   "TEXT": "skafferi12"
+  },
+  {
+   "ANKARE": "occ-rkpugriasueg",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergimorkt",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "Ägg"
+  },
+  {
+   "ANKARE": "occ-rloahfqplovb",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "langavarden",
+   "ordProd": 25,
+   "TAGG": "div",
+   "TEXT": "400 gpasta"
+  },
+  {
+   "ANKARE": "occ-rqovggiovqto",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbflytta",
+   "ordProd": 42,
+   "TAGG": "span",
+   "TEXT": "Rotsakslådabyter plats med"
+  },
+  {
+   "ANKARE": "occ-rrjmavjhnype",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "kontextmeny",
+   "ordProd": 23,
+   "TAGG": "div",
+   "TEXT": "Dela"
+  },
+  {
+   "ANKARE": "occ-rsqxxnpiqrtn",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "safeareaandroid",
+   "ordProd": 17,
+   "TAGG": "div",
+   "TEXT": "1 pktpasta"
+  },
+  {
+   "ANKARE": "occ-rsryuvcuwtzv",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flergrupp",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-rtxvsgxsklbi",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmboffline",
+   "ordProd": 30,
+   "TAGG": "span",
+   "TEXT": "Fisksoppa35 min"
+  },
+  {
+   "ANKARE": "occ-segurvgdbcgm",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferivyn",
+   "ordProd": 27,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-sfgcwcecirue",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredmeny",
+   "ordProd": 37,
+   "TAGG": "span",
+   "TEXT": "N"
+  },
+  {
+   "ANKARE": "occ-sfpwexmeaqws",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist2",
+   "ordProd": 30,
+   "TAGG": "span",
+   "TEXT": "Stek köttbullarna i smör.FÖRSLAG"
+  },
+  {
+   "ANKARE": "occ-sgzdogeavbgh",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 57,
+   "TAGG": "span",
+   "TEXT": "Grillat"
+  },
+  {
+   "ANKARE": "occ-sjxclpothlbi",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 32,
+   "TAGG": "div",
+   "TEXT": "Veganskt"
+  },
+  {
+   "ANKARE": "occ-slkhoehvfbxu",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 58,
+   "TAGG": "span",
+   "TEXT": "Koriander"
+  },
+  {
+   "ANKARE": "occ-smgbnvtvmfbm",
+   "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "RAM": "bredinkop",
+   "ordProd": 27,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-snfapwjppkxg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatmedmig",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "Spara"
+  },
+  {
+   "ANKARE": "occ-snnlexmzkbgs",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flerbar",
+   "ordProd": 36,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-squmkqcyqilx",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 46,
+   "TAGG": "div",
+   "TEXT": "Midsommar 7 recept · 1 regel"
+  },
+  {
+   "ANKARE": "occ-sqwgjvtaefne",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 37,
+   "TAGG": "div",
+   "TEXT": "Visa på receptkort"
+  },
+  {
+   "ANKARE": "occ-srzxsotarojv",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 25,
+   "TAGG": "span",
+   "TEXT": "Sesam"
+  },
+  {
+   "ANKARE": "occ-swwendpxqrid",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "lagasubst",
+   "ordProd": 20,
+   "TAGG": "div",
+   "TEXT": "1 msksmörByt"
+  },
+  {
+   "ANKARE": "occ-swzittmcagns",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemat",
+   "ordProd": 30,
+   "TAGG": "div",
+   "TEXT": "J Johan"
+  },
+  {
+   "ANKARE": "occ-sxibscdemhal",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 6,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-syfymbsfotmx",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "taggdetalj",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Ingrediens: kokt ris Ingrediensregel · taggade 3 recept"
+  },
+  {
+   "ANKARE": "occ-tadtcdgmmnwy",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbflytta",
+   "ordProd": 20,
+   "TAGG": "span",
+   "TEXT": "Ugnspannkakapasserad"
+  },
+  {
+   "ANKARE": "occ-tboidulnivjz",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "receptkommentarer",
+   "ordProd": 25,
+   "TAGG": "div",
+   "TEXT": "M Du 4 timmar Vi lade i lite citronskal på slutet. Rekommenderas!"
+  },
+  {
+   "ANKARE": "occ-tedlvksgbcli",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "hem360",
+   "ordProd": 31,
+   "TAGG": "div",
+   "TEXT": "Fre · Rester"
+  },
+  {
+   "ANKARE": "occ-thmlqwbhcsck",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onballergi",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "Soja"
+  },
+  {
+   "ANKARE": "occ-tnghihchqhqp",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Skaldjur"
+  },
+  {
+   "ANKARE": "occ-tolauvovigcy",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "kalender",
+   "ordProd": 130,
+   "TAGG": "div",
+   "TEXT": "Lunch Rester · Kikärtscurry Middag Krämig svamppasta Kväll + planera"
+  },
+  {
+   "ANKARE": "occ-trdrzclaigds",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikboffline",
+   "ordProd": 26,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-tsluxpakagzi",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 49,
+   "TAGG": "span",
+   "TEXT": "lägger ut …"
+  },
+  {
+   "ANKARE": "occ-tsywcwmespjf",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "familjebetyg",
+   "ordProd": 29,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-tszixrxkwhqp",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "inkopmergeoppen",
+   "ordProd": 11,
+   "TAGG": "div",
+   "TEXT": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Rad"
+  },
+  {
+   "ANKARE": "occ-twrzuaahxvva",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist1",
+   "ordProd": 38,
+   "TAGG": "span",
+   "TEXT": "Stek köttbullarna i smör."
+  },
+  {
+   "ANKARE": "occ-twvnuduqchcq",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbnormal",
+   "ordProd": 20,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-tyrviyvgppmo",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delatlistor",
+   "ordProd": 31,
+   "TAGG": "div",
+   "TEXT": "J"
+  },
+  {
+   "ANKARE": "occ-tzjjkkfdlola",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "langavarden",
+   "ordProd": 21,
+   "TAGG": "div",
+   "TEXT": "1,5 dlkallpressad rapsolja från Gotland, gärna den ofiltrerade"
+  },
+  {
+   "ANKARE": "occ-uatlgblrivrd",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "taggar",
+   "ordProd": 40,
+   "TAGG": "div",
+   "TEXT": "Jul 12 recept"
+  },
+  {
+   "ANKARE": "occ-uaxpxoxlipvv",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbnormal",
+   "ordProd": 15,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-ubhaurdopgdy",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "betygsoversikt",
+   "ordProd": 13,
+   "TAGG": "span",
+   "TEXT": "Familj 4,3"
+  },
+  {
+   "ANKARE": "occ-uceelzmfifsx",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delaark",
+   "ordProd": 19,
+   "TAGG": "div",
+   "TEXT": "S Söndagsmiddagarna"
+  },
+  {
+   "ANKARE": "occ-ucxrmnkxhfhw",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferiflerval",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": "Färsk basilika1 kruka"
+  },
+  {
+   "ANKARE": "occ-udkbyilabuwl",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "veckorostlagg",
+   "ordProd": 25,
+   "TAGG": "span",
+   "TEXT": "Krämig svamppastaAnna föreslog2"
+  },
+  {
+   "ANKARE": "occ-ulokkwjewora",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "nydelatlista",
+   "ordProd": 10,
+   "TAGG": "div",
+   "TEXT": "E Erik Sandell"
+  },
+  {
+   "ANKARE": "occ-uoihzztnfugc",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "delaark",
+   "ordProd": 7,
+   "TAGG": "div",
+   "TEXT": "E Erik Sandell"
+  },
+  {
+   "ANKARE": "occ-uojsblrdezec",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "synkko",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Bild till Sommarens grillmarinad Bilden är för stor (14 MB) Försök mindre Släng "
+  },
+  {
+   "ANKARE": "occ-updbujqfhceu",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "faq",
+   "ordProd": 13,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-uqcmuermtfbl",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "lagaliggande",
+   "ordProd": 2,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-urgbphptptym",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbkonflikt",
+   "ordProd": 23,
+   "TAGG": "span",
+   "TEXT": "Ugnspannkaka40 min"
+  },
+  {
+   "ANKARE": "occ-uuwiaiyzttmf",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbateruppta",
+   "ordProd": 15,
+   "TAGG": "span",
+   "TEXT": "Mjölk"
+  },
+  {
+   "ANKARE": "occ-uvkguxfcmbhy",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "skafferivara",
+   "ordProd": 2,
+   "TAGG": "div",
+   "TEXT": "Lägg till i skafferiet Vara Krossade tomater Tomatpuré Soltorkade tomater Plats "
+  },
+  {
+   "ANKARE": "occ-uwsrnmgkcqts",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "vemat",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": "M MalinVuxen"
+  },
+  {
+   "ANKARE": "occ-uxgdspucieuw",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "storsttext",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "400 gPasta"
+  },
+  {
+   "ANKARE": "occ-uygkyhfjgdwo",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 59,
+   "TAGG": "span",
+   "TEXT": "Rotsakslåda55 minrörs inte"
+  },
+  {
+   "ANKARE": "occ-vculiafoosdc",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "skafferi",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Kylen 12"
+  },
+  {
+   "ANKARE": "occ-vdmmsxppswxh",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 20,
+   "TAGG": "div",
+   "TEXT": "Ägg"
+  },
+  {
+   "ANKARE": "occ-vesykaidboio",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "Soja"
+  },
+  {
+   "ANKARE": "occ-vflcrhsgloev",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbsenare",
+   "ordProd": 27,
+   "TAGG": "span",
+   "TEXT": "Veganskt"
+  },
+  {
+   "ANKARE": "occ-vmoawvdnffxx",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "ingredienssok",
+   "ordProd": 14,
+   "TAGG": "span",
+   "TEXT": "pasta"
+  },
+  {
+   "ANKARE": "occ-vpmybhtrziph",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "familjmedlemsamtycke",
+   "ordProd": 57,
+   "TAGG": "span",
+   "TEXT": "Oliver"
+  },
+  {
+   "ANKARE": "occ-vppzchmlkekq",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatmindel",
+   "ordProd": 57,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-vrkteiqfgucg",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatnarvaro",
+   "ordProd": 31,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-vxwcsnkwxhea",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatlistaaktiv",
+   "ordProd": 56,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-vzbtnfndpohv",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbnormal",
+   "ordProd": 28,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-wenkvwxvwfhf",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "imparkiv",
+   "ordProd": 17,
+   "TAGG": "span",
+   "TEXT": "Fiskgratängarkiverat i mars"
+  },
+  {
+   "ANKARE": "occ-weompezkurol",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "grupp",
+   "ordProd": 15,
+   "TAGG": "span",
+   "TEXT": "P"
+  },
+  {
+   "ANKARE": "occ-wgdkzbzrsgsr",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flergrupp",
+   "ordProd": 36,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-wgmhisjqxuzl",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "ingredienssok",
+   "ordProd": 10,
+   "TAGG": "span",
+   "TEXT": "grädde"
+  },
+  {
+   "ANKARE": "occ-widjucqlwtik",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "skrivsjalv",
+   "ordProd": 52,
+   "TAGG": "div",
+   "TEXT": "2 gula lökar"
+  },
+  {
+   "ANKARE": "occ-wnpaiadoulyt",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 37,
+   "TAGG": "span",
+   "TEXT": "NYTorsk med potatis30 min"
+  },
+  {
+   "ANKARE": "occ-wnwqzoyqtlkz",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 28,
+   "TAGG": "div",
+   "TEXT": "Indiskt"
+  },
+  {
+   "ANKARE": "occ-wqkuxkngsdli",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbdelvis",
+   "ordProd": 55,
+   "TAGG": "span",
+   "TEXT": "4Linsgryta25 min"
+  },
+  {
+   "ANKARE": "occ-wxfhmciqkhja",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "redigera",
+   "ordProd": 41,
+   "TAGG": "div",
+   "TEXT": "2 citroner · ändrad"
+  },
+  {
+   "ANKARE": "occ-wyutxcotrqgz",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist1",
+   "ordProd": 41,
+   "TAGG": "span",
+   "TEXT": "Servera med potatismos."
+  },
+  {
+   "ANKARE": "occ-wzbdukdaeuxa",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatnarvaro",
+   "ordProd": 52,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-wzfgayhjvfpp",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "kontextmeny",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "Redigera Dela Duplicera Exportera Ta bort"
+  },
+  {
+   "ANKARE": "occ-xcvmgzmslxov",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "storsttext",
+   "ordProd": 30,
+   "TAGG": "div",
+   "TEXT": "2 dlGrädde"
+  },
+  {
+   "ANKARE": "occ-xehstscwfehj",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatmedmig",
+   "ordProd": 14,
+   "TAGG": "div",
+   "TEXT": "Sommarens grillmarinad från Per · för 2 dagar sedan Spara"
+  },
+  {
+   "ANKARE": "occ-xgnmbtepubgs",
+   "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "RAM": "notisrensa",
+   "ordProd": 18,
+   "TAGG": "span",
+   "TEXT": "Erik vill bli vän"
+  },
+  {
+   "ANKARE": "occ-xidjadbrnwyg",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "laggtillmedlemmar",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "H Hanna Vik"
+  },
+  {
+   "ANKARE": "occ-ximufjbjogbg",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbsenare",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": "Laktosfritt"
+  },
+  {
+   "ANKARE": "occ-xkojtuqufgtp",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "kontosakerhet",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": "Byt lösenord"
+  },
+  {
+   "ANKARE": "occ-xnjjfrzeodza",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbimport",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": "Fotografera en sidaUr en kokbok eller en handskriven lapp"
+  },
+  {
+   "ANKARE": "occ-xnkfbaomlrmu",
+   "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "RAM": "socgruppinfo",
+   "ordProd": 9,
+   "TAGG": "div",
+   "TEXT": "Samtalets namnMatlaget Lägg till någon"
+  },
+  {
+   "ANKARE": "occ-xthoxykssvlw",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 48,
+   "TAGG": "div",
+   "TEXT": "Ägg"
+  },
+  {
+   "ANKARE": "occ-xttjxrkvkkvo",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbblockerade",
+   "ordProd": 37,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-xvuwbgpxqzoz",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "storsttext",
+   "ordProd": 5,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-xvvkggjtlnbp",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbrotation",
+   "ordProd": 0,
+   "TAGG": "div",
+   "TEXT": "Mormors köttbullarA+ INGREDIENSER · 6 PORT 900 g blandfärs1,5 st lök1,5 dl ströb"
+  },
+  {
+   "ANKARE": "occ-xyhoaytbdkgl",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "skafferi",
+   "ordProd": 41,
+   "TAGG": "div",
+   "TEXT": "Skafferiet 9"
+  },
+  {
+   "ANKARE": "occ-xyylydtctfmr",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "skafferi",
+   "ordProd": 36,
+   "TAGG": "div",
+   "TEXT": "Frysen 7"
+  },
+  {
+   "ANKARE": "occ-xzlaxzjttcsd",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "fbblockerade",
+   "ordProd": 43,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-yaldvulgzajb",
+   "FIL": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "RAM": "onbsenare",
+   "ordProd": 26,
+   "TAGG": "span",
+   "TEXT": "Vegetariskt"
+  },
+  {
+   "ANKARE": "occ-ycfuiekxbrcq",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "chatt",
+   "ordProd": 37,
+   "TAGG": "svg",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-yfhgzrxxiwjk",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist2",
+   "ordProd": 24,
+   "TAGG": "span",
+   "TEXT": "Blanda färsen med ägg och ströbröd.FÖRSLAG"
+  },
+  {
+   "ANKARE": "occ-yggnaglkbltd",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "hemmorkt",
+   "ordProd": 40,
+   "TAGG": "div",
+   "TEXT": "LörRester"
+  },
+  {
+   "ANKARE": "occ-yljiohxdxkcq",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 12,
+   "TAGG": "div",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-ynqewhlxcxvv",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 31,
+   "TAGG": "div",
+   "TEXT": "Socialt flöde"
+  },
+  {
+   "ANKARE": "occ-ypvkbhqzkmzm",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbdelad",
+   "ordProd": 14,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-yqfrcsvfslko",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "menysmak",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "Husmanskost"
+  },
+  {
+   "ANKARE": "occ-yqkegijjpfju",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "ikbnormal",
+   "ordProd": 10,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-yqothacnvnhd",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "hemtom",
+   "ordProd": 32,
+   "TAGG": "div",
+   "TEXT": "Fota en receptsidaur en kokbok eller ett urklipp"
+  },
+  {
+   "ANKARE": "occ-yvgjtgeesqcl",
+   "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "RAM": "modrapporter",
+   "ordProd": 24,
+   "TAGG": "div",
+   "TEXT": "KOMMENTAR · com_5512bny Trakasseri Anmäld av anv_9a20 Flytta framRadera"
+  },
+  {
+   "ANKARE": "occ-ywpgrsurlnfq",
+   "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "RAM": "impassist3",
+   "ordProd": 50,
+   "TAGG": "div",
+   "TEXT": "TillbakaSpara recept"
+  },
+  {
+   "ANKARE": "occ-yxdltykzqlwj",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "receptbildfel",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "400 gpasta"
+  },
+  {
+   "ANKARE": "occ-yxqflnhlpnrj",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkopflerval",
+   "ordProd": 32,
+   "TAGG": "span",
+   "TEXT": "Parmesan80 g"
+  },
+  {
+   "ANKARE": "occ-zanzarerqdlr",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flerbar",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-zaqxkctxeiqv",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "notisinstallningar",
+   "ordProd": 21,
+   "TAGG": "div",
+   "TEXT": "Inköpslistor"
+  },
+  {
+   "ANKARE": "occ-zbubhlrukrkc",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "delatlista",
+   "ordProd": 44,
+   "TAGG": "div",
+   "TEXT": "Snaps Anna"
+  },
+  {
+   "ANKARE": "occ-zciflxcvdzuw",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkopflerval",
+   "ordProd": 26,
+   "TAGG": "span",
+   "TEXT": "Grädde3 dl"
+  },
+  {
+   "ANKARE": "occ-zcvkhygoqvhu",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbgenererar",
+   "ordProd": 53,
+   "TAGG": "span",
+   "TEXT": "Linsgrytaskrivs över"
+  },
+  {
+   "ANKARE": "occ-zdffbhbodcvy",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmbdelvis",
+   "ordProd": 51,
+   "TAGG": "span",
+   "TEXT": "I dag · 3Pannbiffar35 min"
+  },
+  {
+   "ANKARE": "occ-zdqzwpnngjqp",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "skafferivyn",
+   "ordProd": 38,
+   "TAGG": "div",
+   "TEXT": "frys4"
+  },
+  {
+   "ANKARE": "occ-zgidmpgayrtu",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 26,
+   "TAGG": "div",
+   "TEXT": "Nötter"
+  },
+  {
+   "ANKARE": "occ-zhzbqjvtdlnb",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmboffline",
+   "ordProd": 60,
+   "TAGG": "span",
+   "TEXT": "Rotsakslåda55 min"
+  },
+  {
+   "ANKARE": "occ-zitmgqnbetdm",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "betygvemat",
+   "ordProd": 18,
+   "TAGG": "div",
+   "TEXT": "P Per"
+  },
+  {
+   "ANKARE": "occ-zjtllueoguau",
+   "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+   "RAM": "delatlistaaktiv",
+   "ordProd": 39,
+   "TAGG": "span",
+   "TEXT": ""
+  },
+  {
+   "ANKARE": "occ-zkqzdtxcczmg",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "taggdetalj",
+   "ordProd": 22,
+   "TAGG": "div",
+   "TEXT": "Innehåller \"rester\" Nyckelord i titel eller beskrivning · taggade 5 recept"
+  },
+  {
+   "ANKARE": "occ-zkvqjbtaauqx",
+   "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "RAM": "familjeform",
+   "ordProd": 54,
+   "TAGG": "div",
+   "TEXT": "Laktos"
+  },
+  {
+   "ANKARE": "occ-zlfuivhdwgkz",
+   "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "RAM": "kompmallar",
+   "ordProd": 15,
+   "TAGG": "div",
+   "TEXT": "Fredagsmys Använd 2 gånger · 6 varor"
+  },
+  {
+   "ANKARE": "occ-znqfsjnbdryl",
+   "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "RAM": "flervalingang",
+   "ordProd": 13,
+   "TAGG": "div",
+   "TEXT": "Pannbiffar med lök35 min · fyra portioner"
+  },
+  {
+   "ANKARE": "occ-zpywexhkniof",
+   "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "RAM": "lagasubst",
+   "ordProd": 12,
+   "TAGG": "div",
+   "TEXT": "250 gkantarellerByt"
+  },
+  {
+   "ANKARE": "occ-zsiphqzsyryq",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "vmboffline",
+   "ordProd": 44,
+   "TAGG": "span",
+   "TEXT": "VÄNTARLinsgryta25 min"
+  },
+  {
+   "ANKARE": "occ-zsiytlisccqu",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "onboarding",
+   "ordProd": 16,
+   "TAGG": "div",
+   "TEXT": "Laktos"
+  },
+  {
+   "ANKARE": "occ-zujhxjvvjeio",
+   "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "RAM": "inkoputeslutna",
+   "ordProd": 40,
+   "TAGG": "span",
+   "TEXT": "Gul lök3 st"
+  },
+  {
+   "ANKARE": "occ-zuyiglbjbees",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "allergener",
+   "ordProd": 10,
+   "TAGG": "div",
+   "TEXT": "Jordnötter"
+  },
+  {
+   "ANKARE": "occ-zwveqqgcmntg",
+   "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "RAM": "vemat",
+   "ordProd": 29,
+   "TAGG": "div",
+   "TEXT": "E EbbaBarn 7–12"
+  },
+  {
+   "ANKARE": "occ-zymdnuorpoyh",
+   "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "RAM": "lgbrotation",
+   "ordProd": 29,
+   "TAGG": "span",
+   "TEXT": "A+"
+  },
+  {
+   "ANKARE": "occ-zyopbtwzkeaq",
+   "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "RAM": "hemrecept",
+   "ordProd": 19,
+   "TAGG": "span",
+   "TEXT": "Snabbt"
+  }
+ ]
+}

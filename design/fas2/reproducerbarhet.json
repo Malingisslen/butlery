@@ -1,0 +1,94 @@
+{
+ "$regel": "Två rena körningar utan produktändringar. Allt som är ett resultat måste vara identiskt.",
+ "normaliserade_fält": [
+  "runId",
+  "startedAt",
+  "finishedAt",
+  "durationMs",
+  "timestamp",
+  "out",
+  "pid"
+ ],
+ "$normaliseringsnot": "Endast tids- och körnings-id-fält normaliseras. Inget resultatfält står i listan.",
+ "körning_a": "C:/Users/malla/butlery-render/repro-a/render-raw.json",
+ "körning_b": "C:/Users/malla/butlery-render/repro-b/render-raw.json",
+ "jämförda_nycklar": [
+  "produktpopulation",
+  "probepopulation",
+  "detektioner",
+  "probedetektioner_st",
+  "findingIds",
+  "elementfynd_st",
+  "felinstanser",
+  "felinstanser_st",
+  "källrotorsaker",
+  "källrotorsaker_st",
+  "kontrollstatus"
+ ],
+ "hashar": {
+  "produktpopulation": {
+   "a": "8a367f04ae90c282",
+   "b": "8a367f04ae90c282",
+   "lika": true
+  },
+  "probepopulation": {
+   "a": "ed6148dce1eb5a4a",
+   "b": "ed6148dce1eb5a4a",
+   "lika": true
+  },
+  "detektioner": {
+   "a": "6b8ddf89d5a1d90c",
+   "b": "6b8ddf89d5a1d90c",
+   "lika": true
+  },
+  "probedetektioner_st": {
+   "a": "c2356069e9d1e79c",
+   "b": "c2356069e9d1e79c",
+   "lika": true
+  },
+  "findingIds": {
+   "a": "daa6c0759eaedea6",
+   "b": "daa6c0759eaedea6",
+   "lika": true
+  },
+  "elementfynd_st": {
+   "a": "35135aaa6cc23891",
+   "b": "35135aaa6cc23891",
+   "lika": true
+  },
+  "felinstanser": {
+   "a": "ab9a455835944d90",
+   "b": "ab9a455835944d90",
+   "lika": true
+  },
+  "felinstanser_st": {
+   "a": "4523540f1504cd17",
+   "b": "4523540f1504cd17",
+   "lika": true
+  },
+  "källrotorsaker": {
+   "a": "4cde4405b8c8837b",
+   "b": "4cde4405b8c8837b",
+   "lika": true
+  },
+  "källrotorsaker_st": {
+   "a": "e7f6c011776e8db7",
+   "b": "e7f6c011776e8db7",
+   "lika": true
+  },
+  "kontrollstatus": {
+   "a": "4efaf5360345f9ce",
+   "b": "4efaf5360345f9ce",
+   "lika": true
+  }
+ },
+ "sammanfattning": {
+  "produktartefakter_st": 309,
+  "probeartefakter_st": 3,
+  "elementfynd_st": 29,
+  "felinstanser_st": 17,
+  "källrotorsaker_st": 6
+ },
+ "skillnader": [],
+ "status": "reproducerbar"
+}

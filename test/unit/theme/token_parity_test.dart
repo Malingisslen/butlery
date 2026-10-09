@@ -1,17 +1,13 @@
 /// P8-U07: the token check in the build.
 ///
-/// lib/theme/app_colors.dart and app_colors_dark.dart are generated in the
-/// design repo from tokens.json (their header: "VÄRDET kommer ur
-/// tokens.json"). Every colour member names its token on its doc line
-/// ("· semantic.text.primary", "· palette.inkDeep", "(dark)" in the dark
-/// file). This test reads both files as text and checks each member's value
-/// against that token in test/fixtures/design/tokens-semantic.json, the
-/// vendored copy of tokens.json with its sha256. A hand edit of a generated
-/// colour, or tokens that moved on without a regeneration, turns it red.
-///
-/// Refresh the fixture with tools/vendor_design_tokens.dart when the design
-/// tokens change. Parity against the vendored copy stands in for re-running
-/// the generator, which lives in the design repo (Q8-10).
+/// lib/theme/app_colors.dart and app_colors_dark.dart are generated from
+/// design/tokens.json (their header: "VÄRDET kommer ur tokens.json"). Every
+/// colour member names its token on its doc line ("· semantic.text.primary",
+/// "· palette.inkDeep", "(dark)" in the dark file). This test reads both
+/// files as text and checks each member's value against that token in
+/// design/tokens.json. A hand edit of a generated colour, or tokens that
+/// moved on without a regeneration (dart run tools/design_theme.dart), turns
+/// it red.
 library;
 
 import 'dart:convert';
@@ -29,8 +25,7 @@ const semanticKeysWithoutMember = <String, String>{};
 /// Empty: every semantic key has a member since BUT-2198 was delivered.
 const tokenRegisteredTickets = <String, String>{};
 
-const _fixture = 'test/fixtures/design/tokens-semantic.json';
-const _contrastFixture = 'test/fixtures/design/contrast_pairs.json';
+const _fixture = 'design/tokens.json';
 const _light = 'lib/theme/app_colors.dart';
 const _dark = 'lib/theme/app_colors_dark.dart';
 
@@ -154,16 +149,6 @@ void main() {
   final dark = parseMembers(darkSource);
   final semantic = fixture['semantic'] as Map<String, dynamic>;
 
-  test('the fixture is the tokens.json the contrast pairs came from', () {
-    final contrast =
-        jsonDecode(File(_contrastFixture).readAsStringSync())
-            as Map<String, dynamic>;
-    final source = fixture['source'] as Map<String, dynamic>;
-    expect(source['sha256'], (contrast['source'] as Map)['sha256']);
-    expect(fixture['version'], (contrast['source'] as Map)['tokens_version']);
-    expect(fixture['date'], (contrast['source'] as Map)['tokens_date']);
-  });
-
   test('both generated files were generated from this tokens version', () {
     final version = RegExp(
       r'^// system [\d.]+ · tokens ([\d.]+)$',
@@ -218,7 +203,8 @@ void main() {
     () {
       final ladder = [
         for (final steps in (fixture['opacityLadder'] as Map).values)
-          for (final s in steps as List) (s as num).toDouble(),
+          if (steps is List)
+            for (final s in steps) (s as num).toDouble(),
       ];
       expect(ladder, isNotEmpty);
       for (final entry in {'light': light, 'dark': dark}.entries) {

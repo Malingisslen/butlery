@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "butlery-verify-report/2",
+  "version": "2.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "runId",
+    "generatedAt",
+    "canonicalCommand",
+    "packageIdentity",
+    "sources",
+    "steps",
+    "controls",
+    "tally",
+    "measures",
+    "manifest",
+    "pipelineResult",
+    "controlsResult",
+    "phaseGateResult",
+    "overallResult",
+    "exitCode",
+    "finalExitCode",
+    "currentPhase",
+    "requirements"
+  ],
+  "properties": {
+    "schema": {
+      "const": "butlery-verify-report/2"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "object"
+    },
+    "packageIdentity": {
+      "type": "object",
+      "required": [
+        "manifestSha256",
+        "manifestExpected",
+        "cwd",
+        "node",
+        "artifactFingerprint"
+      ],
+      "properties": {
+        "manifestSha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "manifestExpected": {
+          "type": "integer"
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        },
+        "artifactFingerprint": {
+          "type": "object",
+          "required": [
+            "sha256",
+            "mode",
+            "declared",
+            "hashed"
+          ],
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "mode": {
+              "enum": [
+                "repo",
+                "delivery"
+              ]
+            },
+            "declared": {
+              "type": "integer"
+            },
+            "hashed": {
+              "type": "integer"
+            },
+            "missing": {
+              "type": "integer"
+            },
+            "totalEntries": {
+              "type": "integer"
+            },
+            "outsideEntries": {
+              "type": "integer"
+            }
+          }
+        },
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "step",
+          "script",
+          "status",
+          "exitCode"
+        ],
+        "properties": {
+          "step": {
+            "type": "string"
+          },
+          "script": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed"
+            ]
+          },
+          "exitCode": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "owner",
+          "source",
+          "status",
+          "resolutionPhase",
+          "requiredForGate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^CHK-"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed",
+              "blocked",
+              "not run",
+              "not applicable"
+            ]
+          },
+          "resolutionPhase": {
+            "type": "integer"
+          },
+          "requiredForGate": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "tally": {
+      "type": "object",
+      "required": [
+        "passed",
+        "failed",
+        "blocked",
+        "not run",
+        "not applicable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "passed": {
+          "type": "integer"
+        },
+        "failed": {
+          "type": "integer"
+        },
+        "blocked": {
+          "type": "integer"
+        },
+        "not run": {
+          "type": "integer"
+        },
+        "not applicable": {
+          "type": "integer"
+        }
+      }
+    },
+    "measures": {
+      "type": "object",
+      "required": [
+        "specErrors",
+        "specWarnings",
+        "geometryDeviations",
+        "coverageErrors"
+      ],
+      "properties": {
+        "specErrors": {
+          "type": "integer"
+        },
+        "specWarnings": {
+          "type": "integer"
+        },
+        "geometryDeviations": {
+          "type": "integer"
+        },
+        "coverageErrors": {
+          "type": "integer"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "required": [
+        "total",
+        "byStatus"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "byStatus": {
+          "type": "object"
+        }
+      }
+    },
+    "pipelineResult": {
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "controlsResult": {
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "phaseGateResult": {
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "overallResult": {
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "exitCode": {
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "finalExitCode": {
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "currentPhase": {
+      "type": "integer"
+    },
+    "manifest": {
+      "type": "object",
+      "required": [
+        "status"
+      ]
+    }
+  }
+}
