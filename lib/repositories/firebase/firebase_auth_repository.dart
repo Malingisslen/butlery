@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:butlery/models/auth/password_reset_link.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -135,8 +136,33 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {
-    await _firebaseAuth.sendPasswordResetEmail(email: email);
+    await _firebaseAuth.sendPasswordResetEmail(
+      email: email,
+      actionCodeSettings: passwordResetActionCodeSettings,
+    );
   }
+
+  static final ActionCodeSettings passwordResetActionCodeSettings =
+      ActionCodeSettings(
+        url: PasswordResetLink.continueUrl,
+        handleCodeInApp: true,
+        linkDomain: PasswordResetLink.linkDomain,
+        androidPackageName: PasswordResetLink.androidPackageName,
+        iOSBundleId: PasswordResetLink.iOSBundleId,
+      );
+
+  @override
+  Future<String> verifyPasswordResetCode(String code) =>
+      _firebaseAuth.verifyPasswordResetCode(code);
+
+  @override
+  Future<void> confirmPasswordReset({
+    required String code,
+    required String newPassword,
+  }) => _firebaseAuth.confirmPasswordReset(
+    code: code,
+    newPassword: newPassword,
+  );
 
   @override
   Future<void> signOut() async {

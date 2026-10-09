@@ -3,8 +3,10 @@
     "apps": [],
     "details": [
       {
-        "appID": "REPLACE_ME_TEAMID.se.butlery.app",
+        "appID": "F6SFW9MP8T.se.butlery.app",
         "paths": [
+          "/__/auth/links",
+          "/__/auth/links/*",
           "/invite/*",
           "/recipe/*",
           "/menu/*",

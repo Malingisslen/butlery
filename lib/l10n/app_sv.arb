@@ -13937,5 +13937,84 @@
   "pantryRestorePreviousFailed": "Kunde inte återställa förra versionen",
   "@pantryRestorePreviousFailed": {
     "description": "BUT-2140: the viewmodel's failure text when restoring a pantry item's previous version, shown whole as the error (base_viewmodel.dart executeAsync)."
+  },
+  "setNewPasswordTitle": "Välj nytt lösenord",
+  "@setNewPasswordTitle": {
+    "description": "BUT-2170: title of the view a reset link opens."
+  },
+  "setNewPasswordChecking": "Kontrollerar länken …",
+  "@setNewPasswordChecking": {
+    "description": "BUT-2170: shown while the reset link is checked."
+  },
+  "setNewPasswordForAccount": "Gäller kontot {email}.",
+  "@setNewPasswordForAccount": {
+    "description": "BUT-2170: names the account the reset link belongs to.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "setNewPasswordRepeat": "Upprepa nytt lösenord",
+  "@setNewPasswordRepeat": {
+    "description": "BUT-2170: second password field, label from Skarmar v12 etapp 6."
+  },
+  "setNewPasswordSave": "Spara lösenordet",
+  "@setNewPasswordSave": {
+    "description": "BUT-2170: primary button."
+  },
+  "setNewPasswordWeak": "Lösenordet är för enkelt. Välj ett längre, gärna med siffror och tecken.",
+  "@setNewPasswordWeak": {
+    "description": "BUT-2170: Firebase's password policy refused the new password."
+  },
+  "setNewPasswordSaveFailed": "Lösenordet kunde inte sparas.",
+  "@setNewPasswordSaveFailed": {
+    "description": "BUT-2170: Part 1 when saving failed for an unknown reason."
+  },
+  "setNewPasswordSaveFailedBecause": "Lösenordet kunde inte sparas. {cause}",
+  "@setNewPasswordSaveFailedBecause": {
+    "description": "BUT-2170: Part 1 with a mapped cause (network, too many attempts).",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "setNewPasswordNothingChanged": "Ditt gamla lösenord gäller fortfarande.",
+  "@setNewPasswordNothingChanged": {
+    "description": "BUT-2170: Part 2 of an error: what is kept."
+  },
+  "setNewPasswordCheckFailed": "Länken kunde inte kontrolleras.",
+  "@setNewPasswordCheckFailed": {
+    "description": "BUT-2170: Part 1 when checking the link failed but the link may still work."
+  },
+  "setNewPasswordLinkInvalidTitle": "Länken gäller inte längre",
+  "@setNewPasswordLinkInvalidTitle": {
+    "description": "BUT-2170: the reset link is used or expired (flow 05/06 wording)."
+  },
+  "setNewPasswordLinkInvalidBody": "Den har redan använts eller blivit för gammal. Be om en ny länk, så kommer den till din e-post.",
+  "@setNewPasswordLinkInvalidBody": {
+    "description": "BUT-2170: body under the expired-link title."
+  },
+  "setNewPasswordRequestNew": "Skicka ny länk",
+  "@setNewPasswordRequestNew": {
+    "description": "BUT-2170: opens Glömt lösenord on the sign-in screen."
+  },
+  "setNewPasswordClose": "Stäng",
+  "@setNewPasswordClose": {
+    "description": "BUT-2170: leaves the view when this device is signed in to another account."
+  },
+  "setNewPasswordSavedOther": "Lösenordet för {email} är bytt.",
+  "@setNewPasswordSavedOther": {
+    "description": "BUT-2170: snackbar when the device is signed in to another account.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordResetDoneNotice": "Lösenordet är bytt. Logga in med det nya.",
+  "@passwordResetDoneNotice": {
+    "description": "BUT-2170: notice on the sign-in screen after a reset (decision B1)."
   }
 }

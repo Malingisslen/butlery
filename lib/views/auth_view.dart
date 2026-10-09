@@ -23,6 +23,8 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
+import 'package:butlery/views/auth/password_reset_done_notice.dart';
+import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
@@ -62,6 +64,24 @@ class _AuthViewState extends State<AuthView> {
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<AuthViewModel>();
+    _takePasswordResetHandoff();
+  }
+
+  /// After "Välj nytt lösenord" (BUT-2170): a saved password lands here with
+  /// the address filled in and a receipt; a dead link opens "Glömt
+  /// lösenord" so a new one can be sent.
+  void _takePasswordResetHandoff() {
+    switch (PasswordResetHandoff.pending) {
+      case PasswordResetDone(:final email):
+        _emailController.text = email;
+      case PasswordResetRequestNewLink():
+        PasswordResetHandoff.clear();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _showPasswordResetDialog(context, _viewModel);
+        });
+      case null:
+        break;
+    }
   }
 
   @override
@@ -107,6 +127,12 @@ class _AuthViewState extends State<AuthView> {
                                 _buildSessionEndNotice(
                                   cs,
                                   SessionEndNotice.pending!,
+                                ),
+                              if (PasswordResetHandoff.pending
+                                  is PasswordResetDone)
+                                PasswordResetDoneNotice(
+                                  onClose: () =>
+                                      setState(PasswordResetHandoff.clear),
                                 ),
                               _buildLoginCard(viewModel),
                             ],
@@ -748,6 +774,7 @@ class _AuthViewState extends State<AuthView> {
         MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
       );
       SessionEndNotice.clear();
+      PasswordResetHandoff.clear();
       // After a timeout, the same account lands where it was
       // (TR::FLOW::06::session::utgang; Q-P6-E07).
       final userId = ServiceLocator.get<AuthService>().currentUserId;
