@@ -418,8 +418,13 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
       _internalOps.removeCategoryInternal(categoryId);
 
   /// Internal method to sync category to Firebase (for operations classes)
-  Future<void> syncCategoryToFirebaseInternal(FriendCategory category) async =>
-      await _internalOps.syncCategoryToFirebaseInternal(category);
+  Future<void> syncCategoryToFirebaseInternal(
+    FriendCategory category, {
+    FriendCategory? previous,
+  }) async => await _internalOps.syncCategoryToFirebaseInternal(
+    category,
+    previous: previous,
+  );
 
   /// Internal method to delete category from Firebase (for operations classes)
   Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async =>

@@ -24,6 +24,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -285,6 +286,121 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('syncCategoryToFirebaseInternal — owner routing', () {
+    // BUT-2326: a whole-document set from a stale copy seats a member who
+    // left; a change to an existing group goes out as its difference.
+    test(
+      'owner with the earlier copy writes the difference, never a set',
+      () async {
+        final before = _cat(
+          id: 'c1',
+          ownerId: currentUserId,
+          memberIds: [currentUserId, 'friend-1'],
+        );
+        final after = _cat(
+          id: 'c1',
+          ownerId: currentUserId,
+          name: 'Vänner',
+          memberIds: [currentUserId, 'friend-1'],
+        );
+        when(
+          () => categoryRepo.updateOwnedCategory(any(), any(), any()),
+        ).thenAnswer((_) async {});
+
+        await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+        verify(
+          () => categoryRepo.updateOwnedCategory(currentUserId, before, after),
+        ).called(1);
+        verifyNever(() => categoryRepo.saveCategory(any(), any()));
+      },
+    );
+
+    test(
+      'a non-owner change to another member is refused, not written',
+      () async {
+        final before = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: ['someone-else', currentUserId, 'friend-1'],
+        );
+        final after = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: ['someone-else', currentUserId],
+        );
+
+        await expectLater(
+          ops.syncCategoryToFirebaseInternal(after, previous: before),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+        verifyNever(() => categoryRepo.removeSelfFromCategory(any(), any()));
+      },
+    );
+
+    test('a non-owner joining with the earlier copy still joins', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else'],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId],
+      );
+      when(
+        () => categoryRepo.addSelfToCategory(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+      verify(
+        () => categoryRepo.addSelfToCategory('someone-else', 'c1'),
+      ).called(1);
+    });
+
+    test('a non-owner swapping one member for another is refused', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId, 'friend-1'],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId, 'friend-2'],
+      );
+
+      await expectLater(
+        ops.syncCategoryToFirebaseInternal(after, previous: before),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+    });
+
+    test('a non-owner leaving with the earlier copy still leaves', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else'],
+      );
+      when(
+        () => categoryRepo.removeSelfFromCategory(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+      verify(
+        () => categoryRepo.removeSelfFromCategory('someone-else', 'c1'),
+      ).called(1);
+    });
+
     /// Proves the OWNER path: when current user owns the category, the
     /// full-doc-write saveCategory is invoked. Catches a bug where a
     /// refactor flipped the equality (then non-owners would full-write).
