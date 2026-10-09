@@ -23,6 +23,7 @@ import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
+import 'package:butlery/widgets/recipe/recipe_image_states.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
@@ -470,6 +471,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   leading: Padding(
                     padding: const EdgeInsets.all(AppDimensions.space4),
                     child: RecipeHeroButton(
+                      ringVisible: recipe.imageUrls.isNotEmpty,
                       icon: ButleryIcons.arrowLeft,
                       onPressed: () => Navigator.pop(context),
                       tooltip: widget.backTo == null
@@ -512,16 +514,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   placeholder: (context, url) => ColoredBox(
                                     color: cs.surfaceContainerHighest,
                                   ),
-                                  errorWidget: (context, url, error) {
-                                    return ColoredBox(
-                                      color: cs.surfaceContainerHighest,
-                                      child: ButleryIcon(
-                                        ButleryIcons.utensils,
-                                        size: AppDimensions.iconSizeHero,
-                                        color: cs.onSurfaceVariant,
-                                      ),
-                                    );
-                                  },
+                                  errorWidget: (context, url, error) =>
+                                      const RecipeImageFailedPlate(),
                                 ),
                               ),
                             ),
@@ -543,6 +537,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ? context.l10n.favoritesRemove
                               : context.l10n.favoritesAdd,
                           child: RecipeHeroButton(
+                            ringVisible: recipe.imageUrls.isNotEmpty,
                             icon: recipe.isFavorite
                                 ? ButleryIcons.favourite
                                 : ButleryIcons.favouriteOutline,
@@ -574,6 +569,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         button: true,
                         label: context.l10n.recipeShareWithFriends,
                         child: RecipeHeroButton(
+                          ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.users,
                           onPressed: () =>
                               _actions.showSocialShareDialog(context),
@@ -590,6 +586,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         button: true,
                         label: context.l10n.recipeShareExternal,
                         child: RecipeHeroButton(
+                          ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.share2,
                           onPressed: () => _actions.shareRecipe(context),
                           tooltip: context.l10n.recipeShareExternal,
@@ -608,6 +605,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         key: const ValueKey('test-recipe-detail-add-to-list'),
                         padding: AppDimensions.paddingVertical4,
                         child: RecipeHeroButton(
+                          ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.shoppingCart,
                           onPressed: () => _actions.showAddToCartConfirmation(
                             context,
@@ -632,6 +630,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         // describe the menu, not one item (WCAG 4.1.2).
                         label: context.l10n.a11yRecipeMoreActions,
                         child: RecipeHeroMenuButton<_MenuAction>(
+                          ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.moreVertical,
                           itemBuilder: (context) {
                             final menuCs = Theme.of(context).colorScheme;
@@ -986,6 +985,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               viewModel: viewModel,
                               scrollToComments: widget.scrollToComments,
                               actions: _actions,
+                              canAddPhoto: _canAddPhoto(recipe),
                             ),
                           ),
                         ),
@@ -1055,6 +1055,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               recipe: recipe,
               viewModel: viewModel,
               actions: _actions,
+              canAddPhoto: _canAddPhoto(recipe),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             // BUT-410: render heirloom scan above recipe content so the
@@ -1145,6 +1146,16 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       ),
     );
   }
+
+  // Only the owner edits the recipe, so only the owner is offered the chip
+  // that leads to the editor's photo.
+  bool _canAddPhoto(Recipe recipe) =>
+      !widget.readOnly &&
+      recipeMenuRole(
+            recipe,
+            ServiceLocator.get<PermissionService>().currentUserId,
+          ) ==
+          RecipeMenuRole.owner;
 
   Future<void> _showAddSnapSheet(
     BuildContext context,

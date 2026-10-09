@@ -11716,6 +11716,7 @@
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
   },
+  "recipeAddPhoto": "Add photo",
   "imageRetriesWhenOnline": "Tries again when the connection is back",
   "@imageRetriesWhenOnline": {
     "description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."

@@ -15744,6 +15744,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageCouldNotBeShown => 'Bilden kunde inte visas';
 
   @override
+  String get recipeAddPhoto => 'Lägg till foto';
+
+  @override
   String get imageRetriesWhenOnline => 'Försöker igen när nätet är tillbaka';
 
   @override
