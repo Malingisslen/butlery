@@ -9,12 +9,15 @@
  *   (e) doc missing → fallback
  *   (f) malformed doc (missing field, wrong type, empty string) → fallback
  *   (g) fallback log fires once per cache window (observability contract)
+ *   (h) BUT-2317: a doc whose promptVersion is older than the compiled-in
+ *       PROMPT_VERSION (or not semver) → fallback; equal or newer → remote
  *
  * Run with: npx ts-node src/__tests__/prompts-config.test.ts
  */
 
 import {
   getPromptsConfig,
+  compareSemver,
   __resetPromptsCacheForTests,
   PROMPTS_CACHE_TTL_MS,
 } from "../llm/prompts-config";
@@ -94,7 +97,6 @@ function validRemoteDoc(): Record<string, unknown> {
     recipeExtractionSystemPrompt: "REMOTE_EXTRACTION_PROMPT",
     recipeEnhancementSystemPrompt: "REMOTE_ENHANCEMENT_PROMPT",
     imageOcrSystemPrompt: "REMOTE_OCR_PROMPT",
-    // BUT-684: required field mirrored end-to-end.
     imageOcrHandwrittenSystemPrompt: "REMOTE_HANDWRITTEN_OCR_PROMPT",
     spokenContentSystemPrompt: "REMOTE_SPOKEN_PROMPT",
     ingredientLineSystemPrompt: "REMOTE_INGREDIENT_PROMPT",
@@ -173,7 +175,7 @@ async function testCacheMissAfterTtl(): Promise<void> {
     calls++;
     return {
       ...validRemoteDoc(),
-      promptVersion: `v${calls}`,
+      promptVersion: `9.9.${calls}`,
     };
   };
 
@@ -185,7 +187,7 @@ async function testCacheMissAfterTtl(): Promise<void> {
   });
 
   const ok =
-    calls === 2 && r1.promptVersion === "v1" && r2.promptVersion === "v2";
+    calls === 2 && r1.promptVersion === "9.9.1" && r2.promptVersion === "9.9.2";
   record(
     "loader re-invoked after TTL expiry; version reflects new fetch",
     ok
@@ -402,6 +404,149 @@ async function testRemoteRecoveryAfterFallback(): Promise<void> {
   );
 }
 
+function bumped(part: 0 | 1 | 2, delta: number): string {
+  const parts = FALLBACK_PROMPT_VERSION.split(".").map(Number);
+  parts[part] += delta;
+  if (delta < 0 && parts[part] < 0) {
+    throw new Error(`cannot lower ${FALLBACK_PROMPT_VERSION} at ${part}`);
+  }
+  return parts.join(".");
+}
+
+async function testStaleDocDoesNotShadowCompiled(): Promise<void> {
+  console.log(
+    "\n[9] BUT-2317: doc older than compiled PROMPT_VERSION → fallback",
+  );
+
+  const olderMinor = bumped(1, -1);
+  const staleCases: Array<[string, string]> = [
+    ["older minor", olderMinor],
+    ["older major", "0.9.9"],
+    ["pre-release of the compiled version", `${FALLBACK_PROMPT_VERSION}-hotfix`],
+    ["not semver (v-prefixed)", `v${FALLBACK_PROMPT_VERSION}`],
+    ["not semver (two parts)", "9.9"],
+    ["not semver (label)", "v-experiment-1"],
+  ];
+
+  for (const [label, version] of staleCases) {
+    __resetPromptsCacheForTests();
+    clearLogs();
+    const result = await getPromptsConfig({
+      loader: async () => ({ ...validRemoteDoc(), promptVersion: version }),
+      now: () => 0,
+    });
+    const warns = captured.filter(
+      (e) => e.level === "warn" && e.msg.includes("older than compiled"),
+    );
+    const fields = warns[0]?.fields as Record<string, unknown> | undefined;
+    record(
+      `${label} (${version}) falls back to compiled prompts, one warn naming both versions`,
+      result.source === "fallback" &&
+        result.promptVersion === FALLBACK_PROMPT_VERSION &&
+        result.recipeExtractionSystemPrompt === RECIPE_EXTRACTION_SYSTEM_PROMPT &&
+        warns.length === 1 &&
+        fields?.remoteVersion === version &&
+        fields?.fallbackVersion === FALLBACK_PROMPT_VERSION
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `source=${result.source}, v=${result.promptVersion}, warns=${warns.length}`,
+          },
+    );
+  }
+
+  __resetPromptsCacheForTests();
+  clearLogs();
+  let calls = 0;
+  const loader = async (): Promise<Record<string, unknown>> => {
+    calls++;
+    return { ...validRemoteDoc(), promptVersion: olderMinor };
+  };
+  await getPromptsConfig({ loader, now: () => 0 });
+  await getPromptsConfig({ loader, now: () => 1 });
+  await getPromptsConfig({ loader, now: () => PROMPTS_CACHE_TTL_MS - 1 });
+  const windowWarns = captured.filter((e) =>
+    e.msg.includes("older than compiled"),
+  ).length;
+  await getPromptsConfig({ loader, now: () => PROMPTS_CACHE_TTL_MS + 1 });
+  const nextWindowWarns = captured.filter((e) =>
+    e.msg.includes("older than compiled"),
+  ).length;
+  record(
+    "stale-doc warn fires once per cache window",
+    calls === 2 && windowWarns === 1 && nextWindowWarns === 2
+      ? { ok: true }
+      : {
+          ok: false,
+          detail: `calls=${calls}, window=${windowWarns}, next=${nextWindowWarns}`,
+        },
+  );
+}
+
+async function testCurrentOrNewerDocStillHotEdits(): Promise<void> {
+  console.log(
+    "\n[10] BUT-2317: doc at or above compiled PROMPT_VERSION still overrides",
+  );
+
+  const currentCases: Array<[string, string]> = [
+    ["equal", FALLBACK_PROMPT_VERSION],
+    ["newer patch", bumped(2, 1)],
+    ["newer minor", bumped(1, 1)],
+    ["newer major", bumped(0, 1)],
+    ["equal with build metadata", `${FALLBACK_PROMPT_VERSION}+console-edit`],
+    ["surrounding whitespace", ` ${FALLBACK_PROMPT_VERSION} `],
+  ];
+
+  for (const [label, version] of currentCases) {
+    __resetPromptsCacheForTests();
+    clearLogs();
+    const result = await getPromptsConfig({
+      loader: async () => ({ ...validRemoteDoc(), promptVersion: version }),
+      now: () => 0,
+    });
+    record(
+      `${label} (${version}) is served from Firestore without a warn`,
+      result.source === "firestore" &&
+        result.promptVersion === version.trim() &&
+        result.recipeExtractionSystemPrompt === "REMOTE_EXTRACTION_PROMPT" &&
+        captured.filter((e) => e.level === "warn").length === 0
+        ? { ok: true }
+        : { ok: false, detail: `source=${result.source}, v=${result.promptVersion}` },
+    );
+  }
+}
+
+function testCompareSemver(): void {
+  console.log("\n[11] compareSemver precedence");
+  const cases: Array<[string, string, number | null]> = [
+    ["3.2.0", "3.2.0", 0],
+    ["3.10.0", "3.9.0", 1],
+    ["3.2.0", "3.10.0", -1],
+    ["3.2.1", "3.2.0", 1],
+    ["4.0.0", "3.99.99", 1],
+    ["3.2.0-alpha", "3.2.0", -1],
+    ["3.2.0-alpha", "3.2.0-alpha.1", -1],
+    ["3.2.0-alpha.2", "3.2.0-alpha.10", -1],
+    ["3.2.0-1", "3.2.0-alpha", -1],
+    ["3.2.0-beta", "3.2.0-alpha", 1],
+    ["3.2.0+build.7", "3.2.0", 0],
+    ["v3.2.0", "3.2.0", null],
+    ["3.2", "3.2.0", null],
+    ["", "3.2.0", null],
+    ["03.2.0", "3.2.0", null],
+    ["3.02.0", "3.2.0", null],
+    ["3.2.00", "3.2.0", null],
+  ];
+  for (const [a, b, expected] of cases) {
+    const got = compareSemver(a, b);
+    const sign = got === null ? null : Math.sign(got);
+    record(
+      `compareSemver(${JSON.stringify(a)}, ${JSON.stringify(b)}) → ${expected}`,
+      sign === expected ? { ok: true } : { ok: false, detail: `got ${got}` },
+    );
+  }
+}
+
 // =============================================================================
 // Driver
 // =============================================================================
@@ -418,6 +563,9 @@ async function main(): Promise<void> {
   await testMalformedDocFallback();
   await testFallbackCachedToSuppressLogStorm();
   await testRemoteRecoveryAfterFallback();
+  await testStaleDocDoesNotShadowCompiled();
+  await testCurrentOrNewerDocStillHotEdits();
+  testCompareSemver();
 
   restoreLogger();
 

@@ -521,6 +521,40 @@ void main() {
     });
   });
 
+  // BUT-2256: the widget hands the tags' loading state to the filter panel,
+  // so the personal-tag section says it is fetching rather than "none".
+  testWidgets('personalTagsLoading reaches the filter panel', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScrollView: true,
+        child: SearchFilterWidget(
+          searchQuery: '',
+          onSearchChanged: (_) {},
+          activeTimeFilters: const {},
+          activeMealTypeFilters: const {},
+          activeRatingFilters: const {},
+          onTimeFilterToggle: (_) {},
+          onMealTypeFilterToggle: (_) {},
+          onRatingFilterToggle: (_) {},
+          showFilters: true,
+          onToggleFilters: () {},
+          hasActiveFilters: false,
+          personalTagIds: const [],
+          onPersonalTagFilterToggle: (_) {},
+          onManagePersonalTags: () {},
+          personalTagsLoading: true,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(
+      find.text('Hämtar dina taggar …', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.text('Inga egna taggar', skipOffstage: false), findsNothing);
+  });
+
   group('voice search (voice plan Phase 2a)', () {
     setUp(() async {
       await GetIt.instance.reset();

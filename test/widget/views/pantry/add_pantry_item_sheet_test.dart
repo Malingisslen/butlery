@@ -754,6 +754,60 @@ void main() {
   // both as 0.5. They are kept because they kill the BUT-1891 defect class — a
   // formatter that eats the separator — which is how this fix could go wrong.
   // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('a new item starts with an empty amount, so typing 6 saves 6', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSheet());
+
+    final amount = find.widgetWithText(TextField, 'Mängd');
+    expect(tester.widget<TextField>(amount).controller!.text, isEmpty);
+    expect(tester.widget<TextField>(amount).decoration!.hintText, '1');
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Ägg',
+    );
+    await tester.tap(amount);
+    await tester.enterText(amount, '6');
+    await tester.pump();
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pump();
+
+    verify(
+      () => vm.addItemFromText(
+        'Ägg',
+        quantity: 6,
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
+  });
+
+  testWidgets('an untouched amount still saves 1', (tester) async {
+    await tester.pumpWidget(buildSheet());
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Ägg',
+    );
+    await tester.pump();
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pump();
+
+    verify(
+      () => vm.addItemFromText(
+        'Ägg',
+        quantity: 1,
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
+  });
+
   testWidgets('a comma decimal reaches the view model as a fraction', (
     tester,
   ) async {

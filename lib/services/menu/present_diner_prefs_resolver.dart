@@ -7,6 +7,7 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -49,10 +50,10 @@ class PresentDinerPrefsResolver {
 
     final List<HouseholdRosterMember>? roster;
     try {
-      // Read-only: `getActiveForUser`, never `ensureForUser`.
-      final household = await householdRepo.getActiveForUser(uid);
-      if (household == null) return null;
-      roster = await rosterService.tryGetRoster(household.id);
+      // Read-only: never `ensureForUser`.
+      final households = await householdRepo.eatingHouseholdsFor(uid);
+      if (households.isEmpty) return null;
+      roster = await rosterService.tryGetRosters(households.map((h) => h.id));
     } catch (e) {
       AppLogger.warning('Present-diner roster read failed: $e');
       return _unreadable(uid);
@@ -152,17 +153,8 @@ class PresentDinerPrefsResolver {
 
     final diners = <DinerProfile>[];
     try {
-      final household = await householdRepo.getActiveForUser(uid);
-      // A joined household is the active one, but the children of the
-      // household the user created still eat with them.
-      final ids = {
-        ?household?.id,
-        if (household != null && household.createdBy != uid)
-          for (final own in await householdRepo.getForUser(uid))
-            if (own.createdBy == uid) own.id,
-      };
-      for (final id in ids) {
-        diners.addAll(await dinerRepo.getByHousehold(id));
+      for (final household in await householdRepo.eatingHouseholdsFor(uid)) {
+        diners.addAll(await dinerRepo.getByHousehold(household.id));
       }
     } catch (e) {
       AppLogger.warning('Household diner profile read failed: $e');

@@ -1,8 +1,8 @@
-# P7-U08: the icon masters are copied byte-identical from the design system
-# and verified by hash (test/widget/common/icons/icon_masters.sha256).
-# Keep them out of line-ending conversion.
-assets/icons/*.svg -text
-assets/icons/icons.json -text
+# P7-U08: ButleryIcons embeds each icon master byte for byte, and
+# test/widget/common/icons/butlery_icons_test.dart compares the two. Keep the
+# masters out of line-ending conversion.
+design/assets/icons/*.svg -text
+design/icons.json -text
 assets/brand/*.svg -text
 
 # P8-U04: the icon font the Linux goldens load, vendored so a render never

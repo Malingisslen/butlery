@@ -5296,6 +5296,12 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // once when the account goes. Exported in the account-subcollections
   // section, so EXPORT ⊇ DELETION holds.
   "overwritten_versions",
+  // BUT-907: the user's own deleted recipes in the trash, written by the
+  // trash repository in the same batch that deletes the recipe. A TTL policy
+  // on `expireAt` removes each row; this entry erases them at once when the
+  // account goes. Their photos
+  // sit under `users/{uid}/recipes/`, which the Storage prefix delete covers.
+  "trash",
   // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
   // an account predating a writer's removal can still hold rows, and by the
   // superset rule above such a row would otherwise be permanently residual.

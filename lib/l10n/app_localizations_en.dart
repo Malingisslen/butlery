@@ -166,6 +166,65 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String slotSpillHeading(int placed, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: '$placed places',
+      one: 'One place',
+      zero: 'No free places',
+    );
+    return '$_temp0, $count recipes';
+  }
+
+  @override
+  String slotSpillBody(int rest, int week, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rest,
+      locale: localeName,
+      other:
+          '$rest recipes do not fit in week $week: $names. Choose what happens to them, then I will write.',
+      one:
+          'One recipe does not fit in week $week: $names. Choose what happens to it, then I will write.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String slotSpillNextWeek(int placed, int rest, int week) {
+    return 'Add $placed now, $rest in wk $week';
+  }
+
+  @override
+  String slotSpillAllNextWeek(int week) {
+    return 'Add all in wk $week';
+  }
+
+  @override
+  String get slotSpillChooseMore => 'Choose more places';
+
+  @override
+  String slotSpillPlaceOnly(int placed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: 'Add only those $placed',
+      one: 'Add only the first',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week) {
+    return '$added recipes this week, $next in wk $week';
+  }
+
+  @override
+  String bulkAddToMenuNextWeekFailed(int added, int week) {
+    return '$added recipes added this week. The rest could not be added to wk $week.';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Pick a menu slot';
 
   @override
@@ -1852,6 +1911,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSectionAccount => 'Account & security';
+
+  @override
+  String get settingsSectionPrivacy => 'Privacy and data';
 
   @override
   String get settingsSectionAbout => 'About';
@@ -5745,7 +5807,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count invitations sent';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations sent',
+      one: '1 invitation sent',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6170,7 +6238,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCouldNotShare => 'Could not share recipe';
 
   @override
-  String get recipeDeleted => 'Recipe deleted';
+  String get recipeDeleted => 'Recipe moved to the trash for 30 days';
 
   @override
   String get recipeMarkedAsCooked => 'Recipe marked as cooked today.';
@@ -6685,7 +6753,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count people';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -12836,7 +12910,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recipeDeleteWarning => 'The recipe will be permanently deleted.';
+  String get recipeDeleteWarning =>
+      'The recipe moves to the trash and stays there for 30 days.';
 
   @override
   String get shoppingListDeleteWarning =>
@@ -13128,7 +13203,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recipes deleted';
+    return '$count recipes moved to the trash for 30 days';
   }
 
   @override
@@ -14722,6 +14797,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yRemoveMember(String name) {
+    return 'Remove $name';
+  }
+
+  @override
   String get a11yToggleFullscreenChrome => 'Show or hide controls';
 
   @override
@@ -15712,6 +15792,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get recipeAddPhoto => 'Add photo';
+
+  @override
   String get imageRetriesWhenOnline =>
       'Tries again when the connection is back';
 
@@ -15920,6 +16003,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupMemberRemoveNotSaved =>
       'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'You can no longer change the group';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'The change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing =>
+      'The group no longer exists';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, selected, could not be removed';
+  }
 
   @override
   String get groupMembersRemoveNone =>
@@ -17700,4 +17799,215 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Couldn\'t restore the previous version';
+
+  @override
+  String get setNewPasswordTitle => 'Choose a new password';
+
+  @override
+  String get setNewPasswordChecking => 'Checking the link …';
+
+  @override
+  String setNewPasswordForAccount(String email) {
+    return 'For the account $email.';
+  }
+
+  @override
+  String get setNewPasswordRepeat => 'Repeat new password';
+
+  @override
+  String get setNewPasswordSave => 'Save password';
+
+  @override
+  String get setNewPasswordWeak =>
+      'The password is too simple. Choose a longer one, ideally with numbers and symbols.';
+
+  @override
+  String get setNewPasswordSaveFailed => 'The password couldn\'t be saved.';
+
+  @override
+  String setNewPasswordSaveFailedBecause(String cause) {
+    return 'The password couldn\'t be saved. $cause';
+  }
+
+  @override
+  String get setNewPasswordNothingChanged => 'Your old password still works.';
+
+  @override
+  String get setNewPasswordCheckFailed => 'The link couldn\'t be checked.';
+
+  @override
+  String get setNewPasswordLinkInvalidTitle => 'This link no longer works';
+
+  @override
+  String get setNewPasswordLinkInvalidBody =>
+      'It has already been used or is too old. Ask for a new link and it will come to your email.';
+
+  @override
+  String get setNewPasswordRequestNew => 'Send a new link';
+
+  @override
+  String get setNewPasswordClose => 'Close';
+
+  @override
+  String setNewPasswordSavedOther(String email) {
+    return 'The password for $email has been changed.';
+  }
+
+  @override
+  String get passwordResetDoneNotice =>
+      'Your password has been changed. Log in with the new one.';
+
+  @override
+  String shoppingItemsAddedToListSnack(int count, String listName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items added to \"$listName\"',
+      one: '1 item added to \"$listName\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingAddToListHeading => 'Add to list';
+
+  @override
+  String get recipeImportNoIngredientsNotice =>
+      'We found no ingredients. Add them yourself below.';
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashSelectAll => 'Select all';
+
+  @override
+  String get trashSelectNone => 'Deselect all';
+
+  @override
+  String get trashLoading => 'Loading the trash …';
+
+  @override
+  String get trashLoadFailed => 'The trash could not be loaded.';
+
+  @override
+  String get trashEmptyTitle => 'The trash is empty';
+
+  @override
+  String get trashEmptyBody => 'Deleted recipes stay here for 30 days.';
+
+  @override
+  String trashDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+      zero: 'Expires today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String trashRestoreSelected(int count) {
+    return 'Restore $count recipes';
+  }
+
+  @override
+  String trashDeleteSelected(int count) {
+    return 'Delete $count recipes';
+  }
+
+  @override
+  String get trashEmptyAction => 'Empty the trash';
+
+  @override
+  String get trashDeleteConfirmTitle => 'Delete for good?';
+
+  @override
+  String trashDeleteConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes are deleted for good. This cannot be undone.',
+      one: 'The recipe is deleted for good. This cannot be undone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashDeleteConfirmAction => 'Delete for good';
+
+  @override
+  String get trashEmptyConfirmTitle => 'Empty the trash?';
+
+  @override
+  String get trashEmptyConfirmBody =>
+      'Every recipe in the trash is deleted for good. This cannot be undone.';
+
+  @override
+  String trashRestoredAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes restored as private',
+      one: 'Restored as private',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashDeletedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were deleted for good',
+      one: 'The recipe was deleted for good',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashEmptied => 'The trash is empty now';
+
+  @override
+  String get trashOfflineNothingChanged =>
+      'You are offline. Nothing was changed.';
+
+  @override
+  String get trashFailedNothingChanged =>
+      'Something went wrong. Nothing was changed.';
+
+  @override
+  String trashPartialSummary(int done, int total) {
+    return '$done of $total done.';
+  }
+
+  @override
+  String get trashPartialNoneDone => 'Nothing was changed.';
+
+  @override
+  String trashFailOffline(int count) {
+    return '$count recipes were not done because you are offline.';
+  }
+
+  @override
+  String trashFailExpired(int count) {
+    return '$count recipes had already expired.';
+  }
+
+  @override
+  String trashFailGone(int count) {
+    return '$count recipes were no longer in the trash.';
+  }
+
+  @override
+  String trashFailFailed(int count) {
+    return '$count recipes could not be done. Try again.';
+  }
 }

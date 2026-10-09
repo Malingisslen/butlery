@@ -410,6 +410,55 @@ void main() {
   // shareWithFriends — happy path
   // ===========================================================================
   group('shareWithFriends — happy path', () {
+    test('stamps itemCount from listData.items (BUT-2095)', () async {
+      await _seedPersonalList(
+        firestore,
+        listId: 'l1',
+        items: [
+          {'name': 'mjölk', 'amount': 1},
+          {'name': 'bröd', 'amount': 2},
+          {'name': 'ost', 'amount': 1},
+        ],
+      );
+
+      expect(
+        await module.shareWithFriends(listId: 'l1', friendIds: const ['f1']),
+        isTrue,
+      );
+
+      final data = (await _allShared(firestore)).single.data();
+      expect(data['itemCount'], 3);
+      expect((data['listData'] as Map)['items'], hasLength(3));
+    });
+
+    test('stamps itemCount 0 for an empty or missing items array', () async {
+      await _seedPersonalList(firestore, listId: 'empty', items: const []);
+      await firestore
+          .collection(FirestoreCollections.users)
+          .doc(_me)
+          .collection(FirestoreCollections.unifiedShoppingLists)
+          .doc('noitems')
+          .set({'name': 'Utan rader'});
+
+      expect(
+        await module.shareWithFriends(listId: 'empty', friendIds: const ['f1']),
+        isTrue,
+      );
+      expect(
+        await module.shareWithFriends(
+          listId: 'noitems',
+          friendIds: const ['f1'],
+        ),
+        isTrue,
+      );
+
+      final docs = await _allShared(firestore);
+      expect(docs, hasLength(2));
+      for (final d in docs) {
+        expect(d.data()['itemCount'], 0);
+      }
+    });
+
     test(
       'writes one shared_content doc + one received_lists doc per friend',
       () async {

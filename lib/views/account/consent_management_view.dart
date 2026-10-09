@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
@@ -457,6 +458,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          trailing: const ButleryExpansionChevron(),
           tilePadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
           ),

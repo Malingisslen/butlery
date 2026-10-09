@@ -31,7 +31,7 @@ abstract interface class QueuedRecipeWriter {
   /// (BUT-2213).
   Future<int> update(Recipe recipe);
 
-  /// Deletes the recipe and what hangs off it (images, comments, ratings).
+  /// Deletes the recipe and what hangs off it (comments, ratings).
   Future<void> delete(String recipeId);
 }
 

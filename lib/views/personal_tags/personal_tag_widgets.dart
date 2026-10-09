@@ -3,6 +3,7 @@
 /// Extracted to keep the main view under 500 lines.
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -318,6 +319,7 @@ class UnusedTagsSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ExpansionTile(
+      trailing: const ButleryExpansionChevron(),
       leading: ButleryIcon(
         ButleryIcons.tag,
         color: colorScheme.onSurfaceVariant,

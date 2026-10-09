@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:2cfe888dd047a670898b5f96512f40c034f8c2f30c1953fe9359a53d8551af2c (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:f6ac785339c4e5ebdbd09a10b12b4ef8a153a2d30e262a28792f2302f0de6ca1 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -33,6 +33,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     letterSpacing: -0.6,
     height: 1.3,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.display.compact — 26/700
@@ -42,6 +43,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     letterSpacing: -0.6,
     height: 1.3,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.title — 22/700
@@ -51,6 +53,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     letterSpacing: -0.4,
     height: 1.3,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.display — 32/700
@@ -60,6 +63,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
     height: 1.3,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.stepper — 17/600
@@ -68,6 +72,7 @@ class AppTextStyles {
     fontSize: 17,
     fontWeight: FontWeight.w600,
     height: 1.3,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.cardTitle — 15/600
@@ -76,6 +81,7 @@ class AppTextStyles {
     fontSize: 15,
     fontWeight: FontWeight.w600,
     height: 1.3,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.body — 16/400
@@ -84,6 +90,7 @@ class AppTextStyles {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.bodyMedium — 14/400 · appens vanligaste brödtext — 14/400. Fas 1 (tredje vändan): värdet låg som derivedStyles i tools/app-theme-map.json, dessförinnan som ett dolt medelvärde i generatorn. Steget 14 finns i skalan; ingen 400-vikt under 12 px.
@@ -92,6 +99,7 @@ class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.4,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.listItem — 13/600
@@ -100,6 +108,7 @@ class AppTextStyles {
     fontSize: 13,
     fontWeight: FontWeight.w600,
     height: 1.35,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.label — 14/600 · knappar: 14/600 — inte 700
@@ -108,6 +117,7 @@ class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w600,
     height: 1.4,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.meta — 12.5/600 · säkerhets- och samtyckestext 12,5–13
@@ -116,6 +126,7 @@ class AppTextStyles {
     fontSize: 12.5,
     fontWeight: FontWeight.w600,
     height: 1.4,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.navLabel — 11/700 · höjd från 10,5 — kökskontext
@@ -124,6 +135,7 @@ class AppTextStyles {
     fontSize: 11,
     fontWeight: FontWeight.w700,
     height: 1.45,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.overline — 10.5/700 · endast kategorier och systemetiketter
@@ -133,6 +145,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     letterSpacing: 1.5,
     height: 1.45,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.stat — 38/700 · endast statistikvyn och matlagningslägets timer (produktbeslut R7-3 = C, BUT-2165, Malin 2026-10-04): timerns siffror är 38/700 med tabellsiffror (typography.numerals.tabular: timer)
@@ -141,6 +154,7 @@ class AppTextStyles {
     fontSize: 38,
     fontWeight: FontWeight.w700,
     height: 1.3,
+    fontFeatures: [FontFeature.tabularFigures()],
   );
 
   /// tokens: typography.roles.cookingStep — 19/600 · matlagningsläget — läsavstånd
@@ -149,6 +163,7 @@ class AppTextStyles {
     fontSize: 19,
     fontWeight: FontWeight.w600,
     height: 1.35,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.caption — 12/400 · minsta 400-storlek
@@ -157,6 +172,7 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.45,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.calendarCell — 11/600 · endast kalendercellens rättnamn — 52 dp kolumn. Beslut B-41.
@@ -165,6 +181,7 @@ class AppTextStyles {
     fontSize: 11,
     fontWeight: FontWeight.w600,
     height: 1.45,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   /// tokens: typography.roles.tab — 13/600 · flikens etikett i vila 13/600; vald flik bär boldWeight 700, alltså 13/700 (Komponentark v1:38, 106, 112-113). Tallrikslinjen under vald flik är ordets bredd + 5 px per sida, mätt. Radhöjd som listItem. BUT-2228.
@@ -173,6 +190,7 @@ class AppTextStyles {
     fontSize: 13,
     fontWeight: FontWeight.w600,
     height: 1.35,
+    fontFeatures: [FontFeature.proportionalFigures()],
   );
 
   // ── Alias · samma stil, historiska namn ──

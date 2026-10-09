@@ -86,6 +86,11 @@ class ShoppingSocialShareModule {
         'title': listTitle,
         'description': message?.trim(),
         'listData': listData,
+        // BUT-2095: readers parse `itemCount` (a missing one is 0), never
+        // `listData.items`, so without it every recipient sees an empty list.
+        'itemCount': listData['items'] is List
+            ? (listData['items'] as List).length
+            : 0,
         'sharedByUserId': currentUser.uid,
         'sharedByDisplayName': sharedByDisplayName,
         'sharedByAvatarUrl': currentUser.avatarUrl,

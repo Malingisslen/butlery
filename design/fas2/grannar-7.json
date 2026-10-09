@@ -1,0 +1,1035 @@
+{
+ "$schema": "butlery-grannar-7/1",
+ "$datum": "2026-08-17",
+ "$franCommit": "2d53b4f",
+ "$typ": "APPLICABILITY REVIEW av exakt de sju grannkontrollerna. Inga produktskrivningar, inga fargskrivningar, inga designbeslut, ingen remediering.",
+ "$produktfilerOrorda": true,
+ "A_population": {
+  "TARGET_OCCURRENCES": 7,
+  "DUPLICATES": 0,
+  "OMITTED": 0,
+  "UNRESOLVED_IDENTITY": 0,
+  "unikaControlId": 7,
+  "unikaPartId": 7
+ },
+ "B_ingenPropagering": {
+  "$regel": "Ingen av de sju har arvt dom fran de 15. Samma kantfarg, samma kvot, samma rad, fysisk narhet, samma skarm, samma kontrolltyp, samma morka tema, liknande ikon och det faktum att grannen behovde starkare kant ar INTE evidens.",
+  "$bevis": "De sju domarna blev tre olika: 4 REQUIRED, 1 SUPPLEMENTAL, 2 UNKNOWN. Tva kontroller med identisk funktion, identisk kantfarg och identisk kvot (lagaliggande|11 och lagatimers|30) fick samma dom av samma skal, men bedomdes var for sig och den ena har ett indicium den andra saknar."
+ },
+ "C_kontrafaktisktProv": {
+  "mal": 7,
+  "filer": 5,
+  "kallfilerOforandrade": true,
+  "aterstalldaEfterVarjeRender": true,
+  "kollateralaAndringar": 0,
+  "$metod": "gransen gjord visuellt oskiljbar mot sin faktiska angransande yta med bibehallen bredd; rorelse fryst; scenen granskad i faktisk render"
+ },
+ "D_domar": {
+  "REQUIRED": 4,
+  "SUPPLEMENTAL_NOT_REQUIRED": 3,
+  "UNKNOWN": 0,
+  "konformans": {
+   "REQUIRED_FAIL": 4,
+   "REQUIRED_PASS": 0,
+   "NOT_APPLICABLE": 3,
+   "UNKNOWN": 0
+  },
+  "poster": [
+   {
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_ID": "lagastaende|3",
+    "PART_ID": "lagastaende|3#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Textstorlek",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1.5px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "931",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "descendantordinal": 5,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "A+",
+    "VISIBLE_ICON_PRESENT": false,
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 48,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 3,
+     "foralderText": "Krämig svamppasta med timjan A+"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 4,
+     "namn": [
+      "check",
+      "refresh-cw",
+      "clock",
+      "chevron-right"
+     ]
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Krämig svamppasta med timj",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Avsluta matlagningsläget",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(245, 244, 237)"
+     }
+    ],
+    "STATE_RELEVANCE": null,
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "kontrafaktisktUtfall": "Utan gransen star \"A+\" som tva losa tecken direkt bredvid recepttiteln. Scenen anvander bara glyfer och bar text for icke-kontroller (bocken vid \"Allt i skafferiet\", klockan, chevronen), och kontrollen har ingen egen fyllning och ingen glyf. Kvar blir en textetikett bland andra textetiketter.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"A+\" — men texten ar en storleksbeteckning, inte en handlingsetikett, och sager ingenting om att nagot gar att trycka pa",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 48x48 med 8 px radie — formen ritas ENBART av gransen",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonet Avsluta matlagningslaget behaller sin egen grans, sa malet blir visuellt olikt sin egen funktionella jamlike",
+     "OTHER_VISUAL_CARRIERS: scenen har 4 bara glyfer som INTE ar kontroller"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": null
+   },
+   {
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_ID": "lagamorkt|3",
+    "PART_ID": "lagamorkt|3#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Textstorlek",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1.5px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "995",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "descendantordinal": 5,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "A+",
+    "VISIBLE_ICON_PRESENT": false,
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 48,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 3,
+     "foralderText": "Krämig svamppasta med timjan A+"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 4,
+     "namn": [
+      "check",
+      "refresh-cw",
+      "clock",
+      "chevron-right"
+     ]
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Krämig svamppasta med timj",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Avsluta matlagningsläget",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(245, 244, 237)"
+     }
+    ],
+    "STATE_RELEVANCE": null,
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "kontrafaktisktUtfall": "Samma scen i morkt lage. Utan gransen aterstar \"A+\" som bar text i sidhuvudet; kontrollen har varken fyllning eller glyf, och formen ritas enbart av gransen.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"A+\", en storleksbeteckning",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 48x48 med 8 px radie, ritad enbart av gransen",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonet behaller sin grans",
+     "OTHER_VISUAL_CARRIERS: 4 bara glyfer i scenen ar icke-kontroller"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": null
+   },
+   {
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_ID": "lagastaende320|3",
+    "PART_ID": "lagastaende320|3#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Textstorlek",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1.5px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1777",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "descendantordinal": 5,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "A+",
+    "VISIBLE_ICON_PRESENT": false,
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 48,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 3,
+     "foralderText": "Krämig svamppasta med timjan A+"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 3,
+     "namn": [
+      "check",
+      "clock",
+      "chevron-right"
+     ]
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Krämig svamppasta med timj",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Avsluta matlagningsläget",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(245, 244, 237)"
+     }
+    ],
+    "STATE_RELEVANCE": null,
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "kontrafaktisktUtfall": "Samma sidhuvud i 320 px. Kontrafaktisk render visar \"A+\" som bar text bredvid titeln, medan krysset bredvid behaller sin grans.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"A+\", en storleksbeteckning",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 48x48, ritad enbart av gransen",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonet behaller sin grans",
+     "OTHER_VISUAL_CARRIERS: 3 bara glyfer i scenen ar icke-kontroller"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": null
+   },
+   {
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_ID": "lagastaende320|18",
+    "PART_ID": "lagastaende320|18#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Visa ingredienser, 5 rader",
+    "STATE": "collapsed",
+    "BOUNDARY_SOURCE": [
+     "border-top: 1px solid rgba(245, 244, 237, 0.35)",
+     "border-bottom: 1px solid rgba(245, 244, 237, 0.18)"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_ANCHOR": {
+     "tagg": "div",
+     "attribut": {
+      "data-dc-tpl": "1792",
+      "data-hit": "self",
+      "data-a11y-name": "Visa ingredienser, 5 rader",
+      "data-state-group": "lagastaende320-ingredienslista",
+      "data-a11y-role": "button",
+      "data-a11y-state": "collapsed"
+     },
+     "text": "\n          "
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "descendantordinal": 20,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "Ingredienser 5 rader",
+    "VISIBLE_ICON_PRESENT": true,
+    "ikoner": [
+     "chevron-down"
+    ],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 280,
+     "hojd": 50,
+     "radie": "0px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 2,
+     "foralderText": "Ingredienser 5 rader Under 360 px kollapsar ingredienserna till en sektion — steget får he"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 3,
+     "namn": [
+      "check",
+      "clock",
+      "chevron-right"
+     ]
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Under 360 px kollapsar ing",
+      "egenFyllning": null,
+      "egenRam": null
+     }
+    ],
+    "STATE_RELEVANCE": "collapsed",
+    "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+    "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "kontrafaktisktUtfall": "Utan gransen laser raden fortfarande som en hopfallbar sektion: rubriken INGREDIENSER, rakneuppgiften \"5 rader\" och en chevron-down langst till hoger. Bade komponenten och dess tillstand — hopfalld — bars av chevronen och dess riktning, inte av den 1 px tunna kanten runt hela raden.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"Ingredienser 5 rader\"",
+     "VISIBLE_ICON_PRESENT: chevron-down",
+     "STATE_RELEVANCE: collapsed — tillstandet bars av chevronens riktning",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 280x50 utan radie — en full radbredd, ingen knappform",
+     "ALTERNATIV_CARRIER: chevron-down"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": {
+     "PART_ID": "lagastaende320|18#ikon#0",
+     "typ": "ikon",
+     "ikon": "chevron-down",
+     "finnsIKanoniskMatning": true,
+     "kvot": 11.36,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(36, 56, 44)"
+    }
+   },
+   {
+    "SCREEN": "Matlagning · landskap",
+    "CONTROL_ID": "lagaliggande|11",
+    "PART_ID": "lagaliggande|11#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Starta timer 8 minuter",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_ANCHOR": {
+     "tagg": "div",
+     "attribut": {
+      "data-dc-tpl": "1729",
+      "data-hit": "self",
+      "data-a11y-name": "Starta timer 8 minuter",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "descendantordinal": 13,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "Starta timer · 8:00",
+    "VISIBLE_ICON_PRESENT": true,
+    "ikoner": [
+     "clock"
+    ],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 181.8,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 2,
+     "foralderText": "Fräs kantarellerna i het panna tills all vätska kokat bort, salta först därefter Starta ti"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 0,
+     "namn": []
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Fräs kantarellerna i het p",
+      "egenFyllning": null,
+      "egenRam": null
+     }
+    ],
+    "STATE_RELEVANCE": null,
+    "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+    "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+    "APPLICABILITY_PROVENANCE": "HUMAN_OCCURRENCE_ADJUDICATION",
+    "kontrafaktisktUtfall": "Utan gransen aterstar en accentfargad etikett \"Starta timer · 8:00\" med en klockglyf, ensam i en stor tom yta under stegrubriken. Ingen annan statisk text i scenen ar accentfargad.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"Starta timer · 8:00\", en handlingsetikett",
+     "VISIBLE_ICON_PRESENT: clock, kvot 7.52 mot ytan",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 182x48 med 8 px radie, ritad enbart av gransen",
+     "OTHER_VISUAL_CARRIERS: accentfargad etikett"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": {
+     "PART_ID": "lagaliggande|11#ikon#0",
+     "typ": "ikon",
+     "ikon": "clock",
+     "finnsIKanoniskMatning": true,
+     "kvot": 7.52,
+     "farg": "rgb(220, 169, 104)",
+     "angransande": "rgb(23, 37, 29)"
+    },
+    "OCCURRENCE_RECORD_ID": "NB-LAGALIGGANDE-11-BOUNDARY",
+    "beslutsdatum": "2026-08-17",
+    "motivering": "Utan gransen finns fortfarande en explicit handlingsetikett \"Starta timer\", en semantiskt tydlig klockglyf och en placering i steget som tillsammans identifierar kontrollens operation och gor kontrollen visuellt identifierbar.",
+    "EVIDENCE": [
+     "explicit action label: \"Starta timer · 8:00\"",
+     "clock glyph: kanonisk grafisk del lagaliggande|11#ikon#0, kvot 7.52 mot rgb(23, 37, 29)",
+     "actual scene context / placement: handlingen ligger direkt under stegets instruktion och hor till just det steget"
+    ],
+    "EJ_EVIDENCE": [
+     "same color",
+     "global accent convention",
+     "neighboring control verdict",
+     "same operation across occurrences"
+    ],
+    "observeradStyling": {
+     "guldfargadEtikett": "rgb(220, 169, 104)",
+     "$status": "OBSERVERAT STYLINGFAKTUM — ar INTE verdict provenance och ar inte den barare beslutet vilar pa"
+    },
+    "$separatIdentitet": "Egen occurrence-level-post. Ingen gemensam beslutsidentitet skapas med den andra timerkontrollen, och ingen systemregel harleds ur de tva."
+   },
+   {
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_ID": "lagatimers|30",
+    "PART_ID": "lagatimers|30#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Starta timer för det här steget, 9 minuter",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_ANCHOR": {
+     "tagg": "div",
+     "attribut": {
+      "data-dc-tpl": "1426",
+      "data-hit": "self",
+      "data-a11y-name": "Starta timer för det här steget, 9 minuter",
+      "data-a11y-role": "button"
+     },
+     "text": "\n        "
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "descendantordinal": 34,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "Starta timer · 9:00",
+    "VISIBLE_ICON_PRESENT": true,
+    "ikoner": [
+     "clock"
+    ],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 181.8,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 3,
+     "foralderText": "Koka pastan al dente. Spara 1 dl av kokvattnet innan du häller av. Starta timer · 9:00 Not"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 1,
+     "namn": [
+      "info"
+     ]
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Koka pastan al dente. Spar",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Notiser är avstängda. Time",
+      "egenFyllning": "rgb(47, 68, 55)",
+      "egenRam": null
+     }
+    ],
+    "STATE_RELEVANCE": null,
+    "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+    "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+    "APPLICABILITY_PROVENANCE": "HUMAN_OCCURRENCE_ADJUDICATION",
+    "kontrafaktisktUtfall": "Utan gransen aterstar samma accentfargade etikett med klockglyf. I DEN HAR scenen finns dessutom en annan accentfargad textlank, \"Sla pa notiser\", inuti notisrutan — vilket talar for att accentfarg anvands for handling har.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"Starta timer · 9:00\", en handlingsetikett",
+     "VISIBLE_ICON_PRESENT: clock, kvot 7.52 mot ytan",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 182x48 med 8 px radie, ritad enbart av gransen",
+     "OTHER_VISUAL_CARRIERS: accentfargad etikett; scenen har aven en accentfargad textlank"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": {
+     "PART_ID": "lagatimers|30#ikon#0",
+     "typ": "ikon",
+     "ikon": "clock",
+     "finnsIKanoniskMatning": true,
+     "kvot": 7.52,
+     "farg": "rgb(220, 169, 104)",
+     "angransande": "rgb(23, 37, 29)"
+    },
+    "OCCURRENCE_RECORD_ID": "NB-LAGATIMERS-30-BOUNDARY",
+    "beslutsdatum": "2026-08-17",
+    "motivering": "Utan gransen finns fortfarande en explicit handlingsetikett \"Starta timer\", en semantiskt tydlig klockglyf och en placering i steget som tillsammans identifierar kontrollens operation och gor kontrollen visuellt identifierbar.",
+    "EVIDENCE": [
+     "explicit action label: \"Starta timer · 9:00\"",
+     "clock glyph: kanonisk grafisk del lagatimers|30#ikon#0, kvot 7.52 mot rgb(23, 37, 29)",
+     "actual scene context / placement: handlingen ligger direkt under stegets instruktion och hor till just det steget"
+    ],
+    "EJ_EVIDENCE": [
+     "same color",
+     "global accent convention",
+     "neighboring control verdict",
+     "same operation across occurrences"
+    ],
+    "observeradStyling": {
+     "guldfargadEtikett": "rgb(220, 169, 104)",
+     "$status": "OBSERVERAT STYLINGFAKTUM — ar INTE verdict provenance och ar inte den barare beslutet vilar pa"
+    },
+    "$separatIdentitet": "Egen occurrence-level-post. Ingen gemensam beslutsidentitet skapas med den andra timerkontrollen, och ingen systemregel harleds ur de tva."
+   },
+   {
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_ID": "lgbtimer|37",
+    "PART_ID": "lgbtimer|37#ram#0",
+    "CONTROL_ROLE": "button",
+    "CONTROL_OPERATION": "Timer steg 4, 12 minuter kvar",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1px solid rgb(63, 81, 69)"
+    ],
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 1.48,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1789",
+      "data-hit": "self",
+      "data-a11y-name": "Timer steg 4, 12 minuter kvar",
+      "data-a11y-role": "button"
+     },
+     "text": "Steg 4 · 12:00"
+    },
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "descendantordinal": 61,
+    "VISIBLE_TEXT_PRESENT": true,
+    "egenText": "Steg 4 · 12:00",
+    "VISIBLE_ICON_PRESENT": false,
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "SHAPE_CARRIER": {
+     "bredd": 112.4,
+     "hojd": 50,
+     "radie": "0px"
+    },
+    "POSITION_AND_CONTEXT": {
+     "radlangd": 6,
+     "foralderText": "TIMRAR Steg 1 · 4:12 Steg 4 · 12:00 Steg 2 klar"
+    },
+    "OTHER_VISUAL_CARRIERS": {
+     "scenensBaraGlyfer": 0,
+     "namn": []
+    },
+    "SURROUNDING_COMPONENT_STRUCTURE": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "TIMRAR",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Timer steg 1, 4 minuter 12 sekunder kvar",
+      "text": "Steg 1 · 4:12",
+      "egenFyllning": null,
+      "egenRam": "rgb(220, 169, 104)"
+     },
+     {
+      "arKontroll": true,
+      "namn": "Timern för steg 2 är klar. Kvittera",
+      "text": "Steg 2 klar",
+      "egenFyllning": "rgb(156, 59, 35)",
+      "egenRam": null
+     },
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Tysta uppläsningen",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(120, 132, 119)"
+     }
+    ],
+    "STATE_RELEVANCE": null,
+    "APPLICABILITY_VERDICT": "REQUIRED",
+    "CONFORMANCE_VERDICT": "REQUIRED_FAIL",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "kontrafaktisktUtfall": "Utan gransen blir \"Steg 4 · 12:00\" bar text i timerlisten. I samma list bar syskonen tydliga egna behallare: \"Steg 1 · 4:12\" har en accentfargad ram och \"Steg 2 klar\" en rod fyllning. Listens egen etikett TIMRAR ar ocksa bar text. Bar text i den har listen betyder alltsa INTE kontroll.",
+    "evidens": [
+     "VISIBLE_TEXT_PRESENT: \"Steg 4 · 12:00\"",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 112x50 utan radie",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonen bar accentram respektive rod fyllning; listrubriken TIMRAR ar bar text",
+     "STATE_RELEVANCE: listen visar tre olika timertillstand med olika visuella behallare"
+    ],
+    "saknadEvidens": null,
+    "alternativCarrier": null
+   }
+  ]
+ },
+ "E_alternativaCarriers": {
+  "$regel": "En grans far vara SUPPLEMENTAL bara om den barare som ersatter den ar utpekad och finns som kanonisk grafisk del.",
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende320|18",
+    "PART_ID": "lagastaende320|18#ikon#0",
+    "typ": "ikon",
+    "ikon": "chevron-down",
+    "finnsIKanoniskMatning": true,
+    "kvot": 11.36,
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)"
+   },
+   {
+    "CONTROL_ID": "lagaliggande|11",
+    "PART_ID": "lagaliggande|11#ikon#0",
+    "typ": "ikon",
+    "ikon": "clock",
+    "finnsIKanoniskMatning": true,
+    "kvot": 7.52,
+    "farg": "rgb(220, 169, 104)",
+    "angransande": "rgb(23, 37, 29)"
+   },
+   {
+    "CONTROL_ID": "lagatimers|30",
+    "PART_ID": "lagatimers|30#ikon#0",
+    "typ": "ikon",
+    "ikon": "clock",
+    "finnsIKanoniskMatning": true,
+    "kvot": 7.52,
+    "farg": "rgb(220, 169, 104)",
+    "angransande": "rgb(23, 37, 29)"
+   }
+  ],
+  "$ingaDubbletter": "Ingen ny relation har skapats. Den utpekade bararen fanns redan i den ordinarie matmotorn."
+ },
+ "F_nyaREQUIRED_FAIL": {
+  "antal": 4,
+  "$ingenRemediering": "Ingen atgard, ingen farg och ingen mekanism valjs. Ingen sammanslagning med befintlig beslutsenhet gors pa grund av narhet eller samma nuvarande kantvarde.",
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende|3",
+    "PART_ID": "lagastaende|3#ram#0",
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_OPERATION": "Textstorlek",
+    "CURRENT_RATIO": 2.78,
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "931",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "descendantordinal": 5,
+    "requirednessEvidens": [
+     "VISIBLE_TEXT_PRESENT: \"A+\" — men texten ar en storleksbeteckning, inte en handlingsetikett, och sager ingenting om att nagot gar att trycka pa",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 48x48 med 8 px radie — formen ritas ENBART av gransen",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonet Avsluta matlagningslaget behaller sin egen grans, sa malet blir visuellt olikt sin egen funktionella jamlike",
+     "OTHER_VISUAL_CARRIERS: scenen har 4 bara glyfer som INTE ar kontroller"
+    ],
+    "kontrafaktisktUtfall": "Utan gransen star \"A+\" som tva losa tecken direkt bredvid recepttiteln. Scenen anvander bara glyfer och bar text for icke-kontroller (bocken vid \"Allt i skafferiet\", klockan, chevronen), och kontrollen har ingen egen fyllning och ingen glyf. Kvar blir en textetikett bland andra textetiketter."
+   },
+   {
+    "CONTROL_ID": "lagamorkt|3",
+    "PART_ID": "lagamorkt|3#ram#0",
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_OPERATION": "Textstorlek",
+    "CURRENT_RATIO": 2.98,
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "995",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "descendantordinal": 5,
+    "requirednessEvidens": [
+     "VISIBLE_TEXT_PRESENT: \"A+\", en storleksbeteckning",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 48x48 med 8 px radie, ritad enbart av gransen",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonet behaller sin grans",
+     "OTHER_VISUAL_CARRIERS: 4 bara glyfer i scenen ar icke-kontroller"
+    ],
+    "kontrafaktisktUtfall": "Samma scen i morkt lage. Utan gransen aterstar \"A+\" som bar text i sidhuvudet; kontrollen har varken fyllning eller glyf, och formen ritas enbart av gransen."
+   },
+   {
+    "CONTROL_ID": "lagastaende320|3",
+    "PART_ID": "lagastaende320|3#ram#0",
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_OPERATION": "Textstorlek",
+    "CURRENT_RATIO": 2.78,
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1777",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "descendantordinal": 5,
+    "requirednessEvidens": [
+     "VISIBLE_TEXT_PRESENT: \"A+\", en storleksbeteckning",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 48x48, ritad enbart av gransen",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonet behaller sin grans",
+     "OTHER_VISUAL_CARRIERS: 3 bara glyfer i scenen ar icke-kontroller"
+    ],
+    "kontrafaktisktUtfall": "Samma sidhuvud i 320 px. Kontrafaktisk render visar \"A+\" som bar text bredvid titeln, medan krysset bredvid behaller sin grans."
+   },
+   {
+    "CONTROL_ID": "lgbtimer|37",
+    "PART_ID": "lgbtimer|37#ram#0",
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_OPERATION": "Timer steg 4, 12 minuter kvar",
+    "CURRENT_RATIO": 1.48,
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1789",
+      "data-hit": "self",
+      "data-a11y-name": "Timer steg 4, 12 minuter kvar",
+      "data-a11y-role": "button"
+     },
+     "text": "Steg 4 · 12:00"
+    },
+    "descendantordinal": 61,
+    "requirednessEvidens": [
+     "VISIBLE_TEXT_PRESENT: \"Steg 4 · 12:00\"",
+     "VISIBLE_ICON_PRESENT: nej",
+     "FILL_CARRIER: ingen",
+     "SHAPE_CARRIER: 112x50 utan radie",
+     "SURROUNDING_COMPONENT_STRUCTURE: syskonen bar accentram respektive rod fyllning; listrubriken TIMRAR ar bar text",
+     "STATE_RELEVANCE: listen visar tre olika timertillstand med olika visuella behallare"
+    ],
+    "kontrafaktisktUtfall": "Utan gransen blir \"Steg 4 · 12:00\" bar text i timerlisten. I samma list bar syskonen tydliga egna behallare: \"Steg 1 · 4:12\" har en accentfargad ram och \"Steg 2 klar\" en rod fyllning. Listens egen etikett TIMRAR ar ocksa bar text. Bar text i den har listen betyder alltsa INTE kontroll."
+   }
+  ]
+ },
+ "G_supplemental": {
+  "antal": 1,
+  "$regel": "Fargen lamnas orord. Att kanten kan bli svagare an en REQUIRED granne ar accepterat sa lange identifieringen bars av annan visuell information. Ingen konsistensfix utan egen designmotivering."
+ },
+ "H_designkonsistens": {
+  "$typ": "DESIGN-CONSISTENCY OBSERVATION — inte en konformitetsdom",
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende|3",
+    "verdikt": "REQUIRED",
+    "egenKvot": 2.78,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lagastaende|4",
+      "operation": "Avsluta matlagningsläget",
+      "kvot": 5.19
+     },
+     {
+      "CONTROL_ID": "lagastaende|55",
+      "operation": "Föregående steg",
+      "kvot": 5.19
+     }
+    ],
+    "skillnad": 2.41
+   },
+   {
+    "CONTROL_ID": "lagamorkt|3",
+    "verdikt": "REQUIRED",
+    "egenKvot": 2.98,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lagamorkt|4",
+      "operation": "Avsluta matlagningsläget",
+      "kvot": 6.05
+     },
+     {
+      "CONTROL_ID": "lagamorkt|55",
+      "operation": "Föregående steg",
+      "kvot": 6.05
+     }
+    ],
+    "skillnad": 3.07
+   },
+   {
+    "CONTROL_ID": "lagastaende320|3",
+    "verdikt": "REQUIRED",
+    "egenKvot": 2.78,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lagastaende320|4",
+      "operation": "Avsluta matlagningsläget",
+      "kvot": 5.19
+     },
+     {
+      "CONTROL_ID": "lagastaende320|36",
+      "operation": "Föregående steg",
+      "kvot": 5.19
+     }
+    ],
+    "skillnad": 2.41
+   },
+   {
+    "CONTROL_ID": "lagastaende320|18",
+    "verdikt": "SUPPLEMENTAL_NOT_REQUIRED",
+    "egenKvot": 2.78,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lagastaende320|4",
+      "operation": "Avsluta matlagningsläget",
+      "kvot": 5.19
+     },
+     {
+      "CONTROL_ID": "lagastaende320|36",
+      "operation": "Föregående steg",
+      "kvot": 5.19
+     }
+    ],
+    "skillnad": 2.41
+   },
+   {
+    "CONTROL_ID": "lagaliggande|11",
+    "verdikt": "UNKNOWN",
+    "egenKvot": 2.98,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lagaliggande|28",
+      "operation": "Föregående steg",
+      "kvot": 6.05
+     }
+    ],
+    "skillnad": 3.07
+   },
+   {
+    "CONTROL_ID": "lagatimers|30",
+    "verdikt": "UNKNOWN",
+    "egenKvot": 2.98,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lagatimers|16",
+      "operation": "Pausa timern Pastan",
+      "kvot": 4.6
+     },
+     {
+      "CONTROL_ID": "lagatimers|25",
+      "operation": "Pausa timern Svampen",
+      "kvot": 4.6
+     },
+     {
+      "CONTROL_ID": "lagatimers|43",
+      "operation": "Föregående steg",
+      "kvot": 6.05
+     }
+    ],
+    "skillnad": 3.07
+   },
+   {
+    "CONTROL_ID": "lgbtimer|37",
+    "verdikt": "REQUIRED",
+    "egenKvot": 1.48,
+    "remedieradeISammaScen": [
+     {
+      "CONTROL_ID": "lgbtimer|16",
+      "operation": "Föregående steg",
+      "kvot": 3.2
+     },
+     {
+      "CONTROL_ID": "lgbtimer|43",
+      "operation": "Tysta uppläsningen",
+      "kvot": 3.2
+     }
+    ],
+    "skillnad": 1.72
+   }
+  ],
+  "$vad": "I fem skarmar star en nyss remedierad REQUIRED-grans bredvid en grans som nu ar SUPPLEMENTAL eller UNKNOWN och som behaller sin svagare styrka.",
+  "$regel": "Ingenting andras for symmetri. Observationen halls skild fran den normativa domen."
+ },
+ "I_regression": {
+  "deklareradeKontroller": 1375,
+  "R02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "kontrollgrafik": 1879,
+  "gransdelar": 689,
+  "maladeKontrollytor": 420,
+  "fristaende": 32,
+  "R01fynd": 0,
+  "produktskrivningar": 0,
+  "fargskrivningar": 0,
+  "geometridelta": 0,
+  "nyKlipp": 0,
+  "R04skrivningar": 0,
+  "R04credit": 0
+ },
+ "J_unknownSkuld": {
+  "UNKNOWN_APPLICABILITY_BEFORE": 1743,
+  "TARGET_REVIEWED": 7,
+  "avDeSju": {
+   "REQUIRED": 4,
+   "SUPPLEMENTAL": 3,
+   "UNKNOWN": 0
+  },
+  "UNKNOWN_APPLICABILITY_AFTER": 1736,
+  "$steg": [
+   {
+    "block": "950494a",
+    "efter": 1738
+   },
+   {
+    "block": "detta",
+    "efter": 1736
+   }
+  ],
+  "andradeUtanforDeSju": 0,
+  "$regel": "Ingen annan UNKNOWN-identitet har rorts."
+ },
+ "K_status": {
+  "dettaBlock": "SEVEN-NEIGHBOUR APPLICABILITY REVIEW · CLOSED / VERIFIED",
+  "15-BOUNDARY REMEDIATION": "CLOSED / VERIFIED",
+  "KNOWN_REQUIRED_FAIL": 4,
+  "$nya": "De 4 REQUIRED_FAIL ar registrerade och OATGARDADE. De ligger som egen post infor ett separat design- och remedieringspaket.",
+  "CURRENT_NON_TEXT_CONTRAST": "OPEN",
+  "UNKNOWN_APPLICABILITY": 1736,
+  "SAFFRON_REMEDIATION": "CLOSED / VERIFIED",
+  "PRESSED": "UNTESTED",
+  "INACTIVE": "UNTESTED",
+  "FOCUS": "UNTESTED",
+  "R04_CREDIT": 0
+ },
+ "$uppdaterad": "Tva manskliga occurrence-domar registrerade efter 950494a.",
+ "B2_guldregeln": {
+  "$beslut": "NO_GLOBAL_GOLD_RULE",
+  "$vad": "Guldfargad text ar INTE en etablerad global designsystemregel for att nagot gar att trycka pa. Ingen sadan regel skapas, guld eller accent registreras inte som CONTROL_SIGNAL, och beslutet propageras inte till andra guldfargade texter eller kontroller.",
+  "$logik": "NO_GLOBAL_GOLD_RULE innebar INTE automatiskt REQUIRED_BOUNDARY. Requiredness avgors fortsatt ur den faktiska scenen och samtliga kvarvarande visuella barare.",
+  "$tillampat": "For de tva timerkontrollerna vilar domen pa handlingsetiketten, klockglyfen och placeringen i steget. Guldfargen ar noterad som observerat stylingfaktum."
+ }
+}

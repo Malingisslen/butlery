@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/views/unified_shopping/widgets/dialogs/no_friends_dialog.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -254,9 +255,7 @@ class ShoppingListOperations {
       final availableFriends = friendsService.friends;
 
       if (availableFriends.isEmpty) {
-        if (context.mounted) {
-          onError(context.l10n.shoppingNoFriends);
-        }
+        if (context.mounted) await showNoFriendsDialog(context);
         return;
       }
 

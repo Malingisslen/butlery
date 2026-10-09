@@ -146,6 +146,50 @@ void main() {
       expect(manageTapped, isTrue);
     });
 
+    // BUT-2256: while the tags are still being read, an empty list is not
+    // "the user has none" — the section says it is fetching instead.
+    testWidgets('while loading, an empty list shows the loading state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: PersonalTagFilterChipsWidget(
+            tags: const [],
+            selectedTagIds: const {},
+            onToggle: (_) {},
+            onManageTags: () {},
+            isLoading: true,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Hämtar dina taggar …'), findsOneWidget);
+      expect(find.text('Inga egna taggar'), findsNothing);
+      expect(find.text('Skapa egna taggar'), findsNothing);
+    });
+
+    testWidgets('loading with tags already present still shows the chips', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: PersonalTagFilterChipsWidget(
+            tags: testTags,
+            selectedTagIds: const {},
+            onToggle: (_) {},
+            isLoading: true,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Favoriter'), findsOneWidget);
+      expect(find.text('Hämtar dina taggar …'), findsNothing);
+    });
+
     testWidgets('empty state shows nothing when onManageTags is null', (
       tester,
     ) async {

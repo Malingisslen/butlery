@@ -1,16 +1,16 @@
 /// Widget tests for LoadMenuBottomSheet (menu_load_dialog.dart).
 ///
-/// Covers the four observable behaviours:
+/// Covers these observable behaviours:
 ///   1. Initial render shows the localized header + close button.
 ///   2. While `refreshSavedMenus` is in flight, a spinner is shown.
 ///   3. Empty result list renders the StateWidget.empty branch with the
 ///      localized "Inga sparade menyer" copy.
 ///   4. Populated result list renders one ListTile per saved menu and the
 ///      onTap callback invokes `viewModel.loadSavedMenu(menu.key)`.
+///   5. Delete removes the row at once with Ångra and commits afterwards
+///      (BUT-2145).
 ///
-/// The viewmodel is faked via mocktail; we don't drive the SnackBar /
-/// Navigator side effects since those traverse Scaffold descendants — they
-/// are exercised by integration tests. See SKIP comments below.
+/// The viewmodel is faked via mocktail.
 library;
 
 import 'dart:async';
@@ -191,15 +191,85 @@ void main() {
       },
     );
 
-    // SKIP: deletion confirmation dialog navigates through showDialog<bool>
-    // which composes a second route. Testing the end-to-end delete branch
-    // requires driving the AlertDialog inside the bottom sheet AND mocking
-    // the SnackBar; the value-vs-noise tradeoff is poor for a pure widget
-    // test. The flow is exercised by integration tests.
-    testWidgets(
-      'delete branch end-to-end (SKIP — dialog-on-dialog flow)',
-      skip: true,
-      (tester) async {},
-    );
+    group('BUT-2145: delete is immediate with Ångra', () {
+      _FakeMenuViewModel deletableVm() {
+        final vm = _FakeMenuViewModel();
+        when(() => vm.refreshSavedMenus()).thenAnswer((_) async {});
+        when(() => vm.savedMenus).thenReturn([
+          _menu(key: 'k1', name: 'M1'),
+          _menu(key: 'k2', name: 'M2'),
+        ]);
+        when(() => vm.deleteSavedMenu(any())).thenAnswer((_) async => true);
+        when(() => vm.error).thenReturn(null);
+        return vm;
+      }
+
+      Future<void> deleteFirst(WidgetTester tester) async {
+        await tester.tap(find.byType(PopupMenuButton<String>).first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Ta bort'));
+        await tester.pump();
+        await tester.pump();
+      }
+
+      testWidgets(
+        'the row leaves at once, with no dialog, and Ångra brings it back '
+        'without deleting',
+        (tester) async {
+          final vm = deletableVm();
+          await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+          await tester.pumpAndSettle();
+
+          await deleteFirst(tester);
+
+          expect(find.byType(AlertDialog), findsNothing);
+          expect(find.text('M1'), findsNothing);
+          expect(find.text('M2'), findsOneWidget);
+          expect(find.text('Meny "M1" borttagen'), findsOneWidget);
+
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Ångra'));
+          await tester.pumpAndSettle();
+
+          expect(find.text('M1'), findsOneWidget);
+          verifyNever(() => vm.deleteSavedMenu(any()));
+        },
+      );
+
+      testWidgets('the delete commits once the undo window has run out', (
+        tester,
+      ) async {
+        final vm = deletableVm();
+        await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+        await tester.pumpAndSettle();
+
+        await deleteFirst(tester);
+        verifyNever(() => vm.deleteSavedMenu(any()));
+
+        await tester.pump(const Duration(seconds: 7));
+        await tester.pump(const Duration(seconds: 7));
+        await tester.pumpAndSettle();
+
+        verify(() => vm.deleteSavedMenu('k1')).called(1);
+        expect(find.text('M1'), findsNothing);
+      });
+
+      testWidgets('a failed delete puts the row back and says so', (
+        tester,
+      ) async {
+        final vm = deletableVm();
+        when(() => vm.deleteSavedMenu(any())).thenAnswer((_) async => false);
+        await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+        await tester.pumpAndSettle();
+
+        await deleteFirst(tester);
+        await tester.pump(const Duration(seconds: 7));
+        await tester.pump(const Duration(seconds: 7));
+        await tester.pumpAndSettle();
+
+        expect(find.text('M1'), findsOneWidget);
+        expect(find.textContaining('Kunde inte ta bort meny'), findsOneWidget);
+      });
+    });
   });
 }

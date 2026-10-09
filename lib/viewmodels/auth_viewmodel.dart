@@ -175,7 +175,16 @@ class AuthViewModel extends ChangeNotifier
   ///   // Display error from authViewModel.errorMessage
   /// }
   /// ```
-  Future<bool> signIn({required String email, required String password}) async {
+  Future<bool> signIn({required String email, required String password}) =>
+      _singleFlight(
+        'signIn',
+        () => _signIn(email: email, password: password),
+      );
+
+  Future<bool> _signIn({
+    required String email,
+    required String password,
+  }) async {
     // Validate input before processing
     if (!_validateEmail(email)) {
       return false;
@@ -219,6 +228,32 @@ class AuthViewModel extends ChangeNotifier
   /// }
   /// ```
   Future<bool> register({
+    required String email,
+    required String password,
+    required String displayName,
+  }) => _singleFlight(
+    'register',
+    () => _register(email: email, password: password, displayName: displayName),
+  );
+
+  /// A second tap or Enter while a request is in flight joins it instead of
+  /// sending another: the busy state only shows after the service's first
+  /// await, so the button is still live for a double tap before it.
+  final Map<String, Future<bool>> _inFlight = {};
+
+  Future<bool> _singleFlight(String key, Future<bool> Function() run) {
+    final running = _inFlight[key];
+    if (running != null) return running;
+    final future = run().whenComplete(() {
+      // Block body: returning remove()'s Future would make whenComplete await
+      // itself.
+      _inFlight.remove(key);
+    });
+    _inFlight[key] = future;
+    return future;
+  }
+
+  Future<bool> _register({
     required String email,
     required String password,
     required String displayName,

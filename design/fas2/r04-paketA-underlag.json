@@ -1,0 +1,320 @@
+{
+ "$regel": "Underlag for ett nytt beslut om mork ytniva for exakt undergruppen ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande under CAND-yta-upphojd-#f5f4ed. Inget varde valjs. Inget forslag om att dela de 27 delade foregrundstokensen lamnas — den vagen provas forst om inget ytvarde klarar bade kontrast och hierarki.",
+ "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+ "skarmar": [
+  "veckochips",
+  "veckoresultat",
+  "veckofel",
+  "veckorostutgang",
+  "modrapporter",
+  "modminderarig"
+ ],
+ "ytelement": 10,
+ "foregrunderPaYtan": [
+  {
+   "typ": "text",
+   "ljus": "#37453a",
+   "mork": [
+    "#93a48d"
+   ],
+   "storlek": 13,
+   "vikt": "700",
+   "antal": 7,
+   "arter": [
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostutgang",
+    "modrapporter"
+   ]
+  },
+  {
+   "typ": "text",
+   "ljus": "#24382c",
+   "mork": [
+    "#c9d3c4"
+   ],
+   "storlek": 14,
+   "vikt": "600",
+   "antal": 6,
+   "arter": [
+    "veckoresultat",
+    "modrapporter",
+    "modminderarig"
+   ]
+  },
+  {
+   "typ": "text",
+   "ljus": "#f5f4ed",
+   "mork": [
+    "#f5f4ed"
+   ],
+   "storlek": 13,
+   "vikt": "700",
+   "antal": 4,
+   "arter": [
+    "veckochips",
+    "veckoresultat",
+    "veckofel"
+   ]
+  },
+  {
+   "typ": "text",
+   "ljus": "#627061",
+   "mork": [
+    "#93a48d"
+   ],
+   "storlek": 12,
+   "vikt": "600",
+   "antal": 4,
+   "arter": [
+    "modrapporter",
+    "modminderarig"
+   ]
+  }
+ ],
+ "alternativ": [
+  {
+   "varde": "#17251d",
+   "luminans": 0.0159,
+   "kontrast": {
+    "#93a48d": 6.02,
+    "#de9078": 6.34
+   },
+   "separationMotAppytan": 1,
+   "renderadSomMorkYtaIVerifieratMaterial": 217,
+   "etableradeTokens": {
+    "somMorktVarde": [
+     {
+      "token": "--yta-platshallare",
+      "roll": "yta-platshallare",
+      "ljus": "#e6ead9"
+     },
+     {
+      "token": "--yta-upphojd",
+      "roll": "yta-upphojd",
+      "ljus": "#e6ead9"
+     },
+     {
+      "token": "--yta-upphojd",
+      "roll": "yta-upphojd",
+      "ljus": "#e6ead9"
+     },
+     {
+      "token": "--yta-upphojd-b2",
+      "roll": "yta-upphojd",
+      "ljus": "#24382c"
+     },
+     {
+      "token": "--yta-kontroll-b1",
+      "roll": "yta-kontroll",
+      "ljus": "#e6ead9"
+     },
+     {
+      "token": "--yta-kontroll-b2",
+      "roll": "yta-kontroll",
+      "ljus": "#24382c"
+     }
+    ],
+    "somLjustVarde": []
+   },
+   "fallandeForegrunder": [],
+   "antalFallande": 0,
+   "nastladeOchRamar": {
+    "relationer": 6,
+    "under3": [
+     {
+      "mork": "#17251d",
+      "kvot": 1
+     },
+     {
+      "mork": "#17251d",
+      "kvot": 1
+     },
+     {
+      "mork": "rgba(245,244,237,.18)",
+      "kvot": 1.72
+     }
+    ]
+   }
+  },
+  {
+   "varde": "#24382c",
+   "luminans": 0.0339,
+   "kontrast": {
+    "#93a48d": 4.73,
+    "#de9078": 4.99
+   },
+   "separationMotAppytan": 1.27,
+   "renderadSomMorkYtaIVerifieratMaterial": 12,
+   "etableradeTokens": {
+    "somMorktVarde": [],
+    "somLjustVarde": [
+     {
+      "token": "--text-innehall-b",
+      "roll": "text-innehall",
+      "mork": "#c9d3c4"
+     },
+     {
+      "token": "--ikon-fristaende-a",
+      "roll": "ikon-fristaende",
+      "mork": "#c9d3c4"
+     },
+     {
+      "token": "--ram-behallare-a",
+      "roll": "ram-behallare",
+      "mork": "rgba(245,244,237,.4)"
+     },
+     {
+      "token": "--text-kontroll-a",
+      "roll": "text-kontroll",
+      "mork": "#c9d3c4"
+     },
+     {
+      "token": "--ram-kontroll-a",
+      "roll": "ram-kontroll",
+      "mork": "rgba(245,244,237,.4)"
+     },
+     {
+      "token": "--ram-kontroll-a",
+      "roll": "ram-kontroll",
+      "mork": "rgba(245,244,237,.4)"
+     },
+     {
+      "token": "--text-kontroll-a",
+      "roll": "text-kontroll",
+      "mork": "#c9d3c4"
+     },
+     {
+      "token": "--text-innehall-b",
+      "roll": "text-innehall",
+      "mork": "#c9d3c4"
+     },
+     {
+      "token": "--ram-behallare-a",
+      "roll": "ram-behallare",
+      "mork": "rgba(245,244,237,.4)"
+     },
+     {
+      "token": "--yta-upphojd-b2",
+      "roll": "yta-upphojd",
+      "mork": "#17251d"
+     },
+     {
+      "token": "--yta-kontroll-b2",
+      "roll": "yta-kontroll",
+      "mork": "#17251d"
+     },
+     {
+      "token": "--ikon-kontroll-b3",
+      "roll": "ikon-kontroll",
+      "mork": "#c9d3c4"
+     },
+     {
+      "token": "--ikon-fristaende-a",
+      "roll": "ikon-fristaende",
+      "mork": "#c9d3c4"
+     }
+    ]
+   },
+   "fallandeForegrunder": [],
+   "antalFallande": 0,
+   "nastladeOchRamar": {
+    "relationer": 6,
+    "under3": [
+     {
+      "mork": "#17251d",
+      "kvot": 1.27
+     },
+     {
+      "mork": "#17251d",
+      "kvot": 1.27
+     },
+     {
+      "mork": "rgba(245,244,237,.18)",
+      "kvot": 1.71
+     }
+    ]
+   }
+  },
+  {
+   "varde": "#2f4437",
+   "luminans": 0.0501,
+   "kontrast": {
+    "#93a48d": 3.96,
+    "#de9078": 4.18
+   },
+   "separationMotAppytan": 1.52,
+   "renderadSomMorkYtaIVerifieratMaterial": 0,
+   "etableradeTokens": {
+    "somMorktVarde": [],
+    "somLjustVarde": []
+   },
+   "fallandeForegrunder": [
+    {
+     "fg": "#93a48d",
+     "typ": "text",
+     "mork": "#93a48d",
+     "kvot": 3.96,
+     "krav": 4.5
+    },
+    {
+     "fg": "#93a48d",
+     "typ": "text",
+     "mork": "#93a48d",
+     "kvot": 3.96,
+     "krav": 4.5
+    }
+   ],
+   "antalFallande": 2,
+   "nastladeOchRamar": {
+    "relationer": 6,
+    "under3": [
+     {
+      "mork": "#17251d",
+      "kvot": 1.52
+     },
+     {
+      "mork": "#17251d",
+      "kvot": 1.52
+     },
+     {
+      "mork": "rgba(245,244,237,.18)",
+      "kvot": 1.66
+     },
+     {
+      "mork": "rgba(245,244,237,.4)",
+      "kvot": 2.91
+     },
+     {
+      "mork": "rgba(245,244,237,.4)",
+      "kvot": 2.91
+     }
+    ]
+   }
+  }
+ ],
+ "appyta": "#17251d",
+ "renderadeMorkaYtnivaerIVerifieratMaterial": [
+  [
+   "rgb(23, 37, 29)",
+   217
+  ],
+  [
+   "rgb(230, 234, 217)",
+   22
+  ],
+  [
+   "rgb(36, 56, 44)",
+   12
+  ],
+  [
+   "rgb(245, 244, 237)",
+   6
+  ],
+  [
+   "rgb(206, 124, 30)",
+   5
+  ]
+ ]
+}

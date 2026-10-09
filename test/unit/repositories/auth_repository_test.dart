@@ -22,6 +22,10 @@ void main() {
     late FirebaseAuthRepository repository;
     late MockFirebaseAuth mockFirebaseAuth;
 
+    setUpAll(() {
+      registerFallbackValue(ActionCodeSettings(url: 'https://example.com'));
+    });
+
     setUp(() async {
       await BaseUnitTest.setupUnit();
       mockFirebaseAuth = MockFirebaseAuth();
@@ -249,6 +253,7 @@ void main() {
         when(
           () => mockFirebaseAuth.sendPasswordResetEmail(
             email: any(named: 'email'),
+            actionCodeSettings: any(named: 'actionCodeSettings'),
           ),
         ).thenAnswer((_) async {});
 
@@ -259,6 +264,64 @@ void main() {
         verify(
           () => mockFirebaseAuth.sendPasswordResetEmail(
             email: 'test@example.com',
+            actionCodeSettings: any(named: 'actionCodeSettings'),
+          ),
+        ).called(1);
+      });
+
+      // BUT-2170: the link must open the app (handleCodeInApp) through the
+      // Hosting domain whose association files name this app; without these
+      // settings Firebase's own page opens instead.
+      test('sends the reset link so that it opens the app', () async {
+        when(
+          () => mockFirebaseAuth.sendPasswordResetEmail(
+            email: any(named: 'email'),
+            actionCodeSettings: any(named: 'actionCodeSettings'),
+          ),
+        ).thenAnswer((_) async {});
+
+        await repository.sendPasswordResetEmail('test@example.com');
+
+        final settings =
+            verify(
+                  () => mockFirebaseAuth.sendPasswordResetEmail(
+                    email: 'test@example.com',
+                    actionCodeSettings: captureAny(
+                      named: 'actionCodeSettings',
+                    ),
+                  ),
+                ).captured.single
+                as ActionCodeSettings;
+        expect(settings.handleCodeInApp, isTrue);
+        expect(settings.linkDomain, 'butlery-app-1.firebaseapp.com');
+        expect(settings.androidPackageName, 'se.butlery.app');
+        expect(settings.iOSBundleId, 'se.butlery.app');
+        expect(Uri.parse(settings.url).host, 'butlery-app-1.firebaseapp.com');
+      });
+
+      test('passes a reset code and new password through', () async {
+        when(
+          () => mockFirebaseAuth.verifyPasswordResetCode('code-1'),
+        ).thenAnswer((_) async => 'anna@example.com');
+        when(
+          () => mockFirebaseAuth.confirmPasswordReset(
+            code: any(named: 'code'),
+            newPassword: any(named: 'newPassword'),
+          ),
+        ).thenAnswer((_) async {});
+
+        expect(
+          await repository.verifyPasswordResetCode('code-1'),
+          'anna@example.com',
+        );
+        await repository.confirmPasswordReset(
+          code: 'code-1',
+          newPassword: 'nytt-losen-1',
+        );
+        verify(
+          () => mockFirebaseAuth.confirmPasswordReset(
+            code: 'code-1',
+            newPassword: 'nytt-losen-1',
           ),
         ).called(1);
       });
@@ -268,6 +331,7 @@ void main() {
         when(
           () => mockFirebaseAuth.sendPasswordResetEmail(
             email: any(named: 'email'),
+            actionCodeSettings: any(named: 'actionCodeSettings'),
           ),
         ).thenAnswer(
           (_) async => throw FirebaseAuthException(

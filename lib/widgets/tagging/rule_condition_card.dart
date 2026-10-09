@@ -68,6 +68,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                   child: PressFill(
                     surface: PressSurface.base,
                     child: DropdownButtonFormField<ConditionType>(
+                      icon: const ButleryIcon(ButleryIcons.chevronDown),
                       iconEnabledColor: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant,
@@ -114,6 +115,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                   child: PressFill(
                     surface: PressSurface.base,
                     child: DropdownButtonFormField<ConditionOperator>(
+                      icon: const ButleryIcon(ButleryIcons.chevronDown),
                       iconEnabledColor: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant,

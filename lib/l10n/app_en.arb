@@ -100,6 +100,67 @@
       }
     }
   },
+  "slotSpillHeading": "{placed, plural, =0{No free places} =1{One place} other{{placed} places}}, {count} recipes",
+  "@slotSpillHeading": {
+    "description": "BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day",
+    "placeholders": {
+      "placed": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
+  "slotSpillBody": "{rest, plural, =1{One recipe does not fit in week {week}: {names}. Choose what happens to it, then I will write.} other{{rest} recipes do not fit in week {week}: {names}. Choose what happens to them, then I will write.}}",
+  "@slotSpillBody": {
+    "description": "BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)",
+    "placeholders": {
+      "rest": {"type": "int"},
+      "week": {"type": "int"},
+      "names": {"type": "String"}
+    }
+  },
+  "slotSpillNextWeek": "Add {placed} now, {rest} in wk {week}",
+  "@slotSpillNextWeek": {
+    "description": "BUT-2153: place what fits now and the rest from Monday of the next week",
+    "placeholders": {
+      "placed": {"type": "int"},
+      "rest": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
+  "slotSpillAllNextWeek": "Add all in wk {week}",
+  "@slotSpillAllNextWeek": {
+    "description": "BUT-2153: nothing fits in the chosen week, so place all of them from Monday of the next week",
+    "placeholders": {
+      "week": {"type": "int"}
+    }
+  },
+  "slotSpillChooseMore": "Choose more places",
+  "@slotSpillChooseMore": {
+    "description": "BUT-2153: close the panel and pick another start in the slot picker"
+  },
+  "slotSpillPlaceOnly": "{placed, plural, =1{Add only the first} other{Add only those {placed}}}",
+  "@slotSpillPlaceOnly": {
+    "description": "BUT-2153: place only the recipes that fit and leave the rest out",
+    "placeholders": {
+      "placed": {"type": "int"}
+    }
+  },
+  "bulkAddToMenuSuccessTwoWeeks": "{added} recipes this week, {next} in wk {week}",
+  "@bulkAddToMenuSuccessTwoWeeks": {
+    "description": "BUT-2153: receipt after placing what fit and the rest in the next week",
+    "placeholders": {
+      "added": {"type": "int"},
+      "next": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
+  "bulkAddToMenuNextWeekFailed": "{added} recipes added this week. The rest could not be added to wk {week}.",
+  "@bulkAddToMenuNextWeekFailed": {
+    "description": "BUT-2153: the first week was saved but writing the rest into the next week failed",
+    "placeholders": {
+      "added": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
   "slotPickerDialogTitle": "Pick a menu slot",
   "@slotPickerDialogTitle": {
     "description": "BUT-1029: SlotPickerDialog header title."
@@ -1286,7 +1347,7 @@
   },
   "householdAllergenRosterIncomplete": "We could not read everyone in the household just now, so the list of allergies may be incomplete.",
   "@householdAllergenRosterIncomplete": {
-    "description": "BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted"
+    "description": "BUT-1663/BUT-1820: warning shown when at least one household member's profile could not be read, so the named allergens cannot be trusted. It appears appended to the household-filter opt-out dialog, as a row above the generated menu, and under the menu generation error"
   },
   "householdAllergenShareTitle": "Share my allergies with the household",
   "@householdAllergenShareTitle": {
@@ -1346,6 +1407,10 @@
   },
   "settingsSectionNotifications": "Notifications",
   "settingsSectionAccount": "Account & security",
+  "settingsSectionPrivacy": "Privacy and data",
+  "@settingsSectionPrivacy": {
+    "description": "Settings hub section heading for privacy policy, consent and data export (BUT-2261)"
+  },
   "settingsSectionAbout": "About",
   "settingsSectionLanguage": "Language",
   "settingsLanguageTitle": "Language",
@@ -3833,7 +3898,7 @@
     }
   },
   "groupInvitationSent": "Sent",
-  "groupInvitationsSent": "{count} invitations sent",
+  "groupInvitationsSent": "{count, plural, =1{1 invitation sent} other{{count} invitations sent}}",
   "@groupInvitationsSent": {
     "placeholders": {
       "count": {
@@ -4145,7 +4210,7 @@
   "recipeCouldNotMarkAsCooked": "Could not mark as cooked",
   "recipeCouldNotOpenEditor": "Could not open editor",
   "recipeCouldNotShare": "Could not share recipe",
-  "recipeDeleted": "Recipe deleted",
+  "recipeDeleted": "Recipe moved to the trash for 30 days",
   "recipeMarkedAsCooked": "Recipe marked as cooked today.",
   "recipeAlreadyCookedToday": "Already logged today",
   "recipeShared": "Recipe shared",
@@ -4489,7 +4554,7 @@
     }
   },
   "groupLeaveGroup": "Leave group",
-  "groupMemberCount": "{count} people",
+  "groupMemberCount": "{count, plural, =1{1 person} other{{count} people}}",
   "@groupMemberCount": {
     "placeholders": {
       "count": {
@@ -8920,7 +8985,7 @@
       }
     }
   },
-  "recipeDeleteWarning": "The recipe will be permanently deleted.",
+  "recipeDeleteWarning": "The recipe moves to the trash and stays there for 30 days.",
   "shoppingListDeleteWarning": "All items on the list will be removed.",
   "itemDeletedSuccess": "{type} has been deleted",
   "@itemDeletedSuccess": {
@@ -9128,7 +9193,7 @@
   "viewModeList": "List View",
   "imageCropTitle": "Crop image",
   "bulkDeleteConfirmMessage": "The selected recipes will be removed.",
-  "bulkDeleteSuccess": "{count} recipes deleted",
+  "bulkDeleteSuccess": "{count} recipes moved to the trash for 30 days",
   "@bulkDeleteSuccess": {
     "placeholders": {
       "count": {
@@ -10638,6 +10703,15 @@
       }
     }
   },
+  "a11yRemoveMember": "Remove {name}",
+  "@a11yRemoveMember": {
+    "description": "Screen-reader label for the remove button on a chosen member chip",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yToggleFullscreenChrome": "Show or hide controls",
   "@a11yToggleFullscreenChrome": {
     "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
@@ -11715,6 +11789,7 @@
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
   },
+  "recipeAddPhoto": "Add photo",
   "imageRetriesWhenOnline": "Tries again when the connection is back",
   "@imageRetriesWhenOnline": {
     "description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."
@@ -11959,6 +12034,27 @@
   "groupMemberRemoveNotSaved": "Could not be removed — the change was not saved",
   "@groupMemberRemoveNotSaved": {
     "description": "P5-U33: reason on a member row in the partial outcome."
+  },
+  "groupMemberRemoveFailedNoPermission": "You can no longer change the group",
+  "@groupMemberRemoveFailedNoPermission": {
+    "description": "BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group."
+  },
+  "groupMemberRemoveFailedNotSaved": "The change was not saved",
+  "@groupMemberRemoveFailedNotSaved": {
+    "description": "BUT-2153: reason under a member's name when the removal could not be saved."
+  },
+  "groupMemberRemoveFailedGroupMissing": "The group no longer exists",
+  "@groupMemberRemoveFailedGroupMissing": {
+    "description": "BUT-2153: reason under a member's name when the group no longer exists."
+  },
+  "a11yMemberRemoveFailed": "{name}, selected, could not be removed",
+  "@a11yMemberRemoveFailed": {
+    "description": "BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "groupMembersRemoveNone": "None of the selected members could be removed.",
   "@groupMembersRemoveNone": {
@@ -13592,5 +13688,65 @@
   },
   "pantryRestorePreviousAction": "Restore",
   "pantryPreviousRestored": "Previous version restored",
-  "pantryRestorePreviousFailed": "Couldn't restore the previous version"
+  "pantryRestorePreviousFailed": "Couldn't restore the previous version",
+  "setNewPasswordTitle": "Choose a new password",
+  "setNewPasswordChecking": "Checking the link …",
+  "setNewPasswordForAccount": "For the account {email}.",
+  "setNewPasswordRepeat": "Repeat new password",
+  "setNewPasswordSave": "Save password",
+  "setNewPasswordWeak": "The password is too simple. Choose a longer one, ideally with numbers and symbols.",
+  "setNewPasswordSaveFailed": "The password couldn't be saved.",
+  "setNewPasswordSaveFailedBecause": "The password couldn't be saved. {cause}",
+  "setNewPasswordNothingChanged": "Your old password still works.",
+  "setNewPasswordCheckFailed": "The link couldn't be checked.",
+  "setNewPasswordLinkInvalidTitle": "This link no longer works",
+  "setNewPasswordLinkInvalidBody": "It has already been used or is too old. Ask for a new link and it will come to your email.",
+  "setNewPasswordRequestNew": "Send a new link",
+  "setNewPasswordClose": "Close",
+  "setNewPasswordSavedOther": "The password for {email} has been changed.",
+  "passwordResetDoneNotice": "Your password has been changed. Log in with the new one.",
+  "shoppingItemsAddedToListSnack": "{count, plural, =1{1 item added to \"{listName}\"} other{{count} items added to \"{listName}\"}}",
+  "@shoppingItemsAddedToListSnack": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddToListHeading": "Add to list",
+  "recipeImportNoIngredientsNotice": "We found no ingredients. Add them yourself below.",
+  "@recipeImportNoIngredientsNotice": {
+    "description": "BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists."
+  },
+  "trashTitle": "Trash",
+  "trashSelectAll": "Select all",
+  "trashSelectNone": "Deselect all",
+  "trashLoading": "Loading the trash …",
+  "trashLoadFailed": "The trash could not be loaded.",
+  "trashEmptyTitle": "The trash is empty",
+  "trashEmptyBody": "Deleted recipes stay here for 30 days.",
+  "trashDaysLeft": "{count, plural, =0{Expires today} =1{1 day left} other{{count} days left}}",
+  "trashSelectedCount": "{count} selected",
+  "trashRestoreSelected": "Restore {count} recipes",
+  "trashDeleteSelected": "Delete {count} recipes",
+  "trashEmptyAction": "Empty the trash",
+  "trashDeleteConfirmTitle": "Delete for good?",
+  "trashDeleteConfirmBody": "{count, plural, =1{The recipe is deleted for good. This cannot be undone.} other{{count} recipes are deleted for good. This cannot be undone.}}",
+  "trashDeleteConfirmAction": "Delete for good",
+  "trashEmptyConfirmTitle": "Empty the trash?",
+  "trashEmptyConfirmBody": "Every recipe in the trash is deleted for good. This cannot be undone.",
+  "trashRestoredAll": "{count, plural, =1{Restored as private} other{{count} recipes restored as private}}",
+  "trashDeletedAll": "{count, plural, =1{The recipe was deleted for good} other{{count} recipes were deleted for good}}",
+  "trashEmptied": "The trash is empty now",
+  "trashOfflineNothingChanged": "You are offline. Nothing was changed.",
+  "trashFailedNothingChanged": "Something went wrong. Nothing was changed.",
+  "trashPartialSummary": "{done} of {total} done.",
+  "trashPartialNoneDone": "Nothing was changed.",
+  "trashFailOffline": "{count} recipes were not done because you are offline.",
+  "trashFailExpired": "{count} recipes had already expired.",
+  "trashFailGone": "{count} recipes were no longer in the trash.",
+  "trashFailFailed": "{count} recipes could not be done. Try again."
 }

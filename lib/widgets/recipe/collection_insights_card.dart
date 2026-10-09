@@ -2,6 +2,7 @@
 /// for the user's recipe collection.
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -39,6 +40,7 @@ class CollectionInsightsCard extends StatelessWidget {
     return Padding(
       padding: AppDimensions.responsiveContentPadding(context),
       child: ExpansionTile(
+        trailing: const ButleryExpansionChevron(),
         leading: ButleryIcon(
           ButleryIcons.barChart,
           color: colorScheme.onSurface,

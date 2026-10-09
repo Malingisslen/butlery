@@ -26,9 +26,9 @@ void main() {
     'an add that completes after dispose runs its finally without throwing',
     () async {
       final service = MockUnifiedShoppingService();
-      final gate = Completer<bool>();
+      final gate = Completer<String?>();
       when(
-        () => service.addItemToActiveList(
+        () => service.addItemToActiveListWithId(
           name: any(named: 'name'),
           amount: any(named: 'amount'),
           unit: any(named: 'unit'),
@@ -50,8 +50,8 @@ void main() {
 
       // The service answers afterwards. Without the guard, the `finally`'s
       // `_setAddingItem(false)` throws a FlutterError out of the future.
-      gate.complete(false);
-      await expectLater(inFlight, completion(isFalse));
+      gate.complete(null);
+      await expectLater(inFlight, completion(isNull));
       expect(notifications, duringFlight);
     },
   );

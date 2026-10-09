@@ -131,6 +131,40 @@ void main() {
       },
     );
 
+    testWidgets('data export tile renders in /settings (BUT-2302)', (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      await pumpHub(tester, isAdmin: false);
+
+      expect(
+        find.ancestor(
+          of: find.text(sv.profileExportData),
+          matching: find.byType(ListTile),
+        ),
+        findsOneWidget,
+        reason:
+            'The GDPR export must be reachable from /settings, not only '
+            'from the profile sheet.',
+      );
+    });
+
+    testWidgets('tapping the export tile keeps /settings open (BUT-2302)', (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      await pumpHub(tester, isAdmin: false);
+
+      await tester.tap(find.text(sv.profileExportData));
+      await tester.pumpAndSettle();
+
+      // DataExportService is not registered here, so opening fails: the
+      // failure notice proves the handler ran, the title that the hub was
+      // not popped on the way.
+      expect(find.text(sv.profileDataExportOpenFailed), findsOneWidget);
+      expect(find.text(sv.commonSettings), findsOneWidget);
+    });
+
     testWidgets('About Butlery tile pushes the about route', (tester) async {
       final sv = AppLocalizationsSv();
       final pushed = <String?>[];
@@ -147,6 +181,66 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(pushed, [Routes.settingsAbout]);
+    });
+
+    testWidgets('Trash tile pushes the trash route', (tester) async {
+      final sv = AppLocalizationsSv();
+      final pushed = <String?>[];
+      await pumpHub(
+        tester,
+        isAdmin: false,
+        onGenerateRoute: (settings) {
+          pushed.add(settings.name);
+          return MaterialPageRoute(builder: (_) => const SizedBox());
+        },
+      );
+
+      await tester.tap(find.text(sv.trashTitle));
+      await tester.pumpAndSettle();
+
+      expect(pushed, [Routes.settingsTrash]);
+    });
+
+    // BUT-2261: privacy, consent and export are found under Inställningar
+    // too, and opening one keeps the settings page underneath it.
+    testWidgets('privacy section opens the privacy policy over Inställningar', (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      final pushed = <String?>[];
+      await pumpHub(
+        tester,
+        isAdmin: false,
+        onGenerateRoute: (settings) {
+          pushed.add(settings.name);
+          return MaterialPageRoute(builder: (_) => const SizedBox());
+        },
+      );
+
+      expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
+      expect(find.text(sv.profileManageConsent), findsOneWidget);
+      expect(find.text(sv.profileExportData), findsOneWidget);
+
+      await tester.tap(find.text(sv.profilePrivacyPolicy));
+      await tester.pumpAndSettle();
+      expect(pushed, [Routes.privacyPolicy]);
+
+      Navigator.of(tester.element(find.byType(SizedBox).last)).pop();
+      await tester.pumpAndSettle();
+      expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
+    });
+
+    // ConsentService is not registered here, so opening fails and says so;
+    // what matters is that Inställningar is still the page underneath.
+    testWidgets('consent tile keeps Inställningar open', (tester) async {
+      final sv = AppLocalizationsSv();
+      await pumpHub(tester, isAdmin: false);
+
+      await tester.tap(find.text(sv.profileManageConsent));
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.profileConsentManagementOpenFailed), findsOneWidget);
+      expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
     });
 
     testWidgets('moderator tile is hidden for a non-admin user', (

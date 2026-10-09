@@ -1,0 +1,955 @@
+{
+ "$schema": "butlery-r04-foundationbeslut/1",
+ "$datum": "2026-08-12",
+ "$omfattning": "EN scen: soctomtingavanner. Fyra foundation-enheter. Inga beslut fattade, ingen produktwrite, ingen registry-write, ingen preview renderad.",
+ "$rattelse": {
+  "galler": "fas2/r04-granularitetsaudit.json · K_foundation",
+  "vadSomVarFel": "Auditen raknade APPYTAN som lost med motiveringen att appytan #24382c har en verifierad token-hook till #17251d. Den motiveringen var fel farg.",
+  "uppmatt": {
+   "ljus": "#f5f4ed",
+   "mork": "#17251d",
+   "artefakter": 64,
+   "metod": "appytan identifierad som storsta malade produktyta i varje artefakt som deklarerar authored dark; berknat bakgrundsvarde last fore och efter data-theme=\"dark\"",
+   "utfall": "64 av 64 artefakter, undantagslost"
+  },
+  "foljd": {
+   "appytaF5F4ED": "185 artefakter — LOST, uppmatt mappning",
+   "appyta24382C": "20 artefakter — OBESLUTAD, ingen observerad mappning",
+   "appyta17251D": "7 artefakter — redan morka ritningar, kraver egen adjudicering"
+  },
+  "previewbaraOmraknat": {
+   "tidigareRapporterat": 38,
+   "LOST_OBSERVERAD_MAPPNING": 29,
+   "OBESLUTAD_INGEN_OBSERVERAD_MAPPNING": 3,
+   "BLANDAD_lost_och_obeslutad": 3,
+   "BLANDAD_lost_och_redan_mork": 2,
+   "REDAN_MORK": 1,
+   "korrigeradSiffra": 29,
+   "$not": "Riktningen i auditens slutsats star kvar — previews kraver inga nya beslut for 29 enheter. Talet 38 och motiveringen om #24382c ar felaktiga och ersatts har. Auditartefakten skrivs inte om."
+  },
+  "paverkarSentinelscenen": "NEJ. soctomtingavanner har appytan #f5f4ed, som ar den uppmatt losta. Scenens fyra foundation-enheter star kvar oforandrade."
+ },
+ "accentgrind": {
+  "flaggadePopulation": 24,
+  "traffarBlandDeFyra": 0,
+  "utfall": [
+   {
+    "enhet": "ikon-fristaende|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+    "namn": "ikonlinje",
+    "iFlaggadePopulationen": false,
+    "klass": "DECORATIVE",
+    "grund": "authored data-graphic-role=\"redundant\": ikonen upprepar information som redan star i text"
+   },
+   {
+    "enhet": "text-innehall|#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "namn": "brodtext A",
+    "iFlaggadePopulationen": false,
+    "klass": "NEUTRAL_CONTENT",
+    "grund": "rollen text-innehall ar authored innehallstext utan kontroll- eller statusankare (kontrollroll saknas, state saknas, ingen data-component)"
+   },
+   {
+    "enhet": "text-innehall|#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "namn": "brodtext B",
+    "iFlaggadePopulationen": false,
+    "klass": "NEUTRAL_CONTENT",
+    "grund": "rollen text-innehall ar authored innehallstext utan kontroll- eller statusankare (kontrollroll saknas, state saknas, ingen data-component)"
+   },
+   {
+    "enhet": "text-kontroll|#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "namn": "knapptext",
+    "iFlaggadePopulationen": false,
+    "klass": "SEMANTIC_ACTION",
+    "grund": "authored data-a11y-role=\"button\" pa den narmaste kontrollen — texten ar en atgardsetikett, inte innehallstext"
+   }
+  ],
+  "$regel": "Klassificeringen kommer ur authored evidens — data-a11y-role, data-graphic-role, rollkartan. Ingen implicit accentklassning ur rafarg."
+ },
+ "beslutskort": [
+  {
+   "stabilId": "ikon-fristaende|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "namn": "ikonlinje",
+   "vadDetAr": "users-ikonen overst i det tomma laget. 38×38 svg, stroke-width 1.4, authored data-graphic-role=\"redundant\" och data-icon=\"users\".",
+   "semantiskFunktion": "DECORATIVE",
+   "semantiskGrund": "authored data-graphic-role=\"redundant\": ikonen upprepar information som redan star i text",
+   "accentflaggad": false,
+   "ljusvarde": "#7d897c",
+   "egenskap": "stroke",
+   "roll": "ikon-fristaende",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "kallankare": {
+    "artefakt": "soctomtingavanner",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "produktordinal": "1"
+   },
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "faktiskForalder": "soctomtingavanner|0",
+   "foralderStatus": "APPYTA · uppmatt mappning #f5f4ed -> #17251d i 64 av 64 artefakter",
+   "slutligMorkBakgrund": "#17251d",
+   "tillamplligPrincip": "P-GRAPHIC",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE for denna enhet. Appytans mappning #f5f4ed -> #17251d ar uppmatt i 64 av 64 artefakter med authored dark och galler bakgrunden, inte enheten.",
+   "kandidatuniversum": {
+    "totalt": 10,
+    "semantisktBehoriga": 7,
+    "tekniskt_godkanda": 7,
+    "summerar": true
+   },
+   "kandidater": [
+    {
+     "varde": "#17251d",
+     "semantisktBehorig": false,
+     "skal": "anvands varken som grafisk forgrund eller ram",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands varken som grafisk forgrund eller ram"
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 1.72,
+     "krav": null
+    },
+    {
+     "varde": "#93a48d",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 6.02,
+     "krav": null
+    },
+    {
+     "varde": "#24382c",
+     "semantisktBehorig": false,
+     "skal": "anvands varken som grafisk forgrund eller ram",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands varken som grafisk forgrund eller ram"
+    },
+    {
+     "varde": "#c9d3c4",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 10.31,
+     "krav": null
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 3.5,
+     "krav": null
+    },
+    {
+     "varde": "#8fb89a",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 7.2,
+     "krav": null
+    },
+    {
+     "varde": "#de9078",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 6.34,
+     "krav": null
+    },
+    {
+     "varde": "#dca968",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "EJ_TILLAMPLIGT",
+     "avvisad": null,
+     "kontrast": 7.52,
+     "krav": null
+    },
+    {
+     "varde": "#4a5c43",
+     "semantisktBehorig": false,
+     "skal": "anvands varken som grafisk forgrund eller ram",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands varken som grafisk forgrund eller ram"
+    }
+   ],
+   "livskraftiga": [
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "kontrast": 1.72
+    },
+    {
+     "varde": "#93a48d",
+     "kontrast": 6.02
+    },
+    {
+     "varde": "#c9d3c4",
+     "kontrast": 10.31
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "kontrast": 3.5
+    },
+    {
+     "varde": "#8fb89a",
+     "kontrast": 7.2
+    },
+    {
+     "varde": "#de9078",
+     "kontrast": 6.34
+    },
+    {
+     "varde": "#dca968",
+     "kontrast": 7.52
+    }
+   ],
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "skal": "7 varden ar fortsatt genuint rimliga",
+   "rekommenderatVarde": null,
+   "rekommendationsskal": "Ingen rekommendation lamnas. Ingen av de fyra ar PRINCIPLE_RECOMMENDED.",
+   "spridning": {
+    "instanser": 2,
+    "familjer": 2,
+    "familjerUtanforScenen": 1,
+    "instanserPaLostBakgrund": 2,
+    "andelLostBakgrund": 100,
+    "bakgrunder": [
+     {
+      "bakgrund": "APPYTA #f5f4ed · LOST (#f5f4ed -> #17251d, uppmatt 64/64)",
+      "instanser": 2
+     }
+    ]
+   },
+   "aterkalleligtSjalvstandigt": "JA. Ingen annan enhet beror pa den, och den beror pa ingen annan an appytan."
+  },
+  {
+   "stabilId": "text-innehall|#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "namn": "brodtext A",
+   "vadDetAr": "rubriken \"Har syns det dina vanner lagar\". 19px/700. Fargen ar INTE satt pa elementet — den arvs fran ytan och ar systemets grundlaggande textfarg.",
+   "semantiskFunktion": "NEUTRAL_CONTENT",
+   "semantiskGrund": "rollen text-innehall ar authored innehallstext utan kontroll- eller statusankare (kontrollroll saknas, state saknas, ingen data-component)",
+   "accentflaggad": false,
+   "ljusvarde": "#24382c",
+   "egenskap": "color",
+   "roll": "text-innehall",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kallankare": {
+    "artefakt": "soctomtingavanner",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "produktordinal": "6"
+   },
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "faktiskForalder": "soctomtingavanner|0",
+   "foralderStatus": "APPYTA · uppmatt mappning #f5f4ed -> #17251d i 64 av 64 artefakter",
+   "slutligMorkBakgrund": "#17251d",
+   "tillamplligPrincip": "P-TEXT-CONTENT",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE for denna enhet. Appytans mappning #f5f4ed -> #17251d ar uppmatt i 64 av 64 artefakter med authored dark och galler bakgrunden, inte enheten.",
+   "kandidatuniversum": {
+    "totalt": 10,
+    "semantisktBehoriga": 3,
+    "tekniskt_godkanda": 3,
+    "summerar": true
+   },
+   "kandidater": [
+    {
+     "varde": "#17251d",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "#93a48d",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "PASS",
+     "avvisad": null,
+     "kontrast": 6.02,
+     "krav": 3
+    },
+    {
+     "varde": "#24382c",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "#c9d3c4",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "PASS",
+     "avvisad": null,
+     "kontrast": 10.31,
+     "krav": 3
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "#8fb89a",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "PASS",
+     "avvisad": null,
+     "kontrast": 7.2,
+     "krav": 3
+    },
+    {
+     "varde": "#de9078",
+     "semantisktBehorig": false,
+     "skal": "semantisk accent — far inte losa kontrast for neutral innehallstext",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: semantisk accent — far inte losa kontrast for neutral innehallstext"
+    },
+    {
+     "varde": "#dca968",
+     "semantisktBehorig": false,
+     "skal": "semantisk accent — far inte losa kontrast for neutral innehallstext",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: semantisk accent — far inte losa kontrast for neutral innehallstext"
+    },
+    {
+     "varde": "#4a5c43",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    }
+   ],
+   "livskraftiga": [
+    {
+     "varde": "#93a48d",
+     "kontrast": 6.02
+    },
+    {
+     "varde": "#c9d3c4",
+     "kontrast": 10.31
+    },
+    {
+     "varde": "#8fb89a",
+     "kontrast": 7.2
+    }
+   ],
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "skal": "3 varden ar fortsatt genuint rimliga",
+   "rekommenderatVarde": null,
+   "rekommendationsskal": "Ingen rekommendation lamnas. Ingen av de fyra ar PRINCIPLE_RECOMMENDED.",
+   "spridning": {
+    "instanser": 836,
+    "familjer": 210,
+    "familjerUtanforScenen": 209,
+    "instanserPaLostBakgrund": 791,
+    "andelLostBakgrund": 94.6,
+    "bakgrunder": [
+     {
+      "bakgrund": "APPYTA #f5f4ed · LOST (#f5f4ed -> #17251d, uppmatt 64/64)",
+      "instanser": 791
+     },
+     {
+      "bakgrund": "yta-upphojd #f5f4ed · OBESLUTAD",
+      "instanser": 25
+     },
+     {
+      "bakgrund": "yta-upphojd #e6ead9 · OBESLUTAD",
+      "instanser": 17
+     },
+     {
+      "bakgrund": "yta-upphojd rgba(245,244,237,0.6) · OBESLUTAD",
+      "instanser": 2
+     },
+     {
+      "bakgrund": "yta-upphojd #b4bfa6 · OBESLUTAD",
+      "instanser": 1
+     }
+    ]
+   },
+   "aterkalleligtSjalvstandigt": "DELVIS. Kan angras sjalvstandigt, men brodtext A och B ar bundna till varandra av hierarkikravet — ett omval av den ena kan tvinga fram omval av den andra."
+  },
+  {
+   "stabilId": "text-innehall|#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "namn": "brodtext B",
+   "vadDetAr": "brodtexten under rubriken. 14px/400, explicit color:#37453a.",
+   "semantiskFunktion": "NEUTRAL_CONTENT",
+   "semantiskGrund": "rollen text-innehall ar authored innehallstext utan kontroll- eller statusankare (kontrollroll saknas, state saknas, ingen data-component)",
+   "accentflaggad": false,
+   "ljusvarde": "#37453a",
+   "egenskap": "color",
+   "roll": "text-innehall",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kallankare": {
+    "artefakt": "soctomtingavanner",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "produktordinal": "7"
+   },
+   "komponent": null,
+   "kontrollroll": null,
+   "state": null,
+   "faktiskForalder": "soctomtingavanner|0",
+   "foralderStatus": "APPYTA · uppmatt mappning #f5f4ed -> #17251d i 64 av 64 artefakter",
+   "slutligMorkBakgrund": "#17251d",
+   "tillamplligPrincip": "P-TEXT-CONTENT",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE for denna enhet. Appytans mappning #f5f4ed -> #17251d ar uppmatt i 64 av 64 artefakter med authored dark och galler bakgrunden, inte enheten.",
+   "kandidatuniversum": {
+    "totalt": 10,
+    "semantisktBehoriga": 3,
+    "tekniskt_godkanda": 3,
+    "summerar": true
+   },
+   "kandidater": [
+    {
+     "varde": "#17251d",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "#93a48d",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "PASS",
+     "avvisad": null,
+     "kontrast": 6.02,
+     "krav": 4.5
+    },
+    {
+     "varde": "#24382c",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "#c9d3c4",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "PASS",
+     "avvisad": null,
+     "kontrast": 10.31,
+     "krav": 4.5
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    },
+    {
+     "varde": "#8fb89a",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "PASS",
+     "avvisad": null,
+     "kontrast": 7.2,
+     "krav": 4.5
+    },
+    {
+     "varde": "#de9078",
+     "semantisktBehorig": false,
+     "skal": "semantisk accent — far inte losa kontrast for neutral innehallstext",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: semantisk accent — far inte losa kontrast for neutral innehallstext"
+    },
+    {
+     "varde": "#dca968",
+     "semantisktBehorig": false,
+     "skal": "semantisk accent — far inte losa kontrast for neutral innehallstext",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: semantisk accent — far inte losa kontrast for neutral innehallstext"
+    },
+    {
+     "varde": "#4a5c43",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund i den verifierade morka populationen"
+    }
+   ],
+   "livskraftiga": [
+    {
+     "varde": "#93a48d",
+     "kontrast": 6.02
+    },
+    {
+     "varde": "#c9d3c4",
+     "kontrast": 10.31
+    },
+    {
+     "varde": "#8fb89a",
+     "kontrast": 7.2
+    }
+   ],
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "skal": "3 varden ar fortsatt genuint rimliga",
+   "rekommenderatVarde": null,
+   "rekommendationsskal": "Ingen rekommendation lamnas. Ingen av de fyra ar PRINCIPLE_RECOMMENDED.",
+   "spridning": {
+    "instanser": 311,
+    "familjer": 138,
+    "familjerUtanforScenen": 137,
+    "instanserPaLostBakgrund": 198,
+    "andelLostBakgrund": 63.7,
+    "bakgrunder": [
+     {
+      "bakgrund": "APPYTA #f5f4ed · LOST (#f5f4ed -> #17251d, uppmatt 64/64)",
+      "instanser": 198
+     },
+     {
+      "bakgrund": "yta-upphojd #e6ead9 · OBESLUTAD",
+      "instanser": 83
+     },
+     {
+      "bakgrund": "yta-upphojd #ccd1c2 · OBESLUTAD",
+      "instanser": 25
+     },
+     {
+      "bakgrund": "yta-upphojd #f0eee2 · OBESLUTAD",
+      "instanser": 3
+     },
+     {
+      "bakgrund": "yta-upphojd #f5f4ed · OBESLUTAD",
+      "instanser": 2
+     }
+    ]
+   },
+   "aterkalleligtSjalvstandigt": "DELVIS. Kan angras sjalvstandigt, men brodtext A och B ar bundna till varandra av hierarkikravet — ett omval av den ena kan tvinga fram omval av den andra."
+  },
+  {
+   "stabilId": "text-kontroll|#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "namn": "knapptext",
+   "vadDetAr": "etiketten i den orange atgardsknappen. Sitter direkt pa kontrollytan #ce7c1e.",
+   "semantiskFunktion": "SEMANTIC_ACTION",
+   "semantiskGrund": "authored data-a11y-role=\"button\" pa den narmaste kontrollen — texten ar en atgardsetikett, inte innehallstext",
+   "accentflaggad": false,
+   "ljusvarde": "#17251d",
+   "egenskap": "color",
+   "roll": "text-kontroll",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kallankare": {
+    "artefakt": "soctomtingavanner",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "produktordinal": "8"
+   },
+   "komponent": null,
+   "kontrollroll": "button",
+   "state": null,
+   "faktiskForalder": "soctomtingavanner|8",
+   "foralderStatus": "OBESLUTAD — ar sjalva previewmalet (kontrollytan #ce7c1e)",
+   "slutligMorkBakgrund": null,
+   "tillamplligPrincip": "P-TEXT-SEMANTIC",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE for denna enhet. Appytans mappning #f5f4ed -> #17251d ar uppmatt i 64 av 64 artefakter med authored dark och galler bakgrunden, inte enheten.",
+   "kandidatuniversum": {
+    "totalt": 10,
+    "semantisktBehoriga": 5,
+    "tekniskt_godkanda": 0,
+    "summerar": true
+   },
+   "kandidater": [
+    {
+     "varde": "#17251d",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund"
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund"
+    },
+    {
+     "varde": "#93a48d",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "DEPENDENCY",
+     "avvisad": "PARENT_DEPENDENCY: slutlig foralderyta ar inte beslutad — inget varde antas"
+    },
+    {
+     "varde": "#24382c",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund"
+    },
+    {
+     "varde": "#c9d3c4",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "DEPENDENCY",
+     "avvisad": "PARENT_DEPENDENCY: slutlig foralderyta ar inte beslutad — inget varde antas"
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund"
+    },
+    {
+     "varde": "#8fb89a",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "DEPENDENCY",
+     "avvisad": "PARENT_DEPENDENCY: slutlig foralderyta ar inte beslutad — inget varde antas"
+    },
+    {
+     "varde": "#de9078",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "DEPENDENCY",
+     "avvisad": "PARENT_DEPENDENCY: slutlig foralderyta ar inte beslutad — inget varde antas"
+    },
+    {
+     "varde": "#dca968",
+     "semantisktBehorig": true,
+     "skal": null,
+     "tekniskt": "DEPENDENCY",
+     "avvisad": "PARENT_DEPENDENCY: slutlig foralderyta ar inte beslutad — inget varde antas"
+    },
+    {
+     "varde": "#4a5c43",
+     "semantisktBehorig": false,
+     "skal": "anvands aldrig som forgrund",
+     "tekniskt": null,
+     "avvisad": "SEMANTIC_ELIGIBILITY: anvands aldrig som forgrund"
+    }
+   ],
+   "livskraftiga": [],
+   "klassificering": "NEEDS_MORE_CONTEXT",
+   "skal": "slutlig foralderyta (soctomtingavanner|8) saknar beslut. Inget kandidatvarde far provas mot ett antaget foraldervarde.",
+   "rekommenderatVarde": null,
+   "rekommendationsskal": "Ingen rekommendation lamnas. Ingen av de fyra ar PRINCIPLE_RECOMMENDED.",
+   "spridning": {
+    "instanser": 30,
+    "familjer": 29,
+    "familjerUtanforScenen": 28,
+    "instanserPaLostBakgrund": 0,
+    "andelLostBakgrund": 0,
+    "bakgrunder": [
+     {
+      "bakgrund": "yta-kontroll #ce7c1e · OBESLUTAD",
+      "instanser": 30
+     }
+    ]
+   },
+   "aterkalleligtSjalvstandigt": "NEJ. Beslutet ar bundet till kontrollytan #ce7c1e och kan inte fattas eller angras oberoende av den."
+  }
+ ],
+ "beroendeMellanDeFyra": [
+  {
+   "fran": "knapptext",
+   "till": "kontrollytan #ce7c1e (previewmalet)",
+   "typ": "HARD",
+   "beskrivning": "Samtliga 30 instanser ligger pa kontrollytan. Ingen instans ligger pa en beslutad bakgrund. Knapptexten kan inte utvarderas fore ytan."
+  },
+  {
+   "fran": "brodtext A",
+   "till": "brodtext B",
+   "typ": "KOPPLAD",
+   "beskrivning": "Hierarkikravet binder dem. Primartexten maste behalla hogre kontrast an sekundartexten. 3 av 9 kombinationer bevarar hierarkin."
+  },
+  {
+   "fran": "ikonlinje",
+   "till": null,
+   "typ": "INGEN",
+   "beskrivning": "Fristaende. Bada instanserna ligger pa den uppmatt losta appytan."
+  }
+ ],
+ "hierarkikoppling": {
+  "ljus": {
+   "primar": 11.36,
+   "sekundar": 9.18,
+   "kvot": 1.24
+  },
+  "kombinationer": [
+   {
+    "primar": "#93a48d",
+    "primarKontrast": 6.02,
+    "sekundar": "#93a48d",
+    "sekundarKontrast": 6.02,
+    "hierarkiBevarad": false,
+    "kvotDark": 1,
+    "avvisad": "HIERARCHY_COLLAPSE: samma varde pa primar och sekundar"
+   },
+   {
+    "primar": "#93a48d",
+    "primarKontrast": 6.02,
+    "sekundar": "#c9d3c4",
+    "sekundarKontrast": 10.31,
+    "hierarkiBevarad": false,
+    "kvotDark": 0.58,
+    "avvisad": "HIERARCHY_COLLAPSE: sekundar skulle fa hogre kontrast an primar"
+   },
+   {
+    "primar": "#93a48d",
+    "primarKontrast": 6.02,
+    "sekundar": "#8fb89a",
+    "sekundarKontrast": 7.2,
+    "hierarkiBevarad": false,
+    "kvotDark": 0.84,
+    "avvisad": "HIERARCHY_COLLAPSE: sekundar skulle fa hogre kontrast an primar"
+   },
+   {
+    "primar": "#c9d3c4",
+    "primarKontrast": 10.31,
+    "sekundar": "#93a48d",
+    "sekundarKontrast": 6.02,
+    "hierarkiBevarad": true,
+    "kvotDark": 1.71,
+    "avvisad": null
+   },
+   {
+    "primar": "#c9d3c4",
+    "primarKontrast": 10.31,
+    "sekundar": "#c9d3c4",
+    "sekundarKontrast": 10.31,
+    "hierarkiBevarad": false,
+    "kvotDark": 1,
+    "avvisad": "HIERARCHY_COLLAPSE: samma varde pa primar och sekundar"
+   },
+   {
+    "primar": "#c9d3c4",
+    "primarKontrast": 10.31,
+    "sekundar": "#8fb89a",
+    "sekundarKontrast": 7.2,
+    "hierarkiBevarad": true,
+    "kvotDark": 1.43,
+    "avvisad": null
+   },
+   {
+    "primar": "#8fb89a",
+    "primarKontrast": 7.2,
+    "sekundar": "#93a48d",
+    "sekundarKontrast": 6.02,
+    "hierarkiBevarad": true,
+    "kvotDark": 1.2,
+    "avvisad": null
+   },
+   {
+    "primar": "#8fb89a",
+    "primarKontrast": 7.2,
+    "sekundar": "#c9d3c4",
+    "sekundarKontrast": 10.31,
+    "hierarkiBevarad": false,
+    "kvotDark": 0.7,
+    "avvisad": "HIERARCHY_COLLAPSE: sekundar skulle fa hogre kontrast an primar"
+   },
+   {
+    "primar": "#8fb89a",
+    "primarKontrast": 7.2,
+    "sekundar": "#8fb89a",
+    "sekundarKontrast": 7.2,
+    "hierarkiBevarad": false,
+    "kvotDark": 1,
+    "avvisad": "HIERARCHY_COLLAPSE: samma varde pa primar och sekundar"
+   }
+  ],
+  "giltiga": 3,
+  "totalt": 9,
+  "$regel": "HIERARCHY_COLLAPSE avvisar bade lika varden och omvand ordning. Ingen rekommendation ges om vilken av de tre giltiga kombinationerna som ar ratt — det ar ett visuellt val."
+ },
+ "blockeradePar": {
+  "enheter": [
+   "knapptext #17251d",
+   "kontrollyta #ce7c1e"
+  ],
+  "varfor": "Det ar inte en cykel som kan brytas med ordning. Det ar ETT gemensamt beslut om ett tvadelat objekt: en orange atgardsknapp och dess etikett. Varken ytan eller texten kan bedomas utan den andra.",
+  "punkt8_mindreIsoleratKontext": {
+   "finns": false,
+   "bevis": "0 av 30 knapptextinstanser ligger pa en beslutad bakgrund. Alla 30 ligger pa yta-kontroll #ce7c1e."
+  },
+  "gemensamMatris": {
+   "krav": 4.5,
+   "rader": [
+    {
+     "kontrollyta": "rgba(245,244,237,0.18)",
+     "ytaKompositMotAppytan": "rgb(63, 74, 66)",
+     "knapptext": "#93a48d",
+     "kontrast": 3.5,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "rgba(245,244,237,0.18)",
+     "ytaKompositMotAppytan": "rgb(63, 74, 66)",
+     "knapptext": "#c9d3c4",
+     "kontrast": 5.99,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "rgba(245,244,237,0.18)",
+     "ytaKompositMotAppytan": "rgb(63, 74, 66)",
+     "knapptext": "#8fb89a",
+     "kontrast": 4.18,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "rgba(245,244,237,0.18)",
+     "ytaKompositMotAppytan": "rgb(63, 74, 66)",
+     "knapptext": "#de9078",
+     "kontrast": 3.69,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "rgba(245,244,237,0.18)",
+     "ytaKompositMotAppytan": "rgb(63, 74, 66)",
+     "knapptext": "#dca968",
+     "kontrast": 4.37,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "#24382c",
+     "ytaKompositMotAppytan": "rgb(36, 56, 44)",
+     "knapptext": "#93a48d",
+     "kontrast": 4.73,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "#24382c",
+     "ytaKompositMotAppytan": "rgb(36, 56, 44)",
+     "knapptext": "#c9d3c4",
+     "kontrast": 8.11,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "#24382c",
+     "ytaKompositMotAppytan": "rgb(36, 56, 44)",
+     "knapptext": "#8fb89a",
+     "kontrast": 5.66,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "#24382c",
+     "ytaKompositMotAppytan": "rgb(36, 56, 44)",
+     "knapptext": "#de9078",
+     "kontrast": 4.99,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "#24382c",
+     "ytaKompositMotAppytan": "rgb(36, 56, 44)",
+     "knapptext": "#dca968",
+     "kontrast": 5.91,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "#4a5c43",
+     "ytaKompositMotAppytan": "rgb(74, 92, 67)",
+     "knapptext": "#93a48d",
+     "kontrast": 2.73,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "#4a5c43",
+     "ytaKompositMotAppytan": "rgb(74, 92, 67)",
+     "knapptext": "#c9d3c4",
+     "kontrast": 4.68,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    {
+     "kontrollyta": "#4a5c43",
+     "ytaKompositMotAppytan": "rgb(74, 92, 67)",
+     "knapptext": "#8fb89a",
+     "kontrast": 3.27,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "#4a5c43",
+     "ytaKompositMotAppytan": "rgb(74, 92, 67)",
+     "knapptext": "#de9078",
+     "kontrast": 2.88,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    },
+    {
+     "kontrollyta": "#4a5c43",
+     "ytaKompositMotAppytan": "rgb(74, 92, 67)",
+     "knapptext": "#dca968",
+     "kontrast": 3.42,
+     "krav": 4.5,
+     "utfall": "FAIL"
+    }
+   ],
+   "$not": "Matrisen ar teknisk evidens, inte ett beslut. Den visar vilka kombinationer som overhuvudtaget ar mojliga."
+  }
+ },
+ "punkt15_svar": {
+  "A_beslutskort": 4,
+  "B_accentstatus": "ingen av de fyra ingar i den flaggade populationen; alla fyra klassificerade ur authored evidens",
+  "C_principklassificering": [
+   {
+    "namn": "ikonlinje",
+    "klass": "VISUAL_CHOICE_REQUIRED"
+   },
+   {
+    "namn": "brodtext A",
+    "klass": "VISUAL_CHOICE_REQUIRED"
+   },
+   {
+    "namn": "brodtext B",
+    "klass": "VISUAL_CHOICE_REQUIRED"
+   },
+   {
+    "namn": "knapptext",
+    "klass": "NEEDS_MORE_CONTEXT"
+   }
+  ],
+  "D_beroenden": "1 hard (knapptext -> kontrollytan), 1 kopplad (brodtext A <-> B), 1 fristaende (ikonlinje)",
+  "E_kanAllaFyraFattas": false,
+  "E_skal": "Tre av fyra kan laggas fram som visuella val nu. Knapptexten kan inte: alla dess instanser ligger pa den obeslutade kontrollytan, och det finns inget mindre isolerat kontext att visa den i.",
+  "minstaVerkligaBlockerare": "Det gemensamma beslutet {kontrollyta #ce7c1e, knapptext #17251d}. Det maste fattas som ETT beslut om knappen som objekt, inte som tva beslut i foljd."
+ },
+ "ejGjort": [
+  "inga varden valda",
+  "ingen produktwrite",
+  "ingen registry-write",
+  "ingen tokenwrite",
+  "ingen preview renderad",
+  "ingen rolltaxonomi andrad",
+  "inget beslut om #f5f4ed direct-on-app"
+ ]
+}

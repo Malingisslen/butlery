@@ -1,0 +1,684 @@
+{
+ "$schema": "butlery-r04-previewgrind/1",
+ "$datum": "2026-08-12",
+ "$status": "STOPPGATE. Previewmekanismen ar byggd och bevisad. Previewbilder av de fem enheterna ar INTE renderade, eftersom ingen malartefakt har ett authored morkt lage. Inga beslut, ingen produktwrite, ingen registry-write, ingen tokenwrite.",
+ "byggt": {
+  "tools/parent-resolution.mjs": "foralderupplosning ur faktisk elementidentitet; COMPOSITING_DEPENDENCY och PREVIEW_CONTEXT_DEPENDENCY strukturellt atskilda",
+  "tools/parent-resolution-fixtures.mjs": "PR-01 … PR-10, alla grona",
+  "tools/preview-simulation.mjs": "transient kandidatsimulering med tre fail-closed grindar: SCENTEMAGRIND, KALLGRIND, FORALDERGRIND",
+  "tools/preview-simulation-fixtures.mjs": "PV-01 … PV-08, alla grona, mot en verkligt renderad scen",
+  "borttaget": "tools/preview-candidate.mjs — hade en egen kopia av scopelogiken i stallet for den incheckade motorn. Aldrig incheckad, nu raderad."
+ },
+ "stoppgate": {
+  "punkt": "Punkt 5 i ordern kraver correct authored dark theme per preview.",
+  "matning": {
+   "malartefakterMedAuthoredDark": 0,
+   "malartefakterTotalt": 109,
+   "produktelementSomAndrasAvDark": 0,
+   "produktelementITestade": 1396,
+   "metod": "data-theme satt via den incheckade primitiven pa varje malartefakts .sc-item; berknade varden lasta fore och efter"
+  },
+  "slutsats": "Kravet kan inte uppfyllas for nagon av de fem enheterna. Detta ar inte ett verktygsfel — det ar sjalva luckan R-04 ska sluta. Artefakterna har inget morkt lage att previewa i.",
+  "vadEnRenderingSkulleVisa": "Kandidaten mot LJUSA omgivningar. Det ar precis fel jamforelse och skulle kunna driva fram ett felaktigt beslut. Darfor renderas ingen bild."
+ },
+ "obeslutatIMalartefakterna": [
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-CONTROL",
+   "ljus": "#ce7c1e",
+   "artefakter": 27,
+   "maladeElement": 1405,
+   "losta": 135,
+   "malet": 27,
+   "obeslutade": 1243,
+   "andelObeslutat": 88.5
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-ELEVATED",
+   "ljus": "#ccd1c2",
+   "artefakter": 23,
+   "maladeElement": 1383,
+   "losta": 115,
+   "malet": 44,
+   "obeslutade": 1224,
+   "andelObeslutat": 88.5
+  },
+  {
+   "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-ELEVATED",
+   "ljus": "#4a5c43",
+   "artefakter": 22,
+   "maladeElement": 1219,
+   "losta": 110,
+   "malet": 30,
+   "obeslutade": 1079,
+   "andelObeslutat": 88.5
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "princip": "P-SURFACE-ELEVATED",
+   "ljus": "rgba(36,56,44,0.35)",
+   "artefakter": 21,
+   "maladeElement": 807,
+   "losta": 105,
+   "malet": 21,
+   "obeslutade": 681,
+   "andelObeslutat": 84.4
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "princip": "P-SURFACE-ELEVATED",
+   "ljus": "rgba(36,56,44,0.4)",
+   "artefakter": 16,
+   "maladeElement": 555,
+   "losta": 84,
+   "malet": 16,
+   "obeslutade": 455,
+   "andelObeslutat": 82
+  }
+ ],
+ "minstaArligaScen": {
+  "$regel": "En arlig scen kraver att varje malat varde i artefakten har ett morkervarde. Appytan och token-hooks raknas som losta. Ett beslut = en (roll, ljusvarde, egenskapstyp).",
+  "$viktigt": "Detta ar INTE ett forslag att fatta besluten for att lasa upp previews. Punkt 8 i ordern galler. Talen finns for att visa hur litet steget faktiskt ar.",
+  "perEnhet": [
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-CONTROL",
+    "ljus": "#ce7c1e",
+    "artefakter": 27,
+    "scen": "soctomtingavanner",
+    "maladeElement": 10,
+    "beslutSomKravs": 4,
+    "beslut": [
+     {
+      "roll": "ikon-fristaende",
+      "ljus": "#7d897c",
+      "typ": "grafik",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#37453a",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-kontroll",
+      "ljus": "#17251d",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     }
+    ],
+    "fordelningOverArtefakter": {
+     "4": 1,
+     "9": 1,
+     "10": 1,
+     "12": 3,
+     "14": 3,
+     "15": 2,
+     "16": 1,
+     "17": 4,
+     "18": 3,
+     "19": 4,
+     "20": 1,
+     "24": 1,
+     "25": 2
+    }
+   },
+   {
+    "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#ccd1c2",
+    "artefakter": 23,
+    "scen": "surfplatta",
+    "maladeElement": 30,
+    "beslutSomKravs": 6,
+    "beslut": [
+     {
+      "roll": "yta-upphojd",
+      "ljus": "#f5f4ed",
+      "typ": "yta",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 15,
+      "iDe91": false
+     },
+     {
+      "roll": "ram-behallare",
+      "ljus": "#ccd1c2",
+      "typ": "ram",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#627061",
+      "typ": "forgrund",
+      "element": 2,
+      "iDe91": false
+     },
+     {
+      "roll": "text-kontroll",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "ram-kontroll",
+      "ljus": "#24382c",
+      "typ": "ram",
+      "element": 4,
+      "iDe91": false
+     }
+    ],
+    "fordelningOverArtefakter": {
+     "6": 1,
+     "8": 2,
+     "9": 2,
+     "10": 1,
+     "11": 2,
+     "12": 2,
+     "13": 4,
+     "14": 2,
+     "15": 2,
+     "16": 1,
+     "19": 1,
+     "21": 1,
+     "22": 2
+    }
+   },
+   {
+    "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#4a5c43",
+    "artefakter": 22,
+    "scen": "delatvidare",
+    "maladeElement": 37,
+    "beslutSomKravs": 8,
+    "beslut": [
+     {
+      "roll": "ram-behallare",
+      "ljus": "#ccd1c2",
+      "typ": "ram",
+      "element": 9,
+      "iDe91": false
+     },
+     {
+      "roll": "ikon-kontroll",
+      "ljus": "#24382c",
+      "typ": "grafik",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 5,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#5b6959",
+      "typ": "forgrund",
+      "element": 7,
+      "iDe91": false
+     },
+     {
+      "roll": "yta-upphojd",
+      "ljus": "#627061",
+      "typ": "yta",
+      "element": 1,
+      "iDe91": true
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#f5f4ed",
+      "typ": "forgrund",
+      "element": 3,
+      "iDe91": false
+     },
+     {
+      "roll": "yta-upphojd",
+      "ljus": "#e6ead9",
+      "typ": "yta",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#37453a",
+      "typ": "forgrund",
+      "element": 3,
+      "iDe91": false
+     }
+    ],
+    "fordelningOverArtefakter": {
+     "8": 1,
+     "10": 3,
+     "12": 3,
+     "13": 1,
+     "14": 3,
+     "15": 2,
+     "16": 1,
+     "17": 4,
+     "18": 1,
+     "19": 1,
+     "23": 1,
+     "24": 1
+    }
+   },
+   {
+    "enhet": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "rgba(36,56,44,0.35)",
+    "artefakter": 21,
+    "scen": "onbhoppa",
+    "maladeElement": 17,
+    "beslutSomKravs": 7,
+    "beslut": [
+     {
+      "roll": "yta-upphojd",
+      "ljus": "#f5f4ed",
+      "typ": "yta",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#37453a",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#627061",
+      "typ": "forgrund",
+      "element": 2,
+      "iDe91": false
+     },
+     {
+      "roll": "text-kontroll",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "ram-kontroll",
+      "ljus": "#24382c",
+      "typ": "ram",
+      "element": 4,
+      "iDe91": false
+     },
+     {
+      "roll": "text-kontroll",
+      "ljus": "#9c3b23",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     }
+    ],
+    "fordelningOverArtefakter": {
+     "7": 1,
+     "9": 2,
+     "10": 3,
+     "11": 2,
+     "12": 1,
+     "13": 4,
+     "14": 1,
+     "15": 1,
+     "16": 1,
+     "17": 2,
+     "19": 1,
+     "20": 1,
+     "23": 1
+    }
+   },
+   {
+    "enhet": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "rgba(36,56,44,0.4)",
+    "artefakter": 16,
+    "scen": "dialogradera",
+    "maladeElement": 20,
+    "beslutSomKravs": 7,
+    "beslut": [
+     {
+      "roll": "yta-upphojd",
+      "ljus": "#f5f4ed",
+      "typ": "yta",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "ram-behallare",
+      "ljus": "#7d897c",
+      "typ": "ram",
+      "element": 4,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#24382c",
+      "typ": "forgrund",
+      "element": 2,
+      "iDe91": false
+     },
+     {
+      "roll": "text-innehall",
+      "ljus": "#5b6959",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "ram-behallare",
+      "ljus": "#24382c",
+      "typ": "ram",
+      "element": 4,
+      "iDe91": false
+     },
+     {
+      "roll": "yta-kontroll",
+      "ljus": "#9c3b23",
+      "typ": "yta",
+      "element": 1,
+      "iDe91": false
+     },
+     {
+      "roll": "text-kontroll",
+      "ljus": "#f5f4ed",
+      "typ": "forgrund",
+      "element": 1,
+      "iDe91": false
+     }
+    ],
+    "fordelningOverArtefakter": {
+     "7": 2,
+     "8": 3,
+     "9": 1,
+     "10": 4,
+     "11": 2,
+     "14": 2,
+     "15": 1,
+     "23": 1
+    }
+   }
+  ],
+  "ingenGemensamScen": "Ingen artefakt innehaller mer an en av de fem. Varje enhet kraver sin egen scen."
+ },
+ "punkt9_treOavgjorda": {
+  "status": "LAMNADE OAVGJORDA. Ingen merge, ingen tvingad split.",
+  "beroende": [
+   "#ce7c1e",
+   "#93a48d",
+   "#b4bfa6"
+  ],
+  "omvardering": "Nar dessa tre foralderytor har morkervarden ska ekvivalensen omprovas automatiskt: samma morkervarde -> ett beslut, olika -> flera."
+ },
+ "punkt10_accentMotNeutral": {
+  "status": "FLAGGAT, INGEN TAXONOMIANDRING",
+  "antalFlaggade": 24,
+  "enheter": [
+   {
+    "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+    "roll": "text-innehall",
+    "ljus": "#17251d",
+    "princip": "P-TEXT-CONTENT",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#ce7c1e"
+    ],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "princip": "P-GRAPHIC",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "princip": "P-GRAPHIC",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "princip": "P-GRAPHIC",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+    "roll": "ikon-kontroll",
+    "ljus": "#17251d",
+    "princip": "P-GRAPHIC",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#ce7c1e"
+    ],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#f5f4ed",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#f7e8d2"
+    ],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "princip": "P-GRAPHIC",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#f5f4ed",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#8a5212"
+    ],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "princip": "P-SURFACE-CONTROL",
+    "egetVardeArAccent": true,
+    "accentforaldrar": [],
+    "varfor": "nuvarande rollmodell skiljer inte accentyta fran neutral yta. Om den skillnaden infors kan principvalet for denna enhet andras. Ingen taxonomiandring gors i detta block."
+   }
+  ]
+ },
+ "ejGjort": [
+  "inga previewbilder renderade",
+  "inga kandidater registrerade som beslut",
+  "inga bakgrundsfarger beslutade",
+  "ingen rolltaxonomi andrad",
+  "ingen produktfil andrad",
+  "ingen registry-write",
+  "ingen tokenwrite"
+ ]
+}

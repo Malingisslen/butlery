@@ -1,0 +1,1272 @@
+{
+ "$schema": "butlery-groupb-grannar/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "0884b25",
+ "$status": "GRANNARNA ADJUDICERADE OCH MORKA SKAPA KONTO OMPROVAD — inget skrivet",
+ "$typ": "COUPLED-DEPENDENCY ADJUDICATION + AUTHORIZED RE-REVIEW.",
+ "A_grannar": [
+  {
+   "identitet": "tomtrecept|16",
+   "art": "tomtrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Tomt läge — recept",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "tomtrecept",
+    "produktordinal": 16,
+    "outerHTMLHash": "c1b13740",
+    "outerHTMLLangd": 182,
+    "inlineStil": "background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 8px;",
+    "synligText": "Lägg till recept",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "tomtrecept|17",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 137.2,
+    "h": 43
+   },
+   "geometriPlanerad": {
+    "w": 137.2,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(206, 124, 30)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     }
+    },
+    "radie": "8px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Lägg till recept",
+   "barnAntal": 0,
+   "kanBaraTillstand": false,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Tomt läge — illustration (tom tallrik), med vägledande text och två vägar in.",
+   "bindning": "Prosan raknar exakt TVA vagar in. Foraldern har exakt tva barn. Det andra ar redan etablerat som kontroll i batch 3. Detta ar den forsta av de tva vagarna, bunden genom prosans antal och foralderns struktur — inte genom syskonet.",
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "NAVIGATES_TO_DESTINATION"
+    ],
+    "skal": "rollen vilar pa NAVIGATES_TO_DESTINATION"
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "olostFraga": null,
+   "geometripaverkan": {
+    "hojdFore": 43,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.014652,
+    "andelAvArtefaktytaEfter": 0.016356,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "bred",
+    "formklassAndras": true,
+    "upprepningPaverkas": false,
+    "signaturAndras": true
+   },
+   "beroende": "DEPENDENCY: den planerade hojdandringen skulle andra objektets formklass mycket-bred→bred — och darmed dess framtida klustring och adjudikeringsevidens."
+  },
+  {
+   "identitet": "smartimport|30",
+   "art": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Importera länk",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "smartimport",
+    "produktordinal": 30,
+    "outerHTMLHash": "07093ebd",
+    "outerHTMLLangd": 544,
+    "inlineStil": "flex: 1 1 0%; background: rgb(230, 234, 217); color: rgb(55, 69, 58); text-align: center; font-size: 14px; font-weight: 600; padding: 12px; border-radius: 8px; position: relative; overflow: hidden;",
+    "synligText": "Importerar …",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "smartimport|29",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 47
+   },
+   "geometriPlanerad": {
+    "w": 176.5,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(230, 234, 217)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(55, 69, 58)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(55, 69, 58)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(55, 69, 58)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(55, 69, 58)"
+     }
+    },
+    "radie": "8px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Importerar …",
+   "barnAntal": 1,
+   "kanBaraTillstand": true,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Smart import — URL eller inklistrad text, plattformsmärke, trestegsförlopp Hämtar → Analyserar → Skapar.",
+   "bindning": "Prosan namnger ett TRESTEGSFORLOPP med tre namngivna steg. Objektets text \"Importerar …\" ar ett forloppslage, inte en handling. Det bar en fylld yta (#e6ead9), position: relative och overflow: hidden med ETT barn — en forloppsstapel i ett spar. Ingen roll, traffyta, handlare, tabindex eller contenteditable.",
+   "kontrollprov": {
+    "klass": "UNKNOWN",
+    "barande": [],
+    "svaga": [],
+    "skal": "ingen grund anford — faller stangt"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktivitet ar inte etablerad — rollfragan uppstar inte an"
+   },
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "olostFraga": null,
+   "geometripaverkan": {
+    "hojdFore": 47,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.02843,
+    "andelAvArtefaktytaEfter": 0.029035,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "mycket-bred",
+    "formklassAndras": false,
+    "upprepningPaverkas": false,
+    "signaturAndras": false
+   },
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "placera|50",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 50,
+    "outerHTMLHash": "c8e2dc8d",
+    "outerHTMLLangd": 200,
+    "inlineStil": "flex: 2 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); text-align: center; font-size: 14px; font-weight: 600; padding: 10px; border-radius: 8px;",
+    "synligText": "Klar",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "placera|49",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 145.2,
+    "h": 43
+   },
+   "geometriPlanerad": {
+    "w": 145.2,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(206, 124, 30)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     }
+    },
+    "radie": "8px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Klar",
+   "barnAntal": 0,
+   "kanBaraTillstand": false,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Prosan namnger brickan, dagstrycket och autoplaceringen — men INTE \"Klar\". Korpusen har tio deklarerade namn som innehaller ordet klar, men inget ar ett rent avslutskommando; de ar kvitteringar med egna objekt (\"Klar, två åt\"). Kvar star bara etiketten.",
+   "kontrollprov": {
+    "klass": "UNKNOWN",
+    "barande": [],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "samtliga anforda grunder ar utsagor om etiketten eller utseendet (IMPERATIVE_ACTION_LABEL) — de kan inte ensamma etablera interaktivitet"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktivitet ar inte etablerad — rollfragan uppstar inte an"
+   },
+   "verdikt": "UNKNOWN",
+   "olostFraga": "Ar \"Klar\" en kontroll som avslutar placeringslaget, eller en statusmarkering av att placeringen ar fardig? Skarmprosan namnger den inte, korpusen har ingen deklarerad motsvarighet med samma funktion, och objektet bar varken roll, traffyta, handlare, tabindex eller contenteditable. Etiketten ensam far per ADJ-16 inte avgora.",
+   "geometripaverkan": {
+    "hojdFore": 43,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.015503,
+    "andelAvArtefaktytaEfter": 0.017306,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "mycket-bred",
+    "formklassAndras": false,
+    "upprepningPaverkas": false,
+    "signaturAndras": false
+   },
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "onboarding|40",
+   "art": "onboarding",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Onboarding — allergener",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "onboarding",
+    "produktordinal": 40,
+    "outerHTMLHash": "e65d646b",
+    "outerHTMLLangd": 182,
+    "inlineStil": "flex: 1 1 0%; background: rgb(36, 56, 44); color: rgb(245, 244, 237); text-align: center; font-size: 14px; font-weight: 600; padding: 12px;",
+    "synligText": "Nästa",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "onboarding|39",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 47
+   },
+   "geometriPlanerad": {
+    "w": 176.5,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(36, 56, 44)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(245, 244, 237)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(245, 244, 237)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(245, 244, 237)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(245, 244, 237)"
+     }
+    },
+    "radie": "0px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Nästa",
+   "barnAntal": 0,
+   "kanBaraTillstand": false,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Guiden: åldersgräns → välkommen → allergener → kost → import. … tallrikslinje-steg, Tillbaka/Nästa.",
+   "bindning": "Prosan namnger paret \"Tillbaka/Nästa\" som guidens stegnavigering. Objektets hela text ar \"Nästa\".",
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE"
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "olostFraga": null,
+   "geometripaverkan": {
+    "hojdFore": 47,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.020215,
+    "andelAvArtefaktytaEfter": 0.020646,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "mycket-bred",
+    "formklassAndras": false,
+    "upprepningPaverkas": false,
+    "signaturAndras": false
+   },
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "forfragningar|15",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 15,
+    "outerHTMLHash": "2ee880db",
+    "outerHTMLLangd": 204,
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center;",
+    "synligText": "Acceptera",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "forfragningar|16",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 39
+   },
+   "geometriPlanerad": {
+    "w": 176.5,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(206, 124, 30)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     }
+    },
+    "radie": "8px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Acceptera",
+   "barnAntal": 0,
+   "kanBaraTillstand": false,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Förfrågningar-fliken under Vänner — inkommande kort med Acceptera/Avböj, skickade med Avbryt.",
+   "bindning": "Prosan namnger paret \"Acceptera/Avböj\" pa inkommande kort. Objektets hela text ar \"Acceptera\", i Erik Sandells kort.",
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE"
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "olostFraga": null,
+   "geometripaverkan": {
+    "hojdFore": 39,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.018741,
+    "andelAvArtefaktytaEfter": 0.023066,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "mycket-bred",
+    "formklassAndras": false,
+    "upprepningPaverkas": false,
+    "signaturAndras": false
+   },
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "forfragningar|25",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 25,
+    "outerHTMLHash": "aeab79dc",
+    "outerHTMLLangd": 204,
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center;",
+    "synligText": "Acceptera",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "forfragningar|26",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 39
+   },
+   "geometriPlanerad": {
+    "w": 176.5,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(206, 124, 30)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     }
+    },
+    "radie": "8px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Acceptera",
+   "barnAntal": 0,
+   "kanBaraTillstand": false,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Förfrågningar-fliken under Vänner — inkommande kort med Acceptera/Avböj, skickade med Avbryt.",
+   "bindning": "Samma prosa, bunden till Hanna Viks kort. Bedomt for sig, inte via forfragningar|15.",
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE"
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "olostFraga": null,
+   "geometripaverkan": {
+    "hojdFore": 39,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.018741,
+    "andelAvArtefaktytaEfter": 0.023066,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "mycket-bred",
+    "formklassAndras": false,
+    "upprepningPaverkas": false,
+    "signaturAndras": false
+   },
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "vanprofil|33",
+   "art": "vanprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänprofil",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "vanprofil",
+    "produktordinal": 33,
+    "outerHTMLHash": "56941de8",
+    "outerHTMLLangd": 213,
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; text-align: center;",
+    "synligText": "Skicka meddelande",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "relationTillGruppB": {
+    "granneTill": "vanprofil|34",
+    "relation": "sidoliggande syskon i samma rad, samma hojd, samma foralder",
+    "varforGeometrinMasteAndras": "Group B-knappen vaxer till 48 px hojd. Raden ar en flexrad med align-items som ger syskonen samma hojd. Lamnas grannen oforandrad blir raden ojamn. Deltat ar en foljd av radens layout, inte ett eget beslut om grannen."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 45
+   },
+   "geometriPlanerad": {
+    "w": 176.5,
+    "h": 48
+   },
+   "iRaKandidatpopulation": true,
+   "reviewStateFore": "UNREVIEWED",
+   "v2Partition": {
+    "ytklass": "A-2",
+    "formklass": "mycket-bred",
+    "$not": "Signaturens ovriga falt ar oforandrade av en hojdandring."
+   },
+   "egenMalning": {
+    "malar": true,
+    "bakgrund": "rgb(206, 124, 30)",
+    "kanter": {
+     "t": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "b": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "l": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     },
+     "r": {
+      "b": 0,
+      "stil": "none",
+      "farg": "rgb(23, 37, 29)"
+     }
+    },
+    "radie": "8px"
+   },
+   "kanVaraHitTarget": {
+    "egenGeometriRacker": false,
+    "efterPlanen": true
+   },
+   "egenText": "Skicka meddelande",
+   "barnAntal": 0,
+   "kanBaraTillstand": false,
+   "authoradKontext": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "state": null,
+    "handlare": 0,
+    "tabindex": null,
+    "contenteditable": null
+   },
+   "prosacitat": "Vänprofil — avatar, vän sedan, nyckeltal, meddelande/dela-knappar och ta bort vän.",
+   "bindning": "Prosan sager ordagrant \"MEDDELANDE/dela-KNAPPAR\". Objektets hela text ar \"Skicka meddelande\".",
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "AUTHORED_PROSE_STATES_ROLE",
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa AUTHORED_PROSE_STATES_ROLE, OPERATION_ON_CURRENT_STATE"
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "olostFraga": null,
+   "geometripaverkan": {
+    "hojdFore": 45,
+    "hojdEfter": 48,
+    "andelAvArtefaktytaFore": 0.022082,
+    "andelAvArtefaktytaEfter": 0.023554,
+    "ytklassFore": "A-2",
+    "ytklassEfter": "A-2",
+    "ytklassAndras": false,
+    "formklassFore": "mycket-bred",
+    "formklassEfter": "mycket-bred",
+    "formklassAndras": false,
+    "upprepningPaverkas": false,
+    "signaturAndras": false
+   },
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  }
+ ],
+ "B_verdikt": {
+  "INTERACTIVE_CONTROL": 5,
+  "NON_INTERACTIVE_STATE_GRAPHIC": 1,
+  "UNKNOWN": 1
+ },
+ "C_signaturpaverkan": [
+  {
+   "identitet": "tomtrecept|16",
+   "hojdFore": 43,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.014652,
+   "andelAvArtefaktytaEfter": 0.016356,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "bred",
+   "formklassAndras": true,
+   "upprepningPaverkas": false,
+   "signaturAndras": true,
+   "beroende": "DEPENDENCY: den planerade hojdandringen skulle andra objektets formklass mycket-bred→bred — och darmed dess framtida klustring och adjudikeringsevidens."
+  },
+  {
+   "identitet": "smartimport|30",
+   "hojdFore": 47,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.02843,
+   "andelAvArtefaktytaEfter": 0.029035,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "mycket-bred",
+   "formklassAndras": false,
+   "upprepningPaverkas": false,
+   "signaturAndras": false,
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "placera|50",
+   "hojdFore": 43,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.015503,
+   "andelAvArtefaktytaEfter": 0.017306,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "mycket-bred",
+   "formklassAndras": false,
+   "upprepningPaverkas": false,
+   "signaturAndras": false,
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "onboarding|40",
+   "hojdFore": 47,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.020215,
+   "andelAvArtefaktytaEfter": 0.020646,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "mycket-bred",
+   "formklassAndras": false,
+   "upprepningPaverkas": false,
+   "signaturAndras": false,
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "forfragningar|15",
+   "hojdFore": 39,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.018741,
+   "andelAvArtefaktytaEfter": 0.023066,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "mycket-bred",
+   "formklassAndras": false,
+   "upprepningPaverkas": false,
+   "signaturAndras": false,
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "forfragningar|25",
+   "hojdFore": 39,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.018741,
+   "andelAvArtefaktytaEfter": 0.023066,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "mycket-bred",
+   "formklassAndras": false,
+   "upprepningPaverkas": false,
+   "signaturAndras": false,
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  },
+  {
+   "identitet": "vanprofil|33",
+   "hojdFore": 45,
+   "hojdEfter": 48,
+   "andelAvArtefaktytaFore": 0.022082,
+   "andelAvArtefaktytaEfter": 0.023554,
+   "ytklassFore": "A-2",
+   "ytklassEfter": "A-2",
+   "ytklassAndras": false,
+   "formklassFore": "mycket-bred",
+   "formklassEfter": "mycket-bred",
+   "formklassAndras": false,
+   "upprepningPaverkas": false,
+   "signaturAndras": false,
+   "beroende": "Ingen signaturpaverkan: ytklass och formklass ar oforandrade av deltat."
+  }
+ ],
+ "D_morkOmprovning": {
+  "identitet": "inloggningmorkt|19",
+  "synligText": "Skapa konto",
+  "trigger": "NEW_EVIDENCE",
+  "auktorisation": "registrerad i 0884b25",
+  "A_kontrollstatus": {
+   "verdikt": "INTERACTIVE_CONTROL",
+   "prov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+     "DECLARED_INTERACTION_RELATION"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL, DECLARED_INTERACTION_RELATION"
+   },
+   "evidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL: authlogga, den kanoniska ritningen av auth_view, sager i sin egen prosa att formularets tva lagen vaxlas av \"en KONTURKNAPP under en eller-avdelare\".",
+    "DECLARED_INTERACTION_RELATION: authlogga deklarerar dessutom button \"Skapa konto\" i samma vy.",
+    "VERIFIERAD FOREKOMSTEKVIVALENS: inloggning och inloggningmorkt har 21 av 21 produktobjekt med identisk tagg och identisk text pa identisk ordinal. Ordinal 19 ar samma objekt, ritat i tva teman. Det ar inte \"ritningarna liknar varandra\" — det ar samma ritning."
+   ],
+   "motevidens": [
+    "Den morka skarmens egen prosa namnger \"lankar\" och ingen enskild kontroll. Den anfors darfor inte som grund.",
+    "Objektet bar fortfarande ingen authorad interaktion: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex."
+   ]
+  },
+  "B_roll": {
+   "roll": "button",
+   "avgjord": true,
+   "grunder": [
+    "AUTHORED_PROSE_STATES_ROLE",
+    "OPERATION_ON_CURRENT_STATE"
+   ],
+   "skal": "rollen vilar pa AUTHORED_PROSE_STATES_ROLE, OPERATION_ON_CURRENT_STATE"
+  },
+  "C_relation": {
+   "tillInloggning19": "samma objekt, verifierad ekvivalens 21/21",
+   "tillAuthlogga": "authlogga ar en annan, rikare ritning (30 produktobjekt) av samma vy och bar den kanoniska deklarationen button \"Skapa konto\".",
+   "censuskonsekvens": "inloggningmorkt|19 ar en TREDJE artefaktforekomst av samma kanoniska produktkontroll. Den okar occurrence-censusen men inte antalet unika kontroller."
+  },
+  "D_namnkrav": {
+   "synligText": "Skapa konto",
+   "foreslagetNamn": "Skapa konto",
+   "unikIskarmen": true,
+   "$not": "Den synliga texten \"Skapa konto\" ar unik i skarmen och duger som tillgangligt namn. Ingen namnkonflikt."
+  },
+  "E_traffyta": {
+   "w": 364,
+   "h": 47,
+   "krav": 48,
+   "klarar": false,
+   "fynd": "HIT_TARGET_FINDING: 364x47, saknar 1 px hojd."
+  },
+  "F_ickeText": {
+   "ram": "1.5px solid rgba(245, 244, 237, 0.35)",
+   "yta": "rgb(23, 37, 29)",
+   "kvot": 2.982,
+   "krav": 3,
+   "kravdBarare": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen; objektet har ingen egen fyllning.",
+   "fynd": "CONTROL_NON_TEXT_FINDING: 2.982 mot rgb(23, 37, 29), kravet ar 3.0. Detta ar det tidigare 2.98-fyndet, nu med etablerad kontrollstatus.",
+   "$ejAtgard": "Ingen remediering i detta block. Ingen mork mappning harleds, ingen R-04-kredit."
+  },
+  "nyttVerdikt": "INTERACTIVE_CONTROL",
+  "statusOvergang": "REVIEWED_UNKNOWN → REVIEWED_RESOLVED",
+  "$ejILastaPlanen": "Objektet inkluderas INTE automatiskt i den redan lasta 19-skrivplanen. Ett utokat implementationsscope kraver eget beslut och egen reconciliation."
+ },
+ "D2_ekvivalensbevis": {
+  "artefakter": [
+   "inloggning",
+   "inloggningmorkt"
+  ],
+  "produktobjekt": [
+   21,
+   21
+  ],
+  "positionerMedSammaTaggOchText": "21 av 21",
+  "fullstandig": true,
+  "$slutsats": "Verifierad forekomstekvivalens. Samma ritning i tva teman, inte tva ritningar som liknar varandra. Ordinal 19 ar samma objekt i bada."
+ },
+ "E_nyaKontroller": {
+  "antal": 6,
+  "per": [
+   {
+    "identitet": "tomtrecept|16",
+    "roll": "button",
+    "rollAvgjord": true,
+    "namnkrav": "Lägg till recept",
+    "namnUnikISkarmen": true,
+    "traffyta": {
+     "w": 137.2,
+     "h": 43,
+     "krav": 48,
+     "klararIdag": false,
+     "efterPlaneradGeometri": true
+    },
+    "ickeTextBarare": "egen malning finns; carrier-relationen maste matas separat",
+    "ankare": {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "skarm": "tomtrecept",
+     "produktordinal": 16,
+     "outerHTMLHash": "c1b13740",
+     "outerHTMLLangd": 182,
+     "inlineStil": "background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 8px;",
+     "synligText": "Lägg till recept",
+     "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+    },
+    "migrationsberoende": "Far INTE bli 48 px som sidoeffekt av grannens atgard utan att dess egen kontrollidentitet och matpopulation reconcileras."
+   },
+   {
+    "identitet": "onboarding|40",
+    "roll": "button",
+    "rollAvgjord": true,
+    "namnkrav": "Nästa",
+    "namnUnikISkarmen": true,
+    "traffyta": {
+     "w": 176.5,
+     "h": 47,
+     "krav": 48,
+     "klararIdag": false,
+     "efterPlaneradGeometri": true
+    },
+    "ickeTextBarare": "egen malning finns; carrier-relationen maste matas separat",
+    "ankare": {
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "skarm": "onboarding",
+     "produktordinal": 40,
+     "outerHTMLHash": "e65d646b",
+     "outerHTMLLangd": 182,
+     "inlineStil": "flex: 1 1 0%; background: rgb(36, 56, 44); color: rgb(245, 244, 237); text-align: center; font-size: 14px; font-weight: 600; padding: 12px;",
+     "synligText": "Nästa",
+     "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+    },
+    "migrationsberoende": "Far INTE bli 48 px som sidoeffekt av grannens atgard utan att dess egen kontrollidentitet och matpopulation reconcileras."
+   },
+   {
+    "identitet": "forfragningar|15",
+    "roll": "button",
+    "rollAvgjord": true,
+    "namnkrav": "Acceptera",
+    "namnUnikISkarmen": false,
+    "traffyta": {
+     "w": 176.5,
+     "h": 39,
+     "krav": 48,
+     "klararIdag": false,
+     "efterPlaneradGeometri": true
+    },
+    "ickeTextBarare": "egen malning finns; carrier-relationen maste matas separat",
+    "ankare": {
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "skarm": "forfragningar",
+     "produktordinal": 15,
+     "outerHTMLHash": "2ee880db",
+     "outerHTMLLangd": 204,
+     "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center;",
+     "synligText": "Acceptera",
+     "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+    },
+    "migrationsberoende": "Far INTE bli 48 px som sidoeffekt av grannens atgard utan att dess egen kontrollidentitet och matpopulation reconcileras."
+   },
+   {
+    "identitet": "forfragningar|25",
+    "roll": "button",
+    "rollAvgjord": true,
+    "namnkrav": "Acceptera",
+    "namnUnikISkarmen": false,
+    "traffyta": {
+     "w": 176.5,
+     "h": 39,
+     "krav": 48,
+     "klararIdag": false,
+     "efterPlaneradGeometri": true
+    },
+    "ickeTextBarare": "egen malning finns; carrier-relationen maste matas separat",
+    "ankare": {
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "skarm": "forfragningar",
+     "produktordinal": 25,
+     "outerHTMLHash": "aeab79dc",
+     "outerHTMLLangd": 204,
+     "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center;",
+     "synligText": "Acceptera",
+     "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+    },
+    "migrationsberoende": "Far INTE bli 48 px som sidoeffekt av grannens atgard utan att dess egen kontrollidentitet och matpopulation reconcileras."
+   },
+   {
+    "identitet": "vanprofil|33",
+    "roll": "button",
+    "rollAvgjord": true,
+    "namnkrav": "Skicka meddelande",
+    "namnUnikISkarmen": true,
+    "traffyta": {
+     "w": 176.5,
+     "h": 45,
+     "krav": 48,
+     "klararIdag": false,
+     "efterPlaneradGeometri": true
+    },
+    "ickeTextBarare": "egen malning finns; carrier-relationen maste matas separat",
+    "ankare": {
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "skarm": "vanprofil",
+     "produktordinal": 33,
+     "outerHTMLHash": "56941de8",
+     "outerHTMLLangd": 213,
+     "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; text-align: center;",
+     "synligText": "Skicka meddelande",
+     "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+    },
+    "migrationsberoende": "Far INTE bli 48 px som sidoeffekt av grannens atgard utan att dess egen kontrollidentitet och matpopulation reconcileras."
+   },
+   {
+    "identitet": "inloggningmorkt|19",
+    "roll": "button",
+    "rollAvgjord": true,
+    "namnkrav": "Skapa konto",
+    "namnUnikISkarmen": true,
+    "traffyta": {
+     "w": 364,
+     "h": 47,
+     "krav": 48,
+     "klararIdag": false,
+     "efterPlaneradGeometri": null
+    },
+    "ickeTextBarare": "ram 2.982 mot rgb(23, 37, 29)",
+    "ankare": {
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "skarm": "inloggningmorkt",
+     "produktordinal": 19,
+     "outerHTMLHash": "8fc80791",
+     "outerHTMLLangd": 204
+    },
+    "migrationsberoende": "Ingar inte i den lasta 19-planen. Kraver eget beslut."
+   }
+  ]
+ },
+ "F_reviewState": {
+  "fore": {
+   "UNREVIEWED": 2475,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 93,
+   "unresolved": 2591
+  },
+  "efter": {
+   "UNREVIEWED": 2468,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 100,
+   "unresolved": 2584
+  },
+  "overgangar": [
+   {
+    "identitet": "tomtrecept|16",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "INTERACTIVE_CONTROL"
+   },
+   {
+    "identitet": "smartimport|30",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC"
+   },
+   {
+    "identitet": "placera|50",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_UNKNOWN",
+    "verdikt": "UNKNOWN"
+   },
+   {
+    "identitet": "onboarding|40",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "INTERACTIVE_CONTROL"
+   },
+   {
+    "identitet": "forfragningar|15",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "INTERACTIVE_CONTROL"
+   },
+   {
+    "identitet": "forfragningar|25",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "INTERACTIVE_CONTROL"
+   },
+   {
+    "identitet": "vanprofil|33",
+    "fran": "UNREVIEWED",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "INTERACTIVE_CONTROL"
+   },
+   {
+    "identitet": "inloggningmorkt|19",
+    "fran": "REVIEWED_UNKNOWN",
+    "till": "REVIEWED_RESOLVED",
+    "verdikt": "INTERACTIVE_CONTROL",
+    "$not": "explicit auktoriserad omprovning"
+   }
+  ],
+  "$regel": "Inga totalsiffror framtvingade. Varje overgang ar en enskild forekomst."
+ },
+ "G_census": {
+  "historiskFryst": 1351,
+  "lastPlan": 19,
+  "hypotes1370": {
+   "giltig": false,
+   "$villkor": "1370 galler ENDAST om den slutliga implementationspopulationen forblir exakt de ursprungliga 19 forekomsterna.",
+   "$utfall": "OGILTIG SOM SLUTSIFFRA. 6 ytterligare kontroller ar nu etablerade och kan komma att migreras i samma implementation. Utokad census maste raknas om nar scopet fryses."
+  },
+  "omAllaMigreras": 1376,
+  "$regel": "Skriv inte \"1370 final\" forran scopet ar slutligt fryst."
+ },
+ "H_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "geometriskrivningar": 0,
+  "fargskrivningar": 0,
+  "a11ySkrivningar": 0,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "bitIdentisk": true
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "manskligaBeslutOforandrade": {
+   "fargval": "#7d897c",
+   "veckodagsnamn": "\"<Veckodag>, ledig. Placera här\" med utskriven veckodag",
+   "avbojmall": "Avböj {displayName}, med HELA det visade namnet",
+   "skickaIgen": "Skicka igen",
+   "geometriprincip": "APPROVED_IN_PRINCIPLE, alla tre grupper"
+  },
+  "rollerFor19": "button × 19"
+ },
+ "I_produktskrivningar": 0,
+ "stopp": []
+}

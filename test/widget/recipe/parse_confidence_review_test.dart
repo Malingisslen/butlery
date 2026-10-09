@@ -229,6 +229,42 @@ void main() {
         findsNothing,
       );
     });
+
+    // BUT-1821: the warning hue is for glyphs and borders; warning text on
+    // paper takes the text warning token (app_mode_colors.dart).
+    for (final dark in [false, true]) {
+      testWidgets('subtitle is painted in the text warning token '
+          '(${dark ? 'dark' : 'light'})', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
+            home: Scaffold(
+              body: ParseConfidenceReview(
+                ingredients: [
+                  _ingredient(name: 'a', confidence: ParseConfidence.low),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)),
+        );
+        final subtitle = tester.widget<Text>(
+          find.text(l10n.parseConfidenceReviewCountSubtitle(1)),
+        );
+        expect(
+          subtitle.style?.color,
+          AppModeColors.textWarning(dark ? Brightness.dark : Brightness.light),
+        );
+        if (!dark) expect(subtitle.style?.color, isNot(colors.warning));
+      });
+    }
   });
 
   group('ParseConfidenceReview — sort order', () {

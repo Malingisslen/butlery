@@ -208,6 +208,18 @@ void main() {
           expect(icon.color, AppModeColors.textDisabled(theme.brightness));
         }
       });
+
+      // BUT-2310: amounts keep tabular figures so the column lines up.
+      testWidgets('the amount column uses tabular figures', (tester) async {
+        await _pump(tester, theme);
+
+        final amount = find.text('500 g');
+        expect(amount, findsOneWidget);
+        expect(
+          tester.widget<Text>(amount).style?.fontFeatures,
+          contains(const FontFeature.tabularFigures()),
+        );
+      });
     });
   }
 }

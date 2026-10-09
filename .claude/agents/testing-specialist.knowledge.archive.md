@@ -40201,3 +40201,14 @@ parsing-tagging-menu chapter to make room for the return-line coverage principle
 
 ### 2026-10-08 — BUT-1937: falsely green extraction and unified-recipe suites
 Wired an authenticated `AuthRepository` into the production `ServiceLocator` in `extraction_manager_test`, `social_media_extractor_test` and `unified_recipe_service_test`; all three stayed green. Probe on `session handoff`: with the registration removed, `stopRealtimeEditing` returned false (expected true), so the added assertion discriminates. The other three realtime tests still assert `anyOf(isTrue,isFalse)`: `unified_recipe_service.dart:459` constructs `RealtimeRecipeOperations` with no `realtimeSyncService`, so `startRealtimeEditing` returns false regardless.
+
+### 2026-10-09 — BUT-2275 f3: list-wide initials call sites pinned (trigger: widgets-ui, new view tests)
+Added tests: PresenceOverview expanded grid, calendar slot with explicit presence (whole-roster computation), group menu hidden 4th face, feed_tab `events` vs `filteredEvents`, FamilyAccountRow pass-through, MinFamiljView (account "Test 16" + family "Test 17" -> T6/T7, pins the `accounts.length + i` offset). All RED under one mutant each (drop `initials:`, narrow list to `present`/`shown`/`filteredEvents`, offset `i`), restored byte-identical. MinFamiljView pumps with TestServiceLocator defaults plus mocktail `HouseholdRosterService` and `DinerProfileRepository` overrides AND `production.ServiceLocator.initialize(DIContainer())` in setUpAll (the VM reads the production locator; without it the view throws "ServiceLocator not initialized"). Rating breakdown/entry views: no widget harness exists, skipped.
+
+### 2026-10-09 — retired verbatim from widgets-ui chapter to stay under the 20,000-char cap
+- **ONE parameter feeding TWO axes is pinned on the easy axis only** (a grid's `spacing` used between
+  rows AND columns) — enumerate the axes the parameter's own doc claims, one assertion each
+  (BUT-1911).
+- **A guard wrapping [spacer + a child that self-collapses to `SizedBox.shrink()`] is pinned ONLY by
+  `find.byType(<ChildWidget>)`** — the child-CONTENT assertion is vacuous, because deleting the guard
+  rebuilds the child, which draws nothing and leaves the dead spacer (BUT-1869).

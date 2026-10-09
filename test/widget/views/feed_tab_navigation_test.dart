@@ -141,6 +141,59 @@ void main() {
     );
   }
 
+  group('FeedTab actor initials', () {
+    testWidgets('actors with the same initials get different avatars', (
+      tester,
+    ) async {
+      final events = [
+        for (final entry in {'e-a': 'Maria A', 'e-b': 'Mikael A'}.entries)
+          ActivityEvent(
+            id: entry.key,
+            actorId: entry.key,
+            actorDisplayName: entry.value,
+            type: ActivityEventType.shared,
+            recipeId: _recipeId,
+            recipeTitle: _recipeTitle,
+          ),
+      ];
+      when(() => feedVm.events).thenReturn(events);
+      when(() => feedVm.filteredEvents).thenReturn(events);
+
+      await tester.pumpWidget(buildApp());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('Ma'), findsOneWidget);
+      expect(find.text('Mi'), findsOneWidget);
+      expect(find.text('MA'), findsNothing);
+    });
+  });
+
+  group('FeedTab actor initials under a filter', () {
+    testWidgets('a filtered-out namesake still counts as a collision', (
+      tester,
+    ) async {
+      ActivityEvent by(String id, String name) => ActivityEvent(
+        id: id,
+        actorId: id,
+        actorDisplayName: name,
+        type: ActivityEventType.shared,
+        recipeId: _recipeId,
+        recipeTitle: _recipeTitle,
+      );
+      final maria = by('e-a', 'Maria A');
+      when(() => feedVm.events).thenReturn([maria, by('e-b', 'Mikael A')]);
+      when(() => feedVm.filteredEvents).thenReturn([maria]);
+
+      await tester.pumpWidget(buildApp());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('Ma'), findsOneWidget);
+      expect(find.text('MA'), findsNothing);
+    });
+  });
+
   group('FeedTab recipe tap — Task 5 navigation', () {
     testWidgets(
       'fetchFriendRecipe returns recipe → pushes recipeDetail with readOnly:true',

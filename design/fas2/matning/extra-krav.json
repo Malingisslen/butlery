@@ -1,0 +1,406 @@
+{
+ "enheter": [
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlista::objekt::occ-qmrmjhbmbawt",
+   "OWNER_ID": "OWNER::delatlista::objekt::occ-qmrmjhbmbawt",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlista::objekt::occ-qmrmjhbmbawt",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlista::objekt::occ-nbiexivguveo",
+   "OWNER_ID": "OWNER::delatlista::objekt::occ-nbiexivguveo",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlista::objekt::occ-nbiexivguveo",
+   "CURRENT_EVIDENCE": "avatar \"A\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlista::objekt::occ-pmmjamdhhiva",
+   "OWNER_ID": "OWNER::delatlista::objekt::occ-pmmjamdhhiva",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlista::objekt::occ-pmmjamdhhiva",
+   "CURRENT_EVIDENCE": "avatar \"P\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::grupp::objekt::occ-jlhjiijwxrrc",
+   "OWNER_ID": "OWNER::grupp::objekt::occ-jlhjiijwxrrc",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::grupp::objekt::occ-jlhjiijwxrrc",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::grupp::objekt::occ-ostmpxfjbusd",
+   "OWNER_ID": "OWNER::grupp::objekt::occ-ostmpxfjbusd",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::grupp::objekt::occ-ostmpxfjbusd",
+   "CURRENT_EVIDENCE": "avatar \"A\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::grupp::objekt::occ-weompezkurol",
+   "OWNER_ID": "OWNER::grupp::objekt::occ-weompezkurol",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::grupp::objekt::occ-weompezkurol",
+   "CURRENT_EVIDENCE": "avatar \"P\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::grupp::objekt::occ-behsvzlpxqwf",
+   "OWNER_ID": "OWNER::grupp::objekt::occ-behsvzlpxqwf",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::grupp::objekt::occ-behsvzlpxqwf",
+   "CURRENT_EVIDENCE": "avatar \"S\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlistor::objekt::occ-pkxdzowrscnf",
+   "OWNER_ID": "OWNER::delatlistor::objekt::occ-pkxdzowrscnf",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlistor::objekt::occ-pkxdzowrscnf",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlistor::objekt::occ-ayjmwukcnjbo",
+   "OWNER_ID": "OWNER::delatlistor::objekt::occ-ayjmwukcnjbo",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlistor::objekt::occ-ayjmwukcnjbo",
+   "CURRENT_EVIDENCE": "avatar \"E\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlistor::objekt::occ-fdegclcapgzs",
+   "OWNER_ID": "OWNER::delatlistor::objekt::occ-fdegclcapgzs",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlistor::objekt::occ-fdegclcapgzs",
+   "CURRENT_EVIDENCE": "avatar \"H\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlistor::objekt::occ-luwgowkxjerr",
+   "OWNER_ID": "OWNER::delatlistor::objekt::occ-luwgowkxjerr",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlistor::objekt::occ-luwgowkxjerr",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::delatlistor::objekt::occ-tyrviyvgppmo",
+   "OWNER_ID": "OWNER::delatlistor::objekt::occ-tyrviyvgppmo",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::delatlistor::objekt::occ-tyrviyvgppmo",
+   "CURRENT_EVIDENCE": "avatar \"J\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-qqrpnlartrba",
+   "OWNER_ID": "OWNER::bredmeny::objekt::occ-qqrpnlartrba",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::bredmeny::objekt::occ-qqrpnlartrba",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-mazfeakrtfpj",
+   "OWNER_ID": "OWNER::bredmeny::objekt::occ-mazfeakrtfpj",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::bredmeny::objekt::occ-mazfeakrtfpj",
+   "CURRENT_EVIDENCE": "avatar \"N\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-frauktpotikw",
+   "OWNER_ID": "OWNER::bredmeny::objekt::occ-frauktpotikw",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::bredmeny::objekt::occ-frauktpotikw",
+   "CURRENT_EVIDENCE": "avatar \"I\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-qoluyblcovsd",
+   "OWNER_ID": "OWNER::bredmeny::objekt::occ-qoluyblcovsd",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::bredmeny::objekt::occ-qoluyblcovsd",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-vashdduwiyll",
+   "OWNER_ID": "OWNER::bredmeny::objekt::occ-vashdduwiyll",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::bredmeny::objekt::occ-vashdduwiyll",
+   "CURRENT_EVIDENCE": "avatar \"N\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  },
+  {
+   "id": "RP::HANDOFF_IMAGE::bredmeny::objekt::occ-cdtpzvfevoua",
+   "OWNER_ID": "OWNER::bredmeny::objekt::occ-cdtpzvfevoua",
+   "REQUIREMENT_ID": "H44 Avatar utan namn",
+   "REQUIREMENT_SOURCE": "Butlery tillganglighetshandoff",
+   "PROVENANCE": "SOURCE_GROUNDED",
+   "CATEGORY": "PRODUCT_REMEDIATION_REQUIRED",
+   "CURRENT_STATUS": "IMAGE_WITHOUT_NAME",
+   "OCCURRENCES": 1,
+   "REQUIRED": "roll bild + namn = personens namn",
+   "WRITE_OWNER": "H44::OWNER::bredmeny::objekt::occ-cdtpzvfevoua",
+   "CURRENT_EVIDENCE": "avatar \"M\" utan namn intill; personen finns inte i kallan",
+   "BLOCKERS_EXTRA": [
+    "NAME_VALUE_DESIGN_UNRESOLVED: personens namn finns inte i ritningen"
+   ]
+  }
+ ],
+ "hinder": {
+  "OWNER::taggar::objekt::occ-sgzdogeavbgh": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: H18 \"Filtrera på {namn}\" eller annat — chipets funktion i vyn ar inte ritad"
+  ],
+  "OWNER::taggar::objekt::occ-qipnjqngjgaf": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: H18 \"Filtrera på {namn}\" eller annat — chipets funktion i vyn ar inte ritad"
+  ],
+  "OWNER::taggar::objekt::occ-owwkuuvomhzb": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: H18 \"Filtrera på {namn}\" eller annat — chipets funktion i vyn ar inte ritad"
+  ],
+  "OWNER::betygsoversikt::objekt::occ-ubhaurdopgdy": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: H18 \"Filtrera på {namn}\" eller annat — chipets funktion i vyn ar inte ritad"
+  ],
+  "OWNER::chatt::objekt::occ-ycfuiekxbrcq": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::chatt320::objekt::occ-adxeqolfgkbl": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::chattmorkt::objekt::occ-qbswrbxipxld": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::hemrecept::namn::sok-bland-recept": [
+   "SPEC_LINT_SYNC: rollen searchbox saknas i T-08 (BL-03)"
+  ],
+  "OWNER::lagamorkt::namn::tryck-pa-en-rad-for-att-byta-ingrediens": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Tryck på en rad för att byta i…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::lagastaende::namn::tryck-pa-en-rad-for-att-byta-ingrediens": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Tryck på en rad för att byta i…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::plussheet::namn::lagg-till-recept": [
+   "SPEC_LINT_SYNC: rollen dialog saknas i spec och T-08"
+  ],
+  "OWNER::sortera::namn::sok-recept-ingrediens": [
+   "SPEC_LINT_SYNC: rollen searchbox saknas i T-08 (BL-03)"
+  ],
+  "OWNER::tomtrecept::namn::sok-bland-dina-recept": [
+   "SPEC_LINT_SYNC: rollen searchbox saknas i T-08 (BL-03)"
+  ],
+  "OWNER::delatlista::objekt::occ-aqqeeltsbqhg": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::delatmedmig::namn::sok-delat-innehall": [
+   "SPEC_LINT_SYNC: rollen searchbox saknas i T-08 (BL-03)"
+  ],
+  "OWNER::kontosakerhet::namn::bekrafta-nytt-losenord": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Bekräfta nytt lösenord…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::meddelanden::namn::sok-konversationer": [
+   "SPEC_LINT_SYNC: rollen searchbox saknas i T-08 (BL-03)"
+  ],
+  "OWNER::taggar::objekt::occ-agmapdhjnklv": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::taggar::objekt::occ-sxibscdemhal": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::betygsoversikt::objekt::occ-gvmfszmcblwp": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::delaark::objekt::occ-hegwuenawnhq": [
+   "SPEC_LINT_SYNC: rollen dialog saknas i spec och T-08"
+  ],
+  "OWNER::delatlistor::objekt::occ-izjjgxhtypxj": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::faq::objekt::occ-updbujqfhceu": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::kontextmeny::objekt::occ-wzfgayhjvfpp": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: namn saknas",
+   "SPEC_LINT_SYNC: rollen menu saknas i spec och T-08"
+  ],
+  "OWNER::kontextmeny::objekt::occ-diitlcvjmqrz": [
+   "SPEC_LINT_SYNC: rollen menuitem saknas i T-08 (BL-03)"
+  ],
+  "OWNER::kontextmeny::objekt::occ-rrjmavjhnype": [
+   "SPEC_LINT_SYNC: rollen menuitem saknas i T-08 (BL-03)"
+  ],
+  "OWNER::kontextmeny::objekt::occ-avrkjctzgznm": [
+   "SPEC_LINT_SYNC: rollen menuitem saknas i T-08 (BL-03)"
+  ],
+  "OWNER::laggtillmedlemmar::namn::sok-bland-vanner": [
+   "SPEC_LINT_SYNC: rollen searchbox saknas i T-08 (BL-03)"
+  ],
+  "OWNER::skafferivara::objekt::occ-mfjcajaaxksh": [
+   "SPEC_LINT_SYNC: rollen dialog saknas i spec och T-08"
+  ],
+  "OWNER::veckoplacering::namn::valj-en-ratt-nedan-tryck-sedan-pa-en-plats-i-vec": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Välj en rätt nedan, tryck seda…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::veckoplaceringvald::namn::tryck-pa-en-plats-for": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Tryck på en plats för…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::skafferivyn::objekt::occ-duflmljhrhyy": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::skafferivyn::objekt::occ-segurvgdbcgm": [
+   "NAME_VALUE_DESIGN_UNRESOLVED: NAMN: glyfen saknar text; designen maste ange namnet"
+  ],
+  "OWNER::authmfa::namn::skriv-koden": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Skriv koden…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::impfoto::namn::gar-uppladdningen-fel": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: texten ar en instruktion som hanvisar till andra kontroller (\"Går uppladdningen fel…\"); ingen tvilling eller handoffregel ger en roll"
+  ],
+  "OWNER::kontosakerhetsvy::objekt::occ-bzphacqdnszv": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: avsnittsrubrik (\"Byt e-post\") ovanfor falt och en deklarerad knapp med samma namn; om rubriken ar en expanderare, flik eller rubrik kan kallan inte avgora"
+  ],
+  "OWNER::kontosakerhetsvy::objekt::occ-cizisunghdtc": [
+   "CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED: avsnittsrubrik (\"Byt lösenord\") ovanfor falt och en deklarerad knapp med samma namn; om rubriken ar en expanderare, flik eller rubrik kan kallan inte avgora"
+  ]
+ }
+}

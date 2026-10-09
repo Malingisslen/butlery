@@ -1,0 +1,89 @@
+{
+ "steg": [
+  {
+   "kalla": "fas2/odeklarerade-komponenter.json (974b30e)",
+   "antal": 108,
+   "perKomponent": [
+    {
+     "komponent": "chip",
+     "antal": 28
+    },
+    {
+     "komponent": "checkbox",
+     "antal": 78
+    },
+    {
+     "komponent": "(odeklarerad struktur)",
+     "antal": 2
+    }
+   ]
+  },
+  {
+   "kalla": "fas2/prioriterade-kandidater.json (cbee18d)",
+   "prioriterade": 21,
+   "utanforOmfang": 87,
+   "verdikt21": {
+    "INTERACTIVE_CONTROL": 5,
+    "NON_INTERACTIVE_STATE_GRAPHIC": 9,
+    "UNKNOWN": 7
+   },
+   "olosta7": [
+    "delatmindel|41",
+    "delatmindel|48",
+    "delatnarvaro|25",
+    "delatclaimkonflikt|15",
+    "impassist2|16",
+    "impassist2|19",
+    "impassist2|22"
+   ],
+   "summa": "87 utanfor omfanget + 7 olosta av de 21 = 94"
+  },
+  {
+   "kalla": "fas2/prioritetsdelta-adjudicering.json (9eaaa4c)",
+   "formel": "94 − 4 = 90",
+   "losta": [
+    "dialogsparameny|8",
+    "kontovantan|23",
+    "kontovantan|26",
+    "imp2hamtar|23"
+   ]
+  },
+  {
+   "kalla": "fas2/upptacktstackning.json (7906adc)",
+   "formel": "90 + 58 nya kandidater − 2 adjudicerade = 146"
+  },
+  {
+   "kalla": "fas2/upptacktsrecall.json (aaf5b86)",
+   "fore": 146,
+   "efter": 1719
+  },
+  {
+   "kalla": "fas2/batch3.json (9c8a04b)",
+   "fore": {
+    "UNREVIEWED": 2498,
+    "REVIEWED_UNKNOWN": 113,
+    "REVIEWED_RESOLVED": 73,
+    "unresolved": 2611
+   },
+   "efter": {
+    "UNREVIEWED": 2475,
+    "REVIEWED_UNKNOWN": 114,
+    "REVIEWED_RESOLVED": 95,
+    "unresolved": 2589
+   }
+  }
+ ],
+ "inget_tappat": true,
+ "klass": "SUPERSEDED",
+ "efterfoljare": {
+  "klass": "STILL_UNRESOLVED",
+  "kategori": "UNVERIFIABLE",
+  "remediering": false,
+  "ommatPaKandidat": false,
+  "orsak": "control-shape-discovery.mjs ar en modul utan CLI",
+  "UNREVIEWED": 2475,
+  "REVIEWED_UNKNOWN": 114,
+  "REVIEWED_RESOLVED": 95,
+  "unresolved": 2589
+ }
+}

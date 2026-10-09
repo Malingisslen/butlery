@@ -1,0 +1,1803 @@
+{
+ "$om": "Block 288 · UX- och beteendefrysning. Skild fran Block 287:s visuella kravfrysning.",
+ "BLOCK": 288,
+ "STATUS": "FROZEN",
+ "PROVENIENS": {
+  "VISUAL_REQUIREMENT_FREEZE": "fas2/block287k-frysning.json",
+  "$skillnad": "Den visuella frysningen binder element och krav. Den har binder tillstand, overgangar och interaktionslagen. Ingen av dem raknar om den andra.",
+  "KALLOR": [
+   "fas2/stateflow-mappning.json",
+   "fas2/stateflow-applicability.json",
+   "fas2/role-state-applicability.json",
+   "fas2/stateflow-applicability-0608.json",
+   "fas2/block287k-population.json",
+   "Butlery Skarmar v12*.dc.html"
+  ]
+ },
+ "BINDNING": {
+  "UX_STATE_SET_HASH": "60e69697717610db907452b858d3535e94627eef3368fb2273544fa8aa08932a",
+  "TRANSITION_SET_HASH": "51bafaaed5d02513c607951ff9138fc724d8c9fd28a0c799a391d5651652c05e",
+  "INTERACTION_SET_HASH": "34ed0d011c8552877f4f823d8bf0092e5107583b944b0740b7c5403562fa59fd",
+  "DECISION_SET_HASH": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "CORPUS_FRAME_SET_HASH": "89f8998e5d8c0a09e50db634f160eaac7573d8638bfbe7a7cbb11a958485ae40",
+  "CORPUS_BYTES": 2891778,
+  "CORPUS_FILES": 23,
+  "CORPUS_FRAMES": 372,
+  "SOURCE_0608_HASH": "204b1d7b6ddc06db87163a5d80cafd3922f971ed9c9861c1a606f6b24d56453f",
+  "BLOCK_282_FINGERPRINT": "639a14d6afb84664",
+  "BLOCK_283_IDENTITY_FINGERPRINT": "2e7816936df8d602",
+  "UX_MODEL_FINGERPRINT": "fb457383025db2b6",
+  "UX_STATE_ROWS": 126,
+  "UX_STATES_APPLICABLE": 82,
+  "UX_STATES_DRAWN": 52,
+  "UX_STATES_ABSENT_IN_DESIGN": 30,
+  "UX_VIEWS": 18,
+  "TRANSITIONS_TOTAL": 86,
+  "TRANSITIONS_FLOW_01_05": 35,
+  "TRANSITIONS_FLOW_06_08": 48,
+  "TRANSITIONS_REQUIRED": 81,
+  "TRANSITIONS_NOT_REQUIRED": 5,
+  "TRANSITIONS_UNRESOLVED": 0,
+  "TRANSITIONS_PRESENT_IN_DESIGN": 50,
+  "TRANSITIONS_ABSENT_IN_DESIGN": 34,
+  "TRANSITIONS_UNVERIFIABLE_IN_DESIGN": 2,
+  "INTERACTION_ROWS": 70,
+  "INTERACTION_REQUIRED": 33,
+  "INTERACTION_NOT_REQUIRED": 4,
+  "INTERACTION_UNSPECIFIED": 33,
+  "DESIGN_DECISION_REQUIRED": 0,
+  "HUMAN_PRODUCT_DECISIONS": 4,
+  "TRANSITIONS_SUPERSEDED_BY_DECISION": 4,
+  "TRANSITIONS_ADDED_BY_DECISION": 3,
+  "FLOWS_MODELLED": 8
+ },
+ "BESLUTSBEHOV": [],
+ "PRODUKTBESLUT": [
+  "D-01",
+  "D-02",
+  "D-03",
+  "D-04"
+ ],
+ "BLOCKERANDE": [],
+ "vytillstand": [
+  {
+   "VIEW": "admin",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "admin",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "admin",
+   "STATE": "EMPTY",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "admin",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "admin",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "admin",
+   "STATE": "OFFLINE",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "admin",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "LOADING",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "auth-otp",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "EMPTY",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "ERROR",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "chatt",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "OFFLINE",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "dialog-sheet",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "EMPTY",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "LOADING",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "hem",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "LOADING",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "import-av-recept",
+   "STATE": "PARTIAL",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "CONFLICT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "EMPTY",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "inköpslista",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "ERROR",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "juridik",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "LOADING",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "matlagningsläge",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "LOADING",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "profil-inställningar",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "CONFLICT",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "receptdetalj",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "CONFLICT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "LOADING",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "recepteditor",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "EMPTY",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "ERROR",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "receptlista-sök",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "CONFLICT",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "EMPTY",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "ERROR",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "skafferi",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "CONFLICT",
+   "KATEGORI": "UNSPECIFIED_NO_ACTION"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "EMPTY",
+   "KATEGORI": "UNSPECIFIED_NO_ACTION"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "ERROR",
+   "KATEGORI": "UNSPECIFIED_NO_ACTION"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "LOADING",
+   "KATEGORI": "UNSPECIFIED_NO_ACTION"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "OFFLINE",
+   "KATEGORI": "UNSPECIFIED_NO_ACTION"
+  },
+  {
+   "VIEW": "start",
+   "STATE": "PARTIAL",
+   "KATEGORI": "UNSPECIFIED_NO_ACTION"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "CONFLICT",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "EMPTY",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "ERROR",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "veckogenerering",
+   "STATE": "PARTIAL",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "CONFLICT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "EMPTY",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "ERROR",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "LOADING",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "OFFLINE",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "veckomeny",
+   "STATE": "PARTIAL",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "CONFLICT",
+   "KATEGORI": "NOT_REQUIRED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "DEFAULT",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "EMPTY",
+   "KATEGORI": "ALREADY_SATISFIED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "ERROR",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "LOADING",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "OFFLINE",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "VIEW": "vänner-grupp",
+   "STATE": "PARTIAL",
+   "KATEGORI": "NOT_REQUIRED"
+  }
+ ],
+ "overgangar": [
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::0-recept-placerade",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::1-n-begärt-antal-recept-placerade",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::10-s",
+   "FLOW_ID": "01",
+   "STATUS": "NOT_REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "BESLUT": "D-03"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::6-10-s",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::alla-dagar-klara",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::offline",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::lång-väntan::fortsätt-i-bakgrunden",
+   "FLOW_ID": "01",
+   "STATUS": "NOT_REQUIRED",
+   "REPRESENTATION": "UNVERIFIABLE",
+   "BLOCK": "283",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "BESLUT": "D-03"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::placering::kvitto-7-s-andra",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288",
+   "BESLUT": "D-04"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::resultat::efter-30-s",
+   "FLOW_ID": "01",
+   "STATUS": "NOT_REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "BESLUT": "D-04"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::resultat::placera-i-veckan",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288",
+   "BESLUT": "D-04"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::resultat::ångra-snackbar-30-s",
+   "FLOW_ID": "01",
+   "STATUS": "NOT_REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "BESLUT": "D-04"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::tom-vecka::generera",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::vecka-med-rätter::generera",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::vecka-sparad-av-annan::konfliktsnackbar",
+   "FLOW_ID": "01",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288",
+   "BESLUT": "D-04"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",
+   "FLOW_ID": "02",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::merge-ark::ersätt-listan-på",
+   "FLOW_ID": "02",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::merge-ark::lägg-till-n-varor",
+   "FLOW_ID": "02",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::veckomeny::till-inköpslistan",
+   "FLOW_ID": "02",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::foto-ocr::otolkad-text",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::granska::receptet-finns-redan",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::betalvägg",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::ok",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::privat-trasig-länk",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::sidan-har-inget-recept",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::länkfält::importera",
+   "FLOW_ID": "03",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::avslutat::klart",
+   "FLOW_ID": "04",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::receptdetalj::börja-laga",
+   "FLOW_ID": "04",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::app-i-bakgrunden",
+   "FLOW_ID": "04",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::bakåt-stäng",
+   "FLOW_ID": "04",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::rotation",
+   "FLOW_ID": "04",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "UNVERIFIABLE",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::timer-startad",
+   "FLOW_ID": "04",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::deep-link::länken-återkallad-eller-utgången",
+   "FLOW_ID": "05",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::deep-link::redan-medlem",
+   "FLOW_ID": "05",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::deep-link::utloggad",
+   "FLOW_ID": "05",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::grupp::ägaren-lämnar",
+   "FLOW_ID": "05",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::medlem::behörighet-sänks-till-endast-läsa",
+   "FLOW_ID": "05",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::person::blockerad",
+   "FLOW_ID": "05",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "283"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::aterstall::satt-nytt",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::byt-epost::galler-vid-oppnad-lank",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::byt-epost::omverifiering-bada",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::export::tre-felorsaker",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::export::vy-lamnas",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::glomt-losenord::aterstall",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::losenord-epost::kraver-nuvarande-losenord",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::aterstallning-engangskoder",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::automatisk-verifiering",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::ominloggning-kravs",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::paslagning-kraver-reservkoder",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::utmaning-maskerad-ledtrad",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::aterkallningsfonster",
+   "FLOW_ID": "06",
+   "STATUS": "NOT_REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::delvis",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::kaskad-vantan",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::klart",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::reautentisering",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::skal-och-losenord",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::samtycke::fornyelse",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::session::utgang",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::skapa-konto::verifiera-epost",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::verifiera-epost::klart",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::verifieringslank::utgangen",
+   "FLOW_ID": "06",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::first-ask::forklaring-fore-systemdialog",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::kamera-utan-behorighet::galleri",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::nekad::funktionen-kvar",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::notiser-avstangda-i-systemet::rad-overst",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::notiser-utan-behorighet::timers-bara-i-appen",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::permanent-nekad::oppna-installningar",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::sparrad-av-systemet::ingen-knapp",
+   "FLOW_ID": "07",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::beroendekedja-misslyckas",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::koindikator-i-toppfaltet",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::omforsok-backoff",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::permanent-fel",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::toms::konfliktbanner",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::kovy::vantar-pa-synk",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::online::offline",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::skrivning::koas",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::stale-data::tidsstampel",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::aterupptagning",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::avbryt-behaller",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::livstid-utgangen",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288",
+   "BESLUT": "D-01"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::skapas",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288",
+   "BESLUT": "D-02"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::slang-raderar",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "PRESENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::utloggning-raderar",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utloggning-med-ko::blockeras",
+   "FLOW_ID": "08",
+   "STATUS": "REQUIRED",
+   "REPRESENTATION": "ABSENT",
+   "BLOCK": "288"
+  }
+ ],
+ "interaktion": [
+  {
+   "ROW_ID": "CSR::ROLE::button::COLLAPSED",
+   "CONTROL_TYPE": "button",
+   "STATE": "COLLAPSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::DEFAULT",
+   "CONTROL_TYPE": "button",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::DISABLED",
+   "CONTROL_TYPE": "button",
+   "STATE": "DISABLED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::EXPANDED",
+   "CONTROL_TYPE": "button",
+   "STATE": "EXPANDED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::FOCUSED",
+   "CONTROL_TYPE": "button",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::PRESSED",
+   "CONTROL_TYPE": "button",
+   "STATE": "PRESSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::SELECTED",
+   "CONTROL_TYPE": "button",
+   "STATE": "SELECTED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::COLLAPSED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::DEFAULT",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::DISABLED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "DISABLED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::EXPANDED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::FOCUSED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::PRESSED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::SELECTED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "SELECTED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::COLLAPSED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "COLLAPSED",
+   "STATUS": "NOT_REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::DEFAULT",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::DISABLED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "DISABLED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::EXPANDED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "EXPANDED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::FOCUSED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "FOCUSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::PRESSED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::SELECTED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "SELECTED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::COLLAPSED",
+   "CONTROL_TYPE": "link",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::DEFAULT",
+   "CONTROL_TYPE": "link",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::DISABLED",
+   "CONTROL_TYPE": "link",
+   "STATE": "DISABLED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::EXPANDED",
+   "CONTROL_TYPE": "link",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::FOCUSED",
+   "CONTROL_TYPE": "link",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::PRESSED",
+   "CONTROL_TYPE": "link",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::SELECTED",
+   "CONTROL_TYPE": "link",
+   "STATE": "SELECTED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::COLLAPSED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "COLLAPSED",
+   "STATUS": "NOT_REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::DEFAULT",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::DISABLED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "DISABLED",
+   "STATUS": "NOT_REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::EXPANDED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "EXPANDED",
+   "STATUS": "NOT_REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::FOCUSED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::PRESSED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::SELECTED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "SELECTED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::COLLAPSED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::DEFAULT",
+   "CONTROL_TYPE": "radio",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::DISABLED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "DISABLED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::EXPANDED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::FOCUSED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::PRESSED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::SELECTED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "SELECTED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::COLLAPSED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::DEFAULT",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::DISABLED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "DISABLED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::EXPANDED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::FOCUSED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::PRESSED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::SELECTED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "SELECTED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "285"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::COLLAPSED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::DEFAULT",
+   "CONTROL_TYPE": "switch",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::DISABLED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "DISABLED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::EXPANDED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::FOCUSED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::PRESSED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::SELECTED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "SELECTED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::COLLAPSED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::DEFAULT",
+   "CONTROL_TYPE": "tab",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::DISABLED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "DISABLED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::EXPANDED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::FOCUSED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::PRESSED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::SELECTED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "SELECTED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::COLLAPSED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "COLLAPSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::DEFAULT",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "DEFAULT",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::DISABLED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "DISABLED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::EXPANDED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "EXPANDED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::FOCUSED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "FOCUSED",
+   "STATUS": "REQUIRED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::PRESSED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "PRESSED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::SELECTED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "SELECTED",
+   "STATUS": "UNSPECIFIED",
+   "AVGJORD_I": "283"
+  }
+ ]
+}

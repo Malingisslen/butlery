@@ -1,0 +1,335 @@
+// GENERERAD FIL — ändra källan, inte den här.
+// system 2.1 · tokens 1.13
+// generator tools/gen-app-theme.mjs v2.3
+// källfingeravtryck sha256:f6ac785339c4e5ebdbd09a10b12b4ef8a153a2d30e262a28792f2302f0de6ca1 (6 indatafiler, generatorns källa inräknad)
+// genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
+//
+// Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
+// leveranskontraktet (legacy-api-contract.json), som TG-01 mäter med exakt
+// mängdlikhet. Att ytan motsvarar app-repots faktiska anrop är OVERIFIERAT
+// till Fas 2 (styrdokumentet § 9E). VÄRDET kommer ur tokens.json. Färgnamn som
+// forestGreen och cream är därför historiska: de bär ink respektive paper.
+// Att döpa om dem är en separat, mekanisk vända (BUT-nr saknas).
+//
+// Undantag: brand*-färgerna nedan är externa varumärkesidentiteter och
+// tokeniseras inte — de är citat, inte design.
+import 'package:flutter/material.dart';
+
+class AppColors {
+  AppColors._();
+
+  /// Rubrikyta och primär åtgärd · semantic.surface.ink
+  static const Color forestGreen = Color(0xFF24382C);
+  /// Nedtryckt / betoning · palette.inkDeep
+  static const Color forestGreenDark = Color(0xFF17251D);
+  /// Ljus variant · palette.greenLight
+  static const Color forestGreenLight = Color(0xFF8FB89A);
+  /// Dekorativ accent · palette.saffron
+  static const Color rust = Color(0xFFCE7C1E);
+  /// Kortens underkant · semantic.border.statusWarning
+  static const Color rustLight = Color(0xFFD8B784);
+  /// semantic.surface.base
+  static const Color cream = Color(0xFFF5F4ED);
+  /// semantic.surface.raised
+  static const Color creamDark = Color(0xFFE6EAD9);
+  /// Navigering · semantic.border.subtle
+  static const Color creamDarker = Color(0xFFCCD1C2);
+  /// semantic.surface.raised
+  static const Color greenPale = Color(0xFFE6EAD9);
+  /// Nav ovald · semantic.text.secondary
+  static const Color greenMuted = Color(0xFF5B6959);
+  /// Systemet har inget rent vitt · semantic.surface.base
+  static const Color cardWhite = Color(0xFFF5F4ED);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.paperCard
+  static const Color cardWhite54 = Color(0x8AF5F4ED);
+  /// semantic.text.primary
+  static const Color textDark = Color(0xFF24382C);
+  /// Lasbar sekundartext. Ytsakert varde: text.secondary #627061 ger 4,27:1 pa surface.raised och underkanns av 4,5-kravet, medan .onRaised klarar alla tillatna ytor. Sedan B96-1 (BUT-2196, 2026-09-30) har text.secondary samma varde, #5B6959/#A9B2A0. · semantic.text.secondary.onRaised
+  static const Color textMedium = Color(0xFF5B6959);
+  /// semantic.border.control
+  static const Color placeholderIcon = Color(0xFF7D897C);
+  /// LEGACY_ALIAS for lasbar sekundartext. Lag tidigare pa text.disabled, vilket var semantiskt fel: appen anvander den till lasbar text, inte till avstangd. Ytsakert varde eftersom en Flutter-konstant inte kan valja per yta. Pensioneras i paket 7. · semantic.text.secondary.onRaised
+  static const Color textLight = Color(0xFF5B6959);
+  /// palette.sagePale
+  static const Color textTertiary = Color(0xFFB4BFA6);
+  /// semantic.control.checked.foreground
+  static const Color textOnPrimary = Color(0xFFF5F4ED);
+  /// semantic.text.body
+  static const Color textOnCream = Color(0xFF37453A);
+  /// semantic.text.success
+  static const Color success = Color(0xFF3F6B4F);
+  /// Endast ytor och ikoner, aldrig text · semantic.border.statusWarning
+  static const Color warning = Color(0xFFD8B784);
+  /// semantic.text.danger
+  static const Color error = Color(0xFF9C3B23);
+  /// semantic.surface.raised
+  static const Color errorContainer = Color(0xFFE6EAD9);
+  /// semantic.text.danger.onRaised
+  static const Color onErrorContainer = Color(0xFF9C3B23);
+  /// semantic.surface.raised
+  static const Color successContainer = Color(0xFFE6EAD9);
+  /// semantic.text.success.onRaised
+  static const Color onSuccessContainer = Color(0xFF3F6B4F);
+  /// semantic.surface.raised
+  static const Color warningContainer = Color(0xFFE6EAD9);
+  /// semantic.text.accent.onRaised
+  static const Color onWarningContainer = Color(0xFF8A5212);
+  /// semantic.surface.raised
+  static const Color infoContainer = Color(0xFFE6EAD9);
+  /// semantic.text.primary
+  static const Color onInfoContainer = Color(0xFF24382C);
+  /// Systemet har ingen bla - info bar lankfargen. Lag tidigare pa palette.saffronLink (#A15A0A), vilket ar exakt det varde text.link ersatte: det foll pa upphojd yta. Som palettfarg saknade den dessutom morkt lage och gav 1,99:1 mot surface.raised i morkt. · semantic.text.link
+  static const Color info = Color(0xFF8A5212);
+  /// semantic.border.subtle
+  static const Color divider = Color(0xFFCCD1C2);
+  /// semantic.text.secondary
+  static const Color recipeMeta = Color(0xFF5B6959);
+  /// semantic.text.body
+  static const Color sectionHeader = Color(0xFF37453A);
+  /// palette.saffron
+  static const Color starGold = Color(0xFFCE7C1E);
+  /// palette.wheat
+  static const Color categoryDairy = Color(0xFFD8B784);
+  /// palette.green
+  static const Color categoryVegetables = Color(0xFF3F6B4F);
+  /// palette.greenLight
+  static const Color categoryFruit = Color(0xFF8FB89A);
+  /// palette.saffronPale
+  static const Color categoryBreadGrains = Color(0xFFDCA968);
+  /// palette.sage
+  static const Color categoryFrozen = Color(0xFF93A48D);
+  /// palette.saffronDeep
+  static const Color categoryDryGoods = Color(0xFF8A5212);
+  /// palette.sageMuted
+  static const Color categoryOther = Color(0xFFA9B2A0);
+  /// semantic.surface.raised
+  static const Color backgroundTint = Color(0xFFE6EAD9);
+  /// palette.saffronDeep
+  static const Color illustrationBrown = Color(0xFF8A5212);
+  /// palette.saffron
+  static const Color illustrationOrange = Color(0xFFCE7C1E);
+  /// palette.clay
+  static const Color illustrationPurpleRed = Color(0xFF9C3B23);
+  /// semantic.scrim
+  static const Color overlay = Color(0x6624382C);
+  /// semantic.surface.base
+  static const Color neutralLight = Color(0xFFF5F4ED);
+  /// palette.sageMuted
+  static const Color neutralMedium = Color(0xFFA9B2A0);
+  /// palette.inkDeep
+  static const Color neutralDark = Color(0xFF17251D);
+  /// semantic.text.secondary
+  static const Color sharedRecipeText = Color(0xFF5B6959);
+  /// palette.sagePale
+  static const Color sharedRecipeIcon = Color(0xFFB4BFA6);
+  /// semantic.surface.raised
+  static const Color sharedRecipeBackground = Color(0xFFE6EAD9);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.elevation.shadow
+  static const Color shadowColor = Color(0x1A17251D);
+  /// Lila fanns inte i systemet — närmaste avsikt är clay · palette.clay
+  static const Color secondaryPurple = Color(0xFF9C3B23);
+  /// palette.inkRaised
+  static const Color surfaceDark = Color(0xFF2F4437);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.paperWash
+  static const Color overlayWhite40 = Color(0x66F5F4ED);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkSubtle
+  static const Color overlayBlack10 = Color(0x1A17251D);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkLight
+  static const Color overlayBlack20 = Color(0x3317251D);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkMedium
+  static const Color overlayBlack40 = Color(0x6617251D);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkStrong
+  static const Color overlayBlack60 = Color(0x9917251D);
+  /// Tallrikslinjens ranna · semantic.progressTrack
+  static const Color progressTrack = Color(0xFFE6EAD9);
+  /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator
+  static const Color progressIndicator = Color(0xFFCE7C1E);
+  /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled
+  static const Color surfaceDisabled = Color(0xFFA9B2A0);
+  /// Avstangd text. Ytsakert varde: text.disabled #7D897C ger 2,985:1 pa surface.raised och underkanns av det egna 3:1-golvet, och i morkt 2,0:1. .onRaised klarar papper och upphojd yta i bada lagen. · semantic.text.disabled.onRaised
+  static const Color textDisabled = Color(0xFF788477);
+  /// Fokusringen: 2 px med 3 px avstand (tokens focusRing.width/offset). Ink pa ljust, papper pa morkt, aldrig saffran. · semantic.focusRing
+  static const Color focusRing = Color(0xFF24382C);
+  /// Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg. · semantic.action.primary
+  static const Color actionPrimary = Color(0xFFCE7C1E);
+  /// Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed. · semantic.action.primaryPressed
+  static const Color actionPrimaryPressed = Color(0xFF9A5C14);
+  /// Text pa saffran. Star bara pa actionPrimary. · semantic.text.onActionPrimary
+  static const Color onActionPrimary = Color(0xFF17251D);
+  /// Text pa nedtryckt saffran: papper, aldrig ink (beslut B-14, ink ger 2,97:1). Star bara pa actionPrimaryPressed. · semantic.text.onActionPrimaryPressed
+  static const Color onActionPrimaryPressed = Color(0xFFF5F4ED);
+  /// Rod fylld knapp, bara roststartens inspelningsknapp och uppladdningens felknapp (R8-5 = B, BUT-2232). Byts alltid i par med onActionDanger. · semantic.action.danger
+  static const Color actionDanger = Color(0xFF9C3B23);
+  /// Nedtryckt actionDanger. Forgrunden ar fortfarande onActionDanger. · semantic.action.dangerPressed
+  static const Color actionDangerPressed = Color(0xFF7B2E1C);
+  /// Ikon och text pa actionDanger och actionDangerPressed. · semantic.text.onActionDanger
+  static const Color onActionDanger = Color(0xFFF5F4ED);
+  /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning
+  static const Color textWarning = Color(0xFF8A5212);
+  /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent
+  static const Color textAccent = Color(0xFFA15A0A);
+  /// Accenttext pa surface.ink: snackbarens atgard (Komponentark v1:747) och Hem-kortets Ikvall-rubrik. Ljust #E09D50 (5,43:1 pa ink), morkt #DCA968 (5,91:1). Produktbeslut R7-5 = A (Malin 2026-10-04): morkt foljer R6-01 och ersatter PQ-09:s #E09D50. Star bara pa surface.ink och surfacePressedOnInk (6,91 / 7,52). · semantic.text.accent.onInk
+  static const Color textAccentOnInk = Color(0xFFE09D50);
+  /// Avstangd text pa papper (BUT-2191). Ytbunden till surface.base: golvet ar 3:1 (contrastPolicy disabled), och det nas dar (3,32:1 ljust, 3,04:1 morkt) men inte pa surface.raised (2,98:1 ljust, 2,00:1 morkt; dar galler textDisabled, som ar text.disabled.onRaised). Namnet textDisabled ar upptaget i det frysta kontraktet. Aldrig via opacitet. · semantic.text.disabled
+  static const Color textDisabledOnBase = Color(0xFF7D897C);
+  /// Avklarad rad (BUT-2147): genomstrykningen bar betydelsen, completed ar inte disabled. Ytbunden till surface.base: morkt #93A48D ger 6,02:1 dar men 3,96:1 pa surface.raised. · semantic.text.completed
+  static const Color textCompleted = Color(0xFF37453A);
+  /// Sekundar brodtext (BUT-2159): behorighetsforklaringen, matlagningslaget utan steg och fotoimportens hjalptext. Ytblind: minst 6,79:1 (morkt pa surface.raised). · semantic.text.bodyMuted
+  static const Color textBodyMuted = Color(0xFF37453A);
+  /// Vald yta (BUT-2198). Yta, inte text. · semantic.surface.selected
+  static const Color surfaceSelected = Color(0xFFE6EAD9);
+  /// Avgransning mellan ytor pa ink och inkRaised (BUT-2198). Dekorativ linje utan kontrastgolv, bar aldrig information. Anvands den som yta galler inkRaised #2F4437 i stallet. · semantic.border.onInk
+  static const Color borderOnInk = Color(0xFF3F5145);
+  /// Saffranstonad yta (BUT-2191): vald plats, i dag, pagaende. Bar text.primary och text.accent.onRaised; text.accent (#A15A0A, 4,38:1) ar forbjuden har. · semantic.surface.tint.accent
+  static const Color surfaceTintAccent = Color(0xFFF7E8D2);
+  /// Lerrod statusyta (BUT-2191). Bar text.danger.onRaised och ink. · semantic.surface.tint.danger
+  static const Color surfaceTintDanger = Color(0xFFF2DDD6);
+  /// Gron statusyta (BUT-2191). Bar text.success och ink. · semantic.surface.tint.success
+  static const Color surfaceTintSuccess = Color(0xFFDFE8DC);
+  /// Varm notisyta pa papper (BUT-2191): upplysningar och kvar-att-losa-rutor. Bar text.body, ink, text.accent.onRaised och text.danger.onRaised. · semantic.surface.tint.warning
+  static const Color surfaceTintWarning = Color(0xFFF0EEE2);
+  /// Ifylld kryssruta och radio (BUT-2191). Bar control.checked.foreground (textOnPrimary), 11,36:1 i bada lagena. · semantic.control.checked.background
+  static const Color controlCheckedBackground = Color(0xFF24382C);
+  /// Lanktext (BUT-2226). Ytbunden: klarar papper (5,78:1), surface.raised (5,20:1) och de fyra statustintarna (minst 4,88:1) i ljust lage; morkt 7,52:1 pa surface.base, 4,95:1 pa surface.raised och 5,91:1 pa surface.ink. ALDRIG pa surface.ink i ljust lage: #8A5212 ger 1,97:1 dar. · semantic.text.link
+  static const Color textLink = Color(0xFF8A5212);
+  /// Avstangd text pa surface.ink. Harledd, inte ritad; Malin kan prova. Ink ar #24382C i bada lagena, sa vardet ar #93A48D i bada (mork ytas varde, som text.disabled.onRaised morkt). Golv 3:1 (contrastPolicy disabled): 4,73:1 pa ink. Ytbunden till surface.ink. · semantic.text.disabled.onInk
+  static const Color textDisabledOnInk = Color(0xFF93A48D);
+  /// Tryck och hover pa en rad som redan ligger pa surface.raised (BUT-2205; R7-1 = B, R7-2 = B). Ljust #B4BFA6, morkt #17251D. Overgaende lage: ljust ar golvet 3:1 for texten i raden (contrastPolicy-undantag, lagst text.secondary.onRaised 3,03); morkt klarar all text 4,5. Aldrig vilande yta. · semantic.surface.pressed.onRaised
+  static const Color surfacePressedOnRaised = Color(0xFFB4BFA6);
+  /// Tryck och hover pa surface.ink och ritade ink-knappar (BUT-2205; R7-2 = B). #17251D i bada lagena, som Grafisk manual v6:155 action-primary-pressed. Inte actionPrimaryPressed, som ar saffranknappens tryck. · semantic.surface.pressed.onInk
+  static const Color surfacePressedOnInk = Color(0xFF17251D);
+  /// Receptkortets vansterkant (BUT-2297): ink i ljust lage, salvia i morkt. · semantic.border.cardEdge
+  static const Color recipeCardLeftBorder = Color(0xFF24382C);
+
+  // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
+  // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.
+  static const Color textSecondary = textMedium;
+  static const Color accent = rust;
+  static const Color warningText = onWarningContainer;
+  static const Color sharedRecipeTextColor = sharedRecipeText;
+  static const Color sharedRecipeIconColor = sharedRecipeIcon;
+  static const Color sharedRecipeBackgroundColor = sharedRecipeBackground;
+  static const Color chatBubbleOutgoing = forestGreen;
+  static const Color chatBubbleIncoming = creamDark;
+  static const Color chatTextOutgoing = textOnPrimary;
+  static const Color chatTextIncoming = textDark;
+  static const Color categoryMeatFish = illustrationPurpleRed;
+  static const Color backgroundLight = cream;
+  static const Color backgroundDark = neutralDark;
+  static const Color primary = forestGreen;
+  static const Color secondary = rust;
+  static const Color surface = cream;
+  static const Color surfaceVariant = creamDark;
+  static const Color onSurface = textDark;
+  static const Color primaryContainer = creamDark;
+  static const Color secondaryContainer = creamDark;
+  static const Color onPrimaryContainer = forestGreen;
+  static const Color onPrimary = textOnPrimary;
+  static const Color outline = placeholderIcon;
+  static const Color shadow = shadowColor;
+  static const Color onSuccess = textOnPrimary;
+  static const Color onError = textOnPrimary;
+  static const Color onWarning = textDark;
+  static const Color onInfo = textOnPrimary;
+  static const Color recipeCardBottomBorder = rustLight;
+  static const Color headerBackground = forestGreen;
+  static const Color headerAccent = rust;
+  static const Color headerForeground = textOnPrimary;
+  static const Color navBackground = creamDarker;
+  static const Color navSelectedIndicator = rust;
+  static const Color navSelectedItem = forestGreenDark;
+  static const Color navUnselectedItem = greenMuted;
+  static const Color transparent = Colors.transparent;
+
+  /// Ljust schema — varje slot ur tokens.json, inga härledda toner.
+  static const ColorScheme lightColorScheme = ColorScheme(
+    brightness: Brightness.light,
+    primary: Color(0xFF24382C),
+    onPrimary: Color(0xFFF5F4ED),
+    primaryContainer: Color(0xFFE6EAD9),
+    onPrimaryContainer: Color(0xFF24382C),
+    secondary: Color(0xFFCE7C1E),
+    onSecondary: Color(0xFF17251D),
+    secondaryContainer: Color(0xFFE6EAD9),
+    onSecondaryContainer: Color(0xFF8A5212),
+    tertiary: Color(0xFF3F6B4F),
+    onTertiary: Color(0xFFF5F4ED),
+    tertiaryContainer: Color(0xFFE6EAD9),
+    onTertiaryContainer: Color(0xFF3F6B4F),
+    error: Color(0xFF9C3B23),
+    onError: Color(0xFFF5F4ED),
+    errorContainer: Color(0xFFE6EAD9),
+    onErrorContainer: Color(0xFF9C3B23),
+    surface: Color(0xFFF5F4ED),
+    onSurface: Color(0xFF24382C),
+    surfaceContainerHighest: Color(0xFFE6EAD9),
+    onSurfaceVariant: Color(0xFF5B6959),
+    outline: Color(0xFF7D897C),
+    outlineVariant: Color(0xFFCCD1C2),
+    shadow: Color(0x1A17251D),
+    scrim: Color(0x6624382C),
+    inverseSurface: Color(0xFF24382C),
+    onInverseSurface: Color(0xFFF5F4ED),
+    inversePrimary: Color(0xFF8FB89A),
+    surfaceTint: Color(0xFF24382C),
+  );
+
+  /// Mörkt schema. **Ändring mot tidigare:** det byggdes med
+  /// `ColorScheme.fromSeed`, som räknade fram toner systemet aldrig godkänt
+  /// och som därför behövde tio handöverskrivningar. Nu är varje slot en
+  /// token med ett mätt kontrastpar bakom sig, och schemat är `const`.
+  static const ColorScheme darkColorScheme = ColorScheme(
+    brightness: Brightness.dark,
+    primary: Color(0xFF24382C),
+    onPrimary: Color(0xFFF5F4ED),
+    primaryContainer: Color(0xFF2F4437),
+    onPrimaryContainer: Color(0xFFF5F4ED),
+    secondary: Color(0xFFCE7C1E),
+    onSecondary: Color(0xFF17251D),
+    secondaryContainer: Color(0xFF2F4437),
+    onSecondaryContainer: Color(0xFFDCA968),
+    tertiary: Color(0xFF8FB89A),
+    onTertiary: Color(0xFFF5F4ED),
+    tertiaryContainer: Color(0xFF2F4437),
+    onTertiaryContainer: Color(0xFF8FB89A),
+    error: Color(0xFFDE9078),
+    onError: Color(0xFF17251D),
+    errorContainer: Color(0xFF2F4437),
+    onErrorContainer: Color(0xFFE5A08A),
+    surface: Color(0xFF17251D),
+    onSurface: Color(0xFFF5F4ED),
+    surfaceContainerHighest: Color(0xFF2F4437),
+    onSurfaceVariant: Color(0xFFA9B2A0),
+    outline: Color(0x66F5F4ED),
+    outlineVariant: Color(0x2EF5F4ED),
+    shadow: Color(0x1A17251D),
+    scrim: Color(0x9917251D),
+    inverseSurface: Color(0xFF17251D),
+    onInverseSurface: Color(0xFFF5F4ED),
+    inversePrimary: Color(0xFF8FB89A),
+    surfaceTint: Color(0xFF24382C),
+  );
+
+  // ── Externa varumärken · tokeniseras inte (se kommentaren ovan) ──
+  static const Color brandYoutube = Color(0xFFFF0000);
+  static const Color brandYoutubeBackground = Color(0xFFFFE0E0);
+  static const Color brandYoutubeText = Color(0xFFCC0000);
+  static const Color brandTiktok = Color(0xFF00F2EA);
+  static const Color brandTiktokBackground = Color(0xFFE0F7FA);
+  static const Color brandTiktokText = Color(0xFF161823);
+  static const Color brandInstagram = Color(0xFFE1306C);
+  static const Color brandInstagramBackground = Color(0xFFFCE4EC);
+  static const Color brandInstagramText = Color(0xFFC13584);
+  static const Color brandTwitter = Color(0xFF1DA1F2);
+  static const Color brandPinterest = Color(0xFFE60023);
+  static const Color brandWhatsapp = Color(0xFF25D366);
+  static const Color brandTelegram = Color(0xFF0088CC);
+  static const Color brandFacebook = Color(0xFF1877F2);
+  static const Color brandReddit = Color(0xFFFF4500);
+  static const Color brandAllrecipes = Color(0xFFBD081C);
+  static const Color brandIca = Color(0xFFFF6600);
+  static const Color brandCoop = Color(0xFF006341);
+  static const Color brandArla = Color(0xFFE30613);
+  static const Color brandKoketSe = Color(0xFF000000);
+  static const Color brandGeneric = Color(0xFF6B7280);
+}

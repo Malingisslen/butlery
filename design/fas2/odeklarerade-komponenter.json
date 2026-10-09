@@ -1,0 +1,6378 @@
+{
+ "$schema": "butlery-odeklarerade-komponenter/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "974b30e",
+ "$status": "METODKORRIGERING. Frekvensregeln borttagen. 0 produktwrites, 0 fargbeslut, 0 R-04-paverkan.",
+ "A_detektor": {
+  "modul": "tools/undeclared-components.mjs",
+  "kandidatgrind": [
+   "elementet bar ett authored data-component, ELLER",
+   "elementet ar ett pillerformat spar med ett absolut placerat runt barn",
+   "och varken elementet sjalvt eller nagon forfader inom artefakten bar data-a11y-role"
+  ],
+  "evidenskrav": {
+   "AUTHORED_KOMPONENTTYP": "elementet bar en authored data-component som namnger en komponenttyp",
+   "SYNLIG_ETIKETT": "raden innehaller synlig text vid sidan av komponenten, sa att ett tillgangligt namn kan tas ur befintlig text utan att uppfinnas",
+   "DEKLARERAT_EXEMPEL": "det finns minst en DEKLARERAD kontroll i korpusen med samma komponenttyp, samma radsignatur, samma tillstandsstruktur OCH samma agarmodell (rollen sitter pa raden). Exemplet levererar kontrollrollen",
+   "KONTROLLRADSFORM": "radens hela innehall ar etikett foljt av komponenten och inget mer",
+   "INSTALLNINGSKONTEXT": "raden ligger under en sektionsrubrik"
+  },
+  "adjudiceringsregel": [
+   "A INTERACTIVE_CONTROL kravs antingen en agande deklaration, eller att SAMTLIGA fem evidenskrav i EVIDENSKRAV ar uppfyllda for just den forekomsten.",
+   "B NON_INTERACTIVE_STATE_GRAPHIC kravs positiv evidens for att objektet visar tillstand utan att vara manovrerbart. Saknad metadata ar inte sadan evidens.",
+   "C DECORATIVE_GRAPHIC kravs positiv evidens, till exempel aria-hidden.",
+   "D UNKNOWN ar utfallet nar ingen av de tre har positiv evidens. Unknown ar ett giltigt slutresultat och far aldrig tvingas till pass eller till kontroll.",
+   "Utseende, geometri och skarmnamn ar aldrig tillrackligt for A, B eller C.",
+   "Komponenttypens deklarationsgrad i korpusen ar STODJANDE evidens och prioriteringssignal. Den ar varken tillracklig eller nodvandig for A, och den far aldrig ensam gora en typ till UNKNOWN.",
+   "Syskonparitet och lokal skarmkonvention hojer prioriteten i adjudiceringskon men avgor inte verdikt — grannens roll ar inte elementets roll."
+  ],
+  "$rattelse": {
+   "vad": "Deklarationsgraden per komponenttyp anvandes som beslutsregel (>= 90 %).",
+   "varforFel": "Frekvens beskriver hur ofta NAGON ANNAN forekomst blivit anmald och sager ingenting om den forekomst som bedoms. Den ar varken tillracklig eller nodvandig evidens.",
+   "nu": "Frekvens ar stodjande evidens och prioriteringssignal. Verdiktet bygger pa fem positiva evidenskrav som samtliga galler den enskilda forekomsten.",
+   "troskelBorttagen": true
+  },
+  "$viktigt": "Detektorn rapporterar kandidater. Den doper dem inte till kontroller."
+ },
+ "B_accessibilityTrad": {
+  "matt": true,
+  "verktyg": "CDP Accessibility.getPartialAXTree",
+  "provPaDeklareradeKontroller": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "antal": 76,
+   "exponeraderRoll": 0
+  },
+  "kandidaterMatta": 208,
+  "utfall": "EJ INFORMATIV",
+  "$skal": "Noll av 76 korrekt deklarerade kontroller exponerar nagon roll i accessibility-tradet. data-a11y-role ar en authored annotering i en designspecifikation, inte ett levande ARIA-attribut. Tradet kan darfor varken bekrafta eller motbevisa exponering.",
+  "$sprakregel": "Formuleringar om vad en skarmlasare faktiskt hor far inte anvandas. Korrekt formulering: kontrollen saknar deklarerad switch-roll, accessible name och state-semantik; exakt accessibility-tree-exponering ar inte verifierbar i denna korpus."
+ },
+ "C_observation": {
+  "kontrollikaObjekt": 208,
+  "deklarerade": 98,
+  "kandidater": 110,
+  "stodjandeTypkonvention": [
+   {
+    "komponent": "chip",
+    "totalt": 41,
+    "deklarerade": 13,
+    "grad": 0.3171,
+    "$roll": "STODJANDE_EVIDENS_OCH_PRIORITERING — aldrig beslutsregel"
+   },
+   {
+    "komponent": "toggle",
+    "totalt": 34,
+    "deklarerade": 32,
+    "grad": 0.9412,
+    "$roll": "STODJANDE_EVIDENS_OCH_PRIORITERING — aldrig beslutsregel"
+   },
+   {
+    "komponent": "checkbox",
+    "totalt": 131,
+    "deklarerade": 53,
+    "grad": 0.4046,
+    "$roll": "STODJANDE_EVIDENS_OCH_PRIORITERING — aldrig beslutsregel"
+   }
+  ],
+  "deklareradeExempelmonster": [
+   {
+    "nyckel": "toggle ‖ span|flex|KOMPONENT ‖ PILLER_MED_KNOPP",
+    "antal": 11,
+    "roller": [
+     "switch"
+    ],
+    "exempel": [
+     "installningar|27",
+     "allergener|40",
+     "allergener|45"
+    ]
+   },
+   {
+    "nyckel": "toggle ‖ div|flex|TEXT+KOMPONENT ‖ PILLER_MED_KNOPP",
+    "antal": 21,
+    "roller": [
+     "switch"
+    ],
+    "exempel": [
+     "formularmorkt|25",
+     "skafferibas|14",
+     "behnotiser|17"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT+TEXT ‖ TOM_RAM",
+    "antal": 10,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "safeareaios|14",
+     "safeareaios|18",
+     "safeareaios|22"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT+TEXT ‖ FYLLD_MED_IKON",
+    "antal": 3,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "betygvemat|12",
+     "betygvemat|19",
+     "betygvemat|25"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|TEXT+TEXT+KOMPONENT ‖ FYLLD_MED_IKON",
+    "antal": 2,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "betygvemarket|18",
+     "betygvemarket|26"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|TEXT+TEXT+KOMPONENT ‖ TOM_RAM",
+    "antal": 1,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "betygvemarket|34"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ div|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "antal": 2,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "familjmedlemsamtycke|19",
+     "familjmedlemsamtycke|32"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT+TEXT ‖ FYLLD_MED_IKON",
+    "antal": 6,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "inkopbockad|8",
+     "impassist1|18",
+     "impassist1|24"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT+TEXT ‖ TOM_RAM",
+    "antal": 4,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "inkopbockad|14",
+     "inkoputeslutna|41",
+     "inkoputeslutna|45"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT ‖ TOM_RAM",
+    "antal": 13,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "delatlistaaktiv|25",
+     "delatlistaaktiv|40",
+     "delatlistaaktiv|57"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT ‖ FYLLD_MED_IKON",
+    "antal": 3,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "delatlistaaktiv|32",
+     "delatlistaaktiv|49",
+     "delatnarvaro|38"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ div|flex|OMSLAG+TEXT ‖ FYLLD_MED_IKON",
+    "antal": 1,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "authskapa|23"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT ‖ TOM_RAM",
+    "antal": 5,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "impassist1|36",
+     "impassist1|39",
+     "impassist1|42"
+    ]
+   },
+   {
+    "nyckel": "checkbox ‖ span|flex|KOMPONENT+TEXT ‖ FYLLD_MED_IKON",
+    "antal": 3,
+    "roller": [
+     "checkbox"
+    ],
+    "exempel": [
+     "imparkiv|11",
+     "imparkiv|18",
+     "imparkiv|25"
+    ]
+   }
+  ],
+  "$avstamning": "208 = 98 deklarerade + 110 kandidater"
+ },
+ "D_adjudicering": {
+  "rakn": {
+   "INTERACTIVE_CONTROL": 2,
+   "NON_INTERACTIVE_STATE_GRAPHIC": 0,
+   "DECORATIVE_GRAPHIC": 0,
+   "UNKNOWN": 108
+  },
+  "summerar": true,
+  "jamfortMedBlockA": {
+   "bytteKlass": [],
+   "antalBytteKlass": 0,
+   "$regel": "Metodfixen far inte flytta nagon kandidat mellan klasser."
+  },
+  "perKomponentOchVerdikt": [
+   {
+    "grupp": "chip → UNKNOWN",
+    "antal": 28
+   },
+   {
+    "grupp": "checkbox → UNKNOWN",
+    "antal": 78
+   },
+   {
+    "grupp": "toggle → INTERACTIVE_CONTROL",
+    "antal": 2
+   },
+   {
+    "grupp": "(odeklarerad struktur) → UNKNOWN",
+    "antal": 2
+   }
+  ],
+  "kandidater": [
+   {
+    "art": "hemrecept",
+    "ordinal": 19,
+    "komponent": "chip",
+    "identitet": "hemrecept|19",
+    "etikett": "Vego · Filter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Vego · Filter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "hemrecept",
+    "ordinal": 20,
+    "komponent": "chip",
+    "identitet": "hemrecept|20",
+    "etikett": "Snabbt · Filter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Snabbt · Filter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "laga",
+    "ordinal": 37,
+    "komponent": "chip",
+    "identitet": "laga|37",
+    "etikett": "2",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "2",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|block|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 10,
+    "komponent": "chip",
+    "identitet": "snabbspara|10",
+    "etikett": "Lunch · Frukost · Efterrätt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Lunch · Frukost · Efterrätt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 11,
+    "komponent": "chip",
+    "identitet": "snabbspara|11",
+    "etikett": "Middag · Frukost · Efterrätt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Middag · Frukost · Efterrätt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 12,
+    "komponent": "chip",
+    "identitet": "snabbspara|12",
+    "etikett": "Middag · Lunch · Efterrätt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Middag · Lunch · Efterrätt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 13,
+    "komponent": "chip",
+    "identitet": "snabbspara|13",
+    "etikett": "Middag · Lunch · Frukost",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Middag · Lunch · Frukost",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "vemat",
+    "ordinal": 18,
+    "komponent": "checkbox",
+    "identitet": "vemat|18",
+    "etikett": "M · MalinVuxen",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "M · MalinVuxen",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "vemat",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "vemat|26",
+    "etikett": "J · JonasVuxen",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "J · JonasVuxen",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "vemat",
+    "ordinal": 34,
+    "komponent": "checkbox",
+    "identitet": "vemat|34",
+    "etikett": "E · EbbaBarn 7–12",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "E · EbbaBarn 7–12",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "inkopmerge",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "identitet": "inkopmerge|22",
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 2,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 12,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|12",
+    "etikett": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 2,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|19",
+    "etikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 2,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|26",
+    "etikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 2,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|33",
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 2,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 11,
+    "komponent": "checkbox",
+    "identitet": "onboarding|11",
+    "etikett": "Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "onboarding|15",
+    "etikett": "Jordnötter · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 17,
+    "komponent": "checkbox",
+    "identitet": "onboarding|17",
+    "etikett": "Jordnötter · Gluten · Ägg · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Ägg · Skaldjur · Soja · Nötter · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "onboarding|21",
+    "etikett": "Jordnötter · Gluten · Laktos · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Skaldjur · Soja · Nötter · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "onboarding|23",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Soja · Nötter · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "onboarding|25",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Nötter · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 27,
+    "komponent": "checkbox",
+    "identitet": "onboarding|27",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Fisk",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "onboarding|29",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "menysmak|15",
+    "etikett": "Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "menysmak|19",
+    "etikett": "Italienskt · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Italienskt · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "menysmak|23",
+    "etikett": "Italienskt · Husmanskost · Mexikanskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Italienskt · Husmanskost · Mexikanskt · Indiskt · Japanskt · Franskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "menysmak|25",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Indiskt · Japanskt · Franskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "menysmak|29",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Japanskt · Franskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 31,
+    "komponent": "checkbox",
+    "identitet": "menysmak|31",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Franskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "menysmak|33",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "taggar",
+    "ordinal": 57,
+    "komponent": "chip",
+    "identitet": "taggar|57",
+    "etikett": "Soppa · Testkök",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Soppa · Testkök",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Taggar",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "taggar",
+    "ordinal": 58,
+    "komponent": "chip",
+    "identitet": "taggar|58",
+    "etikett": "Grillat · Testkök",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Grillat · Testkök",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Taggar",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "taggar",
+    "ordinal": 59,
+    "komponent": "chip",
+    "identitet": "taggar|59",
+    "etikett": "Grillat · Soppa",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Grillat · Soppa",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Taggar",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "allergener",
+    "ordinal": 11,
+    "komponent": "checkbox",
+    "identitet": "allergener|11",
+    "etikett": "Laktos · Gluten · Ägg · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Laktos · Gluten · Ägg · Skaldjur · Nötter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "allergener|15",
+    "etikett": "Jordnötter · Gluten · Ägg · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Gluten · Ägg · Skaldjur · Nötter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "allergener|19",
+    "etikett": "Jordnötter · Laktos · Ägg · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Laktos · Ägg · Skaldjur · Nötter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "allergener|21",
+    "etikett": "Jordnötter · Laktos · Gluten · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Laktos · Gluten · Skaldjur · Nötter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "allergener|23",
+    "etikett": "Jordnötter · Laktos · Gluten · Ägg · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Laktos · Gluten · Ägg · Nötter",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "allergener|25",
+    "etikett": "Jordnötter · Laktos · Gluten · Ägg · Skaldjur",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordnötter · Laktos · Gluten · Ägg · Skaldjur",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "allergener|29",
+    "etikett": "Veganskt · Fläskfritt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Veganskt · Fläskfritt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "allergener|33",
+    "etikett": "Vegetariskt · Fläskfritt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Vegetariskt · Fläskfritt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "allergener",
+    "ordinal": 35,
+    "komponent": "checkbox",
+    "identitet": "allergener|35",
+    "etikett": "Vegetariskt · Veganskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Vegetariskt · Veganskt",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "delatlista|26",
+    "etikett": "Jordgubbar 3 l",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jordgubbar 3 l",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 30,
+    "komponent": "checkbox",
+    "identitet": "delatlista|30",
+    "etikett": "Färskpotatis 2 kg",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Färskpotatis 2 kg",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 34,
+    "komponent": "checkbox",
+    "identitet": "delatlista|34",
+    "etikett": "Gräddfil 2 st",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Gräddfil 2 st",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 39,
+    "komponent": "checkbox",
+    "identitet": "delatlista|39",
+    "etikett": "Sill 2 burkar · Per",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Sill 2 burkar · Per",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 3,
+     "exempel": [
+      "betygvemat|12",
+      "betygvemat|19",
+      "betygvemat|25"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 45,
+    "komponent": "checkbox",
+    "identitet": "delatlista|45",
+    "etikett": "Snaps · Anna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Snaps · Anna",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 3,
+     "exempel": [
+      "betygvemat|12",
+      "betygvemat|19",
+      "betygvemat|25"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 6,
+    "komponent": "chip",
+    "identitet": "ingredienssok|6",
+    "etikett": "grädde · pasta · lägg till …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "grädde · pasta · lägg till …",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 10,
+    "komponent": "chip",
+    "identitet": "ingredienssok|10",
+    "etikett": "champinjoner · pasta · lägg till …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "champinjoner · pasta · lägg till …",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 14,
+    "komponent": "chip",
+    "identitet": "ingredienssok|14",
+    "etikett": "champinjoner · grädde · lägg till …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "champinjoner · grädde · lägg till …",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 27,
+    "komponent": "chip",
+    "identitet": "ingredienssok|27",
+    "etikett": "Krämig svamppasta med timjan 3 av 3 ingredienser",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Krämig svamppasta med timjan 3 av 3 ingredienser",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TOM+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 34,
+    "komponent": "chip",
+    "identitet": "ingredienssok|34",
+    "etikett": "Svamprisotto 2 av 3 ingredienser",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Svamprisotto 2 av 3 ingredienser",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TOM+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 43,
+    "komponent": "chip",
+    "identitet": "ingredienssok|43",
+    "etikett": "Pasta carbonara 1 av 3 ingredienser · Delat",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Pasta carbonara 1 av 3 ingredienser · Delat",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TOM+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "profil",
+    "ordinal": 34,
+    "komponent": "toggle",
+    "identitet": "profil|34",
+    "etikett": "Sökbar för vänner",
+    "verdikt": "INTERACTIVE_CONTROL",
+    "kontrolltyp": "switch",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "toggle",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Sökbar för vänner",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "switch",
+     "exempelantal": 21,
+     "exempel": [
+      "formularmorkt|25",
+      "skafferibas|14",
+      "behnotiser|17"
+     ],
+     "KONTROLLRADSFORM": true,
+     "radsignatur": "div|flex|TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Integritet",
+     "tillstandsstruktur": {
+      "typ": "PILLER_MED_KNOPP",
+      "lage": "hoger"
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 34,
+      "typkonventionDeklarerade": 32,
+      "typkonventionGrad": 0.9412,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "authored data-component=\"toggle\"",
+     "synlig etikett i raden: \"Sökbar för vänner\"",
+     "samma agar- och radstruktur som 21 deklarerade switch-kontroller (till exempel formularmorkt|25, skafferibas|14, behnotiser|17)",
+     "radens innehall ar etikett foljd av komponenten och inget mer: div|flex|TEXT+KOMPONENT",
+     "installningskontext under sektionsrubriken \"Integritet\"",
+     "tillstandet visualiseras av den etablerade strukturen PILLER_MED_KNOPP med knoppen till hoger",
+     "$ingenFrekvensregel: komponenttypens deklarationsgrad ingar inte i verdiktet"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "profil",
+    "ordinal": 38,
+    "komponent": "toggle",
+    "identitet": "profil|38",
+    "etikett": "Visa mina recept publikt",
+    "verdikt": "INTERACTIVE_CONTROL",
+    "kontrolltyp": "switch",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "toggle",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Visa mina recept publikt",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "switch",
+     "exempelantal": 21,
+     "exempel": [
+      "formularmorkt|25",
+      "skafferibas|14",
+      "behnotiser|17"
+     ],
+     "KONTROLLRADSFORM": true,
+     "radsignatur": "div|flex|TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Integritet",
+     "tillstandsstruktur": {
+      "typ": "PILLER_MED_KNOPP",
+      "lage": "vanster"
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 34,
+      "typkonventionDeklarerade": 32,
+      "typkonventionGrad": 0.9412,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "authored data-component=\"toggle\"",
+     "synlig etikett i raden: \"Visa mina recept publikt\"",
+     "samma agar- och radstruktur som 21 deklarerade switch-kontroller (till exempel formularmorkt|25, skafferibas|14, behnotiser|17)",
+     "radens innehall ar etikett foljd av komponenten och inget mer: div|flex|TEXT+KOMPONENT",
+     "installningskontext under sektionsrubriken \"Integritet\"",
+     "tillstandet visualiseras av den etablerade strukturen PILLER_MED_KNOPP med knoppen till vanster",
+     "$ingenFrekvensregel: komponenttypens deklarationsgrad ingar inte i verdiktet"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "familjeform|29",
+    "etikett": "Jag är vårdnadshavare för Sigrid och godkänner att en profil skapas.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jag är vårdnadshavare för Sigrid och godkänner att en profil skapas.",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 39,
+    "komponent": "checkbox",
+    "identitet": "familjeform|39",
+    "etikett": "Jag godkänner att Sigrids allergener sparas.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Jag godkänner att Sigrids allergener sparas.",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 45,
+    "komponent": "checkbox",
+    "identitet": "familjeform|45",
+    "etikett": "Ägg · Gluten · Laktos · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Ägg · Gluten · Laktos · Soja",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 49,
+    "komponent": "checkbox",
+    "identitet": "familjeform|49",
+    "etikett": "Nötter · Gluten · Laktos · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Nötter · Gluten · Laktos · Soja",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 53,
+    "komponent": "checkbox",
+    "identitet": "familjeform|53",
+    "etikett": "Nötter · Ägg · Laktos · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Nötter · Ägg · Laktos · Soja",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 55,
+    "komponent": "checkbox",
+    "identitet": "familjeform|55",
+    "etikett": "Nötter · Ägg · Gluten · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Nötter · Ägg · Gluten · Soja",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 57,
+    "komponent": "checkbox",
+    "identitet": "familjeform|57",
+    "etikett": "Nötter · Ägg · Gluten · Laktos",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Nötter · Ägg · Gluten · Laktos",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "betygsoversikt",
+    "ordinal": 13,
+    "komponent": "chip",
+    "identitet": "betygsoversikt|13",
+    "etikett": "Familjens snitt 3 betyg",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Familjens snitt 3 betyg",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "laggtillmedlemmar",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "laggtillmedlemmar|15",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "E · Erik Sandell",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "laggtillmedlemmar",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "laggtillmedlemmar|21",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "H · Hanna Vik",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "laggtillmedlemmar",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "laggtillmedlemmar|29",
+    "etikett": "P · Pelle Åberg",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "P · Pelle Åberg",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 11,
+    "komponent": "chip",
+    "identitet": "nygruppchatt|11",
+    "etikett": "Hanna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Hanna",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Deltagare · 2 valda",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 14,
+    "komponent": "chip",
+    "identitet": "nygruppchatt|14",
+    "etikett": "Erik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Erik",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": true,
+     "radsignatur": "div|flex|TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Deltagare · 2 valda",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "nygruppchatt|21",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "E · Erik Sandell",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 27,
+    "komponent": "checkbox",
+    "identitet": "nygruppchatt|27",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "H · Hanna Vik",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "nygruppchatt|33",
+    "etikett": "J · Jonas Ek",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "J · Jonas Ek",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "nydelatlista",
+    "ordinal": 13,
+    "komponent": "checkbox",
+    "identitet": "nydelatlista|13",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "E · Erik Sandell",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Dela med",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "nydelatlista",
+    "ordinal": 20,
+    "komponent": "checkbox",
+    "identitet": "nydelatlista|20",
+    "etikett": "S · Söndagsmiddagarna · grupp, 4 pers",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "S · Söndagsmiddagarna · grupp, 4 pers",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Dela med",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "nydelatlista",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "nydelatlista|26",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "H · Hanna Vik",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Dela med",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "taggdetalj",
+    "ordinal": 25,
+    "komponent": null,
+    "identitet": "taggdetalj|25",
+    "etikett": "Innehåller \"rester\"",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": false,
+     "authoradKomponenttyp": null,
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Innehåller \"rester\"",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": true,
+     "radsignatur": "div|flex|TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "PILLER_MED_KNOPP",
+      "lage": "hoger"
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": null,
+      "typkonventionDeklarerade": null,
+      "typkonventionGrad": null,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: AUTHORED_KOMPONENTTYP, DEKLARERAT_EXEMPEL, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "ingen authored komponenttyp — bara en strukturell form, och formen ar inte evidens"
+    ],
+    "uppfylldaKrav": [
+     "SYNLIG_ETIKETT",
+     "KONTROLLRADSFORM"
+    ],
+    "saknadeKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "taggdetalj",
+    "ordinal": 31,
+    "komponent": null,
+    "identitet": "taggdetalj|31",
+    "etikett": "Ingrediens: kokt ris",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": false,
+     "authoradKomponenttyp": null,
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Ingrediens: kokt ris",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": true,
+     "radsignatur": "div|flex|TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "PILLER_MED_KNOPP",
+      "lage": "hoger"
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": null,
+      "typkonventionDeklarerade": null,
+      "typkonventionGrad": null,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: AUTHORED_KOMPONENTTYP, DEKLARERAT_EXEMPEL, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "ingen authored komponenttyp — bara en strukturell form, och formen ar inte evidens"
+    ],
+    "uppfylldaKrav": [
+     "SYNLIG_ETIKETT",
+     "KONTROLLRADSFORM"
+    ],
+    "saknadeKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "delaark",
+    "ordinal": 10,
+    "komponent": "checkbox",
+    "identitet": "delaark|10",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "E · Erik Sandell",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Vänner",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "delaark",
+    "ordinal": 16,
+    "komponent": "checkbox",
+    "identitet": "delaark|16",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "H · Hanna Vik",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Vänner",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "delaark",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "identitet": "delaark|22",
+    "etikett": "S · Söndagsmiddagarna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "S · Söndagsmiddagarna",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Grupper",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "dialogsparameny",
+    "ordinal": 8,
+    "komponent": "checkbox",
+    "identitet": "dialogsparameny|8",
+    "etikett": "Dela direkt med Söndagsmiddagarna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Dela direkt med Söndagsmiddagarna",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "storsttext",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "storsttext|23",
+    "etikett": "400 g · Pasta",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "400 g · Pasta",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "storsttext",
+    "ordinal": 27,
+    "komponent": "checkbox",
+    "identitet": "storsttext|27",
+    "etikett": "250 g · Kantareller",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "250 g · Kantareller",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "storsttext",
+    "ordinal": 31,
+    "komponent": "checkbox",
+    "identitet": "storsttext|31",
+    "etikett": "2 dl · Grädde",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "2 dl · Grädde",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "langavarden",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "langavarden|21",
+    "etikett": "1,5 dl · kallpressad rapsolja från Gotland, gärna den ofiltrerade",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "1,5 dl · kallpressad rapsolja från Gotland, gärna den ofiltrerade",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Delad lista · medlemmar",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "langavarden",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "langavarden|25",
+    "etikett": "400 g · pasta",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "400 g · pasta",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Delad lista · medlemmar",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "veckoallergi",
+    "ordinal": 45,
+    "komponent": "chip",
+    "identitet": "veckoallergi|45",
+    "etikett": "Mindre kött · kan släppas",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Mindre kött · kan släppas",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Krav i det här hushållet",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 1,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "betygsammanslaget",
+    "ordinal": 21,
+    "komponent": "chip",
+    "identitet": "betygsammanslaget|21",
+    "etikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av Maja I Ida hoppade över · Ingen historik per tillfälle. Data",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av Maja I Ida hoppade över · Ingen historik per tillfälle. Data",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|block|TEXT+KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 2,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 4
+   },
+   {
+    "art": "delatmindel",
+    "ordinal": 41,
+    "komponent": "checkbox",
+    "identitet": "delatmindel|41",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "2 st · gul lök · AAnna tar",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 13,
+     "exempel": [
+      "delatlistaaktiv|25",
+      "delatlistaaktiv|40",
+      "delatlistaaktiv|57"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 5,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 6
+   },
+   {
+    "art": "delatmindel",
+    "ordinal": 48,
+    "komponent": "checkbox",
+    "identitet": "delatmindel|48",
+    "etikett": "1 kg · potatis · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "1 kg · potatis · AAnna tar",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 13,
+     "exempel": [
+      "delatlistaaktiv|25",
+      "delatlistaaktiv|40",
+      "delatlistaaktiv|57"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 5,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 6
+   },
+   {
+    "art": "delatnarvaro",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "delatnarvaro|25",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "2 st · gul lök · AAnna tar",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 13,
+     "exempel": [
+      "delatlistaaktiv|25",
+      "delatlistaaktiv|40",
+      "delatlistaaktiv|57"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 4,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 6
+   },
+   {
+    "art": "delatclaimkonflikt",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "delatclaimkonflikt|15",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "2 st · gul lök · AAnna tar",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 13,
+     "exempel": [
+      "delatlistaaktiv|25",
+      "delatlistaaktiv|40",
+      "delatlistaaktiv|57"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Frukt & grönt",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 2,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 7
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 13,
+    "komponent": "chip",
+    "identitet": "veckochips|13",
+    "etikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 14,
+    "komponent": "chip",
+    "identitet": "veckochips|14",
+    "etikett": "3 middagar · tacofredag · max 30 min · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "3 middagar · tacofredag · max 30 min · 2 luncher",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+KOMPONENT+TEXT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 15,
+    "komponent": "chip",
+    "identitet": "veckochips|15",
+    "etikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 16,
+    "komponent": "chip",
+    "identitet": "veckochips|16",
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+TEXT+KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 17,
+    "komponent": "chip",
+    "identitet": "veckochips|17",
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|TEXT+TEXT+TEXT+TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_UTAN_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 20,
+    "komponent": "chip",
+    "identitet": "veckochips|20",
+    "etikett": "”som förra gången”",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "”som förra gången”",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 5
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 25,
+    "komponent": "chip",
+    "identitet": "veckochips|25",
+    "etikett": "”lite lyxigt”",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "chip",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "”lite lyxigt”",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": true,
+     "radsignatur": "div|flex|TEXT+KOMPONENT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Så tolkade jag beskrivningen",
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 41,
+      "typkonventionDeklarerade": 13,
+      "typkonventionGrad": 0.3171,
+      "syskonAiDeklareradeKontroller": 1,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "prioritet": 6
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 9,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|9",
+    "etikett": "Hämtar sidan",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Hämtar sidan",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 14,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|14",
+    "etikett": "Läser strukturerad data",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Läser strukturerad data",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|19",
+    "etikett": "Tolkar ingredienser · …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Tolkar ingredienser · …",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|23",
+    "etikett": "Kontrollerar allergener",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Kontrollerar allergener",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "impassist2",
+    "ordinal": 16,
+    "komponent": "checkbox",
+    "identitet": "impassist2|16",
+    "etikett": "500 g blandfärs",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "500 g blandfärs",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 5,
+     "exempel": [
+      "impassist1|36",
+      "impassist1|39",
+      "impassist1|42"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Vilka rader är instruktioner?",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 3,
+      "sammaTypDeklareradISkarmen": 3,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 3 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 7
+   },
+   {
+    "art": "impassist2",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "impassist2|19",
+    "etikett": "1 gul lök",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "1 gul lök",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 5,
+     "exempel": [
+      "impassist1|36",
+      "impassist1|39",
+      "impassist1|42"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Vilka rader är instruktioner?",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 3,
+      "sammaTypDeklareradISkarmen": 3,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 3 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 7
+   },
+   {
+    "art": "impassist2",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "identitet": "impassist2|22",
+    "etikett": "3 dl grädde",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "3 dl grädde",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 5,
+     "exempel": [
+      "impassist1|36",
+      "impassist1|39",
+      "impassist1|42"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "span|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": true,
+     "sektion": "Vilka rader är instruktioner?",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 3,
+      "sammaTypDeklareradISkarmen": 3,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 3 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM"
+    ],
+    "prioritet": 7
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 9,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|9",
+    "etikett": "Sökindex",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Sökindex",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 14,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|14",
+    "etikett": "Lokal cache",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Lokal cache",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 2,
+     "exempel": [
+      "familjmedlemsamtycke|19",
+      "familjmedlemsamtycke|32"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "FYLLD_MED_IKON",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|19",
+    "etikett": "Recept, menyer, listor · pågår",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Recept, menyer, listor · pågår",
+     "DEKLARERAT_EXEMPEL": true,
+     "exempelroll": "checkbox",
+     "exempelantal": 10,
+     "exempel": [
+      "safeareaios|14",
+      "safeareaios|18",
+      "safeareaios|22"
+     ],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "saknadeKrav": [
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|23",
+    "etikett": "Bilder och filer",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Bilder och filer",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|26",
+    "etikett": "Kontot",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "AUTHORED_KOMPONENTTYP": true,
+     "authoradKomponenttyp": "checkbox",
+     "SYNLIG_ETIKETT": true,
+     "synligEtikett": "Kontot",
+     "DEKLARERAT_EXEMPEL": false,
+     "exempelroll": null,
+     "exempelantal": 0,
+     "exempel": [],
+     "KONTROLLRADSFORM": false,
+     "radsignatur": "div|flex|KOMPONENT+TEXT",
+     "INSTALLNINGSKONTEXT": false,
+     "sektion": null,
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     },
+     "agandeDeklaration": null,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "$stodjande": {
+      "typkonventionTotalt": 131,
+      "typkonventionDeklarerade": 53,
+      "typkonventionGrad": 0.4046,
+      "syskonAiDeklareradeKontroller": 0,
+      "sammaTypDeklareradISkarmen": 0,
+      "$roll": "STODJANDE — ingar aldrig i verdiktet"
+     }
+    },
+    "skal": [
+     "saknad positiv evidens: DEKLARERAT_EXEMPEL, KONTROLLRADSFORM, INSTALLNINGSKONTEXT",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "uppfylldaKrav": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "saknadeKrav": [
+     "DEKLARERAT_EXEMPEL",
+     "KONTROLLRADSFORM",
+     "INSTALLNINGSKONTEXT"
+    ],
+    "prioritet": 2
+   }
+  ]
+ },
+ "E_nyaKontroller": [
+  {
+   "identitet": "profil|34",
+   "skarm": "profil",
+   "komponent": "toggle",
+   "kontrolltyp": "switch",
+   "etikett": "Sökbar för vänner",
+   "positivEvidens": [
+    "authored data-component=\"toggle\"",
+    "synlig etikett i raden: \"Sökbar för vänner\"",
+    "samma agar- och radstruktur som 21 deklarerade switch-kontroller (till exempel formularmorkt|25, skafferibas|14, behnotiser|17)",
+    "radens innehall ar etikett foljd av komponenten och inget mer: div|flex|TEXT+KOMPONENT",
+    "installningskontext under sektionsrubriken \"Integritet\"",
+    "tillstandet visualiseras av den etablerade strukturen PILLER_MED_KNOPP med knoppen till hoger",
+    "$ingenFrekvensregel: komponenttypens deklarationsgrad ingar inte i verdiktet"
+   ],
+   "uppfylldaKrav": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL",
+    "KONTROLLRADSFORM",
+    "INSTALLNINGSKONTEXT"
+   ],
+   "$ingenFrekvensregel": "Komponenttypens deklarationsgrad ingar inte i verdiktet.",
+   "radsignatur": "div|flex|TEXT+KOMPONENT",
+   "sektion": "Integritet",
+   "tillstandsstruktur": {
+    "typ": "PILLER_MED_KNOPP",
+    "lage": "hoger"
+   },
+   "avseddTraffytaAgare": "raden profil|32",
+   "uppmattGeometri": {
+    "w": 364,
+    "h": 37
+   }
+  },
+  {
+   "identitet": "profil|38",
+   "skarm": "profil",
+   "komponent": "toggle",
+   "kontrolltyp": "switch",
+   "etikett": "Visa mina recept publikt",
+   "positivEvidens": [
+    "authored data-component=\"toggle\"",
+    "synlig etikett i raden: \"Visa mina recept publikt\"",
+    "samma agar- och radstruktur som 21 deklarerade switch-kontroller (till exempel formularmorkt|25, skafferibas|14, behnotiser|17)",
+    "radens innehall ar etikett foljd av komponenten och inget mer: div|flex|TEXT+KOMPONENT",
+    "installningskontext under sektionsrubriken \"Integritet\"",
+    "tillstandet visualiseras av den etablerade strukturen PILLER_MED_KNOPP med knoppen till vanster",
+    "$ingenFrekvensregel: komponenttypens deklarationsgrad ingar inte i verdiktet"
+   ],
+   "uppfylldaKrav": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL",
+    "KONTROLLRADSFORM",
+    "INSTALLNINGSKONTEXT"
+   ],
+   "$ingenFrekvensregel": "Komponenttypens deklarationsgrad ingar inte i verdiktet.",
+   "radsignatur": "div|flex|TEXT+KOMPONENT",
+   "sektion": "Integritet",
+   "tillstandsstruktur": {
+    "typ": "PILLER_MED_KNOPP",
+    "lage": "vanster"
+   },
+   "avseddTraffytaAgare": "raden profil|36",
+   "uppmattGeometri": {
+    "w": 364,
+    "h": 36
+   }
+  }
+ ],
+ "F_kvarvarandeUnknown": {
+  "antal": 108,
+  "perKomponent": [
+   {
+    "komponent": "chip",
+    "antal": 28
+   },
+   {
+    "komponent": "checkbox",
+    "antal": 78
+   },
+   {
+    "komponent": "(odeklarerad struktur)",
+    "antal": 2
+   }
+  ],
+  "prioriterade": 17,
+  "$prioritetsregel": "Prioritet = antal uppfyllda evidenskrav + syskonparitet + skarmkonvention. Rent en sorteringshjalp, aldrig ett verdikt.",
+  "vanligasteSaknadeKrav": [
+   {
+    "krav": "KONTROLLRADSFORM",
+    "antal": 104
+   },
+   {
+    "krav": "DEKLARERAT_EXEMPEL",
+    "antal": 83
+   },
+   {
+    "krav": "INSTALLNINGSKONTEXT",
+    "antal": 83
+   },
+   {
+    "krav": "AUTHORED_KOMPONENTTYP",
+    "antal": 2
+   }
+  ],
+  "$regel": "Unknown ar ett giltigt slutresultat och har inte tvingats till pass eller kontroll."
+ },
+ "G_populationsavstamning": {
+  "HISTORICAL_VERIFIED_CONTROL_POPULATION": {
+   "antal": 1344,
+   "$harledning": "1376 kalldeklarationer = 1344 i artefakt + 32 utanfor",
+   "NT_baslinje": 1344,
+   "$orord": "Inte omskriven."
+  },
+  "CURRENT_DISCOVERED_CONTROL_POPULATION": {
+   "antal": 1346,
+   "$harledning": "1344 + 2 adjudicerade nya kontroller",
+   "tillagg": [
+    {
+     "identitet": "profil|34",
+     "skarm": "profil",
+     "etikett": "Sökbar för vänner",
+     "kontrolltyp": "switch"
+    },
+    {
+     "identitet": "profil|38",
+     "skarm": "profil",
+     "etikett": "Visa mina recept publikt",
+     "kontrolltyp": "switch"
+    }
+   ]
+  },
+  "CURRENT_UNKNOWN_COMPONENT_CANDIDATES": {
+   "antal": 108
+  },
+  "$summering": "110 = 2 / 0 / 0 / 108"
+ },
+ "H_R02": {
+  "kontrakt": "48 x 48 CSS-px, tools/hit-contract.mjs",
+  "historisktOrort": true,
+  "nya": [
+   {
+    "kontroll": "profil|34",
+    "skarm": "profil",
+    "etikett": "Sökbar för vänner",
+    "avseddTraffytaAgare": "raden profil|32",
+    "faktiskTraffytaDeklarerad": null,
+    "form": "undeclared",
+    "matbar": false,
+    "bredd": 364,
+    "hojd": 37,
+    "krav": 48,
+    "utfall": "UNKNOWN",
+    "overlapp": "ej provbart utan deklarerad traffyta",
+    "traffbarhet": "ej provbart utan deklarerad traffyta",
+    "$villkorat": "Med data-hit=\"self\" enligt korpuskonventionen vore ytan 364 x 37 px, 11.0 px under hojdkravet."
+   },
+   {
+    "kontroll": "profil|38",
+    "skarm": "profil",
+    "etikett": "Visa mina recept publikt",
+    "avseddTraffytaAgare": "raden profil|36",
+    "faktiskTraffytaDeklarerad": null,
+    "form": "undeclared",
+    "matbar": false,
+    "bredd": 364,
+    "hojd": 36,
+    "krav": 48,
+    "utfall": "UNKNOWN",
+    "overlapp": "ej provbart utan deklarerad traffyta",
+    "traffbarhet": "ej provbart utan deklarerad traffyta",
+    "$villkorat": "Med data-hit=\"self\" enligt korpuskonventionen vore ytan 364 x 36 px, 12.0 px under hojdkravet."
+   }
+  ],
+  "$slutsats": "R-02 far inte rapporteras som VERIFIED for hela appen. Den utokade populationen innehaller tva kontroller utan deklarerad traffyta, alltsa UNKNOWN."
+ },
+ "I_ickeTextAgarskap": {
+  "nya": [
+   {
+    "kontroll": "profil|34",
+    "etikett": "Sökbar för vänner",
+    "relationspar": [
+     {
+      "par": "knopp mot spar",
+      "varde": "rgb(245, 244, 237)",
+      "mot": "rgb(36, 56, 44)",
+      "kvot": 11.36,
+      "krav": 3,
+      "pass": true
+     },
+     {
+      "par": "spar mot angransande yta",
+      "varde": "rgb(36, 56, 44)",
+      "mot": "rgb(245, 244, 237)",
+      "kvot": 11.36,
+      "krav": 3,
+      "pass": true
+     }
+    ],
+    "bliviandeAgarskap": "CONTROL_NON_TEXT",
+    "$villkor": "Agarskapet flyttas forst nar kontrollen faktiskt ar deklarerad.",
+    "kopplatTillGrafikfynd": null
+   },
+   {
+    "kontroll": "profil|38",
+    "etikett": "Visa mina recept publikt",
+    "relationspar": [
+     {
+      "par": "knopp mot spar",
+      "varde": "rgb(245, 244, 237)",
+      "mot": "rgb(204, 209, 194)",
+      "kvot": 1.41,
+      "krav": 3,
+      "pass": false
+     },
+     {
+      "par": "spar mot angransande yta",
+      "varde": "rgb(204, 209, 194)",
+      "mot": "rgb(245, 244, 237)",
+      "kvot": 1.41,
+      "krav": 3,
+      "pass": false
+     }
+    ],
+    "bliviandeAgarskap": "CONTROL_NON_TEXT",
+    "$villkor": "Agarskapet flyttas forst nar kontrollen faktiskt ar deklarerad.",
+    "kopplatTillGrafikfynd": "BG-020"
+   }
+  ],
+  "BG_020": {
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "relationsidentitet": "profil|38→39",
+   "kvot": 1.41,
+   "status": "LIGGER KVAR, EJ MIGRERAD",
+   "baslinje": "34 / 0 / 1"
+  }
+ },
+ "J_stopgate": {
+  "utlosta": [],
+  "antal": 0
+ },
+ "K_baslinje": {
+  "produktfilerAndrade": 0,
+  "fargbeslut": 0,
+  "R04_registretBitIdentiskt": true,
+  "R04_COVERAGE_CREDIT": 0,
+  "grafikbaslinje": "34 / 0 / 1",
+  "profilfixUtford": false
+ }
+}

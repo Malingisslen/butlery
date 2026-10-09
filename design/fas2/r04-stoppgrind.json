@@ -1,0 +1,98 @@
+{
+ "$regel": "Stoppgrind fore produktwrite. Alla sju punkter maste vara grona.",
+ "datum": "2026-08-11",
+ "punkter": [
+  {
+   "nr": 1,
+   "vad": "de 31 breda textgapen matta",
+   "status": "ROD",
+   "resultat": "Samtliga 31 nadda vid expanded-1180. INGEN av dem har .sc-phone eller .sc-card — varken vid nagon viewport eller i kallan. Produktytan gar inte att peka ut med den frysta scopingregeln.",
+   "matt": {
+    "textfragment": 1229,
+    "DOKUMENTATION": 410,
+    "CONTROL_TEXT": 76,
+    "SCOPE_UNRESOLVED": 743
+   },
+   "blockerare": "De 31 ar en exakt delmangd av de 32 ramlosa paneler som redan star som F i R-04 med koden NO_IDENTIFIABLE_PRODUCT_SURFACE. Samma oppna scopebeslut.",
+   "atgard": "Kraver positiv authored produktytemetadata eller ett explicit scopebeslut. Ingen ny heuristik infors."
+  },
+  {
+   "nr": 2,
+   "vad": "full standalone-population reconcilerad",
+   "status": "ROD",
+   "skal": "743 textfragment i de 31 kan inte tilldelas ett stratum. Fail closed, aldrig godkanda."
+  },
+  {
+   "nr": 3,
+   "vad": "nya text-rotorsaker identifierade",
+   "status": "GRON",
+   "resultat": "0 nya utover de 10 redan beslutade, inom den scopade populationen."
+  },
+  {
+   "nr": 4,
+   "vad": "de 10 beslutens source dry-run",
+   "status": "GRON_MED_ANMARKNING",
+   "resultat": "9 beslutsposter tacker 10 rotorsaker. Alla tokennamn unika, 0 befintliga namn rorda."
+  },
+  {
+   "nr": 5,
+   "vad": "L03/L04 faktisk ytidentitet avgjord",
+   "status": "GRON",
+   "resultat": "L03 och L04 delar EN ytidentitet: veckogenererar elementordinal 11, en enda INLINE-deklaration rgba(36,56,44,0.6). ETT gemensamt scopat ytbeslut registrerat, inga konkurrerande tokens. L06 ar en egen ytidentitet: cooksnapgalleri ordinal 16, egen halvgenomskinlig bakgrund."
+  },
+  {
+   "nr": 6,
+   "vad": "notiscentral atomiskt writeblock definierat",
+   "status": "GRON",
+   "block": {
+    "artefakt": "notiscentral",
+    "delar": [
+     "RC-YH-01 yta -> #24382c",
+     "RC-TX-D03 forgrund #8a5212 -> #de9078"
+    ],
+    "kvotEfter": 4.99,
+    "krav": 4.5,
+    "not": "Enda COUPLED_FIX_REQUIRED-relationen i hela materialet."
+   }
+  },
+  {
+   "nr": 7,
+   "vad": "simulering",
+   "status": "ROD",
+   "text": {
+    "ljust": {
+     "relationer": 4484,
+     "PASS_TO_FAIL": 0,
+     "WORSENED": 0,
+     "kvarUnderTroskel": 0,
+     "forbattrade": 11
+    },
+    "morkt": {
+     "relationer": 763,
+     "PASS_TO_FAIL": 0,
+     "WORSENED": 0,
+     "kvarUnderTroskel": 0,
+     "forbattrade": 11
+    }
+   },
+   "nonText": "0 nya fel — inga forgrundsfarger pa grafiska barare andras",
+   "ythierarki": {
+    "losta": 159,
+    "nya_1_1": 0,
+    "beslutadYtaSomAndaBlir_1_1": 1,
+    "fall": "kontovantan ordinal 29 tillhor RC-YH-18 och dess underliggande yta ordinal 28 tillhor RC-YH-17. Bada blir #24382c, sa relationen forblir exakt 1:1. Tva nastlade ytor i olika rotorsaker med samma malvarde."
+   },
+   "skrivscope": {
+    "skrivstallen": 170,
+    "REQUIRED_i_auditen": 143,
+    "EJ_required": 27,
+    "fordelning": {
+     "RC-YH-01": 25,
+     "RC-YH-12": 2
+    },
+    "not": "Besluten galler semantiska undergrupper. 27 ytor som auditen klassade REDUNDANT delar undergrupp med en beslutad rotorsak och skulle darfor ocksa byta varde. Det ar ingen regression — de har egen ram eller bar ingen distinktion — men det ar en avsiktlig utvidgning av skrivmangden som maste godkannas explicit."
+   }
+  }
+ ],
+ "slutsats": "STOPPGRINDEN AR ROD. Tre saker kraver beslut: scopet for de 31 ramlosa panelerna, kollisionen mellan RC-YH-17 och RC-YH-18 i kontovantan, och de 27 extra skrivstallena."
+}

@@ -66,11 +66,10 @@ class _FakeDataExportRepository extends Fake
   /// a sentinel -1 no real caller would pass, so a production path that stops
   /// forwarding its cap fails the forwarding test instead of coincidentally
   /// matching the repository's own default. The sentinel is ALSO how a
-  /// deliberate NON-forward is pinned — `exportFriendCategories` and
-  /// `exportChatGroups` are asserted as -1 precisely because the manager
-  /// passes them nothing and they therefore ride an implicit cap with no
-  /// truncation probe (BUT-1701). Only overrides no assertion reads at all
-  /// (blocks) keep the repository's real defaults.
+  /// deliberate NON-forward is pinned — `exportChatGroups` is asserted as -1
+  /// precisely because the manager passes it nothing and it therefore rides an
+  /// implicit cap with no truncation probe. Only overrides no assertion reads
+  /// at all (blocks) keep the repository's real defaults.
   final Map<String, int> capturedMax = <String, int>{};
 
   /// `exportConversationsAndMessages` takes TWO caps, so it records into its
@@ -1622,12 +1621,10 @@ void main() {
               'as possibly incomplete at bundle level',
         );
         // No cap is forwarded, so the section rides the repository's own
-        // implicit default (100 groups) with no N+1 truncation probe — the
-        // same gap `exportFriendCategories` carries, deferred to BUT-1701.
-        // Pinned as the sentinel exactly like that one: when a cap starts
-        // being forwarded this reddens, which is where the truncation flag
-        // has to be added rather than quietly capping a bundle that asserts
-        // it is complete.
+        // implicit default (100 groups) with no N+1 truncation probe.
+        // When a cap starts being forwarded this reddens, which is where the
+        // truncation flag has to be added rather than quietly capping a
+        // bundle that asserts it is complete.
         expect(repo.capturedMax, {'exportChatGroups': -1});
       },
     );
@@ -2271,6 +2268,9 @@ void main() {
     final requestCap = ExportPaginationHelper.getLimitForType(
       'friend_requests',
     );
+    final categoryCap = ExportPaginationHelper.getLimitForType(
+      'friend_categories',
+    );
 
     SocialExportManager managerWith({
       int friends = 0,
@@ -2354,21 +2354,13 @@ void main() {
         dataExportRepository: repo,
       ).exportFriends('user-uid');
 
-      // Whole-map equality rather than three field checks: it proves per-leg
+      // Whole-map equality rather than per-field checks: it proves per-leg
       // forwarding AND that every read this section makes is accounted for.
-      // `exportFriendCategories` records the SENTINEL because the manager
-      // forwards no cap to it at all — that fourth record type rides the
-      // repository's implicit default (100) and is therefore NOT covered by
-      // the section-root `truncated` flag the other three legs OR into. A
-      // user with more than 100 categories gets a section that positively
-      // asserts completeness. Deferred to BUT-1701; when it closes, this
-      // entry becomes `categoryCap + 1` and a positive truncation test for
-      // the categories leg belongs beside the other three.
       expect(repo.capturedMax, {
         'exportFriendsSubcollection': friendCap + 1,
         'exportSocialRequestsSent': requestCap + 1,
         'exportSocialRequestsReceived': requestCap + 1,
-        'exportFriendCategories': -1,
+        'exportFriendCategories': categoryCap + 1,
       });
     });
   });

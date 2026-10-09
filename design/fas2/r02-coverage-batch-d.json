@@ -1,0 +1,152 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "D · kontrollrader där ytan bär kontrollens egen etikett",
+ "$regel": "Ytan får inte säga något som kontrollens etikett inte säger. Geometrin avgör inte. 145 var kandidatpopulationen, inte ett krav på 145 beslut.",
+ "kandidater_st": 145,
+ "target_st": 7,
+ "kvar_unknown_st": 138,
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "role": "button",
+   "accessibleName": "Sluta dela med Anna Lindqvist",
+   "beslut": "target",
+   "dataHitTarget": "receptdelningsstatus-button-sluta-dela-med-anna-lindqvist",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 364,
+    "h": 57
+   },
+   "evidens": "ytan 364×57 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"Anna Lindqvist\" — helt inom kontrollens egen etikett \"Sluta dela med Anna Lindqvist\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "role": "button",
+   "accessibleName": "Sluta dela med Per Sjögren",
+   "beslut": "target",
+   "dataHitTarget": "receptdelningsstatus-button-sluta-dela-med-per-sjogren",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 364,
+    "h": 57
+   },
+   "evidens": "ytan 364×57 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"Per Sjögren\" — helt inom kontrollens egen etikett \"Sluta dela med Per Sjögren\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "role": "button",
+   "accessibleName": "Sluta dela med Ida Holm",
+   "beslut": "target",
+   "dataHitTarget": "receptdelningsstatus-button-sluta-dela-med-ida-holm",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 364,
+    "h": 57
+   },
+   "evidens": "ytan 364×57 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"Ida Holm\" — helt inom kontrollens egen etikett \"Sluta dela med Ida Holm\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "role": "button",
+   "accessibleName": "Ta bort 500 g blandfärs",
+   "beslut": "target",
+   "dataHitTarget": "impassist3-button-ta-bort-500-g-blandfars",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 49
+   },
+   "evidens": "ytan 372×49 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"500 g blandfärs\" — helt inom kontrollens egen etikett \"Ta bort 500 g blandfärs\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "role": "button",
+   "accessibleName": "Ta bort 1 gul lök",
+   "beslut": "target",
+   "dataHitTarget": "impassist3-button-ta-bort-1-gul-lok",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 49
+   },
+   "evidens": "ytan 372×49 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"1 gul lök\" — helt inom kontrollens egen etikett \"Ta bort 1 gul lök\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "role": "button",
+   "accessibleName": "Ta bort 3 dl grädde",
+   "beslut": "target",
+   "dataHitTarget": "impassist3-button-ta-bort-3-dl-gradde",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 49
+   },
+   "evidens": "ytan 372×49 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"3 dl grädde\" — helt inom kontrollens egen etikett \"Ta bort 3 dl grädde\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flertagg",
+   "role": "button",
+   "accessibleName": "Hantera taggar",
+   "beslut": "target",
+   "dataHitTarget": "flertagg-button-hantera-taggar",
+   "kontrollensEgenRect": {
+    "w": 132.28,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 63
+   },
+   "evidens": "ytan 372×63 är visuellt avgränsad, bär exakt EN semantisk kontroll och dess enda text är \"Hantera taggar\" — helt inom kontrollens egen etikett \"Hantera taggar\"; kontrollen har ingen egen ritad kontrollyta som konkurrerar"
+  }
+ ],
+ "handplockade_avslag": [
+  {
+   "artifactId": "veckoresultat",
+   "accessibleName": "Generera om middag",
+   "skal": "ytan är en avdelningsrubrik (\"MIDDAG\") med en knapp i, inte kontrollens egen rad"
+  },
+  {
+   "artifactId": "veckoresultat",
+   "accessibleName": "Generera om lunch",
+   "skal": "ytan är en avdelningsrubrik (\"LUNCH\") med en knapp i, inte kontrollens egen rad"
+  },
+  {
+   "artifactId": "veckodolda",
+   "accessibleName": "Generera om middag",
+   "skal": "ytan är en avdelningsrubrik (\"MIDDAG\") med en knapp i, inte kontrollens egen rad"
+  },
+  {
+   "artifactId": "veckorostning",
+   "accessibleName": "Generera om middag",
+   "skal": "ytan är en avdelningsrubrik (\"MIDDAG\") med en knapp i, inte kontrollens egen rad"
+  }
+ ]
+}

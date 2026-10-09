@@ -1,0 +1,368 @@
+{
+ "$schema": "butlery-remediering-4-implementation/1",
+ "$datum": "2026-08-17",
+ "$franCommit": "0e3f958",
+ "$typ": "EXAKT SCOPAD IMPLEMENTATION av de fyra REQUIRED_FAIL. Endast gransfarg.",
+ "A_beslut": {
+  "$status": "HUMAN_APPROVED",
+  "enheter": [
+   {
+    "DECISION_UNIT_ID": "DU-A1",
+    "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_LIGHT_THEME",
+    "varde": "rgba(245, 244, 237, 0.6)",
+    "antal": 2,
+    "medlemmar": [
+     "lagastaende|3",
+     "lagastaende320|3"
+    ],
+    "taggar": [
+     "HUMAN_APPROVED",
+     "NON_TEXT_REMEDIATION"
+    ]
+   },
+   {
+    "DECISION_UNIT_ID": "DU-A2",
+    "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_DARK_THEME",
+    "varde": "rgba(245, 244, 237, 0.6)",
+    "antal": 1,
+    "medlemmar": [
+     "lagamorkt|3"
+    ],
+    "taggar": [
+     "HUMAN_APPROVED",
+     "NON_TEXT_REMEDIATION"
+    ]
+   },
+   {
+    "DECISION_UNIT_ID": "DU-B",
+    "beslutsidentitet": "TIMER_CHIP_BOUNDARY_LANDSCAPE",
+    "varde": "#788477",
+    "antal": 1,
+    "medlemmar": [
+     "lgbtimer|37"
+    ],
+    "taggar": [
+     "HUMAN_APPROVED",
+     "VISUAL_CHOICE_REQUIRED",
+     "NON_TEXT_REMEDIATION"
+    ]
+   }
+  ],
+  "$treIdentiteter": "DU-A1, DU-A2 och DU-B forblir TRE separata beslutsidentiteter. DU-A1 och DU-A2 delar numeriskt varde utan att dela beslut. DU-B ar INTE sammanslagen med nagot tidigare #788477-beslut: numerisk ateranvandning ar inte mappningsevidens och skapar ingen gemensam identitet.",
+  "$DUBmotivering": "#788477 gor timerchippets REQUIRED kontrollkropp tydligt identifierbar men haller den neutrala \"Steg 4 · 12:00\"-kontrollen visuellt underordnad de starkare syskonen i samma timerlist. Valet gjordes fran actual scene, inte for att 3.199 ligger narmast konformitetsgolvet.",
+  "$bortvalda": "#7D897C, #93A48D och rgba(245, 244, 237, 0.6) forblir tekniskt giltiga men valdes bort som starkare an vad den neutrala kontrollfunktionen behover.",
+  "R04_CREDIT": 0,
+  "R04_WRITES": 0,
+  "$R04": "Provenanstagg NON_TEXT_REMEDIATION_ONLY · NOT_DARK_MAPPING_EVIDENCE. Inget varde far anvandas som observerad eller authorad dark mapping evidence."
+ },
+ "B_skrivning": {
+  "A_PRODUCT_FILES_CHANGED": 3,
+  "B_SOURCE_ELEMENTS_CHANGED": 4,
+  "C_SOURCE_WRITE_SITES": 4,
+  "D_ATTRIBUTE_MUTATIONS": 0,
+  "E_STYLE_PROPERTY_MUTATIONS": 4,
+  "perFalt": {
+   "style:border-color": 4
+  },
+  "perEnhet": {
+   "DU-A1": 2,
+   "DU-A2": 1,
+   "DU-B": 1
+  },
+  "gitRader": {
+   "plus": 4,
+   "minus": 4
+  },
+  "perFil": [
+   {
+    "plus": 2,
+    "minus": 2,
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+   },
+   {
+    "plus": 1,
+    "minus": 1,
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+   },
+   {
+    "plus": 1,
+    "minus": 1,
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+   }
+  ],
+  "mekanism": "border-color som EGEN deklaration efter den befintliga border-kortformen. Bredd och stil ror sig aldrig.",
+  "ankarmetod": "taggnamn + kallans attribut som delmangd av DOM-ognonblickets + egen omedelbar text, pa elementets descendantordinal",
+  "utfall": {
+   "SKRIVEN": 4
+  },
+  "$ingenGlobalErsattning": "Ingen global fargersattning. Varje skrivning ar ankrad pa sin egen forekomst."
+ },
+ "C_deFyra": {
+  "antal": 4,
+  "allaREQUIRED_PASS": true,
+  "allaYtorOforandrade": true,
+  "bredderOchStilar": [
+   "1.5px solid · 4 sidor",
+   "1px solid · 4 sidor"
+  ],
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende|3",
+    "PART_ID": "lagastaende|3#ram#0",
+    "DECISION_UNIT_ID": "DU-A1",
+    "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_LIGHT_THEME",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_OPERATION": "Textstorlek",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(109, 122, 112)",
+    "fargEfter": "rgb(161, 169, 160)",
+    "kvotFore": 2.78,
+    "kvotEfter": 5.19,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagamorkt|3",
+    "PART_ID": "lagamorkt|3#ram#0",
+    "DECISION_UNIT_ID": "DU-A2",
+    "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_DARK_THEME",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_OPERATION": "Textstorlek",
+    "yta": "rgb(23, 37, 29)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(101, 109, 102)",
+    "fargEfter": "rgb(156, 161, 154)",
+    "kvotFore": 2.98,
+    "kvotEfter": 6.05,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lagastaende320|3",
+    "PART_ID": "lagastaende320|3#ram#0",
+    "DECISION_UNIT_ID": "DU-A1",
+    "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_LIGHT_THEME",
+    "beslutsvarde": "rgba(245, 244, 237, 0.6)",
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_OPERATION": "Textstorlek",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(109, 122, 112)",
+    "fargEfter": "rgb(161, 169, 160)",
+    "kvotFore": 2.78,
+    "kvotEfter": 5.19,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1.5px",
+    "stil": "solid",
+    "sidor": 4
+   },
+   {
+    "CONTROL_ID": "lgbtimer|37",
+    "PART_ID": "lgbtimer|37#ram#0",
+    "DECISION_UNIT_ID": "DU-B",
+    "beslutsidentitet": "TIMER_CHIP_BOUNDARY_LANDSCAPE",
+    "beslutsvarde": "#788477",
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_OPERATION": "Timer steg 4, 12 minuter kvar",
+    "yta": "rgb(36, 56, 44)",
+    "ytaOforandrad": true,
+    "fargFore": "rgb(63, 81, 69)",
+    "fargEfter": "rgb(120, 132, 119)",
+    "kvotFore": 1.48,
+    "kvotEfter": 3.2,
+    "APPLICABILITY": "REQUIRED",
+    "KONFORMANS_FORE": "REQUIRED_FAIL",
+    "KONFORMANS_EFTER": "REQUIRED_PASS",
+    "bredd": "1px",
+    "stil": "solid",
+    "sidor": 4
+   }
+  ]
+ },
+ "D_avgransning": {
+  "andradeGrafiskaDelar": 4,
+  "varavMal": 4,
+  "varavIckeMal": 0,
+  "ickeMalMedSammaRavarde": 78,
+  "varavOforandrade": 78,
+  "fargliteraler": {
+   "fore": {
+    "rgba(245,244,237,.35)": 60,
+    "rgba(245,244,237,.6)": 14,
+    "#3F5145": 96,
+    "#788477": 28,
+    "#CE7C1E": 444
+   },
+   "efter": {
+    "rgba(245,244,237,.35)": 60,
+    "rgba(245,244,237,.6)": 17,
+    "#3F5145": 96,
+    "#788477": 29,
+    "#CE7C1E": 444
+   },
+   "$tolkning": "Kortformens rgba(245, 244, 237, .35) ar OFORANDRAD i antal — den rors aldrig. Det nya .6 okar med 3 och #788477 med 1: tillsammans exakt 4. #3F5145 och #CE7C1E ar oforandrade."
+  },
+  "$tresupplemental": "De tre SUPPLEMENTAL_NOT_REQUIRED-grannarna ar ororda och behaller sin svagare kant."
+ },
+ "E_oforandratRunt": {
+  "geometriandringar": 0,
+  "nyaKlipp": 0,
+  "fyllningsandringar": 0,
+  "textposterMedAndratVarde": 0,
+  "produktelement": 13898,
+  "ikonerOchOvrigGrafik": "oforandrade — endast 4 gransdelar bytte farg"
+ },
+ "F_population": {
+  "grafiskaDelarFore": 1879,
+  "grafiskaDelarEfter": 1879,
+  "perTypFore": {
+   "fyllning": 474,
+   "ram": 689,
+   "ikon": 605,
+   "thumb": 43,
+   "bock": 53,
+   "glyf": 15
+  },
+  "perTypEfter": {
+   "fyllning": 474,
+   "ram": 689,
+   "ikon": 605,
+   "thumb": 43,
+   "bock": 53,
+   "glyf": 15
+  },
+  "perTypOforandrad": true,
+  "R02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "R01fynd": 0,
+  "fristaende": 32,
+  "maladeKontrollytor": 420,
+  "gransdelar": 689
+ },
+ "G_korstab": {
+  "efter": {
+   "LT3_REQUIRED": 0,
+   "LT3_SUPPLEMENTAL": 24,
+   "LT3_UNKNOWN": 518,
+   "GE3_REQUIRED": 112,
+   "GE3_SUPPLEMENTAL": 7,
+   "GE3_UNKNOWN": 1218,
+   "SUMMA": 1879
+  },
+  "$slutenhet": true,
+  "$forandring": "LT3_REQUIRED 4 -> 0, GE3_REQUIRED 108 -> 112."
+ },
+ "H_previews": {
+  "efterbilder": [
+   {
+    "id": "lagastaende|3",
+    "fil": "lagastaende-3-efter.png",
+    "inramning": {
+     "vanster": 0.0024154589371980675,
+     "topp": 0.11053332095211564,
+     "bredd": 0.9951690821256038,
+     "hojd": 0.0742873061565605
+    },
+    "radmatt": {
+     "w": 412,
+     "h": 75
+    },
+    "artefaktmatt": {
+     "w": 414,
+     "h": 1009.6
+    }
+   },
+   {
+    "id": "lagamorkt|3",
+    "fil": "lagamorkt-3-efter.png",
+    "inramning": {
+     "vanster": 0.0024154589371980675,
+     "topp": 0.094023157015283,
+     "bredd": 0.9951690821256038,
+     "hojd": 0.07566621739850087
+    },
+    "radmatt": {
+     "w": 412,
+     "h": 75
+    },
+    "artefaktmatt": {
+     "w": 414,
+     "h": 991.2
+    }
+   },
+   {
+    "id": "lagastaende320|3",
+    "fil": "lagastaende320-3-efter.png",
+    "inramning": {
+     "vanster": 0.003105590062111801,
+     "topp": 0.094023157015283,
+     "bredd": 0.9937888198757764,
+     "hojd": 0.07566621739850087
+    },
+    "radmatt": {
+     "w": 320,
+     "h": 75
+    },
+    "artefaktmatt": {
+     "w": 322,
+     "h": 991.2
+    }
+   },
+   {
+    "id": "lgbtimer|37",
+    "fil": "lgbtimer-37-efter.png",
+    "inramning": {
+     "vanster": 0.0009746588693957114,
+     "topp": 0.777250435057744,
+     "bredd": 0.9980506822612085,
+     "hojd": 0.11215362710379322
+    },
+    "radmatt": {
+     "w": 1024,
+     "h": 72
+    },
+    "artefaktmatt": {
+     "w": 1026,
+     "h": 642
+    }
+   }
+  ],
+  "katalog": "C:/Users/malla/claude-reports/Butlery design system/bilder/fyra-efter",
+  "$inramning": "Bilderna ar artefaktrender. De uppmatta relativa koordinaterna anvands for att rama in raden i rapporten; inramningen ar presentation, inte beskarning i kallan."
+ },
+ "I_status": {
+  "4-BOUNDARY REMEDIATION": "CLOSED / VERIFIED",
+  "KNOWN_REQUIRED_FAIL": 0,
+  "CURRENT_NON_TEXT_CONTRAST": "OPEN",
+  "UNKNOWN_APPLICABILITY": 1736,
+  "$skuld": "De 1736 relationerna med okand tillamplighet ligger utanfor detta scope. Att KNOWN_REQUIRED_FAIL nu ar 0 betyder INTE att hela icke-textsparet ar stangt.",
+  "15-BOUNDARY REMEDIATION": "CLOSED / VERIFIED",
+  "SEVEN-NEIGHBOUR APPLICABILITY REVIEW": "CLOSED / VERIFIED",
+  "SAFFRON_REMEDIATION": "CLOSED / VERIFIED",
+  "PRESSED": "UNTESTED",
+  "INACTIVE": "UNTESTED",
+  "FOCUS": "UNTESTED",
+  "R04_CREDIT": 0,
+  "R04_WRITES": 0
+ }
+}

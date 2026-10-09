@@ -357,6 +357,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: cs.onSurface,
                             fontWeight: FontWeight.w600,
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                           textAlign: TextAlign.end,
                         ),

@@ -75,12 +75,17 @@ class UserAllergenPreferences {
   factory UserAllergenPreferences.fromFirestore(Map<String, dynamic>? data) {
     if (data == null) return defaults;
 
-    return UserAllergenPreferences(
-      trackedAllergens:
+    final migrated = migrateLegacyDietary(
+      allergens:
           _parseStringSet(data['trackedAllergens']) ??
           defaults.trackedAllergens,
-      trackedDietary:
+      dietary:
           _parseStringSet(data['trackedDietary']) ?? defaults.trackedDietary,
+    );
+
+    return UserAllergenPreferences(
+      trackedAllergens: migrated.allergens,
+      trackedDietary: migrated.dietary,
       showOnCards: SerializationUtils.safeBool(
         data,
         'showOnCards',
@@ -172,6 +177,33 @@ class UserAllergenPreferences {
   /// Whether any preferences are active.
   bool get hasAnyPreferences => hasTrackedAllergens || hasTrackedDietary;
 
+  /// Old onboarding offered "Glutenfri" and "Laktosfri" as diets, but tagging
+  /// has no such diet: they matched nothing. They mean the allergens `gluten`
+  /// and `laktos`, so a stored diet of that name is moved there on every read
+  /// (no migration script; the next save writes the new shape).
+  static const _legacyDietaryToAllergen = {
+    'glutenfri': 'gluten',
+    'laktosfri': 'laktos',
+  };
+
+  static ({Set<String> allergens, Set<String> dietary}) migrateLegacyDietary({
+    required Set<String> allergens,
+    required Set<String> dietary,
+  }) {
+    if (!dietary.any(_legacyDietaryToAllergen.containsKey)) {
+      return (allergens: allergens, dietary: dietary);
+    }
+    return (
+      allergens: {
+        ...allergens,
+        for (final d in dietary) ?_legacyDietaryToAllergen[d],
+      },
+      dietary: dietary
+          .where((d) => !_legacyDietaryToAllergen.containsKey(d))
+          .toSet(),
+    );
+  }
+
   static Set<String>? _parseStringSet(dynamic value) {
     if (value == null) return null;
     if (value is List) {
@@ -241,7 +273,27 @@ class UserAllergenPreferences {
 class AllergenPreferenceOptions {
   AllergenPreferenceOptions._();
 
-  /// All allergens users can track.
+  /// The most common allergens: the ones onboarding shows before "visa alla".
+  /// A subset of [allergens], so the two screens cannot drift apart.
+  static const List<String> primaryAllergenKeys = [
+    'gluten',
+    'mjölk',
+    'nötter',
+    'ägg',
+    'soja',
+    'fisk',
+    'skaldjur',
+    'sesam',
+  ];
+
+  /// Every allergen key outside [primaryAllergenKeys], in [allergens] order.
+  static List<String> get extendedAllergenKeys => [
+    for (final key in allergens.keys)
+      if (!primaryAllergenKeys.contains(key)) key,
+  ];
+
+  /// All allergens users can track. Onboarding and Settings both read this
+  /// list ("En lista", Malin 2026-10-09).
   static const Map<String, String> allergens = {
     'gluten': 'Gluten',
     'mjölk': 'Mjölk',
@@ -258,6 +310,8 @@ class AllergenPreferenceOptions {
     'senap': 'Senap',
     'lupin': 'Lupin',
     'sulfiter': 'Sulfiter',
+    'kräftdjur': 'Kräftdjur',
+    'blötdjur': 'Blötdjur',
     'kött': 'Kött',
     'fläsk': 'Fläsk',
     'nötkött': 'Nötkött',

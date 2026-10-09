@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
@@ -134,6 +135,10 @@ class _FamilyRatingEntryContent extends StatelessWidget {
       }
     }
 
+    final initials = distinctInitials([
+      for (final m in vm.present) m.displayName,
+    ]);
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -142,13 +147,14 @@ class _FamilyRatingEntryContent extends StatelessWidget {
           style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 16),
-        for (final member in vm.present)
+        for (var i = 0; i < vm.present.length; i++)
           _DinerRatingRow(
-            member: member,
-            stars: vm.starsFor(member.memberId),
-            isHolder: vm.isHolder(member.memberId),
+            member: vm.present[i],
+            initials: initials[i],
+            stars: vm.starsFor(vm.present[i].memberId),
+            isHolder: vm.isHolder(vm.present[i].memberId),
             holderName: holderName,
-            onChanged: (s) => vm.setStars(member.memberId, s),
+            onChanged: (s) => vm.setStars(vm.present[i].memberId, s),
           ),
         const SizedBox(height: 8),
         _privateNote(context, l10n),
@@ -235,10 +241,12 @@ class _DinerRatingRow extends StatelessWidget {
   final int stars;
   final bool isHolder;
   final String? holderName;
+  final String initials;
   final ValueChanged<int> onChanged;
 
   const _DinerRatingRow({
     required this.member,
+    required this.initials,
     required this.stars,
     required this.isHolder,
     required this.holderName,
@@ -282,6 +290,7 @@ class _DinerRatingRow extends StatelessWidget {
           FamilyAvatar(
             name: member.displayName,
             color: parseAvatarColor(context, member.avatarColor),
+            initials: initials,
           ),
           const SizedBox(width: 12),
           Expanded(

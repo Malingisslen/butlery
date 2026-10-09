@@ -126,4 +126,20 @@ void main() {
     expect(_friendNode(_cecilia).getSemanticsData().label, _cecilia);
     handle.dispose();
   });
+
+  // BUT-2261: a chosen member's remove button names who it removes,
+  // not Flutter's bare "Radera".
+  testWidgets('a chosen member chip says whom its remove button removes', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await pumpView(tester);
+
+    tester.semantics.tap(find.semantics.byLabel(_anna));
+    await tester.pump();
+
+    expect(find.byTooltip('Ta bort $_anna'), findsOneWidget);
+    expect(find.byTooltip('Radera'), findsNothing);
+    handle.dispose();
+  });
 }

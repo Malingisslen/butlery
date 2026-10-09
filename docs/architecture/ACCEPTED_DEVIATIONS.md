@@ -5870,3 +5870,63 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   the update is written without comparing, for any edit without a `rev` whose device copy
   has no `rev`. That covers a copy cached before the update whether or not it was queued.
   A send that succeeds gives the copy a `rev`.
+
+## BUT-2106 — a rating's review text is closed (2026-10-09)
+
+- **SUPERSEDES "`recipe_ratings.review` is bounded at 2000 UTF-16 CODE UNITS and must be a
+  string, on BOTH limbs" (BUT-2079 follow-up, 2026-09-17) (BUT-2106, 2026-10-09).** Both
+  limbs of `match /recipe_ratings` now accept `review` only absent or null. The key stays in
+  the create `keys().hasOnly` list and the update `affectedKeys().hasOnly` list, and stays in
+  the Art. 15 `_ratingFields` allowlist. The update limb still validates the full resulting
+  document, so a stored string review refuses every update that does not set it to null;
+  the app's `set(merge: true)` re-rate writes `review: null` and so clears one. Retired with
+  it: "2000 Swedish letters", the `is string` arm and the `size()` measurement in the rules
+  comment. A review surface reopens the field only together with `ContentFilterService` on
+  the write and a `ContentType` it can be reported under.
+  Malin asked for BUT-2106 to be done on 2026-10-09; closing the field rather than building
+  filter and report for it is the ticket's own recommendation, taken as this change's default.
+  **What she was NOT shown:** a count of stored rows holding a review; this change was made
+  without Firestore credentials.
+
+- **SUPERSEDES "Comment likes are erased but not exported (BUT-2112, 2026-09-19)" and the
+  BUT-2115 line "The requester's own reactions on other people's comments are not in the
+  bundle; they go with comment likes in BUT-2114" (BUT-2114, 2026-10-09).** The Art. 15
+  bundle has a `comment_likes` section: the requester's rows from the `likes` collection
+  group whose parent is a top-level `recipe_comments` document, each as the comment id and
+  `likedAt`. The read is admitted by `match /{path=**}/likes/{likeId}`, read only and only
+  where `userId` is the caller. Reactions on other people's comments are still not
+  exported, and the section's note says so; that is BUT-2318.
+
+- **`hashUid` stays unsalted `sha256(uid)` cut to 12 hex characters (BUT-2139, Malin
+  2026-10-09).** Anyone holding a list of uids can hash each one and match it to a
+  `system_events` row, so the value hides an uid from someone holding only the rows, not
+  from someone who also holds the user list. Kept because the rows are admin-read only, no
+  client can write them, `rate_limit_violation` rows are deleted after 90 days, and the
+  repeat-offender correlation (BUT-2138) needs the same hash across rows. A salt or a
+  per-purpose key would break that correlation for every existing row. Never describe the
+  value as anonymous: it is a pseudonym.
+
+## BUT-907 — the trash for deleted recipes (2026-10-09)
+
+- **An app older than BUT-907 does not use the trash (R1).** It deletes the recipe's photos
+  from the client and writes no copy, so a recipe deleted there cannot be restored. That is
+  what every delete did before the trash existed; nothing more is lost.
+- **An offline delete reaches the trash when the queue sends it (R3).** The copy is written
+  in the same batch as the delete, so until the queue sends it the recipe is in neither
+  place on the server. Restore is a transaction and needs a connection; the view says so
+  rather than queueing it.
+- **TTL removal lags `expireAt`.** Firestore's TTL deletes an expired document some time
+  after the timestamp, not at it. `TrashService` filters out and refuses any copy past
+  `expireAt`, so the lag is not visible; `onTrashItemDeleted` deletes the photos when the
+  copy is actually removed. A scheduled sweep would cost reads to close a gap no user sees.
+- **A report on a recipe makes its owner's delete skip the trash.** `onRecipeDeleted` deletes
+  the copy and the photos when the recipe has an open report (Trust & Safety, risk R4), and
+  anyone who knows a recipe id can file a report. Someone could therefore stop another
+  user's delete from being restorable. The outcome is the same delete every recipe had before
+  the trash existed, and the moderator can still close the report; see ADR-0026 for the
+  admin's delete of a copy.
+- **A phone clock more than an hour off makes a recipe delete fail.** The copy's
+  `deletedAt` and `expireAt` come from the phone, because a server timestamp cannot be
+  combined with the 30-day arithmetic in a rule; the rule allows an hour either way, the
+  shape `overwritten_versions` already has. The copy and the delete are one batch, so a
+  refused copy refuses the delete, which before BUT-907 did not depend on the clock.

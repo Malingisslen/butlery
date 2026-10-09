@@ -3075,22 +3075,15 @@ service cloud.firestore {
         // including the conditional recipeOwnerId and the null-valued review.
         && request.resource.data.keys().hasOnly(['recipeId', 'userId',
             'rating', 'review', 'recipeOwnerId', 'createdAt', 'updatedAt'])
-        // BUT-2079 follow-up: `review` is free text every signed-in account can
-        // read. hasOnly admits the KEY; this bounds its VALUE. Three arms,
-        // because FirebaseRatingsRepository.rateRecipe always writes the key
-        // and its value is null on every write the app makes today, while two
-        // rules-test fixtures omit the key entirely. `is string` is what closes
-        // the type hole: size() is polymorphic, so without it a map of <= 2000
-        // keys satisfies the bound.
-        // size() counts UTF-16 CODE UNITS on a string, measured on the emulator
-        // 2026-09-17: 2000 'ä' allow (4000 UTF-8 bytes), 1000 emoji allow (2000
-        // units), 2000 emoji deny (4000 units). So the bound is 2000 Swedish
-        // letters, and an astral character costs two.
+        // BUT-2106: `review` may only be absent or null. It is free text every
+        // signed-in account can read, with no content filter and no report
+        // path. A review surface reopens this arm only
+        // together with ContentFilterService on the write and a ContentType a
+        // user can report it under. The key stays in hasOnly because
+        // FirebaseRatingsRepository.rateRecipe always writes `review: null`.
         && (
           !('review' in request.resource.data)
           || request.resource.data.review == null
-          || (request.resource.data.review is string
-              && request.resource.data.review.size() <= 2000)
         )
         && isServerTimestamp('createdAt')
         && (
@@ -3119,18 +3112,13 @@ service cloud.firestore {
           || isNotBlockedBy(request.resource.data.recipeOwnerId)
         )
         && cannotModify(['recipeId', 'userId', 'createdAt'])
-        // BUT-2079 follow-up: the same value bound as create. It is repeated
-        // here rather than left to create because the client re-rates with
-        // set(merge: true), which evaluates this limb. request.resource.data is
-        // the full resulting document, so this re-validates a stored `review`
-        // the current write never touched — a row whose stored value fails it
-        // cannot be updated again. Deliberate: scoping to affectedKeys() would
-        // let a stored value escape the bound for good.
+        // BUT-2106: the same absent-or-null rule as create. It is repeated here
+        // because the client re-rates with set(merge: true), which evaluates
+        // this limb. request.resource.data is the full resulting document, so a
+        // stored string review blocks every update that does not clear it.
         && (
           !('review' in request.resource.data)
           || request.resource.data.review == null
-          || (request.resource.data.review is string
-              && request.resource.data.review.size() <= 2000)
         )
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['rating', 'review', 'updatedAt', 'recipeOwnerId']);
@@ -3351,6 +3339,73 @@ service cloud.firestore {
 
       allow delete: if isAuthenticated()
         && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // TRASH (BUT-907)
+    // An own recipe the user deleted, kept 30 days behind "Återställ". The
+    // document id is the recipe's id. Same shape as overwritten_versions: the
+    // owner reads and creates it, nobody changes it, and it can never be kept
+    // longer than 30 days. `expireAt` is exactly 30 days after the client's
+    // `deletedAt`, is in the future, and is at most 30 days and one hour from
+    // the server's clock; `deletedAt` is at most one hour behind it. The TTL
+    // policy in firestore.indexes.json deletes on `expireAt`, the account
+    // deletion cascade sweeps the collection (USER_SUBCOLLECTIONS), and
+    // onTrashItemDeleted removes the photos once the copy is gone and the
+    // recipe was not restored.
+    //
+    // `payload` is the recipe's own Firestore map without its sharing state.
+    // `grants` lives inside `socialData` and `blockHeld`/`blockHeldUserIds`
+    // live on shared_content rows, not on recipes; all four are refused at
+    // the top of the payload as well. `core.createdBy` is the recipe's only
+    // owner field outside `socialData`; a legacy recipe may have none.
+    //
+    // A restore goes through the recipe's own create rule. An admin may delete
+    // a copy (a moderator removing a reported recipe the owner already threw
+    // away) but never reads one.
+    // ========================================
+    match /users/{userId}/trash/{itemId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'kind', 'ownerId', 'sourceId', 'title', 'thumbnailUrl', 'payload',
+          'deletedAt', 'expireAt'
+        ])
+        && hasRequiredFields([
+          'kind', 'ownerId', 'sourceId', 'title', 'payload', 'deletedAt',
+          'expireAt'
+        ])
+        && request.resource.data.ownerId == userId
+        && request.resource.data.sourceId == itemId
+        && request.resource.data.kind in ['recipe']
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 200
+        && (request.resource.data.get('thumbnailUrl', null) == null
+            || request.resource.data.thumbnailUrl is string)
+        && request.resource.data.payload is map
+        && !request.resource.data.payload.keys().hasAny([
+          'socialData', 'grants', 'blockHeldUserIds', 'blockHeld'
+        ])
+        && request.resource.data.payload.get('core', {})
+             .get('createdBy', null) in [null, '', userId]
+        && request.resource.data.deletedAt is timestamp
+        && request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt
+          == request.resource.data.deletedAt + duration.value(30, 'd')
+        && request.resource.data.deletedAt
+          >= request.time - duration.value(1, 'h')
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt
+          <= request.time + duration.value(721, 'h');
+
+      // Immutable: a copy is restored or deleted, never edited.
+      allow update: if false;
+
+      allow delete: if isAuthenticated()
+        && (request.auth.uid == userId || isAdmin());
     }
 
     // ========================================
@@ -3705,6 +3760,16 @@ service cloud.firestore {
     // admin-only catch-all is required. Read-only; admins never write here.
     match /{path=**}/recipes/{recipeId} {
       allow read: if isAdmin();
+    }
+
+    // BUT-2114: users can read their OWN likes via collectionGroup, for the
+    // Art. 15 export (`likes where userId == uid`). Read only: liking and
+    // unliking stay on the nested rules under `recipe_comments`.
+    // NOTE: matches ALL 'likes' subcollections. A new one must carry a
+    // `userId` naming its owner before relying on this block.
+    match /{path=**}/likes/{likeId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
     }
 
     // BUT-407: Users can read/delete their OWN pings via collectionGroup.

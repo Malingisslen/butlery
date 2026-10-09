@@ -401,7 +401,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final allergenPrefs = context.select<UserService, UserAllergenPreferences>(
       (svc) => svc.allergenPreferences,
     );
-    final personalTags = context.watch<PersonalTagViewModel>().tags;
+    final tagViewModel = context.watch<PersonalTagViewModel>();
+    final personalTags = tagViewModel.tags;
     final recipeCount = viewModel.recipes.length;
     // Row 4 of produktregler.md:271: an empty library is Hem's empty state.
     final libraryEmpty =
@@ -454,6 +455,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     context,
                     viewModel: viewModel,
                     personalTags: personalTags,
+                    personalTagsLoading: tagViewModel.isLoading,
                     recipeCount: recipeCount,
                     libraryEmpty: libraryEmpty,
                   ),
@@ -473,6 +475,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     BuildContext context, {
     required RecipeListViewModel viewModel,
     required List<PersonalTag> personalTags,
+    required bool personalTagsLoading,
     required int recipeCount,
     required bool libraryEmpty,
   }) {
@@ -516,6 +519,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
             onExcludedPersonalTagFilterToggle:
                 viewModel.toggleExcludedPersonalTagFilter,
+            personalTagsLoading: personalTagsLoading,
             onManagePersonalTags: () {
               Navigator.push(
                 context,

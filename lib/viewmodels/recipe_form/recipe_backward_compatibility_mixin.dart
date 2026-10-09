@@ -158,6 +158,15 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     notifyListeners();
   }
 
+  /// Auto-add after the last line gets text. Reads the manager, not the
+  /// widget's controller list (a copy per build), so a second change before
+  /// the rebuild finds an empty last line and adds nothing.
+  void ensureTrailingIngredientLine() {
+    final values = state.ingredientsManager.values;
+    if (values.isNotEmpty && values.last.trim().isEmpty) return;
+    addIngredient();
+  }
+
   /// Remove ingredient at index
   void removeIngredient(int index) {
     state.removeIngredientLine(index);
@@ -207,6 +216,13 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     notifyListeners();
   }
 
+  /// Instruction twin of [ensureTrailingIngredientLine].
+  void ensureTrailingInstructionLine() {
+    final values = state.instructionsManager.values;
+    if (values.isNotEmpty && values.last.trim().isEmpty) return;
+    addInstruction();
+  }
+
   /// Remove instruction at index
   void removeInstruction(int index) {
     state.instructionsManager.removeAt(index);
@@ -245,9 +261,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   EditMode? get editModeEnum {
     return permissionManager.editModeEnum;
   }
-
-  /// Check if in edit mode
-  bool get isEditMode => permissionManager.canEdit;
 
   /// Function getter for adding image URL
   Function(String) get addImageUrlFunc => addImageFromUrl;

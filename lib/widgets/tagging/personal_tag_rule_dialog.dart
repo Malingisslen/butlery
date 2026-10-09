@@ -435,6 +435,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     return PressFill(
       surface: PressSurface.base,
       child: DropdownButtonFormField<String>(
+        icon: const ButleryIcon(ButleryIcons.chevronDown),
         iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         iconDisabledColor: AppModeColors.textDisabled(
           Theme.of(context).brightness,
@@ -703,6 +704,7 @@ class _ConditionRow extends StatelessWidget {
                 child: PressFill(
                   surface: PressSurface.base,
                   child: DropdownButtonFormField<ConditionType>(
+                    icon: const ButleryIcon(ButleryIcons.chevronDown),
                     iconEnabledColor: Theme.of(
                       context,
                     ).colorScheme.onSurfaceVariant,
@@ -786,6 +788,7 @@ class _ConditionRow extends StatelessWidget {
     return PressFill(
       surface: PressSurface.base,
       child: DropdownButtonFormField<ConditionOperator>(
+        icon: const ButleryIcon(ButleryIcons.chevronDown),
         iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         iconDisabledColor: AppModeColors.textDisabled(
           Theme.of(context).brightness,
@@ -901,6 +904,7 @@ class _ConditionRow extends StatelessWidget {
     return PressFill(
       surface: PressSurface.base,
       child: DropdownButtonFormField<String>(
+        icon: const ButleryIcon(ButleryIcons.chevronDown),
         iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         iconDisabledColor: AppModeColors.textDisabled(
           Theme.of(context).brightness,

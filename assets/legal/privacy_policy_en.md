@@ -1,6 +1,6 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 6, 2026
+**Last updated:** October 9, 2026
 **Version:** 1.4.0
 
 ---
@@ -219,6 +219,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
+| Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |

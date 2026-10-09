@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
+import 'package:butlery/widgets/recipe/recipe_image_states.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
@@ -29,11 +30,16 @@ class RecipeDetailMetadata extends StatefulWidget {
   final int currentPortions;
   final bool isScaled;
 
+  /// Set only for a recipe without a photo that the viewer can edit; draws
+  /// the "Lägg till foto" chip in the chip row.
+  final VoidCallback? onAddPhoto;
+
   const RecipeDetailMetadata({
     super.key,
     required this.viewModel,
     required this.currentPortions,
     required this.isScaled,
+    this.onAddPhoto,
   });
 
   @override
@@ -312,6 +318,11 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         ),
       ),
     );
+
+    final onAddPhoto = widget.onAddPhoto;
+    if (onAddPhoto != null) {
+      metadataWidgets.add(RecipeAddPhotoChip(onPressed: onAddPhoto));
+    }
 
     final metadataRow = Wrap(
       spacing: AppDimensions.spacingMd,

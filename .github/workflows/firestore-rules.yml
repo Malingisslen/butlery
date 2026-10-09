@@ -7,6 +7,8 @@ name: Firestore Rules
 
 on:
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "firestore.rules"
       - "storage.rules"
@@ -39,6 +41,7 @@ on:
       - "functions/src/__tests__/members-collection-group-rules.test.ts"
       - "functions/src/__tests__/acquisition-rules.test.ts"
       - "functions/src/__tests__/overwritten-versions-rules.test.ts"
+      - "functions/src/__tests__/trash-rules.test.ts"
       - "functions/src/__tests__/recipe-suggestions-rules.test.ts"
       - "functions/src/__tests__/realtime-resources-rules.test.ts"
       - "functions/src/__tests__/ingredient-suggestions-rules.test.ts"
@@ -114,6 +117,7 @@ on:
       - "functions/src/__tests__/members-collection-group-rules.test.ts"
       - "functions/src/__tests__/acquisition-rules.test.ts"
       - "functions/src/__tests__/overwritten-versions-rules.test.ts"
+      - "functions/src/__tests__/trash-rules.test.ts"
       - "functions/src/__tests__/recipe-suggestions-rules.test.ts"
       - "functions/src/__tests__/realtime-resources-rules.test.ts"
       - "functions/src/__tests__/ingredient-suggestions-rules.test.ts"
@@ -160,6 +164,7 @@ concurrency:
 
 jobs:
   rules-tests:
+    if: github.event.pull_request.draft != true
     name: Rules unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 15

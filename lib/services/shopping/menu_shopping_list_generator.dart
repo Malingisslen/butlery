@@ -402,11 +402,25 @@ class MenuShoppingListGenerator extends BaseService {
     ];
   }
 
+  static String _formatExtra(({double amount, String unit}) extra) {
+    final item = UnifiedShoppingItem(
+      name: '',
+      amount: extra.amount,
+      unit: extra.unit,
+    );
+    return [
+      item.formattedAmount,
+      item.formattedUnit,
+    ].where((p) => p.isNotEmpty).join(' ');
+  }
+
   /// The row's note: how many recipes it came from ("Raden visar '3
   /// recept'", #inkopmergeoppen) and the pantry's mark (§ 4.2).
   static String? _noteFor(MenuShoppingMergeLine line) {
     final l = AppLocale.current;
     final parts = [
+      // BUT-2304: amounts that could not join the row's own unit.
+      for (final extra in line.extraAmounts) '+ ${_formatExtra(extra)}',
       if (line.sourceCount > 1) l.shoppingMergeRowRecipes(line.sourceCount),
       if (line.mark == MenuShoppingPantryMark.maybeAtHome)
         l.shoppingMergeMarkMaybeHome,

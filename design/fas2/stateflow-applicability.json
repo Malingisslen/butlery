@@ -1,0 +1,1762 @@
+{
+ "$schema": "butlery-stateflow-applicability/1",
+ "$om": "Block 283. Normativ applicability for kontrolltillstand och overgangar. Kanonisk maskinlasbar kalla. HTML-rapporter ar aldrig indata.",
+ "block": "283",
+ "input_commit": "2a36c5150453e9b0a44953a31fe64b345cd1ce7c",
+ "beslutsdatum": "2026-09-17",
+ "$regel": "Identitet = ROW_ID respektive TRANSITION_ID. Status ingar ALDRIG i identiteten. Block 282:s mappning, skarm-id och kravidentiteter ar read-only.",
+ "produktbeslut": {
+  "D10_GENERALIZATION": "NO",
+  "$d10": "D-10 ar scoped till delningslaget och sager dar att lasaren inte far nagra kryssrutor alls, \"inte inaktiverade\". Det ar inte positivt stod for en generell regel. checkbox::DISABLED forblir UNSPECIFIED och far inte bli NOT_REQUIRED.",
+  "ROLE_VOCABULARY_CONFLICT_OPEN": "YES",
+  "$roller": "link, menuitem, combobox och searchbox behandlas tills vidare som oerkanda. Deras 24 applicability-rader forblir UNSPECIFIED. Rollvokabularen andras inte, lintet andras inte, och rollerna mappas inte till andra roller. Fragan loses i Block 284 genom kontroll av de 26 faktiska forekomsterna.",
+  "berorda_roller": [
+   "link",
+   "menuitem",
+   "combobox",
+   "searchbox"
+  ],
+  "berorda_rader": [
+   "CSR::ROLE::combobox::COLLAPSED",
+   "CSR::ROLE::combobox::DISABLED",
+   "CSR::ROLE::combobox::EXPANDED",
+   "CSR::ROLE::combobox::FOCUSED",
+   "CSR::ROLE::combobox::PRESSED",
+   "CSR::ROLE::combobox::SELECTED",
+   "CSR::ROLE::link::COLLAPSED",
+   "CSR::ROLE::link::DISABLED",
+   "CSR::ROLE::link::EXPANDED",
+   "CSR::ROLE::link::FOCUSED",
+   "CSR::ROLE::link::PRESSED",
+   "CSR::ROLE::link::SELECTED",
+   "CSR::ROLE::menuitem::COLLAPSED",
+   "CSR::ROLE::menuitem::DISABLED",
+   "CSR::ROLE::menuitem::EXPANDED",
+   "CSR::ROLE::menuitem::FOCUSED",
+   "CSR::ROLE::menuitem::PRESSED",
+   "CSR::ROLE::menuitem::SELECTED",
+   "CSR::ROLE::searchbox::COLLAPSED",
+   "CSR::ROLE::searchbox::DISABLED",
+   "CSR::ROLE::searchbox::EXPANDED",
+   "CSR::ROLE::searchbox::FOCUSED",
+   "CSR::ROLE::searchbox::PRESSED",
+   "CSR::ROLE::searchbox::SELECTED"
+  ],
+  "TRANSITION_REPRESENTATION_ABSENT_IS_NOT_AUTOMATIC_REMEDIATION": "YES",
+  "$transitioner": "De 25 ABSENT betyder endast att nuvarande granskningsmodell inte hittar en ritad representationsyta for overgangen. Det betyder INTE att produkten behover 25 nya skarmar, animationer eller artefakter. Det avgors forst i en separat representation/remediation-analys."
+ },
+ "kallregister": {
+  "a11y-handoff-doc": {
+   "fil": "Butlery tillganglighetshandoff.dc.html",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Semantik och tillstand (handoff)",
+   "$anspraak": "Roll, namn och tillstand i den har filen vinner over allt annat."
+  },
+  "komponentark": {
+   "fil": "Butlery Komponentark v1.dc.html",
+   "agare": "DS",
+   "doman": "Komponentgeometri och lagen"
+  },
+  "grafisk-manual": {
+   "fil": "Butlery Grafisk manual v6.dc.html",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Principer och motiv"
+  },
+  "evidensmatris": {
+   "fil": "evidensmatris.md",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Kravstatus"
+  },
+  "produktregler": {
+   "fil": "produktregler.md",
+   "agare": "PRODUKT",
+   "authorityState": "active",
+   "doman": "Produktinvarianter"
+  },
+  "flows-roles-budget": {
+   "fil": "flows-roles-budget.md",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Flodesovergangar",
+   "$anspraak": "Normativ for hur man nar varje tillstand."
+  },
+  "tokens": {
+   "fil": "tokens.json",
+   "agare": "DS",
+   "doman": "Designvarden"
+  },
+  "plattformsmatris": {
+   "fil": "plattformsmatris.md",
+   "agare": "DS",
+   "doman": "Plattformsbeteende"
+  },
+  "lint-core": {
+   "fil": "tools/lint-core.mjs",
+   "doman": "Stangd rollvokabular T-08 och A11Y-02"
+  },
+  "block-282": {
+   "fil": "fas2/stateflow-mappning.json + tools/stateflow-population.mjs",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Harledd kontrollpopulation",
+   "$anspraak": "Rader som redan var REQUIRED i Block 282 har sin proveniens dar: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen. Block 283 har inte omprovat dem och andrar dem inte."
+  }
+ },
+ "forvantat": {
+  "CONTROL_STATE_ROWS": 70,
+  "REQUIRED": 28,
+  "UNSPECIFIED": 42,
+  "NOT_REQUIRED": 0,
+  "UNVERIFIABLE": 0,
+  "UNKNOWN": 0,
+  "NYA_REQUIRED": [
+   "CSR::ROLE::button::FOCUSED",
+   "CSR::ROLE::button::PRESSED",
+   "CSR::ROLE::checkbox::FOCUSED",
+   "CSR::ROLE::radio::DISABLED",
+   "CSR::ROLE::radio::FOCUSED",
+   "CSR::ROLE::switch::FOCUSED",
+   "CSR::ROLE::tab::FOCUSED",
+   "CSR::ROLE::textbox::DISABLED",
+   "CSR::ROLE::textbox::FOCUSED"
+  ],
+  "TRANSITION_ROWS": 35,
+  "APPLICABILITY_REQUIRED": 35,
+  "REPRESENTATION_PRESENT": 8,
+  "REPRESENTATION_ABSENT": 25,
+  "REPRESENTATION_UNVERIFIABLE": 2,
+  "IDENTITY_FINGERPRINT": "2e7816936df8d602",
+  "STATUS_FINGERPRINT": "48182cf827ccfb6b",
+  "BLOCK_282": {
+   "POPULATION_FINGERPRINT": "5ede5a7c9ab3dfef",
+   "IDENTITY_FINGERPRINT": "d0c7b88913b45f18",
+   "MAPPING_FINGERPRINT": "639a14d6afb84664",
+   "VIEW_SCREENS": 304,
+   "FRAME_SCREENS": 25,
+   "FLOW_REPRESENTATION": {
+    "PRESENT": 51,
+    "ABSENT": 30,
+    "AMBIGUOUS": 0,
+    "UNVERIFIABLE": 0
+   }
+  }
+ },
+ "kontrolltillstand": [
+  {
+   "ROW_ID": "CSR::ROLE::button::DEFAULT",
+   "CONTROL_TYPE": "button",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (939 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 939 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 939
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::PRESSED",
+   "CONTROL_TYPE": "button",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "a11y-handoff-doc",
+    "evidensmatris",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "handoff: kontrollraderna Favorit, Chip/filter, Visa/dolj losenord (role 'vaxlingsknapp', state 'pressed true/false'). evidensmatris rad 181 K-04. tokens semantic.action.primaryPressed + text.onActionPrimaryPressed.",
+   "EVIDENCE": "handoff: \"Favorit · vaxlingsknapp · pressed true/false\". K-04: \"Pressad saffran bar papper, aldrig ink\", scope knappar, status verifierad.",
+   "DECISION_BASIS": "Tre oberoende agda kallor namnger nedtryckt lage for knapp, varav en (handoff) ar overordnad for roll/namn/tillstand och en (K-04) ar en verifierad kravrad med eget kontrastgolv.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::FOCUSED",
+   "CONTROL_TYPE": "button",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "evidensmatris",
+    "tokens",
+    "plattformsmatris",
+    "komponentark"
+   ],
+   "SOURCE_LOCATION": "evidensmatris rad 198 T-05 (scope alla). tokens semantic.focusRing. plattformsmatris rad 50. komponentark: chip-raden \"vila · vald · fokus · disabled\".",
+   "EVIDENCE": "T-05: \"Fokusordning foljer lasordning\", scope alla. tokens.focusRing: 2 px, 3 px offset, ljus och mork. plattformsmatris: \"Fokusram | tangentbord och switch access\".",
+   "DECISION_BASIS": "Fokus ar deklarerat som designvarde i tokens och som krav med scope alla i evidensmatrisen; knappen ar tangentbordsnabar.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::SELECTED",
+   "CONTROL_TYPE": "button",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (17 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 17 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 17
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::DISABLED",
+   "CONTROL_TYPE": "button",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (7 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 7 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 7
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::EXPANDED",
+   "CONTROL_TYPE": "button",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (5 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 5 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 5
+  },
+  {
+   "ROW_ID": "CSR::ROLE::button::COLLAPSED",
+   "CONTROL_TYPE": "button",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (6 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 6 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 6
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::DEFAULT",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (77 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 77 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 77
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::PRESSED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Nedtryckt lage namns bara for rollen 'vaxlingsknapp' (handoff) och for knappar (K-04). Ingen kalla namner nedtryckt for kryssruta, radio, reglage, flik eller falt. Att extrapolera fran knappen vore forbjuden extrapolering.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::FOCUSED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "evidensmatris",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "evidensmatris rad 195 T-03, scope \"kryssruta · radio · reglage\". tokens semantic.focusRing.",
+   "EVIDENCE": "T-03: \"Fokusram runt hitboxen, aldrig runt glyfen\", scope kryssruta · radio · reglage, status implementerad.",
+   "DECISION_BASIS": "Kravraden namnger kryssrutan uttryckligen i sin scope-kolumn.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::SELECTED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (51 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 51 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 51
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::DISABLED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Enda kallan som ror inaktiverade kryssrutor ar D-10, och den sager motsatsen i sitt sammanhang: lasaren far INGA kryssrutor, 'inte inaktiverade'. Det ar positivt stod for att inte rita dem i just delningslaget, men ingen generell regel for kontrolltypen. Fail closed.",
+   "CONFIDENCE": "MEDEL",
+   "FLAGGA": "Kandidat for NOT_REQUIRED om du anser att D-10 ska generaliseras. Verktyget generaliserar den inte.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::EXPANDED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::checkbox::COLLAPSED",
+   "CONTROL_TYPE": "checkbox",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::DEFAULT",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (8 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 8 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 8
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::PRESSED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::FOCUSED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::SELECTED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::DISABLED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::EXPANDED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::combobox::COLLAPSED",
+   "CONTROL_TYPE": "combobox",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::DEFAULT",
+   "CONTROL_TYPE": "link",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (14 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 14 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 14
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::PRESSED",
+   "CONTROL_TYPE": "link",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::FOCUSED",
+   "CONTROL_TYPE": "link",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::SELECTED",
+   "CONTROL_TYPE": "link",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::DISABLED",
+   "CONTROL_TYPE": "link",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::EXPANDED",
+   "CONTROL_TYPE": "link",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::link::COLLAPSED",
+   "CONTROL_TYPE": "link",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::DEFAULT",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (3 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 3 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 3
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::PRESSED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::FOCUSED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::SELECTED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::DISABLED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::EXPANDED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::menuitem::COLLAPSED",
+   "CONTROL_TYPE": "menuitem",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::DEFAULT",
+   "CONTROL_TYPE": "radio",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (48 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 48 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 48
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::PRESSED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Nedtryckt lage namns bara for rollen 'vaxlingsknapp' (handoff) och for knappar (K-04). Ingen kalla namner nedtryckt for kryssruta, radio, reglage, flik eller falt. Att extrapolera fran knappen vore forbjuden extrapolering.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::FOCUSED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "evidensmatris",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "evidensmatris rad 195 T-03, scope \"kryssruta · radio · reglage\".",
+   "EVIDENCE": "T-03 namnger radio i sin scope-kolumn.",
+   "DECISION_BASIS": "Samma kravrad som kryssrutan; rollen ar namngiven.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::SELECTED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (20 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 20 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 20
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::DISABLED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "SOURCE_LOCATION": "komponentark: \"Segment — vald · vila · disabled\". handoff: kontrollraden \"Segment (Kan redigera / Endast lasa)\" med role 'radiogroup'.",
+   "EVIDENCE": "Komponentarket raknar upp segmentets tre lagen och disabled ar ett av dem; handoffen ger segmentet rollen radiogroup.",
+   "DECISION_BASIS": "Komponentarket namner disabled for segmentet, och handoffen — som ar overordnad for roll — klassar segmentet som radiogroup. Kopplingen segment -> radio ar harledd ur tva kallor, inte ur en enda.",
+   "CONFIDENCE": "MEDEL",
+   "FLAGGA": "Kopplingen segment -> radio vilar pa handoffens rollangivelse. Om du anser att segment ar en egen komponent utan radio-roll faller raden till UNSPECIFIED.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::EXPANDED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::radio::COLLAPSED",
+   "CONTROL_TYPE": "radio",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::DEFAULT",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (1 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 1 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 1
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::PRESSED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::FOCUSED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::SELECTED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::DISABLED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::EXPANDED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::searchbox::COLLAPSED",
+   "CONTROL_TYPE": "searchbox",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Rollerna link, menuitem, combobox och searchbox ligger UTANFOR den stangda rollvokabularen i lint-core (button, tab, switch, radio, checkbox, textbox) och T-08 fäller dem i dag som ogiltiga roller, 26 forekomster. Ingen normativ kalla namner dem. Att tilldela dem tillstandskrav vore att normera en roll som specen inte erkanner.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": "Kraver ditt beslut: ska de fyra rollerna finnas alls? Sa lange T-08 faller dem gar deras tillstandskrav inte att avgora.",
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::DEFAULT",
+   "CONTROL_TYPE": "switch",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (19 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 19 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 19
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::PRESSED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Nedtryckt lage namns bara for rollen 'vaxlingsknapp' (handoff) och for knappar (K-04). Ingen kalla namner nedtryckt for kryssruta, radio, reglage, flik eller falt. Att extrapolera fran knappen vore forbjuden extrapolering.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::FOCUSED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "evidensmatris",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "evidensmatris rad 195 T-03, scope \"kryssruta · radio · reglage\" (reglage = switch).",
+   "EVIDENCE": "T-03 namnger reglaget i sin scope-kolumn.",
+   "DECISION_BASIS": "Samma kravrad; 'reglage' ar projektets ord for switch och anvands sa i produktregler 686 och BH-07.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::SELECTED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (21 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 21 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 21
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::DISABLED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (3 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 3 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 3
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::EXPANDED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::switch::COLLAPSED",
+   "CONTROL_TYPE": "switch",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::DEFAULT",
+   "CONTROL_TYPE": "tab",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (101 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 101 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 101
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::PRESSED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Nedtryckt lage namns bara for rollen 'vaxlingsknapp' (handoff) och for knappar (K-04). Ingen kalla namner nedtryckt for kryssruta, radio, reglage, flik eller falt. Att extrapolera fran knappen vore forbjuden extrapolering.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::FOCUSED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "komponentark",
+    "evidensmatris",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "komponentark: \"Textflikar — vald · vila · fokus\". evidensmatris rad 198 T-05 (scope alla).",
+   "EVIDENCE": "Komponentarket raknar upp flikens lagen och fokus ar ett av tre.",
+   "DECISION_BASIS": "Komponentarket enumererar flikens normativa lagen explicit.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::SELECTED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (10 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 10 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 10
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::DISABLED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Komponentarket namner disabled for Segment, inte for Textflikar. Handoffen ger segmentet rollen radiogroup, inte tablist. Flikens uppraknade lagen ar vald, vila och fokus.",
+   "CONFIDENCE": "MEDEL",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::EXPANDED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::tab::COLLAPSED",
+   "CONTROL_TYPE": "tab",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::DEFAULT",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "DEFAULT",
+   "PREVIOUS_STATUS": "REQUIRED",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "block-282"
+   ],
+   "SOURCE_LOCATION": "Block 282: A11Y-02:s STATEFUL-regel i tools/lint-core.mjs plus faktiska forekomster i skarmkorpusen (55 st).",
+   "EVIDENCE": "Rollen bar tillstandet i korpusen i 55 forekomster.",
+   "DECISION_BASIS": "Arvd fran Block 282, inte omprovad i Block 283. Status oforandrad.",
+   "CONFIDENCE": "ARVD",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 55
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::PRESSED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "PRESSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Nedtryckt lage namns bara for rollen 'vaxlingsknapp' (handoff) och for knappar (K-04). Ingen kalla namner nedtryckt for kryssruta, radio, reglage, flik eller falt. Att extrapolera fran knappen vore forbjuden extrapolering.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::FOCUSED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "FOCUSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "komponentark",
+    "grafisk-manual",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "komponentark: \"Inputens lagen — vila och validerad i border-control, fokus som 2 px blackring med 3 px offset\". grafisk-manual: \"Falt: ... fokus ar ringen (2 px/3 px offset), kanten byter aldrig tjocklek\".",
+   "EVIDENCE": "Bada kallorna enumererar faltets lagen och namnger fokus med matt.",
+   "DECISION_BASIS": "Faltets lagen ar uttryckligen uppraknade och fokus ingar med eget matt.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::SELECTED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "SELECTED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Ingen kalla ger ett textfalt ett valt lage. Handoffens textbox bar 'invalid', inte 'selected'.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::DISABLED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "DISABLED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "REQUIRED",
+   "SOURCE": [
+    "evidensmatris",
+    "grafisk-manual",
+    "tokens"
+   ],
+   "SOURCE_LOCATION": "evidensmatris rad 183 K-06, scope formular. grafisk-manual: \"Falt: ... disabled i surface-tonal med 1 px ui-disabled-kant och lasbar text\". tokens semantic.surface.disabled, text.disabled, contrastPolicy.floors.disabled = 3.",
+   "EVIDENCE": "K-06: \"Inaktiverat: eget golv 3:1, undantaget fran 4,5:1, aldrig via opacitet\", scope formular.",
+   "DECISION_BASIS": "Kravrad med eget kontrastgolv plus manualens faltlagesuppraekning plus egna tokens for inaktiv yta och text.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::EXPANDED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "EXPANDED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  },
+  {
+   "ROW_ID": "CSR::ROLE::textbox::COLLAPSED",
+   "CONTROL_TYPE": "textbox",
+   "STATE": "COLLAPSED",
+   "PREVIOUS_STATUS": "UNKNOWN",
+   "NEW_STATUS": "UNSPECIFIED",
+   "SOURCE": [],
+   "SOURCE_LOCATION": "—",
+   "EVIDENCE": "—",
+   "DECISION_BASIS": "Utfallt och hopfallt namns bara for ytor som oppnar nagot: kebab, sorteringsark och radens atgardsmeny (handoff), samt sektioner och skena (produktregler 945, 1047, FB-13, BR-07). Samtliga bars av knappar. Ingen kalla ger en kryssruta, radio, reglage, flik eller falt ett utfallt lage.",
+   "CONFIDENCE": "HOG",
+   "FLAGGA": null,
+   "REPRESENTATION_OCCURRENCES": 0
+  }
+ ],
+ "overgangar": [
+  {
+   "TRANSITION_ID": "TR::FLOW::01::tom-vecka::generera",
+   "FROM": "tom vecka",
+   "TRIGGER": "Generera",
+   "TO": "genererar",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::vecka-med-rätter::generera",
+   "FROM": "vecka med rätter",
+   "TRIGGER": "Generera",
+   "TO": "bekräfta överskrivning före beräkningen startar",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::10-s",
+   "FROM": "genererar",
+   "TRIGGER": "> 10 s",
+   "TO": "lång väntan",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::lång-väntan::fortsätt-i-bakgrunden",
+   "FROM": "lång väntan",
+   "TRIGGER": "Fortsätt i bakgrunden",
+   "TO": "bakgrund + notis vid klar",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "UNVERIFIABLE",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "MEDEL"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::alla-dagar-klara",
+   "FROM": "genererar",
+   "TRIGGER": "alla dagar klara",
+   "TO": "resultat",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::1-n-begärt-antal-recept-placerade",
+   "FROM": "genererar",
+   "TRIGGER": "1 ≤ n < begärt antal recept placerade",
+   "TO": "partiellt",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::0-recept-placerade",
+   "FROM": "genererar",
+   "TRIGGER": "0 recept placerade",
+   "TO": "inga matchningar",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::6-10-s",
+   "FROM": "genererar",
+   "TRIGGER": "6–10 s",
+   "TO": "samma vy, stegtexten byts till ”Det tar längre tid än vanligt”",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::genererar::offline",
+   "FROM": "genererar",
+   "TRIGGER": "offline",
+   "TO": "avbrutet + banner, tidigare vecka orörd",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::resultat::ångra-snackbar-30-s",
+   "FROM": "resultat",
+   "TRIGGER": "Ångra (snackbar, 30 s)",
+   "TO": "föregående vecka återställd",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::01::resultat::efter-30-s",
+   "FROM": "resultat",
+   "TRIGGER": "efter 30 s",
+   "TO": "överskriven version nås i Återställ i 30 dagar",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 01 · backning: produktregler § 4 Veckomenyns modell, § 2.4 Angra hor till operationen, § 3.1 Offlinekons regler",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::veckomeny::till-inköpslistan",
+   "FROM": "veckomeny",
+   "TRIGGER": "Till inköpslistan",
+   "TO": "merge-ark (#inkopmerge)",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "PRESENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 02 · backning: produktregler § 4.1 Enhetskonvertering, § 4.2 Skafferiavdrag, § 2 Konflikthantering per entitet",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::merge-ark::lägg-till-n-varor",
+   "FROM": "merge-ark",
+   "TRIGGER": "Lägg till N varor",
+   "TO": "inköp + snackbar med Ångra",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 02 · backning: produktregler § 4.1 Enhetskonvertering, § 4.2 Skafferiavdrag, § 2 Konflikthantering per entitet",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::merge-ark::ersätt-listan-på",
+   "FROM": "merge-ark",
+   "TRIGGER": "Ersätt listan (på)",
+   "TO": "egna manuella varor behålls, receptskapade rader ersätts",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 02 · backning: produktregler § 4.1 Enhetskonvertering, § 4.2 Skafferiavdrag, § 2 Konflikthantering per entitet",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::02::lägga-till::listan-ändrad-av-annan-person-samtidigt",
+   "FROM": "lägga till",
+   "TRIGGER": "listan ändrad av annan person samtidigt",
+   "TO": "conflict: dina rader läggs till, inget skrivs över",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 02 · backning: produktregler § 4.1 Enhetskonvertering, § 4.2 Skafferiavdrag, § 2 Konflikthantering per entitet",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::länkfält::importera",
+   "FROM": "länkfält",
+   "TRIGGER": "Importera",
+   "TO": "hämtar",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::ok",
+   "FROM": "hämtar",
+   "TRIGGER": "ok",
+   "TO": "granska före sparande",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::privat-trasig-länk",
+   "FROM": "hämtar",
+   "TRIGGER": "privat / trasig länk",
+   "TO": "error: \"Länken kunde inte läsas\" + Klistra in texten själv",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::betalvägg",
+   "FROM": "hämtar",
+   "TRIGGER": "betalvägg",
+   "TO": "error: \"Sidan kräver inloggning\" + Klistra in texten själv",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::hämtar::sidan-har-inget-recept",
+   "FROM": "hämtar",
+   "TRIGGER": "sidan har inget recept",
+   "TO": "error: \"Vi hittade inget recept på sidan\" + Skriv själv",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
+   "FROM": "granska",
+   "TRIGGER": "fält med låg säkerhet",
+   "TO": "markeras och kräver bekräftelse innan Spara",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::granska::receptet-finns-redan",
+   "FROM": "granska",
+   "TRIGGER": "receptet finns redan",
+   "TO": "dubblett: Öppna befintligt · Spara som nytt",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::03::foto-ocr::otolkad-text",
+   "FROM": "foto/OCR",
+   "TRIGGER": "otolkad text",
+   "TO": "granska med raden tom och markerad — aldrig gissad text",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 03 · backning: produktregler § 9.1–9.6 Import av recept",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::receptdetalj::börja-laga",
+   "FROM": "receptdetalj",
+   "TRIGGER": "Börja laga",
+   "TO": "steg 1, skärmen hålls vaken",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 04 · backning: produktregler § 7.8 Substitutioner, § 7.9 Timers",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::timer-startad",
+   "FROM": "steg n",
+   "TRIGGER": "timer startad",
+   "TO": "timer i systemnotis; flera timers tillåtna, namngivna efter steget",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 04 · backning: produktregler § 7.8 Substitutioner, § 7.9 Timers",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::app-i-bakgrunden",
+   "FROM": "steg n",
+   "TRIGGER": "app i bakgrunden",
+   "TO": "timers fortsätter; notisbehörighet saknas → varning innan timern startas",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 04 · backning: produktregler § 7.8 Substitutioner, § 7.9 Timers",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::bakåt-stäng",
+   "FROM": "steg n",
+   "TRIGGER": "bakåt / stäng",
+   "TO": "bekräfta avslut om mer än ett steg är klart",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 04 · backning: produktregler § 7.8 Substitutioner, § 7.9 Timers",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::avslutat::klart",
+   "FROM": "avslutat",
+   "TRIGGER": "Klart",
+   "TO": "receptdetalj + \"Lagat N gånger\" uppräknad",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 04 · backning: produktregler § 7.8 Substitutioner, § 7.9 Timers",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::04::steg-n::rotation",
+   "FROM": "steg n",
+   "TRIGGER": "rotation",
+   "TO": "layout byter, steg och timer bevaras",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "UNVERIFIABLE",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 04 · backning: produktregler § 7.8 Substitutioner, § 7.9 Timers",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "MEDEL"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::deep-link::utloggad",
+   "FROM": "deep link",
+   "TRIGGER": "utloggad",
+   "TO": "inloggning → tillbaka till länkens mål",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 05 · backning: produktregler § 5 Roller, § 8.1–8.6 Delade inkopslistor",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::deep-link::länken-återkallad-eller-utgången",
+   "FROM": "deep link",
+   "TRIGGER": "länken återkallad eller utgången",
+   "TO": "error: \"Länken gäller inte längre\" + Begär ny",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 05 · backning: produktregler § 5 Roller, § 8.1–8.6 Delade inkopslistor",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::deep-link::redan-medlem",
+   "FROM": "deep link",
+   "TRIGGER": "redan medlem",
+   "TO": "direkt till objektet, ingen mellanvy",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 05 · backning: produktregler § 5 Roller, § 8.1–8.6 Delade inkopslistor",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::grupp::ägaren-lämnar",
+   "FROM": "grupp",
+   "TRIGGER": "ägaren lämnar",
+   "TO": "ägarskap måste överlåtas först — annars blockeras handlingen",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 05 · backning: produktregler § 5 Roller, § 8.1–8.6 Delade inkopslistor",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::medlem::behörighet-sänks-till-endast-läsa",
+   "FROM": "medlem",
+   "TRIGGER": "behörighet sänks till endast läsa",
+   "TO": "öppna redigeringsvyer stängs med förklaring, osparat erbjuds som kopia",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 05 · backning: produktregler § 5 Roller, § 8.1–8.6 Delade inkopslistor",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::05::person::blockerad",
+   "FROM": "person",
+   "TRIGGER": "blockerad",
+   "TO": "delningar döljs åt båda håll, historik behålls",
+   "PREVIOUS_APPLICABILITY": "UNKNOWN",
+   "NEW_APPLICABILITY": "REQUIRED",
+   "REPRESENTATION_STATUS": "ABSENT",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md, flode 05 · backning: produktregler § 5 Roller, § 8.1–8.6 Delade inkopslistor",
+   "DECISION_BASIS": "flows-roles-budget.md ar authorityState active, agare DS, doman 'Flodesovergangar', och forklarar sig sjalv 'Normativ for hur man nar varje tillstand'. Varje rad i dess overgangstabeller ar darfor normativt REQUIRED som flodeskrav. Representation ar en separat axel och avgors av om ett skarmankare finns.",
+   "CONFIDENCE": "HOG"
+  }
+ ]
+}

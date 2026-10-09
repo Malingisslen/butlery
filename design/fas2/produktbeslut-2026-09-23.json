@@ -1,0 +1,232 @@
+{
+ "$om": "Mänskliga produktbeslut från Malin 2026-09-23, fattade på beslutssidan 2026-09-23-beslut.html. Styr paket 3–8 i migreringen. Ändrar inte Block 287/288/289-frysningarna; där ett beslut ändrar en kanonisk källa (t.ex. produktregler §8.7 i PQ-10) görs det som en egen ändring.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-23",
+ "rader": [
+  {
+   "id": "PQ-01",
+   "fraga": "Ska 'Återställ i 30 dagar' byggas nu? Reglerna säger att när någon annans ändring skriver över din ska din version sparas i 30 dagar och kunna återställas. Det kräver en ändringshistorik på servern som appen inte har i dag. Ingen av migrationsplanens 82 enheter bygger den.",
+   "alternativ": [
+    "A: Bygg bara det konflikterna behöver nu, alltså att den överskrivna versionen sparas och kan återställas för veckomenyn och egna recept. Resten (inköpslistans sammanslagning per operation, skafferiets fält-för-fält-historik) blir ett eget projekt efter migreringen.",
+    "B: Bygg hela ändringsmodellen nu, som ett eget paket mellan 5 och 6. Det försenar flödena med flera veckor.",
+    "C: Ändra regeln. Ingen Återställ, bara räddning i stunden ('Behåll min version' och snackbaren i 30 s)."
+   ],
+   "rekommendation": "A. Den håller löftet att inget kastas tyst, till lägst kostnad. I kväll räddas ändringar redan i stunden: konfliktbeskedet med 'Behåll min version' och veckans 30-sekunderssnackbar.",
+   "beslut": "A",
+   "kommentar": "Allt som inte byggs nu men borde läggs som biljetter i Linear."
+  },
+  {
+   "id": "PQ-02",
+   "fraga": "När du ändrar någon annans delade recept samtidigt som ägaren gör det, säger reglerna att ägarens version vinner och att din ändring sparas som ett förslag ('Se ditt förslag', 7 dagar). Appen har inga förslag i dag. Vad ska hända fram till dess?",
+   "alternativ": [
+    "A: Tills vidare får du samma konfliktvy som ägaren ('Behåll min version' eller 'Använd deras'), så att inget försvinner. Förslagen byggs i paket 6 tillsammans med delningsflödet.",
+    "B: Bygg förslagen nu, innan konfliktvyn kopplas in.",
+    "C: Ägaren vinner och du kan bara titta på din version. Det bryter mot regeln att inget kastas tyst."
+   ],
+   "rekommendation": "A. Inget går förlorat, och förslagen byggs en gång i delningsflödet där 'Föreslå ändring' ändå behövs.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-10",
+   "fraga": "Veckomeny → inköpslista med 'Ersätt listan' på: vad händer med varor du själv har skrivit in? Flödesbeskrivningen och ritningen säger 'dina egna varor behålls alltid'. Produktreglerna §8.7 säger 'manuella tillägg överlever inte' när veckans lista görs om. Och vilken lista hamnar varorna i: veckans genererade lista eller en lista du väljer?",
+   "alternativ": [
+    "A: Egna varor behålls alltid, och varorna hamnar i veckans genererade lista (skapas om den saknas). §8.7 ändras.",
+    "B: Egna varor försvinner vid Ersätt, som §8.7 säger, men du varnas först och kan flytta dem.",
+    "C: Du väljer lista varje gång, och egna varor behålls."
+   ],
+   "rekommendation": "A. Två källor (flödet och ritningen) säger samma sak, och att tyst ta bort det användaren skrivit bryter mot grundregeln.",
+   "beslut": "A",
+   "kommentar": "Linear-biljett: överväg att senare låta användaren välja detta."
+  },
+  {
+   "id": "PQ-11",
+   "fraga": "'Dra bort skafferivaror' i sammanslagningsarket: ska appen räkna av mängder (du har 2 dl mjölk och behöver 5, så 3 dl hamnar på listan) eller bara hoppa över basvaror som finns hemma?",
+   "alternativ": [
+    "A: Räkna av mängder, och en vara som bara delvis finns hemma läggs till med skillnaden",
+    "B: Hoppa över hela raden om varan finns hemma"
+   ],
+   "rekommendation": "A. Den står i §4.2, i flödesbeskrivningen och i ritningen.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-17",
+   "fraga": "Ritningarna har ett femdelat skal (Hem+Recept, Veckan, central plusknapp, Inköp, Mer). Appen har fyra flikar, varav 'Lägg till' är en flik fast reglerna säger att den ska vara en knapp. Det finns ingen Mer-flik. Inget av detta finns bland migrationsplanens 82 enheter. Ska skalet in i migreringen?",
+   "alternativ": [
+    "A: Ny enhet i paket 6 för skalet (Mer + plusknapp i stället för fliken). Hem-innehållet bedöms i paket 5",
+    "B: Eget produktprojekt efter migreringen",
+    "C: Bara plusknappen i migreringen, Mer och Hem senare"
+   ],
+   "rekommendation": "A. 'Lägg till' som flik bryter redan mot reglerna, och 'Väntar på synk' behöver en plats.",
+   "beslut": "A",
+   "kommentar": "Skillnader och konsekvenser visas som prototyp innan bygget.",
+   "bekraftat_efter_prototyp": true
+  },
+  {
+   "id": "PQ-16",
+   "fraga": "Ska knappen 'Slå på tvåstegsverifiering' döljas redan nu, före paketordningen? Reglerna säger att den inte får gå att slå på utan reservkoder och ett inloggningssteg, och inget av dem finns. Paketordningen är bunden, så det här vore ett undantag.",
+   "alternativ": [
+    "A: Dölj knappen nu, som en liten säkerhetsfix utanför ordningen",
+    "B: Vänta till paket 6 (P6-U09)"
+   ],
+   "rekommendation": "A. Det är en liten ändring som hindrar att fler låser ute sig själva ur hushållets recept.",
+   "beslut": "A",
+   "kommentar": "Noteras i Linear."
+  },
+  {
+   "id": "PQ-15",
+   "fraga": "Finns det redan konton som har slagit på tvåstegsverifiering? Appen kan i dag inte hantera den andra koden vid inloggning, så de kontona kan troligen inte logga in. Hur ska vi ta hand om dem?",
+   "alternativ": [
+    "A: Jag tar fram hur många det är (via Firebase). Är de få, kontaktar supporten dem och stänger av skyddet på deras begäran",
+    "B: Stäng av tvåstegsverifieringen automatiskt för alla sådana konton och meddela dem",
+    "C: Vänta tills inloggningssteget är byggt i P6-U09"
+   ],
+   "rekommendation": "A. Först antalet, och sedan personlig kontakt. Det rör sig om ett säkerhetsskydd på någons konto.",
+   "beslut": "A",
+   "kommentar": "Det finns inga sådana konton, så ingen hantering behövs."
+  },
+  {
+   "id": "PQ-09",
+   "fraga": "Komponentarket ritar snackbaren mörk (bläck) med knappen i en ljus saffranston (#E09D50). Den färgen finns inte som token i designsystemet. Ska den bli en, och ska alla snackbarer byta till det mörka utseendet på en gång?",
+   "alternativ": [
+    "A: Ny token (text.accent.onInk = #E09D50) och alla snackbarer byter utseende i samma enhet",
+    "B: Använd befintlig mörk accent (#DCA968), som skiljer sig lite från ritningen",
+    "C: Byt utseende redan nu i paket 3"
+   ],
+   "rekommendation": "A. Byt alla snackbarer i samma enhet i paket 4, så att appen aldrig visar två snackbarutseenden samtidigt. Kontrasten mäts först (ungefär 5,4:1).",
+   "beslut": "A",
+   "kommentar": "Skillnaden visas som prototyp.",
+   "bekraftat_efter_prototyp": true
+  },
+  {
+   "id": "PQ-04",
+   "fraga": "Vad ska toppfältet visa när telefonen är uppkopplad men något ändå väntar på att sparas? Särskilt ändringar som servern har avvisat och som aldrig går igenom av sig själva. Reglerna kräver en indikator 'när något väntar', men ingen ritning visar läget när man är uppkopplad.",
+   "alternativ": [
+    "A: Samma banner utan 'Ingen anslutning', till exempel '3 ändringar väntar'",
+    "B: Ingenting medan kön töms av sig själv (det tar några sekunder), och en saffransfärgad räknare bara när något kräver att du gör något",
+    "C: Ingen indikator alls när man är uppkopplad, bara via Mer → Väntar på synk"
+   ],
+   "rekommendation": "B. Saffran betyder 'här behövs du', och en kö som töms på några sekunder är bara brus.",
+   "beslut": "B",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-18",
+   "fraga": "Vänförfrågningar är ritade med en saffransfärgad 'Acceptera' på varje rad, men både Komponentarket och Grafisk manual säger högst en saffransknapp per vy. Vad gäller?",
+   "alternativ": [
+    "A: Saffran på varje rad, som ritat",
+    "B: Saffran bara på den översta",
+    "C: Mörka knappar på raderna och ingen saffran i vyn"
+   ],
+   "rekommendation": "C. Regeln står uttryckligen i två källor, och saffran på varje rad konkurrerar med sig själv.",
+   "beslut": "A",
+   "kommentar": "Avviker från rekommendationen (C). Skillnaderna visas som prototyp.",
+   "revision": {
+    "tidigare_beslut": "B",
+    "nytt_beslut": "A",
+    "grund": "Malin såg prototypen (2026-09-23-prototyper.html) och valde A: saffran på varje rad, som ritat. Undantag från regeln om en saffransknapp per vy, avsiktligt för vänförfrågningar."
+   }
+  },
+  {
+   "id": "PQ-19",
+   "fraga": "Vänprofilen har två ritade saffransknappar i två olika ritningar: 'Skicka meddelande' och 'Dela recept'. Vilken ska vara vyns enda?",
+   "alternativ": [
+    "A: Dela recept",
+    "B: Skicka meddelande",
+    "C: Ingen, båda mörka"
+   ],
+   "rekommendation": "A. Det är den senare och mer specifika ritningen.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-07",
+   "fraga": "'Dölj delat innehåll' (att dölja ett recept, en meny eller en lista som någon delat med dig): hur ska det kunna ångras? I dag får du en bekräftelsefråga och sedan en Ångra-remsa som ligger kvar tills du trycker. Reglerna säger inget om just detta.",
+   "alternativ": [
+    "A: Behåll frågan och Ångra, men låt Ångra försvinna efter 7 s som all annan Ångra",
+    "B: Bara bekräftelsefrågan, ingen Ångra-remsa",
+    "C: Låt det vara som i dag tills gammal UX tas bort (paket 7)"
+   ],
+   "rekommendation": "A. Det liknar moderatorns 'dölj', som reglerna kallar ångerbart, och då blir Ångra likadan överallt.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-12",
+   "fraga": "När appen loggar ut dig automatiskt efter 45 minuter utan aktivitet: ska dina osparade receptutkast raderas? Reglerna säger att utkast raderas vid utloggning, men också att en automatisk utloggning aldrig får kasta något ur kön.",
+   "alternativ": [
+    "Utkasten sparas vid automatisk utloggning och raderas bara när du loggar ut själv",
+    "Utkasten raderas vid all utloggning"
+   ],
+   "rekommendation": "De sparas. Du har inte gjort något fel, och kön behandlas redan så.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-13",
+   "fraga": "När någon öppnar en delningslänk som har återkallats eller gått ut: ska det finnas en knapp för att be om en ny länk? Någon sådan funktion finns inte i dag, och reglerna säger att appen aldrig får erbjuda något den inte kan göra.",
+   "alternativ": [
+    "A: Bara texten 'Länken gäller inte längre. Be den som delade om en ny.'",
+    "B: Knapp som skickar ett meddelande till den som delade",
+    "C: Bygg en riktig förfrågan om ny länk"
+   ],
+   "rekommendation": "A nu, och B senare om det efterfrågas.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-06",
+   "fraga": "När du sätter en egen tagg på många recept på en gång i Mina recept finns i dag en Ångra-knapp. Taggning finns inte i reglernas lista över vad som ska kunna ångras. Ska Ångra finnas kvar?",
+   "alternativ": [
+    "Behåll Ångra: massåtgärd på många recept, svår att göra om för hand",
+    "Ta bort den: taggning räknas som en lätt ändring utan friktion"
+   ],
+   "rekommendation": "Behåll Ångra och skriv in det i reglerna: massändringar kan ångras.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-03",
+   "fraga": "Vad ska offlinebannern säga? Ritningarna säger emot varandra. Komponentarket har 'Du är offline' med en förklarande rad under. Telefonskärmarna har 'Ingen anslutning · 3 ändringar väntar' utan förklaring. De breda vyerna har 'Ingen uppkoppling.' Textguiden säger inget.",
+   "alternativ": [
+    "Ingen anslutning (· N ändringar väntar)",
+    "Du är offline (· N ändringar väntar) + förklarande rad",
+    "Ingen uppkoppling"
+   ],
+   "rekommendation": "'Ingen anslutning', och '· N ändringar väntar' bara när något faktiskt väntar. Det är telefonbannern som leder till kön, och den undviker lånordet. Jag bygger så i kväll, och det är en enda textrad att byta.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-08",
+   "fraga": "När en vara flyttas till en annan kategori i inköpslistan visas i dag 'Flyttade till {kategori}' utan någon knapp, och det är inte tillåtet. Två läsningar av källorna går att försvara: lägg till 'Stäng', eller ta bort remsan helt, eftersom kategoribyte räknas som en lätt ändring. Tas den bort ser den som drar en vara till en ihopfälld kategori varan försvinna utan spår.",
+   "alternativ": [
+    "A: Ta bort remsan. Bara skärmläsare får beskedet",
+    "B: Behåll remsan med 'Stäng', och den stänger sig själv",
+    "C: Ta bort remsan och fäll automatiskt upp kategorin som varan hamnade i"
+   ],
+   "rekommendation": "B. Raden lämnar ditt synfält, så beskedet bär information. Jag bygger B i kväll, och A tar några rader att byta till.",
+   "beslut": "B",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-20a",
+   "fraga": "Offlinebannern: komponentarket (ingen fyllning) mot telefonskärmens fyllning i mörkt läge.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-20b",
+   "fraga": "Inköpslistans konflikt: reglerna (union + upplysning) mot komponentarkets välj-version-banner.",
+   "beslut": "A",
+   "kommentar": null
+  },
+  {
+   "id": "PQ-21",
+   "fraga": "Ångra-rutans tid för skärmläsaranvändare.",
+   "beslut": "A",
+   "kommentar": null
+  }
+ ]
+}

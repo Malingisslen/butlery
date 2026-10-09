@@ -9,7 +9,6 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -64,24 +63,39 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
     }
   }
 
-  Future<void> _deleteTemplate(String templateId, String name) async {
-    final confirmed = await CommonDialogActions.showDeleteConfirmation(
-      context: context,
-      itemName: name,
-      itemType: context.l10n.shoppingTemplateDelete,
-      icon: ButleryIcons.trash2,
-    );
-    if (confirmed != true || !mounted) return;
+  /// Deleting a template is class 1: it goes at once and "Ångra" brings it
+  /// back for 7 s (produktregler.md § 2.4), so there is no confirmation. The
+  /// delete itself is written only once the snackbar closes without Ångra.
+  void _deleteTemplate(String templateId) {
+    final index = _templates.indexWhere((t) => t['id'] == templateId);
+    if (index < 0) return;
+    final removed = _templates[index];
+    final failureText = context.l10n.commonUnknownError;
+    setState(() => _templates = [..._templates]..removeAt(index));
 
-    try {
-      await _shoppingService.deleteTemplate(templateId);
-      if (!mounted) return;
-      SnackBarUtils.showSuccess(context, context.l10n.shoppingTemplateDeleted);
-      _loadTemplates();
-    } catch (_) {
-      if (!mounted) return;
-      SnackBarUtils.showFailure(context, what: context.l10n.commonUnknownError);
-    }
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.shoppingTemplateDeleted,
+      onUndo: () {
+        if (!mounted) return;
+        setState(() {
+          _templates = [..._templates]
+            ..insert(index.clamp(0, _templates.length), removed);
+        });
+      },
+      onCommit: () async {
+        try {
+          await _shoppingService.deleteTemplate(templateId);
+        } catch (_) {
+          // The row is already gone from the screen, so a failed delete has
+          // to bring it back and say so. A closed browser has nothing to
+          // correct: the template is still stored and shows on next open.
+          if (!mounted) return;
+          SnackBarUtils.showFailure(context, what: failureText);
+          _loadTemplates();
+        }
+      },
+    );
   }
 
   @override
@@ -163,13 +177,16 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 const SizedBox(height: AppDimensions.spacingXs),
-                Row(
+                // The two counts share a phone-width tile with the menu
+                // button, so the second wraps under the first rather than
+                // overflowing.
+                Wrap(
+                  spacing: AppDimensions.spacingM,
                   children: [
                     Text(
                       context.l10n.shoppingTemplateItemCount(itemCount),
                       style: AppTextStyles.labelSmall,
                     ),
-                    const SizedBox(width: AppDimensions.spacingM),
                     Text(
                       context.l10n.shoppingTemplateUsedCount(useCount),
                       style: AppTextStyles.labelSmall,
@@ -186,7 +203,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                   if (action == 'use') {
                     widget.onTemplateSelected(id);
                   } else if (action == 'delete') {
-                    _deleteTemplate(id, name);
+                    _deleteTemplate(id);
                   }
                 },
                 itemBuilder: (context) => [

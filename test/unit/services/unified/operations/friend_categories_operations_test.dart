@@ -378,6 +378,89 @@ void main() {
         ).called(1);
       });
 
+      test(
+        'removeFriendFromCategoryWithReason returns null on success',
+        () async {
+          final reason = await operations.removeFriendFromCategoryWithReason(
+            'friend_1',
+            'category_1',
+          );
+
+          expect(reason, isNull);
+        },
+      );
+
+      test('removeFriendFromCategoryWithReason: a friend already out is '
+          'not a failure', () async {
+        final reason = await operations.removeFriendFromCategoryWithReason(
+          'friend_2',
+          'category_1',
+        );
+
+        expect(reason, isNull);
+        verifyNever(
+          () => mockParentService.updateCategoryInternal(any(), any()),
+        );
+      });
+
+      test(
+        'removeFriendFromCategoryWithReason names a missing group',
+        () async {
+          final reason = await operations.removeFriendFromCategoryWithReason(
+            'friend_1',
+            'no_such_group',
+          );
+          final plain = await operations.removeFriendFromCategory(
+            'friend_1',
+            'no_such_group',
+          );
+
+          expect(reason, MemberRemovalFailure.groupMissing);
+          expect(plain, isFalse);
+        },
+      );
+
+      test('removeFriendFromCategoryWithReason names a refused edit', () async {
+        mockPermissionService.setPermissionState(
+          currentUserId: 'someone_else',
+          defaultHasPermission: true,
+        );
+        mockPermissionService.setGroupAdmin(isAdmin: false);
+
+        final reason = await operations.removeFriendFromCategoryWithReason(
+          'friend_1',
+          'category_1',
+        );
+        final plain = await operations.removeFriendFromCategory(
+          'friend_1',
+          'category_1',
+        );
+
+        expect(reason, MemberRemovalFailure.noPermission);
+        expect(plain, isFalse);
+        verifyNever(
+          () => mockParentService.syncCategoryToFirebaseInternal(any()),
+        );
+      });
+
+      test('removeFriendFromCategoryWithReason names a failed save', () async {
+        when(
+          () => mockParentService.syncCategoryToFirebaseInternal(any()),
+        ).thenThrow(StateError('offline'));
+
+        final reason = await operations.removeFriendFromCategoryWithReason(
+          'friend_1',
+          'category_1',
+        );
+        final plain = await operations.removeFriendFromCategory(
+          'friend_1',
+          'category_1',
+        );
+
+        expect(reason, MemberRemovalFailure.notSaved);
+        expect(plain, isFalse);
+      });
+
       test('should move friend between categories', () async {
         // Act
         final result = await operations.moveFriendToCategory(

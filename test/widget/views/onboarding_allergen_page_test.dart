@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -15,6 +17,12 @@ Widget _testApp({required OnboardingViewModel viewModel}) {
     ),
   );
 }
+
+Finder _showAllToggle(BuildContext context) => find.byWidgetPredicate(
+  (w) =>
+      w is Semantics &&
+      w.properties.label == context.l10n.onboardingShowAllAllergens,
+);
 
 void main() {
   group('OnboardingAllergenPage', () {
@@ -71,6 +79,59 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byIcon(ButleryIcons.check), findsNothing);
       expect(viewModel.isAllergenSelected('gluten'), isFalse);
+    });
+
+    testWidgets('collapsed, the page offers the primary allergens and the '
+        'show-all toggle', (tester) async {
+      await tester.pumpWidget(_testApp(viewModel: viewModel));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byType(AnimatedContainer),
+        findsNWidgets(AllergenPreferenceOptions.primaryAllergenKeys.length),
+      );
+      final context = tester.element(find.byType(OnboardingAllergenPage));
+      expect(
+        _showAllToggle(context),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('show all offers exactly the Settings allergen list, '
+        'crustaceans and molluscs included', (tester) async {
+      // Tall enough that the lazy grid builds every card at once.
+      tester.view.physicalSize = const Size(1200, 4000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_testApp(viewModel: viewModel));
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(OnboardingAllergenPage));
+      await tester.tap(
+        _showAllToggle(context),
+      );
+      await tester.pumpAndSettle();
+
+      final cards = find.byType(AnimatedContainer);
+      final count = tester.widgetList(cards).length;
+      for (var i = 0; i < count; i++) {
+        await tester.tap(cards.at(i));
+        await tester.pumpAndSettle();
+      }
+
+      expect(
+        viewModel.selectedAllergens,
+        AllergenPreferenceOptions.allergens.keys.toSet(),
+      );
+      expect(
+        viewModel.selectedAllergens,
+        containsAll(['kräftdjur', 'blötdjur']),
+      );
+      expect(
+        find.text(context.l10n.onboardingAllergenCrustacean),
+        findsOneWidget,
+      );
+      expect(find.text(context.l10n.onboardingAllergenMollusc), findsOneWidget);
     });
 
     testWidgets('semantics toggled property tracks selection state', (

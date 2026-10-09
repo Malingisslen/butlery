@@ -433,6 +433,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           PressFill(
             surface: PressSurface.base,
             child: DropdownButtonFormField<String>(
+              icon: const ButleryIcon(ButleryIcons.chevronDown),
               iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
               iconDisabledColor: AppModeColors.textDisabled(
                 Theme.of(context).brightness,
@@ -568,6 +569,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             viewModel.state.ingredientSectionState.headingController,
         onLineChanged: viewModel.updateIngredient,
         onAddLine: viewModel.addIngredient,
+        onLastLineFilled: viewModel.ensureTrailingIngredientLine,
         onRemoveLine: viewModel.removeIngredient,
         onReorder: viewModel.moveIngredientRow,
         onAddHeading: viewModel.addIngredientHeading,
@@ -583,6 +585,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         controllers: viewModel.instructionControllers,
         onUpdate: viewModel.updateInstruction,
         onAdd: viewModel.addInstruction,
+        onLastFilled: viewModel.ensureTrailingInstructionLine,
         onRemove: viewModel.removeInstruction,
         onReorder: viewModel.reorderInstruction,
       ),

@@ -587,25 +587,25 @@ void main() {
 
         // Just now
         var conv = conversation.copyWith(updatedAt: now);
-        expect(conv.formattedLastActivity, equals('Nu'));
+        expect(conv.formattedLastActivityFor('user_1'), equals('Nu'));
 
         // Minutes
         conv = conversation.copyWith(
           updatedAt: now.subtract(Duration(minutes: 30)),
         );
-        expect(conv.formattedLastActivity, equals('30m'));
+        expect(conv.formattedLastActivityFor('user_1'), equals('30m'));
 
         // Hours
         conv = conversation.copyWith(
           updatedAt: now.subtract(Duration(hours: 5)),
         );
-        expect(conv.formattedLastActivity, equals('5h'));
+        expect(conv.formattedLastActivityFor('user_1'), equals('5h'));
 
         // Days
         conv = conversation.copyWith(
           updatedAt: now.subtract(Duration(days: 3)),
         );
-        expect(conv.formattedLastActivity, equals('3d'));
+        expect(conv.formattedLastActivityFor('user_1'), equals('3d'));
 
         // BUT-1047: ContextualTimeFormatter.compact promotes past 7d to
         // DateFormat.MMMd (e.g. "Apr 22" / "22 apr"). Assert promotion
@@ -614,8 +614,11 @@ void main() {
         conv = conversation.copyWith(
           updatedAt: now.subtract(Duration(days: 14)),
         );
-        expect(conv.formattedLastActivity, isNot(equals('14d')));
-        expect(conv.formattedLastActivity, matches(RegExp(r'[A-Za-z]{3}')));
+        expect(conv.formattedLastActivityFor('user_1'), isNot(equals('14d')));
+        expect(
+          conv.formattedLastActivityFor('user_1'),
+          matches(RegExp(r'[A-Za-z]{3}')),
+        );
       });
     });
 
@@ -982,6 +985,49 @@ void main() {
           reason: 'premise: the sibling method reports no cut-off here',
         );
         expect(conversation.canReadMessageAt(afterJoin, 'user_2'), isFalse);
+      });
+    });
+
+    group('late joiner reads neither time nor unread from a hidden message '
+        '(BUT-1852)', () {
+      final joinedAt = DateTime.now().subtract(const Duration(hours: 2));
+      final hiddenSentAt = DateTime.now().subtract(const Duration(days: 3));
+
+      Conversation build({Map<String, DateTime> lastRead = const {}}) =>
+          Conversation(
+            id: 'conv_late',
+            participantIds: const ['user_late', 'user_2'],
+            participantDisplayNames: const {},
+            participantAvatarUrls: const {},
+            lastMessage: Message(
+              id: 'msg_hidden',
+              conversationId: 'conv_late',
+              senderId: 'user_2',
+              senderDisplayName: 'Erik',
+              content: 'Före din tid',
+              type: MessageType.text,
+              status: MessageStatus.sent,
+              sentAt: hiddenSentAt,
+            ),
+            lastReadTimestamps: lastRead,
+            createdAt: hiddenSentAt.subtract(const Duration(days: 1)),
+            updatedAt: joinedAt,
+            isGroup: true,
+            groupId: 'chat-group-1',
+            memberSince: {'user_late': joinedAt, 'user_2': hiddenSentAt},
+          );
+
+      test('falls back to updatedAt for the reader who may not open it', () {
+        final conv = build();
+        expect(conv.formattedLastActivityFor('user_late'), equals('2h'));
+        expect(conv.formattedLastActivityFor('user_2'), equals('3d'));
+      });
+
+      test('is never unread for the reader who may not open it', () {
+        // No read stamp at all, so only the cut-off keeps this false.
+        final conv = build();
+        expect(conv.hasUnreadMessages('user_late'), isFalse);
+        expect(conv.hasUnreadMessages('user_2'), isTrue);
       });
     });
 

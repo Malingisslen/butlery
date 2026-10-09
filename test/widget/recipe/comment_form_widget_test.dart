@@ -261,6 +261,25 @@ void main() {
     });
   });
 
+  testWidgets('the send button carries a screen-reader label (BUT-2261)', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(_wrap(buildWidget('r1')));
+    await tester.pumpAndSettle();
+
+    final send = find.ancestor(
+      of: find.byIcon(ButleryIcons.send),
+      matching: find.byType(IconButton),
+    );
+    expect(send, findsOneWidget);
+    // IconButton reports its tooltip as the semantics tooltip.
+    expect(tester.getSemantics(send).tooltip, 'Skicka');
+    semantics.dispose();
+  });
+
   testWidgets('load on mount: seeds TextField from prefs and syncs VM', (
     tester,
   ) async {

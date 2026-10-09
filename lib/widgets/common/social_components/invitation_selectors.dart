@@ -292,6 +292,7 @@ class InvitationSelectors {
                   PressFill(
                     surface: PressSurface.base,
                     child: DropdownButton<String>(
+                      icon: const ButleryIcon(ButleryIcons.chevronDown),
                       iconEnabledColor: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant,
@@ -409,9 +410,13 @@ class InvitationSelectors {
                   surface: PressSurface.raised,
                   child: Chip(
                     label: Text(target.displayName),
+                    deleteIcon: const ButleryIcon(ButleryIcons.x),
                     onDeleted: onRemoveTarget != null
                         ? () => onRemoveTarget(target)
                         : null,
+                    deleteButtonTooltipMessage: context.l10n.a11yRemoveMember(
+                      target.displayName,
+                    ),
                     backgroundColor: Theme.of(
                       context,
                     ).colorScheme.surfaceContainerHighest,

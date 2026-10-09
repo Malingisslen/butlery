@@ -58,6 +58,9 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/trash_item.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -4589,3 +4592,28 @@ class SyncError {
 // ===== CONSENT =====
 
 class MockConsentService extends Mock implements ConsentService {}
+
+/// BUT-907: a trash that keeps what is moved into it, for tests that delete
+/// recipes through the real adapter without asserting on the trash itself.
+class FakeTrashRepository extends Fake implements TrashRepository {
+  final List<Recipe> moved = [];
+
+  @override
+  Future<void> moveRecipeToTrash(Recipe recipe) async => moved.add(recipe);
+
+  @override
+  Stream<List<TrashItem>> watchTrash() => Stream.value(const []);
+
+  @override
+  Future<List<TrashItem>> listTrash() async => const [];
+
+  @override
+  Future<Recipe> restoreRecipe(TrashItem item, {TagResult? tagResult}) =>
+      throw TrashItemGoneException(item.id);
+
+  @override
+  Future<void> deleteForever(List<String> ids) async {}
+
+  @override
+  Future<int> emptyTrash() async => 0;
+}

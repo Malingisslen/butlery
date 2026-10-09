@@ -11,6 +11,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -335,6 +336,11 @@ class _SlotPresenceRow extends StatelessWidget {
         ? roster
         : roster.where((m) => presentIds!.contains(m.memberId)).toList();
     final shown = present.take(_maxFaces).toList();
+    // Over the whole roster, not `present`, so a person keeps the same chip in
+    // every cell.
+    final initials = distinctInitials([
+      for (final m in roster) m.displayName,
+    ]);
     final overflow = present.length - shown.length;
 
     return Semantics(
@@ -383,6 +389,7 @@ class _SlotPresenceRow extends StatelessWidget {
                               shown[i].avatarColor,
                             ),
                             size: 16,
+                            initials: initials[roster.indexOf(shown[i])],
                           ),
                         ),
                     if (overflow > 0)

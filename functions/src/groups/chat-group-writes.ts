@@ -139,22 +139,15 @@ export function stageGroupCreation(
     sourceCategory,
   } = params;
   const groupRef = db.collection(Collections.chatGroups).doc(groupId);
-  const convoRef = db.collection(Collections.conversations).doc(conversationId);
 
   const memberIds = members.map((m) => m.uid);
   const displayNames: Record<string, string> = {};
   const avatarUrls: Record<string, string | null> = {};
-  const stamps: Record<string, admin.firestore.Timestamp> = {};
   const addedBy: Record<string, string> = {};
   for (const member of members) {
     displayNames[member.uid] = member.displayName;
     avatarUrls[member.uid] = member.avatarUrl;
-    stamps[member.uid] = joinedAt;
     addedBy[member.uid] = creatorUid;
-    tx.set(
-      convoRef.collection(Collections.participants).doc(member.uid),
-      rosterRow(conversationId, member, joinedAt),
-    );
   }
 
   tx.set(groupRef, {
@@ -188,6 +181,51 @@ export function stageGroupCreation(
         }
       : {}),
   });
+
+  stageConversation(tx, {
+    db,
+    groupId,
+    conversationId,
+    name,
+    creatorUid,
+    members,
+    joinedAt,
+  });
+}
+
+/**
+ * The conversation half of a group: its document and one roster row per member.
+ * BUT-1958: also used ALONE to rebuild a group conversation somebody deleted,
+ * for the members the `chat_groups` document still lists.
+ */
+export function stageConversation(
+  tx: admin.firestore.Transaction,
+  params: {
+    db: admin.firestore.Firestore;
+    groupId: string;
+    conversationId: string;
+    name: string;
+    creatorUid: string;
+    members: ChatGroupMember[];
+    joinedAt: admin.firestore.Timestamp;
+  },
+): void {
+  const { db, groupId, conversationId, name, creatorUid, members, joinedAt } =
+    params;
+  const convoRef = db.collection(Collections.conversations).doc(conversationId);
+  const memberIds = members.map((m) => m.uid);
+  const displayNames: Record<string, string> = {};
+  const avatarUrls: Record<string, string | null> = {};
+  const stamps: Record<string, admin.firestore.Timestamp> = {};
+  for (const member of members) {
+    displayNames[member.uid] = member.displayName;
+    avatarUrls[member.uid] = member.avatarUrl;
+    stamps[member.uid] = joinedAt;
+    tx.set(
+      convoRef.collection(Collections.participants).doc(member.uid),
+      rosterRow(conversationId, member, joinedAt),
+    );
+  }
 
   tx.set(convoRef, {
     participantIds: memberIds,

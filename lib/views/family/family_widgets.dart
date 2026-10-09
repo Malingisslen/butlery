@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
@@ -34,14 +35,6 @@ Color parseAvatarColor(BuildContext context, String? hex) {
     if (value != null) return Color(value).withAlpha(255);
   }
   return Theme.of(context).colorScheme.primary;
-}
-
-String _initials(String name) {
-  final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
-  if (parts.isEmpty) return '?';
-  if (parts.length == 1) return parts.first.characters.first.toUpperCase();
-  return (parts.first.characters.first + parts.last.characters.first)
-      .toUpperCase();
 }
 
 /// A rust-accented section divider (mirrors the settings section style).
@@ -89,12 +82,14 @@ class FamilyAvatar extends StatelessWidget {
   final String name;
   final Color color;
   final double size;
+  final String? initials;
 
   const FamilyAvatar({
     super.key,
     required this.name,
     required this.color,
     this.size = 42,
+    this.initials,
   });
 
   @override
@@ -105,7 +100,7 @@ class FamilyAvatar extends StatelessWidget {
       color: color,
       alignment: Alignment.center,
       child: Text(
-        _initials(name),
+        initials ?? initialsFor(name),
         style: AppTextStyles.bodyMedium.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w700,
@@ -167,11 +162,13 @@ class _AllergenBadge extends StatelessWidget {
 class FamilyAccountRow extends StatelessWidget {
   final HouseholdRosterMember member;
   final bool isAdmin;
+  final String? initials;
 
   const FamilyAccountRow({
     super.key,
     required this.member,
     required this.isAdmin,
+    this.initials,
   });
 
   @override
@@ -196,6 +193,7 @@ class FamilyAccountRow extends StatelessWidget {
           FamilyAvatar(
             name: member.displayName,
             color: parseAvatarColor(context, member.avatarColor),
+            initials: initials,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -226,11 +224,13 @@ class FamilyAccountRow extends StatelessWidget {
 class FamilyMemberRow extends StatelessWidget {
   final DinerProfile profile;
   final VoidCallback onTap;
+  final String? initials;
 
   const FamilyMemberRow({
     super.key,
     required this.profile,
     required this.onTap,
+    this.initials,
   });
 
   @override
@@ -271,6 +271,7 @@ class FamilyMemberRow extends StatelessWidget {
                       FamilyAvatar(
                         name: profile.name,
                         color: parseAvatarColor(context, profile.avatarColor),
+                        initials: initials,
                       ),
                       const SizedBox(width: 12),
                       Expanded(

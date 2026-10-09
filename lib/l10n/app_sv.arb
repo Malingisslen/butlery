@@ -100,6 +100,67 @@
       }
     }
   },
+  "slotSpillHeading": "{placed, plural, =0{Inga lediga platser} =1{En plats} other{{placed} platser}}, {count} recept",
+  "@slotSpillHeading": {
+    "description": "BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day",
+    "placeholders": {
+      "placed": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
+  "slotSpillBody": "{rest, plural, =1{Ett recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med det, sedan skriver jag.} other{{rest} recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med dem, sedan skriver jag.}}",
+  "@slotSpillBody": {
+    "description": "BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)",
+    "placeholders": {
+      "rest": {"type": "int"},
+      "week": {"type": "int"},
+      "names": {"type": "String"}
+    }
+  },
+  "slotSpillNextWeek": "Lägg {placed} nu, {rest} i v. {week}",
+  "@slotSpillNextWeek": {
+    "description": "BUT-2153: place what fits now and the rest from Monday of the next week",
+    "placeholders": {
+      "placed": {"type": "int"},
+      "rest": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
+  "slotSpillAllNextWeek": "Lägg alla i v. {week}",
+  "@slotSpillAllNextWeek": {
+    "description": "BUT-2153: nothing fits in the chosen week, so place all of them from Monday of the next week",
+    "placeholders": {
+      "week": {"type": "int"}
+    }
+  },
+  "slotSpillChooseMore": "Välj fler platser",
+  "@slotSpillChooseMore": {
+    "description": "BUT-2153: close the panel and pick another start in the slot picker"
+  },
+  "slotSpillPlaceOnly": "{placed, plural, =1{Lägg bara det första} other{Lägg bara de {placed}}}",
+  "@slotSpillPlaceOnly": {
+    "description": "BUT-2153: place only the recipes that fit and leave the rest out",
+    "placeholders": {
+      "placed": {"type": "int"}
+    }
+  },
+  "bulkAddToMenuSuccessTwoWeeks": "{added} recept i veckan, {next} i v. {week}",
+  "@bulkAddToMenuSuccessTwoWeeks": {
+    "description": "BUT-2153: receipt after placing what fit and the rest in the next week",
+    "placeholders": {
+      "added": {"type": "int"},
+      "next": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
+  "bulkAddToMenuNextWeekFailed": "{added} recept lades i veckan. Resten kunde inte läggas i v. {week}.",
+  "@bulkAddToMenuNextWeekFailed": {
+    "description": "BUT-2153: the first week was saved but writing the rest into the next week failed",
+    "placeholders": {
+      "added": {"type": "int"},
+      "week": {"type": "int"}
+    }
+  },
   "slotPickerDialogTitle": "Välj plats i veckomenyn",
   "@slotPickerDialogTitle": {
     "description": "BUT-1029: SlotPickerDialog header title."
@@ -1292,7 +1353,7 @@
   },
   "householdAllergenRosterIncomplete": "Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.",
   "@householdAllergenRosterIncomplete": {
-    "description": "BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted"
+    "description": "BUT-1663/BUT-1820: warning shown when at least one household member's profile could not be read, so the named allergens cannot be trusted. It appears appended to the household-filter opt-out dialog, as a row above the generated menu, and under the menu generation error"
   },
   "householdAllergenShareTitle": "Dela mina allergier med hushållet",
   "@householdAllergenShareTitle": {
@@ -1352,6 +1413,10 @@
   },
   "settingsSectionNotifications": "Aviseringar",
   "settingsSectionAccount": "Konto & säkerhet",
+  "settingsSectionPrivacy": "Integritet och data",
+  "@settingsSectionPrivacy": {
+    "description": "Settings hub section heading for privacy policy, consent and data export (BUT-2261)"
+  },
   "settingsSectionAbout": "Om",
   "settingsSectionLanguage": "Språk",
   "settingsLanguageTitle": "Språk",
@@ -3839,7 +3904,7 @@
     }
   },
   "groupInvitationSent": "Skickad",
-  "groupInvitationsSent": "{count} inbjudningar skickade",
+  "groupInvitationsSent": "{count, plural, =1{1 inbjudan skickad} other{{count} inbjudningar skickade}}",
   "@groupInvitationsSent": {
     "placeholders": {
       "count": {
@@ -4166,7 +4231,7 @@
   "recipeCouldNotMarkAsCooked": "Kunde inte markera som lagat",
   "recipeCouldNotOpenEditor": "Kunde inte öppna redigeringsvy",
   "recipeCouldNotShare": "Kunde inte dela recept",
-  "recipeDeleted": "Recept borttaget",
+  "recipeDeleted": "Receptet ligger i papperskorgen i 30 dagar",
   "recipeMarkedAsCooked": "Receptet är markerat som lagat idag.",
   "recipeAlreadyCookedToday": "Redan loggad idag",
   "recipeShared": "Recept delat",
@@ -4510,7 +4575,7 @@
     }
   },
   "groupLeaveGroup": "Lämna grupp",
-  "groupMemberCount": "{count} personer",
+  "groupMemberCount": "{count, plural, =1{1 person} other{{count} personer}}",
   "@groupMemberCount": {
     "placeholders": {
       "count": {
@@ -5242,11 +5307,11 @@
     }
   },
   "socialCouldNotCancelAllRequests": "Kunde inte avbryta alla förfrågningar",
-  "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
+  "socialCouldNotRejectAllRequests": "Kunde inte avböja alla förfrågningar",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",
   "socialCouldNotUnblockUser": "Kunde inte avblockera användare",
   "socialDecline": "Avböj",
-  "socialDeclined": "Avvisad",
+  "socialDeclined": "Avböjd",
   "socialExpired": "Utgången",
   "socialFindFriends": "Hitta vänner",
   "socialFriendsAndGroups": "Vänner & grupper",
@@ -5258,8 +5323,8 @@
   "socialNoSentRequests": "Inga skickade förfrågningar",
   "socialNoSentRequestsDescription": "Du har inga skickade vänskapsförfrågningar",
   "socialPendingResponse": "Väntar på svar",
-  "socialRejectAll": "Avvisa alla",
-  "socialRejectAllSelectedConfirm": "Avvisa alla valda förfrågningar?",
+  "socialRejectAll": "Avböj alla",
+  "socialRejectAllSelectedConfirm": "Avböj alla valda förfrågningar?",
   "socialRequestCancelled": "Förfrågan avbruten",
   "socialSearchGroups": "Sök grupper...",
   "socialSearchNewFriends": "Sök nya vänner",
@@ -5310,7 +5375,7 @@
       }
     }
   },
-  "socialDeclineCount": "Avvisa ({count})",
+  "socialDeclineCount": "Avböj ({count})",
   "@socialDeclineCount": {
     "placeholders": {
       "count": {
@@ -5326,7 +5391,7 @@
       }
     }
   },
-  "socialRejectAllSelectedMessage": "Vill du avvisa {count} valda förfrågningar?",
+  "socialRejectAllSelectedMessage": "Vill du avböja {count} valda förfrågningar?",
   "@socialRejectAllSelectedMessage": {
     "placeholders": {
       "count": {
@@ -5350,7 +5415,7 @@
       }
     }
   },
-  "socialRequestsRejected": "{count} förfrågningar avvisade",
+  "socialRequestsRejected": "{count, plural, =1{1 förfrågan avböjd} other{{count} förfrågningar avböjda}}",
   "@socialRequestsRejected": {
     "placeholders": {
       "count": {
@@ -8974,7 +9039,7 @@
       }
     }
   },
-  "recipeDeleteWarning": "Receptet kommer att tas bort permanent.",
+  "recipeDeleteWarning": "Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.",
   "shoppingListDeleteWarning": "Alla varor på listan kommer att försvinna.",
   "itemDeletedSuccess": "{type} har tagits bort",
   "@itemDeletedSuccess": {
@@ -9214,7 +9279,7 @@
   "viewModeList": "Listvy",
   "imageCropTitle": "Beskär bild",
   "bulkDeleteConfirmMessage": "De valda recepten kommer att tas bort.",
-  "bulkDeleteSuccess": "{count} recept borttagna",
+  "bulkDeleteSuccess": "{count} recept ligger i papperskorgen i 30 dagar",
   "@bulkDeleteSuccess": {
     "placeholders": {
       "count": {
@@ -10756,6 +10821,15 @@
       }
     }
   },
+  "a11yRemoveMember": "Ta bort {name}",
+  "@a11yRemoveMember": {
+    "description": "Screen-reader label for the remove button on a chosen member chip",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yToggleFullscreenChrome": "Visa eller dölj kontroller",
   "@a11yToggleFullscreenChrome": {
     "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
@@ -11442,7 +11516,7 @@
       }
     }
   },
-  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avvisade",
+  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avböjda",
   "@socialRequestsRejectedPartial": {
     "description": "Partial success after a batch friend-request action",
     "placeholders": {
@@ -11856,6 +11930,10 @@
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
   },
+  "recipeAddPhoto": "Lägg till foto",
+  "@recipeAddPhoto": {
+    "description": "BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added."
+  },
   "imageRetriesWhenOnline": "Försöker igen när nätet är tillbaka",
   "@imageRetriesWhenOnline": {
     "description": "Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel)."
@@ -12100,6 +12178,27 @@
   "groupMemberRemoveNotSaved": "Kunde inte tas bort – ändringen sparades inte",
   "@groupMemberRemoveNotSaved": {
     "description": "P5-U33: reason on a member row in the partial outcome."
+  },
+  "groupMemberRemoveFailedNoPermission": "Du får inte längre ändra gruppen",
+  "@groupMemberRemoveFailedNoPermission": {
+    "description": "BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group."
+  },
+  "groupMemberRemoveFailedNotSaved": "Ändringen sparades inte",
+  "@groupMemberRemoveFailedNotSaved": {
+    "description": "BUT-2153: reason under a member's name when the removal could not be saved."
+  },
+  "groupMemberRemoveFailedGroupMissing": "Gruppen finns inte längre",
+  "@groupMemberRemoveFailedGroupMissing": {
+    "description": "BUT-2153: reason under a member's name when the group no longer exists."
+  },
+  "a11yMemberRemoveFailed": "{name}, vald, kunde inte tas bort",
+  "@a11yMemberRemoveFailed": {
+    "description": "BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "groupMembersRemoveNone": "Ingen av de valda kunde tas bort.",
   "@groupMembersRemoveNone": {
@@ -13945,5 +14044,276 @@
   "pantryRestorePreviousFailed": "Kunde inte återställa förra versionen",
   "@pantryRestorePreviousFailed": {
     "description": "BUT-2140: the viewmodel's failure text when restoring a pantry item's previous version, shown whole as the error (base_viewmodel.dart executeAsync)."
+  },
+  "setNewPasswordTitle": "Välj nytt lösenord",
+  "@setNewPasswordTitle": {
+    "description": "BUT-2170: title of the view a reset link opens."
+  },
+  "setNewPasswordChecking": "Kontrollerar länken …",
+  "@setNewPasswordChecking": {
+    "description": "BUT-2170: shown while the reset link is checked."
+  },
+  "setNewPasswordForAccount": "Gäller kontot {email}.",
+  "@setNewPasswordForAccount": {
+    "description": "BUT-2170: names the account the reset link belongs to.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "setNewPasswordRepeat": "Upprepa nytt lösenord",
+  "@setNewPasswordRepeat": {
+    "description": "BUT-2170: second password field, label from Skarmar v12 etapp 6."
+  },
+  "setNewPasswordSave": "Spara lösenordet",
+  "@setNewPasswordSave": {
+    "description": "BUT-2170: primary button."
+  },
+  "setNewPasswordWeak": "Lösenordet är för enkelt. Välj ett längre, gärna med siffror och tecken.",
+  "@setNewPasswordWeak": {
+    "description": "BUT-2170: Firebase's password policy refused the new password."
+  },
+  "setNewPasswordSaveFailed": "Lösenordet kunde inte sparas.",
+  "@setNewPasswordSaveFailed": {
+    "description": "BUT-2170: Part 1 when saving failed for an unknown reason."
+  },
+  "setNewPasswordSaveFailedBecause": "Lösenordet kunde inte sparas. {cause}",
+  "@setNewPasswordSaveFailedBecause": {
+    "description": "BUT-2170: Part 1 with a mapped cause (network, too many attempts).",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "setNewPasswordNothingChanged": "Ditt gamla lösenord gäller fortfarande.",
+  "@setNewPasswordNothingChanged": {
+    "description": "BUT-2170: Part 2 of an error: what is kept."
+  },
+  "setNewPasswordCheckFailed": "Länken kunde inte kontrolleras.",
+  "@setNewPasswordCheckFailed": {
+    "description": "BUT-2170: Part 1 when checking the link failed but the link may still work."
+  },
+  "setNewPasswordLinkInvalidTitle": "Länken gäller inte längre",
+  "@setNewPasswordLinkInvalidTitle": {
+    "description": "BUT-2170: the reset link is used or expired (flow 05/06 wording)."
+  },
+  "setNewPasswordLinkInvalidBody": "Den har redan använts eller blivit för gammal. Be om en ny länk, så kommer den till din e-post.",
+  "@setNewPasswordLinkInvalidBody": {
+    "description": "BUT-2170: body under the expired-link title."
+  },
+  "setNewPasswordRequestNew": "Skicka ny länk",
+  "@setNewPasswordRequestNew": {
+    "description": "BUT-2170: opens Glömt lösenord on the sign-in screen."
+  },
+  "setNewPasswordClose": "Stäng",
+  "@setNewPasswordClose": {
+    "description": "BUT-2170: leaves the view when this device is signed in to another account."
+  },
+  "setNewPasswordSavedOther": "Lösenordet för {email} är bytt.",
+  "@setNewPasswordSavedOther": {
+    "description": "BUT-2170: snackbar when the device is signed in to another account.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordResetDoneNotice": "Lösenordet är bytt. Logga in med det nya.",
+  "@passwordResetDoneNotice": {
+    "description": "BUT-2170: notice on the sign-in screen after a reset (decision B1)."
+  },
+  "shoppingItemsAddedToListSnack": "{count, plural, =1{1 vara tillagd i \"{listName}\"} other{{count} varor tillagda i \"{listName}\"}}",
+  "@shoppingItemsAddedToListSnack": {
+    "description": "BUT-2308: snackbar after a recipe's ingredients were added to a shopping list; its action is Visa.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingAddToListHeading": "Lägg i lista",
+  "recipeImportNoIngredientsNotice": "Vi hittade inga ingredienser. Lägg till dem själv nedan.",
+  "@recipeImportNoIngredientsNotice": {
+    "description": "BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists."
+  },
+  "trashTitle": "Papperskorgen",
+  "@trashTitle": {
+    "description": "BUT-907: trash view. Top bar title of the trash view."
+  },
+  "trashSelectAll": "Markera alla",
+  "@trashSelectAll": {
+    "description": "BUT-907: trash view. Top bar action: select every row."
+  },
+  "trashSelectNone": "Avmarkera alla",
+  "@trashSelectNone": {
+    "description": "BUT-907: trash view. Top bar action once every row is selected."
+  },
+  "trashLoading": "Laddar papperskorgen …",
+  "@trashLoading": {
+    "description": "BUT-907: trash view. Loading state."
+  },
+  "trashLoadFailed": "Papperskorgen kunde inte laddas.",
+  "@trashLoadFailed": {
+    "description": "BUT-907: trash view. Stream error state."
+  },
+  "trashEmptyTitle": "Papperskorgen är tom",
+  "@trashEmptyTitle": {
+    "description": "BUT-907: trash view. Empty state title."
+  },
+  "trashEmptyBody": "Raderade recept ligger kvar här i 30 dagar.",
+  "@trashEmptyBody": {
+    "description": "BUT-907: trash view. Empty state line."
+  },
+  "trashDaysLeft": "{count, plural, =0{Går ut idag} =1{1 dag kvar} other{{count} dagar kvar}}",
+  "@trashDaysLeft": {
+    "description": "BUT-907: trash view. Time left on a row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashSelectedCount": "{count, plural, =1{1 vald} other{{count} valda}}",
+  "@trashSelectedCount": {
+    "description": "BUT-907: trash view. Footer label with the selection size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoreSelected": "Återställ {count} recept",
+  "@trashRestoreSelected": {
+    "description": "BUT-907: trash view. Footer button restoring the selection.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeleteSelected": "Radera {count} recept",
+  "@trashDeleteSelected": {
+    "description": "BUT-907: trash view. Footer button deleting the selection for good.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptyAction": "Töm papperskorgen",
+  "@trashEmptyAction": {
+    "description": "BUT-907: trash view. Footer button when nothing is selected, and confirm button of its dialog."
+  },
+  "trashDeleteConfirmTitle": "Radera för gott?",
+  "@trashDeleteConfirmTitle": {
+    "description": "BUT-907: trash view. Title of the delete-selection confirmation."
+  },
+  "trashDeleteConfirmBody": "{count, plural, =1{Receptet raderas för alltid. Det går inte att ångra.} other{{count} recept raderas för alltid. Det går inte att ångra.}}",
+  "@trashDeleteConfirmBody": {
+    "description": "BUT-907: trash view. Body of the delete-selection confirmation.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeleteConfirmAction": "Radera för gott",
+  "@trashDeleteConfirmAction": {
+    "description": "BUT-907: trash view. Confirm button of the delete-selection dialog."
+  },
+  "trashEmptyConfirmTitle": "Tömma papperskorgen?",
+  "@trashEmptyConfirmTitle": {
+    "description": "BUT-907: trash view. Title of the empty-trash confirmation."
+  },
+  "trashEmptyConfirmBody": "Alla recept i papperskorgen raderas för alltid. Det går inte att ångra.",
+  "@trashEmptyConfirmBody": {
+    "description": "BUT-907: trash view. Body of the empty-trash confirmation."
+  },
+  "trashRestoredAll": "{count, plural, =1{Återställt som privat} other{{count} recept återställda som privat}}",
+  "@trashRestoredAll": {
+    "description": "BUT-907: trash view. Snackbar after a complete restore; restored recipes are private.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletedAll": "{count, plural, =1{Receptet raderades för alltid} other{{count} recept raderades för alltid}}",
+  "@trashDeletedAll": {
+    "description": "BUT-907: trash view. Snackbar after a complete delete.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptied": "Papperskorgen är tömd",
+  "@trashEmptied": {
+    "description": "BUT-907: trash view. Snackbar after emptying the trash."
+  },
+  "trashOfflineNothingChanged": "Du är offline. Inget ändrades.",
+  "@trashOfflineNothingChanged": {
+    "description": "BUT-907: trash view. Snackbar when the change did not run because the device is offline."
+  },
+  "trashFailedNothingChanged": "Något gick fel. Inget ändrades.",
+  "@trashFailedNothingChanged": {
+    "description": "BUT-907: trash view. Snackbar when the change did not run at all."
+  },
+  "trashPartialSummary": "{done} av {total} klara.",
+  "@trashPartialSummary": {
+    "description": "BUT-907: trash view. First sentence of a partly done snackbar.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "trashPartialNoneDone": "Inget ändrades.",
+  "@trashPartialNoneDone": {
+    "description": "BUT-907: trash view. First sentence when no item was done but the change ran."
+  },
+  "trashFailOffline": "{count} recept gjordes inte eftersom du är offline.",
+  "@trashFailOffline": {
+    "description": "BUT-907: trash view. Partly done: offline reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashFailExpired": "{count} recept hade redan gått ut.",
+  "@trashFailExpired": {
+    "description": "BUT-907: trash view. Partly done: expired reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashFailGone": "{count} recept fanns inte kvar i papperskorgen.",
+  "@trashFailGone": {
+    "description": "BUT-907: trash view. Partly done: gone reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashFailFailed": "{count} recept gick inte att klara. Försök igen.",
+  "@trashFailFailed": {
+    "description": "BUT-907: trash view. Partly done: failed reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

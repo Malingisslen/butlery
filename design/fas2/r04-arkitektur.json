@@ -1,0 +1,1246 @@
+{
+ "$schema": "butlery-r04-arkitektur/1",
+ "$regel": "Analys utan andring. Ingen data-theme rors, ingen artefakt skapas, ingen farg andras.",
+ "matfallsgap": {
+  "artefakter_st": 16,
+  "produktartefakter_i_matfall": 310,
+  "probe_st": 3,
+  "harnessets_bredder": [
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 1180,
+    "h": 820,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 2048,
+    "h": 1152,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 1180,
+    "h": 820,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 2048,
+    "h": 1152,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 1440,
+    "h": 900,
+    "dpr": 2,
+    "unit": "css-px"
+   },
+   {
+    "w": 390,
+    "h": 844,
+    "dpr": 2,
+    "unit": "css-px"
+   }
+  ],
+  "artefakter": [
+   {
+    "art": "onbjamforelse",
+    "etikett": "Onboarding — MINIMAL mot koden",
+    "tema": "light",
+    "familj": "onbjamforelse-panel",
+    "ramBredder": [],
+    "kontroller_st": 0,
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+   },
+   {
+    "art": "editorfelkontrakt",
+    "etikett": "Recepteditor — samma fel, fyra besked",
+    "tema": "light",
+    "familj": "editorfelkontrakt-panel",
+    "ramBredder": [],
+    "kontroller_st": 0,
+    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+   },
+   {
+    "art": "globsvep",
+    "etikett": "Globalt — gesttipset behålls med villkor",
+    "tema": "light",
+    "familj": "globsvep-panel",
+    "ramBredder": [],
+    "kontroller_st": 2,
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+   },
+   {
+    "art": "fbkortmonster",
+    "etikett": "Feedbackkortsmönster",
+    "tema": "light",
+    "familj": "fbkortmonster-panel",
+    "ramBredder": [],
+    "kontroller_st": 0,
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+   },
+   {
+    "art": "socreaktion",
+    "etikett": "Emoji-reaktioner — regeln skrivs om",
+    "tema": "light",
+    "familj": "socreaktion-panel",
+    "ramBredder": [],
+    "kontroller_st": 9,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "instportion",
+    "etikett": "Portionsskalning",
+    "tema": "light",
+    "familj": "instportion-panel",
+    "ramBredder": [],
+    "kontroller_st": 3,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "admmatning",
+    "etikett": "Admin — mätvärden och diagram",
+    "tema": "light",
+    "familj": "admmatning-panel",
+    "ramBredder": [],
+    "kontroller_st": 0,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "admdrift",
+    "etikett": "Admin — driftlogg och parsningsdetaljer",
+    "tema": "light",
+    "familj": "admdrift-panel",
+    "ramBredder": [],
+    "kontroller_st": 1,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "kompbild",
+    "etikett": "Bilduppladdning med förlopp",
+    "tema": "light",
+    "familj": "kompbild-panel",
+    "ramBredder": [],
+    "kontroller_st": 2,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "kompdubblett",
+    "etikett": "Dubblettsammanslagning",
+    "tema": "light",
+    "familj": "kompdubblett-panel",
+    "ramBredder": [],
+    "kontroller_st": 8,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "komprelaterade",
+    "etikett": "Relaterade recept",
+    "tema": "light",
+    "familj": "komprelaterade-panel",
+    "ramBredder": [],
+    "kontroller_st": 3,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "kompmallar",
+    "etikett": "Inköpsmallar",
+    "tema": "light",
+    "familj": "kompmallar-panel",
+    "ramBredder": [],
+    "kontroller_st": 3,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "kompsason",
+    "etikett": "Säsongshero på hem",
+    "tema": "light",
+    "familj": "kompsason-panel",
+    "ramBredder": [],
+    "kontroller_st": 0,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "komparvegods",
+    "etikett": "Arvegods — flersidig fotoimport",
+    "tema": "light",
+    "familj": "komparvegods-panel",
+    "ramBredder": [],
+    "kontroller_st": 2,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "installergen",
+    "etikett": "Hushållets allergenfilter",
+    "tema": "light",
+    "familj": "installergen-panel",
+    "ramBredder": [],
+    "kontroller_st": 1,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "art": "surfplatta",
+    "etikett": "Surfplatta — vad designen inte täcker",
+    "tema": "light",
+    "familj": "surfplatta-panel",
+    "ramBredder": [],
+    "kontroller_st": 1,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   }
+  ]
+ },
+ "lightOnly_monster": {
+  "familjer_st": 306,
+  "monster_med_formfaktor_st": 295,
+  "monster_enbart_palett_st": 144,
+  "storsta_monster": [
+   {
+    "artefakter_st": 32,
+    "signatur": "ytor:#24382c,#e6ead9",
+    "exempel": [
+     "inkopflerval",
+     "inkoputeslutna",
+     "veckorostavgor",
+     "veckorosthistorik",
+     "onbimportklar",
+     "onbsenare"
+    ]
+   },
+   {
+    "artefakter_st": 15,
+    "signatur": "ytor:#24382c,#e6ead9,#f5f4ed",
+    "exempel": [
+     "skafferiflerval",
+     "veckochips",
+     "veckoresultat",
+     "veckodolda",
+     "veckofel",
+     "veckoplacering"
+    ]
+   },
+   {
+    "artefakter_st": 13,
+    "signatur": "ytor:#e6ead9",
+    "exempel": [
+     "arkivimport",
+     "stateladdar",
+     "stateladdar412",
+     "statefel",
+     "statefel412",
+     "synkko"
+    ]
+   },
+   {
+    "artefakter_st": 12,
+    "signatur": "ytor:#24382c,#ce7c1e,#e6ead9",
+    "exempel": [
+     "offline",
+     "kalender",
+     "fotoimport",
+     "dataexport",
+     "vanprofil",
+     "hemtom"
+    ]
+   },
+   {
+    "artefakter_st": 11,
+    "signatur": "ytor:#24382c,#ce7c1e",
+    "exempel": [
+     "mer",
+     "menysmak",
+     "faq",
+     "menyforhands",
+     "onboardingimport",
+     "samtycke"
+    ]
+   },
+   {
+    "artefakter_st": 8,
+    "signatur": "ytor:#24382c,#ce7c1e,#e6ead9,#f5f4ed",
+    "exempel": [
+     "hemrecept",
+     "placera",
+     "ingredienssok",
+     "redigera",
+     "taggdetalj",
+     "hem360"
+    ]
+   },
+   {
+    "artefakter_st": 6,
+    "signatur": "ytor:#ce7c1e,#e6ead9,#f5f4ed,rgba(36,56,44,.35)",
+    "exempel": [
+     "inkopgenererad",
+     "authglomt",
+     "behkamera",
+     "behlarm",
+     "samtyckefornya",
+     "socbegar"
+    ]
+   },
+   {
+    "artefakter_st": 5,
+    "signatur": "ytor:#24382c,#ce7c1e,#f5f4ed",
+    "exempel": [
+     "tomtrecept",
+     "snabbspara",
+     "skafferi",
+     "installningar",
+     "mfa"
+    ]
+   },
+   {
+    "artefakter_st": 5,
+    "signatur": "ytor:#e6ead9,#f5f4ed",
+    "exempel": [
+     "delatmedmig",
+     "onbjamforelse",
+     "editorfelkontrakt",
+     "adminskal",
+     "socknuff"
+    ]
+   },
+   {
+    "artefakter_st": 5,
+    "signatur": "ytor:#24382c,#f5f4ed",
+    "exempel": [
+     "kontosakerhet",
+     "lgbutan",
+     "impassist3",
+     "taggregel",
+     "globunderhall"
+    ]
+   },
+   {
+    "artefakter_st": 5,
+    "signatur": "ytor:",
+    "exempel": [
+     "epostverif",
+     "authepostklar",
+     "fbkortmonster",
+     "soctomttyst",
+     "jurriktlinjer"
+    ]
+   },
+   {
+    "artefakter_st": 5,
+    "signatur": "ytor:#24382c,#f5f4ed,rgba(36,56,44,.4)",
+    "exempel": [
+     "dialogratelimit",
+     "veckoplaceringavbryt",
+     "impassistavbryt",
+     "moddolj",
+     "modradera"
+    ]
+   }
+  ]
+ },
+ "temakontrakt": {
+  "css_custom_properties_st": 5,
+  "var_anvandningar_st": 0,
+  "inline_stilattribut_st": 14019,
+  "klassregler_st": 196,
+  "hexfarger_totalt": 12880,
+  "hexfarger_unika": 42,
+  "topp20_andel_procent": 97.5,
+  "topp10": [
+   {
+    "hex": "#24382c",
+    "forekomster": 2357
+   },
+   {
+    "hex": "#627061",
+    "forekomster": 1775
+   },
+   {
+    "hex": "#f5f4ed",
+    "forekomster": 1702
+   },
+   {
+    "hex": "#ccd1c2",
+    "forekomster": 1594
+   },
+   {
+    "hex": "#37453a",
+    "forekomster": 1021
+   },
+   {
+    "hex": "#e6ead9",
+    "forekomster": 748
+   },
+   {
+    "hex": "#93a48d",
+    "forekomster": 485
+   },
+   {
+    "hex": "#7d897c",
+    "forekomster": 470
+   },
+   {
+    "hex": "#ce7c1e",
+    "forekomster": 452
+   },
+   {
+    "hex": "#5b6959",
+    "forekomster": 355
+   }
+  ]
+ },
+ "parjamforelse": {
+  "par": [
+   {
+    "familj": "matlagningslage-staende-412",
+    "light": "lagastaende",
+    "dark": "lagamorkt",
+    "samma_markupskelett": true,
+    "langd_light": 7951,
+    "langd_dark": 7954,
+    "ytor": {
+     "borta": [],
+     "tillkomna": [],
+     "gemensamma": 5
+    },
+    "ramar": {
+     "borta": [],
+     "tillkomna": [],
+     "gemensamma": 2
+    },
+    "text": {
+     "borta": [
+      "#93a48d",
+      "#c9d3c4"
+     ],
+     "tillkomna": [],
+     "gemensamma": 3
+    },
+    "kontroller_light": 3,
+    "kontroller_dark": 3
+   },
+   {
+    "familj": "chatt-default-412",
+    "light": "chatt",
+    "dark": "chattmorkt",
+    "samma_markupskelett": true,
+    "langd_light": 5357,
+    "langd_dark": 5509,
+    "ytor": {
+     "borta": [
+      "#f5f4ed",
+      "#e6ead9",
+      "#a9b2a0",
+      "#ccd1c2"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "#2f4437",
+      "#4a5c50",
+      "rgba(245,244,237,.18)"
+     ],
+     "gemensamma": 3
+    },
+    "ramar": {
+     "borta": [
+      "#ccd1c2"
+     ],
+     "tillkomna": [
+      "rgba(245,244,237,.18)"
+     ],
+     "gemensamma": 1
+    },
+    "text": {
+     "borta": [
+      "#37453a",
+      "#3f6b4f",
+      "#4a5c43",
+      "#627061"
+     ],
+     "tillkomna": [
+      "#8fb89a",
+      "#93a48d",
+      "#b4bfa6"
+     ],
+     "gemensamma": 1
+    },
+    "kontroller_light": 0,
+    "kontroller_dark": 0
+   },
+   {
+    "familj": "inloggning-default-412",
+    "light": "inloggning",
+    "dark": "inloggningmorkt",
+    "samma_markupskelett": false,
+    "langd_light": 2797,
+    "langd_dark": 2827,
+    "ytor": {
+     "borta": [
+      "#f5f4ed",
+      "#ccd1c2"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "rgba(245,244,237,.18)"
+     ],
+     "gemensamma": 1
+    },
+    "ramar": {
+     "borta": [
+      "#7d897c",
+      "#24382c",
+      "rgba(0,0,0,.1)"
+     ],
+     "tillkomna": [
+      "rgba(245,244,237,.18)",
+      "rgba(245,244,237,.35)"
+     ],
+     "gemensamma": 0
+    },
+    "text": {
+     "borta": [
+      "#627061",
+      "#37453a",
+      "#a15a0a"
+     ],
+     "tillkomna": [
+      "#f5f4ed",
+      "#93a48d",
+      "#dca968"
+     ],
+     "gemensamma": 1
+    },
+    "kontroller_light": 0,
+    "kontroller_dark": 0
+   },
+   {
+    "familj": "integritetspolicy-default-412",
+    "light": "juridik412",
+    "dark": "juridikmorkt",
+    "samma_markupskelett": false,
+    "langd_light": 2563,
+    "langd_dark": 2461,
+    "ytor": {
+     "borta": [],
+     "tillkomna": [
+      "#17251d"
+     ],
+     "gemensamma": 2
+    },
+    "ramar": {
+     "borta": [],
+     "tillkomna": [
+      "rgba(245,244,237,.18)"
+     ],
+     "gemensamma": 0
+    },
+    "text": {
+     "borta": [
+      "#627061",
+      "#37453a"
+     ],
+     "tillkomna": [
+      "#93a48d"
+     ],
+     "gemensamma": 1
+    },
+    "kontroller_light": 0,
+    "kontroller_dark": 0
+   },
+   {
+    "familj": "adminpanel-default-660",
+    "light": "admin",
+    "dark": "adminmorkt",
+    "samma_markupskelett": false,
+    "langd_light": 4638,
+    "langd_dark": 4629,
+    "ytor": {
+     "borta": [],
+     "tillkomna": [
+      "#17251d"
+     ],
+     "gemensamma": 1
+    },
+    "ramar": {
+     "borta": [
+      "#24382c",
+      "#ccd1c2"
+     ],
+     "tillkomna": [
+      "rgba(245,244,237,.18)",
+      "rgba(245,244,237,.35)"
+     ],
+     "gemensamma": 2
+    },
+    "text": {
+     "borta": [
+      "#627061",
+      "#3f6b4f",
+      "#8a5212"
+     ],
+     "tillkomna": [
+      "#8fb89a",
+      "#dca968"
+     ],
+     "gemensamma": 3
+    },
+    "kontroller_light": 0,
+    "kontroller_dark": 0
+   },
+   {
+    "familj": "hem-default-412",
+    "light": "hem",
+    "dark": "hemmorkt",
+    "samma_markupskelett": false,
+    "langd_light": 11229,
+    "langd_dark": 11333,
+    "ytor": {
+     "borta": [
+      "#e6ead9",
+      "#f5f4ed"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "#2f4437"
+     ],
+     "gemensamma": 2
+    },
+    "ramar": {
+     "borta": [
+      "#f5f4ed",
+      "#ccd1c2",
+      "#24382c"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "rgba(245,244,237,.18)",
+      "rgba(245,244,237,.35)"
+     ],
+     "gemensamma": 0
+    },
+    "text": {
+     "borta": [
+      "#627061",
+      "#24382c",
+      "#8a5212",
+      "#a15a0a"
+     ],
+     "tillkomna": [
+      "#dca968",
+      "#c9d3c4"
+     ],
+     "gemensamma": 3
+    },
+    "kontroller_light": 13,
+    "kontroller_dark": 13
+   },
+   {
+    "familj": "onboarding-aldersgrind-412",
+    "light": "onbalder",
+    "dark": "onbaldermorkt",
+    "samma_markupskelett": false,
+    "langd_light": 3579,
+    "langd_dark": 3792,
+    "ytor": {
+     "borta": [
+      "#24382c",
+      "rgba(36,56,44,.18)"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "rgba(245,244,237,.18)"
+     ],
+     "gemensamma": 1
+    },
+    "ramar": {
+     "borta": [
+      "#24382c",
+      "#7d897c"
+     ],
+     "tillkomna": [
+      "rgba(245,244,237,.35)"
+     ],
+     "gemensamma": 0
+    },
+    "text": {
+     "borta": [
+      "#627061",
+      "#24382c",
+      "#37453a",
+      "#7d897c"
+     ],
+     "tillkomna": [
+      "#f5f4ed",
+      "#93a48d",
+      "#c9d3c4"
+     ],
+     "gemensamma": 0
+    },
+    "kontroller_light": 2,
+    "kontroller_dark": 2
+   },
+   {
+    "familj": "onboarding-allergener-412",
+    "light": "onballergi",
+    "dark": "onballergimorkt",
+    "samma_markupskelett": false,
+    "langd_light": 7115,
+    "langd_dark": 6952,
+    "ytor": {
+     "borta": [
+      "#e6ead9",
+      "rgba(36,56,44,.18)",
+      "#24382c"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "#2f4437",
+      "rgba(245,244,237,.18)",
+      "#ce7c1e"
+     ],
+     "gemensamma": 1
+    },
+    "ramar": {
+     "borta": [
+      "#24382c",
+      "#7d897c",
+      "#ccd1c2"
+     ],
+     "tillkomna": [
+      "#dca968",
+      "rgba(245,244,237,.4)",
+      "rgba(245,244,237,.35)"
+     ],
+     "gemensamma": 0
+    },
+    "text": {
+     "borta": [
+      "#627061",
+      "#37453a",
+      "#24382c"
+     ],
+     "tillkomna": [
+      "#93a48d",
+      "#c9d3c4",
+      "#17251d"
+     ],
+     "gemensamma": 1
+    },
+    "kontroller_light": 12,
+    "kontroller_dark": 12
+   },
+   {
+    "familj": "onboarding-slutforande-fel-460",
+    "light": "onbfel",
+    "dark": "onbfelmorkt",
+    "samma_markupskelett": false,
+    "langd_light": 2932,
+    "langd_dark": 3527,
+    "ytor": {
+     "borta": [
+      "#24382c"
+     ],
+     "tillkomna": [
+      "#17251d",
+      "#2f4437",
+      "#ce7c1e"
+     ],
+     "gemensamma": 0
+    },
+    "ramar": {
+     "borta": [
+      "#24382c"
+     ],
+     "tillkomna": [
+      "rgba(245,244,237,.35)"
+     ],
+     "gemensamma": 0
+    },
+    "text": {
+     "borta": [
+      "#37453a",
+      "#24382c",
+      "#627061"
+     ],
+     "tillkomna": [
+      "#c9d3c4",
+      "#e5a08a",
+      "#17251d",
+      "#93a48d"
+     ],
+     "gemensamma": 1
+    },
+    "kontroller_light": 2,
+    "kontroller_dark": 2
+   }
+  ],
+  "aterkommande_transformationer": [
+   {
+    "transform": "text: #37453a -> #93a48d",
+    "familjer_st": 6,
+    "familjer": [
+     "chatt-default-412",
+     "inloggning-default-412",
+     "integritetspolicy-default-412",
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #627061 -> #93a48d",
+    "familjer_st": 6,
+    "familjer": [
+     "chatt-default-412",
+     "inloggning-default-412",
+     "integritetspolicy-default-412",
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "ramar: #24382c -> rgba(245,244,237,.35)",
+    "familjer_st": 6,
+    "familjer": [
+     "inloggning-default-412",
+     "adminpanel-default-660",
+     "hem-default-412",
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #627061 -> #c9d3c4",
+    "familjer_st": 4,
+    "familjer": [
+     "hem-default-412",
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #24382c -> #c9d3c4",
+    "familjer_st": 4,
+    "familjer": [
+     "hem-default-412",
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "ytor: #f5f4ed -> #17251d",
+    "familjer_st": 3,
+    "familjer": [
+     "chatt-default-412",
+     "inloggning-default-412",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "ytor: #e6ead9 -> #17251d",
+    "familjer_st": 3,
+    "familjer": [
+     "chatt-default-412",
+     "hem-default-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ytor: #e6ead9 -> #2f4437",
+    "familjer_st": 3,
+    "familjer": [
+     "chatt-default-412",
+     "hem-default-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ramar: #ccd1c2 -> rgba(245,244,237,.18)",
+    "familjer_st": 3,
+    "familjer": [
+     "chatt-default-412",
+     "adminpanel-default-660",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "ramar: #7d897c -> rgba(245,244,237,.35)",
+    "familjer_st": 3,
+    "familjer": [
+     "inloggning-default-412",
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ramar: #24382c -> rgba(245,244,237,.18)",
+    "familjer_st": 3,
+    "familjer": [
+     "inloggning-default-412",
+     "adminpanel-default-660",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "text: #627061 -> #dca968",
+    "familjer_st": 3,
+    "familjer": [
+     "inloggning-default-412",
+     "adminpanel-default-660",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "ramar: #ccd1c2 -> rgba(245,244,237,.35)",
+    "familjer_st": 3,
+    "familjer": [
+     "adminpanel-default-660",
+     "hem-default-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ytor: #24382c -> #17251d",
+    "familjer_st": 3,
+    "familjer": [
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #24382c -> #93a48d",
+    "familjer_st": 3,
+    "familjer": [
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #37453a -> #c9d3c4",
+    "familjer_st": 3,
+    "familjer": [
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "ytor: #f5f4ed -> #2f4437",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "ytor: #f5f4ed -> rgba(245,244,237,.18)",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "inloggning-default-412"
+    ]
+   },
+   {
+    "transform": "ytor: #e6ead9 -> rgba(245,244,237,.18)",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ytor: #ccd1c2 -> #17251d",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "inloggning-default-412"
+    ]
+   },
+   {
+    "transform": "ytor: #ccd1c2 -> rgba(245,244,237,.18)",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "inloggning-default-412"
+    ]
+   },
+   {
+    "transform": "text: #3f6b4f -> #8fb89a",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "adminpanel-default-660"
+    ]
+   },
+   {
+    "transform": "text: #627061 -> #8fb89a",
+    "familjer_st": 2,
+    "familjer": [
+     "chatt-default-412",
+     "adminpanel-default-660"
+    ]
+   },
+   {
+    "transform": "text: #627061 -> #f5f4ed",
+    "familjer_st": 2,
+    "familjer": [
+     "inloggning-default-412",
+     "onboarding-aldersgrind-412"
+    ]
+   },
+   {
+    "transform": "text: #37453a -> #f5f4ed",
+    "familjer_st": 2,
+    "familjer": [
+     "inloggning-default-412",
+     "onboarding-aldersgrind-412"
+    ]
+   },
+   {
+    "transform": "text: #a15a0a -> #dca968",
+    "familjer_st": 2,
+    "familjer": [
+     "inloggning-default-412",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "text: #8a5212 -> #dca968",
+    "familjer_st": 2,
+    "familjer": [
+     "adminpanel-default-660",
+     "hem-default-412"
+    ]
+   },
+   {
+    "transform": "ytor: #24382c -> rgba(245,244,237,.18)",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ytor: rgba(36,56,44,.18) -> #17251d",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ytor: rgba(36,56,44,.18) -> rgba(245,244,237,.18)",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-aldersgrind-412",
+     "onboarding-allergener-412"
+    ]
+   },
+   {
+    "transform": "ytor: #24382c -> #2f4437",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "ytor: #24382c -> #ce7c1e",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #627061 -> #17251d",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #37453a -> #17251d",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   },
+   {
+    "transform": "text: #24382c -> #17251d",
+    "familjer_st": 2,
+    "familjer": [
+     "onboarding-allergener-412",
+     "onboarding-slutforande-fel-460"
+    ]
+   }
+  ]
+ },
+ "darkOnly": [
+  {
+   "familj": "recepteditor-default-412",
+   "art": "formularmorkt",
+   "varfor": "ingen ljus representation finns i sviten"
+  },
+  {
+   "familj": "bottomark-default-412",
+   "art": "arkmorkt",
+   "varfor": "ingen ljus representation finns i sviten"
+  }
+ ],
+ "darkOnly_analys": {
+  "formularmorkt": {
+   "familj": "recepteditor-default-412",
+   "kontroller": 5,
+   "ram": 412,
+   "varfor_ingen_ljus": "Tre ljusa recepteditorer finns — editorutkast, editorutkastval och editorfelkontrakt — men alla tre avbildar ANDRA tillstand. Editorns grundlage ar bara ritat i morkt lage.",
+   "bedomning": "Verkligt globalt temalage. Funktionen finns i ljust, men inte detta tillstand.",
+   "atgard": "Behall darkOnly. Familjer med olika tillstand slas inte ihop for att skapa ett par."
+  },
+  "arkmorkt": {
+   "familj": "bottomark-default-412",
+   "kontroller": 5,
+   "ram": 412,
+   "varfor_ingen_ljus": "Fem ljusa ark finns — plussheet, arkivimport, delaark, betygvemarket och imparkiv — men alla ar SPECIFIKA ark med eget innehall. arkmorkt avbildar bottenarkets grundmonster i morkt lage.",
+   "bedomning": "Verkligt globalt temalage for en komponent, inte en lokal mork variant.",
+   "atgard": "Behall darkOnly. Ett specifikt ljust ark ar inte samma familj som monsterarket."
+  }
+ },
+ "coverage_obligation": {
+  "$regel": "Ingen data-theme andras i denna analys. Klassificeringen ar ett underlag for beslut, inte en dom.",
+  "light_only_st": 306,
+  "REQUIRES_DARK": {
+   "st": 301,
+   "grund": "Avbildar produktens UI som anvandaren nar. 260 med telefonram vid enhetsstorlek och 41 komponentpaneler med interaktiva kontroller.",
+   "med_telefonram": 260,
+   "komponentpaneler_med_kontroller": 41
+  },
+  "UNKNOWN": {
+   "st": 5,
+   "artefakter": [
+    "onbjamforelse",
+    "editorfelkontrakt",
+    "fbkortmonster",
+    "admmatning",
+    "kompsason"
+   ],
+   "grund": "Forklarande paneler utan telefonram och utan kontroller. De avbildar produktens utseende men ar dokumentation. Om de hor till produktens temascope gar inte att avgora ur materialet.",
+   "krav": "Kraver normativt beslut. Far inte klassas som theme-neutral for att minska tackningskravet."
+  },
+  "THEME_NEUTRAL_BY_DESIGN": {
+   "st": 0,
+   "grund": "Ingen light-only-familj har belagts vara temaoberoende genom design. De tre neutrala artefakterna ar harnessets probeytor och ligger utanfor familjerna."
+  },
+  "OUT_OF_PRODUCT_SCOPE": {
+   "st": 0,
+   "grund": "Ingen light-only-familj har belagts ligga utanfor produktens temascope."
+  }
+ },
+ "matfallsgap_klassificering": {
+  "A_in_i_matpopulationen": {
+   "st": 9,
+   "artefakter": [
+    "globsvep",
+    "socreaktion",
+    "instportion",
+    "admdrift",
+    "kompbild",
+    "kompdubblett",
+    "komprelaterade",
+    "kompmallar",
+    "komparvegods"
+   ],
+   "grund": "Komponentpaneler med interaktiva kontroller. R-01, R-02, R-03 och R-04 kan matas pa dem men gor det inte i dag."
+  },
+  "B_legitimt_utanfor": {
+   "st": 0,
+   "grund": "Ingen av de 16 har belagts ligga legitimt utanfor matpopulationen."
+  },
+  "C_oklar": {
+   "st": 7,
+   "artefakter": [
+    "onbjamforelse",
+    "editorfelkontrakt",
+    "fbkortmonster",
+    "admmatning",
+    "kompsason",
+    "surfplatta",
+    "installergen"
+   ],
+   "grund": "Forklarande paneler eller paneler med en enda kontroll. Om de ska in i produktens matpopulation kraver ett beslut."
+  },
+  "konsekvens": "Ingen av de 16 mats i dag av nagon motor. R-01, R-02, R-03 och R-04 kan darfor inte uttala sig om dem, och de ingar inte i namnaren 310."
+ }
+}
