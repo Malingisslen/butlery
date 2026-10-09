@@ -6029,3 +6029,17 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   stays dropped; when it carried `your_poll_vote`, the conversation lists
   `{message_id, your_poll_vote}` under `your_poll_votes_on_withheld_messages`. `message_count`
   and `total_messages` still count rows. Retires the BUT-1955 residual in ADR-0009.
+
+## BUT-1805 — the admin-removal audit row (2026-10-09)
+
+- **An admin removing another member writes one `audit_logs` row that names the removed
+  person's uid, and that uid survives the removed person's erasure.**
+  `stageAdminRemovalAudit` in `functions/src/groups/remove-chat-group-member.ts` writes
+  `userId` (the admin), `resourceId` (the group) and `metadata.{actor, targetUid,
+  conversationId}`, nothing else. The account-deletion cascade does not search
+  `metadata.targetUid`, so the row stays until `purgeExpiredAuditLogs` removes it after 180
+  days. Legitimate interest in a record of a privileged act against another person, bounded
+  by the purge; `on-user-deleted.ts` already stages rows naming a third party's uid in
+  `metadata.targetUid`. The admin's Art. 15 export (`exports/audit-logs.ts`, actor side
+  only) shows the removed uid; the removed person's export does not show the row. Self-leave
+  and the child-safety backstop write no row.
