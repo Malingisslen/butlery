@@ -1,0 +1,410 @@
+{
+ "$om": "Block 287 (omgang 7) — metodbaslinje 3c00aa0; inramade rutor (A), maltid (C), paket 2.",
+ "block": "287-omgang-10",
+ "kandidat": "a805a1b + 16 pf-a-filer (15 skarmfiler + beslutslogg.md) fran 7351ff0, temporar worktree butlery-integ287",
+ "fryst_baslinje": {
+  "282_POPULATION": "5ede5a7c9ab3dfef",
+  "282_IDENTITY": "d0c7b88913b45f18",
+  "282_MAPPING": "639a14d6afb84664",
+  "283_IDENTITY": "2e7816936df8d602",
+  "283_STATUS": "48182cf827ccfb6b",
+  "284_OCCURRENCE_IDENTITY": "0d9f16c0df964d88",
+  "284_OCCURRENCE_STATUS": "68724affa98ecf30",
+  "285_IDENTITY": "5d9d52d93fc08a37",
+  "285_STATUS": "8128ade072cb6f98",
+  "286_IDENTITY": "a3f2e217e88e21c9",
+  "286_STATUS": "731145bceab33d2c"
+ },
+ "roller_ursprungliga": [
+  "button",
+  "tab",
+  "switch",
+  "radio",
+  "checkbox",
+  "textbox"
+ ],
+ "roller_utvidgade_BL03": [
+  "link",
+  "menuitem",
+  "searchbox",
+  "combobox"
+ ],
+ "komponentark_csr": {
+  "$om": "BL-04. Komponentarket, kandidatens version. Rad = Butlery Komponentark v1.dc.html.",
+  "CSR::ROLE::button::FOCUSED": "rad 393",
+  "CSR::ROLE::button::PRESSED": "rad 371, 380, 382",
+  "CSR::ROLE::checkbox::FOCUSED": "rad 153",
+  "CSR::ROLE::radio::FOCUSED": "rad 163",
+  "CSR::ROLE::radio::DISABLED": "rad 164",
+  "CSR::ROLE::switch::FOCUSED": "rad 173",
+  "CSR::ROLE::tab::FOCUSED": "rad 114",
+  "CSR::ROLE::textbox::FOCUSED": "rad 409",
+  "CSR::ROLE::textbox::DISABLED": "rad 423",
+  "CSR::ROLE::menuitem::FOCUSED": "rad 349",
+  "CSR::ROLE::searchbox::FOCUSED": "rad 273",
+  "CSR::ROLE::searchbox::DISABLED": "rad 281",
+  "CSR::ROLE::link::FOCUSED": null,
+  "CSR::ROLE::combobox::EXPANDED": null
+ },
+ "komponentark_cof": {
+  "$om": "BL-13. Roll:tillstand for de enkeltillstandsfamiljer som ar color-only-otestbara. Avsnitt i komponentarket.",
+  "button:disabled": "§10 Spara recept disabled",
+  "textbox:invalid": "§11 Fel",
+  "switch:disabled": "§03 Toggle Agarens installning",
+  "checkbox:checked": "§03 Kryssruta",
+  "checkbox:unchecked": "§03 Kryssruta",
+  "tab:selected": "§02 Textflikar vald",
+  "radio:checked": "§03 Radio vald rad",
+  "button:expanded": "§15 Accordion expanded",
+  "button:collapsed": "§15 Accordion collapsed",
+  "button:selected": "§03 Chip vald",
+  "switch:on": "§03 Toggle Ink = pa",
+  "switch:checked": "§03 Toggle Ink = pa",
+  "button:grabbed": null
+ },
+ "matfiler": {
+  "downstream": "evid-beslutad.json",
+  "r03": "bl09-kort.json",
+  "bl08_94": "bl08-94.json",
+  "bl14": "bl14.json",
+  "bl07": "bl07-kort.json",
+  "r04_partition": "r04-kandidat.json",
+  "r04_partition_repro": "r04-7351ff0.json",
+  "kontrast": "contrast-baseline.json",
+  "morktext": "morktext.json",
+  "morktext_repro": "morktext-repro.json",
+  "upptackt": "UPPTACKT_A",
+  "reglage": "reglage.json",
+  "avatar": "avatar.json",
+  "ytor": "ytor-mork.json",
+  "upptackt_repro": "UPPTACKT_B",
+  "paket1": "paket1-subgrupper.json",
+  "overlay": "overlay13.json",
+  "kanter": "kanter.json",
+  "overlayForra": "overlay11.json"
+ },
+ "bl07_unik": {
+  "$om": "UNIQUE_SAFE_CANDIDATE inom samma semantiska tokenfamilj; ingen ny farg; befintlig onRaised-token med skriven not.",
+  "text.danger / surface.tint.warning · dark": "text.danger.onRaised #E5A08A",
+  "text.danger / surface.tint.danger · dark": "text.danger.onRaised #E5A08A",
+  "text.accent / surface.raised · light": "text.accent.onRaised #8A5212"
+ },
+ "historiska_populationer": [
+  {
+   "id": "BL08::GRAFIK-UNKNOWN-997",
+   "klass": "SUPERSEDED",
+   "grund": "ersatt av den kalldrivna icke-textpopulationen: 1876 delar, 0 unknown pa kandidaten (nontext-baseline)"
+  },
+  {
+   "id": "BL08::LT3-UNKNOWN-190",
+   "klass": "DUPLICATED_BY_LATER_METHOD",
+   "grund": "pf-a:s register domer alla 518 LT3 pa kandidaten, 0 REQUIRED faller"
+  },
+  {
+   "id": "BL08::FYLLNINGAR-72",
+   "klass": "SUPERSEDED",
+   "grund": "fyllningsenumereringen 420/420 (72d12a8/76b094b)"
+  },
+  {
+   "id": "BL08::ODEKLARERADE-94",
+   "klass": "SUPERSEDED",
+   "grund": "94 -> 90 -> 146 -> 1719 -> upptacktsramen (bl08-94.json)"
+  },
+  {
+   "id": "SRC::LAGKONTRAST-87",
+   "klass": "HISTORICAL",
+   "grund": "87 REQUIRED_FAIL vid HEAD; pa kandidaten 0 (lowcontrast-driver)"
+  }
+ ],
+ "blockerare": [],
+ "lintregler": [
+  {
+   "REGEL": "T-08",
+   "MONSTER": "har data-hit=\"(self|target:[^\"]+)\" utan matt",
+   "KATEGORI": "LINT_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "T-08",
+   "MONSTER": "deklarerar data-hit=\"target:[^\"]+\" — [0-9/]+ dp",
+   "KATEGORI": "LINT_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "T-08",
+   "MONSTER": "ogiltig roll \"(link|menuitem|searchbox|combobox)\"",
+   "KATEGORI": "ROLLKOPPLAD"
+  },
+  {
+   "REGEL": "T-02",
+   "MONSTER": "okand token i contrastPairs",
+   "KATEGORI": "LINT_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "T-02",
+   "MONSTER": "= [0-9.]+:1, golv",
+   "KATEGORI": "SPEC_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "T-11",
+   "MONSTER": "kor node tools/gen-counts.mjs",
+   "KATEGORI": "SPEC_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "T-14",
+   "MONSTER": "star \"(implementerad|verifierad)\" utan bevis",
+   "KATEGORI": "SPEC_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "T-21",
+   "MONSTER": "\\[T21-",
+   "KATEGORI": "SPEC_SYNC_REQUIRED"
+  },
+  {
+   "REGEL": "A11Y-01",
+   "MONSTER": "tillstand \"[a-z]+\" utan roll",
+   "KATEGORI": "PRODUCT_REMEDIATION_REQUIRED"
+  },
+  {
+   "REGEL": "A11Y-02",
+   "MONSTER": "saknar data-a11y-state",
+   "KATEGORI": "FUTURE_PHASE_3_IMPLEMENTATION_CONTRACT"
+  }
+ ],
+ "r04_grupper": {
+  "$om": "Kogruppens semantiska agare pa kandidatens partition. Fargen ar matvarde, aldrig identitet.",
+  "ikon-fristaende|#000000": {
+   "agare": "ikon-fristaende::dekorativ::utan-token",
+   "beslut": "D"
+  },
+  "ikon-kontroll|#a15a0a": {
+   "agare": "ikon-kontroll::text.accent",
+   "beslut": "C"
+  },
+  "text-kontroll|#c9d3c4": {
+   "agare": "saffransknapp-text-pa-yta",
+   "beslut": "A"
+  },
+  "ikon-kontroll|#9c3b23": {
+   "agare": "ikon-kontroll::text.danger",
+   "beslut": "A4"
+  },
+  "ikon-kontroll|#c9d3c4": {
+   "agare": "statisk-mork::ikon-kontroll",
+   "delning": {
+    "kontroll:checkbox": {
+     "agare": "statisk-mork::ikon-kontroll::checkbox-bock",
+     "beslut": "B5"
+    },
+    "kontroll:combobox": {
+     "agare": "statisk-mork::ikon-kontroll::combobox-chevron",
+     "beslut": "C6"
+    },
+    "kontroll:radio": {
+     "agare": "statisk-mork::ikon-kontroll::radio-bock",
+     "beslut": "D6"
+    }
+   }
+  },
+  "ram-kontroll|rgba(245,244,237,0.4)": {
+   "agare": "statisk-mork::ram-kontroll",
+   "beslut": "B6",
+   "skrivsVia": "RP::DARK_BORDER::control"
+  },
+  "yta-kontroll|#4a5c43": {
+   "agare": "statisk-mork::yta-kontroll",
+   "beslut": "B5"
+  },
+  "yta-upphojd|#7d4704": {
+   "agare": "statisk-mork::yta-upphojd",
+   "beslut": "D5",
+   "komponentbindning": {
+    "id": "chatt-skicka",
+    "ramar": [
+     "chatt",
+     "chatt320",
+     "chattmorkt"
+    ],
+    "kalla": "produktregler §2.3 Skicka; beslut D5 (action.primary + text.onActionPrimary, bada teman)"
+   }
+  }
+ },
+ "beslut_omgang3": {
+  "A": {
+   "DARK_PRIMARY_ACTION_TEXT_TOKEN": "text.onActionPrimary",
+   "varde": "#17251D",
+   "kvot": 4.948565,
+   "yta": "#CE7C1E",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "B": {
+   "DARK_DANGER_CONTROL_ICON_POLICY": "SURFACE_AWARE_DANGER_TOKEN",
+   "utfall": "STOP — bada forekomsterna ligger pa surface.ink #24382C (tredje yta)",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "C": {
+   "DARK_ACCENT_RADIO_ICON_TOKEN": "text.accent",
+   "varde": "#DCA968",
+   "kvot": 7.52063,
+   "yta": "surface.base dark #17251D",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "D": {
+   "DARK_DECORATIVE_ICON_TOKEN": "text.secondary",
+   "varde": "#93A48D",
+   "dekorativ_verifierad": "data-graphic-role=decorative, ingen kontrollroll (installningar#53)",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "E": {
+   "SINGLE_LINE_FIELD_VALUE_TRUNCATION": "ALLOWED_WHEN_UNFOCUSED",
+   "onbimport": "fullvardet finns i kallan; bara presentationen trunkeras",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "F": {
+   "PROFILE_STATE_GROUP_OLD_ID": "profil-integritetsreglage",
+   "PROFILE_STATE_GROUP_OLD_ID_STATUS": "REJECTED",
+   "PROFILE_STATE_GROUP_NEW_ID": "profil-synlighetsval",
+   "PROFILE_STATE_GROUP_NEW_ID_PROVENANCE": "HUMAN_APPROVED",
+   "COLLISIONS": 0
+  },
+  "A4": {
+   "DARK_DANGER_ICON_ON_SURFACE_INK_TOKEN": "text.danger",
+   "forgrund": "#DE9078",
+   "bakgrund": "surface.ink #24382C",
+   "kvot": 4.988773,
+   "provenance": "HUMAN_APPROVED",
+   "princip": "surface.ink omklassas inte som surface.raised; text.danger.onRaised forblir ytspecifik"
+  },
+  "B4": {
+   "DARK_CONTROL_SECONDARY_TEXT_POLICY": "KEEP_CONTROL_SURFACE_AND_USE_LEGIBLE_EXISTING_TEXT_TOKEN",
+   "DARK_CONTROL_SECONDARY_TEXT_TOKEN": "text.bodyMuted",
+   "varde": "#C9D3C4",
+   "yta": "#4A5C43",
+   "kvot": 4.684103,
+   "lookup": "semantiska agare av #C9D3C4: text.bodyMuted (dark) — exakt en; palette.bodyOnDark ar palett, inte semantik",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "C4": {
+   "AUTHORED_DARK_FRAME_COLOR_POLICY": "CURRENT_TOKEN_BACKED_DARK_VALUES_ARE_AUTHORITATIVE",
+   "CHATTMORKT_RAW_SURFACE_STATUS": "UNRESOLVED_TOKEN_MAPPING",
+   "tillampning": "0 av 11 enheter uppfyller alla fem villkor",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "A5": {
+   "DARK_BORDER_CONTROL_POLICY": "USE_EXISTING_OPACITY_STEP_0_6",
+   "utfall": "STOP",
+   "DARK_BORDER_CONTROL_BINDING_APPROVED": "NO",
+   "skal": "alla 10 morka anvandningar av border.control (0,35) ar avdelarlinjer utan kontrollroll (border-top/-left); 0,6 skulle gora avdelare till tunga linjer. Kontrollkanterna (110) anvander ratt 0,4 och klarar 3,17–3,50."
+  },
+  "B5": {
+   "CHECKED_CONTROL_FOREGROUND_TOKEN": "control.checked.foreground",
+   "CHECKED_CONTROL_BACKGROUND_TOKEN": "control.checked.background",
+   "fg": "#F5F4ED",
+   "bg": "#24382C",
+   "kvot": 11.356622,
+   "provenance": "HUMAN_APPROVED"
+  },
+  "C5": {
+   "utfall": "TWO_CASE_PACKAGE",
+   "UNIQUE_SAFE_EXISTING_TOKEN_CANDIDATE": "NO"
+  },
+  "D5": {
+   "CHAT_SEND_ACTION_SEMANTICS": "PRIMARY_ACTION",
+   "CHAT_SEND_BACKGROUND_TOKEN": "action.primary",
+   "CHAT_SEND_FOREGROUND_TOKEN": "text.onActionPrimary",
+   "CHAT_SEND_RAW_DARK_VALUE_STATUS": "SUPERSEDED_BY_SEMANTIC_TOKEN",
+   "LIGHT_BEFORE": "#F5F4ED pa #8A5212 = 5.777877",
+   "LIGHT_AFTER": "#17251D pa #CE7C1E = 4.948565",
+   "DARK_BEFORE": "#F5F4ED pa #7D4704 = 6.863192",
+   "DARK_AFTER": "#17251D pa #CE7C1E = 4.948565",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "B6": {
+   "DARK_DIVIDER_TOKEN": "border.subtle",
+   "DARK_CONTROL_BORDER_TOKEN": "border.control",
+   "DARK_BORDER_CONTROL_OPACITY_STEP": 0.6,
+   "kontroll": {
+    "antal": 110,
+    "ramar": 44,
+    "bakgrunder": {
+     "rgb(23, 37, 29)": "91 · 6.049551",
+     "rgb(36, 56, 44)": "19 · 5.186607"
+    },
+    "under3": 0
+   },
+   "avdelare": 16,
+   "rattelse": "omgang 5 kallade alla 10 border.control-anvandningar avdelare; 6 ar avdelare, 4 ar fyrsidiga rutor (e-post, losenord, Skapa konto, receptnamn)",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "C6": {
+   "DARK_COMBOBOX_CHEVRON_TOKEN": "text.primary",
+   "varde": "#F5F4ED",
+   "kvot": 14.44,
+   "provenance": "HUMAN_APPROVED"
+  },
+  "D6": {
+   "SELECTED_SORT_CHECK_TOKEN": "control.checked.foreground",
+   "varde": "#F5F4ED",
+   "kvot": 11.356622,
+   "provenance": "HUMAN_APPROVED"
+  },
+  "A7": {
+   "DARK_FRAMED_ELEMENT_POLICY": "CLASSIFY_BY_FUNCTION_NOT_BOX_SHAPE",
+   "provenance": "HUMAN_APPROVED"
+  },
+  "C7": {
+   "MEAL_CHOICE_PATTERN": "RADIO_GROUP",
+   "MEAL_CHOICE_GROUP_NAME": "Måltid",
+   "container": "radiogroup",
+   "option": "radio",
+   "provenance": "HUMAN_APPROVED"
+  }
+ },
+ "metodbaslinje": {
+  "CONTRAST_METHOD_COMMIT": "423910e0ba432e9f762c4cbd06d5cdf02f5a4616",
+  "SVG_DISCOVERY_COMMIT": "3c00aa01127af9e30e8438b9ef918586fe2a062d",
+  "IDENTITY_PATCH_COMMIT": "373ab378bd5d402700af0b348c18dc1aa6b2659a",
+  "METHOD_PATCH_2_COMMIT": "e6e2f0648f50679ef4297f983a702c9ce313bd6e"
+ },
+ "metodpatch_omgang8": {
+  "status": "COMMITTAD",
+  "commit": "373ab378bd5d402700af0b348c18dc1aa6b2659a"
+ },
+ "beslut_omgang9": {
+  "HD_SKRIVSJALV_CHECK_STATUS": "NOT_CONTROL",
+  "HD_SKRIVSJALV_REMOVE_IMAGE": {
+   "klass": "CONTROL",
+   "FINAL_ROLE": "button",
+   "ACCESSIBLE_NAME": "Ta bort bilden"
+  },
+  "HD_SKRIVSJALV_PRIMARY_MARKER": "NOT_CONTROL"
+ },
+ "metodpatch_omgang9": {
+  "status": "COMMITTAD",
+  "commit": "e6e2f0648f50679ef4297f983a702c9ce313bd6e"
+ },
+ "kantpopulation_omgang9": {
+  "TOTAL": 150,
+  "skal": "110 kontrollkanter + 16 avdelare + 24 inramade rutor; en remediering byter typ, aldrig antal"
+ },
+ "portionsvaljare_normativ": {
+  "kalla": "Butlery tillganglighetshandoff: Portionsväljare",
+  "PORTION_SELECTOR_ROLE": "spinbutton",
+  "etikett": "Portioner",
+  "PORTION_DECREMENT_NAME": "Färre portioner",
+  "PORTION_INCREMENT_NAME": "Fler portioner"
+ },
+ "identitetslas": {
+  "status": "LAST",
+  "fran": "Block 287 omgang 10",
+  "commit": "e6e2f0648f50679ef4297f983a702c9ce313bd6e",
+  "kontrakt": [
+   "agaridentitet (identitet8 + tools/discovery-identity.mjs)",
+   "morka kanter per stabil agare",
+   "Block 284 nedstroms alias",
+   "forekomst/granskningsfamilj/agare atskilda",
+   "kollision faller stangt",
+   "flyktig text (tal, barntext, valt varde) aldrig identitet"
+  ],
+  "regel": "andring av identitetsarkitekturen = ny metodblockerare, STOP"
+ },
+ "$kalla": "fas2/matning - persisterat matunderlag for Block 287, matt pa BL-01:s produktinnehall"
+}

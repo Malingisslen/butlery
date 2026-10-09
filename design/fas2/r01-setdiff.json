@@ -1,0 +1,158 @@
+{
+ "$schema": "butlery-r01-setdiff/1",
+ "$datum": "2026-08-11",
+ "$fraga": "Varfor har den lagrade R-01-baslinjen 997 matningar och dagens korning 1041?",
+ "$inteOrsakatAv": "bd79819. Frozen R-01 kordes med sin egen motor pa kallan bade fore och efter metadataskrivningen och gav bit-identiskt utfall.",
+ "baslinje": {
+  "commit": "b5f630f",
+  "datum": "2026-08-08",
+  "fil": "fas2/r01-baslinje.json",
+  "matningar": 1441,
+  "measured": 997,
+  "notApplicable": 444,
+  "artefakter": 239
+ },
+ "nuvarande": {
+  "matningar": 1507,
+  "measured": 1041,
+  "notApplicable": 466,
+  "artefakter": 248
+ },
+ "setdiff": {
+  "COMMON": 1441,
+  "CURRENT_ONLY": 66,
+  "BASELINE_ONLY": 0,
+  "gemensammaMedAndratUtfall": 0
+ },
+ "CURRENT_ONLY_forklaring": {
+  "vad": "Nio artefakter kom in i R-01:s matta population i sin helhet. Ingen av dem fanns i baslinjen.",
+  "commit": "f7710d1",
+  "datum": "2026-08-09",
+  "rubrik": "Fas 2: hybridens metodstod och matfallstackning for de nio panelerna",
+  "mekanism": "Commiten utvidgade matfallstackningen till de nio panelerna. Samtliga 66 nya matningar ligger i profilerna expanded-1180 och expanded-ultrawide-2048 — de breda fall som panelerna saknade fore utvidgningen.",
+  "kontrollerFannsRedan": "Samtliga berorda kontroller fanns i kallan redan vid c262dbc. Ingen markup lades till; det var mattacknigen som vaxte.",
+  "artefakter": {
+   "globsvep": {
+    "matningar": 4,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Stäng tipset",
+     "Fler åtgärder för Pannbiffar med lök"
+    ]
+   },
+   "socreaktion": {
+    "matningar": 18,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Gillar, 3, du har reagerat",
+     "Mums, 1",
+     "Reagera",
+     "Gillar",
+     "Hjärta",
+     "Eld",
+     "Skrattar",
+     "Mums",
+     "Funderar"
+    ]
+   },
+   "instportion": {
+    "matningar": 6,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Färre portioner",
+     "Fler portioner",
+     "Visa i svenska mått"
+    ]
+   },
+   "admdrift": {
+    "matningar": 2,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "arla.se, 89 procent, fastnar på portioner. Visa importerna"
+    ]
+   },
+   "kompbild": {
+    "matningar": 4,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Bild 5 gick inte upp. Försök igen",
+     "Lägg till bilder"
+    ]
+   },
+   "kompdubblett": {
+    "matningar": 16,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Behåll 35 minuter",
+     "Använd 45 minuter",
+     "Behåll fyra portioner",
+     "Använd sex portioner",
+     "Behåll ditt steg 4",
+     "Använd det nya steg 4",
+     "Slå samman till ett recept",
+     "Behåll båda som separata recept"
+    ]
+   },
+   "komprelaterade": {
+    "matningar": 6,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Ta bort kopplingen till Brunsås",
+     "Ta bort kopplingen till Rårörda lingon",
+     "Koppla ett recept"
+    ]
+   },
+   "kompmallar": {
+    "matningar": 6,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Fler åtgärder för Veckohandling",
+     "Använd Veckohandling",
+     "Fler åtgärder för Fredagsmys"
+    ]
+   },
+   "komparvegods": {
+    "matningar": 4,
+    "viewportar": [
+     "expanded-1180",
+     "expanded-ultrawide-2048"
+    ],
+    "kontroller": [
+     "Fota nästa sida",
+     "Läs de tre sidorna"
+    ]
+   }
+  }
+ },
+ "BASELINE_ONLY_forklaring": "Tom. Ingen matning har forsvunnit ur populationen.",
+ "slutsats": {
+  "differens": 66,
+  "forklarad": true,
+  "nyBaslinjeSkriven": false,
+  "regel": "Historiska R-01-resultat bevaras som historiska baslinjer. fas2/r01-baslinje.json ar oforandrad."
+ }
+}

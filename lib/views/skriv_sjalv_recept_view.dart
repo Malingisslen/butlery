@@ -38,11 +38,15 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
   final bool isTemplate;
+
+  /// The import found no ingredient lines; the form explains the empty list.
+  final bool importedWithoutIngredients;
 
   /// After a successful save, navigate to the new recipe's detail page (default)
   /// so the user sees what they created. Onboarding passes false to keep its own
@@ -53,6 +57,7 @@ class SkrivSjalvReceptView extends StatelessWidget {
     super.key,
     this.initialRecipe,
     this.isTemplate = false,
+    this.importedWithoutIngredients = false,
     this.navigateToDetailOnSave = true,
   });
 
@@ -66,15 +71,20 @@ class SkrivSjalvReceptView extends StatelessWidget {
       ),
       child: _SkrivSjalvReceptViewContent(
         navigateToDetailOnSave: navigateToDetailOnSave,
+        importedWithoutIngredients: importedWithoutIngredients,
       ),
     );
   }
 }
 
 class _SkrivSjalvReceptViewContent extends StatefulWidget {
-  const _SkrivSjalvReceptViewContent({required this.navigateToDetailOnSave});
+  const _SkrivSjalvReceptViewContent({
+    required this.navigateToDetailOnSave,
+    required this.importedWithoutIngredients,
+  });
 
   final bool navigateToDetailOnSave;
+  final bool importedWithoutIngredients;
 
   @override
   State<_SkrivSjalvReceptViewContent> createState() =>
@@ -618,6 +628,22 @@ class _SkrivSjalvReceptViewContentState
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
 
+                          // Explains the empty list and the greyed-out save
+                          // button; gone as soon as one ingredient exists.
+                          if (widget.importedWithoutIngredients &&
+                              !viewModel.ingredients.any(
+                                (i) => i.trim().isNotEmpty,
+                              )) ...[
+                            InlineWarning(
+                              key: const ValueKey('importNoIngredientsNotice'),
+                              icon: ButleryIcons.info,
+                              color: context.modeColors.info,
+                              text:
+                                  context.l10n.recipeImportNoIngredientsNotice,
+                            ),
+                            const SizedBox(height: AppDimensions.spacingM),
+                          ],
+
                           // Ingredienser — sectioned editor (PR #211)
                           SectionedIngredientListBuilder(
                             label: context.l10n.recipeIngredient,
@@ -629,6 +655,8 @@ class _SkrivSjalvReceptViewContentState
                                 .headingController,
                             onLineChanged: viewModel.updateIngredient,
                             onAddLine: viewModel.addIngredient,
+                            onLastLineFilled:
+                                viewModel.ensureTrailingIngredientLine,
                             onRemoveLine: viewModel.removeIngredient,
                             onReorder: viewModel.moveIngredientRow,
                             onAddHeading: viewModel.addIngredientHeading,
@@ -923,12 +951,11 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
         ],
-        if (controllers.isEmpty)
-          TextButton.icon(
-            icon: const ButleryIcon(ButleryIcons.plus),
-            label: Text(context.l10n.recipeAddItem(label)),
-            onPressed: onAdd,
-          ),
+        TextButton.icon(
+          icon: const ButleryIcon(ButleryIcons.plus),
+          label: Text(context.l10n.recipeAddItem(label.toLowerCase())),
+          onPressed: onAdd,
+        ),
       ],
     );
   }

@@ -48,7 +48,6 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   @override
   void initState() {
     super.initState();
-    super.initState();
     _selectedCategories = <String>{};
     _selectedFriends = Set.from(widget.selectedFriendIds);
 
@@ -511,13 +510,5 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     }
     widget.onSelectionChanged([]);
     AppLogger.info('All selections cleared');
-  }
-
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions
-    // Dispose of resources
-    super.dispose();
   }
 }

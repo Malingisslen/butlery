@@ -31,6 +31,8 @@ on:
       - '.claude/**'
       - 'memory/**'
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
     paths-ignore:
       - '**.md'
@@ -67,6 +69,7 @@ jobs:
   # Pushing below ~12 min needs a bigger runner or a cached test kernel, not
   # more shards. Coverage lives in the `coverage` job below, not here.
   unit-tests:
+    if: github.event.pull_request.draft != true
     name: unit (ubuntu shard ${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -157,6 +160,7 @@ jobs:
   # against a 433-entry golden set, so parser-accuracy regressions fail CI
   # (BUT-1443). Verified green at wiring time.
   suite-tests:
+    if: github.event.pull_request.draft != true
     name: ${{ matrix.suite }} (ubuntu)
     strategy:
       fail-fast: false
@@ -503,6 +507,7 @@ jobs:
   # Firebase-emulator integration suite. Ubuntu-only already and not a
   # bottleneck, so it stays on the per-commit path unchanged.
   integration-tests:
+    if: github.event.pull_request.draft != true
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20

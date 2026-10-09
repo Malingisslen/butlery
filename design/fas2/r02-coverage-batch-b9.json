@@ -1,0 +1,127 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "F-C klass B · 9 kontroller efter att overlappen losts",
+ "$regel": "En separat synligt ritad bakgrund eller ram kravs INTE for self-agarskap.",
+ "self_st": 9,
+ "uteslutna_B_st": 1,
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "skrivsjalv",
+   "elementOrdinal": 11,
+   "role": "button",
+   "accessibleName": "Flytta rad",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "skrivsjalv",
+   "elementOrdinal": 12,
+   "role": "button",
+   "accessibleName": "Radens åtgärder — flytta upp, flytta ned, ta bort",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "skrivsjalv",
+   "elementOrdinal": 13,
+   "role": "button",
+   "accessibleName": "Flytta rad",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "skrivsjalv",
+   "elementOrdinal": 14,
+   "role": "button",
+   "accessibleName": "Radens åtgärder — flytta upp, flytta ned, ta bort",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygperperson",
+   "elementOrdinal": 170,
+   "role": "radio",
+   "accessibleName": "1 av 5 för Ida",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygperperson",
+   "elementOrdinal": 171,
+   "role": "radio",
+   "accessibleName": "2 av 5 för Ida",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygperperson",
+   "elementOrdinal": 172,
+   "role": "radio",
+   "accessibleName": "3 av 5 för Ida",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygperperson",
+   "elementOrdinal": 175,
+   "role": "button",
+   "accessibleName": "Ida hoppar över",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 99.82,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompkallahel",
+   "elementOrdinal": 99,
+   "role": "button",
+   "accessibleName": "Tolka källan igen och skriv över",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  }
+ ]
+}

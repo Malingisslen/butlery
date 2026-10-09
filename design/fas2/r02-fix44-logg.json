@@ -1,0 +1,200 @@
+[
+ {
+  "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+  "rc": "RC-06",
+  "roll": "button",
+  "namn": "Lägg till",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border-radius:999px;background:#ce7c1e;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border-radius:999px;background:#ce7c1e;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Färre portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Fler portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-03",
+  "roll": "button",
+  "namn": "Ugnspannkaka, placera",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-03",
+  "roll": "button",
+  "namn": "Ärtsoppa, placera",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-03",
+  "roll": "button",
+  "namn": "Rotsakslåda, placera",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Färre portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Fler portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Färre portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Fler portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Färre portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Fler portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Färre portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-01",
+  "roll": "button",
+  "namn": "Fler portioner",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none",
+  "efter": "box-sizing:border-box;width:48px;height:48px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-05",
+  "roll": null,
+  "namn": null,
+  "hitTarget": "lgbgester-button-byt-ut-mjolk",
+  "fore": "display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;background:#2f4437",
+  "efter": "display:flex;align-items:center;gap:10px;min-height:48px;font-size:14px;background:#2f4437"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-08",
+  "roll": "button",
+  "namn": "Utan nötter",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;background:#9C3B23;color:#F5F4ED;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;background:#9C3B23;color:#F5F4ED;font-size:13px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-02",
+  "roll": "button",
+  "namn": "Utan gluten",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-02",
+  "roll": "button",
+  "namn": "Utan laktos",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-08",
+  "roll": "button",
+  "namn": "Under 30 minuter",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;background:#24382c;color:#F5F4ED;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;background:#24382c;color:#F5F4ED;font-size:13px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-02",
+  "roll": "button",
+  "namn": "30 till 60 minuter",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-02",
+  "roll": "button",
+  "namn": "Över en timme",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-02",
+  "roll": "button",
+  "namn": "Mormors",
+  "hitTarget": null,
+  "fore": "min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600",
+  "efter": "min-height:48px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:13px;font-weight:600"
+ }
+]

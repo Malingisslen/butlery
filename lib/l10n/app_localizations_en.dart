@@ -166,6 +166,65 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String slotSpillHeading(int placed, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: '$placed places',
+      one: 'One place',
+      zero: 'No free places',
+    );
+    return '$_temp0, $count recipes';
+  }
+
+  @override
+  String slotSpillBody(int rest, int week, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rest,
+      locale: localeName,
+      other:
+          '$rest recipes do not fit in week $week: $names. Choose what happens to them, then I will write.',
+      one:
+          'One recipe does not fit in week $week: $names. Choose what happens to it, then I will write.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String slotSpillNextWeek(int placed, int rest, int week) {
+    return 'Add $placed now, $rest in wk $week';
+  }
+
+  @override
+  String slotSpillAllNextWeek(int week) {
+    return 'Add all in wk $week';
+  }
+
+  @override
+  String get slotSpillChooseMore => 'Choose more places';
+
+  @override
+  String slotSpillPlaceOnly(int placed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: 'Add only those $placed',
+      one: 'Add only the first',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week) {
+    return '$added recipes this week, $next in wk $week';
+  }
+
+  @override
+  String bulkAddToMenuNextWeekFailed(int added, int week) {
+    return '$added recipes added this week. The rest could not be added to wk $week.';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Pick a menu slot';
 
   @override
@@ -1852,6 +1911,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSectionAccount => 'Account & security';
+
+  @override
+  String get settingsSectionPrivacy => 'Privacy and data';
 
   @override
   String get settingsSectionAbout => 'About';
@@ -5745,7 +5807,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count invitations sent';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations sent',
+      one: '1 invitation sent',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6685,7 +6753,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count people';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14746,6 +14820,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yRemoveMember(String name) {
+    return 'Remove $name';
+  }
+
+  @override
   String get a11yToggleFullscreenChrome => 'Show or hide controls';
 
   @override
@@ -15736,6 +15815,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get recipeAddPhoto => 'Add photo';
+
+  @override
   String get imageRetriesWhenOnline =>
       'Tries again when the connection is back';
 
@@ -15944,6 +16026,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupMemberRemoveNotSaved =>
       'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'You can no longer change the group';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'The change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing =>
+      'The group no longer exists';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, selected, could not be removed';
+  }
 
   @override
   String get groupMembersRemoveNone =>
@@ -17724,4 +17822,79 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Couldn\'t restore the previous version';
+
+  @override
+  String get setNewPasswordTitle => 'Choose a new password';
+
+  @override
+  String get setNewPasswordChecking => 'Checking the link …';
+
+  @override
+  String setNewPasswordForAccount(String email) {
+    return 'For the account $email.';
+  }
+
+  @override
+  String get setNewPasswordRepeat => 'Repeat new password';
+
+  @override
+  String get setNewPasswordSave => 'Save password';
+
+  @override
+  String get setNewPasswordWeak =>
+      'The password is too simple. Choose a longer one, ideally with numbers and symbols.';
+
+  @override
+  String get setNewPasswordSaveFailed => 'The password couldn\'t be saved.';
+
+  @override
+  String setNewPasswordSaveFailedBecause(String cause) {
+    return 'The password couldn\'t be saved. $cause';
+  }
+
+  @override
+  String get setNewPasswordNothingChanged => 'Your old password still works.';
+
+  @override
+  String get setNewPasswordCheckFailed => 'The link couldn\'t be checked.';
+
+  @override
+  String get setNewPasswordLinkInvalidTitle => 'This link no longer works';
+
+  @override
+  String get setNewPasswordLinkInvalidBody =>
+      'It has already been used or is too old. Ask for a new link and it will come to your email.';
+
+  @override
+  String get setNewPasswordRequestNew => 'Send a new link';
+
+  @override
+  String get setNewPasswordClose => 'Close';
+
+  @override
+  String setNewPasswordSavedOther(String email) {
+    return 'The password for $email has been changed.';
+  }
+
+  @override
+  String get passwordResetDoneNotice =>
+      'Your password has been changed. Log in with the new one.';
+
+  @override
+  String shoppingItemsAddedToListSnack(int count, String listName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items added to \"$listName\"',
+      one: '1 item added to \"$listName\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingAddToListHeading => 'Add to list';
+
+  @override
+  String get recipeImportNoIngredientsNotice =>
+      'We found no ingredients. Add them yourself below.';
 }

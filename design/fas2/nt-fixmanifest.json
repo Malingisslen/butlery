@@ -1,0 +1,12 @@
+{
+ "$schema": "butlery-nt-fixmanifest/1",
+ "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
+ "krav_kvot": 3,
+ "rotorsaker_st": 0,
+ "verifierade_fynd_st": 0,
+ "source_occurrences_totalt": 0,
+ "write_scope_totalt": 0,
+ "shared_implementations_st": 0,
+ "utan_forslag_st": 0,
+ "manifest": []
+}

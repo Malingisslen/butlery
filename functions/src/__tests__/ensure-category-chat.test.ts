@@ -648,11 +648,48 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // `firestore.rules` still lets any participant delete a group conversation
-    // (the app's refusal is UX, not a control). The pointer is sticky now, so
-    // without this check the staging helpers' `tx.update` on a missing document
-    // would wedge every future poll for this category behind a bare `internal`.
-    name: "a deleted conversation is reported, not wedged behind a raw grpc error",
+    // BUT-1958, acceptance criterion 2: the steady state — roster unchanged,
+    // the ordinary shape of a repeat poll — is the case BUT-1929's tests missed.
+    // Before this a deleted conversation wedged every later poll for good.
+    name: "a deleted conversation is rebuilt when the roster has NOT drifted",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedCategory(fake, [OWNER, FRIEND]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      await fake.db.doc(`conversations/${first.conversationId}`).delete();
+
+      const second = await ensureCategoryChatWithDeps(fake.db, FRIEND, OWNER, CAT);
+
+      assertEqual(second.conversationId, first.conversationId, "same chat id");
+      assertEqual(chatGroupPaths(fake).length, 1, "chat_groups count");
+      const convo = fake.read(`conversations/${first.conversationId}`);
+      assertEqual(
+        ((convo?.participantIds as string[]) ?? []).slice().sort().join(","),
+        "friend,owner",
+        "rebuilt participants",
+      );
+      assertEqual(convo?.groupId, first.groupId, "still group-owned");
+      assertEqual(
+        Object.keys((convo?.memberSince as object) ?? {}).sort().join(","),
+        "friend,owner",
+        "history cut-off for every member",
+      );
+      const created = fake
+        .childPaths("messages")
+        .map((p) => fake.read(p))
+        .filter(
+          (m) =>
+            (m?.metadata as { systemEvent?: string } | undefined)
+              ?.systemEvent === "group_created",
+        );
+      assertEqual(created.length, 2, "a fresh 'group created' row");
+    },
+  },
+  {
+    name: "a deleted conversation is rebuilt and the drifted roster then synced",
     fn: async () => {
       const fake = new FakeFirestore();
       seedPerson(fake, OWNER);
@@ -666,30 +703,108 @@ const cases: UnitCase[] = [
         .doc(`users/${OWNER}/friend_categories/${CAT}`)
         .update({ friendUserIds: [OWNER, FRIEND, "latecomer"] });
 
-      const err = await capture(() =>
-        ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT),
-      );
+      const res = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
 
-      assertEqual(err.code, "failed-precondition", "refusal code");
+      assertEqual(res.addedUserIds.join(","), "latecomer", "latecomer seated");
       assertEqual(
-        (err.details as { reason?: string } | undefined)?.reason,
-        "conversation-deleted",
-        "refusal carries a reason the client can map",
-      );
-      assertEqual(
-        membersOf(fake, `chat_groups/${first.groupId}`).join(","),
-        "friend,owner",
-        "roster unchanged",
+        (
+          (fake.read(`conversations/${first.conversationId}`)
+            ?.participantIds as string[]) ?? []
+        )
+          .slice()
+          .sort()
+          .join(","),
+        "friend,latecomer,owner",
+        "conversation roster",
       );
     },
   },
   {
-    // BUT-1929. The case above ALSO adds a member, so it reaches the check
-    // inside the transaction. The steady state — roster unchanged, which is the
-    // ordinary shape of a repeat poll — returned before the transaction opened
-    // and handed the caller the id of a conversation that no longer exists.
-    // Every later poll for this category repeated it: no error, no self-heal.
-    name: "a deleted conversation is caught even when the roster has NOT drifted",
+    // The rebuild seats the CHAT's members, not the category's: somebody who
+    // left the chat is still listed in the category, and re-deriving the roster
+    // from it would put them back — the one exit that has to hold for a minor.
+    name: "a rebuild does not seat a member who left, and drops their leftover roster row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedPerson(fake, "third");
+      seedCategory(fake, [OWNER, FRIEND, "third"]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      await fake.db.doc(`chat_groups/${first.groupId}`).update({
+        memberIds: [OWNER, FRIEND],
+        departedUserIds: ["third"],
+      });
+      await fake.db.doc(`conversations/${first.conversationId}`).delete();
+      // What a deletion leaves: the parent goes, the roster rows stay.
+      assertEqual(
+        fake.read(`conversations/${first.conversationId}/participants/third`) !==
+          undefined,
+        true,
+        "premise: the leaver's row outlived the parent",
+      );
+
+      await ensureCategoryChatWithDeps(fake.db, FRIEND, OWNER, CAT);
+
+      assertEqual(
+        (
+          (fake.read(`conversations/${first.conversationId}`)
+            ?.participantIds as string[]) ?? []
+        )
+          .slice()
+          .sort()
+          .join(","),
+        "friend,owner",
+        "leaver not seated",
+      );
+      assertEqual(
+        fake.read(`conversations/${first.conversationId}/participants/third`),
+        undefined,
+        "leftover roster row removed",
+      );
+      assertEqual(
+        fake.read(`conversations/${first.conversationId}/participants/friend`) !==
+          undefined,
+        true,
+        "member's roster row present",
+      );
+    },
+  },
+  {
+    // A caller the chat no longer holds gets the same answer as before the
+    // deletion; rebuilding first would give them a chat they were removed from.
+    name: "a member removed from the chat cannot rebuild it",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedPerson(fake, "third");
+      seedCategory(fake, [OWNER, FRIEND, "third"]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      await fake.db.doc(`chat_groups/${first.groupId}`).update({
+        memberIds: [OWNER, FRIEND],
+        departedUserIds: ["third"],
+      });
+      await fake.db.doc(`conversations/${first.conversationId}`).delete();
+
+      const err = await capture(() =>
+        ensureCategoryChatWithDeps(fake.db, "third", OWNER, CAT),
+      );
+
+      assertEqual(err.code, "permission-denied", "refusal code");
+      assertEqual(
+        fake.read(`conversations/${first.conversationId}`),
+        undefined,
+        "nothing rebuilt",
+      );
+    },
+  },
+  {
+    // Declined rather than cleaned in part: a row past the read would stay in
+    // the rebuilt chat's roster.
+    name: "a rebuild declines when the leftover roster is larger than it reads",
     fn: async () => {
       const fake = new FakeFirestore();
       seedPerson(fake, OWNER);
@@ -698,6 +813,9 @@ const cases: UnitCase[] = [
 
       const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
       await fake.db.doc(`conversations/${first.conversationId}`).delete();
+      for (let i = 0; i < 499; i++) {
+        fake.seed(`conversations/${first.conversationId}/participants/gone-${i}`, {});
+      }
 
       const err = await capture(() =>
         ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT),
@@ -708,6 +826,86 @@ const cases: UnitCase[] = [
         (err.details as { reason?: string } | undefined)?.reason,
         "conversation-deleted",
         "refusal carries a reason the client can map",
+      );
+      assertEqual(
+        fake.read(`conversations/${first.conversationId}`),
+        undefined,
+        "nothing rebuilt",
+      );
+    },
+  },
+  {
+    name: "a rebuild cleans a leftover roster exactly at the cap",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedCategory(fake, [OWNER, FRIEND]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      await fake.db.doc(`conversations/${first.conversationId}`).delete();
+      for (let i = 0; i < 498; i++) {
+        fake.seed(`conversations/${first.conversationId}/participants/gone-${i}`, {});
+      }
+
+      await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+
+      assertEqual(
+        fake.childPaths(`conversations/${first.conversationId}/participants`)
+          .length,
+        2,
+        "only the members' rows remain",
+      );
+    },
+  },
+  {
+    // The backstop's removal of a ruled-out minor fails on a missing
+    // conversation and is not retried, so the minor can still be in
+    // `memberIds` when the rebuild runs. Seating them would undo it.
+    name: "a rebuild does not seat a minor whose adder is no longer their friend",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedPerson(fake, OWNER);
+      seedPerson(fake, FRIEND);
+      seedPerson(fake, "kid", true);
+      seedFriendEdge(fake, "kid", OWNER);
+      seedCategory(fake, [OWNER, FRIEND, "kid"]);
+
+      const first = await ensureCategoryChatWithDeps(fake.db, OWNER, OWNER, CAT);
+      assertEqual(
+        membersOf(fake, `chat_groups/${first.groupId}`).join(","),
+        "friend,kid,owner",
+        "premise: the minor was seated",
+      );
+      await fake.db.doc(`users/kid/friends/${OWNER}`).delete();
+      await fake.db.doc(`conversations/${first.conversationId}`).delete();
+      const groupWritesBefore = fake.writes.filter(
+        (w) => w.path === `chat_groups/${first.groupId}`,
+      ).length;
+
+      await ensureCategoryChatWithDeps(fake.db, FRIEND, OWNER, CAT);
+
+      assertEqual(
+        (
+          (fake.read(`conversations/${first.conversationId}`)
+            ?.participantIds as string[]) ?? []
+        )
+          .slice()
+          .sort()
+          .join(","),
+        "friend,owner",
+        "minor not seated",
+      );
+      assertEqual(
+        fake.read(`conversations/${first.conversationId}/participants/kid`),
+        undefined,
+        "minor's leftover row removed",
+      );
+      assertEqual(
+        fake.writes.filter((w) => w.path === `chat_groups/${first.groupId}`)
+          .length > groupWritesBefore,
+        true,
+        "the group document is written, so the backstop judges again",
       );
     },
   },

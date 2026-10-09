@@ -264,6 +264,10 @@ class _CreateGroupConversationViewState
                   size: AppDimensions.iconSizeS,
                 ),
                 onDeleted: () => viewModel.toggleMemberSelection(member.uid),
+                // Flutter's default is a bare "Radera" on every chip.
+                deleteButtonTooltipMessage: context.l10n.a11yRemoveMember(
+                  member.displayName,
+                ),
               ),
             );
           }).toList(),

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -214,6 +215,61 @@ void main() {
 
         expect(viewModel.group, isNull);
         expect(viewModel.members, isEmpty);
+      });
+    });
+
+    // BUT-2261: a pending row names who was invited.
+    group('inviteeNames', () {
+      GroupInvitation invitationTo(String uid) => GroupInvitation(
+        id: 'inv_$uid',
+        groupId: testGroupId,
+        groupName: 'Test Social Group',
+        groupEmoji: 'party',
+        fromUserId: testUserId,
+        fromUserName: 'Test Owner',
+        toUserId: uid,
+      );
+
+      test('maps each pending invitee to their display name', () async {
+        final invitee = UserProfile(
+          uid: 'invitee_789',
+          displayName: 'Ina Inbjuden',
+          email: 'ina@example.com',
+          joinedAt: now,
+          lastActiveAt: now,
+        );
+        mockUserService.setUserState(
+          users: {
+            testUserId: currentUser,
+            otherUserId: otherMember,
+            'invitee_789': invitee,
+            'nameless_111': UserProfile(
+              uid: 'nameless_111',
+              displayName: '',
+              email: 'n@example.com',
+              joinedAt: now,
+              lastActiveAt: now,
+            ),
+          },
+        );
+        when(() => mockFriendsService.sentInvitations).thenReturn([
+          invitationTo('invitee_789'),
+          invitationTo('unreadable_000'),
+          invitationTo('nameless_111'),
+        ]);
+
+        await viewModel.loadGroupData();
+
+        expect(viewModel.pendingInvitations, hasLength(3));
+        expect(viewModel.inviteeNames, {'invitee_789': 'Ina Inbjuden'});
+        // The invitee's profile is not a member's: the roster is untouched.
+        expect(viewModel.members, hasLength(2));
+      });
+
+      test('is empty when nothing is pending', () async {
+        await viewModel.loadGroupData();
+
+        expect(viewModel.inviteeNames, isEmpty);
       });
     });
 

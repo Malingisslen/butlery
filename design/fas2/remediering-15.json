@@ -1,0 +1,1788 @@
+{
+ "$schema": "butlery-remediering-15/1",
+ "$datum": "2026-08-17",
+ "$franCommit": "76b094b",
+ "$typ": "PRE-WRITE DESIGN + REMEDIATION PACKAGE. Inga produktskrivningar, inga fargskrivningar, inga designbeslut, inga R-04-andringar.",
+ "$produktfilerOrorda": true,
+ "A_population": {
+  "CURRENT_REQUIRED_FAIL": 15,
+  "TARGET_REMEDIATION_POPULATION": 15,
+  "TARGET_UNKNOWN": 0,
+  "allaBoundary": true,
+  "allaREQUIRED": true,
+  "$ejReadjudicerat": "Requiredness ar inte omprovad. Domarna kommer ur den redan stangda occurrence-granskningen i d402bf7.",
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende|4",
+    "PART_ID": "lagastaende|4#ram#0",
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_OPERATION": "Avsluta matlagningsläget",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "932",
+      "data-hit": "self",
+      "data-a11y-name": "Avsluta matlagningsläget",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 6,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-01",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagastaende|55",
+    "PART_ID": "lagastaende|55#ram#0",
+    "SCREEN": "Matlagningsläge — stående",
+    "CONTROL_OPERATION": "Föregående steg",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "983",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 57,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-02",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagamorkt|4",
+    "PART_ID": "lagamorkt|4#ram#0",
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_OPERATION": "Avsluta matlagningsläget",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "996",
+      "data-hit": "self",
+      "data-a11y-name": "Avsluta matlagningsläget",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 6,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-01",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagamorkt|55",
+    "PART_ID": "lagamorkt|55#ram#0",
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "CONTROL_OPERATION": "Föregående steg",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1047",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 57,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-02",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagastaende320|4",
+    "PART_ID": "lagastaende320|4#ram#0",
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_OPERATION": "Avsluta matlagningsläget",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1778",
+      "data-hit": "self",
+      "data-a11y-name": "Avsluta matlagningsläget",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 6,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-01",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagastaende320|36",
+    "PART_ID": "lagastaende320|36#ram#0",
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "CONTROL_OPERATION": "Föregående steg",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1810",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 38,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-02",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagaliggande|28",
+    "PART_ID": "lagaliggande|28#ram#0",
+    "SCREEN": "Matlagning · landskap",
+    "CONTROL_OPERATION": "Föregående steg",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1746",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 30,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-02",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "hemmorkt|23",
+    "PART_ID": "hemmorkt|23#ram#0",
+    "SCREEN": "Hem · mörkt läge",
+    "CONTROL_OPERATION": "Byt förslag",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "633",
+      "data-hit": "self",
+      "data-a11y-name": "Byt förslag",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 26,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-03",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagatimers|16",
+    "PART_ID": "lagatimers|16#ram#0",
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_OPERATION": "Pausa timern Pastan",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(47, 68, 55)",
+    "CURRENT_RATIO": 2.6,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1412",
+      "data-hit": "self",
+      "data-a11y-name": "Pausa timern Pastan",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 20,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-04",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagatimers|25",
+    "PART_ID": "lagatimers|25#ram#0",
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_OPERATION": "Pausa timern Svampen",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(47, 68, 55)",
+    "CURRENT_RATIO": 2.6,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1421",
+      "data-hit": "self",
+      "data-a11y-name": "Pausa timern Svampen",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 29,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-04",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lagatimers|43",
+    "PART_ID": "lagatimers|43#ram#0",
+    "SCREEN": "Matlagning — flera timers",
+    "CONTROL_OPERATION": "Föregående steg",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(245, 244, 237)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "SOURCE_FILE": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1439",
+      "data-hit": "self",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 47,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-02",
+    "VALID_CANDIDATES": 4,
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lgbgester|8",
+    "PART_ID": "lgbgester|8#ram#0",
+    "SCREEN": "Matlagningsläget — de två gesterna",
+    "CONTROL_OPERATION": "Byt ut blandfärs",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 1.48,
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1682",
+      "data-hit": "self",
+      "data-a11y-name": "Byt ut blandfärs",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 33,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-05",
+    "VALID_CANDIDATES": 3,
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lgbgester|22",
+    "PART_ID": "lgbgester|22#ram#0",
+    "SCREEN": "Matlagningsläget — de två gesterna",
+    "CONTROL_OPERATION": "Byt ut ströbröd",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 1.48,
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1696",
+      "data-hit": "self",
+      "data-a11y-name": "Byt ut ströbröd",
+      "data-a11y-role": "button"
+     },
+     "text": ""
+    },
+    "descendantordinal": 47,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-05",
+    "VALID_CANDIDATES": 3,
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lgbtimer|16",
+    "PART_ID": "lgbtimer|16#ram#0",
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_OPERATION": "Föregående steg",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 1.48,
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1768",
+      "data-a11y-name": "Föregående steg",
+      "data-a11y-role": "button",
+      "data-hit": "self"
+     },
+     "text": ""
+    },
+    "descendantordinal": 40,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-06",
+    "VALID_CANDIDATES": 3,
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "CONTROL_ID": "lgbtimer|43",
+    "PART_ID": "lgbtimer|43#ram#0",
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "CONTROL_OPERATION": "Tysta uppläsningen",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "PART_TYPE": "ram",
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 1.48,
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1795",
+      "data-a11y-name": "Tysta uppläsningen",
+      "data-a11y-role": "button",
+      "data-hit": "self"
+     },
+     "text": ""
+    },
+    "descendantordinal": 67,
+    "CURRENT_APPLICABILITY": "REQUIRED",
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION",
+    "DECISION_UNIT": "DU-07",
+    "VALID_CANDIDATES": 3,
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   }
+  ]
+ },
+ "B_beslutsenheter": {
+  "antal": 7,
+  "$regel": "Harledda ur faktisk designfunktion, inte ur ramfarg eller kvot. Sammanslagning kravde samma funktion, samma komponentkropp, samma tillstandsfunktion, samma visuella hierarki, motsvarande ytsemantik och samma tekniska kallmekanism. Vid tvekan har forekomsterna hallits separata.",
+  "$ejTillrackligt": [
+   "samma nuvarande ramfarg",
+   "samma kvot",
+   "samma kontrolltyp",
+   "samma morka tema"
+  ],
+  "enheter": [
+   {
+    "DECISION_UNIT": "DU-01",
+    "funktion": "EXIT_COOKING_MODE",
+    "mekanism": "ALPHA_LIGHT_ON_DARK",
+    "scenfamilj": "COOKING_PORTRAIT",
+    "tillstandsfunktion": "TILLSTANDSLOS",
+    "antal": 3,
+    "medlemmar": [
+     "lagastaende|4",
+     "lagamorkt|4",
+     "lagastaende320|4"
+    ],
+    "ytor": [
+     "rgb(36, 56, 44)",
+     "rgb(23, 37, 29)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (EXIT_COOKING_MODE), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (TILLSTANDSLOS), samma visuella hierarki (utility icon action i COOKING_PORTRAIT), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (ALPHA_LIGHT_ON_DARK)"
+   },
+   {
+    "DECISION_UNIT": "DU-02",
+    "funktion": "PREVIOUS_STEP",
+    "mekanism": "ALPHA_LIGHT_ON_DARK",
+    "scenfamilj": "COOKING_PORTRAIT",
+    "tillstandsfunktion": "TILLSTANDSLOS",
+    "antal": 5,
+    "medlemmar": [
+     "lagastaende|55",
+     "lagamorkt|55",
+     "lagastaende320|36",
+     "lagaliggande|28",
+     "lagatimers|43"
+    ],
+    "ytor": [
+     "rgb(36, 56, 44)",
+     "rgb(23, 37, 29)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (PREVIOUS_STEP), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (TILLSTANDSLOS), samma visuella hierarki (utility icon action i COOKING_PORTRAIT), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (ALPHA_LIGHT_ON_DARK)"
+   },
+   {
+    "DECISION_UNIT": "DU-03",
+    "funktion": "REFRESH_SUGGESTION",
+    "mekanism": "ALPHA_LIGHT_ON_DARK",
+    "scenfamilj": "HOME_DARK_CARD",
+    "tillstandsfunktion": "TILLSTANDSLOS",
+    "antal": 1,
+    "medlemmar": [
+     "hemmorkt|23"
+    ],
+    "ytor": [
+     "rgb(23, 37, 29)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (REFRESH_SUGGESTION), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (TILLSTANDSLOS), samma visuella hierarki (utility icon action i HOME_DARK_CARD), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (ALPHA_LIGHT_ON_DARK)"
+   },
+   {
+    "DECISION_UNIT": "DU-04",
+    "funktion": "PAUSE_TIMER",
+    "mekanism": "ALPHA_LIGHT_ON_DARK",
+    "scenfamilj": "COOKING_PORTRAIT",
+    "tillstandsfunktion": "BAR_TILLSTAND",
+    "antal": 2,
+    "medlemmar": [
+     "lagatimers|16",
+     "lagatimers|25"
+    ],
+    "ytor": [
+     "rgb(47, 68, 55)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (PAUSE_TIMER), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (BAR_TILLSTAND), samma visuella hierarki (utility icon action i COOKING_PORTRAIT), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (ALPHA_LIGHT_ON_DARK)"
+   },
+   {
+    "DECISION_UNIT": "DU-05",
+    "funktion": "SWAP_INGREDIENT",
+    "mekanism": "SOLID_PALETTE_GREEN",
+    "scenfamilj": "COOKING_LANDSCAPE",
+    "tillstandsfunktion": "TILLSTANDSLOS",
+    "antal": 2,
+    "medlemmar": [
+     "lgbgester|8",
+     "lgbgester|22"
+    ],
+    "ytor": [
+     "rgb(36, 56, 44)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (SWAP_INGREDIENT), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (TILLSTANDSLOS), samma visuella hierarki (utility icon action i COOKING_LANDSCAPE), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (SOLID_PALETTE_GREEN)"
+   },
+   {
+    "DECISION_UNIT": "DU-06",
+    "funktion": "PREVIOUS_STEP",
+    "mekanism": "SOLID_PALETTE_GREEN",
+    "scenfamilj": "COOKING_LANDSCAPE",
+    "tillstandsfunktion": "TILLSTANDSLOS",
+    "antal": 1,
+    "medlemmar": [
+     "lgbtimer|16"
+    ],
+    "ytor": [
+     "rgb(36, 56, 44)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (PREVIOUS_STEP), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (TILLSTANDSLOS), samma visuella hierarki (utility icon action i COOKING_LANDSCAPE), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (SOLID_PALETTE_GREEN)"
+   },
+   {
+    "DECISION_UNIT": "DU-07",
+    "funktion": "MUTE_VOICE",
+    "mekanism": "SOLID_PALETTE_GREEN",
+    "scenfamilj": "COOKING_LANDSCAPE",
+    "tillstandsfunktion": "BAR_TILLSTAND",
+    "antal": 1,
+    "medlemmar": [
+     "lgbtimer|43"
+    ],
+    "ytor": [
+     "rgb(36, 56, 44)"
+    ],
+    "mergeGrund": "samma faktiska designfunktion (MUTE_VOICE), samma komponentkropp (48x48 ikonknapp), samma tillstandsfunktion (BAR_TILLSTAND), samma visuella hierarki (utility icon action i COOKING_LANDSCAPE), motsvarande foralder- och angransande ytsemantik, och samma tekniska kallmekanism (SOLID_PALETTE_GREEN)"
+   }
+  ]
+ },
+ "C_kallaOchKoppling": [
+  {
+   "DECISION_UNIT": "DU-01",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "rgba(245, 244, 237, 0.35) — palette.paper med opacityLadder-steg",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 43,
+   "NUMBER_OF_TARGET_CONSUMERS": 3,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 40,
+   "andraKonsumenterPerFil": {
+    "Butlery Komponentark v1.dc.html": 8,
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 8,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 12,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 2,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 7,
+    "Butlery Skarmar v12 etapp 2.dc.html": 1,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 5
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  },
+  {
+   "DECISION_UNIT": "DU-02",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "rgba(245, 244, 237, 0.35) — palette.paper med opacityLadder-steg",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 43,
+   "NUMBER_OF_TARGET_CONSUMERS": 5,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 38,
+   "andraKonsumenterPerFil": {
+    "Butlery Komponentark v1.dc.html": 8,
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 8,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 12,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 2,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 7,
+    "Butlery Skarmar v12 etapp 2.dc.html": 1,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 5
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  },
+  {
+   "DECISION_UNIT": "DU-03",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "rgba(245, 244, 237, 0.35) — palette.paper med opacityLadder-steg",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 43,
+   "NUMBER_OF_TARGET_CONSUMERS": 1,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 42,
+   "andraKonsumenterPerFil": {
+    "Butlery Komponentark v1.dc.html": 8,
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 8,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 12,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 2,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 7,
+    "Butlery Skarmar v12 etapp 2.dc.html": 1,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 5
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  },
+  {
+   "DECISION_UNIT": "DU-04",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "rgba(245, 244, 237, 0.35) — palette.paper med opacityLadder-steg",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 43,
+   "NUMBER_OF_TARGET_CONSUMERS": 2,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 41,
+   "andraKonsumenterPerFil": {
+    "Butlery Komponentark v1.dc.html": 8,
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 8,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 12,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 2,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 7,
+    "Butlery Skarmar v12 etapp 2.dc.html": 1,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 5
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  },
+  {
+   "DECISION_UNIT": "DU-05",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1px solid rgb(63, 81, 69)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "#3F5145 — semantic.border.onInk",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 74,
+   "NUMBER_OF_TARGET_CONSUMERS": 2,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 72,
+   "andraKonsumenterPerFil": {
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 1,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 2,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 6,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 17,
+    "Butlery Skarmar v12 etapp 10 bred layout.dc.html": 1,
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html": 12,
+    "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html": 4,
+    "Butlery Skarmar v12 etapp 2.dc.html": 3,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 6,
+    "Butlery Skarmar v12 etapp 5-7.dc.html": 2,
+    "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html": 6,
+    "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html": 7,
+    "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html": 7
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  },
+  {
+   "DECISION_UNIT": "DU-06",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1.5px solid rgb(63, 81, 69)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "#3F5145 — semantic.border.onInk",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 74,
+   "NUMBER_OF_TARGET_CONSUMERS": 1,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 73,
+   "andraKonsumenterPerFil": {
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 1,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 2,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 6,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 17,
+    "Butlery Skarmar v12 etapp 10 bred layout.dc.html": 1,
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html": 12,
+    "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html": 4,
+    "Butlery Skarmar v12 etapp 2.dc.html": 3,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 6,
+    "Butlery Skarmar v12 etapp 5-7.dc.html": 2,
+    "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html": 6,
+    "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html": 7,
+    "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html": 7
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  },
+  {
+   "DECISION_UNIT": "DU-07",
+   "SOURCE_FILE": [
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+   ],
+   "SOURCE_DECLARATION": [
+    "border: 1px solid rgb(63, 81, 69)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_LITERAL_OR_TOKEN": "#3F5145 — semantic.border.onInk",
+   "SKRIVBARHET": "WRITEABLE · varje forekomst bar sin egen inline-deklaration",
+   "NUMBER_OF_SOURCE_CONSUMERS": 74,
+   "NUMBER_OF_TARGET_CONSUMERS": 1,
+   "NUMBER_OF_NON_TARGET_CONSUMERS": 73,
+   "andraKonsumenterPerFil": {
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 1,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 2,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 6,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 17,
+    "Butlery Skarmar v12 etapp 10 bred layout.dc.html": 1,
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html": 12,
+    "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html": 4,
+    "Butlery Skarmar v12 etapp 2.dc.html": 3,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 6,
+    "Butlery Skarmar v12 etapp 5-7.dc.html": 2,
+    "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html": 6,
+    "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html": 7,
+    "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html": 7
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varforInteSeparation": "Deklarationen ar inline per forekomst. En skrivning traffar exakt det ankrade elementet och kan inte na nagon annan konsument. Ingen strukturell separation kravs. Talet NUMBER_OF_SOURCE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet vore forbjuden.",
+   "$rotorsak": "Rotorsaken ar inte skrivscopet. Samma varde far aldrig andras globalt bara for att det trafffar en av de 15."
+  }
+ ],
+ "D_mekanism": {
+  "vald": "M1 · byt farg pa den redan existerande gransen",
+  "oforandrat": [
+   "border width",
+   "border style",
+   "radius",
+   "box model",
+   "geometri",
+   "kontrollstruktur"
+  ],
+  "$eskalering": "Ingen enhet behovde eskalera. Samtliga sju har minst en tekniskt giltig M1-kandidat, sa varken split pa grund av fargkonflikt, nytt designvarde eller alternativ bararmekanism har behovts.",
+  "$ejProvat": [
+   "ny fyllning",
+   "bredare ram",
+   "skugga",
+   "outline",
+   "tillstandsforandring"
+  ]
+ },
+ "E_kandidatuniversum": {
+  "kalla": "tokens.json",
+  "palettvarden": 41,
+  "opacitetsstege": "onInk [0.18, 0.35, 0.6] — endast dessa nivaer far anvandas",
+  "$R04": "Ett val har ger R-04 CREDIT = 0 och far inte registreras som verifierad light-till-dark-mappning. R-04 och denna icke-textremediering ar separata spar.",
+  "semantisktBlockerade": [
+   "#9A5C14 pressed",
+   "#CE7C1E primaraktionens fyllning",
+   "accent- och varningsvarden"
+  ]
+ },
+ "F_G_kandidatmatriser": [
+  {
+   "DECISION_UNIT": "DU-01",
+   "funktion": "EXIT_COOKING_MODE",
+   "ytor": [
+    "rgb(36, 56, 44)",
+    "rgb(23, 37, 29)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": null,
+     "MIN_BOUNDARY_RATIO": 5.187,
+     "perYta": {
+      "rgb(36, 56, 44)": 5.187,
+      "rgb(23, 37, 29)": 6.05
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "samma farg och samma mekanism, ett steg upp i korpusens egen opacitetsstege onInk [0.18, 0.35, 0.6]. Minsta mojliga andring."
+    },
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199,
+      "rgb(23, 37, 29)": 4.068
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423,
+      "rgb(23, 37, 29)": 4.353
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732,
+      "rgb(23, 37, 29)": 6.017
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  },
+  {
+   "DECISION_UNIT": "DU-02",
+   "funktion": "PREVIOUS_STEP",
+   "ytor": [
+    "rgb(36, 56, 44)",
+    "rgb(23, 37, 29)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": null,
+     "MIN_BOUNDARY_RATIO": 5.187,
+     "perYta": {
+      "rgb(36, 56, 44)": 5.187,
+      "rgb(23, 37, 29)": 6.05
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 4,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "samma farg och samma mekanism, ett steg upp i korpusens egen opacitetsstege onInk [0.18, 0.35, 0.6]. Minsta mojliga andring."
+    },
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199,
+      "rgb(23, 37, 29)": 4.068
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 4,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423,
+      "rgb(23, 37, 29)": 4.353
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 4,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732,
+      "rgb(23, 37, 29)": 6.017
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 4,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  },
+  {
+   "DECISION_UNIT": "DU-03",
+   "funktion": "REFRESH_SUGGESTION",
+   "ytor": [
+    "rgb(23, 37, 29)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": null,
+     "MIN_BOUNDARY_RATIO": 6.05,
+     "perYta": {
+      "rgb(23, 37, 29)": 6.05
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "samma farg och samma mekanism, ett steg upp i korpusens egen opacitetsstege onInk [0.18, 0.35, 0.6]. Minsta mojliga andring."
+    },
+    {
+     "CANDIDATE": "#627061",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sageDeep",
+      "palette.muted",
+      "semantic.text.secondary.light",
+      "semantic.text.disabled.dark",
+      "avatar.pairs.2.fill",
+      "dataScale.sequential.2"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.04,
+     "perYta": {
+      "rgb(23, 37, 29)": 3.04
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#66755C",
+     "typ": "PALETTE_SOLID",
+     "namn": [],
+     "MIN_BOUNDARY_RATIO": 3.233,
+     "perYta": {
+      "rgb(23, 37, 29)": 3.233
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.068,
+     "perYta": {
+      "rgb(23, 37, 29)": 4.068
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  },
+  {
+   "DECISION_UNIT": "DU-04",
+   "funktion": "PAUSE_TIMER",
+   "ytor": [
+    "rgb(47, 68, 55)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": null,
+     "MIN_BOUNDARY_RATIO": 4.599,
+     "perYta": {
+      "rgb(47, 68, 55)": 4.599
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "samma farg och samma mekanism, ett steg upp i korpusens egen opacitetsstege onInk [0.18, 0.35, 0.6]. Minsta mojliga andring."
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.962,
+     "perYta": {
+      "rgb(47, 68, 55)": 3.962
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#8FB89A",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.greenLight",
+      "semantic.text.success.dark",
+      "semantic.text.success.onRaised.dark"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.739,
+     "perYta": {
+      "rgb(47, 68, 55)": 4.739
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#A9B2A0",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sageMuted",
+      "palette.secondaryOnRaisedDark",
+      "semantic.surface.disabled.light",
+      "semantic.text.secondary.onRaised.dark"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.775,
+     "perYta": {
+      "rgb(47, 68, 55)": 4.775
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  },
+  {
+   "DECISION_UNIT": "DU-05",
+   "funktion": "SWAP_INGREDIENT",
+   "ytor": [
+    "rgb(36, 56, 44)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  },
+  {
+   "DECISION_UNIT": "DU-06",
+   "funktion": "PREVIOUS_STEP",
+   "ytor": [
+    "rgb(36, 56, 44)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  },
+  {
+   "DECISION_UNIT": "DU-07",
+   "funktion": "MUTE_VOICE",
+   "ytor": [
+    "rgb(36, 56, 44)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "STATE_COLLISION": "nej — ingen kandidat ar pressed-, focus- eller disabled-farg",
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$motivering": "lugnaste befintliga palettvarde som klarar kravet mot samtliga ytor i enheten — en utility-ikon ska inte bli starkare an den behover"
+    }
+   ]
+  }
+ ],
+ "H_previews": {
+  "metod": "actual-scene, exakt scopead injektion, aterstalld efter varje render",
+  "kallfilerOforandrade": true,
+  "bilder": 32,
+  "katalog": "C:/Users/malla/claude-reports/Butlery design system/bilder/remediering",
+  "$garantier": [
+   "0 geometridelta mellan varianter",
+   "samma innehall och samma tillstand",
+   "endast den avsedda ramfargen varierar",
+   "0 kollaterala andringar",
+   "rorelse fryst under matning sa att animation inte lases som geometriandring"
+  ]
+ },
+ "I_grannarUtanforScopet": {
+  "antal": 7,
+  "perTillamplighet": {
+   "UNKNOWN": 7
+  },
+  "perKvot": {
+   "2.78": 3,
+   "2.98": 3,
+   "1.48": 1
+  },
+  "poster": [
+   {
+    "CONTROL_ID": "lagastaende|3",
+    "namn": "Textstorlek",
+    "skarm": "Matlagningsläge — stående",
+    "farg": "rgb(109, 122, 112)",
+    "angransande": "rgb(36, 56, 44)",
+    "kvot": 2.78,
+    "APPLICABILITY": "UNKNOWN"
+   },
+   {
+    "CONTROL_ID": "lagamorkt|3",
+    "namn": "Textstorlek",
+    "skarm": "Matlagningsläge — mörkt läge",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "kvot": 2.98,
+    "APPLICABILITY": "UNKNOWN"
+   },
+   {
+    "CONTROL_ID": "lagastaende320|3",
+    "namn": "Textstorlek",
+    "skarm": "Matlagningsläge — stående · 320",
+    "farg": "rgb(109, 122, 112)",
+    "angransande": "rgb(36, 56, 44)",
+    "kvot": 2.78,
+    "APPLICABILITY": "UNKNOWN"
+   },
+   {
+    "CONTROL_ID": "lagastaende320|18",
+    "namn": "Visa ingredienser, 5 rader",
+    "skarm": "Matlagningsläge — stående · 320",
+    "farg": "rgb(109, 122, 112)",
+    "angransande": "rgb(36, 56, 44)",
+    "kvot": 2.78,
+    "APPLICABILITY": "UNKNOWN"
+   },
+   {
+    "CONTROL_ID": "lagaliggande|11",
+    "namn": "Starta timer 8 minuter",
+    "skarm": "Matlagning · landskap",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "kvot": 2.98,
+    "APPLICABILITY": "UNKNOWN"
+   },
+   {
+    "CONTROL_ID": "lagatimers|30",
+    "namn": "Starta timer för det här steget, 9 minuter",
+    "skarm": "Matlagning — flera timers",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "kvot": 2.98,
+    "APPLICABILITY": "UNKNOWN"
+   },
+   {
+    "CONTROL_ID": "lgbtimer|37",
+    "namn": "Timer steg 4, 12 minuter kvar",
+    "skarm": "Matlagningsläget — timrar och röst",
+    "farg": "rgb(63, 81, 69)",
+    "angransande": "rgb(36, 56, 44)",
+    "kvot": 1.48,
+    "APPLICABILITY": "UNKNOWN"
+   }
+  ],
+  "$vad": "Kontroller i SAMMA skarmar som malen, med exakt samma renderade ramfarg mot exakt samma angransande yta och samma kvot — men UTANFOR malpopulationen, eftersom deras tillamplighet aldrig har adjudicerats.",
+  "$konsekvens": "En skrivning som bara traffar de 15 gor att tva grannar i samma rad far olika tydlig kant. Det ar inte ett tekniskt fel och inget stoppvillkor — men det ar en designkonsekvens du behover se innan du valjer.",
+  "$ejAtgard": "Att utoka scopet skulle krava ny occurrence-specifik tillamplighetsevidens for grannarna. Det gors INTE har."
+ },
+ "J_rekonciliation": {
+  "antal": 15,
+  "unikaControlId": 15,
+  "unikaPartId": 15,
+  "utanEnhet": 0,
+  "utanGiltigKandidat": 0,
+  "perEnhet": [
+   {
+    "DECISION_UNIT": "DU-01",
+    "antal": 3,
+    "CURRENT_COLOR": [
+     "rgb(245, 244, 237)"
+    ],
+    "CURRENT_MIN_RATIO": 2.78,
+    "VALID_CANDIDATES": [
+     "rgba(245, 244, 237, 0.6)",
+     "#788477",
+     "#7D897C",
+     "#93A48D"
+    ],
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 3,
+     "filer": 2,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 40
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "DECISION_UNIT": "DU-02",
+    "antal": 5,
+    "CURRENT_COLOR": [
+     "rgb(245, 244, 237)"
+    ],
+    "CURRENT_MIN_RATIO": 2.78,
+    "VALID_CANDIDATES": [
+     "rgba(245, 244, 237, 0.6)",
+     "#788477",
+     "#7D897C",
+     "#93A48D"
+    ],
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 5,
+     "filer": 4,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 38
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "DECISION_UNIT": "DU-03",
+    "antal": 1,
+    "CURRENT_COLOR": [
+     "rgb(245, 244, 237)"
+    ],
+    "CURRENT_MIN_RATIO": 2.98,
+    "VALID_CANDIDATES": [
+     "rgba(245, 244, 237, 0.6)",
+     "#627061",
+     "#66755C",
+     "#788477"
+    ],
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 1,
+     "filer": 1,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 42
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "DECISION_UNIT": "DU-04",
+    "antal": 2,
+    "CURRENT_COLOR": [
+     "rgb(245, 244, 237)"
+    ],
+    "CURRENT_MIN_RATIO": 2.6,
+    "VALID_CANDIDATES": [
+     "rgba(245, 244, 237, 0.6)",
+     "#93A48D",
+     "#8FB89A",
+     "#A9B2A0"
+    ],
+    "RECOMMENDED_CANDIDATE": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 2,
+     "filer": 1,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 41
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "DECISION_UNIT": "DU-05",
+    "antal": 2,
+    "CURRENT_COLOR": [
+     "rgb(63, 81, 69)"
+    ],
+    "CURRENT_MIN_RATIO": 1.48,
+    "VALID_CANDIDATES": [
+     "#788477",
+     "#7D897C",
+     "#93A48D"
+    ],
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 2,
+     "filer": 1,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 72
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "DECISION_UNIT": "DU-06",
+    "antal": 1,
+    "CURRENT_COLOR": [
+     "rgb(63, 81, 69)"
+    ],
+    "CURRENT_MIN_RATIO": 1.48,
+    "VALID_CANDIDATES": [
+     "#788477",
+     "#7D897C",
+     "#93A48D"
+    ],
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 1,
+     "filer": 1,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 73
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "DECISION_UNIT": "DU-07",
+    "antal": 1,
+    "CURRENT_COLOR": [
+     "rgb(63, 81, 69)"
+    ],
+    "CURRENT_MIN_RATIO": 1.48,
+    "VALID_CANDIDATES": [
+     "#788477",
+     "#7D897C",
+     "#93A48D"
+    ],
+    "RECOMMENDED_CANDIDATE": "#788477",
+    "SOURCE_WRITE_SCOPE": {
+     "forekomster": 1,
+     "filer": 1,
+     "deklarationer": "inline per forekomst",
+     "NUMBER_OF_NON_TARGET_CONSUMERS": 73
+    },
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   }
+  ]
+ },
+ "L_regression": {
+  "deklareradeKontroller": 1375,
+  "R02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "kontrollgrafik": 1879,
+  "gransdelar": 689,
+  "maladeKontrollytor": 420,
+  "fristaende": 32,
+  "CURRENT_REQUIRED_FAIL": 15,
+  "R01fynd": 0,
+  "nyaOverlapp": 0,
+  "nyKlipp": 0,
+  "andradeSkarmmatt": 0,
+  "produktskrivningar": 0,
+  "fargskrivningar": 0,
+  "R04skrivningar": 0,
+  "R04credit": 0
+ },
+ "M_status": {
+  "dettaBlock": "PRE-WRITE PACKAGE KLART — vantar pa manskligt val per beslutsenhet",
+  "KNOWN_REQUIRED_FAIL": 15,
+  "CURRENT_NON_TEXT_CONTRAST": "OPEN",
+  "kvarstaendeUNKNOWN": 1743,
+  "$formulering": "Aven nar de 15 senare ar atgardade blir overall status inte CLOSED. Korrekt formulering blir da KNOWN_REQUIRED_FAIL = 0, medan den overgripande icke-textstatusen forblir OPEN sa lange de 1743 relationerna med okand tillamplighet inte ar stangda enligt separat metod.",
+  "saffran": "CLOSED / VERIFIED",
+  "R04_CREDIT": 0,
+  "PRESSED": "UNTESTED",
+  "INACTIVE": "UNTESTED",
+  "FOCUS": "UNTESTED"
+ }
+}

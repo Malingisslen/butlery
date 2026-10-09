@@ -1,0 +1,1084 @@
+{
+ "$enhetsregel": "Varje tal bär sin enhet i nyckelnamnet. _st = antal, _detektioner_st = metodträffar, _elementfynd_st = distinkta element med fel, _felinstanser_st = användarsynliga fel, _källrotorsaker_st = gemensamma källor, _produktartefakter_st = distinkta registrerade ritningar.",
+ "$nivåregel": "De fyra nivåerna summeras aldrig ihop och byter aldrig namn. En rå detektion är en metodträff. Ett elementfynd är ett element med ett fel. En felinstans är ett användarsynligt fel i en ritning. En källrotorsak är en gemensam källa bakom felinstanser i flera ritningar.",
+ "chrome": "150.0.7871.188",
+ "dpr": 2,
+ "kontrakt": "1.3",
+ "fall": {
+  "planerade_st": 29,
+  "körda_st": 29,
+  "misslyckade_st": 0
+ },
+ "artefaktmätningar_st": 446,
+ "kapade_artefakter_st": 0,
+ "populationer": {
+  "$regel": "Produktens kontrollresultat och täckningsgrader använder ALLTID registrerade_produktartefakter_st som nämnare. Probeartefakterna ligger i en egen sektion och blandas aldrig in i produktens compliance-tal.",
+  "registrerade_produktartefakter_st": 309,
+  "probeartefakter_st": 3,
+  "probeartefakter": [
+   "bredbrytpunkter",
+   "bredgrid",
+   "bredarbete"
+  ],
+  "totalt_exekverade_artefakter_st": 312
+ },
+ "produkt": {
+  "$nämnare": 309,
+  "raa_detektioner_per_metod": {
+   "r03a": {
+    "detektioner_st": 6,
+    "verifierad_detektioner_st": 6,
+    "verifierad_produktartefakter_st": 6,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 0,
+    "observation_produktartefakter_st": 0,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   },
+   "r03b": {
+    "detektioner_st": 12,
+    "verifierad_detektioner_st": 12,
+    "verifierad_produktartefakter_st": 11,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 0,
+    "observation_produktartefakter_st": 0,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   },
+   "r03c": {
+    "detektioner_st": 2397,
+    "verifierad_detektioner_st": 15,
+    "verifierad_produktartefakter_st": 14,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 2382,
+    "observation_produktartefakter_st": 309,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   },
+   "r03d": {
+    "detektioner_st": 131,
+    "verifierad_detektioner_st": 2,
+    "verifierad_produktartefakter_st": 2,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 129,
+    "observation_produktartefakter_st": 96,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   }
+  },
+  "nivåer": {
+   "raa_detektioner_st": 35,
+   "elementfynd_st": 29,
+   "felinstanser_st": 17,
+   "källrotorsaker_st": 6,
+   "berörda_produktartefakter_st": 14,
+   "$not": "Alla fyra avser klassen verifierad. Observationer, avsiktliga och verktygsfel redovisas separat och blandas aldrig in."
+  },
+  "övriga_klasser": {
+   "avsiktliga_elementfynd_st": 0,
+   "observations_elementfynd_st": 1431,
+   "observations_produktartefakter_st": 309,
+   "verktygsfel_elementfynd_st": 0
+  },
+  "bekräftande_metodkombinationer_elementfynd_st": {
+   "r03a+r03c": 6,
+   "r03b": 12,
+   "r03c": 9,
+   "r03d": 2
+  },
+  "elementnyckelgrund_st": {
+   "normaliserad-selektor": 27,
+   "roll-och-namn": 2
+  },
+  "felinstanser": [
+   {
+    "instansId": "INST · betygperperson · sel:div.c-phone>div[1] · klippning",
+    "artefakt": "betygperperson",
+    "element": "div",
+    "axis": "y",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · betygperperson · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · betygperperson · sel:div>div[3] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "överskott 2 px i y med overflow-y: hidden"
+   },
+   {
+    "instansId": "INST · flergrupp · sel:div.c-phone>div[1] · klippning",
+    "artefakt": "flergrupp",
+    "element": "div",
+    "axis": "y",
+    "subtype": "klippning",
+    "elementfynd_st": 1,
+    "findingIds": [
+     "CHK-R-03 · flergrupp · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": false,
+    "hopslagningsgrund": null,
+    "why": "överskott 3 px i y med overflow-y: hidden"
+   },
+   {
+    "instansId": "INST · hem · sel:span>svg[0] · klippning",
+    "artefakt": "hem",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hem · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hem · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · hem360 · sel:span>svg[0] · klippning",
+    "artefakt": "hem360",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hem360 · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hem360 · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · hemfel · sel:span>svg[0] · klippning",
+    "artefakt": "hemfel",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hemfel · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hemfel · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · hemladdar · sel:span>svg[0] · klippning",
+    "artefakt": "hemladdar",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hemladdar · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hemladdar · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · hemmorkt · sel:span>svg[0] · klippning",
+    "artefakt": "hemmorkt",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hemmorkt · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hemmorkt · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · hemoffline · sel:span>svg[0] · klippning",
+    "artefakt": "hemoffline",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hemoffline · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hemoffline · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · hemtom · sel:span>svg[0] · klippning",
+    "artefakt": "hemtom",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · hemtom · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · hemtom · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · kompkalla · sel:div>div[2] · klippning",
+    "artefakt": "kompkalla",
+    "element": "div",
+    "axis": "y",
+    "subtype": "klippning",
+    "elementfynd_st": 1,
+    "findingIds": [
+     "CHK-R-03 · kompkalla · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": false,
+    "hopslagningsgrund": null,
+    "why": "överskott 52 px i y med overflow-y: hidden"
+   },
+   {
+    "instansId": "INST · langavarden · sel:div>div[0] · klippning",
+    "artefakt": "langavarden",
+    "element": "div",
+    "axis": "y",
+    "subtype": "klippning",
+    "elementfynd_st": 1,
+    "findingIds": [
+     "CHK-R-03 · langavarden · sel:div>div[0] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": false,
+    "hopslagningsgrund": null,
+    "why": "överskott 22 px i y med overflow-y: hidden"
+   },
+   {
+    "instansId": "INST · langavarden · sel:div>div[0] · textrunkering",
+    "artefakt": "langavarden",
+    "element": "div",
+    "axis": "y",
+    "subtype": "textrunkering",
+    "elementfynd_st": 1,
+    "findingIds": [
+     "CHK-R-03 · langavarden · sel:div>div[0] · textrunkering · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": false,
+    "hopslagningsgrund": null,
+    "why": "texten trunkeras: 22 px högre än boxen med line-clamp 2"
+   },
+   {
+    "instansId": "INST · langavarden · sel:span>svg[0] · klippning",
+    "artefakt": "langavarden",
+    "element": "svg",
+    "axis": "xy",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · langavarden · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · langavarden · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "instansId": "INST · onbimport · roll:textbox|Länk till recept · klippning",
+    "artefakt": "onbimport",
+    "element": "span",
+    "axis": "x",
+    "subtype": "klippning",
+    "elementfynd_st": 1,
+    "findingIds": [
+     "CHK-R-03 · onbimport · roll:textbox|Länk till recept · klippning · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": false,
+    "hopslagningsgrund": null,
+    "why": "överskott 19 px i x med overflow-x: hidden"
+   },
+   {
+    "instansId": "INST · onbimport · roll:textbox|Länk till recept · textrunkering",
+    "artefakt": "onbimport",
+    "element": "span",
+    "axis": "x",
+    "subtype": "textrunkering",
+    "elementfynd_st": 1,
+    "findingIds": [
+     "CHK-R-03 · onbimport · roll:textbox|Länk till recept · textrunkering · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": false,
+    "hopslagningsgrund": null,
+    "why": "texten trunkeras: 19 px bredare än boxen med text-overflow: ellipsis"
+   },
+   {
+    "instansId": "INST · synkko · sel:div.c-phone>div[2] · klippning",
+    "artefakt": "synkko",
+    "element": "div",
+    "axis": "y",
+    "subtype": "klippning",
+    "elementfynd_st": 2,
+    "findingIds": [
+     "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "innehåll utanför boxen: scroll 0×1, barn 1.2 px (div)"
+   },
+   {
+    "instansId": "INST · veckoallergi · sel:div.c-phone>div[1] · klippning",
+    "artefakt": "veckoallergi",
+    "element": "div",
+    "axis": "y",
+    "subtype": "klippning",
+    "elementfynd_st": 3,
+    "findingIds": [
+     "CHK-R-03 · veckoallergi · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · veckoallergi · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+     "CHK-R-03 · veckoallergi · sel:div>div[4] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+    ],
+    "hopslagen": true,
+    "hopslagningsgrund": "ömsesidig referens mellan förfader och barn i samma axel",
+    "why": "överskott 2 px i y med overflow-y: hidden"
+   }
+  ],
+  "verifierade_elementfynd": [
+   {
+    "findingId": "CHK-R-03 · betygperperson · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "betygperperson",
+    "element": "div",
+    "elementKey": "sel:div.c-phone>div[1]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03a",
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 2
+    },
+    "why": "överskott 2 px i y med overflow-y: hidden"
+   },
+   {
+    "findingId": "CHK-R-03 · flergrupp · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "flergrupp",
+    "element": "div",
+    "elementKey": "sel:div.c-phone>div[1]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03a",
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 2
+    },
+    "why": "överskott 3 px i y med overflow-y: hidden"
+   },
+   {
+    "findingId": "CHK-R-03 · kompkalla · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "kompkalla",
+    "element": "div",
+    "elementKey": "sel:div>div[2]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03a",
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 2
+    },
+    "why": "överskott 52 px i y med overflow-y: hidden"
+   },
+   {
+    "findingId": "CHK-R-03 · langavarden · sel:div>div[0] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "langavarden",
+    "element": "div",
+    "elementKey": "sel:div>div[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03a",
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 2
+    },
+    "why": "överskott 22 px i y med overflow-y: hidden"
+   },
+   {
+    "findingId": "CHK-R-03 · onbimport · roll:textbox|Länk till recept · klippning · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "onbimport",
+    "element": "span",
+    "elementKey": "roll:textbox|Länk till recept",
+    "keyBasis": "roll-och-namn",
+    "subtype": "klippning",
+    "axis": "x",
+    "evidens": {
+     "metoder": [
+      "r03a",
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 2
+    },
+    "why": "överskott 19 px i x med overflow-x: hidden"
+   },
+   {
+    "findingId": "CHK-R-03 · veckoallergi · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "veckoallergi",
+    "element": "div",
+    "elementKey": "sel:div.c-phone>div[1]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03a",
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 2
+    },
+    "why": "överskott 2 px i y med overflow-y: hidden"
+   },
+   {
+    "findingId": "CHK-R-03 · betygperperson · sel:div>div[3] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "betygperperson",
+    "element": "div",
+    "elementKey": "sel:div>div[3]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hem · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hem",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hem · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hem",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hem360 · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hem360",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hem360 · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hem360",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemfel · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemfel",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemfel · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemfel",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemladdar · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemladdar",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemladdar · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemladdar",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemmorkt · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemmorkt",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemmorkt · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemmorkt",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemoffline · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemoffline",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemoffline · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemoffline",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemtom · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemtom",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · hemtom · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "hemtom",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · langavarden · sel:div>div[0] · textrunkering · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "langavarden",
+    "element": "div",
+    "elementKey": "sel:div>div[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "textrunkering",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03d"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "texten trunkeras: 22 px högre än boxen med line-clamp 2"
+   },
+   {
+    "findingId": "CHK-R-03 · langavarden · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "langavarden",
+    "element": "svg",
+    "elementKey": "sel:span>svg[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×0, barn 186.0 px (path)"
+   },
+   {
+    "findingId": "CHK-R-03 · langavarden · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "langavarden",
+    "element": "path",
+    "elementKey": "sel:svg>path[0]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "xy",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · onbimport · roll:textbox|Länk till recept · textrunkering · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "onbimport",
+    "element": "span",
+    "elementKey": "roll:textbox|Länk till recept",
+    "keyBasis": "roll-och-namn",
+    "subtype": "textrunkering",
+    "axis": "x",
+    "evidens": {
+     "metoder": [
+      "r03d"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "texten trunkeras: 19 px bredare än boxen med text-overflow: ellipsis"
+   },
+   {
+    "findingId": "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "synkko",
+    "element": "div",
+    "elementKey": "sel:div.c-phone>div[2]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03c"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "innehåll utanför boxen: scroll 0×1, barn 1.2 px (div)"
+   },
+   {
+    "findingId": "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "synkko",
+    "element": "div",
+    "elementKey": "sel:div>div[8]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · veckoallergi · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "veckoallergi",
+    "element": "div",
+    "elementKey": "sel:div>div[2]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   },
+   {
+    "findingId": "CHK-R-03 · veckoallergi · sel:div>div[4] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "artefakt": "veckoallergi",
+    "element": "div",
+    "elementKey": "sel:div>div[4]",
+    "keyBasis": "normaliserad-selektor",
+    "subtype": "klippning",
+    "axis": "y",
+    "evidens": {
+     "metoder": [
+      "r03b"
+     ],
+     "profiler": [
+      "compact-390"
+     ],
+     "detektioner_st": 1
+    },
+    "why": "utanför klippande förfader (hidden hidden hidden)"
+   }
+  ],
+  "källrotorsaker": [
+   {
+    "signatur": "svg | klippning | innehåll utanför boxen: scroll N×N, barn N px (path)",
+    "element": "svg",
+    "subtype": "klippning",
+    "felinstanser_st": 8,
+    "artefakter_st": 8,
+    "artefakter": [
+     "hem",
+     "hem360",
+     "hemfel",
+     "hemladdar",
+     "hemmorkt",
+     "hemoffline",
+     "hemtom",
+     "langavarden"
+    ],
+    "instansIds": [
+     "INST · hem · sel:span>svg[0] · klippning",
+     "INST · hem360 · sel:span>svg[0] · klippning",
+     "INST · hemfel · sel:span>svg[0] · klippning",
+     "INST · hemladdar · sel:span>svg[0] · klippning",
+     "INST · hemmorkt · sel:span>svg[0] · klippning",
+     "INST · hemoffline · sel:span>svg[0] · klippning",
+     "INST · hemtom · sel:span>svg[0] · klippning",
+     "INST · langavarden · sel:span>svg[0] · klippning"
+    ],
+    "bedömning": "GEMENSAM KÄLLA — 8 felinstanser i 8 ritningar"
+   },
+   {
+    "signatur": "div | klippning | överskott N px i y med overflow-y: hidden",
+    "element": "div",
+    "subtype": "klippning",
+    "felinstanser_st": 5,
+    "artefakter_st": 5,
+    "artefakter": [
+     "betygperperson",
+     "flergrupp",
+     "kompkalla",
+     "langavarden",
+     "veckoallergi"
+    ],
+    "instansIds": [
+     "INST · betygperperson · sel:div.c-phone>div[1] · klippning",
+     "INST · flergrupp · sel:div.c-phone>div[1] · klippning",
+     "INST · kompkalla · sel:div>div[2] · klippning",
+     "INST · langavarden · sel:div>div[0] · klippning",
+     "INST · veckoallergi · sel:div.c-phone>div[1] · klippning"
+    ],
+    "bedömning": "GEMENSAM KÄLLA — 5 felinstanser i 5 ritningar"
+   },
+   {
+    "signatur": "div | textrunkering | texten trunkeras: N px högre än boxen med line-clamp N",
+    "element": "div",
+    "subtype": "textrunkering",
+    "felinstanser_st": 1,
+    "artefakter_st": 1,
+    "artefakter": [
+     "langavarden"
+    ],
+    "instansIds": [
+     "INST · langavarden · sel:div>div[0] · textrunkering"
+    ],
+    "bedömning": "enskild förekomst"
+   },
+   {
+    "signatur": "span | klippning | överskott N px i x med overflow-x: hidden",
+    "element": "span",
+    "subtype": "klippning",
+    "felinstanser_st": 1,
+    "artefakter_st": 1,
+    "artefakter": [
+     "onbimport"
+    ],
+    "instansIds": [
+     "INST · onbimport · roll:textbox|Länk till recept · klippning"
+    ],
+    "bedömning": "enskild förekomst"
+   },
+   {
+    "signatur": "span | textrunkering | texten trunkeras: N px bredare än boxen med text-overflow: ellipsis",
+    "element": "span",
+    "subtype": "textrunkering",
+    "felinstanser_st": 1,
+    "artefakter_st": 1,
+    "artefakter": [
+     "onbimport"
+    ],
+    "instansIds": [
+     "INST · onbimport · roll:textbox|Länk till recept · textrunkering"
+    ],
+    "bedömning": "enskild förekomst"
+   },
+   {
+    "signatur": "div | klippning | innehåll utanför boxen: scroll N×N, barn N px (div)",
+    "element": "div",
+    "subtype": "klippning",
+    "felinstanser_st": 1,
+    "artefakter_st": 1,
+    "artefakter": [
+     "synkko"
+    ],
+    "instansIds": [
+     "INST · synkko · sel:div.c-phone>div[2] · klippning"
+    ],
+    "bedömning": "enskild förekomst"
+   }
+  ],
+  "verktygsfel_detalj": []
+ },
+ "probe": {
+  "$regel": "Test- och probeytan. Ingår ALDRIG i produktens compliance-tal.",
+  "artefakter": [
+   "bredbrytpunkter",
+   "bredgrid",
+   "bredarbete"
+  ],
+  "raa_detektioner_per_metod": {
+   "r03a": {
+    "detektioner_st": 0,
+    "verifierad_detektioner_st": 0,
+    "verifierad_produktartefakter_st": 0,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 0,
+    "observation_produktartefakter_st": 0,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   },
+   "r03b": {
+    "detektioner_st": 0,
+    "verifierad_detektioner_st": 0,
+    "verifierad_produktartefakter_st": 0,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 0,
+    "observation_produktartefakter_st": 0,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   },
+   "r03c": {
+    "detektioner_st": 24,
+    "verifierad_detektioner_st": 0,
+    "verifierad_produktartefakter_st": 0,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 24,
+    "observation_produktartefakter_st": 1,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   },
+   "r03d": {
+    "detektioner_st": 0,
+    "verifierad_detektioner_st": 0,
+    "verifierad_produktartefakter_st": 0,
+    "avsiktlig_detektioner_st": 0,
+    "avsiktlig_produktartefakter_st": 0,
+    "observation_detektioner_st": 0,
+    "observation_produktartefakter_st": 0,
+    "verktygsfel_detektioner_st": 0,
+    "verktygsfel_produktartefakter_st": 0
+   }
+  }
+ },
+ "exekveringsdiagnostik": {
+  "$regel": "Diagnostik om körningen, inte produktresultat.",
+  "artefakter_med_minst_en_observation_st": 310,
+  "av_totalt_exekverade_st": 312
+ },
+ "$observationsnot": "Observationer är deklarationer utan uppmätt effekt: overflow hidden/clip utan överskridande innehåll, ellips eller line-clamp där texten ryms, överskott i en axel med overflow visible. De är varken fynd eller risker.",
+ "$avsiktlignot": "Avsiktliga är deklarerat scrollbara behållare (overflow auto/scroll), innehåll utanför en scrollande förfader, och allt med data-clip-intent.",
+ "$scopenot": "Radbrytare (br, wbr) har ingen egen visuell yta och ingår inte i geometrisk klippningsanalys. Det är en dokumenterad scoperegel, inte ett verktygsfel. Texten omkring dem mäts av det innehållande blocket.",
+ "validering": {
+  "status": "godkänd",
+  "fel": []
+ }
+}

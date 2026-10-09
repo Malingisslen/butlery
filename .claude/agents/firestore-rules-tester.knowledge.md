@@ -28,6 +28,7 @@ chapter over 20,000.
 | `/household_allergen_shares/{householdId}_{userId}` (member+owner read, consent-bound create/update, path-derived delete) | `household-allergen-shares-rules.test.ts` | `test:rules:household-allergen-shares` |
 | `users/{uid}/counters/{counterId}` (stranger +1 step, owner absolute) | `shared-content-counters-rules.test.ts` | `test:rules:shared-content-counters` |
 | `/shared_content` block hold: `blockHeld*` create/update, mirror gate, held `members` | `shared-content-block-rules.test.ts` | `test:rules:shared-content-block` |
+| `{path=**}/<name>` wildcards but `members` | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---

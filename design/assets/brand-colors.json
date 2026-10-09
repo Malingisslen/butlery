@@ -1,0 +1,62 @@
+{
+  "$schema": "./brand-colors.schema.json",
+  "$id": "butlery-brand-colors/1",
+  "version": "1.0",
+  "date": "2026-08-02",
+  "$note": "EXTERNA VARUMÄRKESIDENTITETER — citat, inte design. De tokeniseras inte och får inte ändras för att passa Butlerys palett. Låg tidigare hårdkodade i tools/gen-app-theme.mjs, vilket gjorde generatorn till en parallell designkälla.",
+  "owner": "PRODUKT",
+  "provenance": "Färgerna är respektive varumärkes officiella primärfärg enligt deras publicerade riktlinjer. Ändras endast när varumärket självt ändrar sin identitet, aldrig av designskäl.",
+  "brands": {
+    "youtube": {
+      "color": "#FF0000",
+      "background": "#FFE0E0",
+      "text": "#CC0000"
+    },
+    "tiktok": {
+      "color": "#00F2EA",
+      "background": "#E0F7FA",
+      "text": "#161823"
+    },
+    "instagram": {
+      "color": "#E1306C",
+      "background": "#FCE4EC",
+      "text": "#C13584"
+    },
+    "twitter": {
+      "color": "#1DA1F2"
+    },
+    "pinterest": {
+      "color": "#E60023"
+    },
+    "whatsapp": {
+      "color": "#25D366"
+    },
+    "telegram": {
+      "color": "#0088CC"
+    },
+    "facebook": {
+      "color": "#1877F2"
+    },
+    "reddit": {
+      "color": "#FF4500"
+    },
+    "allrecipes": {
+      "color": "#BD081C"
+    },
+    "ica": {
+      "color": "#FF6600"
+    },
+    "coop": {
+      "color": "#006341"
+    },
+    "arla": {
+      "color": "#E30613"
+    },
+    "koketSe": {
+      "color": "#000000"
+    },
+    "generic": {
+      "color": "#6B7280"
+    }
+  }
+}

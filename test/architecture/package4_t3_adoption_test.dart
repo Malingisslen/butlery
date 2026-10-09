@@ -30,7 +30,7 @@ const _plateLineFiles = [
   'lib/widgets/common/menu_persistence/menu_load_dialog.dart',
   'lib/widgets/common/menu_persistence/menu_save_dialog.dart',
   'lib/widgets/common/dialogs/menu_selection_dialog.dart',
-  'lib/widgets/common/dialogs/shopping_list_selection_dialog.dart',
+  'lib/widgets/common/dialogs/recipe_add_to_list_dialog.dart',
   'lib/widgets/common/dialogs/group_shopping_list_selection_dialog.dart',
   'lib/widgets/shopping/shopping_template_browser.dart',
 ];
@@ -125,6 +125,7 @@ void main() {
   test('the radio rows carry the focus ring and 48 dp (P4-U10, P4-U16)', () {
     for (final path in [
       'lib/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart',
+      'lib/widgets/common/dialogs/recipe_add_to_list_dialog.dart',
       'lib/views/personal_tags/personal_tag_bulk_dialogs.dart',
     ]) {
       final code = _code(path);

@@ -1,0 +1,104 @@
+{
+ "$regel": "Endast paket B och C. Paket A ar blockerat och far inte migreras.",
+ "paketB": {
+  "beslut": "CAND-yta-upphojd-#ce7c1e ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+  "ljus": "#ce7c1e",
+  "mork": "#ce7c1e",
+  "token": "--yta-upphojd-b3",
+  "skrivningar": 5,
+  "skarmar": [
+   "dataexport",
+   "faq",
+   "samtycke",
+   "juridik",
+   "onbklar"
+  ]
+ },
+ "paketC": {
+  "beslut": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+  "ljus": "rgba(36,56,44,0.18)",
+  "mork": "rgba(245,244,237,0.18)",
+  "token": "--yta-upphojd-b4",
+  "skrivningar": 3,
+  "skarmar": [
+   "onbvalkommen"
+  ]
+ },
+ "kallreconciliation": {
+  "fore": {
+   "painted": 152,
+   "writable": 97,
+   "tokeniserad": 30,
+   "inherited": 24,
+   "classRule": 1
+  },
+  "writable": {
+   "sourceWrites": 79,
+   "coveredBySameDeclaration": 18,
+   "unresolved": 0,
+   "skips": 0,
+   "conflicts": 0
+  },
+  "efter": {
+   "painted": 152,
+   "tokeniserad": 125,
+   "inherited": 24,
+   "writable": 2,
+   "classRule": 1
+  },
+  "not": "De tva kvarvarande writable ar svg-attribut som redan bar var(--ikon-fristaende-a). De ar tokeniserade men klassas SVG_ATTRIBUTE eftersom den grenen saknar var-regeln. Ingen fix i denna batch."
+ },
+ "ljus": {
+  "artefakter": 329,
+  "element": 17342,
+  "fargavvikelser": 0,
+  "geometri": {
+   "avvikelser": 2,
+   "artefakt": "start",
+   "fil": "oberord",
+   "bevis": "samma tva noder avviker mellan tva korningar av IDENTISK kalla; paket A och betygvemat har 0 avvikelser i samtliga falt"
+  }
+ },
+ "mork": {
+  "kallor": 58,
+  "kontroller": 184,
+  "grafiskaDelar": 233,
+  "barare": 86,
+  "ickeTextFynd": 0,
+  "textFynd": 0,
+  "unknown": 0,
+  "tvaRenaKorningar": "bit-identiska"
+ },
+ "regression": {
+  "R01": "population 319 · 0 fynd",
+  "R02": "godkand",
+  "nonText": "godkand",
+  "R03": "10/6/6/4",
+  "effekter": "6/4/0",
+  "identitet": "1377/374/1460/0 verifierade — oforandrat",
+  "metodprov": 175
+ },
+ "coverage": {
+  "fore": {
+   "covered": 61,
+   "gap": 256
+  },
+  "efter": {
+   "covered": 67,
+   "gap": 250
+  },
+  "okning": 6
+ },
+ "paketA": {
+  "status": "BLOCKERAT",
+  "skarmar": [
+   "veckochips",
+   "veckoresultat",
+   "veckofel",
+   "veckorostutgang",
+   "modrapporter",
+   "modminderarig"
+  ],
+  "bevis": "0 avvikelser i ljussnapshoten, inget data-theme-support tillagt, 0 nya forekomster av #2f4437 i diffen"
+ }
+}

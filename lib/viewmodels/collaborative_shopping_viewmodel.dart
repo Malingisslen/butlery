@@ -262,13 +262,30 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     });
   }
 
-  Future<bool> addItem(String itemName) async {
+  /// Adds [itemName] and returns the new row's id, or null when nothing was
+  /// added. The view's "Ångra" passes that id to [removeAddedItem].
+  Future<String?> addItem(String itemName) async {
     return await _itemOperationsManager.addItem(
       itemName,
       canEdit,
       () => _loadList(),
       _updateActivity,
     );
+  }
+
+  /// "Ångra" after [addItem]: removes exactly the row that was added, by id.
+  /// False when the row could not be removed, so the view can say so.
+  Future<bool> removeAddedItem(String itemId) async {
+    final removed = await _shoppingService.removeItemFromActiveList(itemId);
+    if (!removed) return false;
+    try {
+      await _loadList();
+    } catch (e) {
+      // The row is gone either way; the list's own stream brings the screen
+      // up to date when this refresh cannot.
+      AppLogger.error('Refresh after undoing an add failed', e);
+    }
+    return true;
   }
 
   Future<bool> toggleItemCompletion(String itemId) async {

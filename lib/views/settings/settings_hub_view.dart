@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
+import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -137,6 +138,35 @@ class SettingsHubView extends StatelessWidget {
                   icon: ButleryIcons.trash2,
                   title: context.l10n.profileDeleteAccount,
                   onTap: () => AuthActionHandler.handleDeleteAccount(context),
+                ),
+                const SizedBox(height: AppDimensions.spacingMd),
+                // BUT-2261: people look for these under Inställningar, not only in
+                // the profile menu.
+                _SectionHeader(title: context.l10n.settingsSectionPrivacy),
+                _SettingsTile(
+                  icon: ButleryIcons.shield,
+                  title: context.l10n.profilePrivacyPolicy,
+                  onTap: () => GdprConsentHandler.handlePrivacyPolicy(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                _SettingsTile(
+                  icon: ButleryIcons.shield,
+                  title: context.l10n.profileManageConsent,
+                  onTap: () => GdprConsentHandler.handleManageConsent(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                _SettingsTile(
+                  icon: ButleryIcons.export,
+                  title: context.l10n.profileExportData,
+                  subtitle: context.l10n.profileExportDataSubtitle,
+                  onTap: () => GdprConsentHandler.handleExportData(
+                    context,
+                    closeModal: false,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionLanguage),

@@ -50,6 +50,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_evidence.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -129,6 +130,17 @@ void main() {
   // ──────────────────────────────────────────────────────────────────
   // submitReport
   // ──────────────────────────────────────────────────────────────────
+  // BUT-2154: the dialog keeps this id across Försök igen. A service that
+  // returned '' or a constant would let every attempt mint its own report.
+  test('newReportId returns what the repository mints', () {
+    var n = 0;
+    when(() => mockReportRepo.newReportId()).thenAnswer((_) => 'minted-${++n}');
+
+    expect(service.newReportId(), 'minted-1');
+    expect(service.newReportId(), 'minted-2');
+    verify(() => mockReportRepo.newReportId()).called(2);
+  });
+
   group('submitReport', () {
     /// Unauth callers must not be able to submit reports — otherwise
     /// rules-bypass attempts could pollute the moderation queue from
@@ -139,9 +151,10 @@ void main() {
         fakeAuth.setAuthState(userId: null);
 
         final ok = await service.submitReport(
+          reportId: 'rid',
           contentType: ContentType.recipe,
           contentId: 'r1',
-          reason: 'spam',
+          reason: ReportReason.spam,
           contentOwnerId: ownerUid,
         );
 
@@ -162,9 +175,10 @@ void main() {
         ).thenAnswer((_) async => 'new-doc-id');
 
         final ok = await service.submitReport(
+          reportId: 'rid',
           contentType: ContentType.comment,
           contentId: 'c1',
-          reason: 'harassment',
+          reason: ReportReason.harassment,
           contentOwnerId: ownerUid,
           description: 'detailed note',
         );
@@ -204,9 +218,10 @@ void main() {
         final pinned = DateTime(2026, 1, 1, 9, 30);
         await withClock(Clock.fixed(pinned), () async {
           await service.submitReport(
+            reportId: 'rid',
             contentType: ContentType.recipe,
             contentId: 'r1',
-            reason: 'spam',
+            reason: ReportReason.spam,
             contentOwnerId: ownerUid,
           );
         });
@@ -236,14 +251,45 @@ void main() {
       ).thenAnswer((_) async => null);
 
       final ok = await service.submitReport(
+        reportId: 'rid',
         contentType: ContentType.recipe,
         contentId: 'r1',
-        reason: 'spam',
+        reason: ReportReason.spam,
         contentOwnerId: ownerUid,
       );
 
       expect(ok, isFalse);
     });
+
+    /// The reports create rule admits ids only (BUT-2154), and the id minted
+    /// before the first attempt must reach the repository unchanged so a retry
+    /// addresses the same document.
+    test(
+      'stores the reason id and passes reportId through as the doc id',
+      () async {
+        fakeAuth.setAuthState(userId: reporterUid);
+        when(
+          () => mockReportRepo.submitReport(any()),
+        ).thenAnswer((_) async => 'minted-id');
+
+        final ok = await service.submitReport(
+          reportId: 'minted-id',
+          contentType: ContentType.recipe,
+          contentId: 'r1',
+          reason: ReportReason.abuse,
+          contentOwnerId: ownerUid,
+        );
+
+        expect(ok, isTrue);
+        final report =
+            verify(
+                  () => mockReportRepo.submitReport(captureAny()),
+                ).captured.single
+                as ContentReport;
+        expect(report.reason, 'abuse', reason: 'the wire id, not the label');
+        expect(report.id, 'minted-id');
+      },
+    );
 
     /// The optional description field is preserved as null when not
     /// provided — moderators distinguish "no extra context" from empty
@@ -255,9 +301,10 @@ void main() {
       ).thenAnswer((_) async => 'd');
 
       await service.submitReport(
+        reportId: 'rid',
         contentType: ContentType.recipe,
         contentId: 'r1',
-        reason: 'spam',
+        reason: ReportReason.spam,
         contentOwnerId: ownerUid,
       );
 

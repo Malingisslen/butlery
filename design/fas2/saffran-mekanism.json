@@ -1,0 +1,1419 @@
+{
+ "$schema": "butlery-saffran-mekanism/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "f5ae5a6",
+ "$typ": "RECONCILIATION + MEKANISMREVISION. Inget val, ingen skrivning.",
+ "$status": "POPULATIONEN RECONCILERAD — 13 grupper, 94 forekomster, tva mekanismer provade",
+ "A_reconciliation": {
+  "grupper": [
+   {
+    "id": "SG-01",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "fyllning",
+    "antal": 35,
+    "status": "REQUIRED_FAIL",
+    "tillamplighet": {
+     "REQUIRED_FAIL": 35
+    },
+    "skarmar": 33,
+    "etikettfarger": [
+     "rgb(23, 37, 29)",
+     "rgb(36, 56, 44)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "tomtrecept|16",
+     "inkopmerge|28",
+     "inkopmergeoppen|39",
+     "forfragningar|15",
+     "forfragningar|25",
+     "vanprofil|33",
+     "hem360|14",
+     "tangentbord|19",
+     "okandingrediens|45",
+     "veckoallergi|55",
+     "utloggningko|21",
+     "utloggningtom|7",
+     "chattredigerat|42",
+     "chattmeny|27",
+     "hem|22",
+     "hemoffline|31",
+     "receptkommentarer|46",
+     "betygsammanslaget|69",
+     "bredlandskap|28",
+     "vmbnormal|11",
+     "rcbnormal|6",
+     "ikbtom|12",
+     "inkopbockad|24",
+     "inkopgenererad|15",
+     "delatinkorg|18",
+     "delatinkorg|32",
+     "authglomt|16",
+     "behkamera|12",
+     "behlarm|12",
+     "cooksnapsynlighet|29",
+     "vanprofildelning|54",
+     "kontodataexport|41",
+     "globsession|20",
+     "globinstallera|38",
+     "soctomtingavanner|8"
+    ]
+   },
+   {
+    "id": "SG-02",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "barare": "enda-malning",
+    "bredd": "full",
+    "delTyp": "fyllning",
+    "antal": 27,
+    "status": "REQUIRED_FAIL",
+    "tillamplighet": {
+     "REQUIRED_FAIL": 27
+    },
+    "skarmar": 27,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "storsttext|35",
+     "safeareaios|26",
+     "hemtom|15",
+     "receptbildfel|36",
+     "betygvemat|42",
+     "betygperperson|75",
+     "betygvemarket|38",
+     "familjmedlemsamtycke|65",
+     "inkopkategoriordning|54",
+     "skafferilagg|45",
+     "delatlistaaktiv|70",
+     "authlogga|20",
+     "authskapa|31",
+     "lagatimerutgangen|13",
+     "kontosamtycke|63",
+     "samtyckeai|22",
+     "samtyckefornya|15",
+     "dataexportfel|13",
+     "mfalagg|27",
+     "globsessiontyst|25",
+     "flertaggsam|34",
+     "fbformular|55",
+     "fbanmal|28",
+     "socbegar|7",
+     "insthushall|29",
+     "kompdubblett|25",
+     "komparvegods|22"
+    ]
+   },
+   {
+    "id": "SG-03",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(36, 56, 44)",
+    "kvot": 3.891,
+    "barare": "egen-ram",
+    "bredd": "kompakt",
+    "delTyp": "fyllning",
+    "antal": 8,
+    "status": "SUPPLEMENTAL",
+    "tillamplighet": {
+     "SUPPLEMENTAL": 8
+    },
+    "skarmar": 8,
+    "etikettfarger": [
+     "rgb(36, 56, 44)",
+     "rgb(245, 244, 237)"
+    ],
+    "egenRam": [
+     "rgb(245, 244, 237)",
+     "rgb(23, 37, 29)"
+    ],
+    "medlemmar": [
+     "hem360|60",
+     "langavarden|53",
+     "hem|83",
+     "hemmorkt|83",
+     "hemtom|74",
+     "hemladdar|53",
+     "hemoffline|84",
+     "hemfel|65"
+    ]
+   },
+   {
+    "id": "SG-04",
+    "semantiskRoll": "STATE_EMPHASIS",
+    "bakgrund": "rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "ram",
+    "antal": 7,
+    "status": "UNKNOWN",
+    "tillamplighet": {
+     "UNKNOWN": 7
+    },
+    "skarmar": 2,
+    "etikettfarger": [
+     "rgb(36, 56, 44)"
+    ],
+    "egenRam": [
+     "rgb(206, 124, 30)",
+     "rgb(36, 56, 44)"
+    ],
+    "medlemmar": [
+     "flermeny|20",
+     "flermeny|23",
+     "flermeny|26",
+     "flermeny|29",
+     "flermeny|32",
+     "flermeny|35",
+     "socflode|4"
+    ]
+   },
+   {
+    "id": "SG-05",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(23, 37, 29)",
+    "kvot": 4.949,
+    "barare": "enda-malning",
+    "bredd": "full",
+    "delTyp": "fyllning",
+    "antal": 3,
+    "status": "REQUIRED_PASS",
+    "tillamplighet": {
+     "REQUIRED_PASS": 3
+    },
+    "skarmar": 3,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "lagaliggande|31",
+     "safeareaandroid|26",
+     "onbfelmorkt|15"
+    ]
+   },
+   {
+    "id": "SG-06",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(23, 37, 29)",
+    "kvot": 4.949,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "fyllning",
+    "antal": 3,
+    "status": "REQUIRED_PASS",
+    "tillamplighet": {
+     "REQUIRED_PASS": 3
+    },
+    "skarmar": 3,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "hemmorkt|22",
+     "lagatimers|46",
+     "onballergimorkt|40"
+    ]
+   },
+   {
+    "id": "SG-07",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(230, 234, 217)",
+    "kvot": 2.626,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "fyllning",
+    "antal": 3,
+    "status": "REQUIRED_FAIL",
+    "tillamplighet": {
+     "REQUIRED_FAIL": 3
+    },
+    "skarmar": 3,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "vmbtom|12",
+     "rcblaser|5",
+     "rcboffline|10"
+    ]
+   },
+   {
+    "id": "SG-08",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(36, 56, 44)",
+    "kvot": 3.891,
+    "barare": "enda-malning",
+    "bredd": "full",
+    "delTyp": "fyllning",
+    "antal": 2,
+    "status": "REQUIRED_PASS",
+    "tillamplighet": {
+     "REQUIRED_PASS": 2
+    },
+    "skarmar": 2,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "arkmorkt|27",
+     "lagasubst|57"
+    ]
+   },
+   {
+    "id": "SG-09",
+    "semantiskRoll": "SECONDARY_OR_OTHER_CONTROL_SURFACE",
+    "bakgrund": "rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "ram",
+    "antal": 2,
+    "status": "UNKNOWN",
+    "tillamplighet": {
+     "UNKNOWN": 2
+    },
+    "skarmar": 2,
+    "etikettfarger": [
+     "rgb(36, 56, 44)"
+    ],
+    "egenRam": [
+     "rgb(206, 124, 30)",
+     "rgb(204, 209, 194)"
+    ],
+    "medlemmar": [
+     "vmbtom|27",
+     "flertagg|14"
+    ]
+   },
+   {
+    "id": "SG-10",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(36, 56, 44)",
+    "kvot": 3.891,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "fyllning",
+    "antal": 1,
+    "status": "REQUIRED_PASS",
+    "tillamplighet": {
+     "REQUIRED_PASS": 1
+    },
+    "skarmar": 1,
+    "etikettfarger": [
+     "rgb(36, 56, 44)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "bredskal|2"
+    ]
+   },
+   {
+    "id": "SG-11",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(240, 238, 226)",
+    "kvot": 2.763,
+    "barare": "enda-malning",
+    "bredd": "kompakt",
+    "delTyp": "fyllning",
+    "antal": 1,
+    "status": "REQUIRED_FAIL",
+    "tillamplighet": {
+     "REQUIRED_FAIL": 1
+    },
+    "skarmar": 1,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "vmbgenererar|9"
+    ]
+   },
+   {
+    "id": "SG-12",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(240, 238, 226)",
+    "kvot": 2.763,
+    "barare": "enda-malning",
+    "bredd": "full",
+    "delTyp": "fyllning",
+    "antal": 1,
+    "status": "REQUIRED_FAIL",
+    "tillamplighet": {
+     "REQUIRED_FAIL": 1
+    },
+    "skarmar": 1,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "flermeny|46"
+    ]
+   },
+   {
+    "id": "SG-13",
+    "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+    "bakgrund": "rgb(230, 234, 217)",
+    "kvot": 2.626,
+    "barare": "enda-malning",
+    "bredd": "full",
+    "delTyp": "fyllning",
+    "antal": 1,
+    "status": "REQUIRED_FAIL",
+    "tillamplighet": {
+     "REQUIRED_FAIL": 1
+    },
+    "skarmar": 1,
+    "etikettfarger": [
+     "rgb(23, 37, 29)"
+    ],
+    "egenRam": [],
+    "medlemmar": [
+     "kompmallar|14"
+    ]
+   }
+  ],
+  "summa": 94,
+  "primaryAction": 85,
+  "perStatus": {
+   "REQUIRED_FAIL": 68,
+   "SUPPLEMENTAL": 8,
+   "UNKNOWN": 9,
+   "REQUIRED_PASS": 9
+  },
+  "kontroll": {
+   "summa94": true,
+   "primary85": true,
+   "fail68": true,
+   "pass9": true,
+   "supplemental8": true,
+   "unknown9": true
+  }
+ },
+ "B_rapportfel": {
+  "felklass": "REPORT_RENDERING",
+  "$vad": "Den maskinlasbara grupperingen har alltid haft 13 grupper som summerar till 94. HTML-rapportens tabell var en HANDSKRIVEN forkortning med nio rader. Atta rader tackte tolv grupper korrekt, dels genom hopslagning. En grupp foll helt bort.",
+  "tabellsumma": 93,
+  "maskinsumma": 94,
+  "differens": 1,
+  "tabellrader": [
+   {
+    "antal": 35,
+    "grupper": [
+     "SG-01"
+    ]
+   },
+   {
+    "antal": 27,
+    "grupper": [
+     "SG-02"
+    ]
+   },
+   {
+    "antal": 8,
+    "grupper": [
+     "SG-03"
+    ]
+   },
+   {
+    "antal": 7,
+    "grupper": [
+     "SG-04"
+    ]
+   },
+   {
+    "antal": 6,
+    "grupper": [
+     "SG-05",
+     "SG-06"
+    ]
+   },
+   {
+    "antal": 3,
+    "grupper": [
+     "SG-07"
+    ]
+   },
+   {
+    "antal": 3,
+    "grupper": [
+     "SG-08",
+     "SG-10"
+    ]
+   },
+   {
+    "antal": 2,
+    "grupper": [
+     "SG-11",
+     "SG-12"
+    ]
+   },
+   {
+    "antal": 2,
+    "grupper": [
+     "SG-09"
+    ]
+   }
+  ],
+  "utelamnadeGrupper": [
+   {
+    "id": "SG-13",
+    "antal": 1,
+    "status": "REQUIRED_FAIL",
+    "bakgrund": "rgb(230, 234, 217)",
+    "bredd": "full",
+    "medlemmar": [
+     "kompmallar|14"
+    ]
+   }
+  ],
+  "bortfall": 1,
+  "$saknadeForekomsten": "Tabellen summerade till 93 av 94. Den saknade forekomsten ar kompmallar|14 — den enda full-bredds primarknappen pa den ljusgrona ytan.",
+  "$ejJusterat": "Ingen forekomst har lagts till eller tagits bort. Maskindatan var korrekt hela tiden; det var rapportens sammanstallning som var ofullstandig.",
+  "$klass_ejGrouping": "Felet ligger INTE i gruppering, rakning, semantisk klassificering eller aggregering — enbart i renderingen av rapporten."
+ },
+ "C_beslutsenheter": {
+  "$regel": "Kompakt kontra full bredd, skarmbredd och kallfil far INTE ensamt skapa en egen beslutsidentitet. Beslutsnyckeln ar semantisk roll, faktisk bakgrund, bararfunktion, deltyp och etikettfarg.",
+  "fore": 13,
+  "efter": 10,
+  "sammanslagningar": [
+   {
+    "id": "BE-05",
+    "slogSamman": [
+     "SG-05",
+     "SG-06"
+    ],
+    "antal": 6,
+    "$skal": "endast bredd skilde dem at"
+   },
+   {
+    "id": "BE-06",
+    "slogSamman": [
+     "SG-07",
+     "SG-13"
+    ],
+    "antal": 4,
+    "$skal": "endast bredd skilde dem at"
+   },
+   {
+    "id": "BE-10",
+    "slogSamman": [
+     "SG-11",
+     "SG-12"
+    ],
+    "antal": 2,
+    "$skal": "endast bredd skilde dem at"
+   }
+  ],
+  "enheter": [
+   {
+    "id": "BE-01",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(245, 244, 237) | enda-malning | fyllning | rgb(23, 37, 29)+rgb(36, 56, 44)",
+    "grupper": [
+     "SG-01"
+    ],
+    "antal": 35,
+    "status": [
+     "REQUIRED_FAIL"
+    ],
+    "sammanslagna": false
+   },
+   {
+    "id": "BE-02",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(245, 244, 237) | enda-malning | fyllning | rgb(23, 37, 29)",
+    "grupper": [
+     "SG-02"
+    ],
+    "antal": 27,
+    "status": [
+     "REQUIRED_FAIL"
+    ],
+    "sammanslagna": false
+   },
+   {
+    "id": "BE-03",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(36, 56, 44) | egen-ram | fyllning | rgb(245, 244, 237)+rgb(36, 56, 44)",
+    "grupper": [
+     "SG-03"
+    ],
+    "antal": 8,
+    "status": [
+     "SUPPLEMENTAL"
+    ],
+    "sammanslagna": false
+   },
+   {
+    "id": "BE-04",
+    "nyckel": "STATE_EMPHASIS | rgb(245, 244, 237) | enda-malning | ram | rgb(36, 56, 44)",
+    "grupper": [
+     "SG-04"
+    ],
+    "antal": 7,
+    "status": [
+     "UNKNOWN"
+    ],
+    "sammanslagna": false
+   },
+   {
+    "id": "BE-05",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(23, 37, 29) | enda-malning | fyllning | rgb(23, 37, 29)",
+    "grupper": [
+     "SG-05",
+     "SG-06"
+    ],
+    "antal": 6,
+    "status": [
+     "REQUIRED_PASS"
+    ],
+    "sammanslagna": true
+   },
+   {
+    "id": "BE-06",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(230, 234, 217) | enda-malning | fyllning | rgb(23, 37, 29)",
+    "grupper": [
+     "SG-07",
+     "SG-13"
+    ],
+    "antal": 4,
+    "status": [
+     "REQUIRED_FAIL"
+    ],
+    "sammanslagna": true
+   },
+   {
+    "id": "BE-07",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(36, 56, 44) | enda-malning | fyllning | rgb(23, 37, 29)",
+    "grupper": [
+     "SG-08"
+    ],
+    "antal": 2,
+    "status": [
+     "REQUIRED_PASS"
+    ],
+    "sammanslagna": false
+   },
+   {
+    "id": "BE-08",
+    "nyckel": "SECONDARY_OR_OTHER_CONTROL_SURFACE | rgb(245, 244, 237) | enda-malning | ram | rgb(36, 56, 44)",
+    "grupper": [
+     "SG-09"
+    ],
+    "antal": 2,
+    "status": [
+     "UNKNOWN"
+    ],
+    "sammanslagna": false
+   },
+   {
+    "id": "BE-10",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(240, 238, 226) | enda-malning | fyllning | rgb(23, 37, 29)",
+    "grupper": [
+     "SG-11",
+     "SG-12"
+    ],
+    "antal": 2,
+    "status": [
+     "REQUIRED_FAIL"
+    ],
+    "sammanslagna": true
+   },
+   {
+    "id": "BE-09",
+    "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | rgb(36, 56, 44) | enda-malning | fyllning | rgb(36, 56, 44)",
+    "grupper": [
+     "SG-10"
+    ],
+    "antal": 1,
+    "status": [
+     "REQUIRED_PASS"
+    ],
+    "sammanslagna": false
+   }
+  ]
+ },
+ "D_scope": {
+  "remedieringsmal": 68,
+  "ejMal": {
+   "REQUIRED_PASS": 9,
+   "SUPPLEMENTAL": 8,
+   "UNKNOWN": 9
+  },
+  "$ejAutomatiska": "De 9 pa mork yta, de 8 med egen ram och de 9 obedomda ar INTE skrivmal. De ar regressionsvillkor.",
+  "fallandeYtor": [
+   "rgb(245, 244, 237)",
+   "rgb(230, 234, 217)",
+   "rgb(240, 238, 226)"
+  ],
+  "fallandeEtiketter": [
+   "rgb(23, 37, 29)",
+   "rgb(36, 56, 44)"
+  ]
+ },
+ "E_mekanismA_fillOchEtikett": {
+  "antalPar": 116,
+  "$krav": "fyllning >= 3 mot alla tre fallande ytor, etikett >= 4.5 mot fyllningen",
+  "parSomBehallerNuvarandeEtikett": 0,
+  "topp": [
+   {
+    "fyllning": "#627061",
+    "fyllningsnamn": [
+     "palette.sageDeep",
+     "palette.muted",
+     "semantic.text.secondary.light",
+     "semantic.text.disabled.dark"
+    ],
+    "etikett": "#F5F4ED",
+    "etikettnamn": [
+     "palette.paper",
+     "semantic.text.primary.dark",
+     "semantic.text.body.dark",
+     "semantic.text.onActionPrimaryPressed.light",
+     "semantic.text.onActionPrimaryPressed.dark",
+     "semantic.surface.base.light",
+     "semantic.control.checked.foreground.light",
+     "semantic.control.checked.foreground.dark",
+     "semantic.focusRing.dark"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 4.75,
+     "rgb(230, 234, 217)": 4.274,
+     "rgb(240, 238, 226)": 4.497
+    },
+    "etikettMotFyllning": 4.75,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#A15A0A",
+    "fyllningsnamn": [
+     "palette.saffronLink",
+     "semantic.text.accent.light"
+    ],
+    "etikett": "#F5F4ED",
+    "etikettnamn": [
+     "palette.paper",
+     "semantic.text.primary.dark",
+     "semantic.text.body.dark",
+     "semantic.text.onActionPrimaryPressed.light",
+     "semantic.text.onActionPrimaryPressed.dark",
+     "semantic.surface.base.light",
+     "semantic.control.checked.foreground.light",
+     "semantic.control.checked.foreground.dark",
+     "semantic.focusRing.dark"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 4.783,
+     "rgb(230, 234, 217)": 4.303,
+     "rgb(240, 238, 226)": 4.528
+    },
+    "etikettMotFyllning": 4.783,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#A15A0A",
+    "fyllningsnamn": [
+     "palette.saffronLink",
+     "semantic.text.accent.light"
+    ],
+    "etikett": "#F0EEE2",
+    "etikettnamn": [
+     "semantic.surface.tint.warning.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 4.783,
+     "rgb(230, 234, 217)": 4.303,
+     "rgb(240, 238, 226)": 4.528
+    },
+    "etikettMotFyllning": 4.528,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#9A5C14",
+    "fyllningsnamn": [
+     "palette.saffronPressed",
+     "semantic.action.primaryPressed.light",
+     "semantic.action.primaryPressed.dark"
+    ],
+    "etikett": "#F5F4ED",
+    "etikettnamn": [
+     "palette.paper",
+     "semantic.text.primary.dark",
+     "semantic.text.body.dark",
+     "semantic.text.onActionPrimaryPressed.light",
+     "semantic.text.onActionPrimaryPressed.dark",
+     "semantic.surface.base.light",
+     "semantic.control.checked.foreground.light",
+     "semantic.control.checked.foreground.dark",
+     "semantic.focusRing.dark"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 4.865,
+     "rgb(230, 234, 217)": 4.377,
+     "rgb(240, 238, 226)": 4.606
+    },
+    "etikettMotFyllning": 4.865,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#9A5C14",
+    "fyllningsnamn": [
+     "palette.saffronPressed",
+     "semantic.action.primaryPressed.light",
+     "semantic.action.primaryPressed.dark"
+    ],
+    "etikett": "#F0EEE2",
+    "etikettnamn": [
+     "semantic.surface.tint.warning.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 4.865,
+     "rgb(230, 234, 217)": 4.377,
+     "rgb(240, 238, 226)": 4.606
+    },
+    "etikettMotFyllning": 4.606,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#5B6959",
+    "fyllningsnamn": [
+     "palette.secondaryOnRaised",
+     "semantic.text.secondary.onRaised.light"
+    ],
+    "etikett": "#F5F4ED",
+    "etikettnamn": [
+     "palette.paper",
+     "semantic.text.primary.dark",
+     "semantic.text.body.dark",
+     "semantic.text.onActionPrimaryPressed.light",
+     "semantic.text.onActionPrimaryPressed.dark",
+     "semantic.surface.base.light",
+     "semantic.control.checked.foreground.light",
+     "semantic.control.checked.foreground.dark",
+     "semantic.focusRing.dark"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "etikettMotFyllning": 5.276,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#5B6959",
+    "fyllningsnamn": [
+     "palette.secondaryOnRaised",
+     "semantic.text.secondary.onRaised.light"
+    ],
+    "etikett": "#F0EEE2",
+    "etikettnamn": [
+     "semantic.surface.tint.warning.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "etikettMotFyllning": 4.996,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#5B6959",
+    "fyllningsnamn": [
+     "palette.secondaryOnRaised",
+     "semantic.text.secondary.onRaised.light"
+    ],
+    "etikett": "#F7E8D2",
+    "etikettnamn": [
+     "semantic.surface.tint.accent.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "etikettMotFyllning": 4.828,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#5B6959",
+    "fyllningsnamn": [
+     "palette.secondaryOnRaised",
+     "semantic.text.secondary.onRaised.light"
+    ],
+    "etikett": "#E6EAD9",
+    "etikettnamn": [
+     "palette.paperSoft",
+     "semantic.surface.raised.light",
+     "semantic.surface.selected.light",
+     "semantic.progressTrack.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "etikettMotFyllning": 4.747,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#5B6959",
+    "fyllningsnamn": [
+     "palette.secondaryOnRaised",
+     "semantic.text.secondary.onRaised.light"
+    ],
+    "etikett": "#DFE8DC",
+    "etikettnamn": [
+     "semantic.surface.tint.success.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "etikettMotFyllning": 4.63,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#3F6B4F",
+    "fyllningsnamn": [
+     "palette.green",
+     "semantic.text.success.light",
+     "semantic.text.success.onRaised.light"
+    ],
+    "etikett": "#F5F4ED",
+    "etikettnamn": [
+     "palette.paper",
+     "semantic.text.primary.dark",
+     "semantic.text.body.dark",
+     "semantic.text.onActionPrimaryPressed.light",
+     "semantic.text.onActionPrimaryPressed.dark",
+     "semantic.surface.base.light",
+     "semantic.control.checked.foreground.light",
+     "semantic.control.checked.foreground.dark",
+     "semantic.focusRing.dark"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "etikettMotFyllning": 5.557,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#3F6B4F",
+    "fyllningsnamn": [
+     "palette.green",
+     "semantic.text.success.light",
+     "semantic.text.success.onRaised.light"
+    ],
+    "etikett": "#F0EEE2",
+    "etikettnamn": [
+     "semantic.surface.tint.warning.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "etikettMotFyllning": 5.262,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#3F6B4F",
+    "fyllningsnamn": [
+     "palette.green",
+     "semantic.text.success.light",
+     "semantic.text.success.onRaised.light"
+    ],
+    "etikett": "#F7E8D2",
+    "etikettnamn": [
+     "semantic.surface.tint.accent.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "etikettMotFyllning": 5.085,
+    "behallerNuvarandeEtikett": false
+   },
+   {
+    "fyllning": "#3F6B4F",
+    "fyllningsnamn": [
+     "palette.green",
+     "semantic.text.success.light",
+     "semantic.text.success.onRaised.light"
+    ],
+    "etikett": "#E6EAD9",
+    "etikettnamn": [
+     "palette.paperSoft",
+     "semantic.surface.raised.light",
+     "semantic.surface.selected.light",
+     "semantic.progressTrack.light"
+    ],
+    "fyllningMotYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "etikettMotFyllning": 5,
+    "behallerNuvarandeEtikett": false
+   }
+  ],
+  "$slutsats": "116 par ur befintlig palett uppfyller bada kraven. INGET ar valt."
+ },
+ "F_mekanismB_oberoendeRam": {
+  "antalKandidater": 15,
+  "$krav": "ram >= 3 mot alla tre fallande ytor. Fyllning och etikett lamnas oforandrade.",
+  "topp": [
+   {
+    "hex": "#788477",
+    "namn": [
+     "semantic.text.disabled.onRaised.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 3.55,
+     "rgb(230, 234, 217)": 3.194,
+     "rgb(240, 238, 226)": 3.361
+    },
+    "motFyllningen": 1.216
+   },
+   {
+    "hex": "#627061",
+    "namn": [
+     "palette.sageDeep",
+     "palette.muted",
+     "semantic.text.secondary.light",
+     "semantic.text.disabled.dark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.75,
+     "rgb(230, 234, 217)": 4.274,
+     "rgb(240, 238, 226)": 4.497
+    },
+    "motFyllningen": 1.628
+   },
+   {
+    "hex": "#A15A0A",
+    "namn": [
+     "palette.saffronLink",
+     "semantic.text.accent.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.783,
+     "rgb(230, 234, 217)": 4.303,
+     "rgb(240, 238, 226)": 4.528
+    },
+    "motFyllningen": 1.639
+   },
+   {
+    "hex": "#9A5C14",
+    "namn": [
+     "palette.saffronPressed",
+     "semantic.action.primaryPressed.light",
+     "semantic.action.primaryPressed.dark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.865,
+     "rgb(230, 234, 217)": 4.377,
+     "rgb(240, 238, 226)": 4.606
+    },
+    "motFyllningen": 1.667
+   },
+   {
+    "hex": "#5B6959",
+    "namn": [
+     "palette.secondaryOnRaised",
+     "semantic.text.secondary.onRaised.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "motFyllningen": 1.808
+   },
+   {
+    "hex": "#3F6B4F",
+    "namn": [
+     "palette.green",
+     "semantic.text.success.light",
+     "semantic.text.success.onRaised.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "motFyllningen": 1.904
+   },
+   {
+    "hex": "#8A5212",
+    "namn": [
+     "palette.saffronDeep",
+     "palette.accentOnRaised",
+     "semantic.text.warning.light",
+     "semantic.text.accent.onRaised.light",
+     "semantic.text.link.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.778,
+     "rgb(230, 234, 217)": 5.198,
+     "rgb(240, 238, 226)": 5.471
+    },
+    "motFyllningen": 1.98
+   },
+   {
+    "hex": "#9C3B23",
+    "namn": [
+     "palette.clay",
+     "semantic.text.danger.light",
+     "semantic.text.danger.onRaised.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 6.217,
+     "rgb(230, 234, 217)": 5.594,
+     "rgb(240, 238, 226)": 5.887
+    },
+    "motFyllningen": 2.13
+   },
+   {
+    "hex": "#4A5C50",
+    "namn": [
+     "palette.inkSurfaceDark",
+     "semantic.surface.disabled.dark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 6.483,
+     "rgb(230, 234, 217)": 5.833,
+     "rgb(240, 238, 226)": 6.138
+    },
+    "motFyllningen": 2.221
+   },
+   {
+    "hex": "#4A5C43",
+    "namn": [
+     "palette.greenDark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 6.561,
+     "rgb(230, 234, 217)": 5.903,
+     "rgb(240, 238, 226)": 6.212
+    },
+    "motFyllningen": 2.248
+   },
+   {
+    "hex": "#3F5145",
+    "namn": [
+     "semantic.border.onInk.light",
+     "semantic.border.onInk.dark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 7.698,
+     "rgb(230, 234, 217)": 6.926,
+     "rgb(240, 238, 226)": 7.288
+    },
+    "motFyllningen": 2.638
+   },
+   {
+    "hex": "#37453A",
+    "namn": [
+     "palette.body",
+     "semantic.text.body.light",
+     "semantic.text.completed.light",
+     "semantic.text.bodyMuted.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 9.18,
+     "rgb(230, 234, 217)": 8.259,
+     "rgb(240, 238, 226)": 8.692
+    },
+    "motFyllningen": 3.145
+   },
+   {
+    "hex": "#2F4437",
+    "namn": [
+     "palette.inkRaised",
+     "semantic.surface.raised.dark",
+     "semantic.surface.selected.dark",
+     "semantic.surface.tint.warning.dark",
+     "semantic.surface.tint.accent.dark",
+     "semantic.surface.tint.success.dark",
+     "semantic.surface.tint.danger.dark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 9.509,
+     "rgb(230, 234, 217)": 8.556,
+     "rgb(240, 238, 226)": 9.004
+    },
+    "motFyllningen": 3.258
+   },
+   {
+    "hex": "#24382C",
+    "namn": [
+     "palette.ink",
+     "semantic.text.primary.light",
+     "semantic.surface.ink.light",
+     "semantic.surface.ink.dark",
+     "semantic.control.checked.background.light",
+     "semantic.control.checked.background.dark",
+     "semantic.focusRing.light"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 11.357,
+     "rgb(230, 234, 217)": 10.218,
+     "rgb(240, 238, 226)": 10.753
+    },
+    "motFyllningen": 3.891
+   }
+  ],
+  "precedens": {
+   "antal": 8,
+   "vadDeAr": "Samtliga atta ar SAMMA komponent: en rund 56x56 flytande atgardsknapp med en 3 px ljus ring, placerad pa den morka bottenytan.",
+   "skillnaderMotDe68": [
+    "form: cirkel med radie 50 %, inte rektangel med 8 px horn",
+    "omgivande yta: mork rgb(36, 56, 44), inte ljus rgb(245, 244, 237)",
+    "ramfarg: ljus #f5f4ed — pa en LJUS sida vore den osynlig",
+    "ramtjocklek: 3 px, mot de rektangulara knapparnas noll",
+    "hierarki: flytande atgardsknapp, inte inbaddad primarknapp i en rad"
+   ],
+   "$slutsats": "Mekanismen — en egen ram som bar komponentidentiteten — ar arkitektoniskt etablerad i produkten. Men FARGVALET gar inte att overfora: den ljusa ringen fungerar darfor att den ligger pa mork yta. For de 68 pa ljus yta kravs en morkare ram, och det ar ett nytt designbeslut.",
+   "$ejAutomatiskt": "Samma farg- eller stilprecedens ar inte ett automatiskt designbeslut."
+  },
+  "precedensposter": [
+   {
+    "id": "hem360|60",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "langavarden|53",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "hem|83",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "hemmorkt|83",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(23, 37, 29)",
+    "ramstil": "border: 3px solid rgb(23, 37, 29)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(245, 244, 237)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "hemtom|74",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "hemladdar|53",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "hemoffline|84",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   },
+   {
+    "id": "hemfel|65",
+    "w": 62,
+    "h": 62,
+    "ram": "rgb(245, 244, 237)",
+    "ramstil": "border: 3px solid rgb(245, 244, 237)",
+    "radie": "50%",
+    "yta": "rgb(36, 56, 44)",
+    "etikett": "rgb(36, 56, 44)",
+    "namn": "Lägg till"
+   }
+  ],
+  "$slutsats": "15 palettvarden klarar ramkravet. Fyllningen #CE7C1E och nuvarande etikett star kvar oforandrade."
+ },
+ "G_mekanismjamforelse": {
+  "A": {
+   "lostForekomster": 68,
+   "andrarFarg": "fyllning OCH etikett",
+   "antalKandidatpar": 116,
+   "risk": "primarfargens identitet i hela produkten andras; 126 icke-kontrollobjekt anvander samma literal och skulle bli visuellt oslaktade om bara kontrollerna andras"
+  },
+  "B": {
+   "lostForekomster": 68,
+   "andrarFarg": "ingen befintlig farg andras",
+   "antalKandidater": 15,
+   "risk": "primarknappen far en ram och kan narma sig den sekundara, ramade stilen; hierarkin mellan primar och sekundar maste provas visuellt"
+  },
+  "$teknisktDominerande": "Bada ar tekniskt mojliga. B ror ingen befintlig farg och lamnar de 126 icke-kontrollanvandningarna ororda; A andrar produktens primarfarg och tvingar ett kopplat etikettbeslut. Tekniskt ar B mindre ingripande — men det ar en visuell avvagning, inte ett tekniskt facit."
+ },
+ "H_blastRadius": {
+  "literalIKallan": 444,
+  "filer": 22,
+  "perFil": {
+   "Butlery Grafisk manual v6.dc.html": 36,
+   "Butlery Komponentark v1.dc.html": 36,
+   "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 95,
+   "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 58,
+   "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 50,
+   "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 37,
+   "Butlery Skarmar v12 etapp 10 bred layout.dc.html": 9,
+   "Butlery Skarmar v12 etapp 11 breda vyer.dc.html": 20,
+   "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html": 5,
+   "Butlery Skarmar v12 etapp 2.dc.html": 5,
+   "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 14,
+   "Butlery Skarmar v12 etapp 4 import.dc.html": 5,
+   "Butlery Skarmar v12 etapp 5-7.dc.html": 4,
+   "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html": 10,
+   "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html": 18,
+   "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html": 9,
+   "Butlery Skarmar v12.dc.html": 2,
+   "Butlery beslut grund v13.dc.html": 3,
+   "Butlery beslut kalendermatt v1.dc.html": 1,
+   "Butlery blockerande tickets.dc.html": 1,
+   "Butlery tillganglighetshandoff.dc.html": 1,
+   "Butlery utestaende beslut.dc.html": 25
+  },
+  "perBeslutsenhet": [
+   {
+    "beslutsenhet": "BE-01",
+    "forekomster": 35,
+    "filer": 13,
+    "kalldeklarationer": "inline literal #ce7c1e per forekomst",
+    "delarKalla": "nej — varje forekomst har sin egen inline-deklaration",
+    "ejMalSomDelarLiteral": 409,
+    "kraverTokenisering": true,
+    "$skal": "Literalen star 444 ganger i 22 filer. Utan tokenisering eller per-forekomst-ankare kan ingen saker delmangdsskrivning goras. Global sok-och-ersatt ar forbjuden."
+   },
+   {
+    "beslutsenhet": "BE-02",
+    "forekomster": 27,
+    "filer": 8,
+    "kalldeklarationer": "inline literal #ce7c1e per forekomst",
+    "delarKalla": "nej — varje forekomst har sin egen inline-deklaration",
+    "ejMalSomDelarLiteral": 417,
+    "kraverTokenisering": true,
+    "$skal": "Literalen star 444 ganger i 22 filer. Utan tokenisering eller per-forekomst-ankare kan ingen saker delmangdsskrivning goras. Global sok-och-ersatt ar forbjuden."
+   },
+   {
+    "beslutsenhet": "BE-06",
+    "forekomster": 4,
+    "filer": 2,
+    "kalldeklarationer": "inline literal #ce7c1e per forekomst",
+    "delarKalla": "nej — varje forekomst har sin egen inline-deklaration",
+    "ejMalSomDelarLiteral": 440,
+    "kraverTokenisering": true,
+    "$skal": "Literalen star 444 ganger i 22 filer. Utan tokenisering eller per-forekomst-ankare kan ingen saker delmangdsskrivning goras. Global sok-och-ersatt ar forbjuden."
+   },
+   {
+    "beslutsenhet": "BE-10",
+    "forekomster": 2,
+    "filer": 2,
+    "kalldeklarationer": "inline literal #ce7c1e per forekomst",
+    "delarKalla": "nej — varje forekomst har sin egen inline-deklaration",
+    "ejMalSomDelarLiteral": 442,
+    "kraverTokenisering": true,
+    "$skal": "Literalen star 444 ganger i 22 filer. Utan tokenisering eller per-forekomst-ankare kan ingen saker delmangdsskrivning goras. Global sok-och-ersatt ar forbjuden."
+   }
+  ],
+  "$forbud": "Global sok-och-ersatt ar forbjuden."
+ },
+ "I_kvarstaendeMansligaVal": [
+  "Ska primarfargen andras, eller ska knapparna fa en egen ram?",
+  "Om fargen andras: vilken fyllning och vilken etikettfarg, som ett par?",
+  "Om ram valjs: vilken ramfarg och vilken tjocklek, och hur skiljs primar fran sekundar?",
+  "Ska de 126 icke-kontrollanvandningarna av saffran folja med eller sta kvar?",
+  "Ska de 9 pa mork yta och de 8 med egen ram behallas oforandrade for temakonsistens?"
+ ],
+ "J_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "geometriwrites": 0,
+  "kontrollcensus": 1375,
+  "r02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0
+  },
+  "applicability1025": {
+   "SUPPLEMENTAL": 8,
+   "REQUIRED_PASS": 15,
+   "REQUIRED_FAIL": 5,
+   "UNKNOWN": 997,
+   "summa": 1025,
+   "$villkor": "Unionen galler eftersom samtliga 24 nya grafiska delar landade i exakt samma tekniska hink som baslinjens population — nt:supplemental gick 1001 → 1025, +24, medan de tva ovriga hinkarna ar oforandrade. Populationerna ar alltsa samma matmangd.",
+   "stammer": true
+  },
+  "historisk1001": 1001,
+  "saffranstotaler": {
+   "REQUIRED_FAIL": 68,
+   "SUPPLEMENTAL": 8,
+   "UNKNOWN": 9,
+   "REQUIRED_PASS": 9
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "migration24": "CLOSED / VERIFIED, orord"
+ },
+ "K_produktskrivningar": 0,
+ "L_observation": {
+  "vad": "Sex av de 68 bar etiketten rgb(36, 56, 44) pa saffran, kvot 3.891.",
+  "$not": "For normal text ar textkravet 4.5. Detta ar en TEXTFRAGA i R-01-sparet och adjudikeras inte har. Redovisas som iakttagelse."
+ },
+ "stopp": []
+}

@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/social/report_reason_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -171,7 +172,8 @@ class _ReportCard extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              '${context.l10n.moderatorReasonLabel}: ${report.reason}',
+              '${context.l10n.moderatorReasonLabel}: '
+              '${reportReasonDisplay(context.l10n, report.reason)}',
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),

@@ -1,0 +1,122 @@
+[
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "vmbnormal",
+  "roll": "tab",
+  "namn": "Visa som vecka",
+  "modell": "TAL",
+  "fore": "69.45x44"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "rcbofullstandigt",
+  "roll": "button",
+  "namn": "Mängd smör saknas. Fyll i",
+  "modell": "TAL",
+  "fore": "65x47"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "rcbofullstandigt",
+  "roll": "button",
+  "namn": "Mängd kanel saknas. Fyll i",
+  "modell": "TAL",
+  "fore": "65x47"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "rcboffline",
+  "roll": "button",
+  "namn": "Börja laga",
+  "modell": "TAL",
+  "fore": "60.05x44"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "ikbdelad",
+  "roll": "checkbox",
+  "namn": "Gul lök, inte bockad",
+  "modell": "BOX",
+  "fore": "27x27"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "ikbdelad",
+  "roll": "button",
+  "namn": "Ta gul lök",
+  "modell": "TAL",
+  "fore": "70x46"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "lgbrotation",
+  "roll": "button",
+  "namn": "Ändra textstorlek",
+  "modell": "TAL",
+  "fore": "44x44"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "art": "lgbrotation",
+  "roll": "button",
+  "namn": "Ändra textstorlek",
+  "modell": "TAL",
+  "fore": "44x44"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "art": "fbinkorgvy",
+  "roll": "tab",
+  "namn": "Visa alla",
+  "modell": "TAL",
+  "fore": "47.91x46"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "art": "fbinkorgvy",
+  "roll": "tab",
+  "namn": "Visa nya",
+  "modell": "TAL",
+  "fore": "65.59x46"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "art": "fbinkorgvy",
+  "roll": "tab",
+  "namn": "Visa triagerade",
+  "modell": "TAL",
+  "fore": "92.56x46"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "art": "fbinkorgvy",
+  "roll": "tab",
+  "namn": "Visa lösta",
+  "modell": "TAL",
+  "fore": "60.31x46"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "art": "socintegritet",
+  "roll": "switch",
+  "namn": "När jag lagat något",
+  "modell": "BOX",
+  "fore": "48x28"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "art": "socintegritet",
+  "roll": "switch",
+  "namn": "När jag delat ett recept",
+  "modell": "BOX",
+  "fore": "48x28"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "art": "socintegritet",
+  "roll": "switch",
+  "namn": "När jag satt igång med något",
+  "modell": "BOX",
+  "fore": "48x28"
+ }
+]

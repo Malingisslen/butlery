@@ -451,6 +451,103 @@ test("no client writes a text copy, an admin included", async () => {
   }
 });
 
+// ----- BUT-2154: the app's reason ids, and a retry under the same id -----
+
+// The ids `ReportReason.offered` sends (lib/models/social/report_reason.dart).
+// Before BUT-2154 the dialog sent its Swedish label, which this rule refused
+// for every reason, so no report from the app could be filed.
+const APP_REASON_IDS = ["abuse", "spam", "harassment", "copyright", "other"];
+
+// Same two writes in one batch as FirebaseReportRepository.submitReport.
+function appReportBatch(
+  db: ReturnType<ReturnType<RulesTestEnvironment["authenticatedContext"]>["firestore"]>,
+  reportId: string,
+  ownerId: string,
+  reason: string
+) {
+  const batch = db.batch();
+  batch.set(db.doc(`reports/${reportId}`), {
+    reporterId: USER_A_UID,
+    contentType: "recipe",
+    contentId: `c-${reportId}`,
+    contentOwnerId: ownerId,
+    reason,
+    description: null,
+    status: "new",
+    createdAt: new Date(),
+    guidelineVersion: "2026-02-28",
+  });
+  batch.set(db.doc(`users/${USER_A_UID}/report_throttle/${ownerId}`), {
+    lastReportAt: serverTimestamp(),
+  });
+  return batch;
+}
+
+test(
+  "BUT-2154: every reason id the app offers is accepted in the app's batch",
+  async () => {
+    const db = env.authenticatedContext(USER_A_UID).firestore();
+    for (const reason of APP_REASON_IDS) {
+      await assertSucceeds(
+        appReportBatch(db, `r2154-${reason}`, `owner-2154-${reason}`, reason).commit()
+      );
+    }
+  }
+);
+
+test(
+  "BUT-2154: a visible Swedish label as reason is refused",
+  async () => {
+    const db = env.authenticatedContext(USER_A_UID).firestore();
+    await assertFails(
+      appReportBatch(db, "r2154-label", "owner-2154-label", "Olämpligt innehåll").commit()
+    );
+  }
+);
+
+// The repository's read-back after a refused retry depends on both halves:
+// the retry under the same id is refused, and the reporter can read the
+// report the first attempt filed.
+test(
+  "BUT-2154: a retry under the same id is refused and the first report is readable",
+  async () => {
+    const db = env.authenticatedContext(USER_A_UID).firestore();
+    await assertSucceeds(
+      appReportBatch(db, "r2154-retry", "owner-2154-retry", "spam").commit()
+    );
+    await assertFails(
+      appReportBatch(db, "r2154-retry", "owner-2154-retry", "spam").commit()
+    );
+    await assertSucceeds(db.doc("reports/r2154-retry").get());
+  }
+);
+
+// A report names who reported whom; only the reporter and admins may read it.
+// The retry test above reads the reporter's own report, so this is the deny
+// side of the same read rule.
+test(
+  "BUT-2154: another user cannot read someone else's report",
+  async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("reports/r2154-private").set({
+        reporterId: USER_A_UID,
+        contentType: "recipe",
+        contentId: "c-private",
+        contentOwnerId: "owner-2154-private",
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      });
+    });
+    await assertFails(
+      env.authenticatedContext(USER_B_UID).firestore().doc("reports/r2154-private").get()
+    );
+    await assertSucceeds(
+      env.authenticatedContext(USER_A_UID).firestore().doc("reports/r2154-private").get()
+    );
+  }
+);
+
 async function run(): Promise<void> {
   console.log("BUT-417/548: moderation rules tests\n");
   console.log("===================================\n");

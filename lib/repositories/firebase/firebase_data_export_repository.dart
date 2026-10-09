@@ -69,7 +69,9 @@ enum ExportResourceType {
   householdAllergenShares('household_allergen_shares'),
   // P5-U27b: suggestions to shared recipes, made by or to the user
   // (Art. 15 ⊇ Art. 17: the cascade erases them with either account).
-  recipeSuggestions('recipe_suggestions')
+  recipeSuggestions('recipe_suggestions'),
+  // BUT-2114: the user's own likes, read by collection group.
+  likes('likes')
   ;
 
   const ExportResourceType(this.tag);
@@ -379,6 +381,20 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   bool _hasPoll(Map<String, dynamic> data) {
     final metadata = data['metadata'];
     return metadata is Map && metadata['poll'] is Map;
+  }
+
+  /// How many conversations the user is in, by the same query
+  /// [exportConversationsAndMessages] pages. A `count()` aggregation, so it
+  /// costs one read per 1000 index entries rather than one per conversation
+  /// (BUT-1701).
+  Future<int> countConversations(String userId) async {
+    await _guardSelfExport(userId, ExportResourceType.conversations);
+    final snapshot = await firestore
+        .collection(FirestoreCollections.conversations)
+        .where('participantIds', arrayContains: userId)
+        .count()
+        .get();
+    return snapshot.count ?? 0;
   }
 
   /// `conversations` where `participantIds arrayContains userId`, each carrying
@@ -986,6 +1002,34 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     ExportResourceType.reports,
     limit: maxDocuments,
   );
+
+  /// `likes` collection-group where `userId == userId` (BUT-2114), the read
+  /// the `{path=**}/likes` rule admits. Each row carries its parent's
+  /// collection and the caller keeps the ones it exports. The rows come back
+  /// unfiltered so a capped caller counts what the query returned.
+  Future<List<Map<String, dynamic>>> exportLikesByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    await _guardSelfExport(userId, ExportResourceType.likes);
+    final snapshot = await firestore
+        .collectionGroup(FirestoreCollections.likes)
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+    return snapshot.docs.map((doc) {
+      final parent = doc.reference.parent.parent;
+      return <String, dynamic>{
+        'parent_id': parent?.id,
+        // Null for a parent below the top level, so it never matches a
+        // top-level collection name.
+        'parent_collection': parent?.parent.parent == null
+            ? parent?.parent.id
+            : null,
+        'data': doc.data(),
+      };
+    }).toList();
+  }
 
   /// `pings` collection-group where `fromUserId == userId` — group pings the
   /// user sent (pings nest under `pings/{groupId}/pings`). Mirrors the

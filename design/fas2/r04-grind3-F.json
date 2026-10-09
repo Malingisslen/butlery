@@ -1,0 +1,298 @@
+[
+ {
+  "familj": "bredskal-panel",
+  "art": "bredskal",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "bredlandskap-panel",
+  "art": "bredlandskap",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "bredrecept-panel",
+  "art": "bredrecept",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "bredmeny-panel",
+  "art": "bredmeny",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "bredinkop-panel",
+  "art": "bredinkop",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "bredgrans-panel",
+  "art": "bredgrans",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbnormal-panel",
+  "art": "vmbnormal",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbtom-panel",
+  "art": "vmbtom",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbgenererar-panel",
+  "art": "vmbgenererar",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbomrostning-panel",
+  "art": "vmbomrostning",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbkonflikt-panel",
+  "art": "vmbkonflikt",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbdelvis-panel",
+  "art": "vmbdelvis",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmboffline-panel",
+  "art": "vmboffline",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "vmbflytta-panel",
+  "art": "vmbflytta",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcbnormal-panel",
+  "art": "rcbnormal",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcbportion-panel",
+  "art": "rcbportion",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcbofullstandigt-panel",
+  "art": "rcbofullstandigt",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcblaser-panel",
+  "art": "rcblaser",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcbarvegods-panel",
+  "art": "rcbarvegods",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcbkommentar-panel",
+  "art": "rcbkommentar",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "rcboffline-panel",
+  "art": "rcboffline",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "ikbnormal-panel",
+  "art": "ikbnormal",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "ikbtom-panel",
+  "art": "ikbtom",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "ikbdelad-panel",
+  "art": "ikbdelad",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "ikboffline-panel",
+  "art": "ikboffline",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "lgbrotation-panel",
+  "art": "lgbrotation",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "lgbgester-panel",
+  "art": "lgbgester",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "lgbtimer-panel",
+  "art": "lgbtimer",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "lgbutan-panel",
+  "art": "lgbutan",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "onbjamforelse-panel",
+  "art": "onbjamforelse",
+  "kod": "THEME_OBLIGATION_UNDECIDED",
+  "ocksa_scopepanel_7": true,
+  "ocksa_undecidable_5": true,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "editorfelkontrakt-panel",
+  "art": "editorfelkontrakt",
+  "kod": "THEME_OBLIGATION_UNDECIDED",
+  "ocksa_scopepanel_7": true,
+  "ocksa_undecidable_5": true,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "globsvep-panel",
+  "art": "globsvep",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "fbinkorgvy-panel",
+  "art": "fbinkorgvy",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": false,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "fbkortmonster-panel",
+  "art": "fbkortmonster",
+  "kod": "THEME_OBLIGATION_UNDECIDED",
+  "ocksa_scopepanel_7": true,
+  "ocksa_undecidable_5": true,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "admmatning-panel",
+  "art": "admmatning",
+  "kod": "THEME_OBLIGATION_UNDECIDED",
+  "ocksa_scopepanel_7": true,
+  "ocksa_undecidable_5": true,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "kompsason-panel",
+  "art": "kompsason",
+  "kod": "THEME_OBLIGATION_UNDECIDED",
+  "ocksa_scopepanel_7": true,
+  "ocksa_undecidable_5": true,
+  "ocksa_darkOnly": false
+ },
+ {
+  "familj": "surfplatta-panel",
+  "art": "surfplatta",
+  "kod": "NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "ocksa_scopepanel_7": true,
+  "ocksa_undecidable_5": false,
+  "ocksa_darkOnly": false
+ }
+]

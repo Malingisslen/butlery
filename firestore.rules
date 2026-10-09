@@ -3695,6 +3695,16 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    // BUT-2114: users can read their OWN likes via collectionGroup, for the
+    // Art. 15 export (`likes where userId == uid`). Read only: liking and
+    // unliking stay on the nested rules under `recipe_comments`.
+    // NOTE: matches ALL 'likes' subcollections. A new one must carry a
+    // `userId` naming its owner before relying on this block.
+    match /{path=**}/likes/{likeId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+    }
+
     // BUT-407: Users can read/delete their OWN pings via collectionGroup.
     // Enables GDPR erasure cascade in `SocialDeletionOperations.deletePingsByUser`
     // and lets recipients dismiss a directed ping without first resolving the

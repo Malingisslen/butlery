@@ -25,12 +25,18 @@ class RecipeHeroButton extends StatefulWidget {
     required this.icon,
     required this.onPressed,
     this.tooltip,
+    this.ringVisible = true,
     super.key,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
   final String? tooltip;
+
+  /// False on a page without a photo: the ring stands on a photo, and with
+  /// none behind it the icons are drawn bare on the paper and the 48 dp
+  /// hitboxes abut (Komponentark v1, "Utan foto · typografiskt huvud").
+  final bool ringVisible;
 
   @override
   State<RecipeHeroButton> createState() => _RecipeHeroButtonState();
@@ -66,6 +72,7 @@ class _RecipeHeroButtonState extends State<RecipeHeroButton> {
             child: Center(
               child: _PaperRing(
                 pressed: _pressed || _hovered,
+                visible: widget.ringVisible,
                 child: ButleryIcon(
                   widget.icon,
                   color: cs.primary,
@@ -95,9 +102,14 @@ class _RecipeHeroButtonState extends State<RecipeHeroButton> {
 /// surface.raised #E6EAD9, opaque, over the photo and on the collapsed bar
 /// alike (produktbeslut R8-3 = A).
 class _PaperRing extends StatelessWidget {
-  const _PaperRing({required this.pressed, required this.child});
+  const _PaperRing({
+    required this.pressed,
+    required this.child,
+    this.visible = true,
+  });
 
   final bool pressed;
+  final bool visible;
   final Widget child;
 
   @override
@@ -110,7 +122,9 @@ class _PaperRing extends StatelessWidget {
       decoration: BoxDecoration(
         color: pressed
             ? AppModeColors.surfaceRaisedOnPhoto()
-            : Theme.of(context).colorScheme.onPrimary,
+            : visible
+            ? Theme.of(context).colorScheme.onPrimary
+            : Colors.transparent,
         shape: BoxShape.circle,
       ),
       child: child,
@@ -125,9 +139,11 @@ class RecipeHeroMenuButton<T> extends StatefulWidget {
     required this.icon,
     required this.itemBuilder,
     required this.onSelected,
+    this.ringVisible = true,
     super.key,
   });
 
+  final bool ringVisible;
   final IconData icon;
   final List<PopupMenuEntry<T>> Function(BuildContext) itemBuilder;
   final void Function(T) onSelected;
@@ -169,6 +185,7 @@ class _RecipeHeroMenuButtonState<T> extends State<RecipeHeroMenuButton<T>> {
                 style: ButtonStyle(overlayColor: ownPressOverlay),
                 icon: _PaperRing(
                   pressed: _pressed || _hovered,
+                  visible: widget.ringVisible,
                   child: ButleryIcon(
                     widget.icon,
                     color: cs.primary,

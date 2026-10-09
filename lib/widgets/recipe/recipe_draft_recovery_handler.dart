@@ -20,8 +20,10 @@ class RecipeDraftRecoveryHandler {
 
     final viewModel = context.read<RecipeFormViewModel>();
 
-    // Only check for drafts when creating new recipes (not editing existing ones)
-    if (viewModel.isEditMode) {
+    // New recipes only, including the form an import opens (a template has no
+    // stored recipe). Edit permission is true for new recipes too, so it
+    // cannot tell the two apart.
+    if (viewModel.isEditing) {
       AppLogger.debug(
         '[$_logTag] Skipping draft check - editing existing recipe',
       );

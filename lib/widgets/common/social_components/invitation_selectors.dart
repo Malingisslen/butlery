@@ -412,6 +412,9 @@ class InvitationSelectors {
                     onDeleted: onRemoveTarget != null
                         ? () => onRemoveTarget(target)
                         : null,
+                    deleteButtonTooltipMessage: context.l10n.a11yRemoveMember(
+                      target.displayName,
+                    ),
                     backgroundColor: Theme.of(
                       context,
                     ).colorScheme.surfaceContainerHighest,

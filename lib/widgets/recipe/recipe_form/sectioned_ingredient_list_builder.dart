@@ -28,6 +28,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
 
   final void Function(int lineIndex, String value) onLineChanged;
   final VoidCallback onAddLine;
+
+  /// Called after a frame once the last line has text; must add a line only
+  /// when the last line is still non-empty.
+  final VoidCallback onLastLineFilled;
   final void Function(int lineIndex) onRemoveLine;
   final void Function(int fromRow, int toRow) onReorder;
   final VoidCallback onAddHeading;
@@ -45,6 +49,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     required this.headingControllerFor,
     required this.onLineChanged,
     required this.onAddLine,
+    required this.onLastLineFilled,
     required this.onRemoveLine,
     required this.onReorder,
     required this.onAddHeading,
@@ -82,13 +87,19 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           itemBuilder: (context, index) => _buildRow(context, index, headings),
         ),
         const SizedBox(height: AppDimensions.space4),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: TextButton.icon(
-            icon: const ButleryIcon(ButleryIcons.plus),
-            label: Text(context.l10n.recipeAddIngredientHeading),
-            onPressed: canAddHeading ? onAddHeading : null,
-          ),
+        Wrap(
+          children: [
+            TextButton.icon(
+              icon: const ButleryIcon(ButleryIcons.plus),
+              label: Text(context.l10n.commonAddWithLabel(label.toLowerCase())),
+              onPressed: onAddLine,
+            ),
+            TextButton.icon(
+              icon: const ButleryIcon(ButleryIcons.plus),
+              label: Text(context.l10n.recipeAddIngredientHeading),
+              onPressed: canAddHeading ? onAddHeading : null,
+            ),
+          ],
         ),
       ],
     );
@@ -280,11 +291,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
 
   void _handleLineChange(int lineIndex, String value) {
     onLineChanged(lineIndex, value);
-    // Auto-add a new line when the user starts typing in the last line.
-    if (lineIndex == lineControllers.length - 1 &&
-        value.trim().isNotEmpty &&
-        value.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => onAddLine());
+    // A paste, dictation or word suggestion lands several characters in one
+    // change, so the trigger is "the last line has text", not its length.
+    if (lineIndex == lineControllers.length - 1 && value.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onLastLineFilled());
     }
   }
 

@@ -1,0 +1,87 @@
+{
+ "$om": "Malins beslut om tryck på ytor utanför B83-1-regeln, vänknappen på den publika profilen, delningsarket, långa animationer, kontrollkanten i mörkt läge och länkfärg, fattade 2026-10-05 på beslutssidan 'Beslut runda 8' (https://claude.ai/artifact/WMDdBFeY177UfXZNYEHq7x); svaret 'Beslut runda 8: R8-1 A, R8-2 A, R8-3 A, R8-4 C, R8-5 B, R8-6 A, R8-7 A, R8-8 A, R8-9 A, R8-10 A, R8-11 A'.",
+ "beslutat_av": "Malin",
+ "datum": "2026-10-05",
+ "princip": "Samma som runda 6 och 7: opacitet visar aldrig ett tillstånd, och ett tryck är ett ogenomskinligt steg. Nio av elva frågor besvarades enligt rekommendationen; R8-4 och R8-5 avviker, och det står i deras not.",
+ "rader": [
+  {
+   "id": "R8-1",
+   "beslut": "A",
+   "biljett": "BUT-2232",
+   "innebord": "Saffransfyllda knappar (den runda Lägg till-knappen i bottenmenyn och importvalen) trycks till action.primaryPressed #9A5C14, och glyfen eller etiketten blir text.onActionPrimaryPressed #F5F4ED (4,86:1) medan fingret ligger kvar. Hovring använder samma steg. Ingen ny token: AppColors.actionPrimaryPressed och onActionPrimaryPressed finns redan.",
+   "not": "Följer rekommendationen och Grafisk manual v6:166 och :423, Komponentark v1:365 och B-14 (pressad saffransknapp har papperstext, aldrig ink)."
+  },
+  {
+   "id": "R8-2",
+   "beslut": "A",
+   "biljett": "BUT-2232",
+   "innebord": "Offlinebannern på surface.tint.warning trycks och hovras ett steg mörkare: ljust läge surface.raised #E6EAD9 (text.warning #8A5212 ger 5,20:1), mörkt läge surface.pressed.onRaised #17251D, eftersom tint.warning mörkt är samma färg som surface.raised (#2F4437) och R7-2 då gäller. Ingen ny token.",
+   "not": "Följer rekommendationen. Valt bort: sagePale #B4BFA6 (R7-1-tonen), där varningsfärgen faller till 3,32:1."
+  },
+  {
+   "id": "R8-3",
+   "beslut": "A",
+   "biljett": "BUT-2232",
+   "innebord": "Papperscirklarna i receptdetaljens toppfält (_HeroButton) trycks och hovras som en pappersyta enligt B83-1: cirkeln blir surface.raised #E6EAD9, ogenomskinlig, och glyfen ink ger 12,99:1. Samma steg över fotot och på det hopfällda toppfältet. Ingen ny token.",
+   "not": "Följer rekommendationen. Valt bort: en genomskinlig mörk ton över cirkeln, som skulle låta opacitet visa ett tillstånd."
+  },
+  {
+   "id": "R8-4",
+   "beslut": "C",
+   "biljett": "BUT-2232",
+   "innebord": "Ett tryckbart foto (kommentarsbildens miniatyr och avatar med bild) krymper till 97 % medan det trycks, med motion.durations.micro 180 ms, och går tillbaka när fingret släpper. Ingen färg och ingen opacitet. Reducerad rörelse: fotot står stilla. Hovring på webben: muspekaren, ingen skala.",
+   "not": "Avviker från rekommendationen A (fotot står stilla och vyn som öppnas är kvittot). Känd följd: ett nytt rörelsemönster som inte finns ritat i manualens rörelsetabell; det gäller bara foton som öppnar något när man trycker."
+  },
+  {
+   "id": "R8-5",
+   "beslut": "B",
+   "biljett": "BUT-2232",
+   "innebord": "Inspelningsknappen i röstimporten (voice_section_card.dart) och felknappen på fotot i uppladdningen (upload_progress_widgets.dart) behåller sin röda fyllning som ett uttryckligt undantag från Komponentark v1:300 och Grafisk manual v6:423. De får en ny token, action.danger med vila och tryckt läge, levererad via D1-kedjan. Vilotonen är dagens felfärg (#9C3B23 ljust, #DE9078 mörkt); trycktonen är ett mörkare steg av samma kulör, och värdet sätts och kontrastmäts i tokenarbetet.",
+   "ersatter": "Gäller som undantag bara för dessa två knappar. Komponentark v1:300 ('aldrig fylld yta i statusfärg') står kvar för allt annat.",
+   "not": "Avviker från rekommendationen A (inga fyllda röda knappar; inspelningsknappen blir en ink-knapp och felknappen en papperscirkel). Känd följd: en ny token och ett undantag från komponentarket."
+  },
+  {
+   "id": "R8-6",
+   "beslut": "A",
+   "biljett": "BUT-2146",
+   "innebord": "'+ Lägg till vän' på den publika profilen (#publikprofil, Skärmar v12 del 3:488–506) byggs och kopplas till den befintliga vänförfrågan. Knappen får samma lägen som sökresultatets kort (search_result_card.dart): Lägg till vän, Förfrågan skickad, Vänner, Acceptera och Avblockera. Bara det första läget är ritat; de andra följer sökkortet. Menyn 'Fler åtgärder' med Rapportera är ritad i samma ram och byggs också.",
+   "not": "Följer rekommendationen."
+  },
+  {
+   "id": "R8-7",
+   "beslut": "A",
+   "biljett": "BUT-2146",
+   "innebord": "På en minderårigs publika profil visas vänknappen inte för den som inte redan är vän, i linje med att minderåriga inte går att söka fram (produktregler.md:974) och att den som inte är vän inte kan skicka DM till dem (BUT-674). Den minderåriga kan själv skicka förfrågningar.",
+   "not": "Följer rekommendationen. Servern spärrar inte vänförfrågningar till minderåriga i dag (social_requests i firestore.rules); den spärren är ett eget ärende och ingår inte i det här beslutet."
+  },
+  {
+   "id": "R8-8",
+   "beslut": "A",
+   "biljett": "BUT-2146",
+   "innebord": "Delningen är ett ark nerifrån med handtag, som ramen #delaark (Skärmar v12 del 3:1416–1453) ritar, och inte en dialog. Alla ställen som öppnar den universella delningen byter till samma ark. På breda skärmar håller arket en spalt på högst 700 px (etapp 10).",
+   "not": "Följer rekommendationen. Komponentark v1:99 säger bara att ett ark har handtag och en dialog ett X; det säger inte att delningen är en dialog."
+  },
+  {
+   "id": "R8-9",
+   "beslut": "A",
+   "biljett": "BUT-2211",
+   "innebord": "Ingen ny rörelsetoken. Animationer över 320 ms i vanligt UI blir motion.durations.standard 320 ms med standardkurvan: routeglidningen nerifrån och listans intoning (400 ms i dag) och skalövergångarna (600 ms med elasticOut i dag, utan studs efter beslutet). Looparna blir motion.durations.pulse 1200 ms som en hel loop (R7-4). Fördröjningar och debounce (bland annat alla 500 ms-värden) är inte rörelse och blir namngivna konstanter utanför rörelsetokens.",
+   "not": "Följer rekommendationen och Grafisk manual v6:364–369 och :606–680: 180 och 320 ms för vanligt UI, 400 ms bara för ceremonier."
+  },
+  {
+   "id": "R8-10",
+   "beslut": "A",
+   "biljett": "BUT-2229",
+   "ersatter": "Beslut B6 i block 287 (fas2/block287k-population.json, RP::TOKEN::border.control::dark: 'rgba(245,244,237,0.35) → 0,6; 0,4 upphör'), som aldrig fördes in i tokens.json.",
+   "innebord": "border.control i mörkt läge blir papper med 40 % täckning, rgba(245,244,237,0.40): 3,50:1 mot surface.base #17251D och 2,91:1 mot surface.raised #2F4437. Samma värde som skärmarna och appens konturknappar och chips. Levereras via D1-kedjan.",
+   "not": "Följer rekommendationen. Valt bort: 60 % (B6, 6,05:1 och 4,60:1) och 35 % (2,98:1 och 2,60:1)."
+  },
+  {
+   "id": "R8-11",
+   "beslut": "A",
+   "biljett": "BUT-2231",
+   "innebord": "Villkors- och integritetslänkarna på inloggningen (auth_view.dart) och receptets källänk (recipe_detail_shared_widgets.dart) får länkfärgen text.link: #8A5212 ljust (5,78:1 på papper) och #DCA968 mörkt.",
+   "not": "Följer rekommendationen. Alla understrukna länkar i appen använder därmed text.link."
+  }
+ ]
+}

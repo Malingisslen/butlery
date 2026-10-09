@@ -1,0 +1,266 @@
+name: Design system
+
+# BUT-2202: the design system lives in design/ and its checks run here. The
+# three jobs below the theme job are the design repo's own verify.yml, moved
+# as they were except for the working directory; the job that was allowed
+# to stay red (content baseline) was not moved.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'design/**'
+      - 'lib/theme/**'
+      - 'tools/design_theme.dart'
+      - '.github/workflows/design-system.yml'
+  pull_request:
+    paths:
+      - 'design/**'
+      - 'lib/theme/**'
+      - 'tools/design_theme.dart'
+      - '.github/workflows/design-system.yml'
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  # lib/theme/ is the formatted output of the generators in design/tools/.
+  # A hand edit on either side, or a token change without a regeneration,
+  # turns this red. The dark generator and its test are covered here too;
+  # the design repo's chain never ran them.
+  theme:
+    name: Färgfilerna ur källan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - name: lib/theme/ is the generator output
+        run: dart run tools/design_theme.dart --check
+      - name: Generator contracts, preflight, Block 288 and 289 proofs
+        working-directory: design
+        run: |
+          node tools/gen-flutter.mjs --check
+          node tools/gen-css.mjs --check
+          node tools/test-generated.mjs
+          node tools/test-generated-dark.mjs
+          node tools/preflight.mjs
+          node tools/block288/uxprov.mjs --root=.
+          node tools/block289/visuellprov.mjs --root=.
+
+  fas0-gate:
+    name: Fas 0-grinden
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: design
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+
+      - name: CI-kontext för CHK-CI-01
+        run: |
+          node -e "
+            const fs=require('fs'), crypto=require('crypto');
+            const mf = fs.existsSync('fas0/andrade-filer.md')
+              ? crypto.createHash('sha256').update(fs.readFileSync('fas0/andrade-filer.md')).digest('hex') : null;
+            fs.mkdirSync('fas0',{recursive:true});
+            fs.writeFileSync('fas0/ci-evidence.json', JSON.stringify({
+              schema: 'butlery-ci-evidence/2',
+              ciProvider: 'github-actions',
+              githubActions: process.env.GITHUB_ACTIONS || null,
+              runId: process.env.GITHUB_RUN_ID || null,
+              runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+              runnerOs: process.env.RUNNER_OS || null,
+              repository: process.env.GITHUB_REPOSITORY || null,
+              commit: process.env.GITHUB_SHA || null,
+              workflow: process.env.GITHUB_WORKFLOW || null,
+              manifestSha256: mf,
+              startedAt: new Date().toISOString()
+            }, null, 2));
+          "
+
+      # Får vara röd; grinden nedan avgör jobbet.
+      - name: Verifieringskedjan (manifest + kedja)
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: bash fas0/run-verify.sh
+
+      - name: Komplettera CI-beviset
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='fas0/ci-evidence.json';
+            if (!fs.existsSync(p)) process.exit(0);
+            const e=JSON.parse(fs.readFileSync(p,'utf8'));
+            e.verifyExitCode = fs.existsSync('fas0/verify-exit') ? Number(fs.readFileSync('fas0/verify-exit','utf8').trim()) : null;
+            e.completedAt = new Date().toISOString();
+            fs.writeFileSync(p, JSON.stringify(e,null,2));
+            console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
+          "
+
+      - name: Finalisera rapporten
+        if: always()
+        continue-on-error: true
+        env:
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: node tools/finalize.mjs
+
+      - name: Fas 0-grinden
+        if: always()
+        run: node tools/gate.mjs --phase=0
+
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fas0-gate-report
+          path: |
+            design/fas0/verify.log
+            design/fas0/manifest.log
+            design/fas0/verify-report.json
+            design/fas0/kontrollstatus.md
+            design/fas0/ci-evidence.json
+
+  # "En källa": hela leveransen byggs ur Git och grinden körs i den. Två
+  # körningar, GEN-01 mot det incheckade och byteidentitet mellan körningarna.
+  fas1-gate:
+    name: Fas 1-grinden (en källa · delivery-läge)
+    runs-on: ubuntu-latest
+    env:
+      # Leveransen byggs utanför repot; metatest M-39 läser körordningen här.
+      BUTLERY_CI_WORKFLOW: ${{ github.workspace }}/repo/.github/workflows/design-system.yml
+    defaults:
+      run:
+        working-directory: leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: repo
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+
+      - name: Bygg den fullständiga leveransen ur Git
+        working-directory: repo/design
+        run: |
+          node tools/build-delivery.mjs --out="$GITHUB_WORKSPACE/leverans-bygge" --force
+          test -f "$GITHUB_WORKSPACE/leverans-bygge/fas0/DELIVERY" || { echo "leveransmarkoren saknas i bygget"; exit 1; }
+
+      - name: CI-kontext för CHK-CI-01
+        run: |
+          node -e "
+            const fs=require('fs'), crypto=require('crypto');
+            const mf = fs.existsSync('fas0/andrade-filer.md')
+              ? crypto.createHash('sha256').update(fs.readFileSync('fas0/andrade-filer.md')).digest('hex') : null;
+            fs.mkdirSync('fas0',{recursive:true});
+            fs.writeFileSync('fas0/ci-evidence.json', JSON.stringify({
+              schema: 'butlery-ci-evidence/2',
+              ciProvider: 'github-actions',
+              githubActions: process.env.GITHUB_ACTIONS || null,
+              runId: process.env.GITHUB_RUN_ID || null,
+              runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+              runnerOs: process.env.RUNNER_OS || null,
+              repository: process.env.GITHUB_REPOSITORY || null,
+              commit: process.env.GITHUB_SHA || null,
+              workflow: process.env.GITHUB_WORKFLOW || null,
+              manifestSha256: mf,
+              startedAt: new Date().toISOString()
+            }, null, 2));
+          "
+
+      - name: Snapshot före körning 1 (alla generatorutdata)
+        run: node tools/repro-check.mjs --snapshot=/tmp/repro-incheckat.json
+
+      - name: Verifieringskedjan · körning 1 (delivery-läge)
+        env:
+          BUTLERY_MANIFEST_MODE: delivery
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/run1.log
+          echo "${PIPESTATUS[0]}" > /tmp/run1.exit
+          set -e
+          echo "kedjans exitkod: $(cat /tmp/run1.exit)"
+
+      - name: Bevisa att körning 1 fullföljdes
+        run: node tools/run-complete.mjs --log=/tmp/run1.log --exit="$(cat /tmp/run1.exit)"
+
+      - name: Genererade filer oförändrade av körningen (GEN-01)
+        run: node tools/repro-check.mjs --compare=/tmp/repro-incheckat.json
+
+      - name: Snapshot efter körning 1
+        run: node tools/repro-check.mjs --snapshot=/tmp/repro-korning1.json
+
+      - name: Verifieringskedjan · körning 2 (reproducerbarhet)
+        env:
+          BUTLERY_MANIFEST_MODE: delivery
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          node -e "console.log(require('./fas0/verify-report.json').runId)" > /tmp/run1.runid
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/run2.log
+          echo "${PIPESTATUS[0]}" > /tmp/run2.exit
+          set -e
+          echo "kedjans exitkod: $(cat /tmp/run2.exit)"
+
+      - name: Bevisa att körning 2 fullföljdes
+        run: |
+          node tools/run-complete.mjs --log=/tmp/run2.log \
+            --not-runid="$(cat /tmp/run1.runid)" --exit="$(cat /tmp/run2.exit)"
+
+      - name: Reproducerbarhet — körning 1 mot körning 2
+        run: node tools/repro-check.mjs --compare=/tmp/repro-korning1.json
+
+      - name: Komplettera CI-beviset
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='fas0/ci-evidence.json';
+            if (!fs.existsSync(p)) process.exit(0);
+            const e=JSON.parse(fs.readFileSync(p,'utf8'));
+            e.verifyExitCode = fs.existsSync('fas0/verify-exit') ? Number(fs.readFileSync('fas0/verify-exit','utf8').trim()) : null;
+            e.completedAt = new Date().toISOString();
+            fs.writeFileSync(p, JSON.stringify(e,null,2));
+            console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
+          "
+
+      - name: Finalisera rapporten
+        if: always()
+        continue-on-error: true
+        env:
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: node tools/finalize.mjs
+
+      - name: Fas 1-grinden
+        if: always()
+        run: node tools/gate.mjs --phase=1
+
+      # upload-artifact är inget run-steg, så working-directory gäller inte;
+      # absoluta sökvägar, och ett tomt fynd är ett fel.
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fas1-gate-report
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify.log
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/manifest.log
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify-report.json
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/kontrollstatus.md
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/ci-evidence.json

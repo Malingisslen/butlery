@@ -252,6 +252,7 @@ class DataExportService extends BaseService {
       'messages': _socialManager.exportMessages(userId),
       'shared_content': _socialManager.exportSharedContent(userId),
       'comments_and_ratings': _activityManager.exportCommentsAndRatings(userId),
+      'comment_likes': _activityManager.exportCommentLikes(userId),
       'audit_logs': _complianceManager.exportAuditLogs(userId),
       'consent_records': _complianceManager.exportConsentRecords(userId),
       'two_step_verification': _complianceManager.exportTwoStepVerification(

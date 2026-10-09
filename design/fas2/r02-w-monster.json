@@ -1,0 +1,4352 @@
+[
+ {
+  "art": "vanner",
+  "roll": "button",
+  "namn": "Hitta vänner, 2 förfrågningar",
+  "egen": {
+   "x": 385,
+   "y": 7957.05,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "search",
+  "baraIkon": false,
+  "text": "2",
+  "relativHojd": 0.089,
+  "yta": {
+   "w": 364,
+   "h": 49,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 22,
+   "text": "Flöde Vänner Grupper 2",
+   "extraText": 22
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "skrivsjalv",
+  "roll": "button",
+  "namn": "Flytta rad",
+  "egen": {
+   "x": 61,
+   "y": 12722.03,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "drag",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.621,
+  "yta": {
+   "w": 364,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 24,
+   "text": "Bryn köttet i omgångar …",
+   "extraText": 24
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+  "under": "rad · ikon: ovrig ikon (drag) · ledande"
+ },
+ {
+  "art": "publikprofil",
+  "roll": "button",
+  "namn": "Fler åtgärder",
+  "egen": {
+   "x": 397,
+   "y": 8049.85,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "more-vertical",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 364,
+   "h": 24,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 0,
+   "text": "",
+   "extraText": 0
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "under": "rad · ikon: meny · ledande"
+ },
+ {
+  "art": "snackbars",
+  "roll": "button",
+  "namn": "Visa receptet",
+  "egen": {
+   "x": 374.73,
+   "y": 35825.73,
+   "w": 92.27,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Visa receptet",
+  "relativHojd": 0.308,
+  "yta": {
+   "w": 412,
+   "h": 42,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 26,
+   "text": "Recept sparatVisa receptet",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "snackbars",
+  "roll": "button",
+  "namn": "Försök igen",
+  "egen": {
+   "x": 387.23,
+   "y": 35877.73,
+   "w": 79.77,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Försök igen",
+  "relativHojd": 0.403,
+  "yta": {
+   "w": 412,
+   "h": 42,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 35,
+   "text": "Kunde inte dela receptetFörsök igen",
+   "extraText": 24
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "kontextmeny",
+  "roll": "button",
+  "namn": "Fler åtgärder",
+  "egen": {
+   "x": 397,
+   "y": 36339.92,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "more-vertical",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 56,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 25,
+   "text": "Citronrisotto med sparris",
+   "extraText": 25
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "under": "rad · ikon: meny · ledande"
+ },
+ {
+  "art": "hem360",
+  "roll": "button",
+  "namn": "Se hela veckan",
+  "egen": {
+   "x": 288.12,
+   "y": 37948.31,
+   "w": 96.88,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Se hela veckan",
+  "relativHojd": 0.508,
+  "yta": {
+   "w": 320,
+   "h": 20,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 21,
+   "text": "Veckan Se hela veckan",
+   "extraText": 6
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "okandingrediens",
+  "roll": "button",
+  "namn": "Tillbaka till receptet",
+  "egen": {
+   "x": 57,
+   "y": 2792.47,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 22,
+   "text": "Allergenuppgift saknas",
+   "extraText": 22
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoallergi",
+  "roll": "button",
+  "namn": "Stäng genereringen",
+  "egen": {
+   "x": 57,
+   "y": 3735.06,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 15,
+   "text": "Veckans förslag",
+   "extraText": 15
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "veckoallergi",
+  "roll": "button",
+  "namn": "Granska Misogrillad aubergine",
+  "egen": {
+   "x": 336.78,
+   "y": 4144.21,
+   "w": 76.22,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Granska",
+  "relativHojd": 0.542,
+  "yta": {
+   "w": 319,
+   "h": 57,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 48,
+   "text": "Misogrillad auberginemisosoja · Ida, sojaGranska",
+   "extraText": 48
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "veckoallergi",
+  "roll": "button",
+  "namn": "Granska Pad thai med tofu",
+  "egen": {
+   "x": 336.78,
+   "y": 4203.21,
+   "w": 76.22,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Granska",
+  "relativHojd": 0.613,
+  "yta": {
+   "w": 319,
+   "h": 57,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 43,
+   "text": "Pad thai med tofufisksås · Ida, sojaGranska",
+   "extraText": 43
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "synkko",
+  "roll": "button",
+  "namn": "Tillbaka till Mer",
+  "egen": {
+   "x": 57,
+   "y": 4659.26,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Väntar på synk 7",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "hem",
+  "roll": "button",
+  "namn": "Meddelanden",
+  "egen": {
+   "x": 395,
+   "y": 10656.32,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "message-square",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 82,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 31,
+   "text": "Torsdag 9 juli God morgon, Maja",
+   "extraText": 31
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: ovrig ikon (message-square) · ledande"
+ },
+ {
+  "art": "hem",
+  "roll": "button",
+  "namn": "Se hela veckan",
+  "egen": {
+   "x": 336.12,
+   "y": 11075.41,
+   "w": 96.88,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Se hela veckan",
+  "relativHojd": 0.502,
+  "yta": {
+   "w": 364,
+   "h": 20,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 21,
+   "text": "Veckan Se hela veckan",
+   "extraText": 6
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "hemmorkt",
+  "roll": "button",
+  "namn": "Meddelanden",
+  "egen": {
+   "x": 395,
+   "y": 11702.91,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "message-square",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 82,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 30,
+   "text": "Torsdag 9 juli God kväll, Maja",
+   "extraText": 30
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: ovrig ikon (message-square) · ledande"
+ },
+ {
+  "art": "hemmorkt",
+  "roll": "button",
+  "namn": "Se hela veckan",
+  "egen": {
+   "x": 336.12,
+   "y": 12122.01,
+   "w": 96.88,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Se hela veckan",
+  "relativHojd": 0.502,
+  "yta": {
+   "w": 364,
+   "h": 20,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 21,
+   "text": "Veckan Se hela veckan",
+   "extraText": 6
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "hemtom",
+  "roll": "button",
+  "namn": "Meddelanden",
+  "egen": {
+   "x": 395,
+   "y": 12748.51,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "message-square",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 82,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 30,
+   "text": "Torsdag 9 juli Välkommen, Maja",
+   "extraText": 30
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: ovrig ikon (message-square) · ledande"
+ },
+ {
+  "art": "hemladdar",
+  "roll": "button",
+  "namn": "Meddelanden",
+  "egen": {
+   "x": 395,
+   "y": 13775.7,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "message-square",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 82,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 31,
+   "text": "Torsdag 9 juli God morgon, Maja",
+   "extraText": 31
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: ovrig ikon (message-square) · ledande"
+ },
+ {
+  "art": "hemoffline",
+  "roll": "button",
+  "namn": "Meddelanden",
+  "egen": {
+   "x": 395,
+   "y": 14850.9,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "message-square",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.102,
+  "yta": {
+   "w": 412,
+   "h": 82,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 31,
+   "text": "Torsdag 9 juli God morgon, Maja",
+   "extraText": 31
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: ovrig ikon (message-square) · ledande"
+ },
+ {
+  "art": "hemfel",
+  "roll": "button",
+  "namn": "Meddelanden",
+  "egen": {
+   "x": 395,
+   "y": 15830.09,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "message-square",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 82,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 31,
+   "text": "Torsdag 9 juli God morgon, Maja",
+   "extraText": 31
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: ovrig ikon (message-square) · ledande"
+ },
+ {
+  "art": "hemfel",
+  "roll": "button",
+  "namn": "Se alla",
+  "egen": {
+   "x": 385,
+   "y": 16099.72,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Se alla",
+  "relativHojd": 0.341,
+  "yta": {
+   "w": 364,
+   "h": 20,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Dina recept Se alla",
+   "extraText": 11
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "receptkommentarer",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 17024.09,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Krämig svamppasta",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "receptkommentarer",
+  "roll": "button",
+  "namn": "Vem ser kommentarerna, Anna, Per och en till",
+  "egen": {
+   "x": 355.62,
+   "y": 17083.09,
+   "w": 77.38,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Anna, Per +1",
+  "relativHojd": 0.116,
+  "yta": {
+   "w": 364,
+   "h": 20,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 28,
+   "text": "Kommentarer · 3 Anna, Per +1",
+   "extraText": 28
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "receptkommentarer",
+  "roll": "button",
+  "namn": "Åtgärder för din kommentar",
+  "egen": {
+   "x": 395,
+   "y": 17290.53,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "more-vertical",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.368,
+  "yta": {
+   "w": 364,
+   "h": 91.3,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 65,
+   "text": "M Du 4 timmar Vi lade i lite citronskal på slutet. Rekommenderas!",
+   "extraText": 65
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "kort · ikon: meny · ledande"
+ },
+ {
+  "art": "receptcooksnap",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 17986.08,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Krämig svamppasta",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "receptdelningsstatus",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 19004.27,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 25,
+   "text": "Citronrisotto med sparris",
+   "extraText": 25
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "receptdelningsstatus",
+  "roll": "button",
+  "namn": "Sluta dela med alla",
+  "egen": {
+   "x": 290.55,
+   "y": 19077.27,
+   "w": 152.45,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": false,
+  "text": "Sluta dela med alla",
+  "relativHojd": 0.143,
+  "yta": {
+   "w": 364,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 34,
+   "text": "Delningsstatus Sluta dela med alla",
+   "extraText": 20
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "receptdelningsstatus",
+  "roll": "button",
+  "namn": "Sluta dela med gruppen Söndagsmiddag",
+  "egen": {
+   "x": 397,
+   "y": 19368.27,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.525,
+  "yta": {
+   "w": 364,
+   "h": 57,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 24,
+   "text": "Söndagsmiddag4 medlemmar",
+   "extraText": 24
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "receptdelningsstatus",
+  "roll": "button",
+  "namn": "Sluta dela med gruppen Kollegorna",
+  "egen": {
+   "x": 397,
+   "y": 19425.27,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.6,
+  "yta": {
+   "w": 364,
+   "h": 57,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 21,
+   "text": "Kollegorna7 medlemmar",
+   "extraText": 21
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "receptbildfel",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 19885.86,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Krämig svamppasta",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "lagasubst",
+  "roll": "button",
+  "namn": "Byt ut smör",
+  "egen": {
+   "x": 385,
+   "y": 21014.55,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Byt",
+  "relativHojd": 0.339,
+  "yta": {
+   "w": 364,
+   "h": 57,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "1 msksmörByt",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "lagasubst",
+  "roll": "button",
+  "namn": "Byt ut timjan",
+  "egen": {
+   "x": 385,
+   "y": 21071.55,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Byt",
+  "relativHojd": 0.414,
+  "yta": {
+   "w": 364,
+   "h": 57,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "2 kvistartimjanByt",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "betygvemat",
+  "roll": "button",
+  "namn": "Hoppa över betygsättningen",
+  "egen": {
+   "x": 57,
+   "y": 22578.04,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 7,
+   "text": "Vem åt?",
+   "extraText": 7
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "betygperperson",
+  "roll": "button",
+  "namn": "Tillbaka till vem som åt",
+  "egen": {
+   "x": 57,
+   "y": 23419.03,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 14,
+   "text": "Vad tyckte ni?",
+   "extraText": 14
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "betygsammanslaget",
+  "roll": "button",
+  "namn": "Tillbaka till receptet",
+  "egen": {
+   "x": 57,
+   "y": 24279.42,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 15,
+   "text": "Familjens betyg",
+   "extraText": 15
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "familjmedlemsamtycke",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 26554.16,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.038,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 4,
+   "text": "Elsa",
+   "extraText": 4
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "vmbomrostning",
+  "roll": "button",
+  "namn": "Rösta på torsdag middag",
+  "egen": {
+   "x": 539,
+   "y": 3768.02,
+   "w": 105,
+   "h": 44
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Rösta",
+  "relativHojd": null,
+  "yta": {
+   "w": 126,
+   "h": 134.19,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 43,
+   "text": "RÖSTNINGOavgjort · 2–2Ärtsoppa · TacosRösta",
+   "extraText": 43
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "under": "kort · textaction"
+ },
+ {
+  "art": "vmbomrostning",
+  "roll": "button",
+  "namn": "Avgör fredag middag",
+  "egen": {
+   "x": 668,
+   "y": 3768.02,
+   "w": 108,
+   "h": 44
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Avgör",
+  "relativHojd": null,
+  "yta": {
+   "w": 126,
+   "h": 134.19,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 39,
+   "text": "Röstningen gick utingen vann · 1–1Avgör",
+   "extraText": 39
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "under": "kort · textaction"
+ },
+ {
+  "art": "rcbportion",
+  "roll": "button",
+  "namn": "Återställ till fyra portioner",
+  "egen": {
+   "x": 272.05,
+   "y": 8055.72,
+   "w": 49.95,
+   "h": 44
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Återställ",
+  "relativHojd": null,
+  "yta": {
+   "w": 259,
+   "h": 44,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 34,
+   "text": "Receptet är skrivet för 4Återställ",
+   "extraText": 34
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "inkoputeslutna",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 5852.4,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Veckans inköpslista",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "skafferibas",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 10828.31,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 8,
+   "text": "Olivolja",
+   "extraText": 8
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "delatinkorg",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 589.47,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 14,
+   "text": "Delat med mig2",
+   "extraText": 14
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "delatvidare",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 1471.06,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.056,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 13,
+   "text": "Delat med mig",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "delatnarvaro",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 5892.01,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 13,
+   "text": "Helgens inköp",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "delatclaimkonflikt",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 6834.6,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.056,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 13,
+   "text": "Helgens inköp",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "delatlasare",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 7597.2,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 13,
+   "text": "Helgens inköp",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoprompt",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 8934.38,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Veckomenyv31",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoprompt",
+  "roll": "button",
+  "namn": "Diktera beskrivningen",
+  "egen": {
+   "x": 365,
+   "y": 9101.38,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "mic",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.266,
+  "yta": {
+   "w": 338,
+   "h": 50,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 33,
+   "text": "tre middagar, varav en vegetarisk",
+   "extraText": 33
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: ovrig ikon (mic) · ledande"
+ },
+ {
+  "art": "veckogenererar",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 9854.77,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Veckomenyv31",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckochips",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 10577.16,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckochips",
+  "roll": "button",
+  "namn": "Förfina beskrivningen",
+  "egen": {
+   "x": 65,
+   "y": 10870.16,
+   "w": 139.37,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Förfina beskrivningen",
+  "relativHojd": 0.585,
+  "yta": {
+   "w": 412,
+   "h": 419,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 294,
+   "text": "Så tolkade jag beskrivningen 3 middagar1 vegetariskttacofredagmax 30 m",
+   "extraText": 280
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "kort · textaction"
+ },
+ {
+  "art": "veckoresultat",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 11316.95,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckodolda",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 12315.74,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 4 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckofel",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 13076.73,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Veckomenyv31",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckofel",
+  "roll": "button",
+  "namn": "Rensa beskrivningen",
+  "egen": {
+   "x": 382,
+   "y": 13197.73,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.252,
+  "yta": {
+   "w": 372,
+   "h": 50,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 33,
+   "text": "tre middagar, varav en vegetarisk",
+   "extraText": 33
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "veckobyt",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 13857.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoplacering",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 14576.52,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 22,
+   "text": "Placera i veckan2 av 5",
+   "extraText": 22
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoplaceringvald",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 15598.51,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 22,
+   "text": "Placera i veckan2 av 5",
+   "extraText": 22
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoplaceringavbryt",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 16559.5,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 22,
+   "text": "Placera i veckan2 av 5",
+   "extraText": 22
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoautoplacerad",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 17279.89,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.049,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoautoplacerad",
+  "roll": "button",
+  "namn": "Ändra placeringen",
+  "egen": {
+   "x": 373.09,
+   "y": 17908.89,
+   "w": 51.91,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Ändra",
+  "relativHojd": 0.896,
+  "yta": {
+   "w": 380,
+   "h": 72,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 35,
+   "text": "5 rätter placerade i vecka 31.Ändra",
+   "extraText": 35
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "veckokalender",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 18179.28,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckonarvaro",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 19350.46,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.046,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckonarvarooversikt",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 20327.65,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.053,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckooverflow",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 21168.04,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.049,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 7 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoflytta",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 22049.03,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoskrivover",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 22950.02,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckoinkop",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 23686.81,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckorostning",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 24606.2,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 33,
+   "text": "Familjens veckomenyv31 · 5 rätter",
+   "extraText": 33
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckorostlagg",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 25634.98,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 14,
+   "text": "Torsdag middag",
+   "extraText": 14
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckorostavgor",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 26656.35,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 14,
+   "text": "Torsdag middag",
+   "extraText": 14
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckorostutgang",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 27707.33,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 10,
+   "text": "Röstningar",
+   "extraText": 10
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "veckorosthistorik",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 28695.3,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 10,
+   "text": "Röstningar",
+   "extraText": 10
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "authmfa",
+  "roll": "button",
+  "namn": "Avbryt inloggningen",
+  "egen": {
+   "x": 57,
+   "y": 6023.75,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Tvåstegsverifiering",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "onbaldrefel",
+  "roll": "button",
+  "namn": "Försök igen",
+  "egen": {
+   "x": 342.92,
+   "y": 9290.61,
+   "w": 74.08,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Försök igen",
+  "relativHojd": 0.71,
+  "yta": {
+   "w": 364,
+   "h": 86.5,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 86,
+   "text": "Jag kunde inte kontrollera åldern just nu. Ditt år står kvar — försök ",
+   "extraText": 75
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "onbimportklar",
+  "roll": "button",
+  "namn": "Tillbaka till guiden",
+  "egen": {
+   "x": 57,
+   "y": 12674.25,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Ditt första recept",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "onbsenare",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 17034.78,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Veckomenyv31 · 5 rätter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "behfoton",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 22422.95,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.056,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Välj en bild",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "behnotiser",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 23313.34,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.056,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 7,
+   "text": "Notiser",
+   "extraText": 7
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "imp1kalla",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 732.66,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Lägg till recept",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "imp2hamtar",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 1715.05,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 13,
+   "text": "Hämtar recept",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "imp3granska",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 2533.23,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Granska receptSPARA",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "imp4sparad",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 3574.63,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Köttbullar med gräddsås",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "imp4sparad",
+  "roll": "button",
+  "namn": "Ställ in allergener",
+  "egen": {
+   "x": 86,
+   "y": 3701.13,
+   "w": 108.63,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Ställ in allergener",
+  "relativHojd": 0.231,
+  "yta": {
+   "w": 297,
+   "h": 105.5,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 132,
+   "text": "Receptet innehåller mjölk och äggDu har inte sagt vad hushållet undvik",
+   "extraText": 118
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "kort · textaction"
+ },
+ {
+  "art": "impassist1",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 4455.41,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Hjälp mig tolka1/3",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impassist2",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 5436.8,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Hjälp mig tolka2/3",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impassist3",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 6417.2,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Hjälp mig tolka3/3",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impassistavbryt",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 7439.19,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Hjälp mig tolka2/3",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impurl",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 8159.58,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.054,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Från länk",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impsocial",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 8980.97,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.054,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 27,
+   "text": "Från Instagram eller TikTok",
+   "extraText": 27
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impfoto",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 9801.36,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.044,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Från foto",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impfil",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 10765.35,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 14,
+   "text": "Från fil7 av 9",
+   "extraText": 14
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impgrans",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 11626.74,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Lägg till recept",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impgransai",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 12407.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Lägg till recept",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impoffline",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 13170.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.043,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Lägg till recept",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impdubblett",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 14170.52,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Köttbullar med gräddsås",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impinget",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 15031.91,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.054,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Från länk",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impcache",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 15852.3,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Från länk",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impdelning",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 16666.68,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Delat till Butlery",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "impdelningsocial",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 17578.86,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Lägg till recept",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "imparkiv",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 18359.25,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Ur arkivet3 valda",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "taggregel",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 760.95,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.039,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Snabbt på vardagarREGEL",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "taggvillkor",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 1862.74,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.036,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Välj villkor",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "taggkalla",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 3033.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Krämig svamppasta",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "taggkalla",
+  "roll": "button",
+  "namn": "Ta bort taggen Snabbt från receptet",
+  "egen": {
+   "x": 381,
+   "y": 3133.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.178,
+  "yta": {
+   "w": 380,
+   "h": 56,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 31,
+   "text": "Snabbtregel: Snabbt på vardagar",
+   "extraText": 31
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "taggkalla",
+  "roll": "button",
+  "namn": "Ta bort taggen Vegetariskt från receptet",
+  "egen": {
+   "x": 381,
+   "y": 3197.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.262,
+  "yta": {
+   "w": 380,
+   "h": 56,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 24,
+   "text": "Vegetarisktautogenererad",
+   "extraText": 24
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "taggkalla",
+  "roll": "button",
+  "namn": "Ta bort taggen Barnfavorit från receptet",
+  "egen": {
+   "x": 381,
+   "y": 3261.13,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.346,
+  "yta": {
+   "w": 380,
+   "h": 56,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 22,
+   "text": "Barnfavoritsatt av dig",
+   "extraText": 22
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "taggexklusiv",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 3954.52,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Krämig svamppasta",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "taggexklusiv",
+  "roll": "button",
+  "namn": "Ta bort taggen Vardagsmat",
+  "egen": {
+   "x": 381,
+   "y": 4054.52,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.194,
+  "yta": {
+   "w": 380,
+   "h": 56,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 35,
+   "text": "Vardagsmatregel: Snabbt på vardagar",
+   "extraText": 35
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: stang · ledande"
+ },
+ {
+  "art": "kontoradera",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 4834.31,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Radera konto",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontoreauth",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 5875.7,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.058,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 12,
+   "text": "Radera konto",
+   "extraText": 12
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontovantan",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 6656.09,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 14,
+   "text": "Raderar kontot",
+   "extraText": 14
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontodelvis",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 7498.09,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Kontot är raderatDELVIS",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "adminskal",
+  "roll": "button",
+  "namn": "Visa avvikelsen",
+  "egen": {
+   "x": 832.82,
+   "y": 8356.88,
+   "w": 120.18,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Visa avvikelsen",
+  "relativHojd": 0.02,
+  "yta": {
+   "w": 924,
+   "h": 74,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 75,
+   "text": "Importfel från ica.se ligger 4× över normalen senaste timmenVisa avvik",
+   "extraText": 61
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "adminej",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 9163.87,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 10,
+   "text": "Moderering",
+   "extraText": 10
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "modrapporter",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 9884.26,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Moderering3 ÖPPNA",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "modrapporter",
+  "roll": "button",
+  "namn": "Stäng rapporten rec_8f21a",
+  "egen": {
+   "x": 384,
+   "y": 10069.01,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.29,
+  "yta": {
+   "w": 48,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 0,
+   "text": "",
+   "extraText": 0
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "chip · ikon: stang · ledande"
+ },
+ {
+  "art": "modrapporter",
+  "roll": "button",
+  "namn": "Stäng rapporten com_5512b",
+  "egen": {
+   "x": 384,
+   "y": 10231.01,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.502,
+  "yta": {
+   "w": 48,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 0,
+   "text": "",
+   "extraText": 0
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "chip · ikon: stang · ledande"
+ },
+ {
+  "art": "modrapporter",
+  "roll": "button",
+  "namn": "Stäng rapporten usr_71f0c",
+  "egen": {
+   "x": 384,
+   "y": 10415.76,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "x",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.745,
+  "yta": {
+   "w": 48,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 0,
+   "text": "",
+   "extraText": 0
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "chip · ikon: stang · ledande"
+ },
+ {
+  "art": "modminderarig",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 10804.65,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Moderering1 ÖPPEN",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "moddolj",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 11646.64,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 10,
+   "text": "Moderering",
+   "extraText": 10
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "modradera",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 12366.03,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 10,
+   "text": "Moderering",
+   "extraText": 10
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "modtom",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 13067.02,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.064,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 10,
+   "text": "Moderering",
+   "extraText": 10
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "cooksnapgalleri",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 14774.39,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 17,
+   "text": "Krämig svamppasta",
+   "extraText": 17
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontosamtycke",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 982.26,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.038,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Samtycken",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "samtyckeai",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 2157.24,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Samtycken",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontodataexport",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 3907.41,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.045,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 23,
+   "text": "Hämta ut dina uppgifter",
+   "extraText": 23
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontosakerhetsvy",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 5791.38,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.04,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 13,
+   "text": "Kontosäkerhet",
+   "extraText": 13
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontonotiser",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 6924.37,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 7,
+   "text": "Notiser",
+   "extraText": 7
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "notisertyp",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 8056.75,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.046,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 9,
+   "text": "Samarbete",
+   "extraText": 9
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "mfalagg",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 9069.73,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Tvåstegsverifiering",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "mfaaktiv",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 10001.72,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.051,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Tvåstegsverifiering",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "notiscentral",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 10934.7,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 7,
+   "text": "Notiser",
+   "extraText": 7
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "minaanmalningar",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 12879.07,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 16,
+   "text": "Mina anmälningar",
+   "extraText": 16
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontojuridik",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 13854.45,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.047,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 15,
+   "text": "Användarvillkor",
+   "extraText": 15
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "kontostatistik",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 14847.44,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.041,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 11,
+   "text": "Min samling",
+   "extraText": 11
+  },
+  "ensam": true,
+  "delad": false,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "statistikfullstandighet",
+  "roll": "button",
+  "namn": "Tillbaka",
+  "egen": {
+   "x": 57,
+   "y": 15959.42,
+   "w": 48,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": "arrow-left",
+  "baraIkon": true,
+  "text": "",
+  "relativHojd": 0.05,
+  "yta": {
+   "w": 412,
+   "h": 65,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 11,
+   "text": "Min samling",
+   "extraText": 11
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+  "under": "rad · ikon: navigera · ledande"
+ },
+ {
+  "art": "flertagg",
+  "roll": "button",
+  "namn": "Avbryt",
+  "egen": {
+   "x": 378.73,
+   "y": 10626.65,
+   "w": 70.27,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Avbryt",
+  "relativHojd": 0.35,
+  "yta": {
+   "w": 412,
+   "h": 77,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 31,
+   "text": "Lägg en tagg på 3 recept Avbryt",
+   "extraText": 24
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "fbformular",
+  "roll": "button",
+  "namn": "Visa alla tjugo skärmar",
+  "egen": {
+   "x": 134,
+   "y": 17975.66,
+   "w": 90.84,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Visa alla tjugo",
+  "relativHojd": 0.662,
+  "yta": {
+   "w": 292,
+   "h": 90,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 88,
+   "text": "De 20 senaste skärmarna du var påHem → Veckomeny → Recept → Inköpslist",
+   "extraText": 74
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "under": "kort · textaction"
+ },
+ {
+  "art": "socgruppinfo",
+  "roll": "button",
+  "namn": "Ta bort Johan Lind ur samtalet",
+  "egen": {
+   "x": 366.72,
+   "y": 9709.35,
+   "w": 65.28,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Ta bort",
+  "relativHojd": 0.458,
+  "yta": {
+   "w": 378,
+   "h": 69,
+   "kontroller": 1,
+   "avgransad": true,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "JLJohan LindTa bort",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "insthushall",
+  "roll": "button",
+  "namn": "Använd receptets antal i stället",
+  "egen": {
+   "x": 296.68,
+   "y": 13256.65,
+   "w": 125.32,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Som receptet säger",
+  "relativHojd": 0.497,
+  "yta": {
+   "w": 342,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 18,
+   "text": "Som receptet säger",
+   "extraText": 18
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "sokpanel",
+  "roll": "link",
+  "namn": "Ändra i inställningarna",
+  "egen": {
+   "x": 378,
+   "y": 16166.42,
+   "w": 48,
+   "h": 44
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Ändra",
+  "relativHojd": 0.157,
+  "yta": {
+   "w": 350,
+   "h": 44,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 19,
+   "text": "Måste undvikasÄndra",
+   "extraText": 19
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "sokpanel",
+  "roll": "button",
+  "namn": "Rensa alla filter",
+  "egen": {
+   "x": 377.23,
+   "y": 16624.42,
+   "w": 63.77,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Rensa allt",
+  "relativHojd": 0.759,
+  "yta": {
+   "w": 380,
+   "h": 48,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 30,
+   "text": "12 recept · 3 filterRensa allt",
+   "extraText": 30
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "under": "rad · textaction"
+ },
+ {
+  "art": "kompkalla",
+  "roll": "button",
+  "namn": "Visa hela",
+  "egen": {
+   "x": 65,
+   "y": 24759.45,
+   "w": 59.31,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Visa hela",
+  "relativHojd": 0.717,
+  "yta": {
+   "w": 372,
+   "h": 308.25,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 289,
+   "text": "Källan är äldre än en månad. Sidan kan ha ändrats sedan dess — en ny t",
+   "extraText": 280
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "under": "kort · textaction"
+ },
+ {
+  "art": "kompkallahel",
+  "roll": "button",
+  "namn": "Visa mindre",
+  "egen": {
+   "x": 65,
+   "y": 25925.86,
+   "w": 76.38,
+   "h": 48
+  },
+  "egenYta": false,
+  "ikonNamn": null,
+  "baraIkon": false,
+  "text": "Visa mindre",
+  "relativHojd": 0.843,
+  "yta": {
+   "w": 372,
+   "h": 309.59,
+   "kontroller": 1,
+   "avgransad": false,
+   "plats": "forst",
+   "textLangd": 291,
+   "text": "Källan är äldre än en månad. Sidan kan ha ändrats sedan dess — en ny t",
+   "extraText": 280
+  },
+  "ensam": true,
+  "delad": true,
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "under": "kort · textaction"
+ }
+]

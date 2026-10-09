@@ -133,8 +133,6 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       _location = existing.location;
       _expiryDate = existing.expiryDate;
       _noteController.text = existing.note.orEmpty();
-    } else {
-      _quantityController.text = '1';
     }
   }
 
@@ -319,8 +317,12 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                       decimal: true,
                     ),
                     inputFormatters: const [SwedishDecimalInputFormatter()],
+                    // Empty with "1" as a hint, never a prefilled "1": the
+                    // cursor landed after it, so typing 6 gave 16. An empty
+                    // field still saves 1 (BUT-2261).
                     decoration: InputDecoration(
                       labelText: l10n.pantryQuantityLabel,
+                      hintText: _isEditing ? null : '1',
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.zero,
                       ),

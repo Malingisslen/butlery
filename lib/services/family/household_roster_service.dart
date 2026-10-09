@@ -90,3 +90,38 @@ class HouseholdRosterService extends BaseService {
     return members;
   }
 }
+
+/// One roster across several households (BUT-2274): a user who joined someone
+/// else's household still eats with the people of their own. An extension so a
+/// stubbed [HouseholdRosterService] still merges.
+extension MergedRoster on HouseholdRosterService {
+  /// Each member once, in [householdIds] order — the user is on both rosters.
+  Future<List<HouseholdRosterMember>> getRosters(
+    Iterable<String> householdIds,
+  ) async => _merge([for (final id in householdIds) await getRoster(id)]);
+
+  /// [getRosters], except that ANY failed read makes the whole result null: a
+  /// roster missing one household is missing people who may be eating.
+  Future<List<HouseholdRosterMember>?> tryGetRosters(
+    Iterable<String> householdIds,
+  ) async {
+    final rosters = <List<HouseholdRosterMember>>[];
+    for (final id in householdIds) {
+      final roster = await tryGetRoster(id);
+      if (roster == null) return null;
+      rosters.add(roster);
+    }
+    return _merge(rosters);
+  }
+
+  static List<HouseholdRosterMember> _merge(
+    List<List<HouseholdRosterMember>> rosters,
+  ) {
+    final seen = <String>{};
+    return [
+      for (final roster in rosters)
+        for (final member in roster)
+          if (seen.add(member.memberId)) member,
+    ];
+  }
+}

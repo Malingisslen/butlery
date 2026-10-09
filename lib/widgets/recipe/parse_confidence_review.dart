@@ -160,7 +160,9 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                             reviewCount,
                           ),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: context.modeColors.warning,
+                            color: AppModeColors.textWarning(
+                              Theme.of(context).brightness,
+                            ),
                           ),
                         ),
                     ],

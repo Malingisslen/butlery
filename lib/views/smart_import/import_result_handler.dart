@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/external_link.dart';
@@ -237,6 +238,8 @@ abstract final class ImportResultHandler {
       arguments: {
         'initialRecipe': recipe,
         'isTemplate': true,
+        ManualEntryRoute.importedWithoutIngredientsKey:
+            ManualEntryRoute.hasNoIngredients(recipe),
       },
     );
   }

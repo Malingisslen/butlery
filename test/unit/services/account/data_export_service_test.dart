@@ -1093,6 +1093,8 @@ void main() {
         // canonical_rating_events, so the export must carry the section (export ⊇
         // erased) even when the user has no pooled votes.
         expect(data['pooled_rating_events'], isNotNull);
+        // BUT-2114: the cascade erases comment likes, so the bundle carries them.
+        expect(data['comment_likes'], isNotNull);
       });
     });
 

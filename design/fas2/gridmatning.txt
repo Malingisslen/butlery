@@ -1,0 +1,11 @@
+GRIDTRAPPA policy=standardrutnat 320:1 599:1 600:1 767:1 768:2 1023:2 1024:2 1279:2 1280:3 1919:3 1920:4 2047:4 2048:4
+GRIDTRAPPA policy=kortrutnat 320:1 599:1 600:1 767:1 768:2 1023:2 1024:2 1279:2 1280:2 1919:2 1920:3 2047:3 2048:3
+GRIDMATNING policy=standardrutnat bredd=1180 kolumner=2 kortbredd=546.00 gap=24.0 padding=32.0/32.0 radbredd=1116.00 forvantad_radbredd=1116.00 oanvand=0.00 overflow=0.00 maxbredd=800 maxbredd_tillampad=nej rutnatsbredd=1180.00 kategori=tabletLarge
+GRIDMATNING policy=standardrutnat bredd=1919 kolumner=3 kortbredd=602.33 gap=24.0 padding=32.0/32.0 radbredd=1855.00 forvantad_radbredd=1855.00 oanvand=0.00 overflow=0.00 maxbredd=1200 maxbredd_tillampad=nej rutnatsbredd=1919.00 kategori=desktop
+GRIDMATNING policy=standardrutnat bredd=1920 kolumner=4 kortbredd=446.00 gap=24.0 padding=32.0/32.0 radbredd=1856.00 forvantad_radbredd=1856.00 oanvand=0.00 overflow=0.00 maxbredd=1400 maxbredd_tillampad=nej rutnatsbredd=1920.00 kategori=desktopLarge
+GRIDMATNING policy=standardrutnat bredd=2048 kolumner=4 kortbredd=478.00 gap=24.0 padding=32.0/32.0 radbredd=1984.00 forvantad_radbredd=1984.00 oanvand=0.00 overflow=0.00 maxbredd=1400 maxbredd_tillampad=nej rutnatsbredd=2048.00 kategori=desktopLarge
+GRIDMATNING policy=kortrutnat bredd=1180 kolumner=2 kortbredd=546.00 gap=24.0 padding=32.0/32.0 radbredd=1116.00 forvantad_radbredd=1116.00 oanvand=0.00 overflow=0.00 maxbredd=800 maxbredd_tillampad=nej kategori=tabletLarge
+GRIDMATNING policy=kortrutnat bredd=1919 kolumner=2 kortbredd=915.50 gap=24.0 padding=32.0/32.0 radbredd=1855.00 forvantad_radbredd=1855.00 oanvand=0.00 overflow=0.00 maxbredd=1200 maxbredd_tillampad=nej kategori=desktop
+GRIDMATNING policy=kortrutnat bredd=1920 kolumner=3 kortbredd=602.67 gap=24.0 padding=32.0/32.0 radbredd=1856.00 forvantad_radbredd=1856.00 oanvand=0.00 overflow=0.00 maxbredd=1400 maxbredd_tillampad=nej kategori=desktopLarge
+GRIDMATNING policy=kortrutnat bredd=2048 kolumner=3 kortbredd=645.33 gap=24.0 padding=32.0/32.0 radbredd=1984.00 forvantad_radbredd=1984.00 oanvand=0.00 overflow=0.00 maxbredd=1400 maxbredd_tillampad=nej kategori=desktopLarge
+00:01 +3: All tests passed!

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -37,6 +40,12 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
       recipe.ingredients.where(UnreadLineDetector.isUnread).length,
   ];
 
+  // BUT-2317: the editor takes a recipe's import snapshot out of the cache
+  // when it opens, and the snapshot is what shows the review. The preview
+  // holds the snapshots of the recipes it sends to the editor and puts one
+  // back before every open, so a second open still shows the review.
+  final Map<int, ParsedRecipe> _reviewSnapshots = {};
+
   Iterable<int> get _batchIndices => Iterable<int>.generate(
     widget.recipes.length,
   ).where((i) => _unreadCounts[i] == 0);
@@ -45,6 +54,13 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
   void initState() {
     super.initState();
     _selectedIndices.addAll(_batchIndices);
+    final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
+    if (cache == null) return;
+    for (var i = 0; i < widget.recipes.length; i++) {
+      if (_unreadCounts[i] == 0) continue;
+      final snapshot = cache.retrieve(widget.recipes[i].id);
+      if (snapshot != null) _reviewSnapshots[i] = snapshot;
+    }
   }
 
   bool get _allSelected =>
@@ -63,6 +79,13 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
 
   Future<void> _openForReview(int index) async {
     setState(() => _openedIndices.add(index));
+    final snapshot = _reviewSnapshots[index];
+    if (snapshot != null) {
+      ServiceLocator.tryGet<ParsedRecipeCache>()?.store(
+        widget.recipes[index].id,
+        snapshot,
+      );
+    }
     await Navigator.of(context).pushNamed(
       Routes.manualEntry,
       arguments: {'initialRecipe': widget.recipes[index], 'isTemplate': true},

@@ -1,0 +1,211 @@
+{
+ "$schema": "butlery-nt-batch02-utford/1",
+ "$datum": "2026-08-14",
+ "$status": "AVGRANSAD CSS_BOX_NON_TEXT_REMEDIATION UTFORD OCH VERIFIERAD. Ordinarie R-04 fortsatt pausad.",
+ "A_beslut": {
+  "beslutsId": "NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+  "enhet": "DU-01-C",
+  "varde": "#d8b784",
+  "gemensamtFor": [
+   "start",
+   "snackbars"
+  ],
+  "klassificering": "HUMAN_APPROVED / VISUAL_CHOICE_REQUIRED",
+  "kvot": 3.85,
+  "krav": 3,
+  "$grans": "Ett gemensamt LJUST beslut. Ingen gemensam morklagesmappning. Snackbars far ingen dark evidence och ingen R-04-kredit.",
+  "R04_COVERAGE_CREDIT": 0,
+  "produktwrite": "UTFORD 2026-08-14"
+ },
+ "B_produktwrite": {
+  "andradeDeklarationer": 2,
+  "platser": [
+   {
+    "fynd": "BG-001",
+    "skarm": "start",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "offset": 8902,
+    "fran": "#ce7c1e",
+    "till": "#d8b784",
+    "teckenskillnad": 0
+   },
+   {
+    "fynd": "BG-024",
+    "skarm": "snackbars",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "offset": 169824,
+    "fran": "#ce7c1e",
+    "till": "#d8b784",
+    "teckenskillnad": 0
+   }
+  ],
+  "filer": 2,
+  "orelateradeFargandringar": 0,
+  "$avgransning": "Endast fargvardet i respektive deklaration bytt. Varje deklaration innehall exakt en traff pa den gamla fargen."
+ },
+ "C_reconciliation": {
+  "token": "--yta-upphojd-d18",
+  "OLD_light_value": "#ce7c1e",
+  "NEW_light_value": "#d8b784",
+  "oforandrat": [
+   "beslutsId",
+   "morkvarde",
+   "semantiskUndergrupp",
+   "provenance",
+   "klassificering",
+   "mappningstyp",
+   "berordaArtefakter"
+  ],
+  "andrat": [
+   "ljusvarde"
+  ],
+  "dark_value": "rgba(245,244,237,0.18)",
+  "dark_status": "OFORANDRAT",
+  "$ejGjort": [
+   "ingen split",
+   "ingen ny mapping evidence",
+   "ingen mappningstypharledning",
+   "ingen R-04-coveragekredit",
+   "ingen dark evidence till snackbars"
+  ]
+ },
+ "D_frusnaKontroller": {
+  "R01_text": true,
+  "historiskIckeText": true,
+  "R02_traffytor": true,
+  "R03_rendering": true,
+  "effekter": true,
+  "identitet": true,
+  "metod": "jamforelse mot en git-worktree pa HEAD fore writen, samma verktyg och profiler"
+ },
+ "E_morkStartReferens": {
+  "bitIdentisk": true,
+  "varden": {
+   "appyta": "#24382c",
+   "track": "rgba(245,244,237,0.18)",
+   "fill": "rgba(245,244,237,0.18)"
+  },
+  "$skal": "Det morka vardet ar oforandrat. Den morka renderingen bygger pa det registrerade morka vardet, inte pa ljuskallan."
+ },
+ "F_population": {
+  "relationer": 34,
+  "kandidatavstamning": "2492 = 2458 + 34",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "PRODUCT_ERROR": {
+   "fore": 11,
+   "efter": 9,
+   "atgardade": 2
+  },
+  "$forvantat": "Forvantad reconciliation var 11 -> 9. Utfallet stammer och har inte tvingats fram.",
+  "atgardade": [
+   {
+    "id": "BG-001",
+    "skarm": "start",
+    "nyKvot": 3.85,
+    "klassificering": "REQUIRED_INFORMATION_BEARING"
+   },
+   {
+    "id": "BG-024",
+    "skarm": "snackbars",
+    "nyKvot": 3.85,
+    "klassificering": "REQUIRED_INFORMATION_BEARING"
+   }
+  ],
+  "kvarstaende": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "form": "REGLAGE",
+    "kvot": 1.41
+   },
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 1.96
+   },
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "kvot": 2.06
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "form": "FORLOPP",
+    "kvot": 2.06
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "form": "FORLOPP",
+    "kvot": 2.64
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 2.98
+   }
+  ],
+  "profil": {
+   "id": "BG-020",
+   "status": "BLOCKERAD OCH OFORANDRAD",
+   "kvot": 1.41
+  },
+  "ovrigaProgressfynd": 8
+ },
+ "G_stoppvillkor": {
+  "provade": [
+   "fler an tva kallandringar",
+   "annan computed paint andrad",
+   "frusen kontroll avviker",
+   "mork start-referens andrad",
+   "population andrad utan forklaring",
+   "snackbars fatt dark evidence eller R-04-credit"
+  ],
+  "utlosta": [],
+  "utfall": "INGET STOPPVILLKOR UTLOST"
+ },
+ "H_kvarstaende": {
+  "GENERAL_PRODUCT_COLOR_WRITE_STOP": "AKTIVT",
+  "ordinarieR04": "PAUSAD",
+  "profil": "BLOCKERAD OCH OFORANDRAD",
+  "aterstaendeEnheter": [
+   "DU-01-A",
+   "DU-01-B",
+   "DU-01-D",
+   "DU-01-E",
+   "DU-02"
+  ],
+  "aterstaendeFynd": 9
+ },
+ "ejGjort": [
+  "ingen profilatgard",
+  "ingen ordinarie R-04-implementation",
+  "ingen orelaterad fargandring",
+  "ingen R-04-coveragekredit",
+  "ingen dark evidence till snackbars",
+  "ingen split av befintligt beslut"
+ ]
+}

@@ -237,6 +237,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       context,
       members: members,
       pendingInvitations: _viewModel.pendingInvitations,
+      inviteeNames: _viewModel.inviteeNames,
       group: _viewModel.group!,
       onAddMembers: _showAddMembersDialog,
       onMemberRemoved: () => _viewModel.loadGroupData(),

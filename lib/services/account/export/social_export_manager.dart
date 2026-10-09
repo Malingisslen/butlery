@@ -5,6 +5,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/social_export_redaction.dart';
 import 'package:butlery/services/account/export/chat_group_export.dart';
+import 'package:butlery/services/account/export/isolated_section_reads.dart';
 import 'package:butlery/models/messaging/history_cutoff.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show
@@ -49,83 +50,71 @@ class SocialExportManager with SocialExportRedaction {
     'error_code': code,
   };
 
-  /// Export friends, friend requests, and friend categories
+  /// Export friends, friend requests, and friend categories.
+  ///
+  /// BUT-2008: the four reads are isolated, so a refusal on one no longer
+  /// discards the others. BUT-1698/BUT-1701: each is capped with an N+1 probe,
+  /// and the section is truncated when any of them clipped.
   Future<Map<String, dynamic>> exportFriends(String userId) async {
-    try {
-      final friendsData = <String, dynamic>{
-        'friends': [],
-        'friend_requests_sent': [],
-        'friend_requests_received': [],
-        'friend_categories': [],
-      };
-      // BUT-1698: each capped read carries its own N+1 truncation probe, and
-      // the section declares itself truncated when ANY of them clipped. Before
-      // this the caps applied silently, so an Art. 15/20 bundle that had
-      // dropped records still read as complete.
-      final friends = await ExportPaginationHelper.fetchCapped(
-        type: 'friends',
-        fetch: (max) =>
-            _exports.exportFriendsSubcollection(userId, maxDocuments: max),
+    final reads = IsolatedSectionReads(logTag: _logTag);
+
+    Future<void> leg(
+      String key,
+      String limitType,
+      String idKey,
+      String totalKey,
+      Future<List<Map<String, dynamic>>> Function(int maxDocuments) fetch,
+    ) async {
+      final page = await reads.read(
+        key,
+        () => ExportPaginationHelper.fetchCapped(type: limitType, fetch: fetch),
       );
-      for (final entry in friends.items) {
-        friendsData['friends'].add({
-          'friend_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
-        });
-      }
-
-      final sentRequests = await ExportPaginationHelper.fetchCapped(
-        type: 'friend_requests',
-        fetch: (max) =>
-            _exports.exportSocialRequestsSent(userId, maxDocuments: max),
-      );
-      for (final entry in sentRequests.items) {
-        friendsData['friend_requests_sent'].add({
-          'request_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
-        });
-      }
-
-      final receivedRequests = await ExportPaginationHelper.fetchCapped(
-        type: 'friend_requests',
-        fetch: (max) =>
-            _exports.exportSocialRequestsReceived(userId, maxDocuments: max),
-      );
-      for (final entry in receivedRequests.items) {
-        friendsData['friend_requests_received'].add({
-          'request_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
-        });
-      }
-
-      final categories = await _exports.exportFriendCategories(userId);
-      for (final entry in categories) {
-        friendsData['friend_categories'].add({
-          'category_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
-        });
-      }
-
-      friendsData['total_friends'] = friendsData['friends'].length;
-      friendsData['total_pending_sent'] =
-          friendsData['friend_requests_sent'].length;
-      friendsData['total_pending_received'] =
-          friendsData['friend_requests_received'].length;
-      friendsData['total_categories'] = friendsData['friend_categories'].length;
-      // `friend_categories` still rides the repository's own default cap and is
-      // not probed here — tracked on BUT-1701 with the other implicit-default
-      // caps (blocks, reports, pings, the conversation list).
-      if (friends.truncated ||
-          sentRequests.truncated ||
-          receivedRequests.truncated) {
-        friendsData['truncated'] = true;
-      }
-
-      return friendsData;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export friends', e);
-      return _failed('Friends', 'friends-export-failed');
+      if (page == null) return;
+      reads.section[key] = [
+        for (final entry in page.items)
+          {idKey: entry['id'], 'data': sanitizeForJson(entry['data'])},
+      ];
+      reads.section[totalKey] = page.length;
+      if (page.truncated) reads.section['truncated'] = true;
     }
+
+    await leg(
+      'friends',
+      'friends',
+      'friend_id',
+      'total_friends',
+      (max) => _exports.exportFriendsSubcollection(userId, maxDocuments: max),
+    );
+    await leg(
+      'friend_requests_sent',
+      'friend_requests',
+      'request_id',
+      'total_pending_sent',
+      (max) => _exports.exportSocialRequestsSent(userId, maxDocuments: max),
+    );
+    await leg(
+      'friend_requests_received',
+      'friend_requests',
+      'request_id',
+      'total_pending_received',
+      (max) => _exports.exportSocialRequestsReceived(userId, maxDocuments: max),
+    );
+    await leg(
+      'friend_categories',
+      'friend_categories',
+      'category_id',
+      'total_categories',
+      (max) => _exports.exportFriendCategories(userId, maxDocuments: max),
+    );
+
+    return {
+      ...reads.section,
+      ...reads.outcome(
+        partialCode: 'friends-partial-export-failure',
+        failedCode: 'friends-export-failed',
+        failedMessage: 'Friends could not be exported.',
+      ),
+    };
   }
 
   /// [source] with every OTHER participant's avatar URL removed — the map entry
@@ -399,6 +388,29 @@ class SocialExportManager with SocialExportRedaction {
       messagesData['total_conversations'] =
           messagesData['conversations'].length;
 
+      // BUT-1701: the conversation list is capped, and the N+1 probe the other
+      // sections use would fetch a whole extra conversation's messages. A
+      // count runs instead, and only when the page came back full, so nobody
+      // under the cap pays for it.
+      if (conversations.length >= conversationLimit) {
+        try {
+          final held = await _exports.countConversations(userId);
+          if (held > conversationLimit) {
+            messagesData['conversations_truncated'] = true;
+          }
+        } catch (e) {
+          app_logger.AppLogger.error(
+            '[$_logTag] Failed to count conversations',
+            e,
+          );
+          // A full page with no answer may be clipped. Saying nothing would
+          // read as complete, so the section reports the lookup as incomplete.
+          messagesData['conversation_count_error_code'] =
+              'conversation-count-failed';
+          messagesData['error_code'] ??= 'conversation-count-failed';
+        }
+      }
+
       // BUT-1838: the one fact a group holds that the conversation does not —
       // who added you. Its own class so a failure there cannot take this
       // section down.
@@ -477,97 +489,92 @@ class SocialExportManager with SocialExportRedaction {
     }
   }
 
-  /// Export content shared with the user
+  /// Export content shared with the user.
+  ///
+  /// BUT-2008: the three reads are isolated, so a refusal on one no longer
+  /// discards the others. Each leg is capped and probed (BUT-1698), and the
+  /// section is truncated when any of them clipped.
   Future<Map<String, dynamic>> exportSharedContent(String userId) async {
-    try {
-      final sharedData = <String, dynamic>{
-        'shared_recipes_received': [],
-        'shared_menus_received': [],
-        'shared_shopping_lists_received': [],
-      };
-      // BUT-1698: both legs are probed independently and the section is
-      // truncated when either clipped.
-      final sharedRecipes = await ExportPaginationHelper.fetchCapped(
-        type: 'recipes',
-        fetch: (max) =>
-            _exports.exportSharedRecipesReceived(userId, maxDocuments: max),
+    final reads = IsolatedSectionReads(logTag: _logTag);
+
+    Future<void> leg(
+      String key,
+      String limitType,
+      String idKey,
+      String totalKey,
+      Future<List<Map<String, dynamic>>> Function(int maxDocuments) fetch,
+      Object? Function(Map<String, dynamic> entry) shape,
+    ) async {
+      final page = await reads.read(
+        key,
+        () => ExportPaginationHelper.fetchCapped(type: limitType, fetch: fetch),
       );
-      for (final entry in sharedRecipes.items) {
-        sharedData['shared_recipes_received'].add({
-          'share_id': entry['id'],
-          'data': sharedRowForExport(entry, userId),
-        });
-      }
+      if (page == null) return;
+      reads.section[key] = [
+        for (final entry in page.items)
+          {idKey: entry['id'], 'data': shape(entry)},
+      ];
+      reads.section[totalKey] = page.length;
+      if (page.truncated) reads.section['truncated'] = true;
+    }
 
-      final sharedMenus = await ExportPaginationHelper.fetchCapped(
-        type: 'menus',
-        fetch: (max) =>
-            _exports.exportSharedMenusReceived(userId, maxDocuments: max),
-      );
-      for (final entry in sharedMenus.items) {
-        sharedData['shared_menus_received'].add({
-          'menu_id': entry['id'],
-          'data': sharedRowForExport(entry, userId),
-        });
-      }
+    await leg(
+      'shared_recipes_received',
+      'recipes',
+      'share_id',
+      'total_shared_recipes',
+      (max) => _exports.exportSharedRecipesReceived(userId, maxDocuments: max),
+      (entry) => sharedRowForExport(entry, userId),
+    );
+    await leg(
+      'shared_menus_received',
+      'menus',
+      'menu_id',
+      'total_shared_menus',
+      (max) => _exports.exportSharedMenusReceived(userId, maxDocuments: max),
+      (entry) => sharedRowForExport(entry, userId),
+    );
+    // BUT-1798: the third contentType this collection has always carried and
+    // nothing exported. Distinct key from `shared_shopping_lists_*` (which
+    // read `unified_shared_shopping_lists`) so the two provenances stay
+    // tellable apart in the bundle.
+    await leg(
+      'shared_shopping_lists_received',
+      'shopping_lists',
+      'share_id',
+      'total_shared_shopping_lists',
+      (max) =>
+          _exports.exportSharedShoppingListsReceived(userId, maxDocuments: max),
+      (entry) => dropOtherMembersNamesInListData(
+        sharedRowForExport(entry, userId),
+        userId,
+      ),
+    );
 
-      // BUT-1798: the third contentType this collection has always carried and
-      // nothing exported. Distinct key from `shared_shopping_lists_*` (which
-      // read `unified_shared_shopping_lists`) so the two provenances stay
-      // tellable apart in the bundle.
-      final sharedLists = await ExportPaginationHelper.fetchCapped(
-        type: 'shopping_lists',
-        fetch: (max) => _exports.exportSharedShoppingListsReceived(
-          userId,
-          maxDocuments: max,
-        ),
-      );
-      for (final entry in sharedLists.items) {
-        sharedData['shared_shopping_lists_received'].add({
-          'share_id': entry['id'],
-          'data': dropOtherMembersNamesInListData(
-            sharedRowForExport(entry, userId),
-            userId,
-          ),
-        });
-      }
+    final outcome = reads.outcome(
+      partialCode: 'shared-content-partial-export-failure',
+      failedCode: 'shared-content-export-failed',
+      failedMessage: 'Shared content could not be exported.',
+    );
+    if (reads.allFailed) return outcome;
 
-      sharedData['total_shared_recipes'] =
-          sharedData['shared_recipes_received'].length;
-      sharedData['total_shared_menus'] =
-          sharedData['shared_menus_received'].length;
-      sharedData['total_shared_shopping_lists'] =
-          sharedData['shared_shopping_lists_received'].length;
-      if (sharedRecipes.truncated ||
-          sharedMenus.truncated ||
-          sharedLists.truncated) {
-        sharedData['truncated'] = true;
-      }
-
-      // Section level, matching the conversations section, and stating the drop
-      // only — see the note there on why the keep side is never enumerated.
-      sharedData['data_minimisation'] =
+    return {
+      ...reads.section,
+      ...outcome,
+      // Section level, matching the conversations section, and stating the
+      // drop only — see the note there on why the keep side is never
+      // enumerated.
+      'data_minimisation':
           'The profile picture of whoever shared each item has been removed. '
           'In shared shopping lists, the names of other members have also been '
           'removed — from the list itself and from each item, including who '
           'added, bought or last changed it. Your own name is kept so you can '
-          'recognise your entries.';
-      sharedData['provenance'] =
+          'recognise your entries.',
+      'provenance':
           'shared_shopping_lists_received holds lists a friend sent you a copy '
           'of. Lists you were made a member of are in the '
-          'shared_shopping_lists sections elsewhere in this export.';
-
-      return sharedData;
-    } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export shared content',
-        e,
-      );
-      return _failed(
-        'Shared content',
-        'shared-content-export-failed',
-      );
-    }
+          'shared_shopping_lists sections elsewhere in this export.',
+    };
   }
 
   /// Export the blocks this user PLACED. The other direction — who has
@@ -608,18 +615,24 @@ class SocialExportManager with SocialExportRedaction {
         'its presence tells you nothing about whether anyone has blocked you.';
 
     try {
-      final outgoing = await _exports.exportOutgoingBlocks(userId);
+      // BUT-1701: capped and probed, so a clip is stated rather than silent.
+      final outgoing = await ExportPaginationHelper.fetchCapped(
+        type: 'outgoing_blocks',
+        fetch: (max) =>
+            _exports.exportOutgoingBlocks(userId, maxDocuments: max),
+      );
       return {
         // `blockedAt` is stored as a STRING by `BlockRecord.toFirestore()`,
         // so it reaches `sanitizeForJson`'s primitive arm and would ship with
         // whatever zone the blocking device had — under a bundle that says
         // every stamp is UTC. Normalised here rather than in `sanitizeForJson`,
         // which must not rewrite strings that are user content.
-        'outgoing_blocks': outgoing.map((block) {
+        'outgoing_blocks': outgoing.items.map((block) {
           final row = sanitizeForJson(block) as Map<String, dynamic>;
           normalizeTimestampPaths(row, const ['blockedAt']);
           return row;
         }).toList(),
+        if (outgoing.truncated) 'truncated': true,
         'data_minimisation': dataMinimisation,
       };
     } catch (e) {
@@ -644,9 +657,13 @@ class SocialExportManager with SocialExportRedaction {
   /// the deletion cascade erases, so Art. 15 requires it in the export.
   Future<Map<String, dynamic>> exportReports(String userId) async {
     try {
-      final reports = await _exports.exportReportsByReporter(userId);
+      final reports = await ExportPaginationHelper.fetchCapped(
+        type: 'reports_filed',
+        fetch: (max) =>
+            _exports.exportReportsByReporter(userId, maxDocuments: max),
+      );
       return {
-        'reports': reports
+        'reports': reports.items
             .map(
               (e) => {
                 'report_id': e['id'],
@@ -655,6 +672,7 @@ class SocialExportManager with SocialExportRedaction {
             )
             .toList(),
         'total': reports.length,
+        if (reports.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export reports', e);
@@ -705,9 +723,12 @@ class SocialExportManager with SocialExportRedaction {
   /// where `fromUserId == uid`).
   Future<Map<String, dynamic>> exportPings(String userId) async {
     try {
-      final pings = await _exports.exportPingsSent(userId);
+      final pings = await ExportPaginationHelper.fetchCapped(
+        type: 'pings_sent',
+        fetch: (max) => _exports.exportPingsSent(userId, maxDocuments: max),
+      );
       return {
-        'pings': pings
+        'pings': pings.items
             .map(
               (e) => {
                 'ping_id': e['id'],
@@ -716,6 +737,7 @@ class SocialExportManager with SocialExportRedaction {
             )
             .toList(),
         'total': pings.length,
+        if (pings.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export pings', e);

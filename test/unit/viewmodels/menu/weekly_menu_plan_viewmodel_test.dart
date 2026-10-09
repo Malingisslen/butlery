@@ -1389,6 +1389,39 @@ void main() {
         },
       );
 
+      test('BUT-2275: a slow read of the opening week does not take the week '
+          'back after nextWeek', () async {
+        final week1 = _plan(weekStart: DateTime(2026, 4, 13));
+        final week2 = _plan(weekStart: DateTime(2026, 4, 20));
+        final reads = [
+          Completer<WeeklyMenuPlanRead>(),
+          Completer<WeeklyMenuPlanRead>(),
+        ];
+        var call = 0;
+        when(
+          () => mockService.readWeek(week1.weekStartDate),
+        ).thenAnswer((_) => reads[call++].future);
+        when(
+          () => mockService.readWeek(week2.weekStartDate),
+        ).thenAnswer((_) async => _read(week2));
+
+        // The list view and the calendar both ask for the opening week.
+        final first = viewModel.loadWeek(DateTime(2026, 4, 13));
+        final second = viewModel.loadWeek(DateTime(2026, 4, 13));
+        expect(call, 2, reason: 'premise: two reads of the same week');
+        reads[0].complete(_read(week1));
+        await first;
+
+        await viewModel.nextWeek();
+        expect(viewModel.currentWeekStart, week2.weekStartDate);
+
+        reads[1].complete(_read(week1));
+        await second;
+
+        expect(viewModel.currentWeekStart, week2.weekStartDate);
+        expect(viewModel.plan, same(week2));
+      });
+
       test(
         'previousWeek rewinds by 7 days from the current week anchor',
         () async {

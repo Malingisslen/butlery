@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
-/// The page now renders 7 dietary options (vegetarisk, vegansk, pescetarian,
-/// glutenfri, laktosfri, halalanpassad, kosheranpassad).
-const _dietaryOptionCount = 7;
+// Gluten and lactose are allergens on the allergen page, not diets here
+// (BUT-2307, one list).
+const _dietaryKeys = {
+  'vegetarisk',
+  'vegansk',
+  'pescetarian',
+  'halalanpassad',
+  'kosheranpassad',
+};
 
 Widget _testApp({required OnboardingViewModel viewModel}) {
   return ChangeNotifierProvider<OnboardingViewModel>.value(
@@ -43,11 +50,26 @@ void main() {
       viewModel.dispose();
     });
 
-    testWidgets('renders all dietary cards', (tester) async {
+    testWidgets('the cards select exactly the five diets, and gluten-free '
+        'and lactose-free are not offered', (tester) async {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 
-      expect(_findDietaryCards(), findsNWidgets(_dietaryOptionCount));
+      final cards = _findDietaryCards();
+      final count = tester.widgetList(cards).length;
+      for (var i = 0; i < count; i++) {
+        await tester.ensureVisible(cards.at(i));
+        await tester.tap(cards.at(i));
+        await tester.pumpAndSettle();
+      }
+
+      expect(viewModel.selectedDietaryPrefs, _dietaryKeys);
+      final context = tester.element(find.byType(OnboardingDietaryPage));
+      expect(find.text(context.l10n.onboardingDietaryGlutenFree), findsNothing);
+      expect(
+        find.text(context.l10n.onboardingDietaryLactoseFree),
+        findsNothing,
+      );
     });
 
     testWidgets('initially no check_circle icons', (tester) async {
@@ -74,14 +96,13 @@ void main() {
       await tester.pumpAndSettle();
 
       final cards = tester.widgetList(_findDietaryCards());
-      expect(cards.length, _dietaryOptionCount);
+      expect(cards.length, _dietaryKeys.length);
 
-      // Each card has label + description; page has title + description
-      // So at minimum _dietaryOptionCount*2 + 2 Text widgets
+      // Each card has label + description; page has title + description.
       final textWidgets = tester.widgetList<Text>(find.byType(Text));
       expect(
         textWidgets.length,
-        greaterThanOrEqualTo(_dietaryOptionCount * 2 + 2),
+        greaterThanOrEqualTo(_dietaryKeys.length * 2 + 2),
       );
     });
 

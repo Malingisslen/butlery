@@ -1,6 +1,7 @@
 // lib/services/account/export/activity_export_manager.dart
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
@@ -222,6 +223,56 @@ class ActivityExportManager {
         // all — see [_dataMinimisation]. A note that only appeared when the
         // section succeeded would say something about what the read found.
         'data_minimisation': _dataMinimisation,
+      };
+    }
+  }
+
+  /// What a comment like contributes (BUT-2114). `userId` is the requester's
+  /// own uid and the query's filter; the comment is named by its id only,
+  /// because its text may be someone else's.
+  static const commentLikeFieldsExported = <String>['likedAt'];
+
+  /// The comments the requester has liked (`recipe_comments/{id}/likes/{uid}`).
+  ///
+  /// The requester's reactions on other people's comments are NOT here — see
+  /// the note in the section.
+  Future<Map<String, dynamic>> exportCommentLikes(String userId) async {
+    const note =
+        'These are the comments you have liked, by comment id and when. The '
+        'comment text is not repeated here, because it may be another '
+        "person's. Emoji reactions you added to other people's comments are "
+        'not included in this export.';
+    try {
+      final rows = await ExportPaginationHelper.fetchCapped(
+        type: 'comment_likes',
+        fetch: (max) => _exports.exportLikesByUser(userId, maxDocuments: max),
+      );
+      final likes = [
+        for (final row in rows.items)
+          if (row['parent_collection'] == FirestoreCollections.recipeComments)
+            {
+              'comment_id': row['parent_id'],
+              ...sanitizeForJson(
+                    projectExportFields(row['data'], commentLikeFieldsExported),
+                  )
+                  as Map<String, dynamic>,
+            },
+      ];
+      return {
+        'likes': likes,
+        'total': likes.length,
+        if (rows.truncated) 'truncated': true,
+        'note': note,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export comment likes',
+        e,
+      );
+      return {
+        'error': 'Comment likes could not be exported.',
+        'error_code': 'comment-likes-export-failed',
+        'note': note,
       };
     }
   }

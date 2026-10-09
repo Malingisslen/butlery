@@ -1,0 +1,518 @@
+{
+ "$schema": "butlery-r04-registerblock/1",
+ "$datum": "2026-08-12",
+ "$status": "REGISTRY-ONLY. 2 av 5 mappningar skrivna, 3 hallna tillbaka for adjudicering. 0 produktwrites, 0 kallmarkningar, 0 tokenwrites.",
+ "A_split": {
+  "$regel": "DIRECT_ON_APP = instansens faktiska narmaste malade forfader ar artefaktens appyta OCH den appytan har ljusvardet #f5f4ed, vars morkervarde ar uppmatt i 64 av 64 artefakter. Allt annat ar OTHER_FINAL_SURFACE och forblir UNDECIDED.",
+  "enheter": [
+   {
+    "namn": "rubrik",
+    "roll": "text-innehall",
+    "ljusvarde": "#24382c",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasPaAppyta": true,
+    "totalt": 836,
+    "DIRECT_ON_APP": 791,
+    "OTHER_FINAL_SURFACE": 45,
+    "summerar": true,
+    "familjerIScope": 205,
+    "familjerUtanfor": 30
+   },
+   {
+    "namn": "brodtext",
+    "roll": "text-innehall",
+    "ljusvarde": "#37453a",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasPaAppyta": true,
+    "totalt": 311,
+    "DIRECT_ON_APP": 198,
+    "OTHER_FINAL_SURFACE": 113,
+    "summerar": true,
+    "familjerIScope": 81,
+    "familjerUtanfor": 84
+   },
+   {
+    "namn": "ikonlinje",
+    "roll": "ikon-fristaende",
+    "ljusvarde": "#7d897c",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+    "delasPaAppyta": true,
+    "totalt": 2,
+    "DIRECT_ON_APP": 2,
+    "OTHER_FINAL_SURFACE": 0,
+    "summerar": true,
+    "familjerIScope": 2,
+    "familjerUtanfor": 0
+   },
+   {
+    "namn": "kontrollyta",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#ce7c1e",
+    "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasPaAppyta": false,
+    "totalt": 30,
+    "DIRECT_ON_APP": 30,
+    "OTHER_FINAL_SURFACE": 0,
+    "summerar": true,
+    "familjerIScope": 29,
+    "familjerUtanfor": 0
+   },
+   {
+    "namn": "knappetikett",
+    "roll": "text-kontroll",
+    "ljusvarde": "#17251d",
+    "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasPaAppyta": false,
+    "totalt": 30,
+    "DIRECT_ON_APP": 30,
+    "OTHER_FINAL_SURFACE": 0,
+    "summerar": true,
+    "familjerIScope": 29,
+    "familjerUtanfor": 0
+   }
+  ],
+  "$rattelse": {
+   "vad": "Kontrollytans scope var i forsta korningen 99 instanser — hela rafargen yta-kontroll #ce7c1e.",
+   "ratt": "Beslutet galler den EXAKTA undergrupp previewn avsag: 30 instanser. De ovriga 69 forekomsterna av samma rafarg i andra undergrupper ar oberorda.",
+   "regel": "Ingen raw-color propagation utanfor exakt subgroup."
+  }
+ },
+ "B_registerskrivning": {
+  "skrivna": [
+   {
+    "beslutsId": "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--yta-kontroll-d11",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#ce7c1e",
+    "morkvarde": "#4a5c43",
+    "omfattning": "SUBGROUP",
+    "instanser": 30,
+    "familjer": 29
+   },
+   {
+    "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--text-kontroll-d5",
+    "roll": "text-kontroll",
+    "ljusvarde": "#17251d",
+    "morkvarde": "#c9d3c4",
+    "omfattning": "SUBGROUP",
+    "instanser": 30,
+    "familjer": 29
+   }
+  ],
+  "registerEfter": {
+   "beslut": 44,
+   "aktiva": 42,
+   "ersatta": 2
+  },
+  "hallnaTillbaka": [
+   {
+    "namn": "rubrik",
+    "roll": "text-innehall",
+    "ljusvarde": "#24382c",
+    "godkantMorkvarde": "#8fb89a",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "instanserIScope": 791,
+    "familjerIScope": 205,
+    "instanserUtanforScope": 45,
+    "medBefintligtAuthoredMorkervarde": 96,
+    "uppmattaAuthoredVarden": [
+     {
+      "varde": "rgb(201,211,196)",
+      "instanser": 96
+     }
+    ],
+    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
+    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
+   },
+   {
+    "namn": "brodtext",
+    "roll": "text-innehall",
+    "ljusvarde": "#37453a",
+    "godkantMorkvarde": "#93a48d",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "instanserIScope": 198,
+    "familjerIScope": 81,
+    "instanserUtanforScope": 113,
+    "medBefintligtAuthoredMorkervarde": 40,
+    "uppmattaAuthoredVarden": [
+     {
+      "varde": "rgb(147,164,141)",
+      "instanser": 34
+     },
+     {
+      "varde": "rgb(143,184,154)",
+      "instanser": 6
+     }
+    ],
+    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
+    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
+   },
+   {
+    "namn": "ikonlinje",
+    "roll": "ikon-fristaende",
+    "ljusvarde": "#7d897c",
+    "godkantMorkvarde": "rgba(245,244,237,0.4)",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+    "instanserIScope": 2,
+    "familjerIScope": 2,
+    "instanserUtanforScope": 0,
+    "medBefintligtAuthoredMorkervarde": 1,
+    "uppmattaAuthoredVarden": [
+     {
+      "varde": "rgb(201,211,196)",
+      "instanser": 1
+     }
+    ],
+    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
+    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
+   }
+  ],
+  "$varfor": "De tre textbesluten och ikonbeslutet godkandes i tron att instanserna var obeslutade. Reconciliationen visar att 137 av dem redan har ett authored morkervarde. For rubriken skiljer sig det befintliga vardet fran beslutet i samtliga 96 fall.",
+  "$kallaTillDetBefintliga": "fas2/r04-pilottokens.json — markta provisorisk_variant: true. Det ar INTE registrerade beslut, sa det ar ingen beslutskonflikt. Men det ar befintligt utseende som skulle andras.",
+  "$fraga": "For var och en av de tre: ska beslutet ersatta det provisoriska pilottokenvardet i dessa instanser, eller ska scopet delas en gang till sa att de undantas?"
+ },
+ "D_kallmarkningsplan": {
+  "$status": "PLAN ENDAST. Ingen kallmarkning utford. Ingen produktwrite.",
+  "rubrik": {
+   "malidentiteter": "791 instanser i 205 familjer",
+   "nuvarandeKalla": ".sc-phone { color: var(--text-app, #24382c) } — elementen har ingen egen deklaration",
+   "externaReferenser": "Samma --text-app styr ritningens statusrad (::before) och allt annat som arver utan egen farg. Authored morkt varde for --text-app ar #c9d3c4 i 12 av 12 deklarationer.",
+   "blastRadiusVidGlobalAndring": "Alla element som arver fran .sc-phone utan egen fargdeklaration — betydligt fler an de 791. Otillatet.",
+   "foreslagenMekanism": "Egen semantisk klass eller eget token pa exakt de 791 elementen, satt i markup. Tokenet fars eget morkervarde. --text-app lamnas oforandrat.",
+   "idempotens": "Migrationen skriver ett attribut per element och hoppar over element som redan bar det. Omkorning ger 0 nya skrivningar. Ljus rendering ska vara bit-identisk fore och efter.",
+   "risk": "Elementen har i dag INGEN egen fargdeklaration. Att ge dem en ar en verklig kallandring och maste verifieras mot bit-identisk ljus rendering."
+  },
+  "brodtext": {
+   "malidentiteter": "198 instanser i 81 familjer",
+   "nuvarandeKalla": "literal color:#37453a i markup — 865 deklarationer i korpusen",
+   "externaReferenser": "Literalen delas av flera beslutsenheter. Ett befintligt pilottoken --text-innehall-c mappar redan #37453a -> #93a48d i 12 deklarationer.",
+   "blastRadiusVidGlobalAndring": "865 deklarationer, varav bara 198 tillhor detta beslut. Sok-och-ersatt otillatet.",
+   "foreslagenMekanism": "Tokenisering per instans mot ett eget semantiskt token for DIRECT_ON_APP-undergruppen.",
+   "idempotens": "Samma som ovan: en skrivning per instans, hoppa over redan tokeniserade, bit-identisk ljus rendering."
+  },
+  "ikonlinje": {
+   "malidentiteter": "2 instanser i 2 familjer",
+   "nuvarandeKalla": "stroke=\"#7d897c\" som attribut pa svg-elementet",
+   "externaReferenser": "inga — kallan ar per instans",
+   "blastRadiusVidGlobalAndring": "2 element",
+   "foreslagenMekanism": "Tokenisering av tva attribut. Minsta mojliga andring.",
+   "$not": "Beslutet ar dock hallet tillbaka: 1 av de 2 instanserna har redan ett authored morkervarde (#c9d3c4) som skiljer sig fran beslutet."
+  }
+ },
+ "E_planerare": {
+  "$metod": "Elementbaserad foralderupplosning (tools/parent-resolution.mjs). Talet 38 anvands inte.",
+  "$kallor": {
+   "OBSERVERAT": "uppmatt ljus->mork i artefakter med authored dark",
+   "BESLUTAT": "registrerat human design decision",
+   "PROVISORISKT": "pilottoken markt provisorisk_variant — raknas ALDRIG som beslutat"
+  },
+  "beslutsenheter": {
+   "OLOST": 90,
+   "BESLUTAT": 1
+  },
+  "previewbaraEnheter": {
+   "fore": 29,
+   "efter": 31,
+   "$not": "Okningen kommer av att kontrollytan #ce7c1e nu ar beslutad och darmed loser sina barns previewkontext."
+  },
+  "scener": {
+   "totalt": 324,
+   "utanObeslutadeVarden": 5,
+   "$varning": "De scenerna ar kompletta bara om provisoriska pilottokens raknas som varden. arkivimport 35/40, epostverif 10/15, stateladdar 13/18, stateladdar412 13/18, authepost 13/18 — merparten av deras varden ar provisoriska. De duger inte som beslutsunderlag.",
+   "medEttTillTreObeslutade": 42
+  }
+ },
+ "F_nastaMal": {
+  "$kriterium": "Previewbar enhet, fortfarande olost, i den scen som har lagst ORENHET = obeslutade + provisoriska varden. Havstang (antal familjer) bryter lika.",
+  "rekommenderat": {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "princip": "P-SURFACE-ELEVATED",
+   "ljus": "rgba(36,56,44,0.35)",
+   "familjer": 21,
+   "instanser": 21,
+   "kandidater": 3,
+   "scen": "onbhoppa",
+   "maladeVarden": 17,
+   "obeslutade": 2,
+   "provisoriska": 10,
+   "skal": "Hogst havstang (21 familjer) bland de scener som ligger nara komplett. Kraver 2 ytterligare beslut for en helt beslutad scen, plus adjudicering av 10 provisoriska varden."
+  },
+  "renaste": {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-ELEVATED",
+   "ljus": "#f0eee2",
+   "familjer": 4,
+   "scen": "kompsason",
+   "obeslutade": 3,
+   "provisoriska": 8,
+   "skal": "Renaste scenen, men bara 4 familjers havstang."
+  },
+  "fullLista": [
+   {
+    "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#f0eee2",
+    "familjer": 4,
+    "instanser": 4,
+    "kandidater": 3,
+    "scen": {
+     "art": "kompsason",
+     "malade": 16,
+     "saknas": 3,
+     "provisoriska": 8,
+     "lista": [
+      [
+       "ram-behallare #a15a0a",
+       1
+      ],
+      [
+       "ikon-fristaende #3f6b4f",
+       1
+      ],
+      [
+       "yta-upphojd #f0eee2",
+       1
+      ]
+     ],
+     "orent": 11
+    }
+   },
+   {
+    "uid": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "rgba(36,56,44,0.35)",
+    "familjer": 21,
+    "instanser": 21,
+    "kandidater": 3,
+    "scen": {
+     "art": "onbhoppa",
+     "malade": 17,
+     "saknas": 2,
+     "provisoriska": 10,
+     "lista": [
+      [
+       "yta-upphojd rgba(36,56,44,0.35)",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ]
+     ],
+     "orent": 12
+    }
+   },
+   {
+    "uid": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+    "princip": "P-SURFACE-APP",
+    "ljus": "#24382c",
+    "familjer": 10,
+    "instanser": 10,
+    "kandidater": 2,
+    "scen": {
+     "art": "delatlamna",
+     "malade": 27,
+     "saknas": 3,
+     "provisoriska": 16,
+     "lista": [
+      [
+       "ram-kontroll #9c3b23",
+       4
+      ],
+      [
+       "yta-upphojd rgba(36,56,44,0.4)",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ]
+     ],
+     "orent": 19
+    }
+   },
+   {
+    "uid": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-APP",
+    "ljus": "#24382c",
+    "familjer": 7,
+    "instanser": 7,
+    "kandidater": 2,
+    "scen": {
+     "art": "dialogratelimit",
+     "malade": 24,
+     "saknas": 2,
+     "provisoriska": 17,
+     "lista": [
+      [
+       "yta-upphojd rgba(36,56,44,0.4)",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ]
+     ],
+     "orent": 19
+    }
+   },
+   {
+    "uid": "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-CONTROL",
+    "ljus": "#7d897c",
+    "familjer": 4,
+    "instanser": 7,
+    "kandidater": 3,
+    "scen": {
+     "art": "notisinstallningar",
+     "malade": 36,
+     "saknas": 3,
+     "provisoriska": 17,
+     "lista": [
+      [
+       "yta-kontroll #f5f4ed",
+       7
+      ],
+      [
+       "yta-kontroll #24382c",
+       5
+      ],
+      [
+       "yta-kontroll #7d897c",
+       2
+      ]
+     ],
+     "orent": 20
+    }
+   },
+   {
+    "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#ccd1c2",
+    "familjer": 23,
+    "instanser": 44,
+    "kandidater": 3,
+    "scen": {
+     "art": "surfplatta",
+     "malade": 30,
+     "saknas": 2,
+     "provisoriska": 23,
+     "lista": [
+      [
+       "yta-upphojd #ccd1c2",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ]
+     ],
+     "orent": 25
+    }
+   },
+   {
+    "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#ccd1c2",
+    "familjer": 7,
+    "instanser": 25,
+    "kandidater": 3,
+    "scen": {
+     "art": "socdelatvan",
+     "malade": 36,
+     "saknas": 3,
+     "provisoriska": 27,
+     "lista": [
+      [
+       "yta-upphojd #ccd1c2",
+       2
+      ],
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #f0eee2",
+       1
+      ]
+     ],
+     "orent": 30
+    }
+   },
+   {
+    "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#f0eee2",
+    "familjer": 4,
+    "instanser": 5,
+    "kandidater": 3,
+    "scen": {
+     "art": "socdelatvan",
+     "malade": 36,
+     "saknas": 3,
+     "provisoriska": 27,
+     "lista": [
+      [
+       "yta-upphojd #ccd1c2",
+       2
+      ],
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #f0eee2",
+       1
+      ]
+     ],
+     "orent": 30
+    }
+   },
+   {
+    "uid": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "ljus": "#627061",
+    "familjer": 14,
+    "instanser": 18,
+    "kandidater": 3,
+    "scen": {
+     "art": "okandingrediens",
+     "malade": 44,
+     "saknas": 3,
+     "provisoriska": 34,
+     "lista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #627061",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ]
+     ],
+     "orent": 37
+    }
+   }
+  ]
+ },
+ "G_forstaPreview": {
+  "scen": "soctomtingavanner",
+  "status": "HONEST_FULL_DARK_SIMULATION · VERIFIED_AS_DECISION_PREVIEW",
+  "inte": "AUTHORED_DARK_PRODUCT_COVERAGE",
+  "coverageCredit": 0,
+  "$regel": "Ger 0 R-04 coverage credit tills produkten faktiskt har dualThemeRender eller explicit dark representation enligt coverage-kontraktet."
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen kallmarkning",
+  "ingen tokenwrite",
+  "inga av de tre tillbakahallna besluten skrivna",
+  "ingen ny preview renderad",
+  "ingen provisorisk pilottokenmappning uppgraderad till beslut"
+ ]
+}

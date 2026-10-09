@@ -1,0 +1,478 @@
+{
+ "$schema": "butlery-r04-slutlig-preview/1",
+ "$datum": "2026-08-13",
+ "$status": "SLUTLIG PREVIEW LEVERERAD. Ingen appbakgrund beslutad, ingen produktwrite.",
+ "A_illustrationsbeslut": {
+  "bunt": "B · Varm dampad",
+  "verdikt": "ILLUSTRATION_INDEPENDENT = true",
+  "provenance": "HUMAN_APPROVED via TWO_STATE_ANIMATION_DECISION_PREVIEW, commit 0f996ed",
+  "antalBeslut": 8,
+  "$regel": "Bunten ar enbart manslig presentation. I registret ar det atta skilda beslut med atta stabila identiteter och atta mappningar. Ingen merge aven dar varden sammanfaller.",
+  "beslut": [
+   {
+    "tokenNamn": "--ikon-fristaende-d2",
+    "del": "banklinje",
+    "semantiskRoll": "ILLUSTRATION_CONTOUR",
+    "ljusvarde": "#f5f4ed",
+    "morkvarde": "#c9d3c4",
+    "kallidentitet": "start|3|stroke",
+    "varmAccent": false
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d3",
+    "del": "anga vanster",
+    "semantiskRoll": "ILLUSTRATION_STEAM",
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#8fb89a",
+    "kallidentitet": "start|5|stroke",
+    "varmAccent": false
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d4",
+    "del": "anga hoger",
+    "semantiskRoll": "ILLUSTRATION_STEAM",
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#8fb89a",
+    "kallidentitet": "start|6|stroke",
+    "varmAccent": false
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d5",
+    "del": "matratt fram",
+    "semantiskRoll": "ILLUSTRATION_FOOD_WARM",
+    "ljusvarde": "#ce7c1e",
+    "morkvarde": "#de9078",
+    "kallidentitet": "start|8|fill",
+    "varmAccent": true
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d6",
+    "del": "matratt bak",
+    "semantiskRoll": "ILLUSTRATION_FOOD_DEPTH",
+    "ljusvarde": "#a15a0a",
+    "morkvarde": "rgba(245,244,237,0.18)",
+    "kallidentitet": "start|9|fill",
+    "varmAccent": false
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d7",
+    "del": "kupa",
+    "semantiskRoll": "ILLUSTRATION_CONTOUR",
+    "ljusvarde": "#f5f4ed",
+    "morkvarde": "#c9d3c4",
+    "kallidentitet": "start|11|stroke",
+    "varmAccent": false
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d8",
+    "del": "knoppstav",
+    "semantiskRoll": "ILLUSTRATION_LID_KNOB",
+    "ljusvarde": "#ce7c1e",
+    "morkvarde": "#de9078",
+    "kallidentitet": "start|12|stroke",
+    "varmAccent": true
+   },
+   {
+    "tokenNamn": "--ikon-fristaende-d9",
+    "del": "knopp",
+    "semantiskRoll": "ILLUSTRATION_LID_KNOB",
+    "ljusvarde": "#ce7c1e",
+    "morkvarde": "#de9078",
+    "kallidentitet": "start|13|fill",
+    "varmAccent": true
+   }
+  ],
+  "varmaVarden": {
+   "antal": 3,
+   "roller": [
+    "ILLUSTRATION_FOOD_WARM",
+    "ILLUSTRATION_LID_KNOB"
+   ],
+   "$regel": "Numeriskt ateranvant varmt palettvarde. Ateranvander INTE tokenidentiteten for action, warning eller status. Samma hex ar inte samma token."
+  }
+ },
+ "B_registerTotaler": {
+  "beslutTotalt": 56,
+  "aktiva": 54,
+  "ersatta": 2,
+  "illustrationsbeslutTillagda": 8,
+  "mappningstypUNKNOWN": 9,
+  "perTyp": {
+   "temavaxlande": 38,
+   "temainvariant": 7,
+   "UNKNOWN": 9
+  },
+  "perOmfattning": {
+   "WHOLE_CANDIDATE": 9,
+   "SUBGROUP": 45
+  },
+  "olostaIllustrationsenheter": 0
+ },
+ "C_startInventering": {
+  "maladeVarden": 17,
+  "summering": {
+   "TARGET_CANDIDATE": 1,
+   "VERIFIED_EXISTING_MAPPING": 4,
+   "TEMPORARY_PREVIEW_CONTROL": 3,
+   "DECIDED": 9
+  },
+  "summerar": true,
+  "PROVISIONAL_credit": 0,
+  "UNDECIDED_ickeMal": 0,
+  "UNKNOWN_semantiskRoll": 0,
+  "poster": [
+   {
+    "ordinal": 0,
+    "egenskap": "background-color",
+    "vad": "appyta",
+    "ljus": "rgb(36, 56, 44)",
+    "status": "TARGET_CANDIDATE",
+    "varde": null,
+    "roll": "yta-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-top-color",
+    "vad": "appram top",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-right-color",
+    "vad": "appram right",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-bottom-color",
+    "vad": "appram bottom",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-left-color",
+    "vad": "appram left",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 16,
+    "egenskap": "color",
+    "vad": "varumarkesrad",
+    "ljus": "rgb(220, 169, 104)",
+    "status": "TEMPORARY_PREVIEW_CONTROL",
+    "varde": "#c9d3c4",
+    "roll": "BRAND_SUPPORTING_TEXT"
+   },
+   {
+    "ordinal": 18,
+    "egenskap": "background-color",
+    "vad": "forloppsspar",
+    "ljus": "rgba(245, 244, 237, 0.18)",
+    "status": "DECIDED",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "PROGRESS_TRACK"
+   },
+   {
+    "ordinal": 19,
+    "egenskap": "background-color",
+    "vad": "forloppsfyllning",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "TEMPORARY_PREVIEW_CONTROL",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "PROGRESS_VALUE"
+   },
+   {
+    "ordinal": 20,
+    "egenskap": "color",
+    "vad": "statusrad",
+    "ljus": "rgb(201, 211, 196)",
+    "status": "TEMPORARY_PREVIEW_CONTROL",
+    "varde": "#c9d3c4",
+    "roll": "text-innehall"
+   },
+   {
+    "ordinal": 3,
+    "egenskap": "stroke",
+    "vad": "illustration · banklinje",
+    "ljus": "rgb(245, 244, 237)",
+    "status": "DECIDED",
+    "varde": "#c9d3c4",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 5,
+    "egenskap": "stroke",
+    "vad": "illustration · anga vanster",
+    "ljus": "rgb(147, 164, 141)",
+    "status": "DECIDED",
+    "varde": "#8fb89a",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 6,
+    "egenskap": "stroke",
+    "vad": "illustration · anga hoger",
+    "ljus": "rgb(147, 164, 141)",
+    "status": "DECIDED",
+    "varde": "#8fb89a",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 8,
+    "egenskap": "fill",
+    "vad": "illustration · matratt fram",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "DECIDED",
+    "varde": "#de9078",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 9,
+    "egenskap": "fill",
+    "vad": "illustration · matratt bak",
+    "ljus": "rgb(161, 90, 10)",
+    "status": "DECIDED",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 11,
+    "egenskap": "stroke",
+    "vad": "illustration · kupa",
+    "ljus": "rgb(245, 244, 237)",
+    "status": "DECIDED",
+    "varde": "#c9d3c4",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 12,
+    "egenskap": "stroke",
+    "vad": "illustration · knoppstav",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "DECIDED",
+    "varde": "#de9078",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 13,
+    "egenskap": "fill",
+    "vad": "illustration · knopp",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "DECIDED",
+    "varde": "#de9078",
+    "roll": "DECORATIVE_GRAPHIC"
+   }
+  ]
+ },
+ "D_preview": {
+  "bilder": 6,
+  "struktur": "3 appbakgrunder × 2 deterministiska tillstand",
+  "parAvComparisonUnit": true,
+  "frystTid": {
+   "STATE_COVERED": 1375,
+   "STATE_REVEALED": 3475
+  },
+  "endastVariabel": "APP_BACKGROUND",
+  "alla": [
+   {
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "slut-17251d-tackt.png",
+    "granskningOk": true
+   },
+   {
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "slut-17251d-avtackt.png",
+    "granskningOk": true
+   },
+   {
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "slut-24382c-tackt.png",
+    "granskningOk": true
+   },
+   {
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "slut-24382c-avtackt.png",
+    "granskningOk": true
+   },
+   {
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "slut-4a5c43-tackt.png",
+    "granskningOk": true
+   },
+   {
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "slut-4a5c43-avtackt.png",
+    "granskningOk": true
+   }
+  ]
+ },
+ "E_grindar": {
+  "kallgrind": "GRON",
+  "allaInjektionerTraffade": true,
+  "kollateralaAndringar": 0,
+  "arvdCurrentColor": 8,
+  "$arvsnot": "Atta element andrade color och darmed sina ramfarger, som ar currentColor nar inget annat satts. Det ar arv fran den injicerade colorn pa telefonramen, inte kollateral injektion — verifierat kanal for kanal, inte antaget.",
+  "granskningarOk": true,
+  "animationsfasIdentiskPerTillstand": true
+ },
+ "F_conformance": [
+  {
+   "bakgrund": "#17251d",
+   "text": {
+    "varumarkesrad": {
+     "fg": "#c9d3c4",
+     "bg": "#17251d",
+     "kvot": 10.31,
+     "krav": 4.5
+    },
+    "statusrad": {
+     "fg": "#c9d3c4",
+     "bg": "#17251d",
+     "kvot": 10.31,
+     "krav": 4.5
+    },
+    "utfall": "PASS",
+    "unknown": 0
+   },
+   "progress": {
+    "sparMotBakgrund": 1.72,
+    "fyllMotSpar": 1.63,
+    "sparPerceptibelt": true,
+    "fyllningSkildFranSpar": true
+   },
+   "illustration": {
+    "kontur": 10.31,
+    "anga": 7.2,
+    "matFram": 6.34,
+    "buntB": true,
+    "exaktFas": true,
+    "$not": "dekorativ — ingen numerisk troskel tillampas"
+   },
+   "injektion": {
+    "malTraffade": true,
+    "kollateral": 0
+   }
+  },
+  {
+   "bakgrund": "#24382c",
+   "text": {
+    "varumarkesrad": {
+     "fg": "#c9d3c4",
+     "bg": "#24382c",
+     "kvot": 8.11,
+     "krav": 4.5
+    },
+    "statusrad": {
+     "fg": "#c9d3c4",
+     "bg": "#24382c",
+     "kvot": 8.11,
+     "krav": 4.5
+    },
+    "utfall": "PASS",
+    "unknown": 0
+   },
+   "progress": {
+    "sparMotBakgrund": 1.71,
+    "fyllMotSpar": 1.54,
+    "sparPerceptibelt": true,
+    "fyllningSkildFranSpar": true
+   },
+   "illustration": {
+    "kontur": 8.11,
+    "anga": 5.66,
+    "matFram": 4.99,
+    "buntB": true,
+    "exaktFas": true,
+    "$not": "dekorativ — ingen numerisk troskel tillampas"
+   },
+   "injektion": {
+    "malTraffade": true,
+    "kollateral": 0
+   }
+  },
+  {
+   "bakgrund": "#4a5c43",
+   "text": {
+    "varumarkesrad": {
+     "fg": "#c9d3c4",
+     "bg": "#4a5c43",
+     "kvot": 4.68,
+     "krav": 4.5
+    },
+    "statusrad": {
+     "fg": "#c9d3c4",
+     "bg": "#4a5c43",
+     "kvot": 4.68,
+     "krav": 4.5
+    },
+    "utfall": "PASS",
+    "unknown": 0
+   },
+   "progress": {
+    "sparMotBakgrund": 1.52,
+    "fyllMotSpar": 1.38,
+    "sparPerceptibelt": true,
+    "fyllningSkildFranSpar": true
+   },
+   "illustration": {
+    "kontur": 4.68,
+    "anga": 3.27,
+    "matFram": 2.88,
+    "buntB": true,
+    "exaktFas": true,
+    "$not": "dekorativ — ingen numerisk troskel tillampas"
+   },
+   "injektion": {
+    "malTraffade": true,
+    "kollateral": 0
+   }
+  }
+ ],
+ "G_kvarstar": {
+  "APP_BACKGROUND": {
+   "status": "TARGET_CANDIDATE",
+   "finalister": [
+    "#17251d",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "OBSERVED_SAME_UNIT_MAPPING_EVIDENCE": "none"
+  },
+  "tillfalligaKontroller": [
+   "varumarkesrad #c9d3c4",
+   "statusrad #c9d3c4",
+   "forloppsfyllning rgba(245,244,237,0.18)"
+  ],
+  "$not": "Ingen av dem har uppgraderats till HUMAN_APPROVED."
+ },
+ "ejGjort": [
+  "ingen appbakgrund beslutad",
+  "ingen produktwrite",
+  "inga tillfalliga kontroller uppgraderade",
+  "ingen mappningstyp harledd"
+ ]
+}

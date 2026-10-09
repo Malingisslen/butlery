@@ -72,7 +72,10 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addItem(
+  /// Returns the new row's id, or null when nothing was added. Add is class
+  /// 1 with a 7 s "Ångra" (produktregler.md § 2.4), which removes the row
+  /// by this id.
+  Future<String?> addItem(
     String itemName,
     bool canEdit,
     Future<void> Function() onListRefresh,
@@ -84,10 +87,10 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     // refusal and must say so (BUT-1722): the row's controls are gated on
     // `canView`, so a view-only member can reach this call and, without a
     // reason set here, would get silence.
-    if (itemName.trim().isEmpty) return false;
+    if (itemName.trim().isEmpty) return null;
     if (!canEdit) {
       setError(AppLocale.current.shoppingNoEditPermissionShared);
-      return false;
+      return null;
     }
 
     _setAddingItem(true);
@@ -95,30 +98,30 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     try {
       AppLogger.info('➕ Lägger till artikel: $itemName');
 
-      final success = await _shoppingService.addItemToActiveList(
+      final id = await _shoppingService.addItemToActiveListWithId(
         name: itemName.trim(),
         amount: 1.0,
         unit: '',
         category: AppLocale.current.categoryOther,
       );
 
-      if (success) {
+      if (id != null) {
         await onListRefresh();
         onActivityUpdate(
           AppLocale.current.shoppingItemAdded(itemName),
           clock.now(),
         );
         AppLogger.success('✅ Artikel tillagd: $itemName');
-        return true;
+        return id;
       } else {
         setError(AppLocale.current.errorCouldNotAddItem);
         AppLogger.error('❌ Kunde inte lägga till artikel: $itemName');
-        return false;
+        return null;
       }
     } catch (e) {
       setError(AppLocale.current.errorCouldNotAddItem);
       AppLogger.error('❌ Exception vid tillägg av artikel', e);
-      return false;
+      return null;
     } finally {
       _setAddingItem(false);
     }

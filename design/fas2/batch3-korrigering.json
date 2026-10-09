@@ -1,0 +1,2089 @@
+{
+ "$schema": "butlery-batch3-korrigering/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "9c8a04b",
+ "$status": "BATCH 3 KORRIGERAD — 19 kontroller, 1 badge, 3 UNKNOWN",
+ "$typ": "ADJUDICATION CORRECTION. Inga produktandringar.",
+ "A_aterOppnade": [
+  {
+   "identitet": "familj|39",
+   "fran": "INTERACTIVE_CONTROL",
+   "till": "REVIEWED_UNKNOWN",
+   "skal": "Enda grunden var att hela innehallet ar en imperativ handling. Skarmprosan namnger ingen kontroll har och ingen oberoende interaktionsevidens finns i batchen.",
+   "aterlaggning": "Far bara omprovas mot NEW_EVIDENCE, RESOLVED_DEPENDENCY eller EXPLICIT_REVIEW_AUTHORIZATION."
+  },
+  {
+   "identitet": "inloggningmorkt|19",
+   "fran": "INTERACTIVE_CONTROL",
+   "till": "REVIEWED_UNKNOWN",
+   "skal": "Enda grunden var etiketten. Dessutom rollosakerhet: skarmens egen beskrivning talar om \"lankar\", sa aven om interaktiviteten senare etableras ar rollen inte given.",
+   "aterlaggning": "Far bara omprovas mot NEW_EVIDENCE, RESOLVED_DEPENDENCY eller EXPLICIT_REVIEW_AUTHORIZATION."
+  }
+ ],
+ "B_nyaSparrar": {
+  "$numrering": "Ordern kallade dem ADJ-15 och ADJ-16. ADJ-15 ar redan taget: det ar review-state-sparren fran 325d517. For att inte skriva om ett fruset prov-id far de nya numren ADJ-16 och ADJ-17. Innehallet ar ordens, ordagrant.",
+  "ADJ_16": {
+   "regel": "An action-like, imperative or navigational label alone cannot establish CONTROL. Visuell knappform racker inte heller ensam.",
+   "kodad": "tools/control-evidence.mjs — ICKE_GRUNDANDE_FOR_KONTROLL och kontrollprov().",
+   "krav": "Minst en oberoende evidenspunkt for interaktionsavsikt: explicit skarmbeskrivning, specificerad handling, deklarerad interaktionsrelation eller annan forekomstspecifik positiv evidens."
+  },
+  "ADJ_17": {
+   "regel": "Evidence that an occurrence is interactive does not by itself establish BUTTON as its semantic role.",
+   "kodad": "tools/control-evidence.mjs — rollprov(), ROLL och ROLLGRUND.",
+   "krav": "BUTTON, LINK, RADIO, SWITCH med flera avgors separat nar rollen ar relevant. Rollosakerhet star oppen utan att kontrollstatusen faller."
+  }
+ },
+ "C_utfall": {
+  "INTERACTIVE_CONTROL": 19,
+  "UNKNOWN": 3,
+  "NON_INTERACTIVE_STATE_GRAPHIC": 1,
+  "$korrigeratFran": {
+   "INTERACTIVE_CONTROL": 21,
+   "UNKNOWN": 1,
+   "NON_INTERACTIVE_STATE_GRAPHIC": 1
+  }
+ },
+ "D_unknownIdentiteter": [
+  {
+   "identitet": "familj|39",
+   "synligText": "+ Lägg till familjemedlem",
+   "fraga": "Finns nagon oberoende evidens for att \"+ Lägg till familjemedlem\" faktiskt gar att interagera med — en explicit skarmbeskrivning, en specificerad handling, en deklarerad interaktionsrelation eller annan forekomstspecifik positiv evidens? Etiketten och den knapplika ramen racker inte.",
+   "aterOppnad": true
+  },
+  {
+   "identitet": "impdelningsocial|16",
+   "synligText": "Kolla den här! 🍝 instagram.com/p/C8k2vQ1r9Xz",
+   "fraga": "Ar rutan under \"Det du delade\" en ren visning av den mottagna delningstexten, eller ar den redigerbar sa att anvandaren kan rata texten manuellt fore ett nytt forsok? Prosans \"manuella vag\" avgor saken men pekar inte ut vilket objekt den bor i. Ingen roll, traffyta, handlare, tabindex eller contenteditable ar authorad, och max-height med overflow: hidden talar for visning — men bevisar inte att redigering saknas.",
+   "aterOppnad": false
+  },
+  {
+   "identitet": "inloggningmorkt|19",
+   "synligText": "Skapa konto",
+   "fraga": "Finns nagon oberoende evidens for att \"Skapa konto\" faktiskt gar att interagera med — en explicit skarmbeskrivning, en specificerad handling, en deklarerad interaktionsrelation eller annan forekomstspecifik positiv evidens? Etiketten och den knapplika ramen racker inte. Och om interaktiviteten etableras: ar rollen button eller link? Skarmprosan talar om \"lankar\".",
+   "aterOppnad": true
+  }
+ ],
+ "E_avstamning": {
+  "U": 23,
+  "R": 20,
+  "Q": 3,
+  "kontroll": true,
+  "fore": {
+   "UNREVIEWED": 2498,
+   "REVIEWED_UNKNOWN": 113,
+   "REVIEWED_RESOLVED": 73,
+   "unresolved": 2611
+  },
+  "efter": {
+   "UNREVIEWED": 2475,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 93,
+   "unresolved": 2591
+  },
+  "ordernsVantade": {
+   "UNREVIEWED": 2475,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 93,
+   "unresolved": 2591
+  },
+  "avvikelser": [],
+  "rawOforandrad": 2700,
+  "$regel": "Siffrorna ar raknade ur den faktiska persistenta datan och jamforda mot ordens vantade varden. Ingen siffra ar framtvingad."
+ },
+ "F_roller": {
+  "avgjorda": 11,
+  "oppna": 8,
+  "perRoll": {
+   "button": 11,
+   "UNKNOWN": 8
+  },
+  "oppnaIdentiteter": [
+   {
+    "identitet": "grupp|48",
+    "text": "Dela recept, meny eller lista",
+    "skal": "\"Dela recept, meny eller lista\" oppnar en delningsvag. Destination eller operation ar inte avgjort."
+   },
+   {
+    "identitet": "inloggning|19",
+    "text": "Skapa konto",
+    "skal": "\"Skapa konto\" leder till registrering. Prosan i den morka tvillingskarmen talar om \"lankar\". Rollen star oppen."
+   },
+   {
+    "identitet": "placera|17",
+    "text": "Ledig — tryck för att placera",
+    "skal": "En av veckans dagsplatser. Button och radio/option ar bada mojliga."
+   },
+   {
+    "identitet": "placera|29",
+    "text": "Ledig",
+    "skal": "Samma."
+   },
+   {
+    "identitet": "placera|35",
+    "text": "Ledig",
+    "skal": "Samma."
+   },
+   {
+    "identitet": "placera|38",
+    "text": "Ledig",
+    "skal": "Samma."
+   },
+   {
+    "identitet": "placera|41",
+    "text": "Ledig",
+    "skal": "Samma."
+   },
+   {
+    "identitet": "tomtrecept|17",
+    "text": "Importera länk",
+    "skal": "\"Importera länk\" oppnar en annan vag in. Button eller link ar bada mojliga och prosan avgor inte."
+   }
+  ],
+  "$regel": "Oppen roll andrar INTE forekomstens status. Alla 19 star som etablerade kontroller; det ar rollfragan som ar oppen."
+ },
+ "G_traffytor": {
+  "antal": 19,
+  "krav": 48,
+  "utfall": {
+   "FAIL": 19
+  },
+  "per": [
+   {
+    "identitet": "arkivimport|29",
+    "skarm": "Från arkiv",
+    "geometri": "364x45",
+    "w": 364,
+    "h": 45,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "epostverif|8",
+    "skarm": "E-postverifiering",
+    "geometri": "375x47",
+    "w": 375,
+    "h": 47,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "forfragningar|16",
+    "skarm": "Vänförfrågningar",
+    "geometri": "180x39",
+    "w": 180,
+    "h": 39,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "forfragningar|26",
+    "skarm": "Vänförfrågningar",
+    "geometri": "180x39",
+    "w": 180,
+    "h": 39,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "grupp|48",
+    "skarm": "Gruppdetalj",
+    "geometri": "364x43",
+    "w": 364,
+    "h": 43,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "inloggning|19",
+    "skarm": "Inloggning",
+    "geometri": "364x47",
+    "w": 364,
+    "h": 47,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "onboarding|39",
+    "skarm": "Onboarding — allergener",
+    "geometri": "180x47",
+    "w": 180,
+    "h": 47,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "placera|17",
+    "skarm": "Placera i veckan",
+    "geometri": "320x35",
+    "w": 320,
+    "h": 35,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "placera|29",
+    "skarm": "Placera i veckan",
+    "geometri": "320x35",
+    "w": 320,
+    "h": 35,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "placera|35",
+    "skarm": "Placera i veckan",
+    "geometri": "320x35",
+    "w": 320,
+    "h": 35,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "placera|38",
+    "skarm": "Placera i veckan",
+    "geometri": "320x35",
+    "w": 320,
+    "h": 35,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "placera|41",
+    "skarm": "Placera i veckan",
+    "geometri": "320x35",
+    "w": 320,
+    "h": 35,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "placera|49",
+    "skarm": "Placera i veckan",
+    "geometri": "211x43",
+    "w": 211,
+    "h": 43,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "smartimport|29",
+    "skarm": "Importera länk",
+    "geometri": "180x47",
+    "w": 180,
+    "h": 47,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "statefel412|15",
+    "skarm": "State — fel + offline · 412",
+    "geometri": "131x43",
+    "w": 131,
+    "h": 43,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "statefel|15",
+    "skarm": "State — fel + offline",
+    "geometri": "131x43",
+    "w": 131,
+    "h": 43,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "taggdetalj|34",
+    "skarm": "Taggdetalj",
+    "geometri": "364x36",
+    "w": 364,
+    "h": 36,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "tomtrecept|17",
+    "skarm": "Tomt läge — recept",
+    "geometri": "139x43",
+    "w": 139,
+    "h": 43,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   },
+   {
+    "identitet": "vanprofil|34",
+    "skarm": "Vänprofil",
+    "geometri": "180x45",
+    "w": 180,
+    "h": 45,
+    "krav": 48,
+    "prospektivR02": "FAIL"
+   }
+  ],
+  "$regel": "Uppmatt renderad geometri. Ingen geometri andras. De tva ateroppnade objekten raknas INTE som verifierade kontrollfel."
+ },
+ "H_namnproblem": {
+  "antal": 8,
+  "per": [
+   {
+    "identitet": "epostverif|8",
+    "synligText": "Skicka igen (42 s)",
+    "behov": "JA — den synliga texten \"Skicka igen (42 s)\" innehaller en nedrakning som andras varje sekund. Ett tillgangligt namn far inte tickas. Namnet bor vara \"Skicka igen\" och nedrakningen bor bara tillstandet.",
+    "tillstand": "OPPEN — texten \"(42 s)\" tyder pa att knappen ar tillfalligt avstangd under nedrakningen, men inget data-a11y-state ar authorat. Tillstandet ar inte faststallt."
+   },
+   {
+    "identitet": "forfragningar|16",
+    "synligText": "Avböj",
+    "behov": "JA — \"Avböj\" forekommer 2 ganger i samma skarm och skiljer inte instanserna at",
+    "tillstand": null
+   },
+   {
+    "identitet": "forfragningar|26",
+    "synligText": "Avböj",
+    "behov": "JA — \"Avböj\" forekommer 2 ganger i samma skarm och skiljer inte instanserna at",
+    "tillstand": null
+   },
+   {
+    "identitet": "placera|17",
+    "synligText": "Ledig — tryck för att placera",
+    "behov": "JA — texten \"Ledig — tryck för att placera\" bar bade namn och instruktion och saknar dagen. Namnet bor kvalificeras med \"Mån\".",
+    "tillstand": "OPPEN — samma som ovriga dagplatser."
+   },
+   {
+    "identitet": "placera|29",
+    "synligText": "Ledig",
+    "behov": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld."
+   },
+   {
+    "identitet": "placera|35",
+    "synligText": "Ledig",
+    "behov": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld."
+   },
+   {
+    "identitet": "placera|38",
+    "synligText": "Ledig",
+    "behov": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld."
+   },
+   {
+    "identitet": "placera|41",
+    "synligText": "Ledig",
+    "behov": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld."
+   }
+  ],
+  "$regel": "Registreras som framtida content-/semantikbeslut. Ingen accessible-name-text skrivs an."
+ },
+ "I_ickeText": {
+  "redovisas": [
+   {
+    "identitet": "placera|17",
+    "ram": "topp 1.5px dashed rgb(204, 209, 194)",
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)"
+   },
+   {
+    "identitet": "placera|29",
+    "ram": "topp 1.5px dashed rgb(204, 209, 194)",
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)"
+   },
+   {
+    "identitet": "placera|35",
+    "ram": "topp 1.5px dashed rgb(204, 209, 194)",
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)"
+   },
+   {
+    "identitet": "placera|38",
+    "ram": "topp 1.5px dashed rgb(204, 209, 194)",
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)"
+   },
+   {
+    "identitet": "placera|41",
+    "ram": "topp 1.5px dashed rgb(204, 209, 194)",
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)"
+   }
+  ],
+  "uppskjutna": [
+   {
+    "identitet": "familj|39",
+    "ram": "topp 1.5px solid rgb(36, 56, 44)",
+    "ramMotYta": 11.357,
+    "underKravet": false,
+    "beroende": "kontrollstatusen for familj|39"
+   },
+   {
+    "identitet": "inloggningmorkt|19",
+    "ram": "topp 1.5px solid rgba(245, 244, 237, 0.35)",
+    "ramMotYta": 2.982,
+    "underKravet": true,
+    "beroende": "kontrollstatusen for inloggningmorkt|19"
+   }
+  ],
+  "uppskjutnaFynd": [
+   {
+    "identitet": "inloggningmorkt|19",
+    "ram": "topp 1.5px solid rgba(245, 244, 237, 0.35)",
+    "ramMotYta": 2.982,
+    "underKravet": true,
+    "beroende": "kontrollstatusen for inloggningmorkt|19"
+   }
+  ],
+  "$regel": "Ingen icke-textpopulation migreras. De redovisade ar prospektiva control non-text-fynd for objekt vars kontrollstatus ar etablerad."
+ },
+ "J_sprakrattelse": {
+  "aterkallat": "\"osynliga för skärmläsare\"",
+  "korrekt": "odeklarerade i den granskade kontroll- och tillgänglighetsmodellen",
+  "$skal": "Underlaget ar ritnings- och specifikationsfiler. De visar vad som ar DEKLARERAT i kontroll- och tillganglighetsmodellen. De visar inte hur en skarmlasare beter sig vid korning. Runtime-beteende far bara pastas med separat runtime-evidens, och sadan finns inte i detta arbete.",
+  "varForekom": "I terminalsammanfattningen och i HTML-rapporten for 9c8a04b. Inte i artefakten fas2/batch3.json."
+ },
+ "K_perForekomst": [
+  {
+   "identitet": "arkivimport|29",
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Från arkiv",
+   "geometri": "364x45",
+   "synligText": "+ Ladda upp fil",
+   "prosacitat": "Från arkiv — sparade inlägg från sociala medier och filer att importera i efterhand.",
+   "bindning": "Prosan anger filer som ska kunna importeras. Objektets hela innehall ar \"+ Ladda upp fil\" — den enda uttryckta vagen dit i skarmen.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"+ Ladda upp fil\" oppnar filvaljaren — en operation, ingen navigering i appen."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "+ Ladda upp fil",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 45,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 63
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "epostverif|8",
+   "art": "epostverif",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "E-postverifiering",
+   "geometri": "375x47",
+   "synligText": "Skicka igen (42 s)",
+   "prosacitat": "Mjuk grind efter registrering — skickat-till-adress, skicka igen med nedräkning, fortsätt utan.",
+   "bindning": "Prosan namnger \"skicka igen med nedrakning\". Objektets text ar \"Skicka igen (42 s)\" — handlingen plus nedrakningen.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"Skicka igen\" utfor om utskicket. Ingen destination."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Skicka igen (42 s)",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten \"Skicka igen (42 s)\" innehaller en nedrakning som andras varje sekund. Ett tillgangligt namn far inte tickas. Namnet bor vara \"Skicka igen\" och nedrakningen bor bara tillstandet.",
+    "tillstand": "OPPEN — texten \"(42 s)\" tyder pa att knappen ar tillfalligt avstangd under nedrakningen, men inget data-a11y-state ar authorat. Tillstandet ar inte faststallt.",
+    "traffyta": {
+     "w": 375,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 793
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "familj|39",
+   "art": "familj",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Min familj",
+   "geometri": "364x45",
+   "synligText": "+ Lägg till familjemedlem",
+   "prosacitat": "Min familj — hushållets konton + familjeprofiler utan konto.",
+   "bindning": "Prosan namnger ingen kontroll. Enda grunden ar att objektets hela innehall ar en imperativ handling, \"+ Lägg till familjemedlem\". Enkelgrundad.",
+   "interaktionsgrunder": [
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "UNKNOWN",
+   "tidigareVerdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": true,
+   "kontrollprov": {
+    "klass": "UNKNOWN",
+    "barande": [],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "samtliga anforda grunder ar utsagor om etiketten eller utseendet (IMPERATIVE_ACTION_LABEL) — de kan inte ensamma etablera interaktivitet"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar inte etablerad — rollfragan uppstar inte an"
+   },
+   "skalTillAteroppning": "Enda grunden var att hela innehallet ar en imperativ handling. Skarmprosan namnger ingen kontroll har och ingen oberoende interaktionsevidens finns i batchen.",
+   "olostFraga": "Finns nagon oberoende evidens for att \"+ Lägg till familjemedlem\" faktiskt gar att interagera med — en explicit skarmbeskrivning, en specificerad handling, en deklarerad interaktionsrelation eller annan forekomstspecifik positiv evidens? Etiketten och den knapplika ramen racker inte.",
+   "prospektivKontroll": null,
+   "prospektivIckeText": {
+    "status": "UPPSKJUTEN — beroende av att interaktiviteten etableras",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "$regel": "Ramen far inte rapporteras som ett control non-text-fynd sa lange kontrollstatusen ar UNKNOWN."
+   }
+  },
+  {
+   "identitet": "forfragningar|16",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "geometri": "180x39",
+   "synligText": "Avböj",
+   "prosacitat": "Förfrågningar-fliken under Vänner — inkommande kort med Acceptera/Avböj, skickade med Avbryt.",
+   "bindning": "Prosan namnger paret \"Acceptera/Avböj\" pa inkommande kort. Objektets text ar \"Avböj\" och dess foregaende syskon i samma kort ar \"Acceptera\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"Avböj\" utfor en handling pa just det kortets forfragan."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Avböj",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — \"Avböj\" forekommer 2 ganger i samma skarm och skiljer inte instanserna at",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 39,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 39
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "forfragningar|26",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "geometri": "180x39",
+   "synligText": "Avböj",
+   "prosacitat": "Förfrågningar-fliken under Vänner — inkommande kort med Acceptera/Avböj, skickade med Avbryt.",
+   "bindning": "Andra inkommande kortet. Egen \"Acceptera\" som foregaende syskon. Bunden var for sig, inte via forfragningar|16.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "Samma, bedomt pa sitt eget kort."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Avböj",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — \"Avböj\" forekommer 2 ganger i samma skarm och skiljer inte instanserna at",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 39,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 39
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "grupp|48",
+   "art": "grupp",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Gruppdetalj",
+   "geometri": "364x43",
+   "synligText": "Dela recept, meny eller lista",
+   "prosacitat": "Gruppdetalj — närvarorad, aktivitetspings, medlemmar, delat innehåll och \"Vad ska vi äta?\"-omröstning.",
+   "bindning": "Prosan namnger \"delat innehall\" som en av gruppens funktioner. Objektets hela text ar \"Dela recept, meny eller lista\" och det foregas av omrostningsraden som prosan namnger separat.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "\"Dela recept, meny eller lista\" oppnar en delningsvag. Destination eller operation ar inte avgjort."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: \"Dela recept, meny eller lista\" oppnar en delningsvag. Destination eller operation ar inte avgjort.",
+   "prospektivKontroll": {
+    "synligtNamn": "Dela recept, meny eller lista",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 125
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "impdelningsocial|16",
+   "art": "impdelningsocial",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — delning från socialt, hämtningen misslyckades",
+   "geometri": "372x47",
+   "synligText": "Kolla den här! 🍝 instagram.com/p/C8k2vQ1r9Xz",
+   "prosacitat": "Den sociala klassen är den enda med två vägar … _extractFromSocialMedia försöker läsa texten ur inlägget; misslyckas det byter primärknappen etikett till Försök igen … Den manuella vägen finns hela tiden, före och efter felet.",
+   "bindning": "Objektet visar den delade texten under etiketten \"Det du delade\", med max-height och overflow: hidden. Prosan namnger primarknappen SEPARAT, sa objektet ar inte den. Men prosan namnger ocksa en manuell vag — om den vagen ar att redigera just denna text ar objektet ett textfalt.",
+   "interaktionsgrunder": [],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "UNKNOWN",
+   "aterOppnad": false,
+   "kontrollprov": null,
+   "roll": null,
+   "olostFraga": "Ar rutan under \"Det du delade\" en ren visning av den mottagna delningstexten, eller ar den redigerbar sa att anvandaren kan rata texten manuellt fore ett nytt forsok? Prosans \"manuella vag\" avgor saken men pekar inte ut vilket objekt den bor i. Ingen roll, traffyta, handlare, tabindex eller contenteditable ar authorad, och max-height med overflow: hidden talar for visning — men bevisar inte att redigering saknas.",
+   "prospektivKontroll": null,
+   "prospektivIckeText": null
+  },
+  {
+   "identitet": "inloggningmorkt|19",
+   "art": "inloggningmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Inloggning — mörkt läge",
+   "geometri": "364x47",
+   "synligText": "Skapa konto",
+   "prosacitat": "Inloggning i mörkt läge — fält, hjälptext och länkar enligt dark-matrisen.",
+   "bindning": "Prosan for MORKA laget namnger \"lankar\" men ingen enskild kontroll. Enda grunden ar att objektets hela innehall ar handlingen \"Skapa konto\". Enkelgrundad, och rollen kan lika garna vara link.",
+   "interaktionsgrunder": [
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "UNKNOWN",
+   "tidigareVerdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": true,
+   "kontrollprov": {
+    "klass": "UNKNOWN",
+    "barande": [],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "samtliga anforda grunder ar utsagor om etiketten eller utseendet (IMPERATIVE_ACTION_LABEL) — de kan inte ensamma etablera interaktivitet"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar inte etablerad — rollfragan uppstar inte an"
+   },
+   "skalTillAteroppning": "Enda grunden var etiketten. Dessutom rollosakerhet: skarmens egen beskrivning talar om \"lankar\", sa aven om interaktiviteten senare etableras ar rollen inte given.",
+   "olostFraga": "Finns nagon oberoende evidens for att \"Skapa konto\" faktiskt gar att interagera med — en explicit skarmbeskrivning, en specificerad handling, en deklarerad interaktionsrelation eller annan forekomstspecifik positiv evidens? Etiketten och den knapplika ramen racker inte. Och om interaktiviteten etableras: ar rollen button eller link? Skarmprosan talar om \"lankar\".",
+   "prospektivKontroll": null,
+   "prospektivIckeText": {
+    "status": "UPPSKJUTEN — beroende av att interaktiviteten etableras",
+    "ram": [
+     "topp 1.5px solid rgba(245, 244, 237, 0.35)",
+     "botten 1.5px solid rgba(245, 244, 237, 0.35)",
+     "vanster 1.5px solid rgba(245, 244, 237, 0.35)",
+     "hoger 1.5px solid rgba(245, 244, 237, 0.35)"
+    ],
+    "ramMotYta": 2.982,
+    "$regel": "Ramen far inte rapporteras som ett control non-text-fynd sa lange kontrollstatusen ar UNKNOWN."
+   }
+  },
+  {
+   "identitet": "inloggning|19",
+   "art": "inloggning",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Inloggning",
+   "geometri": "364x47",
+   "synligText": "Skapa konto",
+   "prosacitat": "Inloggning — e-post + lösenord, skapa konto, glömt lösenord.",
+   "bindning": "Prosan raknar upp \"skapa konto\" som en av skarmens vagar. Objektets hela text ar \"Skapa konto\", foregatt av avdelaren \"eller\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "\"Skapa konto\" leder till registrering. Prosan i den morka tvillingskarmen talar om \"lankar\". Rollen star oppen."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: \"Skapa konto\" leder till registrering. Prosan i den morka tvillingskarmen talar om \"lankar\". Rollen star oppen.",
+   "prospektivKontroll": {
+    "synligtNamn": "Skapa konto",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 355
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "onboarding|39",
+   "art": "onboarding",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Onboarding — allergener",
+   "geometri": "180x47",
+   "synligText": "Tillbaka",
+   "prosacitat": "Guiden: åldersgräns → välkommen → allergener → kost → import. … tallrikslinje-steg, Tillbaka/Nästa.",
+   "bindning": "Prosan namnger paret \"Tillbaka/Nästa\". Objektets text ar \"Tillbaka\" och dess efterfoljande syskon ar \"Nästa\" i samma rad.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"Tillbaka\" flyttar guidens steg i samma vy. Prosan beskriver stegen som en foljd, inte som destinationer."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Tillbaka",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 47
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "placera|17",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "synligText": "Ledig — tryck för att placera",
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Objektets EGEN text sager \"tryck for att placera\". Prosan sager \"tryck pa en dag\". Objektet ar mandagens plats, foregatt av dagetiketten \"Mån\".",
+   "interaktionsgrunder": [
+    "SELF_TEXT_INTERACTION_INSTRUCTION",
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "SELF_TEXT_INTERACTION_INSTRUCTION",
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: SELF_TEXT_INTERACTION_INSTRUCTION, AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "En av veckans dagsplatser. Button och radio/option ar bada mojliga."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: En av veckans dagsplatser. Button och radio/option ar bada mojliga.",
+   "prospektivKontroll": {
+    "synligtNamn": "Ledig — tryck för att placera",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — texten \"Ledig — tryck för att placera\" bar bade namn och instruktion och saknar dagen. Namnet bor kvalificeras med \"Mån\".",
+    "tillstand": "OPPEN — samma som ovriga dagplatser.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px dashed rgb(204, 209, 194)",
+     "botten 1.5px dashed rgb(204, 209, 194)",
+     "vanster 1.5px dashed rgb(204, 209, 194)",
+     "hoger 1.5px dashed rgb(204, 209, 194)"
+    ],
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "FAIL",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "placera|29",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "synligText": "Ledig",
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Prosan sager \"tryck pa en dag\". Objektet ar onsdagens plats, foregatt av \"Ons\" och ensam innehallscell for den dagen.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "Samma."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: Samma.",
+   "prospektivKontroll": {
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px dashed rgb(204, 209, 194)",
+     "botten 1.5px dashed rgb(204, 209, 194)",
+     "vanster 1.5px dashed rgb(204, 209, 194)",
+     "hoger 1.5px dashed rgb(204, 209, 194)"
+    ],
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "FAIL",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "placera|35",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "synligText": "Ledig",
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Prosan sager \"tryck pa en dag\". Objektet ar fredagens plats, foregatt av \"Fre\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "Samma."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: Samma.",
+   "prospektivKontroll": {
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px dashed rgb(204, 209, 194)",
+     "botten 1.5px dashed rgb(204, 209, 194)",
+     "vanster 1.5px dashed rgb(204, 209, 194)",
+     "hoger 1.5px dashed rgb(204, 209, 194)"
+    ],
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "FAIL",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "placera|38",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "synligText": "Ledig",
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Prosan sager \"tryck pa en dag\". Objektet ar lordagens plats, foregatt av \"Lör\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "Samma."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: Samma.",
+   "prospektivKontroll": {
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px dashed rgb(204, 209, 194)",
+     "botten 1.5px dashed rgb(204, 209, 194)",
+     "vanster 1.5px dashed rgb(204, 209, 194)",
+     "hoger 1.5px dashed rgb(204, 209, 194)"
+    ],
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "FAIL",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "placera|41",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "synligText": "Ledig",
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Prosan sager \"tryck pa en dag\". Objektet ar sondagens plats, foregatt av \"Sön\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "Samma."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: Samma.",
+   "prospektivKontroll": {
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 53
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px dashed rgb(204, 209, 194)",
+     "botten 1.5px dashed rgb(204, 209, 194)",
+     "vanster 1.5px dashed rgb(204, 209, 194)",
+     "hoger 1.5px dashed rgb(204, 209, 194)"
+    ],
+    "ramMotYta": 1.414,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "FAIL",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "placera|49",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "211x43",
+   "synligText": "Placera resten automatiskt",
+   "prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "bindning": "Prosans \"Auto placerar resten\" motsvarar objektets hela text \"Placera resten automatiskt\". Efterfoljande syskon ar \"Klar\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"Placera resten automatiskt\" opererar pa veckans redan valda ratter."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Placera resten automatiskt",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 211,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 43
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 10.218,
+    "yta": "rgb(230, 234, 217)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "rapporter|23",
+   "art": "rapporter",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Mina rapporter",
+   "geometri": "83x23",
+   "synligText": "GRANSKAS",
+   "prosacitat": "Mina rapporter — inskickade anmälningar med typ-ikon, tid och statusbadge Väntar/Granskas/Åtgärdad/Stängd.",
+   "bindning": "Prosan kallar objektet ordagrant en STATUSBADGE och raknar upp dess fyra varden. Objektets text \"GRANSKAS\" ar ett av dem. Ingen handling namnges.",
+   "interaktionsgrunder": [],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "aterOppnad": false,
+   "kontrollprov": null,
+   "roll": null,
+   "olostFraga": null,
+   "prospektivKontroll": null,
+   "prospektivIckeText": null
+  },
+  {
+   "identitet": "smartimport|29",
+   "art": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Importera länk",
+   "geometri": "180x47",
+   "synligText": "Klistra in",
+   "prosacitat": "Smart import — URL eller inklistrad text, plattformsmärke, trestegsförlopp Hämtar → Analyserar → Skapar.",
+   "bindning": "Prosan anger inklistrad text som ett av skarmens tva inmatningssatt. Objektets hela innehall ar \"Klistra in\" — den enda uttryckta vagen till det inmatningssattet.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"Klistra in\" utfor en operation pa skarmens egen inmatning. Ingen destination."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Klistra in",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 79
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(125, 137, 124)",
+     "botten 1.5px solid rgb(125, 137, 124)",
+     "vanster 1.5px solid rgb(125, 137, 124)",
+     "hoger 1.5px solid rgb(125, 137, 124)"
+    ],
+    "ramMotYta": 3.317,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "statefel412|15",
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "State — fel + offline · 412",
+   "geometri": "131x43",
+   "synligText": "Försök igen",
+   "prosacitat": "Feltillstånd med Försök igen, plus offlinebanner överst i referensbredd 412 × 924.",
+   "bindning": "Egen skarm i referensbredd 412. Egen prosa, egen feltext. Bunden var for sig, inte via statefel|15.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "Samma, i egen skarm och egen referensbredd."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Försök igen",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 131,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 863
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "statefel|15",
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "State — fel + offline",
+   "geometri": "131x43",
+   "synligText": "Försök igen",
+   "prosacitat": "Feltillstånd med Försök igen, plus offlinebanner överst.",
+   "bindning": "Prosan namnger \"Försök igen\" som feltillstandets handling. Objektets hela text ar densamma och det foljer direkt pa feltexten.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa OPERATION_ON_CURRENT_STATE",
+    "rollskal": "\"Försök igen\" gor om den misslyckade hamtningen."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Försök igen",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 131,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 320,
+      "h": 442
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "taggdetalj|34",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Taggdetalj",
+   "geometri": "364x36",
+   "synligText": "Kör reglerna nu",
+   "prosacitat": "Taggdetalj — färg, användning, automatiska regler (nyckelord/ingrediens) med kör-knapp.",
+   "bindning": "Prosan sager ordagrant \"kör-KNAPP\". Objektets hela text ar \"Kör reglerna nu\" och det foljer direkt pa regelblocket.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "AUTHORED_PROSE_STATES_ROLE",
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa AUTHORED_PROSE_STATES_ROLE, OPERATION_ON_CURRENT_STATE",
+    "rollskal": "Prosan sager ordagrant \"kör-KNAPP\"."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Kör reglerna nu",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 36,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 243
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "tomtrecept|17",
+   "art": "tomtrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Tomt läge — recept",
+   "geometri": "139x43",
+   "synligText": "Importera länk",
+   "prosacitat": "Tomt läge — illustration (tom tallrik), med vägledande text och två vägar in.",
+   "bindning": "Foraldern har exakt tva barn — \"Lägg till recept\" och \"Importera länk\". Prosans \"tva vagar in\" motsvarar dem ett-till-ett. Objektets hela innehall ar en handling.",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY"
+   },
+   "roll": {
+    "roll": "UNKNOWN",
+    "avgjord": false,
+    "skal": "interaktiviteten ar etablerad men ingen rollspecifik grund ar anford — rollen star oppen",
+    "rollskal": "\"Importera länk\" oppnar en annan vag in. Button eller link ar bada mojliga och prosan avgor inte."
+   },
+   "olostFraga": "Interaktiviteten ar etablerad. Rollen ar det inte: \"Importera länk\" oppnar en annan vag in. Button eller link ar bada mojliga och prosan avgor inte.",
+   "prospektivKontroll": {
+    "synligtNamn": "Importera länk",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 139,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 284,
+      "h": 43
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  },
+  {
+   "identitet": "vanprofil|34",
+   "art": "vanprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänprofil",
+   "geometri": "180x45",
+   "synligText": "Dela recept",
+   "prosacitat": "Vänprofil — avatar, vän sedan, nyckeltal, meddelande/dela-knappar och ta bort vän.",
+   "bindning": "Prosan sager ordagrant \"meddelande/dela-KNAPPAR\". Objektets text ar \"Dela recept\" och dess foregaende syskon ar \"Skicka meddelande\".",
+   "interaktionsgrunder": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "verdikt": "INTERACTIVE_CONTROL",
+   "aterOppnad": false,
+   "kontrollprov": {
+    "klass": "INTERACTIVE_CONTROL",
+    "barande": [
+     "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+    ],
+    "svaga": [
+     "IMPERATIVE_ACTION_LABEL"
+    ],
+    "skal": "minst en oberoende evidenspunkt for interaktionsavsikt: AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   },
+   "roll": {
+    "roll": "button",
+    "avgjord": true,
+    "grunder": [
+     "AUTHORED_PROSE_STATES_ROLE",
+     "OPERATION_ON_CURRENT_STATE"
+    ],
+    "skal": "rollen vilar pa AUTHORED_PROSE_STATES_ROLE, OPERATION_ON_CURRENT_STATE",
+    "rollskal": "Prosan sager ordagrant \"meddelande/dela-KNAPPAR\"."
+   },
+   "olostFraga": null,
+   "prospektivKontroll": {
+    "synligtNamn": "Dela recept",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 45,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 45
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL"
+   },
+   "prospektivIckeText": {
+    "status": "REDOVISAS — kontrollstatusen ar etablerad",
+    "ram": [
+     "topp 1.5px solid rgb(36, 56, 44)",
+     "botten 1.5px solid rgb(36, 56, 44)",
+     "vanster 1.5px solid rgb(36, 56, 44)",
+     "hoger 1.5px solid rgb(36, 56, 44)"
+    ],
+    "ramMotYta": 11.357,
+    "yta": "rgb(245, 244, 237)",
+    "prospektivIckeText": "PASS",
+    "$regel": "Prospektivt. Ingen matpopulation migreras."
+   }
+  }
+ ],
+ "L_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "andradeProduktfiler": [],
+  "rawDiscoveryCandidates": 2700,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "klustringBitIdentisk": true,
+  "strukturkluster": 566,
+  "partitioner": 701,
+  "urval": {
+   "RAW_RANK": 3,
+   "ELIGIBLE_RANK": 1,
+   "rang2Hoppad": "REVIEWED_UNKNOWN utan omprovningsauktorisation"
+  },
+  "produktskrivningar": 0,
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "$matningarBaras": "R-02 och icke-textmatningarna ar overforda. Beviset ar byte-identitet mot 9c8a04b for samtliga 27 produktfiler och for R-04-registret."
+ },
+ "M_produktskrivningar": 0,
+ "stopp": []
+}

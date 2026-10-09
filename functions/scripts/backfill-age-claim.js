@@ -17,12 +17,18 @@
  * left untouched and counted: a minor also needs `isMinor` and search
  * suppression, which onboarding applies and this script does not.
  *
+ * An account with no stored year can be given one in DECLARED_BIRTH_YEARS as
+ * `emailprefix:year` pairs, each prefix matching exactly one account. Malin's
+ * call (2026-10-09, second decision card on BUT-2316) for the two accounts
+ * that existed and had no stored year; the audit row says the year was
+ * declared.
+ *
  * Prints counts only, never a uid or an email. Dry run unless `--apply`.
  * Idempotent: an account that already carries the claim is skipped.
  *
  * Usage (from functions/):
  *   GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> \
- *     node scripts/backfill-age-claim.js [--apply]
+ *     DECLARED_BIRTH_YEARS="prefix:1980" node scripts/backfill-age-claim.js [--apply]
  */
 
 const crypto = require("crypto");
@@ -46,11 +52,12 @@ function parseYear(value) {
 }
 
 /**
- * Decides one account from the two places the old client stored a birth year.
- * Returns `{ outcome, birthYear? }`; only `grant` carries a year.
+ * Decides one account from every birth year known for it: the two places the
+ * old client stored one, plus a declared year when one was given. Returns
+ * `{ outcome, birthYear? }`; only `grant` carries a year.
  */
-function classify(profileYear, preferencesYear, currentYear) {
-  const present = [profileYear, preferencesYear].filter(
+function classify(years, currentYear) {
+  const present = years.filter(
     (v) => v !== undefined && v !== null,
   );
   if (present.length === 0) return { outcome: "noStoredYear" };
@@ -69,7 +76,7 @@ function classify(profileYear, preferencesYear, currentYear) {
   return { outcome: "grant", birthYear };
 }
 
-async function grant(deps, user, birthYear) {
+async function grant(deps, user, birthYear, source) {
   const { auth, db, serverTimestamp } = deps;
   await Promise.all([
     db.doc(`users/${user.uid}`).set({ birthYear, isMinor: false }, { merge: true }),
@@ -86,7 +93,7 @@ async function grant(deps, user, birthYear) {
         userIdHash: hashUid(user.uid),
         isAgeCompliant: true,
         birthDecade: `${Math.floor(birthYear / 10) * 10}s`,
-        source: "backfill_stored_birth_year",
+        source,
         timestamp: serverTimestamp(),
       },
       { merge: true },
@@ -106,7 +113,8 @@ async function grant(deps, user, birthYear) {
  * Walks every Auth account. `deps` is `{ auth, db, serverTimestamp }` with the
  * Admin SDK's shapes, injected so the test can run it over fakes.
  */
-async function runBackfill(deps, { apply, currentYear }) {
+async function runBackfill(deps, { apply, currentYear, declared = {} }) {
+  const declaredKeys = Object.keys(declared);
   const counts = {
     total: 0,
     alreadyCompliant: 0,
@@ -117,7 +125,31 @@ async function runBackfill(deps, { apply, currentYear }) {
     conflictingYears: 0,
     invalidYear: 0,
     failed: 0,
+    declaredUsed: 0,
   };
+
+  // A declared year is matched by email prefix; refuse before any write if a
+  // prefix matches no account or more than one.
+  if (declaredKeys.length > 0) {
+    const matches = Object.fromEntries(declaredKeys.map((k) => [k, 0]));
+    let token;
+    do {
+      const page = await deps.auth.listUsers(1000, token);
+      for (const u of page.users) {
+        for (const k of declaredKeys) {
+          if ((u.email || "").startsWith(k)) matches[k]++;
+        }
+      }
+      token = page.pageToken;
+    } while (token);
+    const bad = declaredKeys.filter((k) => matches[k] !== 1);
+    if (bad.length > 0) {
+      throw Object.assign(
+        new Error("declared prefix must match exactly one account"),
+        { code: "DECLARED_PREFIX_MISMATCH" },
+      );
+    }
+  }
 
   let pageToken;
   do {
@@ -132,17 +164,29 @@ async function runBackfill(deps, { apply, currentYear }) {
         deps.db.doc(`users/${user.uid}`),
         deps.db.doc(`users/${user.uid}/settings/preferences`),
       );
-      const { outcome, birthYear } = classify(
+      const keys = declaredKeys.filter((k) => (user.email || "").startsWith(k));
+      const years = [
         profile.exists ? profile.get("birthYear") : undefined,
         preferences.exists ? preferences.get("birthYear") : undefined,
-        currentYear,
-      );
+      ];
+      // A declared year is one more location: it fills a gap, and disagreeing
+      // with a stored year is a conflict like any other.
+      for (const k of keys) years.push(declared[k]);
+      const { outcome, birthYear } = classify(years, currentYear);
+      if (keys.length > 0) counts.declaredUsed++;
       if (outcome !== "grant" || !apply) {
         counts[outcome]++;
         continue;
       }
       try {
-        await grant(deps, user, birthYear);
+        await grant(
+          deps,
+          user,
+          birthYear,
+          keys.length === 0
+            ? "backfill_stored_birth_year"
+            : "backfill_declared_birth_year",
+        );
         counts.grant++;
       } catch (err) {
         counts.failed++;
@@ -155,17 +199,36 @@ async function runBackfill(deps, { apply, currentYear }) {
   return counts;
 }
 
+/** `"prefix:1980,other:1990"` → `{ prefix: 1980, other: 1990 }`. */
+function parseDeclared(text) {
+  const out = {};
+  for (const pair of text.split(",").map((p) => p.trim()).filter(Boolean)) {
+    const i = pair.lastIndexOf(":");
+    const key = pair.slice(0, i).trim();
+    const year = parseYear(pair.slice(i + 1));
+    if (i < 1 || !key || year === null) {
+      throw Object.assign(
+        new Error("DECLARED_BIRTH_YEARS must be prefix:year pairs"),
+        { code: "DECLARED_FORMAT" },
+      );
+    }
+    out[key] = year;
+  }
+  return out;
+}
+
 async function main() {
   const admin = require("firebase-admin");
   admin.initializeApp();
   const apply = process.argv.includes("--apply");
+  const declared = parseDeclared(process.env.DECLARED_BIRTH_YEARS || "");
   const counts = await runBackfill(
     {
       auth: admin.auth(),
       db: admin.firestore(),
       serverTimestamp: () => admin.firestore.FieldValue.serverTimestamp(),
     },
-    { apply, currentYear: new Date().getFullYear() },
+    { apply, currentYear: new Date().getFullYear(), declared },
   );
   console.log(apply ? "Mode: apply" : "Mode: dry run (no writes)");
   for (const [key, value] of Object.entries(counts)) {
@@ -181,4 +244,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { classify, runBackfill, hashUid };
+module.exports = { classify, runBackfill, hashUid, parseDeclared };

@@ -29,3 +29,4 @@ same drift tripwire as the core digest (`knowledge.digestFiles`).
 - Läs läsarens schema och fönster och grepa VARJE annan läsare av samlingen innan du ansluter (BUT-1952, 2026-09-11)
 - En BREDDAD returtyp är oprövad tills den svit som kör den KOMPONERANDE raden finns (BUT-1925, BUT-2027, 2026-09-12)
 - `flutter analyze` rapporterar inte fel inne i beroenden: en ändrad pubspec.lock bevisas med ett `flutter test` som importerar paketen (BUT-2315, 2026-10-08)
+- En skrivare som ÅTERSKAPAR ett raderat dokument väcker varje hanterare som svalde NOT_FOUND som "lönlöst" — grep efter dem, döm om i samma ändring och trigga dem igen (BUT-1958, 2026-10-09)

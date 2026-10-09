@@ -415,7 +415,7 @@ void main() {
     testWidgets('typing a name and tapping Lägg till adds the item through the '
         'service (BUT-1212 regression)', (tester) async {
       // Drives the FULL shell add path: enterText → tap → State handler →
-      // real VM.addItem → mock service.addItemToActiveList. The handler reads
+      // real VM.addItem → mock service.addItemToActiveListWithId. The handler reads
       // the State-owned `_vm` field directly (BUT-1226); a re-introduced
       // `context.read<CollaborativeShoppingViewModel>()` inside _addItem would
       // throw ProviderNotFoundException (the State's context sits ABOVE the
@@ -433,7 +433,7 @@ void main() {
         isInitialized: true,
       );
       when(
-        () => shoppingService.addItemToActiveList(
+        () => shoppingService.addItemToActiveListWithId(
           name: any(named: 'name'),
           amount: any(named: 'amount'),
           unit: any(named: 'unit'),
@@ -447,7 +447,7 @@ void main() {
           ],
           isInitialized: true,
         );
-        return true;
+        return 'item-oats';
       });
 
       await pumpFullView(tester);
@@ -466,7 +466,7 @@ void main() {
             'context.read against the above-provider State context)',
       );
       verify(
-        () => shoppingService.addItemToActiveList(
+        () => shoppingService.addItemToActiveListWithId(
           name: 'Havregryn',
           amount: any(named: 'amount'),
           unit: any(named: 'unit'),
@@ -477,6 +477,131 @@ void main() {
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller?.text,
         isEmpty,
+      );
+    });
+
+    testWidgets('an added item offers Ångra, which removes exactly that row '
+        '(BUT-2145)', (tester) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      shoppingService.setShoppingState(
+        lists: [listWith(const [])],
+        isInitialized: true,
+      );
+      when(
+        () => shoppingService.addItemToActiveListWithId(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      ).thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [
+            listWith([item('Havregryn', id: 'item-oats')]),
+          ],
+          isInitialized: true,
+        );
+        return 'item-oats';
+      });
+      when(
+        () => shoppingService.removeItemFromActiveList(any()),
+      ).thenAnswer((_) async => true);
+
+      await pumpFullView(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+
+      await tester.enterText(find.byType(TextField), 'Havregryn');
+      await tester.tap(find.text('Lägg till'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text(l10n.shoppingItemAdded('Havregryn')), findsOneWidget);
+      verifyNever(() => shoppingService.removeItemFromActiveList(any()));
+      // Let the snackbar finish sliding in before tapping its action.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await tester.tap(find.text(l10n.commonUndo));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      verify(
+        () => shoppingService.removeItemFromActiveList('item-oats'),
+      ).called(1);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        find.text(l10n.shoppingItemRemoveError('Havregryn')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('an Ångra the list refuses says the row could not be removed '
+        '(BUT-2145)', (tester) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      shoppingService.setShoppingState(
+        lists: [listWith(const [])],
+        isInitialized: true,
+      );
+      when(
+        () => shoppingService.addItemToActiveListWithId(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      ).thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [
+            listWith([item('Havregryn', id: 'item-oats')]),
+          ],
+          isInitialized: true,
+        );
+        return 'item-oats';
+      });
+      when(
+        () => shoppingService.removeItemFromActiveList(any()),
+      ).thenAnswer((_) async => false);
+
+      await pumpFullView(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+
+      await tester.enterText(find.byType(TextField), 'Havregryn');
+      await tester.tap(find.text('Lägg till'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text(l10n.shoppingItemAdded('Havregryn')), findsOneWidget);
+      verifyNever(() => shoppingService.removeItemFromActiveList(any()));
+      // Let the snackbar finish sliding in before tapping its action.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await tester.tap(find.text(l10n.commonUndo));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      verify(
+        () => shoppingService.removeItemFromActiveList('item-oats'),
+      ).called(1);
+      // The failure takes the snackbar's place once Ångra's has gone.
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        find.text(l10n.shoppingItemRemoveError('Havregryn')),
+        findsOneWidget,
       );
     });
   });
@@ -763,13 +888,13 @@ void main() {
           isInitialized: true,
         );
         when(
-          () => shoppingService.addItemToActiveList(
+          () => shoppingService.addItemToActiveListWithId(
             name: any(named: 'name'),
             amount: any(named: 'amount'),
             unit: any(named: 'unit'),
             category: any(named: 'category'),
           ),
-        ).thenAnswer((_) async => false);
+        ).thenAnswer((_) async => null);
 
         await pumpFullView(tester);
         await tester.enterText(find.byType(TextField), 'Havregryn');
@@ -902,7 +1027,7 @@ void main() {
       await tester.pump();
       expect(notice, findsNothing);
       verifyNever(
-        () => shoppingService.addItemToActiveList(
+        () => shoppingService.addItemToActiveListWithId(
           name: any(named: 'name'),
           amount: any(named: 'amount'),
           unit: any(named: 'unit'),

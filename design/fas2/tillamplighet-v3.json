@@ -1,0 +1,336 @@
+{
+ "$schema": "butlery-tillamplighet-v3/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "e7346ae",
+ "$status": "HOLISTISK TILLAMPLIGHET INFORD, LINEAGE LAGAD, 1001 OMRAKNADE — inget skrivet",
+ "$typ": "HOLISTIC APPLICABILITY CORRECTION + TEST-LINEAGE REPAIR + 1001 RECOMPUTE.",
+ "A_borttagetStyrke": {
+  "borttaget": [
+   "STYRKA-enumet STARK/SVAG",
+   "harStark()",
+   "grenen \"minst en stark => SUFFICIENT\"",
+   "grenen \"alla svaga => otillrackligt\"",
+   "LEDTRAD-taxonomin som verdictingang"
+  ],
+  "kvar": "evidens som fri textlista, rent rapporterande",
+  "normativIngang": "holistiskBedomning: SUFFICIENT | NOT_SUFFICIENT | null — den enda.",
+  "verifierat": "Ingen styrke- eller rakningslogik finns kvar i kallan (GP-28, GP-29)."
+ },
+ "B_lineage": {
+  "pensionerade": [
+   "GP-09",
+   "GP-11",
+   "GP-17",
+   "GP-18",
+   "GP-19",
+   "GP-25"
+  ],
+  "$pensionerade": "RETIRED_METHOD_INVALID. Bada historiska lydelserna ar bevarade i provfilen. De gor ingen utsaga om den nuvarande metoden.",
+  "anpassade": [
+   "GP-10",
+   "GP-12",
+   "GP-13",
+   "GP-14",
+   "GP-15",
+   "GP-16",
+   "GP-20",
+   "GP-21",
+   "GP-22",
+   "GP-23",
+   "GP-24"
+  ],
+  "$anpassade": "Samma utsaga, omskriven mot det nya API:t. Ingen ny semantik under gammalt id.",
+  "nya": [
+   "GP-26",
+   "GP-27",
+   "GP-28",
+   "GP-29",
+   "GP-30",
+   "GP-31",
+   "GP-32",
+   "GP-33",
+   "GP-34",
+   "GP-35"
+  ],
+  "$historik": "De tidigare lydelserna star kvar i 485ca59 och e7346ae."
+ },
+ "C_recompute": {
+  "population": 1001,
+  "SUFFICIENT": 3,
+  "REQUIRED_PASS": 0,
+  "REQUIRED_FAIL": 1,
+  "UNKNOWN": 997,
+  "summa": 1001,
+  "$avstamning": "3 + 0 + 1 + 997 = 1001",
+  "historiskaKorningar": [
+   {
+    "commit": "485ca59",
+    "SUFFICIENT": 337,
+    "UNKNOWN": 656,
+    "REQUIRED_FAIL": 8,
+    "metod": "rakning — ogiltig"
+   },
+   {
+    "commit": "e7346ae",
+    "SUFFICIENT": 0,
+    "UNKNOWN": 993,
+    "REQUIRED_FAIL": 8,
+    "metod": "styrka — ogiltig"
+   }
+  ],
+  "$bevarade": "Bada tidigare fordelningar ar bevarade och inte overskrivna."
+ },
+ "D_atta": [
+  {
+   "kontroll": "rcbarvegods|32",
+   "roll": "button",
+   "namn": "Sida 2",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "skarm": "Receptet brett — arvegods",
+   "undersokDel": "kontrollens fyllning",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "tre jamnstora numrerade rutor i foljd, 56x72 med 6 px mellanrum",
+    "aktuell sida \"1\" ar markerad med en 1.5 px mork ram — en av mangden ar utpekad som nuvarande",
+    "raden avslutas av den deklarerade knappen \"Ändra ordning\" i samma rad",
+    "sekvensen 1 2 3 ar sjalv en sidnavigeringsstruktur"
+   ],
+   "counterfactual": "Sidvaljaren lases som EN STRUKTUR. Nummersekvensen med en utpekad aktuell sida, jamnstora rutor och en atgardsknapp i samma rad identifierar sidvaljarna aven om fyllningen inte gick att urskilja. Bedomningen galler helheten, inte nagon enskild ruta.",
+   "holistiskBedomning": "SUFFICIENT",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 1.272,
+   "krav": 3,
+   "utfall": "NOT_APPLICABLE",
+   "olostFraga": null,
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "rcbarvegods|34",
+   "roll": "button",
+   "namn": "Sida 3",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "skarm": "Receptet brett — arvegods",
+   "undersokDel": "kontrollens fyllning",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "samma sidnavigeringsstruktur, ruta 3"
+   ],
+   "counterfactual": "Samma helhetsbedomning av sidvaljaren. Bedomd i sin egen ruta, inte propagerad fran ruta 2 — det ar STRUKTUREN som ar evidensen, och den ar gemensam.",
+   "holistiskBedomning": "SUFFICIENT",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 1.272,
+   "krav": 3,
+   "utfall": "NOT_APPLICABLE",
+   "olostFraga": null,
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "veckokalender|124",
+   "roll": "button",
+   "namn": "Lägg till mer i övrigt på fredag",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — kalendervecka",
+   "undersokDel": "kontrollens ram",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "\"+\"-prefixet i etiketten",
+    "centrerad plats langst ned i dagcellen, under den befintliga posten \"Kanelbullar\"",
+    "accentfargen #9c3b23 skiljer den fran postens morka text",
+    "dagcellen har egen fyllning #e6ead9 och egna kanter som avgransar hela cellen",
+    "samma monster upprepas i kalenderns ovriga dagceller"
+   ],
+   "counterfactual": "I kalendercellen lases \"+ mer\" som cellens laggtill-plats: prefixet, den centrerade placeringen langst ned under en befintlig post, och accentfargen. Cellen ar dessutom sjalv avgransad. Ramen forstarker men behovs inte for att identifiera atgarden.",
+   "holistiskBedomning": "SUFFICIENT",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 1.272,
+   "krav": 3,
+   "utfall": "NOT_APPLICABLE",
+   "olostFraga": null,
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "onbimportklar|25",
+   "roll": "textbox",
+   "namn": "Titel",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "skarm": "Onboarding — importen landade",
+   "undersokDel": "kontrollens ram",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "ingen egen fyllning",
+    "ingen inset eller markor i den statiska ritningen",
+    "etiketten \"Titel\" ligger over faltet — men SAMMA etikett-over-varde-monster anvands av skarmens icke-redigerbara block \"Tid\", \"Portioner\" och \"Ingredienser\"",
+    "vardet \"Krämig svamppasta\" ar satt som vanlig brodtext 16px/400",
+    "skarmens egen prosa sager att utfallet ar en EDITOR — falten ska kunna redigeras"
+   ],
+   "counterfactual": "Counterfactual komponentidentifiering: utan ramen ar faltet visuellt identiskt med skarmens lasrutor. Etikett-over-varde racker inte, eftersom exakt det monstret ocksa anvands for det som INTE gar att redigera. Ramen ar da den enda visuella indikatorn pa att just detta ar ett inmatningsfalt.",
+   "holistiskBedomning": "NOT_SUFFICIENT",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "FINDING",
+   "olostFraga": null,
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "skafferivyn|25",
+   "roll": "button",
+   "namn": "Grädde, 3 deciliter, går ut idag",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "skarm": "Skafferiet — fyra platser",
+   "undersokDel": "kontrollens ram",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "linjen ar border-top, alltsa en RADAVSKILJARE mellan poster, inte en ruta",
+    "varje post ar 56 px hog med samma inre struktur: namn, detaljrad och statusbricka",
+    "sektionskortet ar sjalvt avgransat av en 4 px fargad vansterkant och en 3 px underkant",
+    "samtliga postrader i sektionen ar deklarerade kontroller — ingen statisk rad kan forvaxlas med en post",
+    "MEN sektionsrubriken \"går snart ut 2\" ligger i samma kort utan avskiljare"
+   ],
+   "counterfactual": "Utan radavskiljaren flyter posterna ihop till ett sammanhangande textblock i kortet. Racker den aterkommande 56-pixelsrytmen, den fasta inre strukturen och statusbrickorna for att se var en post slutar och nasta borjar — eller behovs linjen for att kunna skilja de intilliggande traffytorna at? Fragan galler B, hur kontrollen kan anvandas, inte A. Den statiska ritningen avgor den inte.",
+   "holistiskBedomning": "ej bedomd",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "olostFraga": "Utan radavskiljaren flyter posterna ihop till ett sammanhangande textblock i kortet. Racker den aterkommande 56-pixelsrytmen, den fasta inre strukturen och statusbrickorna for att se var en post slutar och nasta borjar — eller behovs linjen for att kunna skilja de intilliggande traffytorna at? Fragan galler B, hur kontrollen kan anvandas, inte A. Den statiska ritningen avgor den inte.",
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "skafferivyn|30",
+   "roll": "button",
+   "namn": "Färsk basilika, 1 kruka, 2 dagar kvar",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "skarm": "Skafferiet — fyra platser",
+   "undersokDel": "kontrollens ram",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "samma sektion, andra posten"
+   ],
+   "counterfactual": "Samma fraga, bedomd i sin egen rad.",
+   "holistiskBedomning": "ej bedomd",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "olostFraga": "Samma fraga, bedomd i sin egen rad.",
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "skafferivyn|41",
+   "roll": "button",
+   "namn": "Parmesan, 200 gram, bäst före 14 augusti",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "skarm": "Skafferiet — fyra platser",
+   "undersokDel": "kontrollens ram",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "sektionen \"kyl\", forsta posten"
+   ],
+   "counterfactual": "Samma fraga i sektionen kyl.",
+   "holistiskBedomning": "ej bedomd",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "olostFraga": "Samma fraga i sektionen kyl.",
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  },
+  {
+   "kontroll": "skafferivyn|46",
+   "roll": "button",
+   "namn": "Oatly iKaffe, 1 liter, inget datum",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "skarm": "Skafferiet — fyra platser",
+   "undersokDel": "kontrollens ram",
+   "statusFore": "PROVISIONAL_FINDING_PENDING_METHOD_REVALIDATION",
+   "scenevidens": [
+    "sektionen \"kyl\", andra posten"
+   ],
+   "counterfactual": "Samma fraga, bedomd i sin egen rad.",
+   "holistiskBedomning": "ej bedomd",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "krav": 3,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "olostFraga": "Samma fraga, bedomd i sin egen rad.",
+   "$ejHeuristik": "Bedomningen anvander varken styrka, antal eller kvot. Den ar en holistisk counterfactual om den faktiska scenen."
+  }
+ ],
+ "E_oforandrat": {
+  "dagsrutor": {
+   "beslut": "DAY_SLOT_BORDER_APPLICABILITY",
+   "verdikt": "SUPPLEMENTAL_NON_TEXT_VISUAL",
+   "kvot": 1.414,
+   "scFynd": "NEJ",
+   "$ejOmraknat": "Star fast fran e7346ae. Raknas INTE om av 1001-metoden och propageras inte."
+  },
+  "fargbeslut": {
+   "beslut": "DAY_SLOT_CONTROL_BORDER_LIGHT",
+   "slutvarde": "#ccd1c2",
+   "writeScope": 0,
+   "$historik": "#7d897c star kvar som superseded."
+  },
+  "morkSkapaKonto": {
+   "kvot": 2.982,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "$skal": "Inte occurrence-adjudicerad i denna korning. Ingen propagation fran dagsrutorna."
+  },
+  "saffran": {
+   "antal": 4,
+   "kvot": 2.918,
+   "utfall": "APPLICABILITY_REVIEW_REQUIRED",
+   "$skal": "Inte occurrence-adjudicerade i denna korning. Ingen propagation fran dagsrutorna."
+  }
+ },
+ "F_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "geometriwrites": 0,
+  "a11ywrites": 0,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelarTotalt": 1652,
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "bitIdentisk": true
+  },
+  "scope24": 24,
+  "census": "1351 → 1375",
+  "dagsruteFargwrites": 0,
+  "granskning": {
+   "UNREVIEWED": 2468,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 100,
+   "unresolved": 2584
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0
+ },
+ "G_produktskrivningar": 0,
+ "stopp": []
+}
