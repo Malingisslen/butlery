@@ -866,6 +866,16 @@
       ]
     },
     {
+      "collectionGroup": "trash",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
       "collectionGroup": "mfa_recovery_attempts",
       "fieldPath": "expiresAt",
       "ttl": true,

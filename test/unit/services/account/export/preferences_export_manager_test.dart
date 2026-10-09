@@ -144,6 +144,7 @@ class _FakeAccountSubsRepository extends Fake
     this.onboarding = const [],
     this.acquisition = const [],
     this.overwrittenVersions = const [],
+    this.trash = const [],
     this.settings = const [],
     this.failing = const <String>{},
   });
@@ -151,6 +152,7 @@ class _FakeAccountSubsRepository extends Fake
   final List<Map<String, dynamic>> onboarding;
   final List<Map<String, dynamic>> acquisition;
   final List<Map<String, dynamic>> overwrittenVersions;
+  final List<Map<String, dynamic>> trash;
   final List<Map<String, dynamic>> settings;
 
   /// Leg keys (`ingredients`, `onboarding`, `acquisition`) whose read throws.
@@ -198,6 +200,12 @@ class _FakeAccountSubsRepository extends Fake
     String userId, {
     int maxDocuments = 200,
   }) async => _page('overwritten_versions', overwrittenVersions, maxDocuments);
+
+  @override
+  Future<List<Map<String, dynamic>>> exportTrash(
+    String userId, {
+    int maxDocuments = 200,
+  }) async => _page('trash', trash, maxDocuments);
 
   // Honours the cap, like the real collection query does. That is what lets a
   // fixture push `preferences` outside the page — the BUT-2003 case.
@@ -1166,6 +1174,76 @@ void main() {
       expect(result.containsKey('error_code'), isFalse);
     });
 
+    // BUT-907: the cascade erases users/{uid}/trash, so the bundle carries
+    // it (Art. 15 ⊇ Art. 17).
+    test('the trash is exported in the section', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          trash: [
+            {
+              'id': 'recipe-1',
+              'data': <String, dynamic>{'kind': 'recipe', 'title': 'Gryta'},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+
+      final rows = result['trash'] as List;
+      expect((rows.single as Map)['id'], 'recipe-1');
+      expect(result.containsKey('error_code'), isFalse);
+      expect(result.containsKey('trash_truncated'), isFalse);
+    });
+
+    test(
+      'a failed trash read is a partial failure, not a lost section',
+      () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            acquisition: [
+              {
+                'id': 'current',
+                'data': <String, dynamic>{'campaign': 'host-2026'},
+              },
+            ],
+            failing: const {'trash'},
+          ),
+        );
+
+        final result = await manager.exportAccountSubcollections('user-uid');
+
+        expect(result.containsKey('trash'), isFalse);
+        expect(result['trash_error_code'], 'trash-export-failed');
+        expect(
+          result['error_code'],
+          'account-subcollections-partial-export-failure',
+        );
+        expect(result.containsKey('error'), isFalse);
+        expect(
+          ((result['acquisition'] as List).single as Map)['id'],
+          'current',
+        );
+      },
+    );
+
+    test('a trash past its cap says so', () async {
+      final cap = ExportPaginationHelper.getLimitForType('user_trash');
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          trash: List.generate(
+            cap + 1,
+            (i) => {'id': 'r-$i', 'data': <String, dynamic>{}},
+          ),
+        ),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+
+      expect(result['trash'], hasLength(cap));
+      expect(result['trash_truncated'], isTrue);
+    });
+
     // ── BUT-2003: the section may not clip in silence ──
     //
     // The three reads used to go through a plain `.limit(n).get()`, so a user
@@ -1247,6 +1325,10 @@ void main() {
           repo.capturedMax['overwritten_versions'],
           ExportPaginationHelper.getLimitForType('user_overwritten_versions') +
               1,
+        );
+        expect(
+          repo.capturedMax['trash'],
+          ExportPaginationHelper.getLimitForType('user_trash') + 1,
         );
       });
     });

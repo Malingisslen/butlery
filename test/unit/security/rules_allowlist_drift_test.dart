@@ -87,6 +87,7 @@ import 'dart:io';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
@@ -144,6 +145,14 @@ const _allowlists = <_Allowlist>[
     writer:
         'lib/models/realtime/overwritten_version.dart OverwrittenVersion.toFirestore, '
         'stored by FirebaseOverwrittenVersionRepository (P5-U26b)',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/trash',
+    mustContain: 'sourceId',
+    anchor: 'match /users/{userId}/trash/{itemId}',
+    writer:
+        'lib/models/trash_item.dart TrashItem.toFirestore, stored by '
+        'FirebaseTrashRepository in the batch that deletes the recipe (BUT-907)',
   ),
   _Allowlist(
     label: 'recipe_suggestions',
@@ -356,6 +365,20 @@ Map<String, Set<String>> _writtenKeys() => {
     overwrittenByName: 'O',
     overwrittenAt: DateTime.utc(2026),
     expiresAt: DateTime.utc(2026, 1, 31),
+  ).toFirestore().keys.toSet(),
+  // BUT-907. Derived from the model, so a new field in toFirestore reddens
+  // here. `thumbnailUrl` is set so a writer that drops a null key still
+  // sends it.
+  'users/{uid}/trash': TrashItem(
+    id: 'r',
+    kind: TrashItemKind.recipe,
+    ownerId: 'u',
+    sourceId: 'r',
+    title: 'T',
+    thumbnailUrl: 't',
+    payload: const <String, dynamic>{},
+    deletedAt: DateTime.utc(2026),
+    expireAt: DateTime.utc(2026, 1, 31),
   ).toFirestore().keys.toSet(),
   // P5-U27b. Derived from the model, so a new field in toFirestore reddens
   // here. The owner's decision is an `affectedKeys().hasOnly` diff
@@ -919,9 +942,11 @@ void main() {
     // BUT-2115 added the recipe_comments reaction update: one keys().hasOnly
     // over the `reactions` MAP (in _knowinglyUncovered), one
     // affectedKeys().hasOnly(['reactions']) and one set difference.
+    // BUT-907 added users/{uid}/trash: one keys().hasOnly on create, guarded
+    // above in _allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      48,
+      49,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

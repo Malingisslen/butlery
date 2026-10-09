@@ -41,6 +41,10 @@ each request.
      Admin-override rules permit delete on `recipes` (under
      `users/{ownerId}/recipes`), `recipe_comments`, `messages`,
      `recipe_ratings` and `cook_snaps`.
+     For a recipe it also deletes the owner's trash copy
+     (`users/{ownerId}/trash/{recipeId}`), so an owner who deleted the
+     recipe before the review cannot restore it afterwards. An admin may
+     delete a trash copy but cannot read one (ADR-0026).
    - **Close report** - skips to `closed` without touching the target
      (used for spam/duplicate reports).
 4. Once a report is `closed` it leaves the list.

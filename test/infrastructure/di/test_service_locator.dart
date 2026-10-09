@@ -15,6 +15,7 @@ import '../mocks/firestore_singleton.dart';
 // Repository interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -252,6 +253,9 @@ class TestServiceLocator {
     getIt.registerSingleton<RecipeRepository>(
       MockFactory.createRecipeRepository(),
     );
+
+    // BUT-907: every recipe delete goes through the trash.
+    getIt.registerSingleton<TrashRepository>(FakeTrashRepository());
 
     // User Repository
     getIt.registerSingleton<UserRepository>(

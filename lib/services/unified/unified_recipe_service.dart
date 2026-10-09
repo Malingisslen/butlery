@@ -12,6 +12,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -32,7 +33,6 @@ import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
-import 'package:butlery/services/storage_service.dart';
 
 // Legacy feature interfaces (for backward compatibility)
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -286,6 +286,7 @@ class UnifiedRecipeService
     _serviceAdapter ??= RecipeServiceAdapter(
       recipeRepository:
           _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
+      trashRepository: ServiceLocator.get<TrashRepository>(),
       commentsRepository:
           _commentsRepository ?? ServiceLocator.tryGet<CommentsRepository>(),
       ratingsRepository:
@@ -293,7 +294,6 @@ class UnifiedRecipeService
       notificationsRepository:
           _notificationsRepository ??
           ServiceLocator.tryGet<NotificationsRepository>(),
-      storageService: ServiceLocator.tryGet<StorageService>(),
     );
     return _serviceAdapter!;
   }
@@ -1022,6 +1022,19 @@ class UnifiedRecipeService
 
   void optimisticRestore(Recipe recipe) {
     _recipes.add(recipe);
+    notifyListeners();
+  }
+
+  /// BUT-907: [recipe], restored from the trash on the server, back in the
+  /// device cache and the list.
+  Future<void> adoptRestoredRecipe(Recipe recipe) async {
+    await _cacheModule.saveRecipeToCache(recipe);
+    final index = _recipes.indexWhere((r) => r.id == recipe.id);
+    if (index >= 0) {
+      _recipes[index] = recipe;
+    } else {
+      _recipes.add(recipe);
+    }
     notifyListeners();
   }
 

@@ -177,6 +177,7 @@ void main() {
     late mocks.MockFirebaseAuthRepository mockAuthRepository;
     late mocks.MockRecipeRepository mockRecipeRepository;
     late MockOfflineService mockOfflineService;
+    late MockCacheDao mockCacheDao;
     late mocks.MockCommentsRepository mockCommentsRepository;
     late mocks.MockRatingsRepository mockRatingsRepository;
     late mocks.MockNotificationsRepository mockNotificationsRepository;
@@ -250,7 +251,7 @@ void main() {
 
       // Stub OfflineService -> AppDatabase -> CacheDao chain
       // Required because _cacheHelper getter accesses offlineService.database.cacheDao
-      final mockCacheDao = MockCacheDao();
+      mockCacheDao = MockCacheDao();
       final mockAppDatabase = MockAppDatabase();
       when(() => mockAppDatabase.cacheDao).thenReturn(mockCacheDao);
       mockOfflineService = MockOfflineService();
@@ -1076,6 +1077,76 @@ void main() {
           );
         },
       );
+    });
+
+    group('adoptRestoredRecipe (BUT-907)', () {
+      setUp(() async {
+        await service.initialize();
+        service.clearError();
+      });
+
+      test('a recipe not in the list is cached, added once and can be '
+          'found', () async {
+        when(
+          () => mockCacheDao.putJson(
+            boxName: any(named: 'boxName'),
+            userId: any(named: 'userId'),
+            key: any(named: 'key'),
+            value: any(named: 'value'),
+          ),
+        ).thenAnswer((_) async {});
+        final recipe = RecipeFactory.build(id: 'restored-1', title: 'Gryta');
+
+        await service.adoptRestoredRecipe(recipe);
+
+        verify(
+          () => mockCacheDao.putJson(
+            boxName: any(named: 'boxName'),
+            userId: any(named: 'userId'),
+            key: 'restored-1',
+            value: any(named: 'value'),
+          ),
+        ).called(1);
+
+        expect(
+          service.recipes.where((r) => r.id == 'restored-1'),
+          hasLength(1),
+        );
+        expect(service.getRecipeById('restored-1')?.title, 'Gryta');
+      });
+
+      test('a changed copy with the same id replaces the entry, not '
+          'appends', () async {
+        await service.adoptRestoredRecipe(
+          RecipeFactory.build(id: 'restored-2', title: 'Gammal'),
+        );
+
+        await service.adoptRestoredRecipe(
+          RecipeFactory.build(id: 'restored-2', title: 'Ny'),
+        );
+
+        expect(
+          service.recipes.where((r) => r.id == 'restored-2'),
+          hasLength(1),
+        );
+        expect(service.getRecipeById('restored-2')?.title, 'Ny');
+      });
+
+      test('listeners are notified', () async {
+        var notifications = 0;
+        final sub = service.stateStream.listen((_) => notifications++);
+        addTearDown(sub.cancel);
+        // The state stream replays its current value to a new listener.
+        await pumpEventQueue();
+        notifications = 0;
+
+        await service.adoptRestoredRecipe(
+          RecipeFactory.build(id: 'restored-3'),
+        );
+        await pumpEventQueue();
+
+        expect(notifications, greaterThanOrEqualTo(1));
+      });
     });
 
     // BUT-1252: list-mutating changes go through notifyListeners() (which

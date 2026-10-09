@@ -32,6 +32,8 @@ enum ExportResourceType {
   userAcquisition('users/{uid}/acquisition'),
   // P5-U26b: overwritten versions kept 30 days behind "Återställ".
   userOverwrittenVersions('users/{uid}/overwritten_versions'),
+  // BUT-907: deleted own recipes kept 30 days.
+  userTrash('users/{uid}/trash'),
   userNotifications('user_notifications'),
   // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
   // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
@@ -841,6 +843,22 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .collection(FirestoreCollections.overwrittenVersions),
     userId,
     ExportResourceType.userOverwrittenVersions,
+    limit: maxDocuments,
+  );
+
+  /// `users/{uid}/trash` — the user's own deleted recipes, kept 30 days
+  /// (BUT-907). Exported because the deletion cascade erases it (Art. 15 ⊇
+  /// Art. 17). A copy carries no sharing list.
+  Future<List<Map<String, dynamic>>> exportTrash(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userTrash),
+    userId,
+    ExportResourceType.userTrash,
     limit: maxDocuments,
   );
 

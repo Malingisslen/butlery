@@ -100,6 +100,9 @@
   `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
+- **A re-read guarding a destructive step is ordered only by a fake that stages
+  the race INSIDE the call right before the re-read.** Staging it earlier leaves
+  "move the re-read up one line" green (`onRecipeDeleted`, BUT-907).
 
 ### GDPR account-deletion cascade
 - **A probe leg whose ONLY deleter lives in `onUserDeleted` is broader by TIMING.**

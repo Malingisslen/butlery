@@ -17,6 +17,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
@@ -28,6 +31,8 @@ import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
+class _MockTrashRepository extends Mock implements TrashRepository {}
+
 void main() {
   group('RecipeServiceAdapter', () {
     late RecipeServiceAdapter adapter;
@@ -35,10 +40,12 @@ void main() {
     late MockCommentsRepository mockCommentsRepository;
     late MockRatingsRepository mockRatingsRepository;
     late MockNotificationsRepository mockNotificationsRepository;
+    late _MockTrashRepository mockTrashRepository;
 
     setUpAll(() async {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
+      registerFallbackValue(RecipeFactory.build());
     });
 
     setUp(() async {
@@ -50,10 +57,15 @@ void main() {
       mockCommentsRepository = MockCommentsRepository();
       mockRatingsRepository = MockRatingsRepository();
       mockNotificationsRepository = MockNotificationsRepository();
+      mockTrashRepository = _MockTrashRepository();
+      when(
+        () => mockTrashRepository.moveRecipeToTrash(any()),
+      ).thenAnswer((_) async {});
 
       // Create adapter with mocked dependencies
       adapter = RecipeServiceAdapter(
         recipeRepository: mockRecipeRepository,
+        trashRepository: mockTrashRepository,
         commentsRepository: mockCommentsRepository,
         ratingsRepository: mockRatingsRepository,
         notificationsRepository: mockNotificationsRepository,
@@ -142,21 +154,18 @@ void main() {
       test('should delete recipe successfully', () async {
         // Arrange
         const recipeId = 'recipe-1';
-
-        // Production calls .read() first to fetch imageUrls before delete.
-        // Without a stub mocktail throws on the unstubbed call, which the
-        // adapter's broad catch swallows -> result returns false silently.
+        final recipe = RecipeFactory.buildPersonal(id: recipeId);
         when(
           () => mockRecipeRepository.read(any()),
-        ).thenAnswer((_) async => null);
-        when(() => mockRecipeRepository.delete(any())).thenAnswer((_) async {});
+        ).thenAnswer((_) async => recipe);
 
         // Act
         final result = await adapter.deleteRecipe(recipeId);
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeRepository.delete(recipeId)).called(1);
+        verify(() => mockTrashRepository.moveRecipeToTrash(recipe)).called(1);
+        verifyNever(() => mockRecipeRepository.delete(any()));
       });
 
       test('should return false when recipe deletion fails', () async {
@@ -164,8 +173,8 @@ void main() {
         const recipeId = 'recipe-1';
 
         when(
-          () => mockRecipeRepository.delete(any()),
-        ).thenThrow(Exception('Delete failed'));
+          () => mockRecipeRepository.read(any()),
+        ).thenThrow(Exception('Read failed'));
 
         // Act
         final result = await adapter.deleteRecipe(recipeId);
@@ -258,6 +267,102 @@ void main() {
           expect(emptyResult, isEmpty);
           expect(whitespaceResult, isEmpty);
           verifyNever(() => mockRecipeRepository.searchRecipes(any()));
+        },
+      );
+    });
+
+    // BUT-907: a delete moves the recipe to the trash, with its photos,
+    // before the cleanup that cannot be undone.
+    group('delete moves the recipe to the trash', () {
+      late FakeFirebaseFirestore fakeFirestore;
+      late RecipeServiceAdapter trashAdapter;
+      const recipeId = 'recipe-trash-1';
+
+      Future<int> commentsLeft() async =>
+          (await fakeFirestore
+                  .collection('recipe_comments')
+                  .where('recipeId', isEqualTo: recipeId)
+                  .get())
+              .docs
+              .length;
+
+      setUp(() async {
+        fakeFirestore = FakeFirebaseFirestore();
+        final firestoreRepo = _MockFirestoreRepository();
+        when(() => firestoreRepo.firestore).thenReturn(fakeFirestore);
+        trashAdapter = RecipeServiceAdapter(
+          recipeRepository: mockRecipeRepository,
+          trashRepository: mockTrashRepository,
+          firestoreRepository: firestoreRepo,
+        );
+        await fakeFirestore.collection('recipe_comments').add({
+          'recipeId': recipeId,
+          'userId': 'someone-else',
+          'text': 'Gott!',
+        });
+      });
+
+      test('writes the copy before the cleanup runs, then cleans up', () async {
+        final recipe = RecipeFactory.build(
+          id: recipeId,
+          imageUrls: ['https://img/photo.jpg'],
+        );
+        when(
+          () => mockRecipeRepository.read(recipeId),
+        ).thenAnswer((_) async => recipe);
+        int? commentsAtTrashWrite;
+        when(() => mockTrashRepository.moveRecipeToTrash(any())).thenAnswer((
+          _,
+        ) async {
+          commentsAtTrashWrite = await commentsLeft();
+        });
+
+        await trashAdapter.delete(recipeId);
+
+        expect(commentsAtTrashWrite, 1, reason: 'cleanup ran before the copy');
+        expect(await commentsLeft(), 0, reason: 'cleanup still runs');
+        final moved =
+            verify(
+                  () => mockTrashRepository.moveRecipeToTrash(captureAny()),
+                ).captured.single
+                as Recipe;
+        // The photos stay with the copy; the client deletes none of them.
+        expect(moved.imageUrls, ['https://img/photo.jpg']);
+        verifyNever(() => mockRecipeRepository.delete(any()));
+      });
+
+      test(
+        'a recipe already gone writes no copy, still cleans up, and throws',
+        () async {
+          when(
+            () => mockRecipeRepository.read(recipeId),
+          ).thenAnswer((_) async => null);
+
+          await expectLater(
+            trashAdapter.delete(recipeId),
+            throwsA(isA<ResourceNotFoundException>()),
+          );
+
+          verifyNever(() => mockTrashRepository.moveRecipeToTrash(any()));
+          verifyNever(() => mockRecipeRepository.delete(any()));
+          // A retry after a crash between the copy and the cleanup.
+          expect(await commentsLeft(), 0);
+        },
+      );
+
+      test(
+        'a failed trash write fails the delete and cleans nothing',
+        () async {
+          when(
+            () => mockRecipeRepository.read(recipeId),
+          ).thenAnswer((_) async => RecipeFactory.build(id: recipeId));
+          when(
+            () => mockTrashRepository.moveRecipeToTrash(any()),
+          ).thenThrow(Exception('unavailable'));
+
+          await expectLater(trashAdapter.delete(recipeId), throwsException);
+          expect(await trashAdapter.deleteRecipe(recipeId), isFalse);
+          expect(await commentsLeft(), 1);
         },
       );
     });
@@ -422,11 +527,13 @@ void main() {
 
           const recipeId = 'recipe-orphan-1';
           final localRecipeRepo = MockRecipeRepository();
-          when(() => localRecipeRepo.read(any())).thenAnswer((_) async => null);
-          when(() => localRecipeRepo.delete(any())).thenAnswer((_) async {});
+          when(() => localRecipeRepo.read(any())).thenAnswer(
+            (_) async => RecipeFactory.buildPersonal(id: recipeId),
+          );
 
           final orphanAdapter = RecipeServiceAdapter(
             recipeRepository: localRecipeRepo,
+            trashRepository: mockTrashRepository,
             firestoreRepository: firestoreRepo,
           );
 
@@ -463,7 +570,7 @@ void main() {
           // Assert: adapter reports success and the shared_content record
           // (plus its members subcollection) is gone.
           expect(result, isTrue);
-          verify(() => localRecipeRepo.delete(recipeId)).called(1);
+          verify(() => mockTrashRepository.moveRecipeToTrash(any())).called(1);
 
           final afterQuery = await fakeFirestore
               .collection('shared_content')
@@ -495,11 +602,13 @@ void main() {
 
         const recipeId = 'recipe-snap-orphan-1';
         final localRecipeRepo = MockRecipeRepository();
-        when(() => localRecipeRepo.read(any())).thenAnswer((_) async => null);
-        when(() => localRecipeRepo.delete(any())).thenAnswer((_) async {});
+        when(() => localRecipeRepo.read(any())).thenAnswer(
+          (_) async => RecipeFactory.buildPersonal(id: recipeId),
+        );
 
         final orphanAdapter = RecipeServiceAdapter(
           recipeRepository: localRecipeRepo,
+          trashRepository: mockTrashRepository,
           firestoreRepository: firestoreRepo,
         );
 
@@ -526,7 +635,7 @@ void main() {
 
         // Assert: adapter reports success and the cook_snap record is gone.
         expect(result, isTrue);
-        verify(() => localRecipeRepo.delete(recipeId)).called(1);
+        verify(() => mockTrashRepository.moveRecipeToTrash(any())).called(1);
 
         final afterQuery = await fakeFirestore
             .collection('cook_snaps')

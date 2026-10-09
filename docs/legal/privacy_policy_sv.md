@@ -1,7 +1,7 @@
 # Integritetspolicy
 
 **Status:** Utkast. Ska granskas av juridiskt ombud och publiceras på en stabil URL (planerad: `butlery.se/integritet` när BUT-680 levereras).
-**Senast uppdaterad:** 2026-10-06
+**Senast uppdaterad:** 2026-10-09
 **Träder i kraft:** TBD vid publicering.
 
 ## 1. Vilka vi är
@@ -57,6 +57,7 @@ Molnbaserad AI-bearbetning (Mistral via Vertex AI) används för receptanalys fr
 ## 6. Lagring
 
 - **Aktiv kontoinformation:** lagras så länge ditt konto finns.
+- **Recept du har raderat:** ligger i papperskorgen i **30 dagar** så att du kan återställa dem, och raderas sedan automatiskt tillsammans med sina bilder. Du kan radera dem för gott eller tömma papperskorgen tidigare, och de raderas med kontot.
 - **Raderad kontoinformation:** bearbetas inom **30 dagar** efter din raderingsbegäran, med undantag av:
   - **Granskningsloggar:** lagras i **365 dagar** enligt GDPR Artikel 17.3(b)-undantaget (rättslig efterlevnad av våra kaskad-raderingsloggningskrav).
   - **Säkerhetskopior:** som innehåller raderad data upphör inom **30 dagar** efter raderingsbegäran.

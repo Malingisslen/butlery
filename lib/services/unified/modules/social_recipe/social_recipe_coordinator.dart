@@ -671,6 +671,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   static RecipeServiceAdapter _createDefaultServiceAdapter() {
     return RecipeServiceAdapter(
       recipeRepository: ServiceLocator.get(),
+      trashRepository: ServiceLocator.get(),
       commentsRepository: ServiceLocator.tryGet(),
       ratingsRepository: ServiceLocator.tryGet(),
       notificationsRepository: ServiceLocator.tryGet(),
