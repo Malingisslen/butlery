@@ -13817,6 +13817,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsMarkAllRead => 'Mark all as read';
 
   @override
+  String notificationsDismissed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count notifications removed',
+      one: 'Notification removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get allergenIncludeUnknownTitle => 'Show unknown allergen status';
 
   @override

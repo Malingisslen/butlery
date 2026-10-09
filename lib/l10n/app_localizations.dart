@@ -23093,6 +23093,12 @@ abstract class AppLocalizations {
   /// **'Markera alla som lästa'**
   String get notificationsMarkAllRead;
 
+  /// No description provided for @notificationsDismissed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Aviseringen togs bort} other{{count} aviseringar togs bort}}'**
+  String notificationsDismissed(int count);
+
   /// No description provided for @allergenIncludeUnknownTitle.
   ///
   /// In sv, this message translates to:

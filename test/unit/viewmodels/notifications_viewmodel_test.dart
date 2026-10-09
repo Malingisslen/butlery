@@ -6,29 +6,29 @@ import 'package:mocktail/mocktail.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
 
-/// Intent: prove the BUT-1080 multi-select dismiss behaviour on the inbox VM —
-/// optimistic local removal scoped to the requested doc ids, listener
-/// notification, no-op guards, and that the optimistic removal survives a
-/// failed (fire-and-forget) backend delete. The security-scoped delete itself
-/// is covered at the repo layer (deleteByIds); here we pin the VM contract that
-/// sits above the already-tested service pass-through.
+/// Intent: prove the BUT-2225 dismiss contract on the inbox VM. Selected
+/// entries disappear at once, nothing is deleted until the Ångra window
+/// closes, Ångra puts them back in order, and a reload inside the window does
+/// not bring them back.
 void main() {
-  group('NotificationsViewModel.dismissSelected', () {
+  group('NotificationsViewModel dismiss with Ångra', () {
     late NotificationsViewModel viewModel;
     late MockNotificationService mockService;
 
     // Three entries whose doc `id` differs from `notificationId` on purpose:
-    // dismissSelected must filter on `id`, not `notificationId`.
-    NotificationHistoryEntry entry(String id) => NotificationHistoryEntry(
-      id: id,
-      notificationId: 'notif-$id',
-      category: 'social',
-      type: 'comment',
-      data: const {},
-      sentAt: DateTime(2026, 1, 1),
-    );
+    // hiding must filter on `id`, not `notificationId`. Newest first, as
+    // the inbox orders them.
+    NotificationHistoryEntry entry(String id, int day) =>
+        NotificationHistoryEntry(
+          id: id,
+          notificationId: 'notif-$id',
+          category: 'social',
+          type: 'comment',
+          data: const {},
+          sentAt: DateTime(2026, 1, day),
+        );
 
-    final seed = [entry('a'), entry('b'), entry('c')];
+    final seed = [entry('a', 3), entry('b', 2), entry('c', 1)];
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -55,15 +55,19 @@ void main() {
       BaseUnitTest.resetMocks();
     });
 
-    test('removes only the selected entries, leaving the others', () async {
-      final removed = await viewModel.dismissSelected({'a', 'c'});
+    test('hides only the selected entries, leaving the others', () {
+      final hidden = viewModel.hideSelected({'a', 'c'});
 
-      expect(removed, 2);
+      expect(hidden.map((e) => e.id), ['a', 'c']);
       expect(viewModel.entries.map((e) => e.id), ['b']);
     });
 
-    test('forwards exactly the requested doc ids to the service', () async {
-      await viewModel.dismissSelected({'a', 'b'});
+    // BUT-2225: nothing is deleted while Ångra can still bring it back.
+    test('hiding sends no delete until the dismiss is committed', () async {
+      final hidden = viewModel.hideSelected({'a', 'b'});
+      verifyNever(() => mockService.deleteHistoryNotifications(any()));
+
+      await viewModel.commitDismiss(hidden);
 
       final captured =
           verify(
@@ -73,56 +77,69 @@ void main() {
       expect(captured.toSet(), {'a', 'b'});
     });
 
-    test('notifies listeners on optimistic removal', () async {
+    test('undo puts the hidden entries back newest first, no delete', () {
+      final hidden = viewModel.hideSelected({'a', 'c'});
+
+      viewModel.undoDismiss(hidden);
+
+      expect(viewModel.entries.map((e) => e.id), ['a', 'b', 'c']);
+      verifyNever(() => mockService.deleteHistoryNotifications(any()));
+    });
+
+    test('a reload inside the Ångra window does not bring them back', () async {
+      viewModel.hideSelected({'a'});
+
+      await viewModel.refresh();
+
+      expect(viewModel.entries.map((e) => e.id), ['b', 'c']);
+    });
+
+    test('after an undo, a reload shows the entries again', () async {
+      final hidden = viewModel.hideSelected({'a'});
+      viewModel.undoDismiss(hidden);
+
+      await viewModel.refresh();
+
+      expect(viewModel.entries.map((e) => e.id), ['a', 'b', 'c']);
+    });
+
+    test('notifies listeners when hiding', () {
       var notifications = 0;
       viewModel.addListener(() => notifications++);
 
-      await viewModel.dismissSelected({'a'});
+      viewModel.hideSelected({'a'});
 
       expect(notifications, greaterThanOrEqualTo(1));
     });
 
-    test(
-      'optimistic removal stands even when the backend delete fails',
-      () async {
-        // `deleteHistoryNotifications` is async, so a real permission denial
-        // surfaces as a *rejected future* (not a synchronous throw) — that is
-        // the path the VM's `.catchError` is designed to swallow. Use a typed
-        // Future<int>.error so the rejected future carries the same type
-        // argument as production (mocktail's `async => throw` erases it to
-        // Future<dynamic>, which trips Future.catchError's return-type check).
-        when(
-          () => mockService.deleteHistoryNotifications(any()),
-        ).thenAnswer((_) => Future<int>.error(Exception('permission denied')));
+    test('a failed delete is swallowed and the entry stays hidden', () async {
+      // `deleteHistoryNotifications` is async, so a real permission denial
+      // surfaces as a rejected future. Use a typed Future<int>.error so it
+      // carries the same type argument as production.
+      when(
+        () => mockService.deleteHistoryNotifications(any()),
+      ).thenAnswer((_) => Future<int>.error(Exception('permission denied')));
 
-        final removed = await viewModel.dismissSelected({'a'});
+      final hidden = viewModel.hideSelected({'a'});
+      await viewModel.commitDismiss(hidden);
 
-        // Fire-and-forget: the failure is swallowed and the entry stays removed
-        // (a refresh would resurrect it, but the VM does not rollback by design).
-        expect(removed, 1);
-        expect(viewModel.entries.map((e) => e.id), ['b', 'c']);
-      },
-    );
-
-    test('empty selection is a no-op — no service call, returns 0', () async {
-      final removed = await viewModel.dismissSelected({});
-
-      expect(removed, 0);
-      expect(viewModel.entries.length, 3);
-      verifyNever(() => mockService.deleteHistoryNotifications(any()));
+      expect(viewModel.entries.map((e) => e.id), ['b', 'c']);
     });
 
-    test(
-      'selection matching no loaded entry is a no-op — no service call',
-      () async {
-        // 'notif-a' is the notificationId of entry 'a'; dismissSelected keys on
-        // the doc id, so passing a notificationId must match nothing.
-        final removed = await viewModel.dismissSelected({'notif-a', 'zzz'});
+    test('empty selection is a no-op', () {
+      final hidden = viewModel.hideSelected({});
 
-        expect(removed, 0);
-        expect(viewModel.entries.length, 3);
-        verifyNever(() => mockService.deleteHistoryNotifications(any()));
-      },
-    );
+      expect(hidden, isEmpty);
+      expect(viewModel.entries.length, 3);
+    });
+
+    test('selection matching no loaded entry is a no-op', () {
+      // 'notif-a' is the notificationId of entry 'a'; hiding keys on the doc
+      // id, so passing a notificationId must match nothing.
+      final hidden = viewModel.hideSelected({'notif-a', 'zzz'});
+
+      expect(hidden, isEmpty);
+      expect(viewModel.entries.length, 3);
+    });
   });
 }

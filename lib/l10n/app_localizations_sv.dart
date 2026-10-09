@@ -13844,6 +13844,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationsMarkAllRead => 'Markera alla som lästa';
 
   @override
+  String notificationsDismissed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count aviseringar togs bort',
+      one: 'Aviseringen togs bort',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get allergenIncludeUnknownTitle => 'Visa okänd allergenstatus';
 
   @override
