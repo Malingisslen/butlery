@@ -209,74 +209,203 @@ void main() {
       expect(auditRows, isEmpty);
     });
 
-    // ---- BUT-1807 measurement, 2026-09-04 ----
-    //
-    // The ticket asked whether `viewedBase` needs hardening. The answer turned
-    // out to be that the path it protects may be unreachable, so this pins the
-    // measurement rather than a fix.
-    //
-    // `canManageShoppingList` (shopping_permission_module.dart) grants a
-    // NON-OWNER holding `SharedListPermission.admin` the right to manage
-    // members on a collaborative list, and `updateMemberPermission` is gated on
-    // exactly that. But the repository chain — updateMemberPermission →
-    // updateSharedListMembership → updateCollaborativeListMembership →
-    // updateCollaborativeList — runs `requireNoPrivilegeEscalation` BEFORE
-    // `restrictAccessControlToDeclaredBase`, and its owner exemption is
-    // `stored.ownerId == uid`. An admin who is not the owner therefore trips
-    // `rewritesMembers` and is refused.
-    //
-    // Two consequences, and this test exists to keep both visible. The first
-    // is a live user-facing defect and is filed as BUT-2013 — a test comment
-    // must not be the only record of unresolved work:
-    //   1. The UI offers member management to a non-owner admin that the
-    //      repository will refuse.
-    //   2. `restrictAccessControlToDeclaredBase` — BUT-1807's whole subject —
-    //      is never reached for that case, so hardening it would be armour on
-    //      a path nobody walks.
-    //
-    // This test asserts the CURRENT behaviour. If it ever goes red because an
-    // admin exemption was added, that is the fix landing, and the test should
-    // be rewritten to pin the new rule rather than restored.
-    test(
-      'a non-owner ADMIN changing memberPermissions is refused, the same as an '
-      'edit member — measured for BUT-1807, not a rule anyone chose',
-      () async {
-        const adminId = 'admin_3';
-        final doc = {
-          'name': 'Gemensam lista',
-          'ownerId': ownerId,
-          'ownerDisplayName': 'Ägaren',
-          'items': <dynamic>[],
-          // The caller holds admin, which is what canManageShoppingList reads.
-          'memberPermissions': {
-            ownerId: 'admin',
-            adminId: 'admin',
-            memberId: 'edit',
-          },
-        };
-        final stored = UnifiedShoppingList.fromMap('list_1', doc);
-        // The admin demotes an edit member — exactly what the dialog offers.
-        final proposed = stored.copyWith(
-          memberPermissions: {
-            ...stored.memberPermissions,
-            memberId: SharedListPermission.view,
-          },
-        );
+    // BUT-2013: the mirror of the rule's `adminManagesMembers()`. Each refusal
+    // below differs from the allowed admin change by one variable.
+    group('a non-owner admin', () {
+      const adminId = 'admin_3';
+      const strangerId = 'stranger_4';
 
+      UnifiedShoppingList storedWith(
+        Map<String, String> members, {
+        String owner = ownerId,
+        DateTime? createdAt,
+      }) => UnifiedShoppingList.fromMap('list_1', {
+        'name': 'Gemensam lista',
+        'ownerId': owner,
+        'ownerDisplayName': 'Ägaren',
+        'items': <dynamic>[],
+        'createdAt': Timestamp.fromDate(
+          createdAt ?? DateTime.utc(2026, 1, 1),
+        ),
+        'memberPermissions': members,
+      });
+
+      final seated = {ownerId: 'admin', adminId: 'admin', memberId: 'edit'};
+
+      Future<void> expectAllowed(
+        UnifiedShoppingList stored,
+        Map<String, SharedListPermission> members, {
+        String actor = adminId,
+      }) async {
         await expectLater(
-          guards.requireNoPrivilegeEscalation(adminId, proposed, stored),
+          guards.requireNoPrivilegeEscalation(
+            actor,
+            stored.copyWith(memberPermissions: members),
+            stored,
+          ),
+          completes,
+        );
+        expect(auditRows, isEmpty);
+      }
+
+      Future<void> expectRefused(
+        UnifiedShoppingList proposed,
+        UnifiedShoppingList stored,
+        String detail, {
+        String actor = adminId,
+      }) async {
+        await expectLater(
+          guards.requireNoPrivilegeEscalation(actor, proposed, stored),
           throwsA(isA<PermissionDeniedException>()),
         );
         expect(auditRows.single['granted'], isFalse);
-        expect(
-          auditRows.single['details'],
-          contains('memberPermissions'),
-          reason:
-              'the refusal is recorded as a member-permission rewrite, which '
-              'is what makes the admin case indistinguishable from an actual '
-              'escalation attempt in the audit trail',
+        expect(auditRows.single['details'], contains(detail));
+      }
+
+      test('may change a member\'s level', () async {
+        final stored = storedWith(seated);
+        await expectAllowed(stored, {
+          ...stored.memberPermissions,
+          memberId: SharedListPermission.view,
+        });
+      });
+
+      test('may add a member', () async {
+        final stored = storedWith(seated);
+        await expectAllowed(stored, {
+          ...stored.memberPermissions,
+          strangerId: SharedListPermission.view,
+        });
+      });
+
+      test('may remove a member', () async {
+        final stored = storedWith(seated);
+        await expectAllowed(
+          stored,
+          Map.of(stored.memberPermissions)..remove(memberId),
         );
-      },
-    );
+      });
+
+      test('may make another admin', () async {
+        final stored = storedWith(seated);
+        await expectAllowed(stored, {
+          ...stored.memberPermissions,
+          memberId: SharedListPermission.admin,
+        });
+      });
+
+      test('an edit member making the same change is refused', () async {
+        final stored = storedWith(seated);
+        await expectRefused(
+          stored.copyWith(
+            memberPermissions: {
+              ...stored.memberPermissions,
+              strangerId: SharedListPermission.view,
+            },
+          ),
+          stored,
+          'non-owner attempted to rewrite memberPermissions',
+          actor: memberId,
+        );
+      });
+
+      test('may not demote the owner', () async {
+        final stored = storedWith(seated);
+        await expectRefused(
+          stored.copyWith(
+            memberPermissions: {
+              ...stored.memberPermissions,
+              ownerId: SharedListPermission.edit,
+            },
+          ),
+          stored,
+          "admin attempted to rewrite the owner's memberPermissions entry",
+        );
+      });
+
+      test('may not remove the owner', () async {
+        final stored = storedWith(seated);
+        await expectRefused(
+          stored.copyWith(
+            memberPermissions: Map.of(stored.memberPermissions)
+              ..remove(ownerId),
+          ),
+          stored,
+          "admin attempted to rewrite the owner's memberPermissions entry",
+        );
+      });
+
+      test('may not seat the owner on a list without their key', () async {
+        final stored = storedWith({adminId: 'admin', memberId: 'edit'});
+        await expectRefused(
+          stored.copyWith(
+            memberPermissions: {
+              ...stored.memberPermissions,
+              ownerId: SharedListPermission.view,
+            },
+          ),
+          stored,
+          "the owner's memberPermissions entry",
+        );
+      });
+
+      test('may add to a list without the owner\'s key', () async {
+        final stored = storedWith({adminId: 'admin', memberId: 'edit'});
+        await expectAllowed(stored, {
+          ...stored.memberPermissions,
+          strangerId: SharedListPermission.view,
+        });
+      });
+
+      test('may not take over ownerId', () async {
+        final stored = storedWith(seated);
+        await expectRefused(
+          storedWith(seated, owner: adminId),
+          stored,
+          'admin attempted to rewrite ownerId',
+        );
+      });
+
+      test('may not rewrite createdAt', () async {
+        final stored = storedWith(seated);
+        await expectRefused(
+          storedWith(seated, createdAt: DateTime.utc(2025, 1, 1)),
+          stored,
+          'admin attempted to rewrite createdAt',
+        );
+      });
+
+      Map<String, String> roster(int size) => {
+        ownerId: 'admin',
+        adminId: 'admin',
+        for (var i = 0; i < size - 2; i++) 'seat_$i': 'view',
+      };
+
+      test('may change a level at the 200-member bound', () async {
+        final stored = storedWith(
+          roster(ShoppingListPermissionGuards.maxMembers),
+        );
+        await expectAllowed(stored, {
+          ...stored.memberPermissions,
+          'seat_0': SharedListPermission.edit,
+        });
+      });
+
+      test('may not seat a member past the 200-member bound', () async {
+        final stored = storedWith(
+          roster(ShoppingListPermissionGuards.maxMembers),
+        );
+        await expectRefused(
+          stored.copyWith(
+            memberPermissions: {
+              ...stored.memberPermissions,
+              strangerId: SharedListPermission.view,
+            },
+          ),
+          stored,
+          'admin attempted to rewrite memberPermissions',
+        );
+      });
+    });
   });
 }

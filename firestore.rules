@@ -3028,6 +3028,24 @@ service cloud.firestore {
         return request.auth.uid in request.resource.data.memberPermissions;
       }
 
+      // BUT-2013 (Malin, 2026-09-05): an admin may do everything the owner
+      // may with the member map, making more admins included, and nothing to
+      // the owner. `.get(owner, null)` on both sides keeps the owner's entry
+      // as it was, absent included, so an admin can neither demote nor remove
+      // the owner, nor seat them on a list that lacks their key.
+      function adminManagesMembers() {
+        return request.auth.uid != resource.data.ownerId
+          && request.auth.uid in resource.data.memberPermissions
+          && resource.data.memberPermissions[request.auth.uid] == 'admin'
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['ownerId', 'createdAt'])
+          && request.resource.data.memberPermissions.get(resource.data.ownerId, null)
+               == resource.data.memberPermissions.get(resource.data.ownerId, null)
+          && request.resource.data.memberPermissions.values()
+               .hasOnly(['view', 'edit', 'admin'])
+          && request.resource.data.memberPermissions.size() <= 200;
+      }
+
       // Can update if you're a member with edit/admin permission (for real-time collaboration).
       // BUT-238: claim/unclaim (assignedToUserId/assignedToDisplayName/assignedAt fields on items[])
       // is just an item-array mutation — allowed for edit/admin. View-only members cannot write.
@@ -3044,6 +3062,7 @@ service cloud.firestore {
          && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
          && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['ownerId', 'memberPermissions', 'createdAt'])) ||
+        adminManagesMembers() ||
         removesOnlySelfFromMembers()
       );
 
