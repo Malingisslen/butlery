@@ -16,6 +16,10 @@ class DynamicListBuilder extends StatelessWidget {
   final List<TextEditingController> controllers;
   final void Function(int index, String value) onUpdate;
   final VoidCallback onAdd;
+
+  /// Called after a frame once the last field has text; must add a field
+  /// only when the last field is still non-empty.
+  final VoidCallback onLastFilled;
   final void Function(int index) onRemove;
   final void Function(int oldIndex, int newIndex)? onReorder;
   final int maxLength;
@@ -26,6 +30,7 @@ class DynamicListBuilder extends StatelessWidget {
     required this.controllers,
     required this.onUpdate,
     required this.onAdd,
+    required this.onLastFilled,
     required this.onRemove,
     this.onReorder,
     this.maxLength = 500,
@@ -44,7 +49,7 @@ class DynamicListBuilder extends StatelessWidget {
           for (int index = 0; index < controllers.length; index++)
             _buildItemRow(context, index),
         ],
-        if (controllers.isEmpty) _buildAddButton(context),
+        _buildAddButton(context),
       ],
     );
   }
@@ -169,18 +174,17 @@ class DynamicListBuilder extends StatelessWidget {
 
   void _handleChange(int index, String value) {
     onUpdate(index, value);
-    // Auto-add new field when typing in the last empty field
-    if (index == controllers.length - 1 &&
-        value.trim().isNotEmpty &&
-        value.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => onAdd());
+    // Same trigger as the sectioned ingredient editor: a paste or dictation
+    // arrives as one multi-character change.
+    if (index == controllers.length - 1 && value.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onLastFilled());
     }
   }
 
   Widget _buildAddButton(BuildContext context) {
     return TextButton.icon(
       icon: const ButleryIcon(ButleryIcons.plus),
-      label: Text(context.l10n.commonAddWithLabel(label)),
+      label: Text(context.l10n.commonAddWithLabel(label.toLowerCase())),
       onPressed: onAdd,
     );
   }

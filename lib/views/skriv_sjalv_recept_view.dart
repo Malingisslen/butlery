@@ -629,6 +629,8 @@ class _SkrivSjalvReceptViewContentState
                                 .headingController,
                             onLineChanged: viewModel.updateIngredient,
                             onAddLine: viewModel.addIngredient,
+                            onLastLineFilled:
+                                viewModel.ensureTrailingIngredientLine,
                             onRemoveLine: viewModel.removeIngredient,
                             onReorder: viewModel.moveIngredientRow,
                             onAddHeading: viewModel.addIngredientHeading,
@@ -923,12 +925,11 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
         ],
-        if (controllers.isEmpty)
-          TextButton.icon(
-            icon: const ButleryIcon(ButleryIcons.plus),
-            label: Text(context.l10n.recipeAddItem(label)),
-            onPressed: onAdd,
-          ),
+        TextButton.icon(
+          icon: const ButleryIcon(ButleryIcons.plus),
+          label: Text(context.l10n.recipeAddItem(label.toLowerCase())),
+          onPressed: onAdd,
+        ),
       ],
     );
   }
