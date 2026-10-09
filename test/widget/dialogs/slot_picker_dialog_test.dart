@@ -18,6 +18,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/slot_spill_panel.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -305,6 +306,204 @@ void main() {
         findsNothing,
         reason: 'Single-select must pop on first tap, exactly as before',
       );
+    });
+  });
+
+  group('BUT-2153: the choice for the rest comes before the write', () {
+    const titles = ['Fisksoppa', 'Ärtsoppa', 'Rotsakslåda', 'Ugnspannkaka'];
+
+    int thisWeek() =>
+        IsoWeekUtils.isoWeekNumber(IsoWeekUtils.weekStartOf(DateTime.now()));
+
+    Future<SlotSelection? Function()> openAndTapFriday(
+      WidgetTester tester,
+      List<String> recipeTitles,
+    ) async {
+      SlotSelection? result;
+      await pumpHost(
+        tester,
+        open: (context) =>
+            showSlotPickerDialog(context, recipeTitles: recipeTitles),
+        onResult: (r) => result = r as SlotSelection?,
+      );
+      await tester.tap(find.text('fre').at(1)); // (fri, middag)
+      await tester.pumpAndSettle();
+      return () => result;
+    }
+
+    testWidgets('a run that fits pops at once with nothing to decide', (
+      tester,
+    ) async {
+      final result = await openAndTapFriday(tester, titles.sublist(0, 3));
+
+      expect(result()?.spill, SlotSpill.none);
+      expect(find.byType(SlotPickerDialog), findsNothing);
+    });
+
+    testWidgets(
+      'a run that does not fit stays open, names what does not fit and '
+      'numbers the order',
+      (tester) async {
+        final result = await openAndTapFriday(tester, titles);
+
+        expect(result(), isNull, reason: 'nothing may be written yet');
+        expect(find.byType(SlotPickerDialog), findsOneWidget);
+        expect(find.text('3 platser, 4 recept'), findsOneWidget);
+        expect(
+          find.textContaining(
+            'Ett recept får inte plats i vecka ${thisWeek()}: Ugnspannkaka.',
+          ),
+          findsOneWidget,
+        );
+        for (final n in ['1', '2', '3']) {
+          expect(find.text(n), findsOneWidget);
+        }
+        expect(find.text('4'), findsNothing);
+      },
+    );
+
+    testWidgets('"Lägg 3 nu, 1 i v." pops with the rest for next week', (
+      tester,
+    ) async {
+      final result = await openAndTapFriday(tester, titles);
+
+      await tester.tap(find.textContaining('Lägg 3 nu, 1 i v. '));
+      await tester.pumpAndSettle();
+
+      expect(result()?.day, DayOfWeek.fri);
+      expect(result()?.spill, SlotSpill.nextWeek);
+    });
+
+    testWidgets('"Lägg bara de 3" pops with the rest left out', (
+      tester,
+    ) async {
+      final result = await openAndTapFriday(tester, titles);
+
+      await tester.tap(find.text('Lägg bara de 3'));
+      await tester.pumpAndSettle();
+
+      expect(result()?.spill, SlotSpill.dropRest);
+    });
+
+    testWidgets('"Välj fler platser" closes the panel and lets the user '
+        'start earlier', (tester) async {
+      final result = await openAndTapFriday(tester, titles);
+
+      await tester.tap(find.text('Välj fler platser'));
+      await tester.pumpAndSettle();
+      expect(find.text('3 platser, 4 recept'), findsNothing);
+
+      await tester.tap(find.text('mån').at(1)); // (mon, middag)
+      await tester.pumpAndSettle();
+
+      expect(result()?.day, DayOfWeek.mon);
+      expect(result()?.spill, SlotSpill.none);
+    });
+
+    void occupyMiddag(List<DayOfWeek> days) {
+      when(() => planService.readWeek(any())).thenAnswer((invocation) async {
+        final empty = WeeklyMenuPlan.empty(
+          userId: 'u',
+          date: IsoWeekUtils.weekStartOf(
+            invocation.positionalArguments.single as DateTime,
+          ),
+        );
+        return WeeklyMenuPlanRead(
+          plan: empty.copyWith(
+            entries: [
+              for (final d in days)
+                WeeklyMenuPlanEntry(
+                  id: 'e-${d.name}',
+                  day: d,
+                  slot: MealSlot.middag,
+                  recipeId: 'busy',
+                  recipeTitle: 'Upptagen',
+                ),
+            ],
+          ),
+          readFailed: false,
+        );
+      });
+    }
+
+    test('freeDaysFrom skips taken cells, as bulkAssignRecipes does', () {
+      final plan =
+          WeeklyMenuPlan.empty(
+            userId: 'u',
+            date: DateTime(2026, 10, 5),
+          ).copyWith(
+            entries: const [
+              WeeklyMenuPlanEntry(
+                id: 'e',
+                day: DayOfWeek.sat,
+                slot: MealSlot.middag,
+                recipeId: 'busy',
+                recipeTitle: 'Upptagen',
+              ),
+            ],
+          );
+
+      expect(
+        SlotPickerDialog.freeDaysFrom(plan, DayOfWeek.thu, MealSlot.middag),
+        [DayOfWeek.thu, DayOfWeek.fri, DayOfWeek.sun],
+      );
+    });
+
+    testWidgets('a start with no free day left offers only next week and '
+        'choosing again', (tester) async {
+      occupyMiddag([DayOfWeek.fri, DayOfWeek.sat, DayOfWeek.sun]);
+      final result = await openAndTapFriday(tester, titles.sublist(0, 2));
+
+      expect(find.text('Inga lediga platser, 2 recept'), findsOneWidget);
+      expect(find.textContaining('Lägg bara'), findsNothing);
+
+      await tester.tap(find.textContaining('Lägg alla i v. '));
+      await tester.pumpAndSettle();
+
+      expect(result()?.spill, SlotSpill.nextWeek);
+    });
+
+    testWidgets('one free day reads "Lägg bara det första"', (tester) async {
+      occupyMiddag([DayOfWeek.sat, DayOfWeek.sun]);
+      final result = await openAndTapFriday(tester, titles.sublist(0, 2));
+
+      expect(find.text('En plats, 2 recept'), findsOneWidget);
+      await tester.tap(find.text('Lägg bara det första'));
+      await tester.pumpAndSettle();
+
+      expect(result()?.spill, SlotSpill.dropRest);
+    });
+
+    testWidgets('on a short screen the panel scrolls instead of overflowing', (
+      tester,
+    ) async {
+      await openAndTapFriday(tester, titles);
+      tester.view.physicalSize = const Size(360, 640);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      await tester.dragUntilVisible(
+        find.text('Lägg bara de 3'),
+        find.byType(SlotSpillPanel),
+        const Offset(0, -40),
+      );
+      expect(find.text('Lägg bara de 3').hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('övrigt takes any number in one cell, so it never asks', (
+      tester,
+    ) async {
+      SlotSelection? result;
+      await pumpHost(
+        tester,
+        open: (context) => showSlotPickerDialog(context, recipeTitles: titles),
+        onResult: (r) => result = r as SlotSelection?,
+      );
+      await tester.tap(find.text('sön').at(2)); // (sun, övrigt)
+      await tester.pumpAndSettle();
+
+      expect(result?.slot, MealSlot.ovrigt);
+      expect(result?.spill, SlotSpill.none);
     });
   });
 
