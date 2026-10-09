@@ -38,6 +38,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
+import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/experiment_assignment.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
@@ -127,6 +128,7 @@ class CoreModule implements DIModule {
       FeedbackService,
       // Auth MFA and device integrity
       AuthMfaService,
+      PasswordResetService,
       DeviceIntegrityService,
       // Onboarding progress (BUT-743)
       OnboardingProgressService,
@@ -274,6 +276,13 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           // P6-U09: the backup-code callables (mfa-backup-codes.ts).
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        ),
+      );
+
+      // Sets a new password from a reset link, signed out (BUT-2170).
+      container.registerLazySingleton<PasswordResetService>(
+        () => PasswordResetService(
+          authRepository: container<AuthRepository>(),
         ),
       );
 

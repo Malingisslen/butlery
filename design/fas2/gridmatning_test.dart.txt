@@ -1,0 +1,183 @@
+// F2-R05 · MÄTNING av designsystemets två LEVANDE gridkonsumenter.
+//
+// Detta är ett mätverktyg, inte ett kravtest. Produktionskoden är orörd: testet
+// monterar de riktiga widgetarna och läser av vad de faktiskt gör vid 1180,
+// 1919, 1920 och 2048 logiska pixlar. Resultatet skrivs som en rad per mätning
+// med prefixet GRIDMATNING så att det kan läsas maskinellt.
+//
+// De två konsumenterna:
+//   · ResponsiveGrid            lib/widgets/common/layout_components.dart:308  → standardrutnat
+//   · Breakpoints.getCardColumnCount  lib/theme/app_dimensions.dart:688        → kortrutnat
+//
+// Postmängden är 12 kort — fler än det största kolumnantalet (4) gånger två, så
+// att trappan syns som hela rader vid varje bredd.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
+
+const bredder = <double>[1180, 1919, 1920, 2048];
+const hojd = 1152.0;
+const poster = 12;
+
+void main() {
+  _trappaTest();
+
+  testWidgets('standardrutnat · ResponsiveGrid vid fyra bredder', (tester) async {
+    for (final b in bredder) {
+      tester.view.physicalSize = Size(b, hojd);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      late double maxBredd;
+      late double gap;
+      late EdgeInsets padding;
+      late int kolumner;
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(builder: (context) {
+            kolumner = Breakpoints.getGridColumnCount(context);
+            gap = AppDimensions.responsiveGridSpacing(context);
+            padding = AppDimensions.responsiveContentPadding(context);
+            maxBredd = Breakpoints.getMaxContentWidth(context);
+            return ResponsiveGrid(
+              children: List.generate(
+                poster,
+                (i) => Container(key: ValueKey('kort$i'), color: Colors.grey),
+              ),
+            );
+          }),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final rutnat = tester.getSize(find.byType(GridView));
+      final kort = tester.getSize(find.byKey(const ValueKey('kort0')));
+      final forsta = tester.getTopLeft(find.byKey(const ValueKey('kort0')));
+      // Sista kortet på forsta raden avslöjar den faktiska radbredden.
+      final sistaIRad = tester.getTopRight(find.byKey(ValueKey('kort${kolumner - 1}')));
+      final radbredd = sistaIRad.dx - forsta.dx;
+      final oanvand = b - padding.left - padding.right - radbredd;
+      // Spiller rutnatet ut ur sin egen bredd?
+      final overflow = radbredd + padding.left + padding.right - b;
+
+      // Bryts trappan? Radbredden ska vara kolumner*kortbredd + (kolumner-1)*gap.
+      final forvantad = kolumner * kort.width + (kolumner - 1) * gap;
+
+      print('GRIDMATNING policy=standardrutnat bredd=${b.toInt()} '
+          'kolumner=$kolumner kortbredd=${kort.width.toStringAsFixed(2)} '
+          'gap=${gap.toStringAsFixed(1)} '
+          'padding=${padding.left.toStringAsFixed(1)}/${padding.right.toStringAsFixed(1)} '
+          'radbredd=${radbredd.toStringAsFixed(2)} '
+          'forvantad_radbredd=${forvantad.toStringAsFixed(2)} '
+          'oanvand=${oanvand.toStringAsFixed(2)} '
+          'overflow=${overflow.toStringAsFixed(2)} '
+          'maxbredd=${maxBredd.isInfinite ? "ingen" : maxBredd.toStringAsFixed(0)} '
+          'maxbredd_tillampad=${(!maxBredd.isInfinite && radbredd > maxBredd + 1) ? "nej" : "ja-eller-ej-tillampligt"} '
+          'rutnatsbredd=${rutnat.width.toStringAsFixed(2)} '
+          'kategori=${_kategori(b)}');
+    }
+  });
+
+  testWidgets('kortrutnat · getCardColumnCount vid fyra bredder', (tester) async {
+    for (final b in bredder) {
+      tester.view.physicalSize = Size(b, hojd);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      late int kolumner;
+      late double gap;
+      late EdgeInsets padding;
+      late double maxBredd;
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(builder: (context) {
+            kolumner = Breakpoints.getCardColumnCount(context);
+            gap = AppDimensions.responsiveGridSpacing(context);
+            padding = AppDimensions.responsiveContentPadding(context);
+            maxBredd = Breakpoints.getMaxContentWidth(context);
+            return GridView.builder(
+              padding: padding,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: kolumner,
+                mainAxisSpacing: gap,
+                crossAxisSpacing: gap,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: poster,
+              itemBuilder: (c, i) =>
+                  Container(key: ValueKey('kort$i'), color: Colors.grey),
+            );
+          }),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final kort = tester.getSize(find.byKey(const ValueKey('kort0')));
+      final forsta = tester.getTopLeft(find.byKey(const ValueKey('kort0')));
+      final sistaIRad = tester.getTopRight(find.byKey(ValueKey('kort${kolumner - 1}')));
+      final radbredd = sistaIRad.dx - forsta.dx;
+      final oanvand = b - padding.left - padding.right - radbredd;
+      final overflow = radbredd + padding.left + padding.right - b;
+      final forvantad = kolumner * kort.width + (kolumner - 1) * gap;
+
+      print('GRIDMATNING policy=kortrutnat bredd=${b.toInt()} '
+          'kolumner=$kolumner kortbredd=${kort.width.toStringAsFixed(2)} '
+          'gap=${gap.toStringAsFixed(1)} '
+          'padding=${padding.left.toStringAsFixed(1)}/${padding.right.toStringAsFixed(1)} '
+          'radbredd=${radbredd.toStringAsFixed(2)} '
+          'forvantad_radbredd=${forvantad.toStringAsFixed(2)} '
+          'oanvand=${oanvand.toStringAsFixed(2)} '
+          'overflow=${overflow.toStringAsFixed(2)} '
+          'maxbredd=${maxBredd.isInfinite ? "ingen" : maxBredd.toStringAsFixed(0)} '
+          'maxbredd_tillampad=${(!maxBredd.isInfinite && radbredd > maxBredd + 1) ? "nej" : "ja-eller-ej-tillampligt"} '
+          'kategori=${_kategori(b)}');
+    }
+  });
+}
+
+// Hela trappan, bada sidor om varje kategorigrans i breakpoints.dart. Utan den
+// kan ett kontrakt pasta fel brytpunkt utan att nagon markt det: fyra matpunkter
+// racker for att se ETT steg, inte for att se var stegen ligger.
+const trappbredder = <double>[
+  320, 599, 600, 767, 768, 1023, 1024, 1279, 1280, 1919, 1920, 2047, 2048
+];
+
+void _trappaTest() {
+  testWidgets('trappa · kolumnantal vid varje kategorigrans', (tester) async {
+    final std = <String>[];
+    final kort = <String>[];
+    for (final b in trappbredder) {
+      tester.view.physicalSize = Size(b, hojd);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      late int s;
+      late int k;
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(builder: (context) {
+          s = Breakpoints.getGridColumnCount(context);
+          k = Breakpoints.getCardColumnCount(context);
+          return const SizedBox();
+        }),
+      ));
+      std.add('${b.toInt()}:$s');
+      kort.add('${b.toInt()}:$k');
+    }
+    print('GRIDTRAPPA policy=standardrutnat ${std.join(" ")}');
+    print('GRIDTRAPPA policy=kortrutnat ${kort.join(" ")}');
+  });
+}
+
+String _kategori(double b) {
+  if (b >= 1920) return 'desktopLarge';
+  if (b >= 1280) return 'desktop';
+  if (b >= 1024) return 'tabletLarge';
+  if (b >= 768) return 'tablet';
+  if (b >= 600) return 'mobileLarge';
+  return 'mobile';
+}

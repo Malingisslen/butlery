@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/social/report_reason_labels.dart';
 
 /// "Mina rapporter" — surfaces user-submitted moderation reports + their
 /// lifecycle status. Required by Google Play UGC appeal policy.
@@ -114,7 +115,7 @@ class _ReportTile extends StatelessWidget {
     return ListTile(
       leading: ButleryIcon(_iconForType(report.contentType)),
       title: Text(
-        report.reason,
+        reportReasonDisplay(l10n, report.reason),
         style: AppTextStyles.titleSmall,
         overflow: TextOverflow.ellipsis,
       ),

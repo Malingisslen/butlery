@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
+import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -120,6 +121,17 @@ class SettingsHubView extends StatelessWidget {
                   icon: ButleryIcons.upload,
                   title: context.l10n.profileRestoreFromBackup,
                   onTap: () => BackupRestoreHandler.handleRestore(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                // BUT-2302: the GDPR export was reachable only from the
+                // profile sheet.
+                _SettingsTile(
+                  icon: ButleryIcons.export,
+                  title: context.l10n.profileExportData,
+                  subtitle: context.l10n.profileExportDataSubtitle,
+                  onTap: () => GdprConsentHandler.handleExportData(
                     context,
                     closeModal: false,
                   ),

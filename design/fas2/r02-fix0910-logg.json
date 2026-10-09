@@ -1,0 +1,29 @@
+[
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-09",
+  "roll": "button",
+  "namn": "Reagera",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px dashed #ccd1c2;box-sizing:border-box",
+  "efter": "width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border:1px dashed #ccd1c2;box-sizing:border-box"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-10",
+  "roll": "button",
+  "namn": "Stäng matlagningsläget",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:#F5F4ED;flex:none",
+  "efter": "width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;background:#F5F4ED;flex:none"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "rc": "RC-09",
+  "roll": "button",
+  "namn": "Reagera",
+  "hitTarget": null,
+  "fore": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px dashed #ccd1c2;box-sizing:border-box",
+  "efter": "width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border:1px dashed #ccd1c2;box-sizing:border-box"
+ }
+]

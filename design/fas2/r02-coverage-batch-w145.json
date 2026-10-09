@@ -1,0 +1,1895 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "W · 145 kontroller, tio monster, alla self",
+ "$regel": "En separat synligt ritad bakgrund eller ram kravs INTE for self-agarskap.",
+ "self_st": 145,
+ "uteslutna_B_st": 0,
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "vanner",
+   "elementOrdinal": 6,
+   "role": "button",
+   "accessibleName": "Hitta vänner, 2 förfrågningar",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "skrivsjalv",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Flytta rad",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "publikprofil",
+   "elementOrdinal": 7,
+   "role": "button",
+   "accessibleName": "Fler åtgärder",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "snackbars",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Visa receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.27,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "snackbars",
+   "elementOrdinal": 11,
+   "role": "button",
+   "accessibleName": "Försök igen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 79.77,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "kontextmeny",
+   "elementOrdinal": 12,
+   "role": "button",
+   "accessibleName": "Fler åtgärder",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "hem360",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Se hela veckan",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 96.88,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "okandingrediens",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Tillbaka till receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "veckoallergi",
+   "elementOrdinal": 13,
+   "role": "button",
+   "accessibleName": "Stäng genereringen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "veckoallergi",
+   "elementOrdinal": 14,
+   "role": "button",
+   "accessibleName": "Granska Misogrillad aubergine",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 76.22,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "veckoallergi",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Granska Pad thai med tofu",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 76.22,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "synkko",
+   "elementOrdinal": 19,
+   "role": "button",
+   "accessibleName": "Tillbaka till Mer",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 51,
+   "role": "button",
+   "accessibleName": "Meddelanden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 54,
+   "role": "button",
+   "accessibleName": "Se hela veckan",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 96.88,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 64,
+   "role": "button",
+   "accessibleName": "Meddelanden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 67,
+   "role": "button",
+   "accessibleName": "Se hela veckan",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 96.88,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemtom",
+   "elementOrdinal": 77,
+   "role": "button",
+   "accessibleName": "Meddelanden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemladdar",
+   "elementOrdinal": 88,
+   "role": "button",
+   "accessibleName": "Meddelanden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemoffline",
+   "elementOrdinal": 95,
+   "role": "button",
+   "accessibleName": "Meddelanden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemfel",
+   "elementOrdinal": 105,
+   "role": "button",
+   "accessibleName": "Meddelanden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemfel",
+   "elementOrdinal": 108,
+   "role": "button",
+   "accessibleName": "Se alla",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptkommentarer",
+   "elementOrdinal": 116,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptkommentarer",
+   "elementOrdinal": 117,
+   "role": "button",
+   "accessibleName": "Vem ser kommentarerna, Anna, Per och en till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 77.38,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptkommentarer",
+   "elementOrdinal": 118,
+   "role": "button",
+   "accessibleName": "Åtgärder för din kommentar",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptcooksnap",
+   "elementOrdinal": 121,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "elementOrdinal": 124,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "elementOrdinal": 125,
+   "role": "button",
+   "accessibleName": "Sluta dela med alla",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 152.45,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "elementOrdinal": 129,
+   "role": "button",
+   "accessibleName": "Sluta dela med gruppen Söndagsmiddag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptdelningsstatus",
+   "elementOrdinal": 130,
+   "role": "button",
+   "accessibleName": "Sluta dela med gruppen Kollegorna",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptbildfel",
+   "elementOrdinal": 131,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 139,
+   "role": "button",
+   "accessibleName": "Byt ut smör",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 140,
+   "role": "button",
+   "accessibleName": "Byt ut timjan",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygvemat",
+   "elementOrdinal": 152,
+   "role": "button",
+   "accessibleName": "Hoppa över betygsättningen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygperperson",
+   "elementOrdinal": 159,
+   "role": "button",
+   "accessibleName": "Tillbaka till vem som åt",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygsammanslaget",
+   "elementOrdinal": 177,
+   "role": "button",
+   "accessibleName": "Tillbaka till receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "familjmedlemsamtycke",
+   "elementOrdinal": 185,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbomrostning",
+   "elementOrdinal": 22,
+   "role": "button",
+   "accessibleName": "Rösta på torsdag middag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 105,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbomrostning",
+   "elementOrdinal": 23,
+   "role": "button",
+   "accessibleName": "Avgör fredag middag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 108,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbportion",
+   "elementOrdinal": 45,
+   "role": "button",
+   "accessibleName": "Återställ till fyra portioner",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 49.95,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "artifactId": "inkoputeslutna",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "artifactId": "skafferibas",
+   "elementOrdinal": 59,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatinkorg",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatvidare",
+   "elementOrdinal": 5,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatnarvaro",
+   "elementOrdinal": 35,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatclaimkonflikt",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatlasare",
+   "elementOrdinal": 54,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoprompt",
+   "elementOrdinal": 56,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoprompt",
+   "elementOrdinal": 59,
+   "role": "button",
+   "accessibleName": "Diktera beskrivningen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckogenererar",
+   "elementOrdinal": 63,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckochips",
+   "elementOrdinal": 66,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckochips",
+   "elementOrdinal": 69,
+   "role": "button",
+   "accessibleName": "Förfina beskrivningen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 139.37,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoresultat",
+   "elementOrdinal": 70,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckodolda",
+   "elementOrdinal": 87,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckofel",
+   "elementOrdinal": 97,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckofel",
+   "elementOrdinal": 100,
+   "role": "button",
+   "accessibleName": "Rensa beskrivningen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckobyt",
+   "elementOrdinal": 103,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplacering",
+   "elementOrdinal": 110,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringvald",
+   "elementOrdinal": 127,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringavbryt",
+   "elementOrdinal": 139,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoautoplacerad",
+   "elementOrdinal": 142,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoautoplacerad",
+   "elementOrdinal": 151,
+   "role": "button",
+   "accessibleName": "Ändra placeringen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 51.91,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckokalender",
+   "elementOrdinal": 152,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckonarvaro",
+   "elementOrdinal": 173,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckonarvarooversikt",
+   "elementOrdinal": 186,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckooverflow",
+   "elementOrdinal": 190,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoflytta",
+   "elementOrdinal": 201,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoskrivover",
+   "elementOrdinal": 213,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoinkop",
+   "elementOrdinal": 218,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostning",
+   "elementOrdinal": 227,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostlagg",
+   "elementOrdinal": 237,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostavgor",
+   "elementOrdinal": 243,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostutgang",
+   "elementOrdinal": 248,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorosthistorik",
+   "elementOrdinal": 253,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "authmfa",
+   "elementOrdinal": 21,
+   "role": "button",
+   "accessibleName": "Avbryt inloggningen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbaldrefel",
+   "elementOrdinal": 30,
+   "role": "button",
+   "accessibleName": "Försök igen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 74.08,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbimportklar",
+   "elementOrdinal": 54,
+   "role": "button",
+   "accessibleName": "Tillbaka till guiden",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbsenare",
+   "elementOrdinal": 73,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "behfoton",
+   "elementOrdinal": 101,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "behnotiser",
+   "elementOrdinal": 106,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imp1kalla",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imp2hamtar",
+   "elementOrdinal": 9,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imp3granska",
+   "elementOrdinal": 11,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imp4sparad",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imp4sparad",
+   "elementOrdinal": 16,
+   "role": "button",
+   "accessibleName": "Ställ in allergener",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 108.63,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist1",
+   "elementOrdinal": 18,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist2",
+   "elementOrdinal": 27,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 33,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassistavbryt",
+   "elementOrdinal": 48,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impurl",
+   "elementOrdinal": 51,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impsocial",
+   "elementOrdinal": 55,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfoto",
+   "elementOrdinal": 58,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfil",
+   "elementOrdinal": 65,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impgrans",
+   "elementOrdinal": 67,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impgransai",
+   "elementOrdinal": 70,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impoffline",
+   "elementOrdinal": 73,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdubblett",
+   "elementOrdinal": 79,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impinget",
+   "elementOrdinal": 84,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impcache",
+   "elementOrdinal": 87,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdelning",
+   "elementOrdinal": 90,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdelningsocial",
+   "elementOrdinal": 92,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imparkiv",
+   "elementOrdinal": 95,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggvillkor",
+   "elementOrdinal": 16,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggkalla",
+   "elementOrdinal": 30,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggkalla",
+   "elementOrdinal": 31,
+   "role": "button",
+   "accessibleName": "Ta bort taggen Snabbt från receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggkalla",
+   "elementOrdinal": 32,
+   "role": "button",
+   "accessibleName": "Ta bort taggen Vegetariskt från receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggkalla",
+   "elementOrdinal": 33,
+   "role": "button",
+   "accessibleName": "Ta bort taggen Barnfavorit från receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggexklusiv",
+   "elementOrdinal": 35,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggexklusiv",
+   "elementOrdinal": 36,
+   "role": "button",
+   "accessibleName": "Ta bort taggen Vardagsmat",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "kontoradera",
+   "elementOrdinal": 38,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "kontoreauth",
+   "elementOrdinal": 42,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "kontovantan",
+   "elementOrdinal": 45,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "kontodelvis",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "adminskal",
+   "elementOrdinal": 48,
+   "role": "button",
+   "accessibleName": "Visa avvikelsen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 120.18,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "adminej",
+   "elementOrdinal": 55,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 56,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 59,
+   "role": "button",
+   "accessibleName": "Stäng rapporten rec_8f21a",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 62,
+   "role": "button",
+   "accessibleName": "Stäng rapporten com_5512b",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 65,
+   "role": "button",
+   "accessibleName": "Stäng rapporten usr_71f0c",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modminderarig",
+   "elementOrdinal": 66,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "moddolj",
+   "elementOrdinal": 69,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modradera",
+   "elementOrdinal": 72,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modtom",
+   "elementOrdinal": 75,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "cooksnapgalleri",
+   "elementOrdinal": 81,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontosamtycke",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "samtyckeai",
+   "elementOrdinal": 8,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontodataexport",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontosakerhetsvy",
+   "elementOrdinal": 20,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontonotiser",
+   "elementOrdinal": 30,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "notisertyp",
+   "elementOrdinal": 41,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "mfalagg",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "mfaaktiv",
+   "elementOrdinal": 50,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "notiscentral",
+   "elementOrdinal": 53,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "minaanmalningar",
+   "elementOrdinal": 65,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontojuridik",
+   "elementOrdinal": 67,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontostatistik",
+   "elementOrdinal": 71,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "statistikfullstandighet",
+   "elementOrdinal": 72,
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flertagg",
+   "elementOrdinal": 36,
+   "role": "button",
+   "accessibleName": "Avbryt",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 70.27,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "elementOrdinal": 79,
+   "role": "button",
+   "accessibleName": "Visa alla tjugo skärmar",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 90.84,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socgruppinfo",
+   "elementOrdinal": 40,
+   "role": "button",
+   "accessibleName": "Ta bort Johan Lind ur samtalet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 65.28,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "insthushall",
+   "elementOrdinal": 50,
+   "role": "button",
+   "accessibleName": "Använd receptets antal i stället",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 125.32,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "elementOrdinal": 63,
+   "role": "link",
+   "accessibleName": "Ändra i inställningarna",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "elementOrdinal": 75,
+   "role": "button",
+   "accessibleName": "Rensa alla filter",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 63.77,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompkalla",
+   "elementOrdinal": 94,
+   "role": "button",
+   "accessibleName": "Visa hela",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 59.31,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompkallahel",
+   "elementOrdinal": 97,
+   "role": "button",
+   "accessibleName": "Visa mindre",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 76.38,
+    "h": 48
+   },
+   "uppfyller48": true
+  }
+ ]
+}

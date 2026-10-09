@@ -1,0 +1,7299 @@
+{
+ "$schema": "butlery-r04-principapplicering/1",
+ "$datum": "2026-08-11",
+ "$status": "UNDERLAG MED TVA KANDA SVAGHETER. Inga beslut fattade, ingen produktwrite, ingen registrering.",
+ "$svagheter": [
+  {
+   "id": "SV-1",
+   "vad": "PRINCIPLE_DETERMINATE vilar pa en tunn palett.",
+   "detalj": "Varje ytenhet hade exakt tva observerade palettkandidater. Nar den ena faller pa 1:1-regeln blir den andra determinate nastan automatiskt. Determinansen kommer da ur palettens storlek, inte ur principens styrka. De 47 bor lasas som \"ingen konkurrent i den observerade paletten\", inte som \"designfragan ar avgjord\"."
+  },
+  {
+   "id": "SV-2",
+   "vad": "Accentfargen filtrerades inte bort for neutral innehallstext.",
+   "detalj": "P-TEXT-CONTENT forbjuder accent som kontrastlosning for neutral text. Kandidatgrinden slapper anda igenom #dca968 och #de9078 for text-innehall. De sex textenheterna maste omprovas med accentfiltret innan de gar till beslut."
+  }
+ ],
+ "splitresultat": {
+  "foreSplit": 80,
+  "efterSplit": 91,
+  "splittadeEnheter": 16,
+  "splitregel": "text delas pa sin slutliga bakgrund, yta pa sin faktiska underliggande yta. Aldrig pa kandidatens morkervarde."
+ },
+ "klassificering": {
+  "NO_EXISTING_PALETTE_SOLUTION": 2,
+  "VISUAL_CHOICE_REQUIRED": 11,
+  "PRINCIPLE_RECOMMENDED": 31,
+  "PRINCIPLE_DETERMINATE": 47
+ },
+ "perPrincip": {
+  "ytor": {
+   "NO_EXISTING_PALETTE_SOLUTION": 2,
+   "PRINCIPLE_RECOMMENDED": 31,
+   "PRINCIPLE_DETERMINATE": 47
+  },
+  "text": {
+   "VISUAL_CHOICE_REQUIRED": 6
+  },
+  "grafik": {
+   "VISUAL_CHOICE_REQUIRED": 5
+  }
+ },
+ "unlock": {
+  "determinateEnsamt": 29,
+  "kurva": [
+   {
+    "beslut": 0,
+    "familjer": 29,
+    "not": "endast principle-determinate"
+   },
+   {
+    "beslut": 1,
+    "familjer": 40,
+    "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e"
+   },
+   {
+    "beslut": 5,
+    "familjer": 65,
+    "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande"
+   },
+   {
+    "beslut": 10,
+    "familjer": 82,
+    "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande"
+   },
+   {
+    "beslut": 15,
+    "familjer": 90,
+    "enhet": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande"
+   },
+   {
+    "beslut": 20,
+    "familjer": 96,
+    "enhet": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig"
+   },
+   {
+    "beslut": 30,
+    "familjer": 108,
+    "enhet": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande"
+   },
+   {
+    "beslut": 40,
+    "familjer": 112,
+    "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande"
+   }
+  ]
+ },
+ "principleDeterminate": [
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 27,
+   "instanser": 27,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 21,
+   "instanser": 21,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 11,
+   "instanser": 11,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 11,
+   "instanser": 34,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 9,
+   "instanser": 9,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 8,
+   "instanser": 31,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 6,
+   "instanser": 6,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 5,
+   "instanser": 10,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 5,
+   "instanser": 9,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 4,
+   "instanser": 7,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 4,
+   "instanser": 7,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 4,
+   "instanser": 4,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 3,
+   "instanser": 3,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 3,
+   "instanser": 10,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 3,
+   "instanser": 8,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:on · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 3,
+   "instanser": 5,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 2,
+   "instanser": 2,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 2,
+   "instanser": 2,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 2,
+   "instanser": 2,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 2,
+   "instanser": 2,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 2,
+   "instanser": 4,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 3,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 3,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · state:checked · nastlad-yta · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 2,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 3,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · state:grabbed · nastlad-yta · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:disabled · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 3,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 4,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 1,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 5,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 3,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:off · nastlad-yta · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 4,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "princip": "P-SURFACE-CONTROL",
+   "familjer": 1,
+   "instanser": 2,
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "provadeKandidater": 2
+  }
+ ],
+ "forstaBeslutspaket": [
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "familjer": 26,
+   "instanser": 30,
+   "artefakter": [
+    "tomtrecept",
+    "snabbspara",
+    "familjebetyg",
+    "mer",
+    "meddelanden",
+    "menysmak"
+   ],
+   "finalister": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 30
+   },
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "princip": "P-GRAPHIC",
+   "roll": "ikon-kontroll",
+   "ljus": "#17251d",
+   "familjer": 23,
+   "instanser": 24,
+   "artefakter": [
+    "hem360",
+    "tangentbord",
+    "langavarden",
+    "lagaliggande",
+    "chattredigerat",
+    "chattmeny"
+   ],
+   "finalister": [
+    "#93a48d",
+    "#c9d3c4",
+    "#de9078",
+    "#dca968"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": null,
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "familjer": 19,
+   "instanser": 21,
+   "artefakter": [
+    "tomtrecept",
+    "offline",
+    "hemrecept",
+    "plussheet",
+    "skafferi",
+    "familj"
+   ],
+   "finalister": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 21
+   },
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+   "princip": "P-GRAPHIC",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "familjer": 9,
+   "instanser": 33,
+   "artefakter": [
+    "skafferi",
+    "bredmeny",
+    "vmbnormal",
+    "vmbgenererar",
+    "vmbomrostning",
+    "vmbkonflikt"
+   ],
+   "finalister": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": null,
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+   "princip": "P-GRAPHIC",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "familjer": 4,
+   "instanser": 7,
+   "artefakter": [
+    "vanner",
+    "publikprofil",
+    "taggdetalj",
+    "rcbnormal"
+   ],
+   "finalister": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": null,
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+   "princip": "P-GRAPHIC",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "familjer": 4,
+   "instanser": 5,
+   "artefakter": [
+    "vmbkonflikt",
+    "impdubblett",
+    "samtyckefornya",
+    "flermeny"
+   ],
+   "finalister": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": null,
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+   "princip": "P-GRAPHIC",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "familjer": 3,
+   "instanser": 4,
+   "artefakter": [
+    "snackbars",
+    "vmbomrostning",
+    "flergrupp"
+   ],
+   "finalister": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": null,
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · komponent:chip · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "familjer": 1,
+   "instanser": 1,
+   "artefakter": [
+    "laga"
+   ],
+   "finalister": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 1
+   },
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "familjer": 1,
+   "instanser": 2,
+   "artefakter": [
+    "lagastaende320"
+   ],
+   "finalister": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 2
+   },
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "familjer": 1,
+   "instanser": 1,
+   "artefakter": [
+    "admmatning"
+   ],
+   "finalister": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "OBSERVED_MAPPING_EVIDENCE": "NONE",
+   "textrelationer": {
+    "bakgrunder": [
+     "#93a48d"
+    ],
+    "krav": 4.5,
+    "antal": 1
+   },
+   "ytrelationer": null,
+   "obs": "Finalistlistan ar INTE filtrerad mot accentregeln — se SV-2."
+  }
+ ],
+ "noExistingPaletteSolution": [
+  {
+   "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "familjer": 10,
+   "grund": "inget befintligt palettvarde klarar principen och villkoren"
+  },
+  {
+   "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "familjer": 7,
+   "grund": "inget befintligt palettvarde klarar principen och villkoren"
+  }
+ ],
+ "blockerareUtanforFargbeslut": {
+  "scope": [
+   "onbjamforelse-panel",
+   "editorfelkontrakt-panel",
+   "fbkortmonster-panel"
+  ],
+  "proveniens": [
+   "installningar-414",
+   "globsvep-panel"
+  ]
+ },
+ "alla": [
+  {
+   "uid": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-app|#24382c",
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "undergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 10,
+   "familjer": [
+    "start-414",
+    "laga-926",
+    "lagastaende320-322",
+    "delaark-414",
+    "dialogvara-414",
+    "utloggningko-414",
+    "delatlamna-414",
+    "delatlamnaagare-414",
+    "globunderhall-414",
+    "komprost-414"
+   ],
+   "familjantal": 10,
+   "artefakter": [
+    "start",
+    "laga",
+    "lagastaende320",
+    "delaark",
+    "dialogvara",
+    "utloggningko"
+   ],
+   "princip": "P-SURFACE-APP",
+   "klass": "NO_EXISTING_PALETTE_SOLUTION",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-SURFACE-APP",
+    "grund": "inget befintligt palettvarde klarar principen och villkoren"
+   },
+   "kandidater": [
+    {
+     "varde": "#17251d",
+     "forekomster": 63,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "ingen"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 10
+   }
+  },
+  {
+   "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+   "rafarg": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "color"
+   ],
+   "instanser": 30,
+   "familjer": [
+    "tomtrecept-414",
+    "snabbspara-414",
+    "familjebetyg-414",
+    "mer-414",
+    "meddelanden-414",
+    "menysmak-414",
+    "fotoimport-414",
+    "delatlista-414",
+    "grupp-414",
+    "ingredienssok-414",
+    "profil-414",
+    "familjeform-414",
+    "forfragningar-414",
+    "vanprofil-414",
+    "publikprofil-414",
+    "laggtillmedlemmar-414",
+    "nygruppchatt-414",
+    "menyforhands-414",
+    "tadelning-414",
+    "nydelatlista-414",
+    "redigera-414",
+    "onboardingimport-414",
+    "mfa-414",
+    "konflikt-414",
+    "statetom-322",
+    "statetom412-414"
+   ],
+   "familjantal": 26,
+   "artefakter": [
+    "tomtrecept",
+    "snabbspara",
+    "familjebetyg",
+    "mer",
+    "meddelanden",
+    "menysmak"
+   ],
+   "princip": "P-TEXT-CONTENT",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-TEXT-CONTENT",
+    "grund": "5 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 285,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 137,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 23,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 13,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#8fb89a",
+     "forekomster": 12,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 30
+   },
+   "ytrelationer": null
+  },
+  {
+   "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "color"
+   ],
+   "instanser": 21,
+   "familjer": [
+    "tomtrecept-414",
+    "offline-414",
+    "hemrecept-414",
+    "plussheet-414",
+    "skafferi-414",
+    "familj-414",
+    "installningar-414",
+    "notiser-414",
+    "vemat-414",
+    "placera-414",
+    "mer-414",
+    "vanner-414",
+    "meddelanden-414",
+    "skrivsjalv-414",
+    "skafferivara-414",
+    "dialogosparat-414",
+    "delaark-414",
+    "dialogvara-414",
+    "dialogsparameny-414"
+   ],
+   "familjantal": 19,
+   "artefakter": [
+    "tomtrecept",
+    "offline",
+    "hemrecept",
+    "plussheet",
+    "skafferi",
+    "familj"
+   ],
+   "princip": "P-TEXT-CONTENT",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-TEXT-CONTENT",
+    "grund": "5 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 285,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 137,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 23,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 13,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#8fb89a",
+     "forekomster": 12,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 21
+   },
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "rafarg": "yta-upphojd|rgba(36,56,44,0.4)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.4)",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 16,
+   "familjer": [
+    "sortera-414",
+    "plussheet-414",
+    "vemat-414",
+    "skafferivara-414",
+    "dialogradera-414",
+    "dialogosparat-414",
+    "dialogratelimit-414",
+    "delaark-414",
+    "dialogvara-414",
+    "dialogsparameny-414",
+    "kontextmeny-414",
+    "utloggningko-414",
+    "utloggningtom-414",
+    "chattmeny-414",
+    "delatlamna-414",
+    "delatlamnaagare-414"
+   ],
+   "familjantal": 16,
+   "artefakter": [
+    "sortera",
+    "plussheet",
+    "vemat",
+    "skafferivara",
+    "dialogradera",
+    "dialogosparat"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed",
+     "#24382c"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 16
+   }
+  },
+  {
+   "uid": "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#7d897c",
+   "roll": "yta-upphojd",
+   "ljus": "#7d897c",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 10,
+   "familjer": [
+    "sortera-414",
+    "plussheet-414",
+    "vemat-414",
+    "skafferivara-414",
+    "delaark-414",
+    "dialogvara-414",
+    "flertagg-414",
+    "flermeny-414",
+    "kompkalla-414",
+    "kompkallahel-414"
+   ],
+   "familjantal": 10,
+   "artefakter": [
+    "sortera",
+    "plussheet",
+    "vemat",
+    "skafferivara",
+    "delaark",
+    "dialogvara"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 10
+   }
+  },
+  {
+   "uid": "text-innehall|#17251d ‖ utan-kontroll · komponent:chip · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "rafarg": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · komponent:chip · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "laga-926"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "laga"
+   ],
+   "princip": "P-TEXT-CONTENT",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-TEXT-CONTENT",
+    "grund": "5 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 285,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 137,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 23,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 13,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#8fb89a",
+     "forekomster": 12,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 1
+   },
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "smartimport-414",
+    "chatt320-322",
+    "rcbarvegods-panel",
+    "kompbild-panel"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "smartimport",
+    "chatt320",
+    "rcbarvegods",
+    "kompbild"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 27,
+   "familjer": [
+    "skafferi-414",
+    "vanner-414",
+    "meddelanden-414",
+    "taggar-414",
+    "hem360-362",
+    "okandingrediens-414",
+    "veckoallergi-414",
+    "safeareaandroid-414",
+    "hemoffline-414",
+    "receptbildfel-414",
+    "betygvemat-414",
+    "betygperperson-414",
+    "betygsammanslaget-414",
+    "familjmedlemsamtycke-414",
+    "inkopbockad-414",
+    "delatinkorg-414",
+    "authlogga-414",
+    "authskapa-414",
+    "kontosamtycke-414",
+    "samtyckeai-414",
+    "mfalagg-414",
+    "globsessiontyst-414",
+    "fbformular-414",
+    "soctomtingavanner-412",
+    "insthushall-414",
+    "kompdubblett-panel",
+    "komparvegods-panel"
+   ],
+   "familjantal": 27,
+   "artefakter": [
+    "skafferi",
+    "vanner",
+    "meddelanden",
+    "taggar",
+    "hem360",
+    "okandingrediens"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed",
+     "#17251d"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 27
+   }
+  },
+  {
+   "uid": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+   "rafarg": "ram-behallare|#ce7c1e",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+   "splittad": false,
+   "egenskaper": [
+    "border-left-color",
+    "border-top-color",
+    "border-right-color",
+    "border-bottom-color"
+   ],
+   "instanser": 33,
+   "familjer": [
+    "skafferi-414",
+    "bredmeny-panel",
+    "vmbnormal-panel",
+    "vmbgenererar-panel",
+    "vmbomrostning-panel",
+    "vmbkonflikt-panel",
+    "vmbdelvis-panel",
+    "vmboffline-panel",
+    "vmbflytta-panel"
+   ],
+   "familjantal": 9,
+   "artefakter": [
+    "skafferi",
+    "bredmeny",
+    "vmbnormal",
+    "vmbgenererar",
+    "vmbomrostning",
+    "vmbkonflikt"
+   ],
+   "princip": "P-GRAPHIC",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-GRAPHIC",
+    "grund": "3 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 183,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "forekomster": 123,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 19,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "textrelationer": null,
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#4a5c43",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 30,
+   "familjer": [
+    "familj-414",
+    "familjebetyg-414",
+    "vanner-414",
+    "meddelanden-414",
+    "delatlista-414",
+    "grupp-414",
+    "profil-414",
+    "betygsoversikt-414",
+    "forfragningar-414",
+    "laggtillmedlemmar-414",
+    "nygruppchatt-414",
+    "tadelning-414",
+    "nydelatlista-414",
+    "delatlistor-414",
+    "chattredigerat-414",
+    "chattmeny-414",
+    "receptkommentarer-414",
+    "betygperperson-414",
+    "betygsammanslaget-414",
+    "delatinkorg-414",
+    "delatvidare-414",
+    "delatmindel-414"
+   ],
+   "familjantal": 22,
+   "artefakter": [
+    "familj",
+    "familjebetyg",
+    "vanner",
+    "meddelanden",
+    "delatlista",
+    "grupp"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 30
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 10,
+   "familjer": [
+    "installningar-414",
+    "allergener-414",
+    "notisinstallningar-414",
+    "impfoto-414",
+    "taggregel-414"
+   ],
+   "familjantal": 5,
+   "artefakter": [
+    "installningar",
+    "allergener",
+    "notisinstallningar",
+    "impfoto",
+    "taggregel"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 10
+   }
+  },
+  {
+   "uid": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#4a5c43",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "vemat-414",
+    "delaark-414",
+    "delatinkorg-414",
+    "veckonarvarooversikt-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "vemat",
+    "delaark",
+    "delatinkorg",
+    "veckonarvarooversikt"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 17,
+   "familjer": [
+    "inkopmerge-414",
+    "inkopmergeoppen-414",
+    "chattmeny-414",
+    "betygvemarket-414",
+    "bredinkop-panel",
+    "bredgrans-panel",
+    "vmbgenererar-panel",
+    "inkopkategoriordning-414",
+    "inkopkategoribyte-414",
+    "skafferilagg-414",
+    "impassist1-414",
+    "impassist2-414",
+    "editorutkastval-414",
+    "socflode-414"
+   ],
+   "familjantal": 14,
+   "artefakter": [
+    "inkopmerge",
+    "inkopmergeoppen",
+    "chattmeny",
+    "betygvemarket",
+    "bredinkop",
+    "bredgrans"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 17
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 21,
+   "familjer": [
+    "inkopmerge-414",
+    "inkopmergeoppen-414",
+    "storsttext-414",
+    "utloggningko-414",
+    "utloggningtom-414",
+    "safeareaios-414",
+    "betygvemarket-414",
+    "inkopkategoriordning-414",
+    "inkopgenererad-414",
+    "skafferilagg-414",
+    "delatinkorg-414",
+    "authglomt-414",
+    "behkamera-414",
+    "behlarm-414",
+    "lagatimerutgangen-414",
+    "cooksnapsynlighet-414",
+    "samtyckefornya-414",
+    "globsession-414",
+    "flertaggsam-414",
+    "fbanmal-414",
+    "socbegar-414"
+   ],
+   "familjantal": 21,
+   "artefakter": [
+    "inkopmerge",
+    "inkopmergeoppen",
+    "storsttext",
+    "utloggningko",
+    "utloggningtom",
+    "safeareaios"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 21
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 44,
+   "familjer": [
+    "onboarding-414",
+    "statistik-414",
+    "bredskal-panel",
+    "bredrecept-panel",
+    "vmbnormal-panel",
+    "vmbgenererar-panel",
+    "rcbnormal-panel",
+    "rcbofullstandigt-panel",
+    "rcbkommentar-panel",
+    "ikbnormal-panel",
+    "ikbdelad-panel",
+    "authlogga-414",
+    "kontosakerhetsvy-414",
+    "globsvep-panel",
+    "flervalingang-414",
+    "socflode-414",
+    "socreaktion-panel",
+    "instportion-panel",
+    "admmatning-panel",
+    "admdrift-panel",
+    "kompbild-panel",
+    "komparvegods-panel",
+    "surfplatta-panel"
+   ],
+   "familjantal": 23,
+   "artefakter": [
+    "onboarding",
+    "statistik",
+    "bredskal",
+    "bredrecept",
+    "vmbnormal",
+    "vmbgenererar"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 44
+   }
+  },
+  {
+   "uid": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+   "rafarg": "ram-behallare|#ce7c1e",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+   "splittad": false,
+   "egenskaper": [
+    "border-top-color",
+    "border-right-color",
+    "border-bottom-color",
+    "border-left-color"
+   ],
+   "instanser": 7,
+   "familjer": [
+    "vanner-414",
+    "publikprofil-414",
+    "taggdetalj-414",
+    "rcbnormal-panel"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "vanner",
+    "publikprofil",
+    "taggdetalj",
+    "rcbnormal"
+   ],
+   "princip": "P-GRAPHIC",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-GRAPHIC",
+    "grund": "3 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 183,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "forekomster": 123,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 19,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "textrelationer": null,
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#627061",
+   "roll": "yta-upphojd",
+   "ljus": "#627061",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 18,
+   "familjer": [
+    "vanner-414",
+    "meddelanden-414",
+    "delatlista-414",
+    "grupp-414",
+    "betygsoversikt-414",
+    "laggtillmedlemmar-414",
+    "delatlistor-414",
+    "langavarden-362",
+    "okandingrediens-414",
+    "receptkommentarer-414",
+    "betygperperson-414",
+    "betygsammanslaget-414",
+    "delatvidare-414",
+    "admmatning-panel"
+   ],
+   "familjantal": 14,
+   "artefakter": [
+    "vanner",
+    "meddelanden",
+    "delatlista",
+    "grupp",
+    "betygsoversikt",
+    "laggtillmedlemmar"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 18
+   }
+  },
+  {
+   "uid": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#4a5c43",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "statistik-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "statistik"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#627061",
+   "roll": "yta-upphojd",
+   "ljus": "#627061",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "statistik-414",
+    "chatt320-322"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "statistik",
+    "chatt320"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#4a5c43",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "taggar-414",
+    "familjeform-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "taggar",
+    "familjeform"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#627061",
+   "roll": "yta-upphojd",
+   "ljus": "#627061",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "taggar-414",
+    "familjeform-414",
+    "betygsoversikt-414",
+    "kontostatistik-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "taggar",
+    "familjeform",
+    "betygsoversikt",
+    "kontostatistik"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 5
+   }
+  },
+  {
+   "uid": "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "undergrupp": "kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 7,
+   "familjer": [
+    "allergener-414",
+    "notisinstallningar-414",
+    "kontosamtycke-414",
+    "kontonotiser-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "allergener",
+    "notisinstallningar",
+    "kontosamtycke",
+    "kontonotiser"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 7
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 7,
+   "familjer": [
+    "allergener-414",
+    "notisinstallningar-414",
+    "kontosamtycke-414",
+    "kontonotiser-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "allergener",
+    "notisinstallningar",
+    "kontosamtycke",
+    "kontonotiser"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#7d897c"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 7
+   }
+  },
+  {
+   "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "rafarg": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "lagastaende320-322"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "lagastaende320"
+   ],
+   "princip": "P-TEXT-CONTENT",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-TEXT-CONTENT",
+    "grund": "5 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 285,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 137,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 23,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 13,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#8fb89a",
+     "forekomster": 12,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "textrelationer": {
+    "bakgrunder": [
+     "#ce7c1e"
+    ],
+    "krav": 4.5,
+    "antal": 2
+   },
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#3f6b4f",
+   "roll": "yta-upphojd",
+   "ljus": "#3f6b4f",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "grupp-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "grupp"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c",
+     "#4a5c43"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "profil-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "profil"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#627061",
+   "roll": "yta-upphojd",
+   "ljus": "#627061",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "publikprofil-414",
+    "delatinkorg-414",
+    "veckonarvarooversikt-414"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "publikprofil",
+    "delatinkorg",
+    "veckonarvarooversikt"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c",
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-app|#24382c",
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "undergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 7,
+   "familjer": [
+    "skafferivara-414",
+    "dialogradera-414",
+    "dialogosparat-414",
+    "dialogratelimit-414",
+    "dialogsparameny-414",
+    "utloggningtom-414",
+    "globceremoni-414"
+   ],
+   "familjantal": 7,
+   "artefakter": [
+    "skafferivara",
+    "dialogradera",
+    "dialogosparat",
+    "dialogratelimit",
+    "dialogsparameny",
+    "utloggningtom"
+   ],
+   "princip": "P-SURFACE-APP",
+   "klass": "NO_EXISTING_PALETTE_SOLUTION",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-SURFACE-APP",
+    "grund": "inget befintligt palettvarde klarar principen och villkoren"
+   },
+   "kandidater": [
+    {
+     "varde": "#17251d",
+     "forekomster": 63,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "ingen"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 7
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:textbox · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 3,
+   "familjer": [
+    "mfa-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "mfa"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 3
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:textbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 3,
+   "familjer": [
+    "mfa-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "mfa"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 3
+   }
+  },
+  {
+   "uid": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+   "rafarg": "ram-behallare|#ce7c1e",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+   "splittad": false,
+   "egenskaper": [
+    "border-left-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "snackbars-450",
+    "vmbomrostning-panel",
+    "flergrupp-414"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "snackbars",
+    "vmbomrostning",
+    "flergrupp"
+   ],
+   "princip": "P-GRAPHIC",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-GRAPHIC",
+    "grund": "3 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 183,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "forekomster": 123,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 19,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "textrelationer": null,
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 6,
+   "familjer": [
+    "hem360-362",
+    "langavarden-362",
+    "hemtom-414",
+    "hemladdar-414",
+    "hemoffline-414",
+    "hemfel-414"
+   ],
+   "familjantal": 6,
+   "artefakter": [
+    "hem360",
+    "langavarden",
+    "hemtom",
+    "hemladdar",
+    "hemoffline",
+    "hemfel"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 6
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 11,
+   "familjer": [
+    "hem360-362",
+    "tangentbord-414",
+    "langavarden-362",
+    "chattredigerat-414",
+    "chattmeny-414",
+    "hemtom-414",
+    "hemladdar-414",
+    "hemoffline-414",
+    "hemfel-414",
+    "bredskal-panel",
+    "globinstallera-414"
+   ],
+   "familjantal": 11,
+   "artefakter": [
+    "hem360",
+    "tangentbord",
+    "langavarden",
+    "chattredigerat",
+    "chattmeny",
+    "hemtom"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c",
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 11
+   }
+  },
+  {
+   "uid": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "rafarg": "ikon-kontroll|#17251d",
+   "roll": "ikon-kontroll",
+   "ljus": "#17251d",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "splittad": false,
+   "egenskaper": [
+    "stroke"
+   ],
+   "instanser": 24,
+   "familjer": [
+    "hem360-362",
+    "tangentbord-414",
+    "langavarden-362",
+    "lagaliggande-926",
+    "chattredigerat-414",
+    "chattmeny-414",
+    "hemtom-414",
+    "hemladdar-414",
+    "hemoffline-414",
+    "hemfel-414",
+    "receptkommentarer-414",
+    "lagatimers-414",
+    "bredskal-panel",
+    "bredlandskap-panel",
+    "vmbnormal-panel",
+    "rcbnormal-panel",
+    "rcblaser-panel",
+    "ikbtom-panel",
+    "delatlistaaktiv-414",
+    "vanprofildelning-414",
+    "kontodataexport-414",
+    "dataexportfel-462",
+    "globinstallera-414"
+   ],
+   "familjantal": 23,
+   "artefakter": [
+    "hem360",
+    "tangentbord",
+    "langavarden",
+    "lagaliggande",
+    "chattredigerat",
+    "chattmeny"
+   ],
+   "princip": "P-GRAPHIC",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-GRAPHIC",
+    "grund": "4 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 41,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 37,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 10,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#de9078",
+    "#dca968"
+   ],
+   "textrelationer": null,
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "storsttext-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "storsttext"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "lagaliggande-926",
+    "rcblaser-panel"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "lagaliggande",
+    "rcblaser"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#17251d",
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "recepteditor-default-412"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "formularmorkt"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#17251d"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "bottomark-default-412",
+    "lagasubst-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "arkmorkt",
+    "lagasubst"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 9,
+   "familjer": [
+    "hemtom-414",
+    "lagatimers-414",
+    "vmbnormal-panel",
+    "rcbnormal-panel",
+    "ikbtom-panel",
+    "delatlistaaktiv-414",
+    "vanprofildelning-414",
+    "kontodataexport-414",
+    "dataexportfel-462"
+   ],
+   "familjantal": 9,
+   "artefakter": [
+    "hemtom",
+    "lagatimers",
+    "vmbnormal",
+    "rcbnormal",
+    "ikbtom",
+    "delatlistaaktiv"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed",
+     "#17251d"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 9
+   }
+  },
+  {
+   "uid": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#3f6b4f",
+   "roll": "yta-upphojd",
+   "ljus": "#3f6b4f",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "receptkommentarer-414",
+    "betygperperson-414",
+    "betygsammanslaget-414",
+    "delatmindel-414",
+    "admmatning-panel"
+   ],
+   "familjantal": 5,
+   "artefakter": [
+    "receptkommentarer",
+    "betygperperson",
+    "betygsammanslaget",
+    "delatmindel",
+    "admmatning"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 5
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "receptkommentarer-414",
+    "bredlandskap-panel"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "receptkommentarer",
+    "bredlandskap"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "rafarg": "yta-upphojd|rgba(36,56,44,0.35)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.35)",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 21,
+   "familjer": [
+    "betygvemarket-414",
+    "inkopkategoriordning-414",
+    "inkopkategoribyte-414",
+    "inkopgenererad-414",
+    "skafferilagg-414",
+    "authglomt-414",
+    "onbhoppa-414",
+    "behkamera-414",
+    "behlarm-414",
+    "editorutkastval-414",
+    "cooksnapsynlighet-414",
+    "samtyckefornya-414",
+    "globsession-414",
+    "flertagg-414",
+    "flermeny-414",
+    "flertaggsam-414",
+    "fbanmal-414",
+    "socbegar-414",
+    "socoverlat-414",
+    "kompkalla-414",
+    "kompkallahel-414"
+   ],
+   "familjantal": 21,
+   "artefakter": [
+    "betygvemarket",
+    "inkopkategoriordning",
+    "inkopkategoribyte",
+    "inkopgenererad",
+    "skafferilagg",
+    "authglomt"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 21
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · state:checked · nastlad-yta · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:checkbox · state:checked · nastlad-yta · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "betygvemarket-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "betygvemarket"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "bredskal-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "bredskal"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "bredskal-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "bredskal"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "bredlandskap-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "bredlandskap"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 25,
+   "familjer": [
+    "bredmeny-panel",
+    "vmbnormal-panel",
+    "rcbkommentar-panel",
+    "ikbdelad-panel",
+    "socreaktion-panel",
+    "socgruppinfo-414",
+    "socdelatvan-414"
+   ],
+   "familjantal": 7,
+   "artefakter": [
+    "bredmeny",
+    "vmbnormal",
+    "rcbkommentar",
+    "ikbdelad",
+    "socreaktion",
+    "socgruppinfo"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 25
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 34,
+   "familjer": [
+    "bredmeny-panel",
+    "lgbrotation-panel",
+    "lgbtimer-panel",
+    "veckoplacering-414",
+    "veckoplaceringvald-414",
+    "veckoautoplacerad-414",
+    "veckokalender-414",
+    "veckonarvaro-414",
+    "veckooverflow-414",
+    "veckoflytta-414",
+    "veckoinkop-414"
+   ],
+   "familjantal": 11,
+   "artefakter": [
+    "bredmeny",
+    "lgbrotation",
+    "lgbtimer",
+    "veckoplacering",
+    "veckoplaceringvald",
+    "veckoautoplacerad"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed",
+     "#24382c"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 34
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:textbox · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "vmbtom-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "vmbtom"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 3,
+   "familjer": [
+    "vmbtom-panel",
+    "rcboffline-panel",
+    "kompmallar-panel"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "vmbtom",
+    "rcboffline",
+    "kompmallar"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 3
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "vmbtom-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "vmbtom"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f7e8d2"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "vmbgenererar-panel",
+    "rcbofullstandigt-panel",
+    "flergrupp-414",
+    "socintegritet-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "vmbgenererar",
+    "rcbofullstandigt",
+    "flergrupp",
+    "socintegritet"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "vmbgenererar-panel",
+    "flermeny-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "vmbgenererar",
+    "flermeny"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f0eee2"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "vmbgenererar-panel",
+    "rcbarvegods-panel",
+    "ikbdelad-panel",
+    "socdelatvan-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "vmbgenererar",
+    "rcbarvegods",
+    "ikbdelad",
+    "socdelatvan"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 5
+   }
+  },
+  {
+   "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "vmbkonflikt-panel",
+    "flermeny-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "vmbkonflikt",
+    "flermeny"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+   "rafarg": "ram-behallare|#ce7c1e",
+   "roll": "ram-behallare",
+   "ljus": "#ce7c1e",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+   "splittad": false,
+   "egenskaper": [
+    "border-left-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "vmbkonflikt-panel",
+    "impdubblett-414",
+    "samtyckefornya-414",
+    "flermeny-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "vmbkonflikt",
+    "impdubblett",
+    "samtyckefornya",
+    "flermeny"
+   ],
+   "princip": "P-GRAPHIC",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-GRAPHIC",
+    "grund": "3 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 183,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "rgba(245,244,237,0.4)",
+     "forekomster": 123,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 19,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "rgba(245,244,237,0.18)",
+    "rgba(245,244,237,0.4)",
+    "#de9078"
+   ],
+   "textrelationer": null,
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 3,
+   "familjer": [
+    "vmbdelvis-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "vmbdelvis"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 3
+   }
+  },
+  {
+   "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "rcbofullstandigt-panel",
+    "rcblaser-panel",
+    "kompsason-panel",
+    "installergen-panel"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "rcbofullstandigt",
+    "rcblaser",
+    "kompsason",
+    "installergen"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "rcblaser-panel",
+    "ikbdelad-panel",
+    "fbblockerade-414"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "rcblaser",
+    "ikbdelad",
+    "fbblockerade"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 5
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "lgbrotation-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "lgbrotation"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "lgbrotation-panel",
+    "lgbutan-panel",
+    "globceremoni-414",
+    "fbknapp-414"
+   ],
+   "familjantal": 4,
+   "artefakter": [
+    "lgbrotation",
+    "lgbutan",
+    "globceremoni",
+    "fbknapp"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c",
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · state:grabbed · nastlad-yta · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · state:grabbed · nastlad-yta · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "inkopkategoriordning-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "inkopkategoriordning"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "inkopkategoriordning-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "inkopkategoriordning"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#7d897c ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "undergrupp": "kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "inkopkategoribyte-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "inkopkategoribyte"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 10,
+   "familjer": [
+    "skafferibas-414",
+    "kontosamtycke-414",
+    "kontonotiser-414"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "skafferibas",
+    "kontosamtycke",
+    "kontonotiser"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#8a5212"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 10
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 9,
+   "familjer": [
+    "veckodolda-414",
+    "veckoplacering-414",
+    "veckoplaceringvald-414",
+    "veckokalender-414",
+    "veckooverflow-414"
+   ],
+   "familjantal": 5,
+   "artefakter": [
+    "veckodolda",
+    "veckoplacering",
+    "veckoplaceringvald",
+    "veckokalender",
+    "veckooverflow"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#e6ead9"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 9
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 31,
+   "familjer": [
+    "veckoplacering-414",
+    "veckoplaceringvald-414",
+    "veckoautoplacerad-414",
+    "veckokalender-414",
+    "veckonarvaro-414",
+    "veckooverflow-414",
+    "veckoflytta-414",
+    "veckoinkop-414"
+   ],
+   "familjantal": 8,
+   "artefakter": [
+    "veckoplacering",
+    "veckoplaceringvald",
+    "veckoautoplacerad",
+    "veckokalender",
+    "veckonarvaro",
+    "veckooverflow"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 31
+   }
+  },
+  {
+   "uid": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+   "rafarg": "yta-upphojd|rgba(36,56,44,0.4)",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.4)",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 6,
+   "familjer": [
+    "veckoplaceringavbryt-414",
+    "veckoskrivover-414",
+    "impassistavbryt-414",
+    "impdubblett-414",
+    "moddolj-414",
+    "modradera-414"
+   ],
+   "familjantal": 6,
+   "artefakter": [
+    "veckoplaceringavbryt",
+    "veckoskrivover",
+    "impassistavbryt",
+    "impdubblett",
+    "moddolj",
+    "modradera"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 6
+   }
+  },
+  {
+   "uid": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#3f6b4f",
+   "roll": "yta-upphojd",
+   "ljus": "#3f6b4f",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "veckonarvarooversikt-414",
+    "socflode-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "veckonarvarooversikt",
+    "socflode"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "veckorostning-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "veckorostning"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "onbaldrefel-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "onbaldrefel"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:checkbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 8,
+   "familjer": [
+    "onbateruppta-414",
+    "impassist1-414",
+    "impassist2-414"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "onbateruppta",
+    "impassist1",
+    "impassist2"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 8
+   }
+  },
+  {
+   "uid": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "behfoton-414",
+    "imp3granska-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "behfoton",
+    "imp3granska"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:disabled · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · state:disabled · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 3,
+   "familjer": [
+    "behnotiser-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "behnotiser"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#a9b2a0"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 3
+   }
+  },
+  {
+   "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "imp3granska-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "imp3granska"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#3f6b4f",
+   "roll": "yta-upphojd",
+   "ljus": "#3f6b4f",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 8,
+   "familjer": [
+    "imp3granska-414",
+    "impfil-414",
+    "admmatning-panel"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "imp3granska",
+    "impfil",
+    "admmatning"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 8
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:radio · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "impassist3-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "impassist3"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "samtyckeai-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "samtyckeai"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#627061"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#7d897c",
+   "roll": "yta-upphojd",
+   "ljus": "#7d897c",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "kontostatistik-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "kontostatistik"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "globunderhall-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "globunderhall"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#24382c"
+    ],
+    "paAppytan": true,
+    "barText": true,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "globsession-414",
+    "flertaggsam-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "globsession",
+    "flertaggsam"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "flertagg-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "flertagg"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 5
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "fbblockerade-414",
+    "socflode-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "fbblockerade",
+    "socflode"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:on · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · state:on · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 5,
+   "familjer": [
+    "socintegritet-414",
+    "instportion-panel",
+    "installergen-panel"
+   ],
+   "familjantal": 3,
+   "artefakter": [
+    "socintegritet",
+    "instportion",
+    "installergen"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#3f6b4f",
+     "#7d897c"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 5
+   }
+  },
+  {
+   "uid": "yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "undergrupp": "kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 3,
+   "familjer": [
+    "socintegritet-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "socintegritet"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 3
+   }
+  },
+  {
+   "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:off · nastlad-yta · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#f5f4ed",
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "undergrupp": "kontroll:switch · state:off · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 4,
+   "familjer": [
+    "socintegritet-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "socintegritet"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#7d897c",
+     "#627061"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 4
+   }
+  },
+  {
+   "uid": "yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "rafarg": "yta-kontroll|#7d897c",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "undergrupp": "kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "socintegritet-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "socintegritet"
+   ],
+   "princip": "P-SURFACE-CONTROL",
+   "klass": "PRINCIPLE_DETERMINATE",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-CONTROL",
+    "grund": "exakt ett befintligt palettvarde uppfyller P-SURFACE-CONTROL och samtliga tekniska villkor"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 29,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 19,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": true,
+    "barText": false,
+    "antal": 2
+   }
+  },
+  {
+   "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "rafarg": "yta-upphojd|#ccd1c2",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "socdelatvan-414"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "socdelatvan"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f0eee2"
+    ],
+    "paAppytan": false,
+    "barText": false,
+    "antal": 1
+   }
+  },
+  {
+   "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+   "rafarg": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "admmatning-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "admmatning"
+   ],
+   "princip": "P-TEXT-CONTENT",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-TEXT-CONTENT",
+    "grund": "5 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 285,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 137,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 23,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 13,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#8fb89a",
+     "forekomster": 12,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "textrelationer": {
+    "bakgrunder": [
+     "#93a48d"
+    ],
+    "krav": 4.5,
+    "antal": 1
+   },
+   "ytrelationer": null
+  },
+  {
+   "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6",
+   "rafarg": "text-innehall|#17251d",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "splittad": true,
+   "egenskaper": [
+    "color"
+   ],
+   "instanser": 1,
+   "familjer": [
+    "admmatning-panel"
+   ],
+   "familjantal": 1,
+   "artefakter": [
+    "admmatning"
+   ],
+   "princip": "P-TEXT-CONTENT",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": null,
+    "princip": "P-TEXT-CONTENT",
+    "grund": "5 varden ar likvardigt rimliga efter principanalys — valet ar visuellt"
+   },
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "forekomster": 285,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#c9d3c4",
+     "forekomster": 137,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#dca968",
+     "forekomster": 23,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#de9078",
+     "forekomster": 13,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#8fb89a",
+     "forekomster": 12,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#93a48d",
+    "#c9d3c4",
+    "#dca968",
+    "#de9078",
+    "#8fb89a"
+   ],
+   "textrelationer": {
+    "bakgrunder": [
+     "#b4bfa6"
+    ],
+    "krav": 4.5,
+    "antal": 1
+   },
+   "ytrelationer": null
+  },
+  {
+   "uid": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "rafarg": "yta-upphojd|#f0eee2",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "splittad": false,
+   "egenskaper": [
+    "background-color"
+   ],
+   "instanser": 2,
+   "familjer": [
+    "kompkalla-414",
+    "kompkallahel-414"
+   ],
+   "familjantal": 2,
+   "artefakter": [
+    "kompkalla",
+    "kompkallahel"
+   ],
+   "princip": "P-SURFACE-ELEVATED",
+   "klass": "PRINCIPLE_RECOMMENDED",
+   "OBSERVED_MAPPING_EVIDENCE": {
+    "styrka": "NONE",
+    "not": "ingen tackt familj anvander denna roll med detta ljusvarde"
+   },
+   "DESIGN_RECOMMENDATION_FROM_PRINCIPLE": {
+    "varde": "#24382c",
+    "princip": "P-SURFACE-ELEVATED",
+    "grund": "flera varden ar tekniskt mojliga; #24382c bar redan samma funktion i den verifierade morka populationen med tydlig marginal"
+   },
+   "kandidater": [
+    {
+     "varde": "#24382c",
+     "forekomster": 84,
+     "brister": [],
+     "haller": true
+    },
+    {
+     "varde": "#17251d",
+     "forekomster": 56,
+     "brister": [
+      "exakt 1:1 mot appytan — fyllningen skulle sluta bara"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "rgba(245,244,237,0.18)",
+     "forekomster": 3,
+     "brister": [
+      "ljus text pa ytan skulle falla (1)"
+     ],
+     "haller": false
+    },
+    {
+     "varde": "#4a5c43",
+     "forekomster": 1,
+     "brister": [],
+     "haller": true
+    }
+   ],
+   "kvarEfterGate": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "textrelationer": null,
+   "ytrelationer": {
+    "foraldrar": [
+     "#f5f4ed"
+    ],
+    "paAppytan": false,
+    "barText": true,
+    "antal": 2
+   }
+  }
+ ]
+}

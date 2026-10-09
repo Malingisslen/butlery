@@ -7,24 +7,23 @@
 Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): package 8 is done when the tests are green and every known failure has a ticket; the migration is complete only when the known-failure list is empty.
 
 - **Package 8 done:** YES_WHEN_CI_IS_GREEN: every known failure has a registered ticket (BUT-nnnn in Linear); green tests are shown by CI, not by this census
-- **Migration complete:** NO: 6 known failures and 0 residue lists are not empty
-- Known failures: 6 (transitions 6)
+- **Migration complete:** NO: 5 known failures and 0 residue lists are not empty
+- Known failures: 5 (transitions 5)
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Accepted failures, counted apart (D5 = B): 11
 - Resting transition requirements, counted apart: 1
-- Tickets: 2 registered in Linear
+- Tickets: 1 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 0
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 5, MISSING 1, RESTING 1, TESTED 74.
+Required: 81 (block 288: 81). BUILT_NOT_REACHABLE 5, RESTING 1, TESTED 75.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built. RESTING is a requirement Malin has put to rest; it is listed apart and is not a known failure.
 
 | Transition | Status | Ticket |
 | --- | --- | --- |
-| `TR::FLOW::06::aterstall::satt-nytt` | MISSING | BUT-2170 |
 | `TR::FLOW::06::mfa::aterstallning-engangskoder` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::06::mfa::automatisk-verifiering` | BUILT_NOT_REACHABLE | BUT-2142 |
 | `TR::FLOW::06::mfa::ominloggning-kravs` | BUILT_NOT_REACHABLE | BUT-2142 |
@@ -81,7 +80,6 @@ Every ticket is a registered Linear issue. A failure whose ticket is not a BUT-n
 | Ticket | Findings | Title (package 8 tickets) |
 | --- | --- | --- |
 | BUT-2142 | transitions 5 |  |
-| BUT-2170 | transitions 1 |  |
 
 ## Ratchets and adoption lists
 

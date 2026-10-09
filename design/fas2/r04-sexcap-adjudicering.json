@@ -1,0 +1,346 @@
+{
+ "$schema": "butlery-r04-sexcap-adjudicering/1",
+ "$datum": "2026-08-11",
+ "$regel": "Ingen klassificering ur .sc-cap-klassen. Ingen analogi fran de tidigare 51. Varje forekomst bedomd ur faktisk funktion, kallstruktur, visuell kontext och relation till produktkontroller.",
+ "sex_occurrences": [
+  {
+   "id": "bredbrytpunkter#26",
+   "artifact": "bredbrytpunkter",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "sourceAnchor": {
+    "elementOrdinal": 26,
+    "tagg": "div",
+    "klass": "sc-cap"
+   },
+   "text": "Kodens sex · vår tre",
+   "visuellKontext": {
+    "farg": "rgb(91, 105, 89)",
+    "storlek": "10.5px",
+    "bredd": 974,
+    "iProduktmock": false,
+    "foralder": {
+     "tagg": "div",
+     "klass": null,
+     "stil": "width: 1024px; border: 1px solid rgb(204, 209, 194); border-radius: 20px; background: rgb(245, 244, 237); box-",
+     "kontrollerIBlocket": 0,
+     "barn": 4
+    },
+    "syskonInnehall": [
+     "320golv 600 768skena · två spalter 1024utfälld · tre kolumner 1280 1920",
+     "320–767En spalt. Bottenrad. Rundad saffransknapp i mitten. Även liggande. 768–10",
+     "Max radlängd gäller alltid, även på mobil: infinity går bort. Löptext får aldrig"
+    ]
+   },
+   "narmasteScopeIdag": {
+    "scope": null,
+    "kalla": "ingen"
+   },
+   "kontrollerIArtefakten": 0,
+   "kontrollerIEgetBlock": 0,
+   "produktmockarIArtefakten": 0,
+   "verdikt": "ANNOTATION",
+   "skal": "Rubrik over en brytpunktstabell som stallar kodens sex brytpunkter mot ramens tre. Artefakten har 0 kontroller, 0 produktmockar och renderar ingen gransnittsyta — hela innehallet ar en specifikation riktad till lasaren av designspecen.",
+   "metadataandringKravs": false,
+   "varfor": "Nuvarande strukturella scope (utanfor varje produktrot) motsvarar den semantiska domen ANNOTATION — fragmentet ligger redan utanfor produktnamnaren. En positiv annotationsgrans hojer evidensen men andrar ingen siffra."
+  },
+  {
+   "id": "bredgrid#18",
+   "artifact": "bredgrid",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "sourceAnchor": {
+    "elementOrdinal": 18,
+    "tagg": "div",
+    "klass": "sc-cap"
+   },
+   "text": "768 · två kolumner",
+   "visuellKontext": {
+    "farg": "rgb(91, 105, 89)",
+    "storlek": "10.5px",
+    "bredd": 392,
+    "iProduktmock": false,
+    "foralder": {
+     "tagg": "div",
+     "klass": null,
+     "stil": "",
+     "kontrollerIBlocket": 0,
+     "barn": 2
+    },
+    "syskonInnehall": [
+     "Pannbiffar med lök35 min · 4 port Ugnspannkaka40 min · 6 port Kolumn 168 px — un"
+    ]
+   },
+   "narmasteScopeIdag": {
+    "scope": null,
+    "kalla": "ingen"
+   },
+   "kontrollerIArtefakten": 0,
+   "kontrollerIEgetBlock": 0,
+   "produktmockarIArtefakten": 2,
+   "verdikt": "ANNOTATION",
+   "skal": "Etikett som namnger vilket jamforelsefall panelen bredvid visar (kortrutnatet vid 768 px). Den beskriver ritningens fall, inte nagot anvandaren ser i produkten.",
+   "metadataandringKravs": false,
+   "varfor": "Nuvarande strukturella scope (utanfor varje produktrot) motsvarar den semantiska domen ANNOTATION — fragmentet ligger redan utanfor produktnamnaren. En positiv annotationsgrans hojer evidensen men andrar ingen siffra."
+  },
+  {
+   "id": "bredgrid#33",
+   "artifact": "bredgrid",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "sourceAnchor": {
+    "elementOrdinal": 33,
+    "tagg": "div",
+    "klass": "sc-cap"
+   },
+   "text": "1024 · tre kolumner, aldrig fyra",
+   "visuellKontext": {
+    "farg": "rgb(91, 105, 89)",
+    "storlek": "10.5px",
+    "bredd": 600,
+    "iProduktmock": false,
+    "foralder": {
+     "tagg": "div",
+     "klass": null,
+     "stil": "",
+     "kontrollerIBlocket": 0,
+     "barn": 2
+    },
+    "syskonInnehall": [
+     "Pannbiffar35 min Ugnspannkaka40 min Ärtsoppa90 min Samma proportion som vid 768 "
+    ]
+   },
+   "narmasteScopeIdag": {
+    "scope": null,
+    "kalla": "ingen"
+   },
+   "kontrollerIArtefakten": 0,
+   "kontrollerIEgetBlock": 0,
+   "produktmockarIArtefakten": 2,
+   "verdikt": "ANNOTATION",
+   "skal": "Samma sak for det andra jamforelsefallet, 1024 px. Formuleringen \"aldrig fyra\" ar en regel till lasaren, inte gransnittstext.",
+   "metadataandringKravs": false,
+   "varfor": "Nuvarande strukturella scope (utanfor varje produktrot) motsvarar den semantiska domen ANNOTATION — fragmentet ligger redan utanfor produktnamnaren. En positiv annotationsgrans hojer evidensen men andrar ingen siffra."
+  },
+  {
+   "id": "bredarbete#7",
+   "artifact": "bredarbete",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "sourceAnchor": {
+    "elementOrdinal": 7,
+    "tagg": "div",
+    "klass": "sc-cap"
+   },
+   "text": "Rättelser · liten kod",
+   "visuellKontext": {
+    "farg": "rgb(91, 105, 89)",
+    "storlek": "10.5px",
+    "bredd": 296,
+    "iProduktmock": false,
+    "foralder": {
+     "tagg": "div",
+     "klass": null,
+     "stil": "padding: 14px; border-right: 1px solid rgb(204, 209, 194);",
+     "kontrollerIBlocket": 0,
+     "barn": 2
+    },
+    "syskonInnehall": [
+     "Skenan vid 768 i stället för 600 · höjdvillkoret · maxContentWidth utan infinity"
+    ]
+   },
+   "narmasteScopeIdag": {
+    "scope": null,
+    "kalla": "ingen"
+   },
+   "kontrollerIArtefakten": 0,
+   "kontrollerIEgetBlock": 0,
+   "produktmockarIArtefakten": 0,
+   "verdikt": "ANNOTATION",
+   "skal": "Kolumnrubrik i en arbetsinsatsuppstallning (\"Vad detta kostar\"). Beskriver hur mycket kod respektive designarbete etappen kraver. Artefakten har 0 kontroller och 0 produktmockar.",
+   "metadataandringKravs": false,
+   "varfor": "Nuvarande strukturella scope (utanfor varje produktrot) motsvarar den semantiska domen ANNOTATION — fragmentet ligger redan utanfor produktnamnaren. En positiv annotationsgrans hojer evidensen men andrar ingen siffra."
+  },
+  {
+   "id": "bredarbete#14",
+   "artifact": "bredarbete",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "sourceAnchor": {
+    "elementOrdinal": 14,
+    "tagg": "div",
+    "klass": "sc-cap"
+   },
+   "text": "Form · designarbete gjort",
+   "visuellKontext": {
+    "farg": "rgb(91, 105, 89)",
+    "storlek": "10.5px",
+    "bredd": 296,
+    "iProduktmock": false,
+    "foralder": {
+     "tagg": "div",
+     "klass": null,
+     "stil": "padding: 14px; border-right: 1px solid rgb(204, 209, 194);",
+     "kontrollerIBlocket": 0,
+     "barn": 2
+    },
+    "syskonInnehall": [
+     "Skenan i Butlerys vokabulär · kortets proportion och kolumngolv · marginalens in"
+    ]
+   },
+   "narmasteScopeIdag": {
+    "scope": null,
+    "kalla": "ingen"
+   },
+   "kontrollerIArtefakten": 0,
+   "kontrollerIEgetBlock": 0,
+   "produktmockarIArtefakten": 0,
+   "verdikt": "ANNOTATION",
+   "skal": "Samma uppstallning, kolumnen for designarbete.",
+   "metadataandringKravs": false,
+   "varfor": "Nuvarande strukturella scope (utanfor varje produktrot) motsvarar den semantiska domen ANNOTATION — fragmentet ligger redan utanfor produktnamnaren. En positiv annotationsgrans hojer evidensen men andrar ingen siffra."
+  },
+  {
+   "id": "bredarbete#17",
+   "artifact": "bredarbete",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "sourceAnchor": {
+    "elementOrdinal": 17,
+    "tagg": "div",
+    "klass": "sc-cap"
+   },
+   "text": "Bygge · verklig insats",
+   "visuellKontext": {
+    "farg": "rgb(91, 105, 89)",
+    "storlek": "10.5px",
+    "bredd": 297,
+    "iProduktmock": false,
+    "foralder": {
+     "tagg": "div",
+     "klass": null,
+     "stil": "padding: 14px;",
+     "kontrollerIBlocket": 0,
+     "barn": 2
+    },
+    "syskonInnehall": [
+     "Veckomenyns rutnät (ny vy) · receptets omdelning med klistrad spalt och en skrol"
+    ]
+   },
+   "narmasteScopeIdag": {
+    "scope": null,
+    "kalla": "ingen"
+   },
+   "kontrollerIArtefakten": 0,
+   "kontrollerIEgetBlock": 0,
+   "produktmockarIArtefakten": 0,
+   "verdikt": "ANNOTATION",
+   "skal": "Samma uppstallning, kolumnen for byggnadsinsats.",
+   "metadataandringKravs": false,
+   "varfor": "Nuvarande strukturella scope (utanfor varje produktrot) motsvarar den semantiska domen ANNOTATION — fragmentet ligger redan utanfor produktnamnaren. En positiv annotationsgrans hojer evidensen men andrar ingen siffra."
+  }
+ ],
+ "utfall": {
+  "ANNOTATION": 6,
+  "PRODUCT_CONTENT": 0,
+  "HARNESS": 0,
+  "UNRESOLVED": 0,
+  "metadataandringarSomKravs": 0
+ },
+ "$bredare_fynd": {
+  "vad": "Adjudiceringen av de sex kravde en genomgang av all text som ligger utanfor bade produktrot och ritningsetikett. Den ar 104 fragment i 6 artefakter — inte 6.",
+  "fragment": 104,
+  "artefakter": {
+   "betygsammanslaget": 2,
+   "bredbrytpunkter": 18,
+   "bredgrid": 15,
+   "bredarbete": 18,
+   "onbjamforelse": 28,
+   "editorfelkontrakt": 23
+  },
+  "domar": {
+   "bredbrytpunkter": {
+    "fragment": 18,
+    "verdikt": "ANNOTATION",
+    "skal": "brytpunktsspecifikation; 0 kontroller, 0 mockar"
+   },
+   "bredarbete": {
+    "fragment": 18,
+    "verdikt": "ANNOTATION",
+    "skal": "arbetsinsatsuppstallning med ordningslista; 0 kontroller, 0 mockar"
+   },
+   "onbjamforelse": {
+    "fragment": 28,
+    "verdikt": "ANNOTATION",
+    "skal": "jamforelsetabell \"Fem sidor blir fyra\" med statusmarken KVAR/KORTAD/FLYTTAD och korsreferenser till andra ritningar — beskriver designandringen, inte produkten"
+   },
+   "editorfelkontrakt": {
+    "fragment": 23,
+    "verdikt": "ANNOTATION",
+    "skal": "felkopiakontrakt: fyra natverksfall med produktens formulering i citattecken plus \"Atgard:\"-rader och en avslutande \"Regeln:\" — en specifikation OM produkttexten, inte produkttexten i drift"
+   },
+   "bredgrid": {
+    "fragment": 15,
+    "verdikt": "BLANDAD",
+    "produkt": 10,
+    "annotation": 5,
+    "skal": "tva .sc-tab-mockar med verkliga receptkort (produkt) plus tva etiketter och tva mattnoter (annotation)"
+   },
+   "betygsammanslaget": {
+    "fragment": 2,
+    "verdikt": "PRODUCT_CONTENT",
+    "skal": "de tva knapparna \"Andra\" och \"Planera igen\" i skarmens bottenrad"
+   }
+  }
+ },
+ "scopedefekter": [
+  {
+   "id": "SD-01",
+   "artifact": "betygsammanslaget",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "vad": "Bottenradens knappbalk hamnar UTANFOR .sc-phone i DOM:en.",
+   "rotorsak": "En rad i kallan avslutas med tva </div> i rad, vilket stanger telefonramen for tidigt. Knappbalken blir syskon till ramen i stallet for barn.",
+   "bevis": "DOM: .sc-phone har ordinal 6 och 66 descendanter; knapparna har ordinal 74 och 75 och .sc-phone.contains() ar false for bada. Geometriskt ligger balken 9 px under ramen, med samma bredd (414 px).",
+   "berordProdukttext": 2,
+   "tillkommandeKontrolltext": 2,
+   "kontrastOmAtgardad": "11.36 och 4.95 mot troskel 4.5 — bada godkanda",
+   "rekommenderadAtgard": "Ratta nastlingen i kallan sa att knappbalken ater blir barn till .sc-phone. Det ar en markupfix, inte metadata — att skriva en produktgrans pa den forlupna balken skulle dolja ett layoutfel med metadata.",
+   "alternativ": "data-conformance-scope=\"product\" pa knappbalken (ordinal 73). Loser mataren men inte ritningen.",
+   "not": "R-01:s frysta motor mater bada kontrollerna redan i dag och ger 0 fynd — dess kontrollpopulation kraver inte .sc-phone-nastling. Skillnaden mot produkttextmotorn ar en verklig populationsdifferens och redovisas som sadan."
+  },
+  {
+   "id": "SD-02",
+   "artifact": "bredgrid",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "vad": "Tva .sc-tab-mockar med verklig produkttext saknar produktgrans.",
+   "rotorsak": "bredgrid ingick aldrig i de 32 ramlosa familjerna och fick darfor ingen produktgrans i metadatabatchen. Mockarna bar 10 produkttextfragment (receptkort) och 0 kontroller.",
+   "berordProdukttext": 10,
+   "kontrastOmAtgardad": "11.36 for korttitlarna och 4.75 for undertexterna mot troskel 4.5 — samtliga godkanda",
+   "rekommenderadAtgard": "data-conformance-scope=\"product\" pa de tva .sc-tab-mockarna, plus annotation pa de tva etiketterna och de tva mattnoterna.",
+   "not": "Samma evidensregel som i punkt 0 galler: mockarna kvalificerar pa produkttext aven utan kontroller."
+  }
+ ],
+ "ljus_denominator": {
+  "nu": {
+   "PRODUCT_CONTROL_TEXT": 1268,
+   "PRODUCT_STANDALONE_TEXT": 3861,
+   "LIGHT_PRODUCT_TEXT_TOTAL": 5129,
+   "ANNOTATION_TEXT": 216,
+   "UTANFOR_PRODUKTROT": 2750,
+   "UNRESOLVED": 0,
+   "unknown": 0,
+   "fynd": 0
+  },
+  "fran_de_sex": {
+   "forandring": 0,
+   "varfor": "alla sex ar ANNOTATION och ligger redan utanfor produktnamnaren"
+  },
+  "om_scopedefekterna_atgardas": {
+   "PRODUCT_CONTROL_TEXT": 1270,
+   "PRODUCT_STANDALONE_TEXT": 3871,
+   "LIGHT_PRODUCT_TEXT_TOTAL": 5141,
+   "tillkommandeFynd": 0,
+   "tillkommandeUnknown": 0
+  }
+ },
+ "status": {
+  "LIGHT_PRODUCT_TEXT_CONTRAST": "VERIFIED FOR CURRENT ADJUDICATED PRODUCT SCOPE",
+  "varfor_inte_CLOSED": "Tva scopedefekter ar oppna: SD-01 och SD-02. 12 produkttextfragment ligger i dag utanfor produktscope trots att de semantiskt ar produktinnehall. Populationen ar darmed inte komplett, aven om varje mott fragment ar gront.",
+  "de_sex": "STANGDA — 6 ANNOTATION, 0 UNRESOLVED, 0 metadataandringar kravs",
+  "OVERALL_DARK_PRODUCT_TEXT": "OPEN"
+ }
+}

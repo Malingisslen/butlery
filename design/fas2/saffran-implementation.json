@@ -1,0 +1,3977 @@
+{
+ "$schema": "butlery-saffran-implementation/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "31756db",
+ "$typ": "PRODUKTIMPLEMENTATION av MECHANISM C. Vag 2: ZERO_UNEXPECTED_GEOMETRY_DELTA for exakt tolv tvaknappsrader, ZERO_GEOMETRY_DELTA for ovriga 56.",
+ "$status": "SAFFRON PRIMARY-ACTION REMEDIATION · ICKE-TEXT GENOMFORD OCH VERIFIERAD",
+ "A_beslut": {
+  "mekanism": "C",
+  "token": "PRIMARY_ACTION_REQUIRED_BORDER_LIGHT",
+  "varde": "#3F5145",
+  "bredd": "1.5px",
+  "stil": "solid",
+  "fyllning": "#CE7C1E OFORANDRAD",
+  "pressedState": "#9A5C14 OFORANDRAD",
+  "ickeKontrollSaffran": "126 UTANFOR SCOPE"
+ },
+ "B_skrivrakning": {
+  "A_PRODUCT_FILES_CHANGED": 13,
+  "B_SOURCE_ELEMENTS_CHANGED": 68,
+  "C_SOURCE_WRITE_SITES": 68,
+  "D_ATTRIBUTE_MUTATIONS": 0,
+  "E_STYLE_PROPERTY_MUTATIONS": 117,
+  "F_TOTAL_FIELD_MUTATIONS": 117,
+  "perFalt": {
+   "style:border": 68,
+   "style:padding-top": 4,
+   "style:padding-right": 9,
+   "style:padding-bottom": 4,
+   "style:padding-left": 9,
+   "style:box-sizing": 23
+  },
+  "gitRader": {
+   "plus": 68,
+   "minus": 68
+  },
+  "perFil": [
+   {
+    "plus": 1,
+    "minus": 1,
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+   },
+   {
+    "plus": 2,
+    "minus": 2,
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+   },
+   {
+    "plus": 6,
+    "minus": 6,
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+   },
+   {
+    "plus": 17,
+    "minus": 17,
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+   },
+   {
+    "plus": 1,
+    "minus": 1,
+    "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+   },
+   {
+    "plus": 7,
+    "minus": 7,
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+   },
+   {
+    "plus": 4,
+    "minus": 4,
+    "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+   },
+   {
+    "plus": 3,
+    "minus": 3,
+    "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+   },
+   {
+    "plus": 6,
+    "minus": 6,
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+   },
+   {
+    "plus": 2,
+    "minus": 2,
+    "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+   },
+   {
+    "plus": 6,
+    "minus": 6,
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+   },
+   {
+    "plus": 7,
+    "minus": 7,
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+   },
+   {
+    "plus": 6,
+    "minus": 6,
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   }
+  ],
+  "$logiskaRelationer": {
+   "ickeTextRamfixar": 68,
+   "textfixar": 0
+  },
+  "$not": "Talet 74 ur beslutslasningen holl inte. De sex textmalen vederlades maskinellt (se avsnitt K). 117 stildeklarationer pa 68 kallelement ar den tekniska skrivrakningen; 68 ar antalet logiska icketextrelationer."
+ },
+ "C_mekanismer": {
+  "M0_ENBART_RAM": {
+   "antal": 40,
+   "vad": "elementet var redan border-box; bara ramdeklarationen skrevs"
+  },
+  "M1_BORDER_BOX": {
+   "antal": 19,
+   "vad": "ram + box-sizing:border-box sa att ramen ritas inuti den befintliga ytan"
+  },
+  "M2_BORDER_BOX_PADDINGKOMP": {
+   "antal": 5,
+   "vad": "som M1, plus horisontell paddingkompensation 1.5 px per sida for innehallsdriven bredd"
+  },
+  "M3_FYRSIDIG_PADDINGKOMP": {
+   "antal": 4,
+   "vad": "fyrsidig paddingkompensation UTAN box-sizing",
+   "$varfor": "Dessa fyra ingar ocksa i den frysta 24-migreringen och bar en min-height som ar RAKNAD for content-boxen (48 minus padding). En overgang till border-box skulle tyst gora om 48-garantin till en garanti om min-height-vardet. Boxmodellen lamnas darfor orord och ramen tas ur paddingen pa alla fyra sidor.",
+   "medlemmar": [
+    {
+     "id": "tomtrecept|16",
+     "minHeight": "28px",
+     "paddingFore": {
+      "t": 10,
+      "r": 18,
+      "b": 10,
+      "l": 18
+     },
+     "paddingEfter": {
+      "t": "8.5px",
+      "r": "16.5px",
+      "b": "8.5px",
+      "l": "16.5px"
+     }
+    },
+    {
+     "id": "forfragningar|15",
+     "minHeight": "32px",
+     "paddingFore": {
+      "t": 8,
+      "r": 8,
+      "b": 8,
+      "l": 8
+     },
+     "paddingEfter": {
+      "t": "6.5px",
+      "r": "6.5px",
+      "b": "6.5px",
+      "l": "6.5px"
+     }
+    },
+    {
+     "id": "forfragningar|25",
+     "minHeight": "32px",
+     "paddingFore": {
+      "t": 8,
+      "r": 8,
+      "b": 8,
+      "l": 8
+     },
+     "paddingEfter": {
+      "t": "6.5px",
+      "r": "6.5px",
+      "b": "6.5px",
+      "l": "6.5px"
+     }
+    },
+    {
+     "id": "vanprofil|33",
+     "minHeight": "26px",
+     "paddingFore": {
+      "t": 11,
+      "r": 11,
+      "b": 11,
+      "l": 11
+     },
+     "paddingEfter": {
+      "t": "9.5px",
+      "r": "9.5px",
+      "b": "9.5px",
+      "l": "9.5px"
+     }
+    }
+   ]
+  },
+  "$ejAnvant": [
+   "box-shadow-substitution",
+   "outline",
+   "marginalkompensation",
+   "andring av sekundarknappens styling"
+  ]
+ },
+ "G_geometri56": {
+  "krav": "ZERO_GEOMETRY_DELTA",
+  "antal": 56,
+  "medNollDelta": 56,
+  "utfall": "UPPFYLLT"
+ },
+ "H_geometri12": {
+  "krav": "ZERO_UNEXPECTED_GEOMETRY_DELTA",
+  "poster": [
+   {
+    "id": "inkopmerge|28",
+    "tillaten": 1.203,
+    "faktisk": {
+     "dx": -1.203,
+     "dy": 0,
+     "dw": 1.203,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "inkopmerge|27",
+     "breddFore": 144.203,
+     "breddEfter": 143,
+     "dw": -1.203,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "inkopmergeoppen|39",
+    "tillaten": 1.203,
+    "faktisk": {
+     "dx": -1.203,
+     "dy": 0,
+     "dw": 1.203,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "inkopmergeoppen|38",
+     "breddFore": 144.203,
+     "breddEfter": 143,
+     "dw": -1.203,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "okandingrediens|45",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "okandingrediens|44",
+     "breddFore": 179.5,
+     "breddEfter": 178,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "veckoallergi|55",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "veckoallergi|54",
+     "breddFore": 179.5,
+     "breddEfter": 178,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "utloggningtom|7",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "utloggningtom|6",
+     "breddFore": 156.5,
+     "breddEfter": 155,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "betygsammanslaget|69",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "betygsammanslaget|68",
+     "breddFore": 179.5,
+     "breddEfter": 178,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "inkopbockad|24",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "inkopbockad|23",
+     "breddFore": 166,
+     "breddEfter": 164.5,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "authglomt|16",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "authglomt|15",
+     "breddFore": 155.5,
+     "breddEfter": 154,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "behkamera|12",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "behkamera|11",
+     "breddFore": 155.5,
+     "breddEfter": 154,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "cooksnapsynlighet|29",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "cooksnapsynlighet|28",
+     "breddFore": 159.5,
+     "breddEfter": 158,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "vanprofildelning|54",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": -1.5,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "vanprofildelning|51",
+     "breddFore": 183.5,
+     "breddEfter": 182,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   },
+   {
+    "id": "kontodataexport|41",
+    "tillaten": 1.5,
+    "faktisk": {
+     "dx": 0,
+     "dy": 0,
+     "dw": 1.5,
+     "dh": 0
+    },
+    "inomTillaten": true,
+    "vertikalOrord": true,
+    "partner": {
+     "id": "kontodataexport|46",
+     "breddFore": 168,
+     "breddEfter": 166.5,
+     "dw": -1.5,
+     "hojdOforandrad": true,
+     "traffFore": 48,
+     "traffEfter": 48,
+     "roll": "button"
+    },
+    "summaBredd": 0
+   }
+  ],
+  "radkontrakt": {
+   "radensYttremattOforandrat": true,
+   "vertikalPositionOforandrad": true,
+   "radhojdOforandrad": true,
+   "mellanrumOforandrat": true,
+   "radbrytningarOforandrade": true,
+   "klippOforandrat": true,
+   "nyaOverlapp": 0,
+   "nedstromsRorelse": 0,
+   "skarmstorleksdelta": 0,
+   "radensYttrekanterOforandrade": true,
+   "$mellanrumsmetod": "mellanrummet mats som avstandet mellan malets och partnerns rutor, inte som partnerns x-koordinat. I elva rader ligger partnern till vanster och malet vaxer at vanster; i en rad (kontodataexport) ar det tvartom. I bada fallen ar mellanrummet och radens ytterkanter identiska fore och efter."
+  },
+  "ovrigaRorda": {
+   "direktaPartner": 12,
+   "barnIPartnern": 14,
+   "$forklaring": "Nar partnern krymper 1.5 px centreras dess eget innehall om. De 14 ovriga rorda elementen ar samtliga barn INUTI partnerknappen och flyttar sig 0.75 px i sidled. Ingen av dem ligger utanfor undantagsraden.",
+   "poster": [
+    {
+     "id": "vanprofildelning|52",
+     "dx": -0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "vanprofildelning|53",
+     "dx": -0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "vanprofildelning|55",
+     "dx": -0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "vanprofildelning|56",
+     "dx": -0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "vanprofildelning|57",
+     "dx": -0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "vanprofildelning|58",
+     "dx": -0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|42",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|43",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|44",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|45",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|47",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|48",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|49",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    },
+    {
+     "id": "kontodataexport|50",
+     "dx": 0.75,
+     "dy": 0,
+     "dw": 0,
+     "dh": 0
+    }
+   ]
+  },
+  "utfall": "UPPFYLLT",
+  "mellanrum": [
+   {
+    "id": "inkopmerge|28",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 69,
+    "radVansterEfter": 69,
+    "radHogerFore": 433,
+    "radHogerEfter": 433,
+    "radLika": true
+   },
+   {
+    "id": "inkopmergeoppen|39",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 69,
+    "radVansterEfter": 69,
+    "radHogerFore": 433,
+    "radHogerEfter": 433,
+    "radLika": true
+   },
+   {
+    "id": "okandingrediens|45",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 69,
+    "radVansterEfter": 69,
+    "radHogerFore": 433,
+    "radHogerEfter": 433,
+    "radLika": true
+   },
+   {
+    "id": "veckoallergi|55",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 69,
+    "radVansterEfter": 69,
+    "radHogerFore": 433,
+    "radHogerEfter": 433,
+    "radLika": true
+   },
+   {
+    "id": "utloggningtom|7",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 92,
+    "radVansterEfter": 92,
+    "radHogerFore": 410,
+    "radHogerEfter": 410,
+    "radLika": true
+   },
+   {
+    "id": "betygsammanslaget|69",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 69,
+    "radVansterEfter": 69,
+    "radHogerFore": 433,
+    "radHogerEfter": 433,
+    "radLika": true
+   },
+   {
+    "id": "inkopbockad|24",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 82.5,
+    "radVansterEfter": 82.5,
+    "radHogerFore": 419.5,
+    "radHogerEfter": 419.5,
+    "radLika": true
+   },
+   {
+    "id": "authglomt|16",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 93,
+    "radVansterEfter": 93,
+    "radHogerFore": 409,
+    "radHogerEfter": 409,
+    "radLika": true
+   },
+   {
+    "id": "behkamera|12",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 93,
+    "radVansterEfter": 93,
+    "radHogerFore": 409,
+    "radHogerEfter": 409,
+    "radLika": true
+   },
+   {
+    "id": "cooksnapsynlighet|29",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 89,
+    "radVansterEfter": 89,
+    "radHogerFore": 413,
+    "radHogerEfter": 413,
+    "radLika": true
+   },
+   {
+    "id": "vanprofildelning|54",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 65,
+    "radVansterEfter": 65,
+    "radHogerFore": 437,
+    "radHogerEfter": 437,
+    "radLika": true
+   },
+   {
+    "id": "kontodataexport|41",
+    "gapFore": 8,
+    "gapEfter": 8,
+    "gapLika": true,
+    "radVansterFore": 80.5,
+    "radVansterEfter": 80.5,
+    "radHogerFore": 421.5,
+    "radHogerEfter": 421.5,
+    "radLika": true
+   }
+  ]
+ },
+ "I_traffytor": {
+  "R02fore": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "R02efter": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "de68UnderKrav": 0,
+  "partnerUnderKrav": 0,
+  "nyaOverlapp": 0,
+  "utfall": "R-02 OFORANDRAD GRON"
+ },
+ "J_ickeText": {
+  "krav": 3,
+  "perKontext": [
+   {
+    "kontext": "K1",
+    "namn": "primar kompakt pa ljus",
+    "antal": 35,
+    "angransande": "rgb(245, 244, 237)",
+    "kvotFyllning": 2.918,
+    "kvotRamForvantad": 7.698,
+    "kvotRamUppmatt": 7.698,
+    "stammer": true,
+    "utfall": "REQUIRED_FAIL -> REQUIRED_PASS"
+   },
+   {
+    "kontext": "K2",
+    "namn": "primar full bredd pa ljus",
+    "antal": 27,
+    "angransande": "rgb(245, 244, 237)",
+    "kvotFyllning": 2.918,
+    "kvotRamForvantad": 7.698,
+    "kvotRamUppmatt": 7.698,
+    "stammer": true,
+    "utfall": "REQUIRED_FAIL -> REQUIRED_PASS"
+   },
+   {
+    "kontext": "K3",
+    "namn": "primar pa ljusgron",
+    "antal": 4,
+    "angransande": "rgb(230, 234, 217)",
+    "kvotFyllning": 2.626,
+    "kvotRamForvantad": 6.926,
+    "kvotRamUppmatt": 6.926,
+    "stammer": true,
+    "utfall": "REQUIRED_FAIL -> REQUIRED_PASS"
+   },
+   {
+    "kontext": "K4",
+    "namn": "primar pa pappersvit",
+    "antal": 2,
+    "angransande": "rgb(240, 238, 226)",
+    "kvotFyllning": 2.763,
+    "kvotRamForvantad": 7.288,
+    "kvotRamUppmatt": 7.288,
+    "stammer": true,
+    "utfall": "REQUIRED_FAIL -> REQUIRED_PASS"
+   }
+  ],
+  "allaOverKrav": 68,
+  "allaStammerMotPrognos": 68,
+  "ramMotFyllning": [
+   2.638
+  ],
+  "$ramMotFyllning": "Diagnostisk information. Inget 3:1-krav palaggs relationen ram mot saffransinteriör. Den remedierade relationen ar ram mot faktisk angransande yta.",
+  "matpipelinen": {
+   "grafiskaDelarFore": 1676,
+   "grafiskaDelarEfter": 1738,
+   "nyaRamdelar": 62,
+   "$varfor62InteInte68": "De sex ikonknapparna saknar synlig text och gar darfor genom motorns ANDRA gren, som lagger en enda componentIdentityCarrier-del i stallet for separata fyllnings- och ramdelar. Deras nya ram registreras alltsa inte som en egen grafisk del i den tekniska hinken. Den ar uppmatt direkt: fyra sidor, 1.5 px, #3F5145, kvot 7.698 mot ytan.",
+   "fyndUnder3Fore": 6,
+   "fyndUnder3Efter": 6
+  },
+  "utfall": "ALLA 68 REQUIRED_PASS"
+ },
+ "K_textsparet": {
+  "pastaende": "sex bekraftade R-01-textfel, #24382C @16px/400, kvot 3.891 mot krav 4.5",
+  "utfall": "VEDERLAGT",
+  "bevis": {
+   "egnaTextnoderTotalt": 0,
+   "textkorningarIR01Totalt": 0,
+   "korpusensTextposter": 4496,
+   "korpusensTextposterUnderTroskel": 0,
+   "fargkallaFinns": 0,
+   "ikonstroke": [
+    "#17251d"
+   ],
+   "ikonfill": [
+    "none"
+   ],
+   "anvanderCurrentColor": 0
+  },
+  "slutsats": "De sex ar ikonknappar utan en enda textnod. Det uppmatta vardet rgb(36, 56, 44) ar den arvda CSS-egenskapen color, som inte malar nagonting: knappen har ingen text och ikonens svg anvander inte currentColor utan stroke=\"#17251d\" med fill=\"none\". Korpusens egen R-01-motor rapporterar noll textkorningar i dessa element och noll textkorningar under troskeln i hela korpusen. Det fanns alltsa aldrig ett textfel att ratta.",
+  "konsekvens": "TEXT_TARGETS gar fran 6 till 0. Ingen fargskrivning utfors. Mekanism C:s icke-textdel ar oforandrad och genomfors i sin helhet.",
+  "poster": [
+   {
+    "id": "tangentbord|19",
+    "art": "tangentbord",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "egnaTextnoder": 0,
+    "textkorningarIR01": 0,
+    "fargkalla": null,
+    "beraknadColor": "rgb(36, 56, 44)",
+    "ikon": {
+     "stroke": "#17251d",
+     "fill": "none",
+     "ikonnamn": "send",
+     "anvanderCurrentColor": false
+    }
+   },
+   {
+    "id": "chattredigerat|42",
+    "art": "chattredigerat",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "egnaTextnoder": 0,
+    "textkorningarIR01": 0,
+    "fargkalla": null,
+    "beraknadColor": "rgb(36, 56, 44)",
+    "ikon": {
+     "stroke": "#17251d",
+     "fill": "none",
+     "ikonnamn": "send",
+     "anvanderCurrentColor": false
+    }
+   },
+   {
+    "id": "chattmeny|27",
+    "art": "chattmeny",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "egnaTextnoder": 0,
+    "textkorningarIR01": 0,
+    "fargkalla": null,
+    "beraknadColor": "rgb(36, 56, 44)",
+    "ikon": {
+     "stroke": "#17251d",
+     "fill": "none",
+     "ikonnamn": "send",
+     "anvanderCurrentColor": false
+    }
+   },
+   {
+    "id": "receptkommentarer|46",
+    "art": "receptkommentarer",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "egnaTextnoder": 0,
+    "textkorningarIR01": 0,
+    "fargkalla": null,
+    "beraknadColor": "rgb(36, 56, 44)",
+    "ikon": {
+     "stroke": "#17251d",
+     "fill": "none",
+     "ikonnamn": "send",
+     "anvanderCurrentColor": false
+    }
+   },
+   {
+    "id": "bredlandskap|28",
+    "art": "bredlandskap",
+    "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+    "egnaTextnoder": 0,
+    "textkorningarIR01": 0,
+    "fargkalla": null,
+    "beraknadColor": "rgb(36, 56, 44)",
+    "ikon": {
+     "stroke": "#17251d",
+     "fill": "none",
+     "ikonnamn": "plus",
+     "anvanderCurrentColor": false
+    }
+   },
+   {
+    "id": "globinstallera|38",
+    "art": "globinstallera",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "egnaTextnoder": 0,
+    "textkorningarIR01": 0,
+    "fargkalla": null,
+    "beraknadColor": "rgb(36, 56, 44)",
+    "ikon": {
+     "stroke": "#17251d",
+     "fill": "none",
+     "ikonnamn": "plus",
+     "anvanderCurrentColor": false
+    }
+   }
+  ]
+ },
+ "L_hierarki": {
+  "metod": "skarmbild av parade scener fore och efter, compact-390, dsf 2",
+  "scener": [
+   "tvaknappsrad (okandingrediens|45)",
+   "full bredd (authlogga|20)",
+   "ljusgron yta (rcblaser|5)",
+   "ikonknapp (tangentbord|19)"
+  ],
+  "sekundarknappensStyling": "OFORANDRAD — 0 mutationer utanfor de 68",
+  "observation": "Primarknappen behaller sin saffransfyllning och laser fortsatt som primar. Sekundarknappen ar oforandrad: ofylld med sin morkare ink-ram. Den nya primarramen ar #3F5145, ljusare an sekundarens #24382C, och de tva kontrollerna ar inte visuellt ekvivalenta: den ena ar fylld, den andra inte.",
+  "utfall": "HIERARKIN HALLER"
+ },
+ "M_kallintegritet": {
+  "fargliteraler": {
+   "ce7c1e": [
+    444,
+    444
+   ],
+   "f3f5145": [
+    28,
+    96
+   ],
+   "i24382C": [
+    2156,
+    2156
+   ],
+   "i17251D": [
+    319,
+    319
+   ],
+   "i9A5C14": [
+    8,
+    8
+   ]
+  },
+  "$tolkning": "Endast #3F5145 okar, med exakt 68. #CE7C1E, #24382C, #17251D och #9A5C14 ar oforandrade i hela korpusen.",
+  "filerMedLitteralforandring": 13,
+  "globalSokOchErsatt": "ALDRIG ANVAND — varje skrivning ar ankrad per forekomst",
+  "ankarmetod": "taggnamn + kallans attribut som delmangd av DOM-ognonblickets + egen omedelbar text, pa elementets descendantordinal i artefakten",
+  "ankarutfall": {
+   "SKRIVEN": 68
+  }
+ },
+ "N_ickeMal": {
+  "saffranskontrollerUtanforDe68": 26,
+  "perStatus": {
+   "REQUIRED_PASS": 9,
+   "SUPPLEMENTAL": 8,
+   "UNKNOWN": 9
+  },
+  "andradeBlandDessa": 0,
+  "elementMedSaffransfyllning": 205,
+  "andradFyllning": 0,
+  "fatNyRam": 68,
+  "allaNyaRamarArMal": true,
+  "ickeKontrollSaffran": 126,
+  "delarInutiKontroll": 18,
+  "raaLitteralerICE7C1E": 444,
+  "utfall": "INGEN PROPAGERING"
+ },
+ "O_tillstandOchFokus": {
+  "PRESSED_STATE": "UNTESTABLE",
+  "DISABLED_STATE": "UNTESTABLE",
+  "FOCUS_INTERACTION": "UNTESTABLE",
+  "$skal": "Ingen av de 68 bar ett authorat tillstand och korpusen renderar ingen fokusindikator i detta lage. Ingen PASS-credit ges. Detta blockerar inte implementationen: fyllnings- och tillstandsaxeln ar oforandrad, #9A5C14 ar orord och ingen tillstandsregel har skrivits."
+ },
+ "P_temaOchR04": {
+  "de68PerTema": {
+   "light": 68,
+   "dark": 0
+  },
+  "artefakterMedRorelse": 12,
+  "morkaArtefakterBerorda": 0,
+  "$filkommentar": "Sjutton av de 68 ligger i filen for morkt lage men samtliga i ljusa artefakter i den filen. Skrivningen ar per forekomst.",
+  "R04": {
+   "credit": 0,
+   "skrivningar": 0,
+   "status": "ORORD"
+  }
+ },
+ "Q_regression": {
+  "R01": {
+   "textposter": [
+    4496,
+    4496
+   ],
+   "underTroskel": [
+    0,
+    0
+   ],
+   "andradePoster": 0
+  },
+  "R02": {
+   "fore": {
+    "measured": 1375,
+    "pass": 1375,
+    "fail": 0,
+    "unknown": 40,
+    "kontroller": 1407,
+    "produktnamnare": 1375,
+    "fel": []
+   },
+   "efter": {
+    "measured": 1375,
+    "pass": 1375,
+    "fail": 0,
+    "unknown": 40,
+    "kontroller": 1407,
+    "produktnamnare": 1375,
+    "fel": []
+   }
+  },
+  "ickeText": {
+   "fore": {
+    "kontroller": 1375,
+    "grafiskaDelar": 1676,
+    "perBararroll": {
+     "supplemental": 1025,
+     "componentIdentityCarrier": 551,
+     "stateCarrier": 100
+    },
+    "fyndUnder3": 6
+   },
+   "efter": {
+    "kontroller": 1375,
+    "grafiskaDelar": 1738,
+    "perBararroll": {
+     "supplemental": 1087,
+     "componentIdentityCarrier": 551,
+     "stateCarrier": 100
+    },
+    "fyndUnder3": 6
+   }
+  },
+  "fristaendeGrafik": {
+   "fore": {
+    "relationer": 32,
+    "uteslutna": 2460
+   },
+   "efter": {
+    "relationer": 32,
+    "uteslutna": 2460
+   }
+  },
+  "produktelement": [
+   13898,
+   13898
+  ],
+  "artefakter": [
+   329,
+   329
+  ],
+  "artefaktmattAndrade": 0,
+  "dokumentmattAndrade": 0,
+  "nyaKlipp": 0,
+  "andradeRadbrytningar": 0,
+  "nyaOverlapp": 0,
+  "provsviter": {
+   "antal": 38,
+   "godkanda": 38,
+   "fallda": 0
+  },
+  "testlinje": {
+   "CW-07": "PENSIONERAT — RETIRED_SCOPE_EXTENDED, lydelsen bevarad",
+   "nya": [
+    "CW-14",
+    "CW-15",
+    "CW-16",
+    "CW-17",
+    "CW-18"
+   ]
+  }
+ },
+ "R_tillamplighet": {
+  "de68Relationsverdict": "REQUIRED — OFORANDRAT",
+  "konformansutfall": "REQUIRED_FAIL -> REQUIRED_PASS for samtliga 68",
+  "$regel": "Requiredness forsvinner inte for att en ram nu finns. Relationen ar fortsatt obligatorisk; det ar bara utfallet som andrats.",
+  "tekniskAgarskap": {
+   "hink": "nt:supplemental",
+   "fore": {
+    "supplemental": 1025,
+    "componentIdentityCarrier": 551,
+    "stateCarrier": 100
+   },
+   "efter": {
+    "supplemental": 1087,
+    "componentIdentityCarrier": 551,
+    "stateCarrier": 100
+   },
+   "delta": 62,
+   "$not": "Den tekniska hinken nt:supplemental ar INTE den normativa verdikten SUPPLEMENTAL. De 62 nya ramdelarna hamnar i den gamla textregelns hink; normativt ar de REQUIRED och nu PASS."
+  },
+  "kvarstaendeTackningsluckor": [
+   "PRESSED_STATE / DISABLED_STATE / FOCUS_INTERACTION — UNTESTABLE, 0 credit",
+   "De sex ikonknapparnas ram registreras inte som egen grafisk del i matpipelinen (motorns andra gren). Deras PASS vilar pa direkt matning, inte pa dellistan.",
+   "997 globala UNKNOWN_APPLICABILITY kvarstar som metodskuld"
+  ]
+ },
+ "S_perForekomst": [
+  {
+   "id": "tomtrecept|16",
+   "kontext": "K1",
+   "skarm": "Tomt läge — recept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "tema": "light",
+   "mekanism": "M3_FYRSIDIG_PADDINGKOMP",
+   "mekanismskal": "min-height 28px ar raknad for content-boxen i den frysta 24-migreringen; boxmodellen lamnas orord och ramen tas ur paddingen pa alla fyra sidor",
+   "i24scope": true,
+   "stil": {
+    "border": "1.5px solid #3F5145",
+    "padding-top": "8.5px",
+    "padding-right": "16.5px",
+    "padding-bottom": "8.5px",
+    "padding-left": "16.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "content-box",
+   "minHeightFore": "28px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 137.234,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "inkopmerge|28",
+   "kontext": "K1",
+   "skarm": "Till inköpslistan — sammanslagning",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 213,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.203,
+    "dy": 0,
+    "dw": 1.203,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "inkopmergeoppen|39",
+   "kontext": "K1",
+   "skarm": "Till inköpslistan — detaljer öppna",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 213,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.203,
+    "dy": 0,
+    "dw": 1.203,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "forfragningar|15",
+   "kontext": "K1",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "mekanism": "M3_FYRSIDIG_PADDINGKOMP",
+   "mekanismskal": "min-height 32px ar raknad for content-boxen i den frysta 24-migreringen; boxmodellen lamnas orord och ramen tas ur paddingen pa alla fyra sidor",
+   "i24scope": true,
+   "stil": {
+    "border": "1.5px solid #3F5145",
+    "padding-top": "6.5px",
+    "padding-right": "6.5px",
+    "padding-bottom": "6.5px",
+    "padding-left": "6.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "content-box",
+   "minHeightFore": "32px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 176.5,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "forfragningar|25",
+   "kontext": "K1",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "mekanism": "M3_FYRSIDIG_PADDINGKOMP",
+   "mekanismskal": "min-height 32px ar raknad for content-boxen i den frysta 24-migreringen; boxmodellen lamnas orord och ramen tas ur paddingen pa alla fyra sidor",
+   "i24scope": true,
+   "stil": {
+    "border": "1.5px solid #3F5145",
+    "padding-top": "6.5px",
+    "padding-right": "6.5px",
+    "padding-bottom": "6.5px",
+    "padding-left": "6.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "content-box",
+   "minHeightFore": "32px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 176.5,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "vanprofil|33",
+   "kontext": "K1",
+   "skarm": "Vänprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "mekanism": "M3_FYRSIDIG_PADDINGKOMP",
+   "mekanismskal": "min-height 26px ar raknad for content-boxen i den frysta 24-migreringen; boxmodellen lamnas orord och ramen tas ur paddingen pa alla fyra sidor",
+   "i24scope": true,
+   "stil": {
+    "border": "1.5px solid #3F5145",
+    "padding-top": "9.5px",
+    "padding-right": "9.5px",
+    "padding-bottom": "9.5px",
+    "padding-left": "9.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "content-box",
+   "minHeightFore": "26px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 176.5,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "hem360|14",
+   "kontext": "K1",
+   "skarm": "Hem · 360",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 234,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "storsttext|35",
+   "kontext": "K2",
+   "skarm": "Receptdetalj · största systemtext 2,0×",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "64px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 64,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "tangentbord|19",
+   "kontext": "K1",
+   "skarm": "Chatt · tangentbord öppet",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": null,
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 48,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "okandingrediens|45",
+   "kontext": "K1",
+   "skarm": "Okänd allergenuppgift — granskning",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 178,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "veckoallergi|55",
+   "kontext": "K1",
+   "skarm": "Veckogenerering — allergihushåll",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 178,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "utloggningko|21",
+   "kontext": "K1",
+   "skarm": "Utloggning med osparade ändringar",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 318,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "utloggningtom|7",
+   "kontext": "K1",
+   "skarm": "Utloggning — kön tömd",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 155,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "chattredigerat|42",
+   "kontext": "K1",
+   "skarm": "Chatt — redigerat och borttaget",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": null,
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 48,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "chattmeny|27",
+   "kontext": "K1",
+   "skarm": "Chatt — avsändarens meddelandemeny",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": null,
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 48,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "safeareaios|26",
+   "kontext": "K2",
+   "skarm": "Safe area — iOS, ljust",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "hem|22",
+   "kontext": "K1",
+   "skarm": "Hem · 412 · ljust",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 274,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "hemtom|15",
+   "kontext": "K2",
+   "skarm": "Hem · tomt (ny användare)",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 322,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "hemoffline|31",
+   "kontext": "K1",
+   "skarm": "Hem · offline",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 274,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "receptkommentarer|46",
+   "kontext": "K1",
+   "skarm": "Receptdetalj — kommentarer",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": null,
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 48,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "receptbildfel|36",
+   "kontext": "K2",
+   "skarm": "Receptdetalj — bilden kunde inte laddas",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "betygvemat|42",
+   "kontext": "K2",
+   "skarm": "Betyg — vem åt",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "betygperperson|75",
+   "kontext": "K2",
+   "skarm": "Betyg — per person",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "betygsammanslaget|69",
+   "kontext": "K1",
+   "skarm": "Betyg — sammanslaget",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 178,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "betygvemarket|38",
+   "kontext": "K2",
+   "skarm": "Betyg — vem åt, arket i sin verkliga form",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 380,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "familjmedlemsamtycke|65",
+   "kontext": "K2",
+   "skarm": "Familjemedlem — två samtycken och en mjuk preferens",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 372,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "bredlandskap|28",
+   "kontext": "K1",
+   "skarm": "Liggande telefon behåller bottenraden",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": null,
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 48,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "vmbnormal|11",
+   "kontext": "K1",
+   "skarm": "Veckan brett — normalläget",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 203,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "vmbtom|12",
+   "kontext": "K3",
+   "skarm": "Veckan brett — tom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvotFore": 2.626,
+   "kvotEfter": 6.926,
+   "forvantad": 6.926,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 203,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "vmbgenererar|9",
+   "kontext": "K4",
+   "skarm": "Veckan brett — genererar och skriver över",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M2_BORDER_BOX_PADDINGKOMP",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145",
+    "padding-left": "14.5px",
+    "padding-right": "14.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(240, 238, 226)",
+   "kvotFore": 2.763,
+   "kvotEfter": 7.288,
+   "forvantad": 7.288,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 126.156,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "rcbnormal|6",
+   "kontext": "K1",
+   "skarm": "Receptet brett — normalläget",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M2_BORDER_BOX_PADDINGKOMP",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145",
+    "padding-left": "14.5px",
+    "padding-right": "14.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 91.281,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "rcblaser|5",
+   "kontext": "K3",
+   "skarm": "Receptet brett — någon annans",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M2_BORDER_BOX_PADDINGKOMP",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145",
+    "padding-left": "14.5px",
+    "padding-right": "14.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvotFore": 2.626,
+   "kvotEfter": 6.926,
+   "forvantad": 6.926,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 172.484,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "rcboffline|10",
+   "kontext": "K3",
+   "skarm": "Receptet brett — frånkopplat",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M2_BORDER_BOX_PADDINGKOMP",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145",
+    "padding-left": "12.5px",
+    "padding-right": "12.5px"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvotFore": 2.626,
+   "kvotEfter": 6.926,
+   "forvantad": 6.926,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 60.047,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "ikbtom|12",
+   "kontext": "K1",
+   "skarm": "Inköpslistan brett — två tomma lägen",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 300,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "inkopkategoriordning|54",
+   "kontext": "K2",
+   "skarm": "Inköp — kategoriordningen",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 372,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "inkopbockad|24",
+   "kontext": "K1",
+   "skarm": "Inköp — bockad vara till skafferiet",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 164.5,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "inkopgenererad|15",
+   "kontext": "K1",
+   "skarm": "Inköp — den genererade listan",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 316,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "skafferilagg|45",
+   "kontext": "K2",
+   "skarm": "Skafferiet — lägg till eller ändra",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 372,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "delatinkorg|18",
+   "kontext": "K1",
+   "skarm": "Delat med mig — erbjudanden",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 244.555,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "delatinkorg|32",
+   "kontext": "K1",
+   "skarm": "Delat med mig — erbjudanden",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 244.555,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "delatlistaaktiv|70",
+   "kontext": "K2",
+   "skarm": "Delad lista — gått med",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "authlogga|20",
+   "kontext": "K2",
+   "skarm": "Auth — logga in",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "authskapa|31",
+   "kontext": "K2",
+   "skarm": "Auth — skapa konto",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "authglomt|16",
+   "kontext": "K1",
+   "skarm": "Auth — glömt lösenordet",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 154,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "behkamera|12",
+   "kontext": "K1",
+   "skarm": "Behörighet — kamera, förklaring före frågan",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 154,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "behlarm|12",
+   "kontext": "K1",
+   "skarm": "Behörighet — exakta larm (finns inte)",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 316,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "lagatimerutgangen|13",
+   "kontext": "K2",
+   "skarm": "Väg C — den utgångna timern kvitteras",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 356,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "cooksnapsynlighet|29",
+   "kontext": "K1",
+   "skarm": "Cook snap — synligheten före uppladdning",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 158,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "vanprofildelning|54",
+   "kontext": "K1",
+   "skarm": "Vänprofil — delningslagret i två riktningar",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 182,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": -1.5,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "kontosamtycke|63",
+   "kontext": "K2",
+   "skarm": "Samtycke — sju ändamål",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 372,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "samtyckeai|22",
+   "kontext": "K2",
+   "skarm": "Samtycke — ändamålet som tappas",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 372,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "samtyckefornya|15",
+   "kontext": "K2",
+   "skarm": "Samtycke — villkoren har ändrats",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 324,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "kontodataexport|41",
+   "kontext": "K1",
+   "skarm": "Dataexport — allt du lagt in",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 166.5,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 1.5,
+    "dh": 0
+   },
+   "geometriundantag": true
+  },
+  {
+   "id": "dataexportfel|13",
+   "kontext": "K2",
+   "skarm": "Dataexport — tre orsaker",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 412,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "mfalagg|27",
+   "kontext": "K2",
+   "skarm": "MFA — lägg till telefon",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 372,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "globsession|20",
+   "kontext": "K1",
+   "skarm": "Globalt — sessionen håller på att gå ut",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 316,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "globsessiontyst|25",
+   "kontext": "K2",
+   "skarm": "Globalt — utloggad utan varning (kravunderlag)",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 364,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "globinstallera|38",
+   "kontext": "K1",
+   "skarm": "Globalt — installationsbannern",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M1_BORDER_BOX",
+   "mekanismskal": "ramen ritas inuti den befintliga ytan genom border-box",
+   "i24scope": false,
+   "stil": {
+    "box-sizing": "border-box",
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "content-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": null,
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 56,
+    "h": 56,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "flermeny|46",
+   "kontext": "K4",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(240, 238, 226)",
+   "kvotFore": 2.763,
+   "kvotEfter": 7.288,
+   "forvantad": 7.288,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 341,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "flertaggsam|34",
+   "kontext": "K2",
+   "skarm": "Flerval — slå samman taggar",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 328,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "fbformular|55",
+   "kontext": "K2",
+   "skarm": "Feedback — formuläret och vad som följer med",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 380,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "fbanmal|28",
+   "kontext": "K2",
+   "skarm": "Anmäl innehåll",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 328,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "soctomtingavanner|8",
+   "kontext": "K1",
+   "skarm": "Flödet — tomt: inga vänner än",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "mekanism": "M2_BORDER_BOX_PADDINGKOMP",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145",
+    "padding-left": "20.5px",
+    "padding-right": "20.5px"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 129.195,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "socbegar|7",
+   "kontext": "K2",
+   "skarm": "Begär receptet av ägaren",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 328,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "insthushall|29",
+   "kontext": "K2",
+   "skarm": "Hushållsstorlek",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 380,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "kompdubblett|25",
+   "kontext": "K2",
+   "skarm": "Dubblettsammanslagning",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 370,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "kompmallar|14",
+   "kontext": "K3",
+   "skarm": "Inköpsmallar",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvotFore": 2.626,
+   "kvotEfter": 6.926,
+   "forvantad": 6.926,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 344,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  },
+  {
+   "id": "komparvegods|22",
+   "kontext": "K2",
+   "skarm": "Arvegods — flersidig fotoimport",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "mekanism": "M0_ENBART_RAM",
+   "mekanismskal": "elementet ar redan border-box; enbart ramdeklarationen behovs",
+   "i24scope": false,
+   "stil": {
+    "border": "1.5px solid #3F5145"
+   },
+   "boxSizingFore": "border-box",
+   "boxSizingEfter": "border-box",
+   "minHeightFore": "48px",
+   "ram": {
+    "sidor": 4,
+    "bredd": "1.5px",
+    "stil": "solid",
+    "farg": "rgb(63, 81, 69)"
+   },
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvotFore": 2.918,
+   "kvotEfter": 7.698,
+   "forvantad": 7.698,
+   "stammer": true,
+   "kvotRamMotFyllning": 2.638,
+   "traffEfter": {
+    "w": 370,
+    "h": 48,
+    "uppfyller": true
+   },
+   "geometridelta": {
+    "dx": 0,
+    "dy": 0,
+    "dw": 0,
+    "dh": 0
+   },
+   "geometriundantag": false
+  }
+ ]
+}

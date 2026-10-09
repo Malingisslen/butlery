@@ -1,0 +1,204 @@
+{
+ "$regel": "Simulering mot SLUTLIGA bakgrunder. Ingen produktfil rord.",
+ "text": {
+  "ljust": {
+   "relationer": 4484,
+   "perUtfall": {
+    "PASS_TO_PASS": 4473,
+    "EXISTING_FAIL_IMPROVED": 11
+   },
+   "ctlNya": 0,
+   "stdNya": 0,
+   "passToFail": 0,
+   "worsened": 0,
+   "kvarUnderTroskel": 0,
+   "kvarLista": []
+  },
+  "morkt": {
+   "relationer": 763,
+   "perUtfall": {
+    "PASS_TO_PASS": 752,
+    "EXISTING_FAIL_IMPROVED": 11
+   },
+   "ctlNya": 0,
+   "stdNya": 0,
+   "passToFail": 0,
+   "worsened": 0,
+   "kvarUnderTroskel": 0,
+   "kvarLista": []
+  }
+ },
+ "ythierarki": {
+  "losta": 138,
+  "nya11": 0,
+  "beslutadeSomAndaAr11": 0,
+  "detaljer": []
+ },
+ "fargandringar": {
+  "textnoder": 244,
+  "ytor": 138,
+  "kollateralaTextandringar": 222,
+  "kollateralaDetaljer": [
+   {
+    "tema": "dark",
+    "art": "dataexport",
+    "ord": 18,
+    "fore": 10.31,
+    "efter": 8.11,
+    "text": "Exporten är klar"
+   },
+   {
+    "tema": "dark",
+    "art": "dataexport",
+    "ord": 19,
+    "fore": 6.02,
+    "efter": 4.73,
+    "text": "12 juli 2026 07:41 · 2,4 MB"
+   },
+   {
+    "tema": "dark",
+    "art": "dataexport",
+    "ord": 21,
+    "fore": 10.31,
+    "efter": 8.11,
+    "text": "Spara fil"
+   },
+   {
+    "tema": "dark",
+    "art": "dataexport",
+    "ord": 22,
+    "fore": 10.31,
+    "efter": 8.11,
+    "text": "Dela"
+   },
+   {
+    "tema": "dark",
+    "art": "dataexport",
+    "ord": 23,
+    "fore": 6.34,
+    "efter": 4.99,
+    "text": "Rensa exporterade data"
+   },
+   {
+    "tema": "dark",
+    "art": "faq",
+    "ord": 4,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Vanliga frågor"
+   },
+   {
+    "tema": "dark",
+    "art": "aldersgrans",
+    "ord": 7,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Logga ut"
+   },
+   {
+    "tema": "dark",
+    "art": "samtycke",
+    "ord": 4,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Mina samtycken"
+   },
+   {
+    "tema": "dark",
+    "art": "rapporter",
+    "ord": 4,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Mina rapporter"
+   },
+   {
+    "tema": "dark",
+    "art": "rapporter",
+    "ord": 13,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "VÄNTAR"
+   },
+   {
+    "tema": "dark",
+    "art": "rapporter412",
+    "ord": 4,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Mina rapporter"
+   },
+   {
+    "tema": "dark",
+    "art": "rapporter412",
+    "ord": 13,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "VÄNTAR"
+   },
+   {
+    "tema": "dark",
+    "art": "juridik",
+    "ord": 4,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Integritetspolicy"
+   },
+   {
+    "tema": "dark",
+    "art": "synkko",
+    "ord": 14,
+    "fore": 6.02,
+    "efter": 4.73,
+    "text": "Ingen anslutning. Läsning fungerar, ändringar kö"
+   },
+   {
+    "tema": "dark",
+    "art": "receptdelningsstatus",
+    "ord": 75,
+    "fore": 6.02,
+    "efter": 4.73,
+    "text": "Varje återkallande bekräftas i en dialog och nam"
+   },
+   {
+    "tema": "dark",
+    "art": "receptdelningsstatus",
+    "ord": 76,
+    "fore": 6.02,
+    "efter": 4.73,
+    "text": "”Sluta dela med Anna Lindqvist?”"
+   },
+   {
+    "tema": "dark",
+    "art": "receptdelningsstatus",
+    "ord": 77,
+    "fore": 6.02,
+    "efter": 4.73,
+    "text": "comment_visibility.dart"
+   },
+   {
+    "tema": "dark",
+    "art": "inkopflerval",
+    "ord": 2,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "Inköpslista"
+   },
+   {
+    "tema": "dark",
+    "art": "inkopflerval",
+    "ord": 3,
+    "fore": 14.44,
+    "efter": 11.36,
+    "text": "14 kvar"
+   },
+   {
+    "tema": "dark",
+    "art": "inkopflerval",
+    "ord": 38,
+    "fore": 6.02,
+    "efter": 4.73,
+    "text": "Kvar att bygga:"
+   }
+  ]
+ }
+}

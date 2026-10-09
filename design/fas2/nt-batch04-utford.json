@@ -1,0 +1,289 @@
+{
+ "$schema": "butlery-nt-batch04-utford/1",
+ "$datum": "2026-08-14",
+ "$status": "METHOD HARDENING + BATCH-04 UTFORD OCH VERIFIERAD. Fargskrivningsstoppet ater i fullt lage.",
+ "A_metodhardning": {
+  "commit": "0e15fc7",
+  "modul": "tools/decision-scope-guard.mjs",
+  "provfil": "tools/decision-scope-guard-fixtures.mjs",
+  "kontrakt": [
+   "En sorteringsnyckeltraff far aldrig ensam koppla ihop beslut.",
+   "En sorteringsnyckeltraff far aldrig ensam ge mappningsevidens.",
+   "En sorteringsnyckeltraff far aldrig ensam ge ett morkt varde.",
+   "En sorteringsnyckeltraff far aldrig ensam ge R-04-kredit.",
+   "En sorteringsnyckeltraff far aldrig ensam andra tokenidentitet.",
+   "En sorteringsnyckeltraff far aldrig ensam utoka scope.",
+   "En kandidat far bindas till ett registrerat beslut BARA nar beslutets faktiska scope och identitet omfattar just den forekomst som analyseras."
+  ],
+  "aterbruk": "Identitetslagret malMatchning() i tools/decision-target.mjs anropas oforandrat. Ingen ny parallell semantik.",
+  "omfattningsklasser": [
+   "KALLIDENTITET",
+   "ARTEFAKTLISTA",
+   "HISTORISK_KORPUS",
+   "OKAND"
+  ],
+  "KEY_prov": "7 av 7 grona",
+  "ovrigaFixturer": "30 fixturfiler oforandrat grona"
+ },
+ "B_konsumenter": {
+  "delatKontrakt": "tools/decision-target.mjs · malMatchning() bar nu en explicit hanvisning till scopelagret",
+  "direktaAnropare": [
+   "tools/decision-scope-guard-fixtures.mjs (KEY-01..KEY-07)",
+   "BATCH-04:s efterkontroll — R-04-guardrailen i detta paket kors genom beslutstackning() och nyckelkollision()"
+  ],
+  "$arlighet": "Inget produktionsverktyg i tools/ laser R-04-registret i dag; registret konsumeras av analyskoden. Skyddet ligger nu i verktygslagen sa att analyskoden slutar rekonstruera det for hand."
+ },
+ "C_produktwrite": {
+  "typ": "CSS_BOX_NON_TEXT_REMEDIATION",
+  "$ejAuktorisation": "Detta ar INTE en auktorisation att ateruppta ordinarie R-04-implementation.",
+  "andradeDeklarationer": 2,
+  "filer": 1,
+  "platser": [
+   {
+    "fynd": "BG-027",
+    "enhet": "DU-01-A",
+    "beslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 166398,
+    "fran": "#ce7c1e",
+    "till": "#d8b784"
+   },
+   {
+    "fynd": "BG-028",
+    "enhet": "TIMER (DU-02)",
+    "beslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 167435,
+    "fran": "#dca968",
+    "till": "#d8b784"
+   }
+  ],
+  "filsummor": [
+   {
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "langdFore": 216876,
+    "langdEfter": 216876,
+    "shaFore": "69f0ca89a5a3120f",
+    "shaEfter": "68e3393030059753",
+    "andrade": 2
+   }
+  ],
+  "fargbokforing": {
+   "#ce7c1e": -1,
+   "#dca968": -1,
+   "#d8b784": 2
+  },
+  "orelateradeFargandringar": 0,
+  "globalReplace": false,
+  "$avgransning": "Endast fargvardet i respektive deklaration bytt. Varje deklaration innehall exakt en traff pa sin egen gamla farg."
+ },
+ "D_frusnaKontroller": {
+  "metod": "jamforelse mot en git-worktree pa HEAD fore writen (0e15fc7), samma verktyg och samma profiler",
+  "text": true,
+  "historiskIckeText": true,
+  "traffytor": true,
+  "rendering": true,
+  "effekter": true,
+  "identitet": true
+ },
+ "E_grafikmatning": {
+  "population": 34,
+  "populationFore": 34,
+  "kandidatavstamning": "2492 = 2458 + 34",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "findings": {
+   "fore": 4,
+   "efter": 2
+  },
+  "losta": [
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "foreKvot": 1.96,
+    "nyKvot": 3.31,
+    "nyttVarde": "rgb(216, 183, 132)"
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "foreKvot": 2.98,
+    "nyKvot": 3.31,
+    "nyttVarde": "rgb(216, 183, 132)"
+   }
+  ],
+  "kvarstaende": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "kvot": 1.41,
+    "status": "BLOCKERAD OCH ORORD"
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "kvot": 2.64,
+    "status": "oforandrad, vantar pa beslut"
+   }
+  ],
+  "$forvantan": "4 → 2 var en forvantad reconciliation, inte ett framtvingat mal."
+ },
+ "F_kopplingsintegritet": {
+  "$fraga": "Kan de tva enheterna skiljas at UTAN att titta pa fyllfargen?",
+  "par": [
+   {
+    "id": "BG-027",
+    "enhet": "DU-01-A",
+    "beslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+    "stabilRelationsId": "lagatimers|13→14",
+    "vardeIdentitet": "lagatimers|14|background-color",
+    "bararIdentitet": "lagatimers|13|background-color",
+    "fillOrdinal": 14,
+    "trackOrdinal": 13,
+    "renderadFill": "rgb(216, 183, 132)",
+    "renderadTrack": "rgb(83, 100, 88)",
+    "andel": 0.58,
+    "kvot": 3.31,
+    "deklarationOffset": 166398
+   },
+   {
+    "id": "BG-028",
+    "enhet": "TIMER (DU-02)",
+    "beslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+    "stabilRelationsId": "lagatimers|22→23",
+    "vardeIdentitet": "lagatimers|23|background-color",
+    "bararIdentitet": "lagatimers|22|background-color",
+    "fillOrdinal": 23,
+    "trackOrdinal": 22,
+    "renderadFill": "rgb(216, 183, 132)",
+    "renderadTrack": "rgb(83, 100, 88)",
+    "andel": 0.2199,
+    "kvot": 3.31,
+    "deklarationOffset": 167435
+   }
+  ],
+  "sarskiljande": {
+   "fillFarg": "IDENTISK — duger inte som sarskiljare",
+   "trackFarg": "IDENTISK — duger inte som sarskiljare",
+   "ordinal": true,
+   "bararIdentitet": true,
+   "relationsId": true,
+   "andel": true,
+   "kallankare": true,
+   "beslutspost": true
+  },
+  "$obs": "Bade fyllfarg och trackfarg ar nu identiska mellan enheterna och far darfor inte raknas som sarskiljare.",
+  "oberoendeSarskiljare": 6,
+  "utfall": "TVA SKILDA IDENTITETER BEKRAFTADE"
+ },
+ "G_R04guardrail": {
+  "registerraderAndrade": 0,
+  "registretBitIdentiskt": true,
+  "sha256": {
+   "HEAD": "b89f4dcdef34031c",
+   "nu": "b89f4dcdef34031c"
+  },
+  "morkaVardenAndrade": 0,
+  "nyMappningsevidens": 0,
+  "R04_COVERAGE_CREDIT": 0,
+  "d18_scope": {
+   "token": "--yta-upphojd-d18",
+   "omfattning": {
+    "klass": "KALLIDENTITET",
+    "varde": "start|19|background-color"
+   },
+   "berordaArtefakter": [
+    "start"
+   ],
+   "kallidentitet": "start|19|background-color",
+   "fortfarandeEndastStart": true
+  },
+  "nyckelkollisionsprov": [
+   {
+    "kallidentitet": "lagatimers|14|background-color",
+    "nyckel": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "antalNyckeltraffar": 1,
+    "utfall": "NYCKELTRAFF_UTAN_TACKNING",
+    "tackning": "EJ_TACKT_ANNAN_KALLA",
+    "kredit": 0,
+    "mappningsevidens": false,
+    "morktVarde": null,
+    "tokenidentitet": null,
+    "scopeUtokat": false,
+    "kopplarBeslut": false,
+    "skal": "beslutet ar scopat till kallraden start|19|background-color — forekomsten lagatimers|14|background-color ar en annan kallrad"
+   },
+   {
+    "kallidentitet": "lagatimers|23|background-color",
+    "nyckel": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "antalNyckeltraffar": 1,
+    "utfall": "NYCKELTRAFF_UTAN_TACKNING",
+    "tackning": "EJ_TACKT_ANNAN_KALLA",
+    "kredit": 0,
+    "mappningsevidens": false,
+    "morktVarde": null,
+    "tokenidentitet": null,
+    "scopeUtokat": false,
+    "kopplarBeslut": false,
+    "skal": "beslutet ar scopat till kallraden start|19|background-color — forekomsten lagatimers|23|background-color ar en annan kallrad"
+   }
+  ],
+  "$slutsats": "Sorteringsnyckeln sammanfaller efter skrivningen, men bada forekomsterna faller pa scopelagret. Noll kredit, noll mappningsevidens, inget morkt varde och ingen tokenidentitet lacker till lagatimers."
+ },
+ "H_tvaIdentiteter": {
+  "beslut": [
+   {
+    "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+    "beslutsenhet": "DU-01-A",
+    "etikett": "Pastan",
+    "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_DU_01_A",
+    "relationer": [
+     "BG-027"
+    ],
+    "kallidentitet": "lagatimers|14|background-color",
+    "valtVarde": "#d8b784",
+    "skrivomfang": 1,
+    "produktwrite": "UTFORD 2026-08-14",
+    "R04_COVERAGE_CREDIT": 0
+   },
+   {
+    "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+    "beslutsenhet": "SEPARAT TIMERBESLUT (DU-02)",
+    "etikett": "Svampen",
+    "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_TIMER_DU_02",
+    "relationer": [
+     "BG-028"
+    ],
+    "kallidentitet": "lagatimers|23|background-color",
+    "valtVarde": "#d8b784",
+    "skrivomfang": 1,
+    "produktwrite": "UTFORD 2026-08-14",
+    "R04_COVERAGE_CREDIT": 0
+   }
+  ],
+  "antal": 2,
+  "$regel": "Samma slutvarde ar varken sammanslagning eller mappningsevidens."
+ },
+ "I_stoppvillkor": {
+  "utlosta": [],
+  "antal": 0,
+  "$lista": [
+   "fler an 2 andrade deklarationer",
+   "population 34 andrad utan exakt avstamning",
+   "UNKNOWN over noll",
+   "nagot annat fynd andrat",
+   "de tva timerbesluten sammanslagna",
+   "R-04-state andrat",
+   "profil paverkad"
+  ]
+ },
+ "J_efterlage": {
+  "fargskrivningsstopp": "ATER I FULLT LAGE",
+  "ordinarieR04": "FORTSATT PAUSAD",
+  "kvarvarandeFynd": [
+   "BG-020",
+   "BG-033"
+  ],
+  "profil": "BG-020 BLOCKERAD OCH ORORD"
+ }
+}

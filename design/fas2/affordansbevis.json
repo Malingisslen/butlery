@@ -1,0 +1,62 @@
+{
+ "$schema": "butlery-affordansbevis/1",
+ "kontroll": "CHK-R-AFF-01",
+ "matt": "2026-08-07",
+ "par": {
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "kollapsad": "kompkalla",
+  "expanderad": "kompkallahel",
+  "kontrollNamn": "Visa hela",
+  "screenId": "receptkalla"
+ },
+ "previewAffordance": {
+  "collapsedState": true,
+  "avsiktligPreview": true,
+  "expandControl": true,
+  "controlRollNamnState": true,
+  "controlNabar": true,
+  "expandedArtifact": true,
+  "sammaLogiskaInnehall": true,
+  "fulltextNabar": true
+ },
+ "verifierad": true,
+ "saknade": [],
+ "matning": {
+  "kontroll": {
+   "roll": "button",
+   "namn": "Visa hela",
+   "state": "collapsed"
+  },
+  "natal": {
+   "scrollTop": 0,
+   "portBottom_minus_kontrollBottom": 0,
+   "portTop_minus_kontrollTop": -260.25
+  },
+  "kallblock": {
+   "kollapsad": {
+    "txt": "Pannbiffar med lök4 port · 35 min600 g blandfärs1 gul lök, finhackad1 dl ströbröd1 ägg1,5 dl mjölksalt, vitpepparBlanda ströbröd och mjölk. Låt svälla 10 min …",
+    "scrollH": 226,
+    "clientH": 139,
+    "overflowY": "hidden",
+    "maxHeight": "115px"
+   },
+   "expanderad": {
+    "txt": "Pannbiffar med lök4 port · 35 min600 g blandfärs1 gul lök, finhackad1 dl ströbröd1 ägg1,5 dl mjölksalt, vitpepparBlanda ströbröd och mjölk. Låt svälla 10 min …",
+    "scrollH": 226,
+    "clientH": 226,
+    "overflowY": "visible",
+    "maxHeight": "none"
+   }
+  },
+  "fel": null
+ },
+ "beslutsunderlag": {
+  "slots": {
+   "kollapsad": "kollapsad",
+   "expanderad": "expanderad",
+   "lineageFrom": "kompkalla"
+  },
+  "normativRad": "previewAllowed=true · hiddenContentRequiresAffordance=true · preferredAffordance=expand/collapse"
+ },
+ "metod": "headless Chrome · 390×844 · deviceScaleFactor 2 · document.fonts.ready inväntad"
+}

@@ -1,14 +1,13 @@
 /// P8-U03: the census of the 81 REQUIRED flow transitions stays true.
 ///
-/// Sources: fas2/block288-uxfrysning.json overgangar (vendored as
-/// test/fixtures/design/block288-overgangar.json with its
-/// TRANSITION_SET_HASH), flows-roles-budget.md flows 01-08, and
+/// Sources: design/fas2/block288-uxfrysning.json overgangar and its
+/// BINDNING.TRANSITION_SET_HASH, flows-roles-budget.md flows 01-08, and
 /// fas2/ux-beslut.json D-03 and D-04. The census is
 /// test/fixtures/design/transition_census.json.
 ///
 /// It checks:
-/// 0. the vendored rows still hash to the pinned TRANSITION_SET_HASH, as
-///    tools/block288/uxfrysning.mjs:152 computes it in the design repo;
+/// 0. the rows still hash to the pinned TRANSITION_SET_HASH, as
+///    design/tools/block288/uxfrysning.mjs computes it;
 /// 1. the census ids are exactly the REQUIRED set, 81, per flow 10/4/8/6/6/
 ///    22/8/17;
 /// 2. every test the census cites exists and still carries that name (and
@@ -59,7 +58,7 @@ String _names(String source) => source
     .replaceAll(r"\'", "'");
 
 void main() {
-  final fixture = _json('test/fixtures/design/block288-overgangar.json');
+  final fixture = _json('design/fas2/block288-uxfrysning.json');
   final rows = (fixture['overgangar'] as List).cast<Map<String, dynamic>>();
   final census = _json('test/fixtures/design/transition_census.json');
   final entries = (census['entries'] as List).cast<Map<String, dynamic>>();
@@ -73,7 +72,7 @@ void main() {
       if (r['STATUS'] == 'NOT_REQUIRED') r['TRANSITION_ID'] as String,
   ];
 
-  test('0 · the vendored transitions still hash to TRANSITION_SET_HASH', () {
+  test('0 · the frozen transitions still hash to TRANSITION_SET_HASH', () {
     final lines = rows
         .map(
           (r) => '${r['TRANSITION_ID']}=${r['STATUS']}/${r['REPRESENTATION']}',
@@ -81,7 +80,7 @@ void main() {
         .join('\n');
     final hash = sha256.convert(utf8.encode(lines)).toString();
     expect(hash, _pinnedHash);
-    expect(fixture['TRANSITION_SET_HASH'], _pinnedHash);
+    expect((fixture['BINDNING'] as Map)['TRANSITION_SET_HASH'], _pinnedHash);
     expect(census['TRANSITION_SET_HASH'], _pinnedHash);
     expect(rows, hasLength(86));
   });

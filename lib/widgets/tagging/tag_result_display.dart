@@ -267,6 +267,7 @@ class TagResultDisplay extends StatelessWidget {
     return InlineWarning(
       icon: ButleryIcons.info,
       color: context.modeColors.warning,
+      textColor: AppModeColors.textWarning(Theme.of(context).brightness),
       text: context.l10n.ingredientDataUnverified,
     );
   }
@@ -349,7 +350,9 @@ class TagResultDisplay extends StatelessWidget {
                         tagResult.unknownIngredients.length,
                       ),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: context.modeColors.warning,
+                        color: AppModeColors.textWarning(
+                          Theme.of(context).brightness,
+                        ),
                       ),
                     ),
                   ),
@@ -374,7 +377,9 @@ class TagResultDisplay extends StatelessWidget {
     // incomplete coverage. Previously 80–99% showed as amber and anything
     // below 80% rendered rust-red — a nearly-full red bar misleads.
     if (tagResult.coverage >= 0.8) return context.modeColors.success;
-    if (tagResult.coverage >= 0.4) return context.modeColors.warning;
+    if (tagResult.coverage >= 0.4) {
+      return AppModeColors.textWarning(Theme.of(context).brightness);
+    }
     return Theme.of(context).colorScheme.error;
   }
 

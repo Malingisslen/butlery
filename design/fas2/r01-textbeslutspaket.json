@@ -1,0 +1,1915 @@
+{
+ "$schema": "butlery-r01-textbeslutspaket/1",
+ "$regel": "Kandidater provas mot den SLUTLIGA bakgrunden — alltsa efter ytbesluten RC-YH-01..19. Ingen global literal-ersattning. Samma raa forgrundsfarg far delas i flera semantiska tokens nar rollerna skiljer sig.",
+ "$ordning": "Befintliga semantiska morka mappningar provas forst, darefter ovrig etablerad palett. Nytt designvarde bara nar ingen befintlig racker.",
+ "malyta": "#24382c",
+ "sammanfattning": {
+  "morkt": {
+   "rotorsaker": 4,
+   "instanser": 11,
+   "palettRacker": 4,
+   "nyttVardeKravs": 0,
+   "paverkasAvYtbeslut": 1
+  },
+  "ljust": {
+   "rotorsaker": 6,
+   "instanser": 11,
+   "palettRacker": 6,
+   "nyttVardeKravs": 0,
+   "viaBakgrund": 3
+  }
+ },
+ "morkt": [
+  {
+   "rootCauseId": "RC-TX-D01",
+   "tema": "dark",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "dataexport"
+   ],
+   "skarmar": 1,
+   "instanser": 6,
+   "kallankare": [
+    {
+     "art": "dataexport",
+     "elementOrdinal": 26,
+     "tagg": "div",
+     "text": "✓ Profil och inställningar"
+    },
+    {
+     "art": "dataexport",
+     "elementOrdinal": 27,
+     "tagg": "div",
+     "text": "✓ Alla recept och betyg"
+    },
+    {
+     "art": "dataexport",
+     "elementOrdinal": 28,
+     "tagg": "div",
+     "text": "✓ Vänner och grupper"
+    },
+    {
+     "art": "dataexport",
+     "elementOrdinal": 29,
+     "tagg": "div",
+     "text": "✓ Meddelanden"
+    },
+    {
+     "art": "dataexport",
+     "elementOrdinal": 30,
+     "tagg": "div",
+     "text": "✓ Inköpslistor och menyer"
+    },
+    {
+     "art": "dataexport",
+     "elementOrdinal": 31,
+     "tagg": "div",
+     "text": "✓ Kommentarer och aktivitet"
+    }
+   ],
+   "tokenkandidat": "rgb(55, 69, 58)",
+   "kallaTillDeklaration": "INHERITED",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#37453a",
+   "typografi": {
+    "storlek": 12,
+    "vikt": 400,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#17251d",
+    "slutligEfterYtbeslut": "#17251d",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 1.57,
+   "kandidater": [
+    {
+     "varde": "#de9078",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 6.34,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#8fb89a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 7.2,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 7.52,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#c9d3c4",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 10.31,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 14.44,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#ce7c1e",
+     "kalla": "befintlig mork palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.95,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#93a48d",
+     "kalla": "semantisk mappning --text-innehall-c (text-innehall)",
+     "kvot": 6.02,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#93a48d",
+     "kalla": "semantisk mappning --ikon-fristaende-c (ikon-fristaende)",
+     "kvot": 6.02,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [
+    "#de9078",
+    "#8fb89a",
+    "#dca968",
+    "#c9d3c4",
+    "#f5f4ed",
+    "#ce7c1e",
+    "#93a48d",
+    "#93a48d",
+    "#93a48d",
+    "#93a48d",
+    "#a9b2a0"
+   ],
+   "forstaKandidat": "#de9078",
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER"
+  },
+  {
+   "rootCauseId": "RC-TX-D02",
+   "tema": "dark",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "samtycke"
+   ],
+   "skarmar": 1,
+   "instanser": 3,
+   "kallankare": [
+    {
+     "art": "samtycke",
+     "elementOrdinal": 32,
+     "tagg": "div",
+     "text": "14 apr 2026 · Gav samtycke — Sigrids profil"
+    },
+    {
+     "art": "samtycke",
+     "elementOrdinal": 33,
+     "tagg": "div",
+     "text": "2 mar 2026 · Gav samtycke — Mina allergener"
+    },
+    {
+     "art": "samtycke",
+     "elementOrdinal": 34,
+     "tagg": "div",
+     "text": "2 mar 2026 · Nekade — Användningsstatistik"
+    }
+   ],
+   "tokenkandidat": "rgb(98, 112, 97)",
+   "kallaTillDeklaration": "INHERITED",
+   "ljusvarde": "#627061",
+   "morkvarde": "#627061",
+   "typografi": {
+    "storlek": 12,
+    "vikt": 400,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#17251d",
+    "slutligEfterYtbeslut": "#17251d",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 3.04,
+   "kandidater": [
+    {
+     "varde": "#de9078",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 6.34,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#8fb89a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 7.2,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 7.52,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#c9d3c4",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 10.31,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 14.44,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#ce7c1e",
+     "kalla": "befintlig mork palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.95,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#93a48d",
+     "kalla": "semantisk mappning --text-innehall-a (text-innehall)",
+     "kvot": 6.02,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#93a48d",
+     "kalla": "semantisk mappning --ikon-fristaende-f (ikon-fristaende)",
+     "kvot": 6.02,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [
+    "#de9078",
+    "#8fb89a",
+    "#dca968",
+    "#c9d3c4",
+    "#f5f4ed",
+    "#ce7c1e",
+    "#93a48d",
+    "#93a48d",
+    "#93a48d",
+    "#93a48d",
+    "#a9b2a0"
+   ],
+   "forstaKandidat": "#de9078",
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER"
+  },
+  {
+   "rootCauseId": "RC-TX-D03",
+   "tema": "dark",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "notiscentral"
+   ],
+   "skarmar": 1,
+   "instanser": 1,
+   "kallankare": [
+    {
+     "art": "notiscentral",
+     "elementOrdinal": 54,
+     "tagg": "a",
+     "text": "notisrensa"
+    }
+   ],
+   "tokenkandidat": "rgb(138, 82, 18)",
+   "kallaTillDeklaration": "CLASS_RULE",
+   "ljusvarde": "#8a5212",
+   "morkvarde": "#8a5212",
+   "typografi": {
+    "storlek": 12,
+    "vikt": 400,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#17251d",
+    "slutligEfterYtbeslut": "#24382c",
+    "andrasAvYtbeslut": true
+   },
+   "nuvarandeKvotMotSlutlig": 1.97,
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 4.73,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#de9078",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 4.99,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#8fb89a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5.66,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#c9d3c4",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 8.11,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 11.36,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#a9b2a0",
+     "kalla": "befintlig mork palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 5.7,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "semantisk mappning --text-innehall-e (text-innehall)",
+     "kvot": 5.91,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "semantisk mappning --ikon-fristaende-e (ikon-fristaende)",
+     "kvot": 5.91,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [
+    "#93a48d",
+    "#de9078",
+    "#8fb89a",
+    "#c9d3c4",
+    "#f5f4ed",
+    "#a9b2a0",
+    "#dca968",
+    "#dca968",
+    "#dca968",
+    "#dca968"
+   ],
+   "forstaKandidat": "#93a48d",
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER"
+  },
+  {
+   "rootCauseId": "RC-TX-D04",
+   "tema": "dark",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "kontojuridik"
+   ],
+   "skarmar": 1,
+   "instanser": 1,
+   "kallankare": [
+    {
+     "art": "kontojuridik",
+     "elementOrdinal": 29,
+     "tagg": "a",
+     "text": "samma regel som för delade listor"
+    }
+   ],
+   "tokenkandidat": "rgb(138, 82, 18)",
+   "kallaTillDeklaration": "CLASS_RULE",
+   "ljusvarde": "#8a5212",
+   "morkvarde": "#8a5212",
+   "typografi": {
+    "storlek": 16,
+    "vikt": 400,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#17251d",
+    "slutligEfterYtbeslut": "#17251d",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 2.5,
+   "kandidater": [
+    {
+     "varde": "#93a48d",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 6.02,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#de9078",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 6.34,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#8fb89a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 7.2,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#c9d3c4",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 10.31,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 14.44,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#ce7c1e",
+     "kalla": "befintlig mork palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.95,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#a9b2a0",
+     "kalla": "befintlig mork palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 7.25,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "semantisk mappning --text-innehall-e (text-innehall)",
+     "kvot": 7.52,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 0,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [
+    "#93a48d",
+    "#de9078",
+    "#8fb89a",
+    "#c9d3c4",
+    "#f5f4ed",
+    "#ce7c1e",
+    "#a9b2a0",
+    "#dca968",
+    "#dca968",
+    "#dca968",
+    "#dca968"
+   ],
+   "forstaKandidat": "#93a48d",
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER"
+  }
+ ],
+ "ljust": [
+  {
+   "rootCauseId": "RC-TX-L01",
+   "tema": "light",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "skafferivara",
+    "delatlamna",
+    "delatlamnaagare"
+   ],
+   "skarmar": 3,
+   "instanser": 4,
+   "kallankare": [
+    {
+     "art": "skafferivara",
+     "elementOrdinal": 21,
+     "tagg": "span",
+     "text": "−"
+    },
+    {
+     "art": "skafferivara",
+     "elementOrdinal": 23,
+     "tagg": "span",
+     "text": "+"
+    },
+    {
+     "art": "delatlamna",
+     "elementOrdinal": 4,
+     "tagg": "div",
+     "text": "Du tas ur deltagarlistan och listan försvinner f"
+    },
+    {
+     "art": "delatlamnaagare",
+     "elementOrdinal": 4,
+     "tagg": "div",
+     "text": "Listan kan inte lämnas ifrån sig — . Att ta bort"
+    }
+   ],
+   "tokenkandidat": "rgb(147, 164, 141)",
+   "kallaTillDeklaration": "INLINE",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#93a48d",
+   "typografi": {
+    "storlek": 16,
+    "vikt": 400,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#f5f4ed",
+    "slutligEfterYtbeslut": "#f5f4ed",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 2.4,
+   "kandidater": [
+    {
+     "varde": "#627061",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 4.75,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 2.39,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 3.04,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#a15a0a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 4.78,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 2.37,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 3.02,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#5b6959",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5.28,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 2.15,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.74,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#3f6b4f",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5.56,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 2.04,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.6,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#8a5212",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5.78,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.97,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.5,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#9c3b23",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 6.22,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.83,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.32,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#37453a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 9.18,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.24,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 1.57,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#24382c",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 11.36,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 1.27,
+       "troskel": 4.5
+      }
+     ]
+    }
+   ],
+   "dugliga": [
+    "#627061",
+    "#a15a0a",
+    "#5b6959",
+    "#3f6b4f",
+    "#8a5212",
+    "#9c3b23",
+    "#37453a",
+    "#24382c",
+    "#17251d"
+   ],
+   "forstaKandidat": "#627061",
+   "kraverEgenToken": true,
+   "kollateralNot": "Samtliga dugliga kandidater skulle skapa nya fel OM samma raa farg ersattes globalt. Fixen ar scopad till denna rotorsak, sa fargen maste delas i en egen semantisk token.",
+   "status": "BEFINTLIG_PALETT_RACKER"
+  },
+  {
+   "rootCauseId": "RC-TX-L02",
+   "tema": "light",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "impdubblett"
+   ],
+   "skarmar": 1,
+   "instanser": 3,
+   "kallankare": [
+    {
+     "art": "impdubblett",
+     "elementOrdinal": 14,
+     "tagg": "span",
+     "text": "Ditt"
+    },
+    {
+     "art": "impdubblett",
+     "elementOrdinal": 16,
+     "tagg": "span",
+     "text": "11 ingredienser · 40 min"
+    },
+    {
+     "art": "impdubblett",
+     "elementOrdinal": 20,
+     "tagg": "span",
+     "text": "13 ingredienser · 45 min"
+    }
+   ],
+   "tokenkandidat": "rgb(147, 164, 141)",
+   "kallaTillDeklaration": "INLINE",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#93a48d",
+   "typografi": {
+    "storlek": 10.5,
+    "vikt": 700,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#e6ead9",
+    "slutligEfterYtbeslut": "#e6ead9",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 2.16,
+   "kandidater": [
+    {
+     "varde": "#5b6959",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 4.75,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 2.15,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.74,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#3f6b4f",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 2.04,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.6,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#8a5212",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5.2,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.97,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.5,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#9c3b23",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 5.59,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.83,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 2.32,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#37453a",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 8.26,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.24,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 1.57,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#24382c",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 10.22,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 1.27,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#17251d",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 12.99,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#24382c",
+       "kvotFore": 4.73,
+       "kvotEfter": 1.27,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#17251d",
+       "kvotFore": 6.02,
+       "kvotEfter": 1,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 1.11,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 3,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [
+    "#5b6959",
+    "#3f6b4f",
+    "#8a5212",
+    "#9c3b23",
+    "#37453a",
+    "#24382c",
+    "#17251d"
+   ],
+   "forstaKandidat": "#5b6959",
+   "kraverEgenToken": true,
+   "kollateralNot": "Samtliga dugliga kandidater skulle skapa nya fel OM samma raa farg ersattes globalt. Fixen ar scopad till denna rotorsak, sa fargen maste delas i en egen semantisk token.",
+   "status": "BEFINTLIG_PALETT_RACKER"
+  },
+  {
+   "rootCauseId": "RC-TX-L03",
+   "tema": "light",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "veckogenererar"
+   ],
+   "skarmar": 1,
+   "instanser": 1,
+   "kallankare": [
+    {
+     "art": "veckogenererar",
+     "elementOrdinal": 13,
+     "tagg": "div",
+     "text": "Sätter samman veckan"
+    }
+   ],
+   "tokenkandidat": "rgb(245, 244, 237)",
+   "kallaTillDeklaration": "INLINE",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#f5f4ed",
+   "typografi": {
+    "storlek": 16,
+    "vikt": 700,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#788379",
+    "slutligEfterYtbeslut": "#788379",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 3.58,
+   "kandidater": [
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --text-kontroll-b4 (text-kontroll)",
+     "kvot": 3.58,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --text-innehall-b4 (text-innehall)",
+     "kvot": 3.58,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --ikon-kontroll-b1 (ikon-kontroll)",
+     "kvot": 3.58,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --ikon-fristaende-b6 (ikon-fristaende)",
+     "kvot": 3.58,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#e6ead9",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 3.22,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 4.27,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 4.3,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#ccd1c2",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 2.53,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 4,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 3.36,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#9c3b23",
+       "kvotFore": 6.22,
+       "kvotEfter": 4.4,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f6b4f",
+       "kvotFore": 5.56,
+       "kvotEfter": 3.93,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 3.38,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#d8b784",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 2.07,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 7,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#4a5c43",
+       "kvotFore": 6.56,
+       "kvotEfter": 3.8,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 2.75,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#9c3b23",
+       "kvotFore": 6.22,
+       "kvotEfter": 3.6,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f6b4f",
+       "kvotFore": 5.56,
+       "kvotEfter": 3.22,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#4a5c50",
+       "kvotFore": 6.48,
+       "kvotEfter": 3.75,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 2.77,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f5145",
+       "kvotFore": 7.7,
+       "kvotEfter": 4.46,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 1.86,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 7,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#4a5c43",
+       "kvotFore": 6.56,
+       "kvotEfter": 3.42,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 2.47,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#9c3b23",
+       "kvotFore": 6.22,
+       "kvotEfter": 3.24,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f6b4f",
+       "kvotFore": 5.56,
+       "kvotEfter": 2.89,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#4a5c50",
+       "kvotFore": 6.48,
+       "kvotEfter": 3.38,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 2.49,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f5145",
+       "kvotFore": 7.7,
+       "kvotEfter": 4.01,
+       "troskel": 4.5
+      }
+     ]
+    }
+   ],
+   "dugliga": [],
+   "forstaKandidat": null,
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER_VIA_BAKGRUND",
+   "alternativMekanism": {
+    "mekanism": "morka bakgrunden",
+    "kandidater": [
+     "#627061 -> 4.75",
+     "#a15a0a -> 4.78",
+     "#5b6959 -> 5.28",
+     "#3f6b4f -> 5.56"
+    ]
+   },
+   "not": "Ingen forgrund i den ljusa paletten klarar kravet mot den har mellangra ytan. Bakgrunden ar dock sjalv en produktyta ur paletten, och att morka DEN loser relationen med befintliga varden. Vilken mekanism som valjs ar ett designbeslut."
+  },
+  {
+   "rootCauseId": "RC-TX-L04",
+   "tema": "light",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "veckogenererar"
+   ],
+   "skarmar": 1,
+   "instanser": 1,
+   "kallankare": [
+    {
+     "art": "veckogenererar",
+     "elementOrdinal": 14,
+     "tagg": "div",
+     "text": "Väljer recept som passar era allergier och det n"
+    }
+   ],
+   "tokenkandidat": "rgba(245, 244, 237, 0.6)",
+   "kallaTillDeklaration": "INLINE",
+   "ljusvarde": "rgba(245,244,237,0.6)",
+   "morkvarde": "rgba(245,244,237,0.6)",
+   "typografi": {
+    "storlek": 12.5,
+    "vikt": 400,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#788379",
+    "slutligEfterYtbeslut": "#788379",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 2.3,
+   "kandidater": [
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 3.58,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#e6ead9",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 3.22,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#ccd1c2",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 2.53,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#d8b784",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 2.07,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 1.86,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#e5a08a",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 1.83,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#a9b2a0",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 1.8,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#8fb89a",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 1.78,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [],
+   "forstaKandidat": null,
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER_VIA_BAKGRUND",
+   "alternativMekanism": {
+    "mekanism": "morka bakgrunden",
+    "kandidater": [
+     "#24382c -> 5.19"
+    ]
+   },
+   "not": "Ingen forgrund i den ljusa paletten klarar kravet mot den har mellangra ytan. Bakgrunden ar dock sjalv en produktyta ur paletten, och att morka DEN loser relationen med befintliga varden. Vilken mekanism som valjs ar ett designbeslut."
+  },
+  {
+   "rootCauseId": "RC-TX-L05",
+   "tema": "light",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "lagatimerutgangen"
+   ],
+   "skarmar": 1,
+   "instanser": 1,
+   "kallankare": [
+    {
+     "art": "lagatimerutgangen",
+     "elementOrdinal": 15,
+     "tagg": "div",
+     "text": "Samtidigt i appen"
+    }
+   ],
+   "tokenkandidat": "rgba(245, 244, 237, 0.6)",
+   "kallaTillDeklaration": "INLINE",
+   "ljusvarde": "rgba(245,244,237,0.6)",
+   "morkvarde": "rgba(245,244,237,0.6)",
+   "typografi": {
+    "storlek": 10.5,
+    "vikt": 700,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#3f4a42",
+    "slutligEfterYtbeslut": "#3f4a42",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 4.2,
+   "kandidater": [
+    {
+     "varde": "#f5f4ed",
+     "kalla": "etablerad i samma semantiska roll (text-innehall)",
+     "iSammaRoll": true,
+     "kvot": 8.39,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#d8b784",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.86,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#ccd1c2",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 5.93,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#e6ead9",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 7.55,
+     "klarar": true,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.37,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#e5a08a",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.29,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#a9b2a0",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.21,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_IMPROVED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#8fb89a",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 4.18,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 2,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    }
+   ],
+   "dugliga": [
+    "#f5f4ed",
+    "#d8b784",
+    "#ccd1c2",
+    "#e6ead9"
+   ],
+   "forstaKandidat": "#f5f4ed",
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER"
+  },
+  {
+   "rootCauseId": "RC-TX-L06",
+   "tema": "light",
+   "semantiskTextroll": "text-innehall",
+   "artefakter": [
+    "cooksnapgalleri"
+   ],
+   "skarmar": 1,
+   "instanser": 1,
+   "kallankare": [
+    {
+     "art": "cooksnapgalleri",
+     "elementOrdinal": 16,
+     "tagg": "span",
+     "text": "3"
+    }
+   ],
+   "tokenkandidat": "rgb(245, 244, 237)",
+   "kallaTillDeklaration": "INLINE",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#f5f4ed",
+   "typografi": {
+    "storlek": 10.5,
+    "vikt": 700,
+    "stor": false,
+    "krav": 4.5
+   },
+   "bakgrund": {
+    "nuvarandeMalad": "#6a7468",
+    "slutligEfterYtbeslut": "#6a7468",
+    "andrasAvYtbeslut": false
+   },
+   "nuvarandeKvotMotSlutlig": 4.42,
+   "kandidater": [
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --text-kontroll-b4 (text-kontroll)",
+     "kvot": 4.42,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --text-innehall-b4 (text-innehall)",
+     "kvot": 4.42,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --ikon-kontroll-b1 (ikon-kontroll)",
+     "kvot": 4.42,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#f5f4ed",
+     "kalla": "semantisk mappning --ikon-fristaende-b6 (ikon-fristaende)",
+     "kvot": 4.42,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_UNCHANGED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 0,
+     "nyaKollaterala": []
+    },
+    {
+     "varde": "#e6ead9",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 3.97,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 2,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 4.27,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 4.3,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#ccd1c2",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 3.12,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 4,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 3.36,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#9c3b23",
+       "kvotFore": 6.22,
+       "kvotEfter": 4.4,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f6b4f",
+       "kvotFore": 5.56,
+       "kvotEfter": 3.93,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 3.38,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#d8b784",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 2.56,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 7,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#4a5c43",
+       "kvotFore": 6.56,
+       "kvotEfter": 3.8,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 2.75,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#9c3b23",
+       "kvotFore": 6.22,
+       "kvotEfter": 3.6,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f6b4f",
+       "kvotFore": 5.56,
+       "kvotEfter": 3.22,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#4a5c50",
+       "kvotFore": 6.48,
+       "kvotEfter": 3.75,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 2.77,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f5145",
+       "kvotFore": 7.7,
+       "kvotEfter": 4.46,
+       "troskel": 4.5
+      }
+     ]
+    },
+    {
+     "varde": "#dca968",
+     "kalla": "befintlig ljus palett, annan roll",
+     "iSammaRoll": false,
+     "kvot": 2.3,
+     "klarar": false,
+     "utfall": "EXISTING_FAIL_WORSENED",
+     "kollateralaBakgrunder": 11,
+     "nyaKollateralaFel": 7,
+     "nyaKollaterala": [
+      {
+       "bakgrund": "#4a5c43",
+       "kvotFore": 6.56,
+       "kvotEfter": 3.42,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#627061",
+       "kvotFore": 4.75,
+       "kvotEfter": 2.47,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#9c3b23",
+       "kvotFore": 6.22,
+       "kvotEfter": 3.24,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f6b4f",
+       "kvotFore": 5.56,
+       "kvotEfter": 2.89,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#4a5c50",
+       "kvotFore": 6.48,
+       "kvotEfter": 3.38,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#a15a0a",
+       "kvotFore": 4.78,
+       "kvotEfter": 2.49,
+       "troskel": 4.5
+      },
+      {
+       "bakgrund": "#3f5145",
+       "kvotFore": 7.7,
+       "kvotEfter": 4.01,
+       "troskel": 4.5
+      }
+     ]
+    }
+   ],
+   "dugliga": [],
+   "forstaKandidat": null,
+   "kraverEgenToken": false,
+   "kollateralNot": null,
+   "status": "BEFINTLIG_PALETT_RACKER_VIA_BAKGRUND",
+   "alternativMekanism": {
+    "mekanism": "morka bakgrunden",
+    "kandidater": [
+     "#627061 -> 4.75",
+     "#a15a0a -> 4.78",
+     "#5b6959 -> 5.28",
+     "#3f6b4f -> 5.56"
+    ]
+   },
+   "not": "Ingen forgrund i den ljusa paletten klarar kravet mot den har mellangra ytan. Bakgrunden ar dock sjalv en produktyta ur paletten, och att morka DEN loser relationen med befintliga varden. Vilken mekanism som valjs ar ett designbeslut."
+  }
+ ]
+}

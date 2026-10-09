@@ -1,0 +1,132 @@
+{
+ "prov": [
+  {
+   "id": "E-01",
+   "vad": "två symptom på samma element med samma konsekvens ger ETT effectId",
+   "ok": true,
+   "diag": "effekter: 1 · legacy per effekt: 2 · grund: samma artefakt, samma element, samma sourceRootCause, samma "
+  },
+  {
+   "id": "E-02",
+   "vad": "två självständiga konsekvenser på samma element ger TVÅ effectId",
+   "ok": true,
+   "diag": "effekter: 2 · axlar: y/40, x/19"
+  },
+  {
+   "id": "E-03",
+   "vad": "samma symptom och samma källa i två artefakter ger TVÅ effectId",
+   "ok": true,
+   "diag": "effekter: 2 · artefakter: A,B · delad källa: SRC-X"
+  },
+  {
+   "id": "E-04",
+   "vad": "en intentional effekt räknas ALDRIG som produktfel",
+   "ok": true,
+   "diag": "productErrors: 0 · intentional: 1 · evidens bärs: true"
+  },
+  {
+   "id": "E-05",
+   "vad": "en undecided effekt räknas ALDRIG som produktfel",
+   "ok": true,
+   "diag": "productErrors: 0 · undecided: 1"
+  },
+  {
+   "id": "E-06",
+   "vad": "en oadjudicerad legacy-instans fäller effektrapporten",
+   "ok": true,
+   "diag": "status: FÄLLD · effekter skapade: 1 · ADJUDICERING SAKNAS: INST · A · sel:div>div[9] · klippning bär status "
+  },
+  {
+   "id": "E-07",
+   "vad": "saknad eller okänd sourceRootCause ger INGEN effekt och ingen påhittad grupp",
+   "ok": true,
+   "diag": "effekter: 0 · fel: 2"
+  },
+  {
+   "id": "E-08",
+   "vad": "en skillnad mot runtime sätter aldrig automatiskt unintended",
+   "ok": true,
+   "diag": "designRuntimeDeviation: true · status: undecided · productErrors: 0"
+  },
+  {
+   "id": "E-09",
+   "vad": "effectId hämtas ur registret och renumreras aldrig när populationen krymper",
+   "ok": true,
+   "diag": "med register efter borttagning: EFF-02 · B, EFF-03 · C · UTAN register (det gamla felet): EFF-01 · B, EFF-02 · C"
+  },
+  {
+   "id": "E-10",
+   "vad": "en ny effekt får nästa lediga nummer och aldrig ett frigjort",
+   "ok": true,
+   "diag": "ny effekt: EFF-03 · D · överlevare: EFF-02 · B · nytilldelade: 1"
+  },
+  {
+   "id": "E-11",
+   "vad": "samma effekt med 2 px i en körning och 3 px i en annan får SAMMA effectId",
+   "ok": true,
+   "diag": "A: EFF-01 · A · B: EFF-01 · A · nyckeln bär storlek: false"
+  },
+  {
+   "id": "E-12",
+   "vad": "samma artefakt, element och källa men olika axlar ger TVÅ effectId",
+   "ok": true,
+   "diag": "effekter: 2 · axlar: y,x"
+  },
+  {
+   "id": "E-13",
+   "vad": "ändrad text och geometri men oförändrad effektidentitet ger SAMMA effectId",
+   "ok": true,
+   "diag": "id: EFF-01 · A · storlek 20 → 47.5 px"
+  },
+  {
+   "id": "E-14",
+   "vad": "en verkligt ny effekt på samma element får nytt nummer, aldrig ett återanvänt",
+   "ok": true,
+   "diag": "ny effekt: EFF-02 · A · nytilldelade: 1 (det frigjorda 01 återanvänds inte)"
+  },
+  {
+   "id": "E-15",
+   "vad": "klippt preview utan affordans behåller innehall-dolt-utan-affordans",
+   "ok": true,
+   "diag": "nyckel: A ‖ sel:div>div[0] ‖ SRC-02 ‖ klass=innehall-dolt-utan-affordans ‖ axel=y"
+  },
+  {
+   "id": "E-16",
+   "vad": "verifierad collapsed-preview med fungerande expanded ger begransad-preview-med-affordans",
+   "ok": true,
+   "diag": "nyckel: A ‖ sel:div>div[0] ‖ SRC-02 ‖ klass=begransad-preview-med-affordans ‖ axel=y"
+  },
+  {
+   "id": "E-17",
+   "vad": "klassbytet, inte listordningen, skapar den nya identiteten",
+   "ok": true,
+   "diag": "enda skillnaden i nyckeln: [\"klass=innehall-dolt-utan-affordans\"]"
+  },
+  {
+   "id": "E-18",
+   "vad": "ändrat stateId skapar varken ny effectClass eller ny effectId",
+   "ok": true,
+   "diag": "nyckel oförändrad: true"
+  },
+  {
+   "id": "E-19",
+   "vad": "kontroll utan verifierat expanded-state ger INTE preview-med-affordans",
+   "ok": true,
+   "diag": "klass: innehall-dolt-utan-affordans · saknade led: [\"expandedArtifact\",\"fulltextNabar\"]"
+  },
+  {
+   "id": "E-20",
+   "vad": "verifierat collapsed/expanded-par kan adjudiceras intentional",
+   "ok": true,
+   "diag": "intentional: 1 · produktfel: 0"
+  },
+  {
+   "id": "E-21",
+   "vad": "ny semantisk nyckel får nästa oanvända ordinal, gamla 05 muteras inte",
+   "ok": true,
+   "diag": "ny effectId: EFF-06 · A · gammal ordinal orörd: true"
+  }
+ ],
+ "gröna": 21,
+ "av": 21
+}

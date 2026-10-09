@@ -1,0 +1,3048 @@
+{
+ "$schema": "butlery-carrier-korrigering-a4/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "bbd2fe0",
+ "$status": "KORRIGERING KLAR — 1:1-plattorna ateroppnade, selectorn rattad",
+ "$typ": "METHOD + ADJUDICATION CORRECTION. Inga produktandringar.",
+ "A_aterOppnade": {
+  "identiteter": [
+   "veckoplaceringavbryt|1",
+   "impassistavbryt|1"
+  ],
+  "del": "HEADER_FILL",
+  "fran": "SUPPLEMENTAL",
+  "till": "UNKNOWN",
+  "skal": "fill == angransande yta, kvot 1.000, bevisar CURRENT_VISUAL_COLLAPSE. Det bevisar inte NOT_REQUIRED, REDUNDANT, DECORATIVE eller frnvaro av strukturell funktion. Ar separationen kravd ar samma 1:1 i stallet ett konformansfynd."
+ },
+ "B_ADJ14": {
+  "regel": "EXACT_VISUAL_EQUALITY / CARRIER_COLLAPSE alone cannot establish NOT_REQUIRED, REDUNDANT or DECORATIVE.",
+  "kodad": "tools/graphic-part-requirement.mjs — EVIDENSGRUND.CURRENT_VISUAL_COLLAPSE, ICKE_GRUNDANDE_FOR_ONODIG, grundarOnodig() och en fail-closed gren i bortfallsprov() for begripligUtan === true.",
+  "badaRiktningar": "Ett 1:1-objekt blir UNKNOWN nar requiredness saknar separat positiv evidens, och kan bli REQUIRED_FOR_UNDERSTANDING nar separat evidens visar att carrier-funktionen behovs. Da ar 1:1 ett konformansfynd, inte ett friande besked."
+ },
+ "C_delavstamning": {
+  "HEADER_BOTTOM_RULE": {
+   "resolved": 29,
+   "UNKNOWN": 2
+  },
+  "HEADER_FILL": {
+   "resolved": 0,
+   "UNKNOWN": 31
+  },
+  "resolvedParts": 29,
+  "unknownParts": 33,
+  "totalParts": 62,
+  "objektMedMinstEnUnknown": 31,
+  "$regel": "Ett objekt raknas som lost forst nar samtliga dess delar ar avgjorda."
+ },
+ "D_deTvaPlattorna": [
+  {
+   "identitet": "veckoplaceringavbryt|1",
+   "skarm": "Veckomeny — lämna placeringen",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "HEADER_FILL": {
+    "klass": "UNKNOWN",
+    "tidigare": "SUPPLEMENTAL",
+    "kvot": 1,
+    "olostFraga": "Kravs en synlig separation mellan skarmens headerband och den morklagda overlagringen under, sa att anvandaren kan se att headern ligger kvar utanfor overlagringen? Om ja ar dagens 1:1 ett konformansfynd. Om nej ar fyllningen supplemental. Kollapsen i sig avgor inte fragan."
+   },
+   "BOTTOM_RULE": {
+    "klass": "UNKNOWN",
+    "kvoter": [
+     8.03,
+     8.03
+    ]
+   }
+  },
+  {
+   "identitet": "impassistavbryt|1",
+   "skarm": "Assisterad import — avbryta med val gjorda",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "HEADER_FILL": {
+    "klass": "UNKNOWN",
+    "tidigare": "SUPPLEMENTAL",
+    "kvot": 1,
+    "olostFraga": "Kravs en synlig separation mellan skarmens headerband och den morklagda overlagringen under, sa att anvandaren kan se att headern ligger kvar utanfor overlagringen? Om ja ar dagens 1:1 ett konformansfynd. Om nej ar fyllningen supplemental. Kollapsen i sig avgor inte fragan."
+   },
+   "BOTTOM_RULE": {
+    "klass": "UNKNOWN",
+    "kvoter": [
+     8.03,
+     8.03
+    ]
+   }
+  }
+ ],
+ "E_konformansneutralitet": {
+  "A": {
+   "vad": "UNKNOWN fills med kvot over kravet",
+   "antal": 29,
+   "kvoter": [
+    10.218,
+    11.357
+   ],
+   "klass": "CURRENT-LIGHT-CONFORMANCE-NEUTRAL",
+   "$innebord": "Blir de senare kravda ger de inget fynd i nuvarande ljusa tema."
+  },
+  "B": {
+   "vad": "UNKNOWN bottom rules med kvot over kravet",
+   "antal": 2,
+   "kvoter": [
+    8.03
+   ],
+   "klass": "CURRENT-LIGHT-CONFORMANCE-NEUTRAL",
+   "$innebord": "Blir de senare kravda ger de inget fynd i nuvarande ljusa tema."
+  },
+  "C": {
+   "vad": "UNKNOWN fills med kvot 1.000",
+   "antal": 2,
+   "identiteter": [
+    "veckoplaceringavbryt|1",
+    "impassistavbryt|1"
+   ],
+   "kvoter": [
+    1
+   ],
+   "klass": "POTENTIALLY_CONFORMANCE_RELEVANT",
+   "$innebord": "Bedoms de senare REQUIRED kan de ge fynd i nuvarande ljusa tema."
+  },
+  "$ejNeutraltIStort": "Pastaendet i bbd2fe0 att SAMTLIGA oppna fragor ar konformansneutrala ar aterkallat. Det galler A och B. Det galler INTE C.",
+  "$r04": "Ingen av dessa slutsatser ger R-04-kredit och ingen av dem sager nagot om framtida dark-theme-mappningar. Bedomningen galler nuvarande ljusa tema.",
+  "kontroll": {
+   "summaOppna": 33,
+   "oppnaDelar": 33,
+   "stammer": true,
+   "ejKlassade": 0
+  }
+ },
+ "F_granskningsliggare": {
+  "raDiscoveryCandidates": 2700,
+  "klustradKandidatpopulation": 2684,
+  "UNREVIEWED": 2498,
+  "REVIEWED_RESOLVED": 73,
+  "REVIEWED_UNKNOWN": 113,
+  "unresolvedTotalt": 2611,
+  "$identitet": "unresolved = UNREVIEWED + REVIEWED_UNKNOWN. REVIEWED_UNKNOWN ar ett riktigt resultat och lamnar inte den olosta populationen.",
+  "$avstamning": "2684 − 73 = 2611"
+ },
+ "G_selectorRattning": {
+  "defektFore": {
+   "beskrivning": "n1.mjs bygger operativ population som \"medlemmar minus de med ett verdikt som inte ar UNKNOWN\". En REVIEWED_UNKNOWN ar darmed lika valbar som en aldrig granskad kandidat, och kan plockas om utan ny evidens.",
+   "reviewedUnknownIValbarPopulation": 113,
+   "behandladesSomOgranskade": true
+  },
+  "rattning": "tools/review-ledger.mjs. Grinden verkar EFTER rankingen och andrar varken medlemskap, havstang, tie-break eller nagon totalsiffra. En REVIEWED_UNKNOWN kan bara tas upp igen mot NY_EVIDENS, UPPLOST_BEROENDE eller EXPLICIT_AUKTORISATION, och skalet maste ha en konkret beskrivning.",
+  "batch2Retroaktivt": {
+   "de31GranskadeForeBatch2": 0,
+   "allaValbaraDa": true,
+   "$slutsats": "Vid f023e26 var samtliga 31 UNREVIEWED. Grinden hade slappt igenom exakt samma partition. RAW_RANK 2 / ELIGIBLE_RANK 1 star oforandrat."
+  },
+  "idag": {
+   "valbara": 0,
+   "sparrade": 31,
+   "medlemmarOforandrade": true,
+   "partitionValbar": false,
+   "exempelSkal": "REVIEWED_UNKNOWN kraver ny evidens, upplost beroende eller explicit omprovningsauktorisation — inget angivet"
+  },
+  "medExplicitAuktorisation": {
+   "valbara": 31,
+   "$not": "Detta blocks aterppnande av de tva plattorna ar just ett sadant auktoriserat fall."
+  },
+  "$rankingOrord": "Ingen ny rankingmodell och ingen ny prioritet har inforts. Klustringen ar bit-identisk: 566 / 701."
+ },
+ "H_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "andradeProduktfiler": [],
+  "rawDiscoveryCandidates": 2700,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "fingeravtryck": "7e0d730a3e5ba58d9c9b19ae"
+  },
+  "ADJ12_ADJ13_ororda": true,
+  "batch2Rank": {
+   "RAW_RANK": 2,
+   "ELIGIBLE_RANK": 1
+  },
+  "linjerKvarSomSupplemental": 29,
+  "korpussignal344": "SIGNAL, INTE EVIDENS. Dessa jamforelseobjekt ar sjalva oadjudicerade. Att appen skickar likvardiga headers utan fyllning eller utan linje ar ingen utsaga om att de ar begripliga. Uppgiften anvands INTE i nagot verdikt ovan.",
+  "$matningarBaras": "R-02 och icke-textmatningarna ar overforda. Beviset ar byte-identitet mot bbd2fe0 for samtliga 27 produktfiler och for R-04-registret."
+ },
+ "I_perForekomst": [
+  {
+   "identitet": "veckoprompt|1",
+   "art": "veckoprompt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — prompt och tomt läge",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckogenererar|1",
+   "art": "veckogenererar",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — genererar",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckochips|1",
+   "art": "veckochips",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — vad tolkningen förstod",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoresultat|1",
+   "art": "veckoresultat",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — resultat och placeringsval",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckodolda|1",
+   "art": "veckodolda",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — färre recept av allergiskäl",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 4 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckofel|1",
+   "art": "veckofel",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — genereringen misslyckades",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckobyt|1",
+   "art": "veckobyt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — byte och slut på alternativ",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoplacering|1",
+   "art": "veckoplacering",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — placera själv",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Placera i veckan",
+    "sekundarvarde": "2 av 5",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoplaceringvald|1",
+   "art": "veckoplaceringvald",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — rätt vald för placering",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(230, 234, 217)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 10.218,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1.111,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.272
+    }
+   },
+   "textrelation": {
+    "titel": "Placera i veckan",
+    "sekundarvarde": "2 av 5",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1.111 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 10.218."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 10.218 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 10.218 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.272 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 10.218,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.272,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoplaceringavbryt|1",
+   "art": "veckoplaceringavbryt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — lämna placeringen",
+   "geometri": "412x65",
+   "delgrupp": "S_LIKA_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(36, 56, 44)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 1,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 11.357,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 8.03
+    }
+   },
+   "textrelation": {
+    "titel": "Placera i veckan",
+    "sekundarvarde": "2 av 5",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "grunder": [
+      "CURRENT_VISUAL_COLLAPSE"
+     ],
+     "skal": "slutsatsen vilar enbart pa CURRENT_VISUAL_COLLAPSE — exakt visuell likhet bevisar inte att funktionen saknas; faller stangt",
+     "tidigareKlass": "SUPPLEMENTAL",
+     "aterOppnad": true,
+     "positivEvidens": [],
+     "motevidens": [
+      "Kvoten 1.000 bevisar CURRENT_VISUAL_COLLAPSE — att fyllningen i sitt nuvarande utseende inte syns mot ytan under. Den bevisar inte NOT_REQUIRED, REDUNDANT, DECORATIVE eller att strukturell funktion saknas.",
+      "Ar separationen eller grupperingen i sjalva verket kravd, ar samma 1:1 i stallet ett KONFORMANSFYND: en kravd barare som inte nar 3 mot sin angransande farg.",
+      "Textagarskapet star kvar men far per ADJ-12 inte anforas at nagot hall."
+     ],
+     "olostFraga": "Kravs en synlig separation mellan skarmens headerband och den morklagda overlagringen under, sa att anvandaren kan se att headern ligger kvar utanfor overlagringen? Om ja ar dagens 1:1 ett konformansfynd. Om nej ar fyllningen supplemental. Kollapsen i sig avgor inte fragan."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA MARKERINGEN: fyllningen och ytan under ar samma farg (kvot 1.000). Linjen ar det enda som skiljer headerbandet fran omradet under. Uppmatt 8.03 mot fyllningen och 8.03 mot ytan under."
+     ],
+     "motevidens": [
+      "Att linjen ar den enda markeringen bevisar inte att markeringen kravs. Omradet under ar en morkad overlagring, och rubriken, vardet och tillbakakontrollen ar lasbara aven om bandet och overlagringen flot ihop.",
+      "Samma 1 px-linje sitter pa exakt samma komponent i de ovriga forekomsterna, dar den inte bar nagon grans. Linjen ar alltsa inte tillagd for det har lage — dess synliga effekt skiljer sig bara at med sammanhanget."
+     ],
+     "olostFraga": "I det morklagda laget ar headerbandet och overlagringen under samma farg. Kravs 1 px-linjen for att forsta att skarmens header ligger kvar utanfor overlagringen, eller ar den informationen ointressant for anvandaren nar rubriken, vardet och tillbakakontrollen anda ar lasbara?"
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 1,
+     "skulleKlara": false
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 8.03,
+     "skulleKlara": true
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare.",
+   "korrigering": "HEADER_FILL ateroppnad fran SUPPLEMENTAL till UNKNOWN enligt ADJ-14. Skalet i bbd2fe0 vilade pa att fyllningen ar bit-lika med ytan under. Det ar CURRENT_VISUAL_COLLAPSE, inte frnvaro av funktion."
+  },
+  {
+   "identitet": "veckoautoplacerad|1",
+   "art": "veckoautoplacerad",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — automatiskt placerad",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckokalender|1",
+   "art": "veckokalender",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — kalendervecka",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckonarvaro|1",
+   "art": "veckonarvaro",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — vem är hemma per måltid",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckonarvarooversikt|1",
+   "art": "veckonarvarooversikt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — närvaro, veckoöversikt",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckooverflow|1",
+   "art": "veckooverflow",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — rätter som inte fick plats",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 7 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoflytta|1",
+   "art": "veckoflytta",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — flytta flera",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(230, 234, 217)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 10.218,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1.111,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.272
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1.111 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 10.218."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 10.218 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 10.218 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.272 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 10.218,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.272,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoskrivover|1",
+   "art": "veckoskrivover",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — skriva över veckan",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckoinkop|1",
+   "art": "veckoinkop",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — inköpslista från veckan",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "veckorostning|1",
+   "art": "veckorostning",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "skarm": "Veckomeny — rösta om en rätt",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Familjens veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "onbsenare|1",
+   "art": "onbsenare",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "skarm": "Onboarding — den uppskjutna frågan",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Veckomeny",
+    "sekundarvarde": "v31 · 5 rätter",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "imp3granska|1",
+   "art": "imp3granska",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — steg 3, granska tolkningen",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Granska recept",
+    "sekundarvarde": "SPARA",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "impassist1|1",
+   "art": "impassist1",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — steg 1, ingredienserna",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "1/3",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "impassist2|1",
+   "art": "impassist2",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — steg 2, instruktionerna",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "2/3",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "impassist3|1",
+   "art": "impassist3",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — steg 3, granska och rätta",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "3/3",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "impassistavbryt|1",
+   "art": "impassistavbryt",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Assisterad import — avbryta med val gjorda",
+   "geometri": "412x65",
+   "delgrupp": "S_LIKA_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(36, 56, 44)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 1,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 11.357,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 8.03
+    }
+   },
+   "textrelation": {
+    "titel": "Hjälp mig tolka",
+    "sekundarvarde": "2/3",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "grunder": [
+      "CURRENT_VISUAL_COLLAPSE"
+     ],
+     "skal": "slutsatsen vilar enbart pa CURRENT_VISUAL_COLLAPSE — exakt visuell likhet bevisar inte att funktionen saknas; faller stangt",
+     "tidigareKlass": "SUPPLEMENTAL",
+     "aterOppnad": true,
+     "positivEvidens": [],
+     "motevidens": [
+      "Kvoten 1.000 bevisar CURRENT_VISUAL_COLLAPSE — att fyllningen i sitt nuvarande utseende inte syns mot ytan under. Den bevisar inte NOT_REQUIRED, REDUNDANT, DECORATIVE eller att strukturell funktion saknas.",
+      "Ar separationen eller grupperingen i sjalva verket kravd, ar samma 1:1 i stallet ett KONFORMANSFYND: en kravd barare som inte nar 3 mot sin angransande farg.",
+      "Textagarskapet star kvar men far per ADJ-12 inte anforas at nagot hall."
+     ],
+     "olostFraga": "Kravs en synlig separation mellan skarmens headerband och den morklagda overlagringen under, sa att anvandaren kan se att headern ligger kvar utanfor overlagringen? Om ja ar dagens 1:1 ett konformansfynd. Om nej ar fyllningen supplemental. Kollapsen i sig avgor inte fragan."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA MARKERINGEN: fyllningen och ytan under ar samma farg (kvot 1.000). Linjen ar det enda som skiljer headerbandet fran omradet under. Uppmatt 8.03 mot fyllningen och 8.03 mot ytan under."
+     ],
+     "motevidens": [
+      "Att linjen ar den enda markeringen bevisar inte att markeringen kravs. Omradet under ar en morkad overlagring, och rubriken, vardet och tillbakakontrollen ar lasbara aven om bandet och overlagringen flot ihop.",
+      "Samma 1 px-linje sitter pa exakt samma komponent i de ovriga forekomsterna, dar den inte bar nagon grans. Linjen ar alltsa inte tillagd for det har lage — dess synliga effekt skiljer sig bara at med sammanhanget."
+     ],
+     "olostFraga": "I det morklagda laget ar headerbandet och overlagringen under samma farg. Kravs 1 px-linjen for att forsta att skarmens header ligger kvar utanfor overlagringen, eller ar den informationen ointressant for anvandaren nar rubriken, vardet och tillbakakontrollen anda ar lasbara?"
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 1,
+     "skulleKlara": false
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 8.03,
+     "skulleKlara": true
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare.",
+   "korrigering": "HEADER_FILL ateroppnad fran SUPPLEMENTAL till UNKNOWN enligt ADJ-14. Skalet i bbd2fe0 vilade pa att fyllningen ar bit-lika med ytan under. Det ar CURRENT_VISUAL_COLLAPSE, inte frnvaro av funktion."
+  },
+  {
+   "identitet": "impfil|1",
+   "art": "impfil",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — fil med flera recept",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Från fil",
+    "sekundarvarde": "7 av 9",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "imparkiv|1",
+   "art": "imparkiv",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — ur arkivet",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Ur arkivet",
+    "sekundarvarde": "3 valda",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "taggregel|1",
+   "art": "taggregel",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Taggregel — bygga en regel",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Snabbt på vardagar",
+    "sekundarvarde": "REGEL",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "kontodelvis|1",
+   "art": "kontodelvis",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Konto — delvis raderat",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Kontot är raderat",
+    "sekundarvarde": "DELVIS",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "modrapporter|1",
+   "art": "modrapporter",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Moderering — öppna rapporter",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Moderering",
+    "sekundarvarde": "3 ÖPPNA",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  },
+  {
+   "identitet": "modminderarig|1",
+   "art": "modminderarig",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "skarm": "Moderering — minderårigt konto",
+   "geometri": "412x65",
+   "delgrupp": "S_LJUS_YTA_UNDER",
+   "matning": {
+    "fyllning": "rgb(36, 56, 44)",
+    "bakomOmBorttagen": "rgb(245, 244, 237)",
+    "ytanUnder": "rgb(245, 244, 237)",
+    "nedreLinje": "1px solid rgb(204, 209, 194)",
+    "andraKanter": 0,
+    "boxShadow": false,
+    "position": "static",
+    "rullandeSyskon": 0,
+    "nastaSyskonRullar": false,
+    "kvoter": {
+     "fillMotYtanUnder": 11.357,
+     "fillMotYtanBakom": 11.357,
+     "ytanBakomMotYtanUnder": 1,
+     "linjeMotFill": 8.03,
+     "linjeMotYtanUnder": 1.414
+    }
+   },
+   "textrelation": {
+    "titel": "Moderering",
+    "sekundarvarde": "1 ÖPPEN",
+    "$regel": "TEXT_BACKGROUND_OWNER. Kontrasten mats i TEXTSPARET. Relationen far per ADJ-12 inte grunda nagon grafisk carrier-status och flyttas inte."
+   },
+   "interaktionsagarskap": {
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0,
+    "deklareradeIBarn": [
+     "button \"Tillbaka\""
+    ],
+    "$slutsats": "Raden bar varken roll, traffyta eller handlare. Den enda interaktionen ar en SEPARAT deklarerad kontroll. Att headern INNEHALLER kontrollen gor varken headern till kontroll eller headerns fyllning till control non-text."
+   },
+   "barare": {
+    "HEADER_FILL": {
+     "del": "HEADER_FILL",
+     "klass": "UNKNOWN",
+     "krav": null,
+     "skal": "begriplighet utan delen ar inte bedomd — faller stangt",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "ENDA BARAREN AV AVGRANSNINGEN: utan fyllningen blir headerbandet och ytan under i praktiken samma falt — uppmatt kvot 1 mellan ytan bakom headern och ytan under den.",
+      "DEN GRAFISKA SKILLNADEN AR MATT: fyllningen mot ytan under ar 11.357."
+     ],
+     "motevidens": [
+      "Att fyllningen ar den enda baren av avgransningen bevisar INTE att avgransningen kravs for att forsta innehallet. Den bedomningen raknas inte ur farg.",
+      "Fyllningen ar ocksa rubriktextens matbakgrund. Det ar TEXT_BACKGROUND_OWNER och far per ADJ-12 inte anforas som grafisk carrier-evidens.",
+      "Ingen rullande relation finns: noll rullande syskon, position static. Argumentet \"gransen mellan fast header och rullande innehall\" ar matt bort."
+     ],
+     "olostFraga": "Kravs den grafiska avgransningen mellan headerbandet och innehallet under for att forsta skarmens struktur, nar rubriktextens egen lasbarhet har hallits utanfor? Rubriken, tillbakakontrollen och placeringen overst finns kvar aven utan fyllningen. Fragan galler grupperingen, inte texten."
+    },
+    "BOTTOM_RULE": {
+     "del": "BOTTOM_RULE",
+     "klass": "SUPPLEMENTAL",
+     "krav": null,
+     "skal": "samma kant bar redan ett uppmatt ytsprang pa 11.357 mellan fyllningen och ytan under; linjens bortfall lamnar det sprangat oforandrat",
+     "grunder": [
+      "GRAPHICAL_DELIMITATION"
+     ],
+     "positivEvidens": [
+      "GRANSEN BARS REDAN AV NAGOT ANNAT: exakt samma kant bar ett ytsprang pa 11.357 mellan headerns fyllning och ytan under. Tas linjen bort star sprangat kvar oforandrat.",
+      "LINJEN HAR INGEN ANDRA FUNKTION: inga ovriga kanter (0), ingen boxShadow, position static, noll rullande syskon — det finns ingen fast/rullande grans for linjen att markera."
+     ],
+     "motevidens": [
+      "Linjen ar en avsiktlig designdetalj och forsvinner inte ur produkten. Bedomningen galler enbart om den KRAVS for forstaelsen.",
+      "Linjen mater 1.414 mot ytan under. Att den ar svag anfors INTE som skal — konformans far inte avgora semantik."
+     ]
+    }
+   },
+   "prospektivKonformans": {
+    "HEADER_FILL": {
+     "lagstaMotAngransande": 11.357,
+     "skulleKlara": true
+    },
+    "BOTTOM_RULE": {
+     "lagstaMotAngransande": 1.414,
+     "skulleKlara": false
+    },
+    "$regel": "Redovisas endast. Ingen matpopulation flyttas, ingen atgard gors."
+   },
+   "objektverdikt": "UNKNOWN",
+   "kvarstarFranBatch2": "INTE en interaktiv kontroll. Den delen av batch 2:s evidens vilade pa avsaknad av roll, traffyta och handlare samt pa separat deklarerat agarskap, och star kvar orord.",
+   "aterkallatFranBatch2": "NON_INTERACTIVE_STATE_GRAPHIC aterkallas. Tre av batch 2:s fyra evidenspunkter var utsagor om TEXT — agarskap till titeln, agarskap till sekundarvardet, och att sekundarvardet varierar. De far per ADJ-12 inte etablera att malningen bar information. Den fjarde punkten, strukturell avgransning, ar nu uppdelad och adjudicerad per barare."
+  }
+ ],
+ "J_produktskrivningar": 0,
+ "stopp": []
+}

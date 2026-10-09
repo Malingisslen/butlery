@@ -1,0 +1,22 @@
+{
+ "$schema": "butlery-nt-rotorsak/1",
+ "$regel": "Grupperingen ar mekanisk. Samma RGB pa olika bakgrunder ar inte samma rotorsak. Rotorsakspopulation och write scope halIs isar.",
+ "population": {
+  "A_kontrollgrafik_grafiskaDelar_st": 0,
+  "A_componentIdentityCarrier_st": 0,
+  "A_stateCarrier_st": 0,
+  "B_fristaende_grafiskaObjekt_st": 0,
+  "totalt_raa_fynd_st": 0
+ },
+ "adjudicering": {
+  "giltiga_fynd_st": 0,
+  "matartefakter_st": 0,
+  "artefakt_barare_utan_egen_farg_st": 0,
+  "artefakt_fel_angransande_yta_st": 0,
+  "$not": "Matartefakter ar bundna till en rotorsak som alla andra, men de ar inte designfel och ska inte fargrattas. De kraver ett metodbeslut."
+ },
+ "rotorsaker_st": 0,
+ "bundna_fynd_st": 0,
+ "oforklarade_st": 0,
+ "rotorsaker": []
+}

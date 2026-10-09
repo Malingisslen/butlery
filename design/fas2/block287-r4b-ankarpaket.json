@@ -1,0 +1,288 @@
+{
+ "$om": "Korrigeringsrunda 4b · ankare for de sista gruppmalen",
+ "APPROVED_TARGET_COUNT": 21,
+ "AMBIGUOUS_TARGETS": 0,
+ "DUPLICATE_TARGETS": 0,
+ "DUPLICATE_ANCHOR_VALUES": 0,
+ "NEW_ANCHOR_COUNT": 21,
+ "FILES_TOUCHED": 6,
+ "ANCHORS_WRITTEN": 21,
+ "DRY_RUN": false,
+ "ANCHOR_VOCABULARY": "data-occurrence (kanoniskt semantiskt objektankare)",
+ "MINT_CONTRACT": "sha256(\"BL01-ANCHOR|\" + fil|ram|tagg|text60 + \"|\" + n) -> occ- + 12 bokstaver",
+ "rader": [
+  {
+   "TARGET_ID": "T4B::fbblockerade#34",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "FRAME": "fbblockerade",
+   "SOURCE_ELEMENT": "<span> \"JL\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::GEOMETRY::AVATAR_SCALE::fbblockerade"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-wdtksiedzxuk",
+   "DEBUG_DC_TPL": 1199
+  },
+  {
+   "TARGET_ID": "T4B::fbblockerade#40",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "FRAME": "fbblockerade",
+   "SOURCE_ELEMENT": "<span> \"SE\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::GEOMETRY::AVATAR_SCALE::fbblockerade"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-jufigkrfbzvj",
+   "DEBUG_DC_TPL": 1205
+  },
+  {
+   "TARGET_ID": "T4B::rcblaser#2",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "FRAME": "rcblaser",
+   "SOURCE_ELEMENT": "<span> \"SE\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::GEOMETRY::AVATAR_SCALE::rcblaser"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-fdvzbjfdxrlz",
+   "DEBUG_DC_TPL": 1014
+  },
+  {
+   "TARGET_ID": "T4B::bredrecept#11",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "FRAME": "bredrecept",
+   "SOURCE_ELEMENT": "<div> \"6portioner · skrivet för 4\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::bredrecept::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-clriivcxiqui",
+   "DEBUG_DC_TPL": 343
+  },
+  {
+   "TARGET_ID": "T4B::delatlista#31",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "delatlista",
+   "SOURCE_ELEMENT": "<span> \"Färskpotatis\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::delatlista::namn::farskpotatis-kg"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "2 delar i agaren delar delnyckeln \"text\" - faller stangt, ingen ordinal reserv",
+   "PROPOSED_DATA_OCCURRENCE": "occ-nmvwyjtqbuun",
+   "DEBUG_DC_TPL": 1527
+  },
+  {
+   "TARGET_ID": "T4B::delatlista#35",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "delatlista",
+   "SOURCE_ELEMENT": "<span> \"Gräddfil\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::delatlista::namn::graddfil-st"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "2 delar i agaren delar delnyckeln \"text\" - faller stangt, ingen ordinal reserv",
+   "PROPOSED_DATA_OCCURRENCE": "occ-nphjjkqweebv",
+   "DEBUG_DC_TPL": 1531
+  },
+  {
+   "TARGET_ID": "T4B::delatlista#27",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "delatlista",
+   "SOURCE_ELEMENT": "<span> \"Jordgubbar\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::delatlista::namn::jordgubbar-l"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "2 delar i agaren delar delnyckeln \"text\" - faller stangt, ingen ordinal reserv",
+   "PROPOSED_DATA_OCCURRENCE": "occ-voagozludsrb",
+   "DEBUG_DC_TPL": 1523
+  },
+  {
+   "TARGET_ID": "T4B::familjebetyg#8",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "familjebetyg",
+   "SOURCE_ELEMENT": "<div> \"MalinDU Vuxen\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::familjebetyg::grupp::betyg-for-malin"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-zaacmnlpycoq",
+   "DEBUG_DC_TPL": 71
+  },
+  {
+   "TARGET_ID": "T4B::instportion#1",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "FRAME": "instportion",
+   "SOURCE_ELEMENT": "<div> \"6portioner · skrivet för 4\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::instportion::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-gjtgxxfupkta",
+   "DEBUG_DC_TPL": 757
+  },
+  {
+   "TARGET_ID": "T4B::laga#11",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "FRAME": "laga",
+   "SOURCE_ELEMENT": "<span> \"Portioner\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::laga::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-ajhlkapcuprr",
+   "DEBUG_DC_TPL": 316
+  },
+  {
+   "TARGET_ID": "T4B::lgbrotation#37",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "FRAME": "lgbrotation",
+   "SOURCE_ELEMENT": "<span> \"Portioner\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::lgbrotation::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "7 delar i agaren delar delnyckeln \"text\" - faller stangt, ingen ordinal reserv",
+   "PROPOSED_DATA_OCCURRENCE": "occ-kdoufmvytxrz",
+   "DEBUG_DC_TPL": 1625
+  },
+  {
+   "TARGET_ID": "T4B::meddelanden#49",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "meddelanden",
+   "SOURCE_ELEMENT": "<div> \"Arkiverade (4)\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::meddelanden::namn::arkiverade"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-kkrqwcdqvjal",
+   "DEBUG_DC_TPL": 731
+  },
+  {
+   "TARGET_ID": "T4B::mer#11",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "mer",
+   "SOURCE_ELEMENT": "<div> \"Meddelanden 3\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::mer::namn::meddelanden"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-zgyojhrvfctq",
+   "DEBUG_DC_TPL": 504
+  },
+  {
+   "TARGET_ID": "T4B::mer#34",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "mer",
+   "SOURCE_ELEMENT": "<div> \"Notiser 5\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::mer::namn::notiser"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-uxcddjjawdwb",
+   "DEBUG_DC_TPL": 527
+  },
+  {
+   "TARGET_ID": "T4B::mer#6",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "mer",
+   "SOURCE_ELEMENT": "<div> \"Vänner & grupper 2\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::mer::namn::vanner-grupper"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-sqszlukvhtju",
+   "DEBUG_DC_TPL": 499
+  },
+  {
+   "TARGET_ID": "T4B::placera#6",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "FRAME": "placera",
+   "SOURCE_ELEMENT": "<div> \"Vecka 28\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::placera::namn::vecka"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-qmjkbcinryzl",
+   "DEBUG_DC_TPL": 137
+  },
+  {
+   "TARGET_ID": "T4B::rcblaser#18",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "FRAME": "rcblaser",
+   "SOURCE_ELEMENT": "<span> \"portioner\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::rcblaser::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-uessestirogl",
+   "DEBUG_DC_TPL": 1030
+  },
+  {
+   "TARGET_ID": "T4B::rcbnormal#21",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "FRAME": "rcbnormal",
+   "SOURCE_ELEMENT": "<div> \"6portioner · skrivet för 4\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::rcbnormal::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-eigiurckqkax",
+   "DEBUG_DC_TPL": 812
+  },
+  {
+   "TARGET_ID": "T4B::rcboffline#19",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "FRAME": "rcboffline",
+   "SOURCE_ELEMENT": "<span> \"portioner\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::rcboffline::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-lwtcdgfibhee",
+   "DEBUG_DC_TPL": 1235
+  },
+  {
+   "TARGET_ID": "T4B::rcbportion#9",
+   "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "FRAME": "rcbportion",
+   "SOURCE_ELEMENT": "<span> \"portioner\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::rcbportion::namn::portioner"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-njbwebbqariz",
+   "DEBUG_DC_TPL": 893
+  },
+  {
+   "TARGET_ID": "T4B::snabbspara#8",
+   "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "FRAME": "snabbspara",
+   "SOURCE_ELEMENT": "<div> \"Måltid\"",
+   "SEMANTIC_OWNER": "sig sjalv",
+   "DEPENDENT_REQUIREMENT_IDS": [
+    "RP::ROLE_AND_NAME::snabbspara::grupp::maltid"
+   ],
+   "WHY_EXISTING_KEY_IS_INSUFFICIENT": "ingen semantisk agare i forfaderkedjan och ingen kallforfattad delnyckel",
+   "PROPOSED_DATA_OCCURRENCE": "occ-zhcnrfolihvg",
+   "DEBUG_DC_TPL": 1110
+  }
+ ]
+}

@@ -11,6 +11,10 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 class InlineWarning extends StatelessWidget {
   final IconData icon;
   final Color color;
+
+  /// Defaults to [color]. Pass it when [color] is an icon-only token such as
+  /// `warning`, which fails text contrast on paper.
+  final Color? textColor;
   final String text;
   final TextStyle? textStyle;
 
@@ -19,6 +23,7 @@ class InlineWarning extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.text,
+    this.textColor,
     this.textStyle,
   });
 
@@ -34,7 +39,7 @@ class InlineWarning extends StatelessWidget {
             style:
                 textStyle ??
                 AppTextStyles.bodySmall.copyWith(
-                  color: color,
+                  color: textColor ?? color,
                   fontStyle: FontStyle.italic,
                 ),
           ),

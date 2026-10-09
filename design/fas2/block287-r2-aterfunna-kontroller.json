@@ -1,0 +1,2008 @@
+{
+ "$om": "A · exakt uppsattning av de 60 aterfunna kontrollerna ur censusomprovningen, mot BL-01 + korrigeringsrunda 1",
+ "RECOVERED_CONTROL_COUNT": 60,
+ "UNACCOUNTED_RECOVERED_CONTROLS": 0,
+ "SUBGROUPS": {
+  "OTHER_ACTION": 1,
+  "PRIMARY_ACTION": 9,
+  "TIMER_CHIP_PRIMARY": 3,
+  "SHEET_ACTION": 2,
+  "FIELD": 8,
+  "NAV_TAB": 11,
+  "OPTION_RADIO": 4,
+  "MENU_ITEM": 2,
+  "SECTION_ACTION": 1,
+  "WEEK_CELL_ACTION": 3,
+  "ROW_ACTION": 2,
+  "LIST_CHECKBOX": 3,
+  "COMBO_FIELD": 4,
+  "TAG_RULE_ROW": 4,
+  "PERSON_NUDGE_ACTION": 3
+ },
+ "SUBGROUP_SUM": 60,
+ "ROLE_SUBGROUPS": {
+  "button": 28,
+  "textbox": 8,
+  "tab": 11,
+  "radio": 4,
+  "menuitem": 2,
+  "checkbox": 3,
+  "combobox": 4
+ },
+ "ROLE_SUM": 60,
+ "ANCHOR_REQUIRED_COUNT": 55,
+ "MED_EGET_ANKARE": 0,
+ "MED_ANKRAD_FORFADER": 5,
+ "NYCKELNIVAER": {
+  "NIVA_4": 55,
+  "NIVA_3": 5
+ },
+ "rader": [
+  {
+   "RECOVERED_CONTROL_ID": "RC::familj::lagg-till-familjemedlem",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::familj::39",
+   "FRAME": "familj",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till familjemedlem\"",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "familj#39",
+   "DEBUG_DC_TPL": "1290",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "+ Lägg till familjemedlem",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i arkivimport; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "OTHER_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hemrecept::borja-laga",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::hemrecept::10",
+   "FRAME": "hemrecept",
+   "SOURCE_ELEMENT": "<div> \"Börja laga\"",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hemrecept#10",
+   "DEBUG_DC_TPL": "183",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Börja laga",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600",
+    "samma synliga text som kalldeklarerad button i safeareaios, rcbnormal, rcboffline; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::lagamorkt::15-min",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagamorkt::49",
+   "FRAME": "lagamorkt",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "lagamorkt#49",
+   "DEBUG_DC_TPL": "1045",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "15 min",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TIMER_CHIP_PRIMARY",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::lagastaende::15-min",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagastaende::49",
+   "FRAME": "lagastaende",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "lagastaende#49",
+   "DEBUG_DC_TPL": "981",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "15 min",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TIMER_CHIP_PRIMARY",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::plussheet::fran-bild",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::plussheet::27",
+   "FRAME": "plussheet",
+   "SOURCE_ELEMENT": "<div> \"Från bild\"",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "plussheet#27",
+   "DEBUG_DC_TPL": "1087",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Från bild",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad button i samma ram: #15 \"Importera länk\", #21 \"Skriv manuellt\", #33 \"Från arkiv\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "SHEET_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::plussheet::fran-arkiv",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::plussheet::33",
+   "FRAME": "plussheet",
+   "SOURCE_ELEMENT": "<div> \"Från arkiv\"",
+   "SOURCE_FILE": "del 1 recept och veckomeny",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "plussheet#33",
+   "DEBUG_DC_TPL": "1093",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Från arkiv",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad button i samma ram: #15 \"Importera länk\", #21 \"Skriv manuellt\", #27 \"Från bild\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "SHEET_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::fotoimport::las-av-2-sidor",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::fotoimport::26",
+   "FRAME": "fotoimport",
+   "SOURCE_ELEMENT": "<div> \"Läs av 2 sidor\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "fotoimport#26",
+   "DEBUG_DC_TPL": "1022",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Läs av 2 sidor",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::grupp::vad-ska-vi-ata-starta-omrostning",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::grupp::47",
+   "FRAME": "grupp",
+   "SOURCE_ELEMENT": "<div> \"Vad ska vi äta? — starta omröstning\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "grupp#47",
+   "DEBUG_DC_TPL": "1984",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Vad ska vi äta? — starta omröstning",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::inloggning::",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::inloggning::8",
+   "FRAME": "inloggning",
+   "SOURCE_ELEMENT": "<div> \"••••••••\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "inloggning#8",
+   "DEBUG_DC_TPL": "1919",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "••••••••",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kalender::hem",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::144",
+   "FRAME": "kalender",
+   "SOURCE_ELEMENT": "<span> \"Hem\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "kalender#144",
+   "DEBUG_DC_TPL": "329",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Hem",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad tab i samma ram: #168 \"Inköp\", #175 \"Mer\"",
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kalender::inkop",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::168",
+   "FRAME": "kalender",
+   "SOURCE_ELEMENT": "<span> \"Inköp\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "kalender#168",
+   "DEBUG_DC_TPL": "353",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Inköp",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad tab i samma ram: #144 \"Hem\", #175 \"Mer\"",
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kalender::mer",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::175",
+   "FRAME": "kalender",
+   "SOURCE_ELEMENT": "<span> \"Mer\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "kalender#175",
+   "DEBUG_DC_TPL": "360",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Mer",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad tab i samma ram: #144 \"Hem\", #168 \"Inköp\"",
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kontosakerhet::nytt-losenord",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::11",
+   "FRAME": "kontosakerhet",
+   "SOURCE_ELEMENT": "<div> \"Nytt lösenord\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "kontosakerhet#11",
+   "DEBUG_DC_TPL": "1882",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Nytt lösenord",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad textbox i samma ram: #12 \"Bekräfta nytt löse\", #16 \"Ny e-postadress\"",
+    "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kontosakerhet::ny-e-postadress",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::16",
+   "FRAME": "kontosakerhet",
+   "SOURCE_ELEMENT": "<div> \"Ny e-postadress\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "kontosakerhet#16",
+   "DEBUG_DC_TPL": "1887",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Ny e-postadress",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad textbox i samma ram: #12 \"Bekräfta nytt löse\", #11 \"Nytt lösenord\"",
+    "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kontosakerhet::nuvarande-losenord",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::6",
+   "FRAME": "kontosakerhet",
+   "SOURCE_ELEMENT": "<div> \"Nuvarande lösenord\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "kontosakerhet#6",
+   "DEBUG_DC_TPL": "1877",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Nuvarande lösenord",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::lagastaende320::15-min",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::lagastaende320::30",
+   "FRAME": "lagastaende320",
+   "SOURCE_ELEMENT": "<span> \"15 min\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "lagastaende320#30",
+   "DEBUG_DC_TPL": "1808",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "15 min",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TIMER_CHIP_PRIMARY",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::placera::laxpudding-med-dill",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::placera::26",
+   "FRAME": "placera",
+   "SOURCE_ELEMENT": "<span> \"Laxpudding med dill\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "placera#26",
+   "DEBUG_DC_TPL": "157",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Laxpudding med dill",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad textbox i samma ram: #32 \"Krämig svamppasta\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::placera::kramig-svamppasta",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::placera::32",
+   "FRAME": "placera",
+   "SOURCE_ELEMENT": "<span> \"Krämig svamppasta\"",
+   "SOURCE_FILE": "del 2 familj och socialt",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "placera#32",
+   "DEBUG_DC_TPL": "163",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Krämig svamppasta",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad textbox i samma ram: #26 \"Laxpudding med dil\"",
+    "samma synliga text som kalldeklarerad textbox i onbimportklar; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::dialogvara::gronsaker",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::23",
+   "FRAME": "dialogvara",
+   "SOURCE_ELEMENT": "<span> \"Grönsaker\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "dialogvara#23",
+   "DEBUG_DC_TPL": "1359",
+   "ROLE": "radio",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Grönsaker",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #26 \"Övrigt\", #24 \"Torrvaror\", #25 \"Fryst\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "OPTION_RADIO",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:radio",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::dialogvara::torrvaror",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::24",
+   "FRAME": "dialogvara",
+   "SOURCE_ELEMENT": "<span> \"Torrvaror\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "dialogvara#24",
+   "DEBUG_DC_TPL": "1360",
+   "ROLE": "radio",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Torrvaror",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #26 \"Övrigt\", #23 \"Grönsaker\", #25 \"Fryst\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "OPTION_RADIO",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:radio",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::dialogvara::fryst",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::25",
+   "FRAME": "dialogvara",
+   "SOURCE_ELEMENT": "<span> \"Fryst\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "dialogvara#25",
+   "DEBUG_DC_TPL": "1361",
+   "ROLE": "radio",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Fryst",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #26 \"Övrigt\", #23 \"Grönsaker\", #24 \"Torrvaror\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "OPTION_RADIO",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:radio",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::dialogvara::ovrigt",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::26",
+   "FRAME": "dialogvara",
+   "SOURCE_ELEMENT": "<span> \"Övrigt\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "dialogvara#26",
+   "DEBUG_DC_TPL": "1362",
+   "ROLE": "radio",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Övrigt",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #23 \"Grönsaker\", #24 \"Torrvaror\", #25 \"Fryst\"",
+    "samma synliga text som kalldeklarerad radio i inkopkategoribyte; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "OPTION_RADIO",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:radio",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kontextmeny::duplicera",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::kontextmeny::28",
+   "FRAME": "kontextmeny",
+   "SOURCE_ELEMENT": "<div> \"Duplicera\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-wzfgayhjvfpp::del::etikett-duplicera",
+   "DEBUG_FRAME_ORD": "kontextmeny#28",
+   "DEBUG_DC_TPL": "1444",
+   "ROLE": "menuitem",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Duplicera",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad menuitem i samma ram: #19 \"Redigera\", #23 \"Dela\", #32 \"Exportera\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "MENU_ITEM",
+   "OWNER_OBJECT": "ankrat objekt occ-wzfgayhjvfpp",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": "occ-wzfgayhjvfpp",
+   "ANCHOR_REQUIRED": false,
+   "KEY_LEVEL": 3,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:menuitem",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::kontextmeny::exportera",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::kontextmeny::32",
+   "FRAME": "kontextmeny",
+   "SOURCE_ELEMENT": "<div> \"Exportera\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "EL::del 3 sok och skalbevis::objekt::occ-wzfgayhjvfpp::del::etikett-exportera",
+   "DEBUG_FRAME_ORD": "kontextmeny#32",
+   "DEBUG_DC_TPL": "1448",
+   "ROLE": "menuitem",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Exportera",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 3 redan klassad menuitem i samma ram: #19 \"Redigera\", #23 \"Dela\", #28 \"Duplicera\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "MENU_ITEM",
+   "OWNER_OBJECT": "ankrat objekt occ-wzfgayhjvfpp",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": "occ-wzfgayhjvfpp",
+   "ANCHOR_REQUIRED": false,
+   "KEY_LEVEL": 3,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:menuitem",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::mfa::verifiera",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::mfa::29",
+   "FRAME": "mfa",
+   "SOURCE_ELEMENT": "<div> \"Verifiera\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "mfa#29",
+   "DEBUG_DC_TPL": "892",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Verifiera",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600",
+    "samma synliga text som kalldeklarerad button i authmfa; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::nydelatlista::skapa-och-dela",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nydelatlista::33",
+   "FRAME": "nydelatlista",
+   "SOURCE_ELEMENT": "<div> \"Skapa och dela\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "nydelatlista#33",
+   "DEBUG_DC_TPL": "621",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Skapa och dela",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::nygruppchatt::skapa-konversation",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::34",
+   "FRAME": "nygruppchatt",
+   "SOURCE_ELEMENT": "<div> \"Skapa konversation\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "nygruppchatt#34",
+   "DEBUG_DC_TPL": "517",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Skapa konversation",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::publikprofil::lagg-till-van",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::publikprofil::17",
+   "FRAME": "publikprofil",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till vän\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "publikprofil#17",
+   "DEBUG_DC_TPL": "422",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "+ Lägg till vän",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::statetom412::lagg-till-ditt-forsta-recept",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::statetom412::8",
+   "FRAME": "statetom412",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till ditt första recept\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "statetom412#8",
+   "DEBUG_DC_TPL": "1175",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "+ Lägg till ditt första recept",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::statetom::lagg-till-ditt-forsta-recept",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::statetom::8",
+   "FRAME": "statetom",
+   "SOURCE_ELEMENT": "<div> \"+ Lägg till ditt första recept\"",
+   "SOURCE_FILE": "del 3 sok och skalbevis",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "statetom#8",
+   "DEBUG_DC_TPL": "1163",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "+ Lägg till ditt första recept",
+   "EVIDENCE_RULE": [
+    "R1_ACTION_PRIMARY"
+   ],
+   "EVIDENCE": [
+    "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PRIMARY_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hem::veckan-se-hela-veckan",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hem::30",
+   "FRAME": "hem",
+   "SOURCE_ELEMENT": "<div> \"Veckan Se hela veckan\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hem#30",
+   "DEBUG_DC_TPL": "542",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Veckan Se hela veckan",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #52 \"Inköp\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hem::inkop",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hem::52",
+   "FRAME": "hem",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hem#52",
+   "DEBUG_DC_TPL": "564",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Inköp",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #30 \"Veckan Se hela vec\"",
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hemmorkt; samma tagg och typografi"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hemmorkt::veckan-se-hela-veckan",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemmorkt::30",
+   "FRAME": "hemmorkt",
+   "SOURCE_ELEMENT": "<div> \"Veckan Se hela veckan\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hemmorkt#30",
+   "DEBUG_DC_TPL": "645",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Veckan Se hela veckan",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #52 \"Inköp\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hemmorkt::inkop",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemmorkt::52",
+   "FRAME": "hemmorkt",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hemmorkt#52",
+   "DEBUG_DC_TPL": "667",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Inköp",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #30 \"Veckan Se hela vec\"",
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hemoffline::veckan",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::40",
+   "FRAME": "hemoffline",
+   "SOURCE_ELEMENT": "<div> \"Veckan\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hemoffline#40",
+   "DEBUG_DC_TPL": "926",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Veckan",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #55 \"Inköp\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hemoffline::inkop",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::55",
+   "FRAME": "hemoffline",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hemoffline#55",
+   "DEBUG_DC_TPL": "941",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Inköp",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #40 \"Veckan\"",
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::hemoffline::6-varor-kvar3-bockningar-vantar-pa-synk",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::57",
+   "FRAME": "hemoffline",
+   "SOURCE_ELEMENT": "<div> \"6 varor kvar3 bockningar väntar på synk\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "hemoffline#57",
+   "DEBUG_DC_TPL": "943",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "6 varor kvar3 bockningar väntar på synk",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i hem; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "SECTION_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::veckoallergi::torskramig-svamppasta",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::16",
+   "FRAME": "veckoallergi",
+   "SOURCE_ELEMENT": "<div> \"TorsKrämig svamppasta\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "veckoallergi#16",
+   "DEBUG_DC_TPL": "168",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "TorsKrämig svamppasta",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad button i samma ram: #19 \"FreUgnsbakad rotse\", #22 \"SönLinsgryta med s\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopmerge, inkopmergeoppen; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "WEEK_CELL_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::veckoallergi::freugnsbakad-rotselleri",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::19",
+   "FRAME": "veckoallergi",
+   "SOURCE_ELEMENT": "<div> \"FreUgnsbakad rotselleri\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "veckoallergi#19",
+   "DEBUG_DC_TPL": "171",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "FreUgnsbakad rotselleri",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad button i samma ram: #16 \"TorsKrämig svamppa\", #22 \"SönLinsgryta med s\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopmerge, inkopmergeoppen; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "WEEK_CELL_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::veckoallergi::sonlinsgryta-med-spetskal",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::22",
+   "FRAME": "veckoallergi",
+   "SOURCE_ELEMENT": "<div> \"SönLinsgryta med spetskål\"",
+   "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "veckoallergi#22",
+   "DEBUG_DC_TPL": "174",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "SönLinsgryta med spetskål",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad button i samma ram: #16 \"TorsKrämig svamppa\", #19 \"FreUgnsbakad rotse\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopmerge, inkopmergeoppen; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "WEEK_CELL_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::bredrecept::mormors-kottbullar",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-10-bred-layout-dc-html::bredrecept::8",
+   "FRAME": "bredrecept",
+   "SOURCE_ELEMENT": "<span> \"Mormors köttbullar\"",
+   "SOURCE_FILE": "etapp 10 bred layout",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "bredrecept#8",
+   "DEBUG_DC_TPL": "340",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Mormors köttbullar",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad textbox i bredgrans, editorutkast; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::rcbnormal::mormors-kottbullar",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbnormal::18",
+   "FRAME": "rcbnormal",
+   "SOURCE_ELEMENT": "<span> \"Mormors köttbullar\"",
+   "SOURCE_FILE": "etapp 11 breda vyer",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "rcbnormal#18",
+   "DEBUG_DC_TPL": "809",
+   "ROLE": "textbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Mormors köttbullar",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad textbox i bredgrans, editorutkast; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:textbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::delatlasare::du-kan-lasa-listan-anna-kan-ge-dig-red",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatlasare::6",
+   "FRAME": "delatlasare",
+   "SOURCE_ELEMENT": "<div> \"Du kan läsa listan · Anna kan ge dig redigeringsrätt\"",
+   "SOURCE_FILE": "etapp 2",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "delatlasare#6",
+   "DEBUG_DC_TPL": "469",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Du kan läsa listan · Anna kan ge dig redigeringsrätt",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i hemoffline, delatlistaaktiv, delatnarvaro; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "ROW_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::skafferiflerval::inkop",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-inkop-och-skafferi-d::skafferiflerval::1",
+   "FRAME": "skafferiflerval",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SOURCE_FILE": "etapp 2 inkop och skafferi",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "skafferiflerval#1",
+   "DEBUG_DC_TPL": "477",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Inköp",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::skafferivyn::inkop",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-inkop-och-skafferi-d::skafferivyn::1",
+   "FRAME": "skafferivyn",
+   "SOURCE_ELEMENT": "<div> \"Inköp\"",
+   "SOURCE_FILE": "etapp 2 inkop och skafferi",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "skafferivyn#1",
+   "DEBUG_DC_TPL": "405",
+   "ROLE": "tab",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Inköp",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "NAV_TAB",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:tab",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::impassist2::500-g-blandfars",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::15",
+   "FRAME": "impassist2",
+   "SOURCE_ELEMENT": "<span> \"500 g blandfärs\"",
+   "SOURCE_FILE": "etapp 4 import",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "impassist2#15",
+   "DEBUG_DC_TPL": "354",
+   "ROLE": "checkbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "500 g blandfärs",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad checkbox i samma ram: #18 \"1 gul lök\", #21 \"3 dl grädde\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad checkbox i impassist1; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "LIST_CHECKBOX",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:checkbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::impassist2::1-gul-lok",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::18",
+   "FRAME": "impassist2",
+   "SOURCE_ELEMENT": "<span> \"1 gul lök\"",
+   "SOURCE_FILE": "etapp 4 import",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "impassist2#18",
+   "DEBUG_DC_TPL": "357",
+   "ROLE": "checkbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "1 gul lök",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad checkbox i samma ram: #15 \"500 g blandfärs\", #21 \"3 dl grädde\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad checkbox i impassist1; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "LIST_CHECKBOX",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:checkbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::impassist2::3-dl-gradde",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::21",
+   "FRAME": "impassist2",
+   "SOURCE_ELEMENT": "<span> \"3 dl grädde\"",
+   "SOURCE_FILE": "etapp 4 import",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "impassist2#21",
+   "DEBUG_DC_TPL": "360",
+   "ROLE": "checkbox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "3 dl grädde",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad checkbox i samma ram: #15 \"500 g blandfärs\", #18 \"1 gul lök\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad checkbox i impassist1; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "LIST_CHECKBOX",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:checkbox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::modminderarig::ny",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modminderarig::11",
+   "FRAME": "modminderarig",
+   "SOURCE_ELEMENT": "<span> \"ny\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "modminderarig#11",
+   "DEBUG_DC_TPL": "667",
+   "ROLE": "combobox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "ny",
+   "EVIDENCE_RULE": [
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "samma synliga text som kalldeklarerad combobox i fbinkorgvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "COMBO_FIELD",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:combobox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::modrapporter::granskas",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::11",
+   "FRAME": "modrapporter",
+   "SOURCE_ELEMENT": "<span> \"granskas\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "EL::etapp 5-7::objekt::occ-idnsubneoyuk::del::etikett-granskas",
+   "DEBUG_FRAME_ORD": "modrapporter#11",
+   "DEBUG_DC_TPL": "604",
+   "ROLE": "combobox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "granskas",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad combobox i samma ram: #27 \"ny\", #42 \"ny\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "COMBO_FIELD",
+   "OWNER_OBJECT": "ankrat objekt occ-idnsubneoyuk",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": "occ-idnsubneoyuk",
+   "ANCHOR_REQUIRED": false,
+   "KEY_LEVEL": 3,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:combobox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::modrapporter::ny",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::27",
+   "FRAME": "modrapporter",
+   "SOURCE_ELEMENT": "<span> \"ny\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "EL::etapp 5-7::objekt::occ-yvgjtgeesqcl::del::etikett-ny",
+   "DEBUG_FRAME_ORD": "modrapporter#27",
+   "DEBUG_DC_TPL": "620",
+   "ROLE": "combobox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "ny",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad combobox i samma ram: #42 \"ny\", #11 \"granskas\"",
+    "samma synliga text som kalldeklarerad combobox i fbinkorgvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "COMBO_FIELD",
+   "OWNER_OBJECT": "ankrat objekt occ-yvgjtgeesqcl",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": "occ-yvgjtgeesqcl",
+   "ANCHOR_REQUIRED": false,
+   "KEY_LEVEL": 3,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:combobox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::modrapporter::ny",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::42",
+   "FRAME": "modrapporter",
+   "SOURCE_ELEMENT": "<span> \"ny\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "EL::etapp 5-7::objekt::occ-avtjqdkxkdwl::del::etikett-ny",
+   "DEBUG_FRAME_ORD": "modrapporter#42",
+   "DEBUG_DC_TPL": "635",
+   "ROLE": "combobox",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "ny",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R3_DECLARED_TEXT_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad combobox i samma ram: #27 \"ny\", #11 \"granskas\"",
+    "samma synliga text som kalldeklarerad combobox i fbinkorgvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "COMBO_FIELD",
+   "OWNER_OBJECT": "ankrat objekt occ-avtjqdkxkdwl",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": "occ-avtjqdkxkdwl",
+   "ANCHOR_REQUIRED": false,
+   "KEY_LEVEL": 3,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:combobox",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::taggexklusiv::vardagsmatregel-snabbt-pa-vardagar",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggexklusiv::8",
+   "FRAME": "taggexklusiv",
+   "SOURCE_ELEMENT": "<div> \"Vardagsmatregel: Snabbt på vardagar\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "taggexklusiv#8",
+   "DEBUG_DC_TPL": "275",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Vardagsmatregel: Snabbt på vardagar",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TAG_RULE_ROW",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::taggkalla::vegetarisktautogenererad",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::16",
+   "FRAME": "taggkalla",
+   "SOURCE_ELEMENT": "<div> \"Vegetarisktautogenererad\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "taggkalla#16",
+   "DEBUG_DC_TPL": "239",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Vegetarisktautogenererad",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TAG_RULE_ROW",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::taggkalla::barnfavoritsatt-av-dig",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::23",
+   "FRAME": "taggkalla",
+   "SOURCE_ELEMENT": "<div> \"Barnfavoritsatt av dig\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "taggkalla#23",
+   "DEBUG_DC_TPL": "246",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Barnfavoritsatt av dig",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TAG_RULE_ROW",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::taggkalla::snabbtregel-snabbt-pa-vardagar",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::9",
+   "FRAME": "taggkalla",
+   "SOURCE_ELEMENT": "<div> \"Snabbtregel: Snabbt på vardagar\"",
+   "SOURCE_FILE": "etapp 5-7",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "taggkalla#9",
+   "DEBUG_DC_TPL": "232",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "Snabbtregel: Snabbt på vardagar",
+   "EVIDENCE_RULE": [
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "TAG_RULE_ROW",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::socgruppinfo::mgmalin-gisslen-du-jljohan-lindta-bort",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socgruppinfo::20",
+   "FRAME": "socgruppinfo",
+   "SOURCE_ELEMENT": "<div> \"MGMalin Gisslén · du JLJohan LindTa bort\"",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "socgruppinfo#20",
+   "DEBUG_DC_TPL": "553",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "MGMalin Gisslén · du JLJohan LindTa bort",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 1 redan klassad button i samma ram: #9 \"Samtalets namnMatl\""
+   ],
+   "PREVIOUS_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "ROW_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::socknuff::i-ida-5-av-5",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::13",
+   "FRAME": "socknuff",
+   "SOURCE_ELEMENT": "<div> \"I Ida 5 av 5\"",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "socknuff#13",
+   "DEBUG_DC_TPL": "247",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "I Ida 5 av 5",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad button i samma ram: #17 \"A Anna hoppade öve\", #9 \"M Malin 4 av 5\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i behlarmnekat; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PERSON_NUDGE_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::socknuff::a-anna-hoppade-over",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::17",
+   "FRAME": "socknuff",
+   "SOURCE_ELEMENT": "<div> \"A Anna hoppade över\"",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "socknuff#17",
+   "DEBUG_DC_TPL": "251",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "A Anna hoppade över",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad button i samma ram: #13 \"I Ida 5 av 5\", #9 \"M Malin 4 av 5\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i behlarmnekat; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PERSON_NUDGE_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  },
+  {
+   "RECOVERED_CONTROL_ID": "RC::socknuff::m-malin-4-av-5",
+   "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::9",
+   "FRAME": "socknuff",
+   "SOURCE_ELEMENT": "<div> \"M Malin 4 av 5\"",
+   "SOURCE_FILE": "etapp 9 socialt och komponenter",
+   "SOURCE_LOCATOR": "OLOST (ingen stabil kallgrund - kraver kallforfattat ankare)",
+   "DEBUG_FRAME_ORD": "socknuff#9",
+   "DEBUG_DC_TPL": "243",
+   "ROLE": "button",
+   "ACCESSIBLE_NAME": null,
+   "ACCESSIBLE_NAME_SOURCE": "saknas - remedieringen maste satta den",
+   "VISIBLE_TEXT": "M Malin 4 av 5",
+   "EVIDENCE_RULE": [
+    "R5_IDENTICAL_SIBLING_IN_FRAME",
+    "R2_DECLARED_SHAPE_TWIN"
+   ],
+   "EVIDENCE": [
+    "identisk kallforfattad stil som 2 redan klassad button i samma ram: #13 \"I Ida 5 av 5\", #17 \"A Anna hoppade öve\"",
+    "identisk kontrollkontraktsignatur som kalldeklarerad button i behlarmnekat; signaturen traffar bara den rollen"
+   ],
+   "PREVIOUS_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CORRECTED_CLASSIFICATION": "KNOWN_CONTROL",
+   "SUBGROUP": "PERSON_NUDGE_ACTION",
+   "OWNER_OBJECT": "ingen ankrad agare",
+   "EXISTING_ANCHOR": null,
+   "ANCESTOR_ANCHOR": null,
+   "ANCHOR_REQUIRED": true,
+   "KEY_LEVEL": 4,
+   "DEPENDENT_REQUIREMENTS": [
+    "ROLE:button",
+    "NAME:REQUIRED"
+   ]
+  }
+ ]
+}

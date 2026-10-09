@@ -909,6 +909,47 @@ void main() {
       );
 
       test(
+        'BUT-1820: loading a shared menu forgets the last pool stats, so no '
+        'allergen hint describes a menu it never filtered',
+        () async {
+          final nutFree = recipeWith(
+            'nut_free',
+            tagWith(allergen: {'nötter': TriState.free}),
+          );
+          final containsNuts = recipeWith(
+            'contains_nuts',
+            tagWith(allergen: {'nötter': TriState.contains}),
+          );
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {'nötter'},
+              trackedDietary: {},
+              includeUnknownInMenu: true,
+            ),
+            recipes: [nutFree, containsNuts],
+          );
+          addTearDown(vm.dispose);
+
+          await vm.getAvailableRecipesAsync();
+          expect(vm.hiddenByFamilyCount, 1);
+
+          vm.loadFromSharedMenu(
+            SharedMenu.create(
+              sharedByUserId: testFriendId,
+              sharedByDisplayName: 'Vän',
+              sharedToUserIds: [testUserId],
+              menuTitle: 'Delad',
+              menuSnapshot: {
+                'Middag': [containsNuts],
+              },
+              shareMessage: '',
+            ),
+          );
+          expect(vm.hiddenByFamilyCount, 0);
+        },
+      );
+
+      test(
         'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',
         () {
           final nutFree = recipeWith(

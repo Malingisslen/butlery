@@ -1,0 +1,471 @@
+{
+ "$schema": "butlery-overlap-audit/3",
+ "kontroll": "CHK-R-02",
+ "$regel": "lostOwnHitArea = arean av snittet mellan tva SKILDA semantiska kontrollers traffytor. Ar den storre an noll konkurrerar de om samma yta. Ingen z-index-vinnare gor det acceptabelt, och ingen tolerans finns. Overlager kraver POSITIV evidens for att underlaget ar suspenderat.",
+ "artefakter_st": 329,
+ "verifierade_traffytor_st": 1344,
+ "geometricOverlap_st": 9,
+ "relationer": {
+  "intentionalOverlay": 7,
+  "notSimultaneous": 2
+ },
+ "produktfynd_st": 0,
+ "unresolved_st": 0,
+ "egenYtaEjTraffbar_st": 0,
+ "egenYtaEjTraffbar": [],
+ "produktfynd": [],
+ "unresolved": [],
+ "alla": [
+  {
+   "art": "chattmeny",
+   "a": "Bifoga",
+   "b": "Ta bort meddelandet",
+   "rollA": "button",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 57,
+    "y": 8389.836,
+    "w": 48,
+    "h": 48,
+    "right": 105,
+    "bottom": 8437.836,
+    "area": 2304
+   },
+   "rektB": {
+    "x": 69,
+    "y": 8354.039,
+    "w": 364,
+    "h": 77.797,
+    "right": 433,
+    "bottom": 8431.836,
+    "area": 28318.063
+   },
+   "intersection": {
+    "w": 36,
+    "h": 42,
+    "area": 1512
+   },
+   "lostOwnHitArea": {
+    "A": 0.656,
+    "B": 0.053
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "chattmeny",
+   "a": "Skriv ett meddelande",
+   "b": "Ta bort meddelandet",
+   "rollA": "textbox",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 113,
+    "y": 8389.836,
+    "w": 276,
+    "h": 48,
+    "right": 389,
+    "bottom": 8437.836,
+    "area": 13248
+   },
+   "rektB": {
+    "x": 69,
+    "y": 8354.039,
+    "w": 364,
+    "h": 77.797,
+    "right": 433,
+    "bottom": 8431.836,
+    "area": 28318.063
+   },
+   "intersection": {
+    "w": 276,
+    "h": 42,
+    "area": 11592
+   },
+   "lostOwnHitArea": {
+    "A": 0.875,
+    "B": 0.409
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "chattmeny",
+   "a": "Skicka",
+   "b": "Ta bort meddelandet",
+   "rollA": "button",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 397,
+    "y": 8389.836,
+    "w": 48,
+    "h": 48,
+    "right": 445,
+    "bottom": 8437.836,
+    "area": 2304
+   },
+   "rektB": {
+    "x": 69,
+    "y": 8354.039,
+    "w": 364,
+    "h": 77.797,
+    "right": 433,
+    "bottom": 8431.836,
+    "area": 28318.063
+   },
+   "intersection": {
+    "w": 36,
+    "h": 42,
+    "area": 1512
+   },
+   "lostOwnHitArea": {
+    "A": 0.656,
+    "B": 0.053
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "flerbar",
+   "a": "Pannbiffar med lök, vald",
+   "b": "Markera alla 24",
+   "rollA": "checkbox",
+   "rollB": "menuitem",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 61,
+    "y": 9380.773,
+    "w": 380,
+    "h": 66.5,
+    "right": 441,
+    "bottom": 9447.273,
+    "area": 25270
+   },
+   "rektB": {
+    "x": 190,
+    "y": 9369.773,
+    "w": 250,
+    "h": 48,
+    "right": 440,
+    "bottom": 9417.773,
+    "area": 12000
+   },
+   "intersection": {
+    "w": 250,
+    "h": 37,
+    "area": 9250
+   },
+   "lostOwnHitArea": {
+    "A": 0.366,
+    "B": 0.771
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flerbar",
+   "a": "Pannbiffar med lök, vald",
+   "b": "Exportera de valda",
+   "rollA": "checkbox",
+   "rollB": "menuitem",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 61,
+    "y": 9380.773,
+    "w": 380,
+    "h": 66.5,
+    "right": 441,
+    "bottom": 9447.273,
+    "area": 25270
+   },
+   "rektB": {
+    "x": 190,
+    "y": 9417.773,
+    "w": 250,
+    "h": 49,
+    "right": 440,
+    "bottom": 9466.773,
+    "area": 12250
+   },
+   "intersection": {
+    "w": 250,
+    "h": 29.5,
+    "area": 7375
+   },
+   "lostOwnHitArea": {
+    "A": 0.292,
+    "B": 0.602
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flerbar",
+   "a": "Linsgryta med spetskål, vald",
+   "b": "Exportera de valda",
+   "rollA": "checkbox",
+   "rollB": "menuitem",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 61,
+    "y": 9455.273,
+    "w": 380,
+    "h": 66.5,
+    "right": 441,
+    "bottom": 9521.773,
+    "area": 25270
+   },
+   "rektB": {
+    "x": 190,
+    "y": 9417.773,
+    "w": 250,
+    "h": 49,
+    "right": 440,
+    "bottom": 9466.773,
+    "area": 12250
+   },
+   "intersection": {
+    "w": 250,
+    "h": 11.5,
+    "area": 2875
+   },
+   "lostOwnHitArea": {
+    "A": 0.114,
+    "B": 0.235
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flerbar",
+   "a": "Linsgryta med spetskål, vald",
+   "b": "Radera 3 recept",
+   "rollA": "checkbox",
+   "rollB": "menuitem",
+   "geometricOverlap": true,
+   "relation": "intentionalOverlay",
+   "produktfynd": false,
+   "evidens": "underlaget ar belagt suspenderat via inert — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan",
+   "rektA": {
+    "x": 61,
+    "y": 9455.273,
+    "w": 380,
+    "h": 66.5,
+    "right": 441,
+    "bottom": 9521.773,
+    "area": 25270
+   },
+   "rektB": {
+    "x": 190,
+    "y": 9466.773,
+    "w": 250,
+    "h": 49,
+    "right": 440,
+    "bottom": 9515.773,
+    "area": 12250
+   },
+   "intersection": {
+    "w": 250,
+    "h": 49,
+    "area": 12250
+   },
+   "lostOwnHitArea": {
+    "A": 0.485,
+    "B": 1
+   },
+   "samtidigtSynliga": true,
+   "suspenderadA": {
+    "ja": true,
+    "via": "inert",
+    "pa": "div"
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "kompkallahel",
+   "a": "Visa mindre",
+   "b": "Jämför med receptet som det är nu",
+   "rollA": "button",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "notSimultaneous",
+   "produktfynd": false,
+   "evidens": "minst en av ytorna ar bortscrollad i sin port och kan inte vara aktiv samtidigt som den andra",
+   "rektA": {
+    "x": 65,
+    "y": 25925.859,
+    "w": 76.375,
+    "h": 48,
+    "right": 141.375,
+    "bottom": 25973.859,
+    "area": 3666
+   },
+   "rektB": {
+    "x": 65,
+    "y": 25903.82,
+    "w": 372,
+    "h": 48,
+    "right": 437,
+    "bottom": 25951.82,
+    "area": 17856
+   },
+   "intersection": {
+    "w": 76.375,
+    "h": 25.961,
+    "area": 1982.771
+   },
+   "lostOwnHitArea": {
+    "A": 0.541,
+    "B": 0.111
+   },
+   "samtidigtSynliga": false,
+   "suspenderadA": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompkallahel",
+   "a": "Visa mindre",
+   "b": "Tolka källan igen och skriv över",
+   "rollA": "button",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "notSimultaneous",
+   "produktfynd": false,
+   "evidens": "minst en av ytorna ar bortscrollad i sin port och kan inte vara aktiv samtidigt som den andra",
+   "rektA": {
+    "x": 65,
+    "y": 25925.859,
+    "w": 76.375,
+    "h": 48,
+    "right": 141.375,
+    "bottom": 25973.859,
+    "area": 3666
+   },
+   "rektB": {
+    "x": 65,
+    "y": 25959.82,
+    "w": 372,
+    "h": 48,
+    "right": 437,
+    "bottom": 26007.82,
+    "area": 17856
+   },
+   "intersection": {
+    "w": 76.375,
+    "h": 14.039,
+    "area": 1072.229
+   },
+   "lostOwnHitArea": {
+    "A": 0.292,
+    "B": 0.06
+   },
+   "samtidigtSynliga": false,
+   "suspenderadA": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  }
+ ],
+ "status": "godkänd"
+}

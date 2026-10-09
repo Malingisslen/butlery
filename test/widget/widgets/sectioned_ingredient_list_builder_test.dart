@@ -47,6 +47,7 @@ void main() {
       headingControllerFor: (_) => heading,
       onLineChanged: (_, __) {},
       onAddLine: () {},
+      onLastLineFilled: () {},
       onRemoveLine: (_) {},
       onReorder: (_, __) {},
       onAddHeading: () {},

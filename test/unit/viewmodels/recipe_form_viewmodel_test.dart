@@ -332,6 +332,36 @@ void main() {
         expect(viewModel.ingredientsManager.values.last, isEmpty);
       });
 
+      // BUT-2301: the auto-add after a paste reaches the view model once per
+      // change, and two changes can land before the rebuild.
+      test(
+        'ensureTrailingIngredientLine adds one line per filled last line',
+        () {
+          final initialLength = viewModel.ingredientsManager.length;
+          viewModel.updateIngredient(initialLength - 1, '6 dl mjölk');
+
+          viewModel.ensureTrailingIngredientLine();
+          viewModel.ensureTrailingIngredientLine();
+
+          expect(viewModel.ingredientsManager.length, initialLength + 1);
+          expect(viewModel.ingredientsManager.values.last, isEmpty);
+        },
+      );
+
+      test(
+        'ensureTrailingInstructionLine adds one line per filled last line',
+        () {
+          final initialLength = viewModel.instructionsManager.length;
+          viewModel.updateInstruction(initialLength - 1, 'Koka upp mjölken.');
+
+          viewModel.ensureTrailingInstructionLine();
+          viewModel.ensureTrailingInstructionLine();
+
+          expect(viewModel.instructionsManager.length, initialLength + 1);
+          expect(viewModel.instructionsManager.values.last, isEmpty);
+        },
+      );
+
       test('should update ingredient at index', () {
         // Arrange
         viewModel.addIngredient();

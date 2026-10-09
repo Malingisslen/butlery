@@ -1,0 +1,130 @@
+{
+ "$regel": "Före/efter för en enda produktfix. Den frysta baslinjen i 8c41c55 skrivs inte om — den står kvar som fas2/r03-baslinje.json.",
+ "beforeCommit": "8d5a9ee",
+ "afterCommit": null,
+ "fix": {
+  "beskrivning": "nav-add-ikonens viewBox rättad från 0 0 24 24 till 22 22 116 116",
+  "rotorsak": "Ikonmastern är ritad på ett 160×160-rutnät. Den inline-bäddade glyfen bar viewBox 0 0 24 24, så plustecknets geometri (43–117) låg helt utanför fönstret. Webbläsare klipper alltid svg-innehåll, så knappen Lägg till renderades som en tom cirkel.",
+  "fonstrets_harkomst": "22 22 116 116 är belagt av 32 fungerande glyfer i samma ikonfamilj — inte en hårdkodad regel för nav-add.",
+  "andrade_filer": 2,
+  "andrade_rader": 8,
+  "enda_skillnaden": "viewBox-attributet"
+ },
+ "totalsiffror": {
+  "fore": {
+   "raa_verifierade_detektioner_st": 35,
+   "elementfynd_st": 29,
+   "felinstanser_st": 17,
+   "kallrotorsaker_st": 6,
+   "berorda_produktartefakter_st": 14
+  },
+  "efter": {
+   "raa_verifierade_detektioner_st": 19,
+   "elementfynd_st": 13,
+   "felinstanser_st": 9,
+   "kallrotorsaker_st": 5,
+   "berorda_produktartefakter_st": 7
+  }
+ },
+ "borttagna_findingId": [
+  "CHK-R-03 · hem · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hem · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hem360 · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hem360 · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemfel · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemfel · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemladdar · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemladdar · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemmorkt · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemmorkt · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemoffline · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemoffline · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemtom · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · hemtom · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · langavarden · sel:span>svg[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0",
+  "CHK-R-03 · langavarden · sel:svg>path[0] · klippning · axis=xy · vp=compact-390 · theme=obeslutad · ts=1.0"
+ ],
+ "borttagna_findingId_st": 16,
+ "borttagna_instansId": [
+  "INST · hem · sel:span>svg[0] · klippning",
+  "INST · hem360 · sel:span>svg[0] · klippning",
+  "INST · hemfel · sel:span>svg[0] · klippning",
+  "INST · hemladdar · sel:span>svg[0] · klippning",
+  "INST · hemmorkt · sel:span>svg[0] · klippning",
+  "INST · hemoffline · sel:span>svg[0] · klippning",
+  "INST · hemtom · sel:span>svg[0] · klippning",
+  "INST · langavarden · sel:span>svg[0] · klippning"
+ ],
+ "borttagna_instansId_st": 8,
+ "borttagen_kallrotorsak": [
+  "svg | klippning | innehåll utanför boxen: scroll N×N, barn N px (path) ×8"
+ ],
+ "borttagen_kallrotorsak_st": 1,
+ "tillkomna_findingId_st": 0,
+ "tillkomna_instansId_st": 0,
+ "oforandrade_kvarvarande": {
+  "findingId_st": 13,
+  "instansId_st": 9,
+  "kallrotorsaker_st": 5,
+  "identiska_med_fore": true
+ },
+ "populationer_oforandrade": {
+  "produktartefakter_st": 309,
+  "probeartefakter_st": 3,
+  "totalt_exekverade_artefakter_st": 312
+ },
+ "ikonregressionstest": {
+  "fixturer": {
+   "I-01 160-geometri i 24-viewBox": "utanfor (fälld)",
+   "I-02 rättat fönster": "ok (passerar)",
+   "I-03 geometri som skärs": "klippt (fälld)",
+   "I-04 utan renderad geometri": "tom (fälld)"
+  },
+  "fixturer_godkanda": "4 av 4",
+  "dokumentmatning": {
+   "fore": {
+    "glyfer_st": 1263,
+    "ok_st": 1102,
+    "utanfor_st": 8,
+    "klippt_st": 0,
+    "tom_st": 0,
+    "ej_renderade_st": 153
+   },
+   "efter": {
+    "glyfer_st": 1263,
+    "ok_st": 1110,
+    "utanfor_st": 0,
+    "klippt_st": 0,
+    "tom_st": 0,
+    "ej_renderade_st": 153
+   }
+  }
+ },
+ "CHK_T21": {
+  "fore": {
+   "status": "failed",
+   "verktygsstatus": "ok",
+   "fel_id": "T21-OBESLUTAT",
+   "draft_st": 317,
+   "screenId_saknas_st": 305,
+   "stateId_saknas_st": 305
+  },
+  "efter": {
+   "status": "failed",
+   "verktygsstatus": "ok",
+   "fel_id": "T21-OBESLUTAT",
+   "draft_st": 317,
+   "screenId_saknas_st": 305,
+   "stateId_saknas_st": 305
+  },
+  "oforandrad": true,
+  "klassificeringsposter_andrade": 0
+ },
+ "observationsdelta": {
+  "fore": 1431,
+  "efter": 1432,
+  "forklaring": "De åtta nav-add-glyferna blir observationer i stället för verifierade fel, men slås samman med befintliga observationer eftersom den normaliserade elementnyckeln bara namnger närmaste förälder. I artefakten hem matchar sel:div>svg[0] åtta olika element. Nettoförändringen blir därför +1, inte +8."
+ },
+ "kant_precisionsbegransning": "Den normaliserade elementnyckeln kolliderar mellan syskonbehållare med samma tagg och klass. Det påverkade inte något verifierat fynd, eftersom dessa var unika per artefakt, men det är en verklig precisionsgräns. Den rättas INTE här: findingId- och instanslogiken får inte ändras i denna commit.",
+ "$afterCommitNot": "En fil kan inte bära sitt eget commit-SHA. Repokopian lämnar fältet null; granskningspaketets kopia bär det verkliga SHA:t efter commit."
+}

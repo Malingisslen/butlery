@@ -1,0 +1,490 @@
+[
+ {
+  "namn": "--ram-kontroll-a",
+  "roll": "ram-kontroll",
+  "ljus": "#24382c",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 101,
+  "artefakter": 16,
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-kontroll-b",
+  "roll": "ram-kontroll",
+  "ljus": "#7d897c",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 60,
+  "artefakter": 7,
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-kontroll-c",
+  "roll": "ram-kontroll",
+  "ljus": "#ccd1c2",
+  "mork": "rgba(245,244,237,.18)",
+  "deklarationer": 46,
+  "artefakter": 10,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ram-kontroll-b4",
+  "roll": "ram-kontroll",
+  "ljus": "#d8b784",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-kontroll-b5",
+  "roll": "ram-kontroll",
+  "ljus": "#9c3b23",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--text-kontroll-a",
+  "roll": "text-kontroll",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "deklarationer": 92,
+  "artefakter": 27,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-kontroll-b2",
+  "roll": "text-kontroll",
+  "ljus": "#5b6959",
+  "mork": "#c9d3c4",
+  "deklarationer": 47,
+  "artefakter": 10,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b3",
+  "roll": "text-kontroll",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "deklarationer": 18,
+  "artefakter": 4,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b4",
+  "roll": "text-kontroll",
+  "ljus": "#f5f4ed",
+  "mork": "#f5f4ed",
+  "deklarationer": 13,
+  "artefakter": 13,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b5",
+  "roll": "text-kontroll",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "deklarationer": 7,
+  "artefakter": 3,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b6",
+  "roll": "text-kontroll",
+  "ljus": "#a15a0a",
+  "mork": "#dca968",
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b7",
+  "roll": "text-kontroll",
+  "ljus": "#dca968",
+  "mork": "#c9d3c4",
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b8",
+  "roll": "text-kontroll",
+  "ljus": "#37453a",
+  "mork": "#93a48d",
+  "deklarationer": 2,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b9",
+  "roll": "text-kontroll",
+  "ljus": "#e5a08a",
+  "mork": "#c9d3c4",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-kontroll-b",
+  "roll": "text-kontroll",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-kontroll-c",
+  "roll": "text-kontroll",
+  "ljus": "#7d897c",
+  "mork": "#93a48d",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-c",
+  "roll": "text-innehall",
+  "ljus": "#37453a",
+  "mork": "#93a48d",
+  "deklarationer": 78,
+  "artefakter": 27,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-a",
+  "roll": "text-innehall",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "deklarationer": 52,
+  "artefakter": 24,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-b",
+  "roll": "text-innehall",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "deklarationer": 46,
+  "artefakter": 21,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-b4",
+  "roll": "text-innehall",
+  "ljus": "#f5f4ed",
+  "mork": "#f5f4ed",
+  "deklarationer": 37,
+  "artefakter": 32,
+  "ateranvand": false
+ },
+ {
+  "namn": "--text-innehall-e",
+  "roll": "text-innehall",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "deklarationer": 16,
+  "artefakter": 7,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-d",
+  "roll": "text-innehall",
+  "ljus": "#5b6959",
+  "mork": "#93a48d",
+  "deklarationer": 14,
+  "artefakter": 11,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-f",
+  "roll": "text-innehall",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "deklarationer": 4,
+  "artefakter": 3,
+  "ateranvand": true
+ },
+ {
+  "namn": "--text-innehall-b8",
+  "roll": "text-innehall",
+  "ljus": "#3f6b4f",
+  "mork": "#8fb89a",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ram-behallare-c",
+  "roll": "ram-behallare",
+  "ljus": "#ccd1c2",
+  "mork": "rgba(245,244,237,.18)",
+  "deklarationer": 61,
+  "artefakter": 32,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ram-behallare-a",
+  "roll": "ram-behallare",
+  "ljus": "#24382c",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 28,
+  "artefakter": 8,
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-behallare-b3",
+  "roll": "ram-behallare",
+  "ljus": "#d8b784",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 24,
+  "artefakter": 6,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-behallare-b4",
+  "roll": "ram-behallare",
+  "ljus": "rgba(245,244,237,0.4)",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 12,
+  "artefakter": 3,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-behallare-d",
+  "roll": "ram-behallare",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "deklarationer": 10,
+  "artefakter": 4,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ram-behallare-b6",
+  "roll": "ram-behallare",
+  "ljus": "#8a5212",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 5,
+  "artefakter": 2,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-behallare-b7",
+  "roll": "ram-behallare",
+  "ljus": "#3f6b4f",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-behallare-b",
+  "roll": "ram-behallare",
+  "ljus": "#7d897c",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--ram-behallare-b9",
+  "roll": "ram-behallare",
+  "ljus": "#627061",
+  "mork": "rgba(245,244,237,.4)",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
+ },
+ {
+  "namn": "--yta-upphojd",
+  "roll": "yta-upphojd",
+  "ljus": "#e6ead9",
+  "mork": "#17251d",
+  "deklarationer": 50,
+  "artefakter": 29,
+  "ateranvand": true
+ },
+ {
+  "namn": "--yta-upphojd-b2",
+  "roll": "yta-upphojd",
+  "ljus": "#24382c",
+  "mork": "#17251d",
+  "deklarationer": 37,
+  "artefakter": 32,
+  "ateranvand": false
+ },
+ {
+  "namn": "--yta-kontroll-b1",
+  "roll": "yta-kontroll",
+  "ljus": "#e6ead9",
+  "mork": "#17251d",
+  "deklarationer": 40,
+  "artefakter": 11,
+  "ateranvand": false
+ },
+ {
+  "namn": "--yta-kontroll-b2",
+  "roll": "yta-kontroll",
+  "ljus": "#24382c",
+  "mork": "#17251d",
+  "deklarationer": 17,
+  "artefakter": 14,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b1",
+  "roll": "ikon-kontroll",
+  "ljus": "#f5f4ed",
+  "mork": "#f5f4ed",
+  "deklarationer": 38,
+  "artefakter": 32,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b2",
+  "roll": "ikon-kontroll",
+  "ljus": "#7d897c",
+  "mork": "#93a48d",
+  "deklarationer": 30,
+  "artefakter": 6,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b3",
+  "roll": "ikon-kontroll",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "deklarationer": 21,
+  "artefakter": 8,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b4",
+  "roll": "ikon-kontroll",
+  "ljus": "#37453a",
+  "mork": "#93a48d",
+  "deklarationer": 4,
+  "artefakter": 2,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b5",
+  "roll": "ikon-kontroll",
+  "ljus": "#e5a08a",
+  "mork": "#de9078",
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b6",
+  "roll": "ikon-kontroll",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b7",
+  "roll": "ikon-kontroll",
+  "ljus": "#a15a0a",
+  "mork": "#dca968",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b8",
+  "roll": "ikon-kontroll",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-kontroll-b9",
+  "roll": "ikon-kontroll",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-fristaende-e",
+  "roll": "ikon-fristaende",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "deklarationer": 9,
+  "artefakter": 8,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ikon-fristaende-b",
+  "roll": "ikon-fristaende",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "deklarationer": 7,
+  "artefakter": 4,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ikon-fristaende-a",
+  "roll": "ikon-fristaende",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "deklarationer": 5,
+  "artefakter": 5,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ikon-fristaende-f",
+  "roll": "ikon-fristaende",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "deklarationer": 5,
+  "artefakter": 5,
+  "ateranvand": true
+ },
+ {
+  "namn": "--ikon-fristaende-b5",
+  "roll": "ikon-fristaende",
+  "ljus": "#3f6b4f",
+  "mork": "#8fb89a",
+  "deklarationer": 3,
+  "artefakter": 3,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-fristaende-b6",
+  "roll": "ikon-fristaende",
+  "ljus": "#f5f4ed",
+  "mork": "#f5f4ed",
+  "deklarationer": 2,
+  "artefakter": 1,
+  "ateranvand": false
+ },
+ {
+  "namn": "--ikon-fristaende-b7",
+  "roll": "ikon-fristaende",
+  "ljus": "#7d897c",
+  "mork": "#c9d3c4",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ateranvand": false
+ }
+]

@@ -25,7 +25,7 @@ import {
 import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "3.2.0";
+export const PROMPT_VERSION = "3.3.0";
 
 /**
  * Vertex AI region — EU data residency (BUT-607, BUT-1187).
@@ -271,6 +271,14 @@ const INGREDIENT_GROUP_RULE =
 // UnreadLineDetector.unreadMarker in the app byte for byte.
 export const UNREADABLE_MARKER = "[oläsligt]";
 const UNREADABLE_RULE = `- Gissa aldrig en ingrediens du inte kan läsa. Går ett ord eller en hel ingrediensrad inte att läsa, skriv exakt ${UNREADABLE_MARKER} där det oläsliga står (bara "${UNREADABLE_MARKER}" som name för en hel rad). Är mängden oläslig: sätt amount till null och skriv ${UNREADABLE_MARKER} i preparation. Hoppa inte över raden`;
+
+// BUT-2317: the OCR retry hands an image reader's raw text to the text
+// extraction prompt, which on its own lets the model fill an unreadable gap
+// with a plausible word. Appended on that retry only, so text and URL imports
+// keep their prompt unchanged.
+export const OCR_RETRY_SYSTEM_PROMPT_RULES = `TEXTEN ÄR LÄST UR EN BILD:
+- Texten kan innehålla ${UNREADABLE_MARKER} där bildläsaren inte kunde läsa. Ersätt det aldrig med en gissning, för det vidare enligt regeln nedan
+${UNREADABLE_RULE}`;
 
 export const RECIPE_EXTRACTION_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på att extrahera recept från svensk text.
 

@@ -1,0 +1,925 @@
+{
+ "$schema": "butlery-nt-forlopp/1",
+ "$datum": "2026-08-14",
+ "$status": "ANALYS ENDAST. 0 produktwrites, 0 registerwrites, 0 fargval.",
+ "A_proveniensLjus": {
+  "kontroll": "NTR-BATCH01-DARK-TYPING-INDICATOR",
+  "treSeparataIdentiteter": true,
+  "numeriskAteranvandningSomEvidens": false,
+  "OBSERVED_SAME_ROLE_EVIDENCE": 0,
+  "provenance": "HUMAN_APPROVED",
+  "klassificering": [
+   "VISUAL_CHOICE_REQUIRED",
+   "HUMAN_VISUAL_CANDIDATE"
+  ],
+  "spar": "fas2/nt-remediering-beslut.json",
+  "R04_COVERAGE_CREDIT": 0,
+  "utfall": "KOMPLETT — inget proveniensgap"
+ },
+ "B_frusenBaslinje": {
+  "population": 34,
+  "kategorier": {
+   "PRODUCT_ERROR": 11,
+   "REDUNDANT": 9,
+   "REQUIRED_INFORMATION_BEARING": 13,
+   "DECORATIVE": 1
+  },
+  "summa": 34,
+  "slutarExakt": true,
+  "UNKNOWN": 0,
+  "kandidatavstamning": {
+   "kandidater": 2492,
+   "inkluderade": 34,
+   "uteslutna": 2458,
+   "perUteslutningsskal": {
+    "BARAREN_BAR_TEXT": 1805,
+    "INUTI_DEKLARERAD_KONTROLL": 651,
+    "INTE_MINDRE": 2
+   },
+   "dubbletter": [],
+   "summerar": true,
+   "$regel": "Varje upptackt kandidat redovisas exakt en gang, med utfall och skal."
+  },
+  "aterstaende": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "form": "REGLAGE",
+    "kvot": 1.41
+   },
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 1.96
+   },
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "kvot": 2.06
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "form": "FORLOPP",
+    "kvot": 2.06
+   },
+   {
+    "id": "BG-001",
+    "skarm": "start",
+    "form": "FORLOPP",
+    "kvot": 2.28
+   },
+   {
+    "id": "BG-024",
+    "skarm": "snackbars",
+    "form": "FORLOPP",
+    "kvot": 2.28
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "form": "FORLOPP",
+    "kvot": 2.64
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 2.98
+   }
+  ]
+ },
+ "C_profil": {
+  "id": "BG-020",
+  "status": "BLOCKED",
+  "kvot": 1.41,
+  "atgard": "ingen",
+  "omklassning": "ingen",
+  "$separat": "Fragan om kontrollens markning och roll halls som ett eget fynd och blandas inte in i forloppsanalysen."
+ },
+ "D_forloppsfynd": {
+  "antal": 10,
+  "semantiskKlass": "PROGRESS_VALUE_MOT_PROGRESS_TRACK i samtliga",
+  "$kravtillampning": "kravet 3.0 galler mot den FAKTISKA track som vardet ligger pa, komponerad nar sparet ar genomskinligt. Ingen ny generell numerisk ytregel har inforts.",
+  "rader": [
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "familj": "lagatimers-414",
+    "vardeIdentitet": "lagatimers|14|background-color",
+    "bararIdentitet": "lagatimers|13|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(83, 100, 88)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgba(245, 244, 237, 0.18)",
+    "genomskinligBarare": true,
+    "bakomBararen": "rgb(47, 68, 55)",
+    "kvot": 1.96,
+    "krav": 3,
+    "kravgrund": "vardet upptar 58 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "timer, tid kvar",
+    "strukturbevis": "vardet upptar 58 % av en 3 px hog barare och bar ingen egen text; texten intill sager \"Pastan\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 166398,
+     "kallform": "display:block;height:100%;width:58%;background:#ce7c1e;border-radius:2px",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|rgba(245,244,237,0.18) ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "familj": "smartimport-414",
+    "vardeIdentitet": "smartimport|32|background-color",
+    "bararIdentitet": "smartimport|31|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(204, 209, 194)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgb(204, 209, 194)",
+    "genomskinligBarare": false,
+    "bakomBararen": "rgb(230, 234, 217)",
+    "kvot": 2.06,
+    "krav": 3,
+    "kravgrund": "vardet upptar 62 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "import pagar",
+    "strukturbevis": "vardet upptar 62 % av en 4 px hog barare och bar ingen egen text; texten intill sager \"Klistra in\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 129675,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:62%;background:#ce7c1e;border-radius:2px",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "familj": "vmbgenererar-panel",
+    "vardeIdentitet": "vmbgenererar|51|background-color",
+    "bararIdentitet": "vmbgenererar|50|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(204, 209, 194)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgb(204, 209, 194)",
+    "genomskinligBarare": false,
+    "bakomBararen": "rgb(245, 244, 237)",
+    "kvot": 2.06,
+    "krav": 3,
+    "kravgrund": "vardet upptar 60 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "generering pagar",
+    "strukturbevis": "vardet upptar 60 % av en 2 px hog barare och bar ingen egen text; texten intill sager \"lägger ut …\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "offset": 28700,
+     "kallform": "display:block;width:60%;height:2px;background:#ce7c1e",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-001",
+    "skarm": "start",
+    "familj": "start-414",
+    "vardeIdentitet": "start|19|background-color",
+    "bararIdentitet": "start|18|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(74, 90, 79)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgba(245, 244, 237, 0.18)",
+    "genomskinligBarare": true,
+    "bakomBararen": "rgb(36, 56, 44)",
+    "kvot": 2.28,
+    "krav": 3,
+    "kravgrund": "vardet upptar 46 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "uppstart, obestamd laddning",
+    "strukturbevis": "vardet upptar 46 % av en 3 px hog barare och bar ingen egen text; texten intill sager \"Dukar upp ditt kök…\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 8902,
+     "kallform": "width:46%;height:100%;background:#ce7c1e;border-radius:999px",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|rgba(245,244,237,0.18) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+    "korsarBeslutISammaArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": true
+     },
+     {
+      "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+      "token": "--yta-upphojd-d17",
+      "semantiskRoll": "PROGRESS_TRACK",
+      "ljusvarde": "rgba(245,244,237,0.18)",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": true
+     }
+    ],
+    "korsarEnhetIAnnanArtefakt": []
+   },
+   {
+    "id": "BG-024",
+    "skarm": "snackbars",
+    "familj": "snackbars-450",
+    "vardeIdentitet": "snackbars|24|background-color",
+    "bararIdentitet": "snackbars|23|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(74, 90, 79)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgba(245, 244, 237, 0.18)",
+    "genomskinligBarare": true,
+    "bakomBararen": "rgb(36, 56, 44)",
+    "kvot": 2.28,
+    "krav": 3,
+    "kravgrund": "vardet upptar 55 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "synkronisering pagar",
+    "strukturbevis": "vardet upptar 55 % av en 4 px hog barare och bar ingen egen text; texten intill sager \"Synkroniserar …\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 169824,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:55%;border-radius:2px;background:#ce7c1e",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|rgba(245,244,237,0.18) ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "familj": "smartimport-414",
+    "vardeIdentitet": "smartimport|20|background-color",
+    "bararIdentitet": "smartimport|19|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(230, 234, 217)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgb(230, 234, 217)",
+    "genomskinligBarare": false,
+    "bakomBararen": "rgb(245, 244, 237)",
+    "kvot": 2.63,
+    "krav": 3,
+    "kravgrund": "vardet upptar 42 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "importsteg, analys pagar",
+    "strukturbevis": "vardet upptar 42 % av en 3 px hog barare och bar ingen egen text; texten intill sager \"Analyserar receptet Undertexter hittade · 0:14\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 128338,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:2px;background:#ce7c1e",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|#e6ead9 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "familj": "hemladdar-414",
+    "vardeIdentitet": "hemladdar|13|background-color",
+    "bararIdentitet": "hemladdar|12|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(230, 234, 217)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgb(230, 234, 217)",
+    "genomskinligBarare": false,
+    "bakomBararen": "rgb(245, 244, 237)",
+    "kvot": 2.63,
+    "krav": 3,
+    "kravgrund": "vardet upptar 44 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "hamtning pagar",
+    "strukturbevis": "vardet upptar 44 % av en 3 px hog barare och bar ingen egen text; texten intill sager \"Hämtar veckans plan …\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 101581,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:44%;border-radius:2px;background:#ce7c1e",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|#e6ead9 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "familj": "imp2hamtar-414",
+    "vardeIdentitet": "imp2hamtar|26|background-color",
+    "bararIdentitet": "imp2hamtar|25|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(230, 234, 217)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgb(230, 234, 217)",
+    "genomskinligBarare": false,
+    "bakomBararen": "rgb(245, 244, 237)",
+    "kvot": 2.63,
+    "krav": 3,
+    "kravgrund": "vardet upptar 62 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "hamtning pagar",
+    "strukturbevis": "vardet upptar 62 % av en 4 px hog barare och bar ingen egen text; texten intill sager \"Hämtar sidan Läser strukturerad data Tolkar ingredienser … Kontrollerar allergen\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "offset": 26004,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:62%;background:#ce7c1e",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|#e6ead9 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "familj": "globceremoni-414",
+    "vardeIdentitet": "globceremoni|8|background-color",
+    "bararIdentitet": "globceremoni|7|background-color",
+    "berknadForgrund": "rgb(206, 124, 30)",
+    "berknadBakgrund": "rgb(63, 81, 69)",
+    "deklareratVarde": "rgb(206, 124, 30)",
+    "deklareradBarare": "rgb(63, 81, 69)",
+    "genomskinligBarare": false,
+    "bakomBararen": "rgb(36, 56, 44)",
+    "kvot": 2.64,
+    "krav": 3,
+    "kravgrund": "vardet upptar 53 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "nedrakning till automatisk stangning",
+    "strukturbevis": "vardet upptar 53 % av en 2 px hog barare och bar ingen egen text; texten intill sager \"Första receptet är ditt ligger nu i ditt kök. Härifrån kan jag lägga den i vecka\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "offset": 30237,
+     "kallform": "width:64px;height:2px;border-radius:2px;background:#ce7c1e",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|#3f5145 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "semantiskRoll": "PROGRESS_VALUE",
+      "ljusvarde": "#ce7c1e",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "scope": [
+       "start"
+      ],
+      "traffarDennaArtefakt": false
+     }
+    ]
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "familj": "lagatimers-414",
+    "vardeIdentitet": "lagatimers|23|background-color",
+    "bararIdentitet": "lagatimers|22|background-color",
+    "berknadForgrund": "rgb(220, 169, 104)",
+    "berknadBakgrund": "rgb(83, 100, 88)",
+    "deklareratVarde": "rgb(220, 169, 104)",
+    "deklareradBarare": "rgba(245, 244, 237, 0.18)",
+    "genomskinligBarare": true,
+    "bakomBararen": "rgb(47, 68, 55)",
+    "kvot": 2.98,
+    "krav": 3,
+    "kravgrund": "vardet upptar 22 % av bararen och ingen synlig text anger den proportionen",
+    "vadDenVisar": "timer, tid kvar",
+    "strukturbevis": "vardet upptar 22 % av en 3 px hog barare och bar ingen egen text; texten intill sager \"Svampen\"",
+    "kallankare": {
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 167435,
+     "kallform": "display:block;height:100%;width:22%;background:#DCA968;border-radius:2px",
+     "delasIFilen": 1
+    },
+    "vardeEnhet": "yta-upphojd|#dca968 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "bararEnhet": "yta-upphojd|rgba(245,244,237,0.18) ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+    "korsarBeslutISammaArtefakt": [],
+    "korsarEnhetIAnnanArtefakt": []
+   }
+  ]
+ },
+ "E_beslutsenheter": {
+  "antal": 2,
+  "DU_01": {
+   "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "medlemmar": [
+    "BG-027",
+    "BG-005",
+    "BG-030",
+    "BG-001",
+    "BG-024",
+    "BG-004",
+    "BG-026",
+    "BG-031",
+    "BG-033"
+   ],
+   "gemensammaVardekandidater": 0,
+   "$problem": "Enheten mots FEM olika faktiska spar. Ingen enda fyllfarg klarar 3.0 mot alla fem.",
+   "kraverSplit": true,
+   "splitgrupper": [
+    {
+     "splitId": "DU-01-A",
+     "faktisktSpar": "rgb(83, 100, 88)",
+     "medlemmar": [
+      "BG-027"
+     ],
+     "skarmar": [
+      "lagatimers"
+     ],
+     "kvoter": [
+      1.96
+     ],
+     "kandidaterVarde": [
+      "#f5f4ed",
+      "#f0eee2",
+      "#f7e8d2",
+      "#e6ead9",
+      "#dfe0d6",
+      "#ccd1c2",
+      "#c3c6ba",
+      "#d8b784",
+      "#b4bfa6"
+     ],
+     "neutralaKandidaterVarde": [
+      "#f5f4ed",
+      "#f0eee2",
+      "#f7e8d2",
+      "#e6ead9",
+      "#dfe0d6",
+      "#ccd1c2",
+      "#c3c6ba",
+      "#d8b784",
+      "#b4bfa6"
+     ],
+     "kandidaterSpar": [
+      "#17251d",
+      "rgba(23,37,29,0.6)",
+      "#24382c",
+      "rgba(36,56,44,0.4)",
+      "rgba(36,56,44,0.35)",
+      "rgba(36,56,44,0.18)",
+      "#2f4437"
+     ],
+     "kraverMansligtVal": true
+    },
+    {
+     "splitId": "DU-01-B",
+     "faktisktSpar": "rgb(204, 209, 194)",
+     "medlemmar": [
+      "BG-005",
+      "BG-030"
+     ],
+     "skarmar": [
+      "smartimport",
+      "vmbgenererar"
+     ],
+     "kvoter": [
+      2.06,
+      2.06
+     ],
+     "kandidaterVarde": [
+      "#17251d",
+      "#24382c",
+      "#2f4437",
+      "#3f5145",
+      "#4a5c43",
+      "#4a5c50",
+      "#9c3b23",
+      "#8a5212",
+      "#3f6b4f",
+      "#a15a0a",
+      "#627061"
+     ],
+     "neutralaKandidaterVarde": [
+      "#17251d",
+      "#24382c",
+      "#2f4437",
+      "#3f5145",
+      "#4a5c43",
+      "#4a5c50",
+      "#3f6b4f",
+      "#627061"
+     ],
+     "kandidaterSpar": [
+      "#17251d",
+      "#24382c",
+      "#2f4437"
+     ],
+     "kraverMansligtVal": true
+    },
+    {
+     "splitId": "DU-01-C",
+     "faktisktSpar": "rgb(74, 90, 79)",
+     "medlemmar": [
+      "BG-001",
+      "BG-024"
+     ],
+     "skarmar": [
+      "start",
+      "snackbars"
+     ],
+     "kvoter": [
+      2.28,
+      2.28
+     ],
+     "kandidaterVarde": [
+      "#f5f4ed",
+      "#f0eee2",
+      "#f7e8d2",
+      "#e6ead9",
+      "#dfe0d6",
+      "#ccd1c2",
+      "#c3c6ba",
+      "#d8b784",
+      "#b4bfa6",
+      "#dca968",
+      "#a9b2a0"
+     ],
+     "neutralaKandidaterVarde": [
+      "#f5f4ed",
+      "#f0eee2",
+      "#f7e8d2",
+      "#e6ead9",
+      "#dfe0d6",
+      "#ccd1c2",
+      "#c3c6ba",
+      "#d8b784",
+      "#b4bfa6",
+      "#a9b2a0"
+     ],
+     "kandidaterSpar": [
+      "#17251d",
+      "rgba(23,37,29,0.6)",
+      "#24382c",
+      "rgba(36,56,44,0.4)",
+      "rgba(36,56,44,0.35)",
+      "rgba(36,56,44,0.18)",
+      "#2f4437"
+     ],
+     "kraverMansligtVal": true
+    },
+    {
+     "splitId": "DU-01-D",
+     "faktisktSpar": "rgb(230, 234, 217)",
+     "medlemmar": [
+      "BG-004",
+      "BG-026",
+      "BG-031"
+     ],
+     "skarmar": [
+      "smartimport",
+      "hemladdar",
+      "imp2hamtar"
+     ],
+     "kvoter": [
+      2.63,
+      2.63,
+      2.63
+     ],
+     "kandidaterVarde": [
+      "#17251d",
+      "#24382c",
+      "#2f4437",
+      "#3f5145",
+      "#4a5c43",
+      "#4a5c50",
+      "#9c3b23",
+      "#8a5212",
+      "#3f6b4f",
+      "#a15a0a",
+      "#627061"
+     ],
+     "neutralaKandidaterVarde": [
+      "#17251d",
+      "#24382c",
+      "#2f4437",
+      "#3f5145",
+      "#4a5c43",
+      "#4a5c50",
+      "#3f6b4f",
+      "#627061"
+     ],
+     "kandidaterSpar": [
+      "#17251d",
+      "#24382c",
+      "#2f4437"
+     ],
+     "kraverMansligtVal": true
+    },
+    {
+     "splitId": "DU-01-E",
+     "faktisktSpar": "rgb(63, 81, 69)",
+     "medlemmar": [
+      "BG-033"
+     ],
+     "skarmar": [
+      "globceremoni"
+     ],
+     "kvoter": [
+      2.64
+     ],
+     "kandidaterVarde": [
+      "#f5f4ed",
+      "#f0eee2",
+      "#f7e8d2",
+      "#e6ead9",
+      "#dfe0d6",
+      "#ccd1c2",
+      "#c3c6ba",
+      "#d8b784",
+      "#b4bfa6",
+      "#dca968",
+      "#a9b2a0",
+      "#de9078",
+      "#93a48d"
+     ],
+     "neutralaKandidaterVarde": [
+      "#f5f4ed",
+      "#f0eee2",
+      "#f7e8d2",
+      "#e6ead9",
+      "#dfe0d6",
+      "#ccd1c2",
+      "#c3c6ba",
+      "#d8b784",
+      "#b4bfa6",
+      "#a9b2a0",
+      "#93a48d"
+     ],
+     "kandidaterSpar": [
+      "#17251d",
+      "rgba(23,37,29,0.6)",
+      "#24382c",
+      "rgba(36,56,44,0.4)",
+      "rgba(36,56,44,0.35)",
+      "rgba(36,56,44,0.18)",
+      "#2f4437"
+     ],
+     "kraverMansligtVal": true
+    }
+   ]
+  },
+  "DU_02": {
+   "enhet": "yta-upphojd|#dca968 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "medlemmar": [
+    "BG-028"
+   ],
+   "neutralaKandidater": [
+    "#f5f4ed",
+    "#f0eee2",
+    "#f7e8d2",
+    "#e6ead9",
+    "#dfe0d6",
+    "#ccd1c2",
+    "#c3c6ba",
+    "#d8b784",
+    "#b4bfa6"
+   ],
+   "kraverSplit": false
+  }
+ },
+ "F_rotorsaker": {
+  "antal": 10,
+  "$fakta": "Varje fynd har en unik kalldeklaration. Ingen deklaration tacker mer an ett fynd.",
+  "$regel": "Att flera fynd delar beslutsenhet ar en designidentitet. Att de har varsin deklaration ar write-scope. De ar inte samma sak.",
+  "platser": [
+   {
+    "id": "BG-027",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 166398,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-005",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "offset": 129675,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-030",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "offset": 28700,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-001",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "offset": 8902,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-024",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "offset": 169824,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-004",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "offset": 128338,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-026",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 101581,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-031",
+    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+    "offset": 26004,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-033",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "offset": 30237,
+    "delasIFilen": 1
+   },
+   {
+    "id": "BG-028",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 167435,
+    "delasIFilen": 1
+   }
+  ]
+ },
+ "G_startkorsning": {
+  "fynd": "BG-001",
+  "kvot": 2.28,
+  "krav": 3,
+  "vardeenhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+  "registreratBeslutSammaEnhet": {
+   "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "token": "--yta-upphojd-d18",
+   "semantiskRoll": "PROGRESS_VALUE",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "scope": [
+    "start"
+   ],
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION"
+  },
+  "bararenhet": "yta-upphojd|rgba(245,244,237,0.18) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+  "registreratBeslutBararenhet": {
+   "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "token": "--yta-upphojd-d17",
+   "semantiskRoll": "PROGRESS_TRACK",
+   "ljusvarde": "rgba(245,244,237,0.18)",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "scope": [
+    "start"
+   ]
+  },
+  "varforLjusaRelationenFaller": "fyllningen rgb(206, 124, 30) mot det komponerade sparet rgb(74, 90, 79) ger 2.28, under kravet 3.0. Sparet ar deklarerat rgba(245, 244, 237, 0.18) och komponeras mot rgb(36, 56, 44).",
+  "$regel": "Det registrerade beslutet ar ett MORKT varde och ror inte ljusvardet. En ljus rattelse andrar den ljusa kallan som beslutet mappar FRAN. Beslutet far inte tyst skrivas over — det ska stammas av uttryckligen om ljusvardet andras.",
+  "$ejGjort": "Ingen andring och ingen split av det befintliga beslutet har gjorts."
+ },
+ "H_nastaBatch": {
+  "forslag": "BATCH-02 = DU-01-C (BG-001 start och BG-024 snackbars)",
+  "$varfor": "Samma faktiska spar rgb(74, 90, 79), tva fynd, en gemensam kandidatmangd. Start ingar och tvingar fram avstamningen mot det registrerade beslutet — den avstamningen behovs anda och ar minst i en liten batch.",
+  "$alternativ": "DU-01-B (BG-005, BG-030) eller DU-01-D (BG-004, BG-026, BG-031) om du hellre haller start utanfor tills vidare.",
+  "$krav": "Bada kraver ett manskligt visuellt val innan nagot skrivs."
+ },
+ "I_stopp": {
+  "fargskrivning": "INGEN",
+  "R04implementation": "INGEN",
+  "profil": "OFORANDRAD",
+  "nyaVisuellaVal": "INGA utan uttryckligt manskligt beslut"
+ },
+ "ejGjort": [
+  "ingen fargskrivning",
+  "ingen R-04-implementation",
+  "ingen profilandring",
+  "ingen registrering av nya visuella val",
+  "ingen omklassning for att ta bort ett fynd",
+  "ingen sammanslagning pa rafarg",
+  "ingen DOM-position som semantisk identitet"
+ ]
+}

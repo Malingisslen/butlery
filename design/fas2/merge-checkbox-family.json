@@ -1,0 +1,1062 @@
+{
+ "$schema": "butlery-merge-checkbox-family/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "e64a8a3",
+ "$status": "MERGE-DIALOG CHECKBOX CONTROL FAMILY STRUCTURALLY CLOSED / VERIFIED",
+ "$typ": "STRUCTURAL CONTROL SEMANTICS + ONE HIT-TARGET GEOMETRY FIX",
+ "B_medlemskap": {
+  "identiteter": [
+   "inkopmergeoppen|12",
+   "inkopmergeoppen|19",
+   "inkopmergeoppen|26",
+   "inkopmergeoppen|33",
+   "inkopmerge|22"
+  ],
+  "fingeravtryck": "388d9c9bb07e1e0e896af528",
+  "iBevisade21": true
+ },
+ "B_objekt": [
+  {
+   "identitet": "inkopmergeoppen|12",
+   "artefakt": "inkopmergeoppen",
+   "skarmetikett": "Till inköpslistan — detaljer öppna",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kallankare": {
+    "offset": -1,
+    "starttagg": null
+   },
+   "synligEtikett": "Sla samman dubbletter",
+   "logiskInstallning": "Sla samman dubbletter",
+   "radtext": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+   "renderatUtseende": "ikryssad — fylld #24382c med check-svg",
+   "avsettState": "checked",
+   "radagare": {
+    "tagg": "div",
+    "w": 364,
+    "h": 79,
+    "barnOrdning": "KOMPONENT+TEXT"
+   },
+   "kryssruta24": "24x24 med check-svg",
+   "nuvarandeKontrollmetadata": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "radroll": null,
+    "radhit": null,
+    "radnamn": null
+   },
+   "nuvarandeStatemetadata": {
+    "state": null,
+    "radstate": null,
+    "grupp": null
+   }
+  },
+  {
+   "identitet": "inkopmergeoppen|19",
+   "artefakt": "inkopmergeoppen",
+   "skarmetikett": "Till inköpslistan — detaljer öppna",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kallankare": {
+    "offset": 51948,
+    "starttagg": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\">"
+   },
+   "synligEtikett": "Konvertera enheter",
+   "logiskInstallning": "Konvertera enheter",
+   "radtext": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+   "renderatUtseende": "ikryssad — fylld #24382c med check-svg",
+   "avsettState": "checked",
+   "radagare": {
+    "tagg": "div",
+    "w": 364,
+    "h": 79,
+    "barnOrdning": "KOMPONENT+TEXT"
+   },
+   "kryssruta24": "24x24 med check-svg",
+   "nuvarandeKontrollmetadata": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "radroll": null,
+    "radhit": null,
+    "radnamn": null
+   },
+   "nuvarandeStatemetadata": {
+    "state": null,
+    "radstate": null,
+    "grupp": null
+   }
+  },
+  {
+   "identitet": "inkopmergeoppen|26",
+   "artefakt": "inkopmergeoppen",
+   "skarmetikett": "Till inköpslistan — detaljer öppna",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kallankare": {
+    "offset": 52763,
+    "starttagg": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\">"
+   },
+   "synligEtikett": "Dra bort skafferivaror",
+   "logiskInstallning": "Dra bort skafferivaror",
+   "radtext": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+   "renderatUtseende": "ikryssad — fylld #24382c med check-svg",
+   "avsettState": "checked",
+   "radagare": {
+    "tagg": "div",
+    "w": 364,
+    "h": 79,
+    "barnOrdning": "KOMPONENT+TEXT"
+   },
+   "kryssruta24": "24x24 med check-svg",
+   "nuvarandeKontrollmetadata": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "radroll": null,
+    "radhit": null,
+    "radnamn": null
+   },
+   "nuvarandeStatemetadata": {
+    "state": null,
+    "radstate": null,
+    "grupp": null
+   }
+  },
+  {
+   "identitet": "inkopmergeoppen|33",
+   "artefakt": "inkopmergeoppen",
+   "skarmetikett": "Till inköpslistan — detaljer öppna",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kallankare": {
+    "offset": -1,
+    "starttagg": null
+   },
+   "synligEtikett": "Ersatt listan",
+   "logiskInstallning": "Ersatt listan",
+   "radtext": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+   "renderatUtseende": "tom — ram 1px rgb(125, 137, 124)",
+   "avsettState": "unchecked",
+   "radagare": {
+    "tagg": "div",
+    "w": 364,
+    "h": 60,
+    "barnOrdning": "KOMPONENT+TEXT"
+   },
+   "kryssruta24": "24x24 tom ram",
+   "nuvarandeKontrollmetadata": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "radroll": null,
+    "radhit": null,
+    "radnamn": null
+   },
+   "nuvarandeStatemetadata": {
+    "state": null,
+    "radstate": null,
+    "grupp": null
+   }
+  },
+  {
+   "identitet": "inkopmerge|22",
+   "artefakt": "inkopmerge",
+   "skarmetikett": "Till inköpslistan — sammanslagning",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kallankare": {
+    "offset": -1,
+    "starttagg": null
+   },
+   "synligEtikett": "Ersatt listan",
+   "logiskInstallning": "Ersatt listan",
+   "radtext": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+   "renderatUtseende": "tom — ram 1px rgb(125, 137, 124)",
+   "avsettState": "unchecked",
+   "radagare": {
+    "tagg": "div",
+    "w": 364,
+    "h": 38,
+    "barnOrdning": "KOMPONENT+TEXT"
+   },
+   "kryssruta24": "24x24 tom ram",
+   "nuvarandeKontrollmetadata": {
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "radroll": null,
+    "radhit": null,
+    "radnamn": null
+   },
+   "nuvarandeStatemetadata": {
+    "state": null,
+    "radstate": null,
+    "grupp": null
+   }
+  }
+ ],
+ "C_konvention": {
+  "deklareradeCheckboxar": 123,
+  "stateVokabular": {
+   "(inget)": 77,
+   "checked": 31,
+   "unchecked": 15
+  },
+  "hitVokabular": {
+   "self": 99,
+   "target:<id>": 24
+  },
+  "gruppmodell": {
+   "form": "<skarm-id>-<suffix>",
+   "skarmlokal": true,
+   "bevisForSkarmlokalitet": [
+    {
+     "grupp": "bredinkop-varurad",
+     "states": [
+      "unchecked",
+      "checked"
+     ]
+    },
+    {
+     "grupp": "ikbnormal-varurad",
+     "states": [
+      "unchecked",
+      "checked"
+     ]
+    },
+    {
+     "grupp": "ikbdelad-varurad",
+     "states": [
+      "unchecked",
+      "checked"
+     ]
+    },
+    {
+     "grupp": "ikboffline-varurad",
+     "states": [
+      "checked",
+      "unchecked"
+     ]
+    }
+   ],
+   "$slutsats": "Fyra skarmar delar suffixet \"varurad\" men har var sitt skarmprefix och slas aldrig ihop. Modellen kan alltsa representera en gemensam semantisk familj utan att slaa ihop kontrollidentiteter."
+  },
+  "stateVokabularForCheckbox": {
+   "checked": 31,
+   "unchecked": 15,
+   "onEllerOff": 0,
+   "$slutsats": "checked/unchecked ar den etablerade vokabularen for checkbox. on/off forekommer inte en enda gang pa en checkbox i korpusen. Det normativa valet stods."
+  },
+  "agarmodell": {
+   "comparator": "familjmedlemsamtycke|19",
+   "detalj": {
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 209384,
+    "tagg": "<div style=\"display:flex;align-items:flex-start;gap:12px;min-height:48px;margin-top:8px;box-sizing:border-box\" data-a11y-name=\"Jag är vårdnadshavare och samtycker till att Elsas uppgifter sparas\" data-state-group=\"familjmedlemsamtycke-samtyckesruta\" data-a11y-role=\"checkbox\" data-hit=\"self\" data-a11y-state=\"checked\">",
+    "barn": "<span data-component=\"checkbox\" style=\"width:24px;height:24px;border:1.5px solid #24382c;border-radius:6px;background:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none;margin-top:1px\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2.2\" stroke-li"
+   },
+   "$slutsats": "roll, namn, data-hit=\"self\" och data-a11y-state sitter pa RADEN; data-component=\"checkbox\" pa den 24x24 stora rutan. Samma modell som de fem behover."
+  },
+  "planeradeGrupper": [
+   {
+    "skarm": "inkopmergeoppen",
+    "grupp": "inkopmergeoppen-inkopslistinstallningar",
+    "medlemmar": [
+     "inkopmergeoppen|12",
+     "inkopmergeoppen|19",
+     "inkopmergeoppen|26",
+     "inkopmergeoppen|33"
+    ],
+    "states": [
+     "checked",
+     "unchecked"
+    ]
+   },
+   {
+    "skarm": "inkopmerge",
+    "grupp": "inkopmerge-inkopslistinstallningar",
+    "medlemmar": [
+     "inkopmerge|22"
+    ],
+    "states": [
+     "unchecked"
+    ]
+   }
+  ],
+  "gruppkollisioner": []
+ },
+ "D_kalldiff": {
+  "metadata": {
+   "$steg": "P2 metadata-only",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "worktree": "C:/Users/malla/butlery-render/wt-mg",
+   "andradeTaggar": 5,
+   "diff": [
+    {
+     "id": "inkopmergeoppen|12",
+     "skarm": "inkopmergeoppen",
+     "offset": 51143,
+     "rubrik": "Slå samman dubbletter",
+     "grupp": "inkopmergeoppen-inkopslistinstallningar",
+     "state": "checked",
+     "fore": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\">",
+     "efter": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\" data-a11y-name=\"Slå samman dubbletter\" data-state-group=\"inkopmergeoppen-inkopslistinstallningar\" data-a11y-role=\"checkbox\" data-hit=\"self\" data-a11y-state=\"checked\">"
+    },
+    {
+     "id": "inkopmergeoppen|19",
+     "skarm": "inkopmergeoppen",
+     "offset": 52114,
+     "rubrik": "Konvertera enheter",
+     "grupp": "inkopmergeoppen-inkopslistinstallningar",
+     "state": "checked",
+     "fore": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\">",
+     "efter": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\" data-a11y-name=\"Konvertera enheter\" data-state-group=\"inkopmergeoppen-inkopslistinstallningar\" data-a11y-role=\"checkbox\" data-hit=\"self\" data-a11y-state=\"checked\">"
+    },
+    {
+     "id": "inkopmergeoppen|26",
+     "skarm": "inkopmergeoppen",
+     "offset": 53092,
+     "rubrik": "Dra bort skafferivaror",
+     "grupp": "inkopmergeoppen-inkopslistinstallningar",
+     "state": "checked",
+     "fore": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\">",
+     "efter": "<div style=\"padding:11px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:12px;align-items:flex-start\" data-a11y-name=\"Dra bort skafferivaror\" data-state-group=\"inkopmergeoppen-inkopslistinstallningar\" data-a11y-role=\"checkbox\" data-hit=\"self\" data-a11y-state=\"checked\">"
+    },
+    {
+     "id": "inkopmergeoppen|33",
+     "skarm": "inkopmergeoppen",
+     "offset": 54076,
+     "rubrik": "Ersätt listan i stället för att lägga till",
+     "grupp": "inkopmergeoppen-inkopslistinstallningar",
+     "state": "unchecked",
+     "fore": "<div style=\"padding:11px 0;display:flex;gap:12px;align-items:flex-start\">",
+     "efter": "<div style=\"padding:11px 0;display:flex;gap:12px;align-items:flex-start\" data-a11y-name=\"Ersätt listan i stället för att lägga till\" data-state-group=\"inkopmergeoppen-inkopslistinstallningar\" data-a11y-role=\"checkbox\" data-hit=\"self\" data-a11y-state=\"unchecked\">"
+    },
+    {
+     "id": "inkopmerge|22",
+     "skarm": "inkopmerge",
+     "offset": 48176,
+     "rubrik": "Ersätt listan i stället för att lägga till",
+     "grupp": "inkopmerge-inkopslistinstallningar",
+     "state": "unchecked",
+     "fore": "<div style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start\">",
+     "efter": "<div style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start\" data-a11y-name=\"Ersätt listan i stället för att lägga till\" data-state-group=\"inkopmerge-inkopslistinstallningar\" data-a11y-role=\"checkbox\" data-hit=\"self\" data-a11y-state=\"unchecked\">"
+    }
+   ],
+   "fargdiff": [],
+   "attrdiff": [
+    {
+     "attribut": "data-a11y-name=",
+     "delta": 5
+    },
+    {
+     "attribut": "data-a11y-role=",
+     "delta": 5
+    },
+    {
+     "attribut": "data-a11y-state=",
+     "delta": 5
+    },
+    {
+     "attribut": "data-hit=",
+     "delta": 5
+    },
+    {
+     "attribut": "data-state-group=",
+     "delta": 5
+    }
+   ],
+   "stilarBitIdentiska": true,
+   "synligTextOforandrad": true,
+   "sha": {
+    "fore": "844f869b304d76b7",
+    "efter": "c827ac693d919e94"
+   }
+  },
+  "geometri": {
+   "$steg": "P4 geometri",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "rad": "inkopmerge|22",
+   "mekanism": "min-height:48px pa agarraden",
+   "motivering": "Korpusens egen mekanism. 385 forekomster anvander min-height:48px utan box-sizing; raden har varken padding eller ram, sa box-sizing vore verkningslost. Minsta konforma andring.",
+   "fore": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start\"",
+   "efter": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start;min-height:48px\"",
+   "stilbyten": [
+    {
+     "fore": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start\"",
+     "efter": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start;min-height:48px\""
+    }
+   ],
+   "fargdiff": [],
+   "attributbokforingOforandrad": true,
+   "synligTextOforandrad": true,
+   "sha": {
+    "fore": "c827ac693d919e94",
+    "efter": "0408f281649822c0"
+   }
+  },
+  "andradeProduktfiler": [
+   "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  ]
+ },
+ "E_perForekomst": [
+  {
+   "identitet": "inkopmergeoppen|12",
+   "roll": "checkbox",
+   "namn": "Slå samman dubbletter",
+   "hit": "self",
+   "state": "checked",
+   "stateGroup": "inkopmergeoppen-inkopslistinstallningar"
+  },
+  {
+   "identitet": "inkopmergeoppen|19",
+   "roll": "checkbox",
+   "namn": "Konvertera enheter",
+   "hit": "self",
+   "state": "checked",
+   "stateGroup": "inkopmergeoppen-inkopslistinstallningar"
+  },
+  {
+   "identitet": "inkopmergeoppen|26",
+   "roll": "checkbox",
+   "namn": "Dra bort skafferivaror",
+   "hit": "self",
+   "state": "checked",
+   "stateGroup": "inkopmergeoppen-inkopslistinstallningar"
+  },
+  {
+   "identitet": "inkopmergeoppen|33",
+   "roll": "checkbox",
+   "namn": "Ersätt listan i stället för att lägga till",
+   "hit": "self",
+   "state": "unchecked",
+   "stateGroup": "inkopmergeoppen-inkopslistinstallningar"
+  },
+  {
+   "identitet": "inkopmerge|22",
+   "roll": "checkbox",
+   "namn": "Ersätt listan i stället för att lägga till",
+   "hit": "self",
+   "state": "unchecked",
+   "stateGroup": "inkopmerge-inkopslistinstallningar"
+  }
+ ],
+ "F_skarmlokalaGrupper": [
+  {
+   "skarm": "inkopmergeoppen",
+   "grupp": "inkopmergeoppen-inkopslistinstallningar",
+   "medlemmar": [
+    "inkopmergeoppen|12",
+    "inkopmergeoppen|19",
+    "inkopmergeoppen|26",
+    "inkopmergeoppen|33"
+   ],
+   "states": [
+    "checked",
+    "unchecked"
+   ]
+  },
+  {
+   "skarm": "inkopmerge",
+   "grupp": "inkopmerge-inkopslistinstallningar",
+   "medlemmar": [
+    "inkopmerge|22"
+   ],
+   "states": [
+    "unchecked"
+   ]
+  }
+ ],
+ "G_mellanmatningR02": {
+  "population": 1351,
+  "utfall": {
+   "measured_st": 1351,
+   "unknown_st": 0,
+   "pass_st": 1350,
+   "fail_st": 1,
+   "fail_bredd_st": 0,
+   "fail_hojd_st": 1,
+   "fail_bagge_st": 0,
+   "measured_coverage_pct": 100,
+   "unknown_coverage_pct": 0
+  },
+  "fynd": [
+   {
+    "findingId": "CHK-R-02 · inkopmerge · roll:checkbox|Ersätt listan i stället för att lägga till · agare=self · vp=compact-390",
+    "artifactId": "inkopmerge",
+    "roll": "checkbox",
+    "namn": "Ersätt listan i stället för att lägga till",
+    "agare": "self",
+    "matt": {
+     "w": 364,
+     "h": 38,
+     "enhet": "css-px"
+    },
+    "krav": 48,
+    "brist": {
+     "bredd": 0,
+     "hojd": 10
+    }
+   }
+  ],
+  "$utfall": "4 PASS + 1 hojdfynd, exakt som kravet"
+ },
+ "H_geometri": {
+  "$steg": "P4 geometri",
+  "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+  "rad": "inkopmerge|22",
+  "mekanism": "min-height:48px pa agarraden",
+  "motivering": "Korpusens egen mekanism. 385 forekomster anvander min-height:48px utan box-sizing; raden har varken padding eller ram, sa box-sizing vore verkningslost. Minsta konforma andring.",
+  "fore": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start\"",
+  "efter": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start;min-height:48px\"",
+  "stilbyten": [
+   {
+    "fore": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start\"",
+    "efter": "style=\"margin-top:12px;display:flex;gap:12px;align-items:flex-start;min-height:48px\""
+   }
+  ],
+  "fargdiff": [],
+  "attributbokforingOforandrad": true,
+  "synligTextOforandrad": true,
+  "sha": {
+   "fore": "c827ac693d919e94",
+   "efter": "0408f281649822c0"
+  }
+ },
+ "I_slutligR02": {
+  "population": 1351,
+  "utfall": {
+   "measured_st": 1351,
+   "unknown_st": 0,
+   "pass_st": 1351,
+   "fail_st": 0,
+   "fail_bredd_st": 0,
+   "fail_hojd_st": 0,
+   "fail_bagge_st": 0,
+   "measured_coverage_pct": 100,
+   "unknown_coverage_pct": 0
+  }
+ },
+ "J_historisk": {
+  "verifierade": 1344,
+  "$regel": "Frusen. Skrivs aldrig om."
+ },
+ "K_identitet": {
+  "identityV2": {
+   "domnoder": 2463,
+   "stable": 1603,
+   "candidate": 91,
+   "ambiguous": 769,
+   "error": 0,
+   "oforandrade": true
+  },
+  "kollisioner": {
+   "fore": 374,
+   "efter": 374
+  },
+  "andradeNoder": 2,
+  "$andradeNoder": "tva diagnostiska rect-varden i inkopmerge, bada exakt −10 px i y. Ingen identityKey, identityStatus eller keyBasis andrades.",
+  "tvaErsattListan": {
+   "identiteter": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "bevis": "kontrollpopulationen okade med 5, inte 4. De tva raderna ligger i tva skilda artefakter, har var sin state-group och rakans som tva kontroller. Identiskt accessible name slog inte ihop dem."
+  }
+ },
+ "L_ickeTextAgarskap": {
+  "$steg": "P5 agarskapsmigration",
+  "kontrollerFore": 6,
+  "kontrollerEfter": 11,
+  "delarFore": 8,
+  "delarEfter": 16,
+  "objektFore": 3,
+  "objektEfter": 0,
+  "nyaDelar": [
+   {
+    "art": "inkopmerge",
+    "kontroll": "Ersätt listan i stället för att lägga till",
+    "roll": "checkbox",
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "status": "matt",
+    "kvot": 3.32,
+    "farg": "rgb(125, 137, 124)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "ikon": null
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Slå samman dubbletter",
+    "roll": "checkbox",
+    "typ": "fyllning",
+    "carrier": "componentIdentityCarrier",
+    "status": "matt",
+    "kvot": 11.36,
+    "farg": "rgb(36, 56, 44)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "ikon": null
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Slå samman dubbletter",
+    "roll": "checkbox",
+    "typ": "bock",
+    "carrier": "stateCarrier",
+    "status": "matt",
+    "kvot": 11.36,
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)",
+    "motYta": "kontrollens inre yta",
+    "ikon": "check"
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Konvertera enheter",
+    "roll": "checkbox",
+    "typ": "fyllning",
+    "carrier": "componentIdentityCarrier",
+    "status": "matt",
+    "kvot": 11.36,
+    "farg": "rgb(36, 56, 44)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "ikon": null
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Konvertera enheter",
+    "roll": "checkbox",
+    "typ": "bock",
+    "carrier": "stateCarrier",
+    "status": "matt",
+    "kvot": 11.36,
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)",
+    "motYta": "kontrollens inre yta",
+    "ikon": "check"
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Dra bort skafferivaror",
+    "roll": "checkbox",
+    "typ": "fyllning",
+    "carrier": "componentIdentityCarrier",
+    "status": "matt",
+    "kvot": 11.36,
+    "farg": "rgb(36, 56, 44)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "ikon": null
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Dra bort skafferivaror",
+    "roll": "checkbox",
+    "typ": "bock",
+    "carrier": "stateCarrier",
+    "status": "matt",
+    "kvot": 11.36,
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)",
+    "motYta": "kontrollens inre yta",
+    "ikon": "check"
+   },
+   {
+    "art": "inkopmergeoppen",
+    "kontroll": "Ersätt listan i stället för att lägga till",
+    "roll": "checkbox",
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "status": "matt",
+    "kvot": 3.32,
+    "farg": "rgb(125, 137, 124)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "ikon": null
+   }
+  ],
+  "bortaDelar": [],
+  "bortaObjekt": [
+   {
+    "art": "inkopmergeoppen",
+    "tag": "svg",
+    "ikon": "check",
+    "carrier": "required",
+    "motivering": "data-graphic-role=\"required\"",
+    "w": 14,
+    "h": 14,
+    "kvot": 11.36,
+    "status": "matt",
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)"
+   },
+   {
+    "art": "inkopmergeoppen",
+    "tag": "svg",
+    "ikon": "check",
+    "carrier": "required",
+    "motivering": "data-graphic-role=\"required\"",
+    "w": 14,
+    "h": 14,
+    "kvot": 11.36,
+    "status": "matt",
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)"
+   },
+   {
+    "art": "inkopmergeoppen",
+    "tag": "svg",
+    "ikon": "check",
+    "carrier": "required",
+    "motivering": "data-graphic-role=\"required\"",
+    "w": 14,
+    "h": 14,
+    "kvot": 11.36,
+    "status": "matt",
+    "farg": "rgb(245, 244, 237)",
+    "angransande": "rgb(36, 56, 44)"
+   }
+  ],
+  "nyaObjekt": [],
+  "avstamning": "nya delar 8 = 3 objekt som bytt agare + 5 barare som tidigare inte matter i nagon population",
+  "okandaDelar": [],
+  "okandaStatus": [],
+  "fyndEfter": []
+ },
+ "L_cssBoxgrafik": {
+  "kandidater": {
+   "fore": 2492,
+   "efter": 2492
+  },
+  "inkluderade": {
+   "fore": 32,
+   "efter": 32
+  },
+  "uteslutningsskal": {
+   "fore": {
+    "BARAREN_BAR_TEXT": 1803,
+    "INUTI_DEKLARERAD_KONTROLL": 655,
+    "INTE_MINDRE": 2
+   },
+   "efter": {
+    "BARAREN_BAR_TEXT": 1800,
+    "INUTI_DEKLARERAD_KONTROLL": 658,
+    "INTE_MINDRE": 2
+   }
+  },
+  "$tolkning": "Tre relationer bytte uteslutningsskal fran BARAREN_BAR_TEXT till INUTI_DEKLARERAD_KONTROLL. Ingen barare forsvann; den inkluderade populationen ar bit-stabil pa 32."
+ },
+ "M_nyaIckeTextfynd": {
+  "antal": 0,
+  "grafiskaDelar": {
+   "fore": 1644,
+   "efter": 1652
+  },
+  "barare": {
+   "fore": 643,
+   "efter": 651
+  },
+  "fristaende": {
+   "fore": {
+    "required": 266,
+    "fynd": 0,
+    "unknown": 0
+   },
+   "efter": {
+    "required": 263,
+    "fynd": 0,
+    "unknown": 0
+   }
+  },
+  "$slutsats": "Inga nya icke-textfynd. Lagsta uppmatta kvot bland de nya bararna ar 3.32 (den tomma rutans ram mot ytan utanfor kontrollen)."
+ },
+ "N_stateColorUse": {
+  "fore": {
+   "medTillstand": 137,
+   "saknarFamilj": 0,
+   "familjer": 71,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "par": 21,
+   "parUtanFarg": 21,
+   "okandaPar": 0,
+   "colorOnly": 0
+  },
+  "efter": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "familjer": 73,
+   "singleton": 53,
+   "tvetydiga": 0,
+   "par": 22,
+   "parUtanFarg": 22,
+   "okandaPar": 0,
+   "colorOnly": 0
+  },
+  "nyttPar": {
+   "familj": "inkopmergeoppen-inkopslistinstallningar",
+   "stateA": "checked",
+   "stateB": "unchecked",
+   "artA": "inkopmergeoppen",
+   "artB": "inkopmergeoppen",
+   "namnA": "Slå samman dubbletter",
+   "namnB": "Ersätt listan i stället för att lägga till",
+   "ickeFargSignaler": [
+    {
+     "nyckel": "bock",
+     "slag": "innehall",
+     "text": "bock tillkommer eller forsvinner",
+     "a": "true",
+     "b": "false"
+    },
+    {
+     "nyckel": "glyfNamn",
+     "slag": "innehall",
+     "text": "glyfuppsattningen skiljer",
+     "a": "check",
+     "b": ""
+    },
+    {
+     "nyckel": "avgransning",
+     "slag": "form",
+     "text": "ihalig ram mot massiv yta",
+     "a": "fyllning",
+     "b": "ram"
+    },
+    {
+     "nyckel": "barnAntal",
+     "slag": "form",
+     "text": "antal synliga delar skiljer",
+     "a": "1",
+     "b": "0"
+    }
+   ],
+   "okandaSignaler": [],
+   "klassificering": "NON_COLOR_STATE_DIFFERENCE",
+   "colorOnly": false,
+   "lage": {
+    "a": {
+     "klass": "okant",
+     "varfor": "ingen renderad geometri for spar och knopp"
+    },
+    "b": {
+     "klass": "okant",
+     "varfor": "ingen renderad geometri for spar och knopp"
+    }
+   }
+  },
+  "nySingleton": {
+   "familj": "inkopmerge-inkopslistinstallningar",
+   "state": "unchecked",
+   "instanser": 1,
+   "artefakter": [
+    "inkopmerge"
+   ],
+   "varfor": "gruppen forekommer bara i tillstandet \"unchecked\" i hela sviten — det finns ingen motpart att jamfora med"
+  }
+ },
+ "O_raDetektor": {
+  "fore": 108,
+  "efter": 103,
+  "lamnadeListan": [
+   "inkopmergeoppen|12",
+   "inkopmergeoppen|19",
+   "inkopmergeoppen|26",
+   "inkopmergeoppen|33",
+   "inkopmerge|22"
+  ],
+  "avseddaFem": [
+   "inkopmergeoppen|12",
+   "inkopmergeoppen|19",
+   "inkopmergeoppen|26",
+   "inkopmergeoppen|33",
+   "inkopmerge|22"
+  ],
+  "exaktDeAvsedda": true,
+  "nyaKandidater": [],
+  "verdiktByten": [],
+  "$regel": "Kandidater lamnar den ra listan bara genom produktdeklaration. Inget verdikt raknas bort ur bokforingen."
+ },
+ "P_prioritet": {
+  "medlemmarFore": 108,
+  "medlemmarEfter": 103,
+  "tillkomna": [],
+  "avgangna": [
+   "inkopmergeoppen|12",
+   "inkopmergeoppen|19",
+   "inkopmergeoppen|26",
+   "inkopmergeoppen|33",
+   "inkopmerge|22"
+  ],
+  "signalbyten": [
+   {
+    "identitet": "delatlista|26",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   },
+   {
+    "identitet": "delatlista|30",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   },
+   {
+    "identitet": "delatlista|34",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   },
+   {
+    "identitet": "dialogsparameny|8",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   },
+   {
+    "identitet": "imp2hamtar|23",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   },
+   {
+    "identitet": "kontovantan|23",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   },
+   {
+    "identitet": "kontovantan|26",
+    "komponent": "checkbox",
+    "fore": {
+     "prioritet": 2,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "efter": {
+     "prioritet": 3,
+     "syskon": 0,
+     "sammaTyp": 0
+    },
+    "verdiktFore": "UNKNOWN",
+    "verdiktEfter": "UNKNOWN"
+   }
+  ],
+  "$regel": "Prioritet ar en sorteringssignal. En andrad prioritet ar INTE en semantisk adjudicering och ingen kandidat far verdikt i detta block."
+ },
+ "Q_semantiskUnknown": {
+  "utanforOmfang": 87,
+  "olostaAvDe21": 7,
+  "summa": 94,
+  "$regel": "Ingen ny semantisk adjudicering gjordes. De nio redan adjudicerade NON_INTERACTIVE_STATE_GRAPHIC ligger kvar i den ra detektorlistan — det ar inte samma sak som semantisk UNKNOWN."
+ },
+ "R_rendering": {
+  "r03BitIdentisk": true,
+  "inkopmergeoppen": {
+   "noder": "43 → 43",
+   "skillnader": 4,
+   "$enda": "roll null → checkbox pa fyra rader. Noll pixelrorelse."
+  },
+  "inkopmerge": {
+   "noder": "32 → 32",
+   "artefaktstorlek": "{\"w\":414,\"h\":513.6} oforandrad",
+   "skillnader": 24,
+   "unikaYforskjutningar": [
+    -10
+   ],
+   "hojdandringar": [
+    "373.8 → 383.8",
+    "38 → 48"
+   ],
+   "$enda": "Malraden 38 → 48 px med min-height 0px → 48px, dess panel 373.8 → 383.8, och 24 noder forskjutna exakt −10 px i y. Bredd, teckenstorlek, radhojd, teckenvikt, padding och margin oforandrade overallt. Kryssrutans 24x24 oforandrad. Riktningen ar uppat for att dialogen ar bottenforankrad."
+  },
+  "overflow": "ingen",
+  "klippning": "ingen"
+ },
+ "S_farg": {
+  "andradeProduktfiler": [
+   "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  ],
+  "fargdiffar": [],
+  "$slutsats": "0 fargdeklarationer andrade"
+ },
+ "T_r04": {
+  "registerBitIdentiskt": true,
+  "morkaVarden": 0,
+  "mappningsevidens": 0,
+  "arvdaMorkaTokens": 0,
+  "kredit": 0
+ },
+ "U_text": {
+  "fyndFore": 0,
+  "fyndEfter": 0,
+  "kontrollerFore": 1344,
+  "kontrollerEfter": 1349
+ },
+ "U_effekter": {
+  "bitIdentiska": true,
+  "produktfelFore": 0,
+  "produktfelEfter": 0
+ },
+ "stopp": []
+}

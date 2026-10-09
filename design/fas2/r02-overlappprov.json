@@ -1,0 +1,51 @@
+{
+ "$schema": "butlery-overlappprov/2",
+ "kontroll": "CHK-R-02",
+ "godkanda": 7,
+ "total": 7,
+ "status": "godkand",
+ "prov": [
+  {
+   "id": "O-A",
+   "vad": "belagt suspenderat underlag ger intentionalOverlay, inget fynd",
+   "ok": true,
+   "diag": "intentionalOverlay · underlaget ar belagt suspenderat via inert — det ligger i ett lagre in"
+  },
+  {
+   "id": "O-B",
+   "vad": "tva kontroller utan lagerevidens far INTE bli intentionalOverlay",
+   "ok": true,
+   "diag": "unresolved · snitt 1800 · forlorad andel A 0.25 B 0.25"
+  },
+  {
+   "id": "O-C",
+   "vad": "egen yta med pointer-events:none ar ett eget fel",
+   "ok": true,
+   "diag": "Over"
+  },
+  {
+   "id": "O-D",
+   "vad": "olika scrollpositioner ger notSimultaneous, inget fynd",
+   "ok": true,
+   "diag": "notSimultaneous"
+  },
+  {
+   "id": "O-E",
+   "vad": "kant mot kant ger inget par alls",
+   "ok": true,
+   "diag": "0 par"
+  },
+  {
+   "id": "O-F",
+   "vad": "ett enda pixels overlapp registreras — ingen tolerans",
+   "ok": true,
+   "diag": "snitt 1×48 = 48"
+  },
+  {
+   "id": "O-G",
+   "vad": "glyf och dess egen agare jamfors inte som tva ytor",
+   "ok": true,
+   "diag": "0 par"
+  }
+ ]
+}

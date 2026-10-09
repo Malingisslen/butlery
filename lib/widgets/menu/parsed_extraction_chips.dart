@@ -59,7 +59,7 @@ class ParsedExtractionChips extends StatelessWidget {
             Text(
               l10n.weeklyMenuChipsNotUnderstood,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: colors.warning,
+                color: AppModeColors.textWarning(scheme.brightness),
               ),
             ),
             const SizedBox(height: AppDimensions.space4),

@@ -253,7 +253,9 @@ class MessageStates {
                 Text(
                   title,
                   style: AppTextStyles.titleLarge.copyWith(
-                    color: context.modeColors.warning,
+                    color: AppModeColors.textWarning(
+                      Theme.of(context).brightness,
+                    ),
                   ),
                   textAlign: TextAlign.center,
                 ),

@@ -1,0 +1,692 @@
+{
+ "$schema": "butlery-r04-scope-recon/1",
+ "$datum": "2026-08-11",
+ "$fraga": "Hur forhaller sig 32 product-UI-familjer till antalet produktgranser?",
+ "$rattelse": {
+  "rapporterat": "30 pa .sc-tab + 4 pa mocklosa = 34",
+  "faktiskt": 33,
+  "varfor": "En av de 30 .sc-tab-mockarna ar bredlandskaps \"Fel\"-panel. Den har 0 kontroller och 0 produkttextfragment — all dess text ar designkommentar om vad koden gor i dag. Att skriva product dar hade varit ett pastaende utan evidens. Den tacks i stallet av sin annotationsgrans.",
+  "regel": "En mock far en produktgrans bara om den innehaller minst en kontroll ELLER minst ett produkttextfragment."
+ },
+ "sammanfattning": {
+  "familjerIn": 32,
+  "familjerAvstamda": 32,
+  "produktgranser": 33,
+  "familjerMedEnGrans": 31,
+  "familjerMedTvaGranser": 1,
+  "familjerUtanGrans": 0,
+  "avfordaMockar": 1,
+  "dubbeltAgarskap": 0,
+  "annotationsgranserIDe32": 47,
+  "annotationsgranserUtanforDe32": 20,
+  "annotationsgranserTotalt": 67
+ },
+ "familjerMedTvaGranser": [
+  {
+   "familyId": "lgbrotation-panel",
+   "artifactId": "lgbrotation",
+   "varfor": "artefakten renderar tva sjalvstandiga produktmockar med egna kontroller och egen produkttext",
+   "ankare": [
+    {
+     "elementOrdinal": 22,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 11,
+     "annotationInuti": null
+    },
+    {
+     "elementOrdinal": 50,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 4,
+     "produkttextfragment": 10,
+     "annotationInuti": null
+    }
+   ]
+  }
+ ],
+ "avfordaMockar": [
+  {
+   "artifactId": "bredlandskap",
+   "mockar": [
+    {
+     "ordinal": 64,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "varfor": "0 kontroller och 0 produkttextfragment — ingen produktevidens",
+     "text": "Skena redan vid 600 px — navigationen hamnar under handloven, och Material-forme"
+    }
+   ]
+  }
+ ],
+ "familjer": [
+  {
+   "familyId": "bredskal-panel",
+   "artifactId": "bredskal",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 27,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 6,
+     "produkttextfragment": 19,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "bredlandskap-panel",
+   "artifactId": "bredlandskap",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 18,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 5,
+     "produkttextfragment": 11,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [
+    {
+     "ordinal": 64,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "varfor": "0 kontroller och 0 produkttextfragment — ingen produktevidens",
+     "text": "Skena redan vid 600 px — navigationen hamnar under handloven, och Material-forme"
+    }
+   ],
+   "annotationsgranser": 3
+  },
+  {
+   "familyId": "bredrecept-panel",
+   "artifactId": "bredrecept",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 31,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 5,
+     "produkttextfragment": 27,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 2
+  },
+  {
+   "familyId": "bredmeny-panel",
+   "artifactId": "bredmeny",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 20,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 8,
+     "produkttextfragment": 33,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "bredinkop-panel",
+   "artifactId": "bredinkop",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 21,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 4,
+     "produkttextfragment": 25,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "bredgrans-panel",
+   "artifactId": "bredgrans",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 44,
+     "tagg": "div",
+     "klass": null,
+     "harledning": "LCA-produktelement",
+     "kontroller": 2,
+     "produkttextfragment": 10,
+     "annotationInuti": 0
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 3
+  },
+  {
+   "familyId": "vmbnormal-panel",
+   "artifactId": "vmbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 10,
+     "produkttextfragment": 56,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "vmbtom-panel",
+   "artifactId": "vmbtom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 13,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 9,
+     "produkttextfragment": 16,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "vmbgenererar-panel",
+   "artifactId": "vmbgenererar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 19,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 35,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 3
+  },
+  {
+   "familyId": "vmbomrostning-panel",
+   "artifactId": "vmbomrostning",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 22,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 29,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "vmbkonflikt-panel",
+   "artifactId": "vmbkonflikt",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 19,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 2,
+     "produkttextfragment": 25,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "vmbdelvis-panel",
+   "artifactId": "vmbdelvis",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 16,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 5,
+     "produkttextfragment": 33,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 2
+  },
+  {
+   "familyId": "vmboffline-panel",
+   "artifactId": "vmboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 2,
+     "produkttextfragment": 33,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "vmbflytta-panel",
+   "artifactId": "vmbflytta",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 22,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 25,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 2
+  },
+  {
+   "familyId": "rcbnormal-panel",
+   "artifactId": "rcbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 6,
+     "produkttextfragment": 30,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 2
+  },
+  {
+   "familyId": "rcbportion-panel",
+   "artifactId": "rcbportion",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 15,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 22,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "rcbofullstandigt-panel",
+   "artifactId": "rcbofullstandigt",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 15,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 24,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 2
+  },
+  {
+   "familyId": "rcblaser-panel",
+   "artifactId": "rcblaser",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 4,
+     "produkttextfragment": 21,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "rcbarvegods-panel",
+   "artifactId": "rcbarvegods",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 5,
+     "produkttextfragment": 26,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "rcbkommentar-panel",
+   "artifactId": "rcbkommentar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 15,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 2,
+     "produkttextfragment": 18,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "rcboffline-panel",
+   "artifactId": "rcboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 16,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 24,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "ikbnormal-panel",
+   "artifactId": "ikbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 14,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 6,
+     "produkttextfragment": 28,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 0
+  },
+  {
+   "familyId": "ikbtom-panel",
+   "artifactId": "ikbtom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 13,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 2,
+     "produkttextfragment": 6,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "ikbdelad-panel",
+   "artifactId": "ikbdelad",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 16,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 4,
+     "produkttextfragment": 23,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "ikboffline-panel",
+   "artifactId": "ikboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 17,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "lgbrotation-panel",
+   "artifactId": "lgbrotation",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 2,
+   "ankare": [
+    {
+     "elementOrdinal": 22,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 3,
+     "produkttextfragment": 11,
+     "annotationInuti": null
+    },
+    {
+     "elementOrdinal": 50,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 4,
+     "produkttextfragment": 10,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 3
+  },
+  {
+   "familyId": "lgbgester-panel",
+   "artifactId": "lgbgester",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 25,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 8,
+     "produkttextfragment": 14,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 2
+  },
+  {
+   "familyId": "lgbtimer-panel",
+   "artifactId": "lgbtimer",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 24,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 7,
+     "produkttextfragment": 12,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "lgbutan-panel",
+   "artifactId": "lgbutan",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": "sc-tab",
+     "harledning": "mockrot",
+     "kontroller": 2,
+     "produkttextfragment": 4,
+     "annotationInuti": null
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  },
+  {
+   "familyId": "globsvep-panel",
+   "artifactId": "globsvep",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 23,
+     "tagg": "div",
+     "klass": null,
+     "harledning": "LCA-produktelement",
+     "kontroller": 2,
+     "produkttextfragment": 3,
+     "annotationInuti": 10
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 4
+  },
+  {
+   "familyId": "fbinkorgvy-panel",
+   "artifactId": "fbinkorgvy",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 24,
+     "tagg": "div",
+     "klass": null,
+     "harledning": "LCA-produktelement",
+     "kontroller": 8,
+     "produkttextfragment": 14,
+     "annotationInuti": 0
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 0
+  },
+  {
+   "familyId": "surfplatta-panel",
+   "artifactId": "surfplatta",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "produktgranser": 1,
+   "ankare": [
+    {
+     "elementOrdinal": 17,
+     "tagg": "div",
+     "klass": null,
+     "harledning": "LCA-produktelement",
+     "kontroller": 1,
+     "produkttextfragment": 18,
+     "annotationInuti": 3
+    }
+   ],
+   "avfordaMockar": [],
+   "annotationsgranser": 1
+  }
+ ]
+}

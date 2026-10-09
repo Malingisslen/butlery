@@ -1,0 +1,228 @@
+{
+ "$schema": "butlery-offswitch-utford/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "effacb9",
+ "$status": "PROFILE OFF-SWITCH COLOR REMEDIATION CLOSED / VERIFIED",
+ "$tema": "LIGHT NON-TEXT REMEDIATION · inte R-04-implementation",
+ "B_kalldiff": {
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "andradeDeklarationer": 1,
+  "kontroll": "Visa mina recept publikt",
+  "state": "OFF",
+  "beslut": "NTR-BATCH06-LIGHT-SWITCH-OFF-TRACK-PROFIL",
+  "del": "OFF_TRACK",
+  "kallidentitet": "profil|38|background-color",
+  "offset": 30913,
+  "fore": "width:34px;height:20px;border-radius:999px;background:#ccd1c2;position:relative",
+  "efter": "width:34px;height:20px;border-radius:999px;background:#7d897c;position:relative",
+  "filstorlek": {
+   "fore": 211933,
+   "efter": 211933
+  },
+  "sha256": {
+   "fore": "3054f1045c913cb0",
+   "efter": "cd0561fff127fafa"
+  },
+  "globalReplace": false
+ },
+ "C_fargdiff": {
+  "poster": [
+   {
+    "farg": "#ccd1c2",
+    "fore": 103,
+    "efter": 102,
+    "delta": -1
+   },
+   {
+    "farg": "#7d897c",
+    "fore": 53,
+    "efter": 54,
+    "delta": 1
+   }
+  ],
+  "unikaFargerIFilen": 26,
+  "OFF_THUMB_kalla": {
+   "deklarationerFore": 1,
+   "deklarationerEfter": 1,
+   "bitIdentisk": true
+  },
+  "$avgransning": "Endast #ccd1c2 → #7d897c. Ingen annan farg i filen andrade antal."
+ },
+ "D_OFF_TRACK": {
+  "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-TRACK-PROFIL",
+  "tokenidentitet": "SWITCH_OFF_TRACK_PROFIL",
+  "kallidentitet": "profil|38|background-color",
+  "relation": "sparet mot den faktiskt malade ytan utanfor kontrollen",
+  "angransande": "rgb(245, 244, 237)",
+  "varde": {
+   "fore": "#ccd1c2",
+   "efter": "#7d897c"
+  },
+  "kvot": {
+   "fore": 1.41,
+   "efter": 3.32
+  },
+  "krav": 3,
+  "utfall": "PASS",
+  "skrivomfang": 1,
+  "produktwrite": "UTFORD 2026-08-14",
+  "morktVarde": null,
+  "R04_COVERAGE_CREDIT": 0
+ },
+ "E_OFF_THUMB": {
+  "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-THUMB-PROFIL",
+  "tokenidentitet": "SWITCH_OFF_THUMB_PROFIL",
+  "kallidentitet": "profil|39|background-color",
+  "relation": "knoppen mot sparet, alltsa kontrollens inre yta",
+  "angransande": "rgb(125, 137, 124) (sparets nya varde)",
+  "varde": {
+   "fore": "#f5f4ed",
+   "efter": "#f5f4ed"
+  },
+  "kvot": {
+   "fore": 1.41,
+   "efter": 3.32
+  },
+  "krav": 3,
+  "utfall": "PASS",
+  "skrivomfang": 0,
+  "produktwrite": "INGEN PRODUKTANDRING BEHOVS — skrivomfang 0, vardet behalls",
+  "morktVarde": null,
+  "R04_COVERAGE_CREDIT": 0,
+  "$not": "Kvoten forbattrades utan att knoppens varde andrades — den mats mot sparet, och sparet bytte farg. Beslutet var att behalla vardet, och det holls."
+ },
+ "F_stateSeparation": {
+  "PA_spar": "rgb(36, 56, 44)",
+  "AV_spar": "rgb(125, 137, 124)",
+  "separation": 3.42,
+  "$fore": 8.03,
+  "$not": "Separationen minskade fran 8.03 till 3.42 men ligger over den svagaste separation korpusen redan accepterar i samma skarm (1.74) och over den etablerade AV/PA-separationen i allergener och notisinstallningar (3.42).",
+  "knoppLage": {
+   "PA": "hoger",
+   "AV": "vanster"
+  },
+  "$stateCarrier": "Knoppens lage ar oforandrat och ar fortfarande den primara tillstandsbararen."
+ },
+ "G_kontrollIckeText": {
+  "fynd": {
+   "fore": 2,
+   "efter": 0
+  },
+  "grafiskaDelar": {
+   "fore": 1644,
+   "efter": 1644
+  },
+  "bedomda": {
+   "fore": 637,
+   "efter": 637
+  },
+  "unknown": 0,
+  "$forvantan": "2 → 0 var en forvantan, inte ett framtvingat tal."
+ },
+ "H_kontrollerOchR02": {
+  "kandaKontroller": 1346,
+  "kalldeklarationer": 1378,
+  "utanforArtefakt": 32,
+  "switchar": 43,
+  "R02": {
+   "fore": {
+    "measured_st": 1346,
+    "unknown_st": 0,
+    "pass_st": 1346,
+    "fail_st": 0,
+    "fail_bredd_st": 0,
+    "fail_hojd_st": 0,
+    "fail_bagge_st": 0,
+    "measured_coverage_pct": 100,
+    "unknown_coverage_pct": 0
+   },
+   "efter": {
+    "measured_st": 1346,
+    "unknown_st": 0,
+    "pass_st": 1346,
+    "fail_st": 0,
+    "fail_bredd_st": 0,
+    "fail_hojd_st": 0,
+    "fail_bagge_st": 0,
+    "measured_coverage_pct": 100,
+    "unknown_coverage_pct": 0
+   }
+  },
+  "profilradernasHojd": [
+   48,
+   48
+  ]
+ },
+ "I_standaloneGrafik": {
+  "population": {
+   "fore": 32,
+   "efter": 32
+  },
+  "avstamning": "2492 = 2460 + 32",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "fynd": {
+   "fore": 0,
+   "efter": 0
+  }
+ },
+ "J_unknownBacklog": {
+  "fore": 108,
+  "efter": 108,
+  "$oforandrad": true,
+  "$separatBlock": "De 21 prioriterade kandidaterna ar inte analyserade eller rorda i detta block."
+ },
+ "K_regression": {
+  "metod": "jamforelse mot en git-worktree pa HEAD fore writen (effacb9), samma verktyg och profiler",
+  "text_R01": {
+   "identiskaFynd": true,
+   "fynd": 0,
+   "kontroller": 1344
+  },
+  "rendering_R03": "IDENTISK",
+  "effekter": "IDENTISK",
+  "identitet": "IDENTISK",
+  "andraProfilfargerAndrade": 0,
+  "andraKontrollerBytteIdentitet": 0,
+  "andraTraffytorAndrade": 0,
+  "andraIckeTextRelationerAndrade": 0,
+  "layoutEllerKlippning": "oforandrat — renderingskontrollen ar bit-identisk",
+  "farganvandningskontrollen": "oforandrad av denna skrivning — se M"
+ },
+ "L_R04guard": {
+  "registretBitIdentiskt": true,
+  "sha256": {
+   "HEAD": "b89f4dcdef34031c",
+   "nu": "b89f4dcdef34031c"
+  },
+  "morkaVardenAndrade": 0,
+  "nyMappningsevidens": 0,
+  "arvdaMorkaTokens": 0,
+  "R04_COVERAGE_CREDIT": 0,
+  "scopeGuard": {
+   "spar": "ingen gruppträff alls",
+   "knopp": "ingen gruppträff alls",
+   "gruppträffar": 0
+  },
+  "$numeriskAteranvandning": "Att #7d897c anvands av sju andra AV-reglage ar precedens — inte mappningsevidens, inte sammanslagning, inte tokenaliasering och inte morklageunderlag."
+ },
+ "M_oppetSidofynd": {
+  "vad": "Fargavandningskontrollen (WCAG 1.4.1) rapporterar pairingUnknown = 1: profil-kontrollen \"Sokbar for vanner\" bar data-a11y-state=\"checked\" men saknar data-state-group.",
+  "infortAv": "Del 2, den strukturella profilbatchen (commit 300c769) — inte av denna fargskrivning.",
+  "oforandratIDettaBlock": true,
+  "fore": 1,
+  "efter": 1,
+  "tackning": 99.3,
+  "$konsekvens": "Icke-textrapportens samlade status ar FALLD av detta skal, inte av kontrastskal. Kontrastfynden ar 0.",
+  "$atgard": "Kraver en strukturell rattelse — data-state-group pa den paslagna profilraden, enligt samma modell som kontonotiser. INTE auktoriserad i detta block."
+ },
+ "N_stoppvillkor": {
+  "utlosta": [],
+  "antal": 0
+ },
+ "O_efterlage": {
+  "fargskrivningsstopp": "ATER I FULLT LAGE",
+  "ordinarieR04": "FORTSATT PAUSAD",
+  "nastaBlock": "adjudicering av de 21 prioriterade UNKNOWN-kandidaterna, separat"
+ }
+}
