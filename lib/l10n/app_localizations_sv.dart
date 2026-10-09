@@ -5791,7 +5791,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupCouldNotLoadMembers => 'Kunde inte ladda gruppmedlemmar';
 
   @override
-  String get groupLeaveRosterIncomplete =>
+  String get groupRosterIncomplete =>
       'Vi kunde inte läsa alla medlemmar. Försök igen.';
 
   @override

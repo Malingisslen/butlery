@@ -375,7 +375,10 @@ void main() {
       await tester.tap(find.text('Blockera').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+      expect(
+        find.text('Vi kunde inte läsa alla medlemmar. Försök igen.'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Försök igen'));
       await tester.pumpAndSettle();
@@ -413,7 +416,10 @@ void main() {
       await tester.tap(find.text('Blockera').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+      expect(
+        find.text('Vi kunde inte läsa alla medlemmar. Försök igen.'),
+        findsOneWidget,
+      );
       expect(find.text('Anna Svensson'), findsNothing);
     },
   );
@@ -447,7 +453,10 @@ void main() {
         find.text('Det finns ingen annan att blockera här'),
         findsOneWidget,
       );
-      expect(find.text('Ett fel uppstod. Försök igen.'), findsNothing);
+      expect(
+        find.text('Vi kunde inte läsa alla medlemmar. Försök igen.'),
+        findsNothing,
+      );
     },
   );
 

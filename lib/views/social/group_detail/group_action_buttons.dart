@@ -19,7 +19,7 @@ class GroupActionButtons extends StatelessWidget {
   final VoidCallback onAskWhatToEat;
   final VoidCallback onEditGroup;
   final VoidCallback onDeleteGroup;
-  final VoidCallback onLeaveGroup;
+  final VoidCallback? onLeaveGroup;
 
   const GroupActionButtons({
     super.key,
@@ -31,7 +31,7 @@ class GroupActionButtons extends StatelessWidget {
     required this.onAskWhatToEat,
     required this.onEditGroup,
     required this.onDeleteGroup,
-    required this.onLeaveGroup,
+    this.onLeaveGroup,
   });
 
   @override

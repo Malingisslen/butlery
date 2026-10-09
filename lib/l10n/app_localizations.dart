@@ -9691,11 +9691,11 @@ abstract class AppLocalizations {
   /// **'Kunde inte ladda gruppmedlemmar'**
   String get groupCouldNotLoadMembers;
 
-  /// No description provided for @groupLeaveRosterIncomplete.
+  /// No description provided for @groupRosterIncomplete.
   ///
   /// In sv, this message translates to:
   /// **'Vi kunde inte läsa alla medlemmar. Försök igen.'**
-  String get groupLeaveRosterIncomplete;
+  String get groupRosterIncomplete;
 
   /// No description provided for @groupCouldNotTransferOwnership.
   ///
