@@ -5870,3 +5870,20 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   the update is written without comparing, for any edit without a `rev` whose device copy
   has no `rev`. That covers a copy cached before the update whether or not it was queued.
   A send that succeeds gives the copy a `rev`.
+
+## BUT-2106 — a rating's review text is closed (2026-10-09)
+
+- **SUPERSEDES "`recipe_ratings.review` is bounded at 2000 UTF-16 CODE UNITS and must be a
+  string, on BOTH limbs" (BUT-2079 follow-up, 2026-09-17) (BUT-2106, 2026-10-09).** Both
+  limbs of `match /recipe_ratings` now accept `review` only absent or null. The key stays in
+  the create `keys().hasOnly` list and the update `affectedKeys().hasOnly` list, and stays in
+  the Art. 15 `_ratingFields` allowlist. The update limb still validates the full resulting
+  document, so a stored string review refuses every update that does not set it to null;
+  the app's `set(merge: true)` re-rate writes `review: null` and so clears one. Retired with
+  it: "2000 Swedish letters", the `is string` arm and the `size()` measurement in the rules
+  comment. A review surface reopens the field only together with `ContentFilterService` on
+  the write and a `ContentType` it can be reported under.
+  Malin asked for BUT-2106 to be done on 2026-10-09; closing the field rather than building
+  filter and report for it is the ticket's own recommendation, taken as this change's default.
+  **What she was NOT shown:** a count of stored rows holding a review; this change was made
+  without Firestore credentials.
