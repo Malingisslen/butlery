@@ -44,7 +44,7 @@ class DynamicListBuilder extends StatelessWidget {
           for (int index = 0; index < controllers.length; index++)
             _buildItemRow(context, index),
         ],
-        if (controllers.isEmpty) _buildAddButton(context),
+        _buildAddButton(context),
       ],
     );
   }
@@ -169,18 +169,21 @@ class DynamicListBuilder extends StatelessWidget {
 
   void _handleChange(int index, String value) {
     onUpdate(index, value);
-    // Auto-add new field when typing in the last empty field
-    if (index == controllers.length - 1 &&
-        value.trim().isNotEmpty &&
-        value.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => onAdd());
+    // Not gated on length == 1: paste, dictation and autocomplete fill the
+    // last row in one change, and the last row only holds text before its
+    // successor exists.
+    if (index == controllers.length - 1 && value.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Two changes can land before the frame; only the first may add.
+        if (index == controllers.length - 1) onAdd();
+      });
     }
   }
 
   Widget _buildAddButton(BuildContext context) {
     return TextButton.icon(
       icon: const ButleryIcon(ButleryIcons.plus),
-      label: Text(context.l10n.commonAddWithLabel(label)),
+      label: Text(context.l10n.commonAddWithLabel(label.toLowerCase())),
       onPressed: onAdd,
     );
   }

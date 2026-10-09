@@ -38,6 +38,7 @@ void main() {
     required List<IngredientRow> rows,
     required List<TextEditingController> lineControllers,
     bool canAddHeading = true,
+    VoidCallback? onAddLine,
   }) => createLocalizedTestApp(
     wrapInScrollView: true,
     child: SectionedIngredientListBuilder(
@@ -46,7 +47,7 @@ void main() {
       lineControllers: lineControllers,
       headingControllerFor: (_) => heading,
       onLineChanged: (_, __) {},
-      onAddLine: () {},
+      onAddLine: onAddLine ?? () {},
       onRemoveLine: (_) {},
       onReorder: (_, __) {},
       onAddHeading: () {},
@@ -139,5 +140,94 @@ void main() {
     );
     expect(find.widgetWithText(TextFormField, '5 dl vetemjöl'), findsOneWidget);
     expect(find.widgetWithText(TextFormField, '75 g smör'), findsOneWidget);
+  });
+
+  group('adding rows', () {
+    testWidgets('a pasted whole line in the last row adds one new row', (
+      tester,
+    ) async {
+      var adds = 0;
+      final empty = TextEditingController();
+      addTearDown(empty.dispose);
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(), LineRow()],
+          lineControllers: [line1, empty],
+          onAddLine: () => adds++,
+        ),
+      );
+      await tester.enterText(
+        find.byType(TextFormField).last,
+        '6 dl mjölk',
+      );
+      await tester.pump();
+      expect(adds, 1);
+    });
+
+    testWidgets('whitespace only in the last row adds nothing', (
+      tester,
+    ) async {
+      var adds = 0;
+      final empty = TextEditingController();
+      addTearDown(empty.dispose);
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(), LineRow()],
+          lineControllers: [line1, empty],
+          onAddLine: () => adds++,
+        ),
+      );
+      await tester.enterText(find.byType(TextFormField).last, '   ');
+      await tester.pump();
+      expect(adds, 0);
+    });
+
+    testWidgets('typing in a row that is not last adds nothing', (
+      tester,
+    ) async {
+      var adds = 0;
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow(), LineRow()],
+          lineControllers: [line1, line2],
+          onAddLine: () => adds++,
+        ),
+      );
+      await tester.enterText(find.byType(TextFormField).first, '6 dl mjölk');
+      await tester.pump();
+      expect(adds, 0);
+    });
+
+    testWidgets('"Lägg till ingrediens" adds a row', (tester) async {
+      var adds = 0;
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow()],
+          lineControllers: [line1],
+          onAddLine: () => adds++,
+        ),
+      );
+      await tester.tap(find.text('Lägg till ingrediens'));
+      expect(adds, 1);
+    });
+
+    testWidgets('heading button is disabled when no heading can be added', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        build(
+          rows: const [LineRow()],
+          lineControllers: [line1],
+          canAddHeading: false,
+        ),
+      );
+      final button = tester.widget<TextButton>(
+        find.ancestor(
+          of: find.text('Lägg till rubrik'),
+          matching: find.byWidgetPredicate((w) => w is TextButton),
+        ),
+      );
+      expect(button.onPressed, isNull);
+    });
   });
 }

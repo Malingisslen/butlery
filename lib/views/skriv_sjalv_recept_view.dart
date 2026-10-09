@@ -376,8 +376,6 @@ class _SkrivSjalvReceptViewContentState
         // "Skriv själv" is a subpage under Lägg till recept: back arrow and
         // title in 14/700 (Komponentark v1:71-78; Skarmar v12 del 2 'Skriv
         // själv').
-        // `isEditing` (a stored recipe is loaded), not `isEditMode`, which is
-        // the edit permission and is true for a new recipe too.
         appBar: ButleryTopBar.undersida(
           title: viewModel.isEditing
               ? context.l10n.recipeEdit
@@ -819,6 +817,16 @@ class _SkrivSjalvReceptViewContentState
     required RecipeFormViewModel viewModel,
     void Function(int, int)? onReorder,
   }) {
+    // Last row going non-empty (typed, pasted or dictated) opens the next row.
+    void handleChange(int index, String value) {
+      onUpdate(index, value);
+      if (index == controllers.length - 1 && value.trim().isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (index == controllers.length - 1) onAdd();
+        });
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -870,10 +878,7 @@ class _SkrivSjalvReceptViewContentState
                         maxLines: null,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
-                        // No auto-grow on the first character — it was jarring
-                        // (a new empty field popped in mid-type). Use the
-                        // explicit "+ Add" button below to add a row.
-                        onChanged: (value) => onUpdate(index, value),
+                        onChanged: (value) => handleChange(index, value),
                       ),
                     ),
                     if (controllers.length > 1)
@@ -903,10 +908,7 @@ class _SkrivSjalvReceptViewContentState
                         maxLines: null,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
-                        // No auto-grow on the first character — it was jarring
-                        // (a new empty field popped in mid-type). Use the
-                        // explicit "+ Add" button below to add a row.
-                        onChanged: (value) => onUpdate(index, value),
+                        onChanged: (value) => handleChange(index, value),
                       ),
                     ),
                     if (controllers.length > 1)
@@ -923,12 +925,11 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
         ],
-        if (controllers.isEmpty)
-          TextButton.icon(
-            icon: const ButleryIcon(ButleryIcons.plus),
-            label: Text(context.l10n.recipeAddItem(label)),
-            onPressed: onAdd,
-          ),
+        TextButton.icon(
+          icon: const ButleryIcon(ButleryIcons.plus),
+          label: Text(context.l10n.recipeAddItem(label.toLowerCase())),
+          onPressed: onAdd,
+        ),
       ],
     );
   }

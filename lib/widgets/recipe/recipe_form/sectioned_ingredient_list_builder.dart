@@ -84,10 +84,21 @@ class SectionedIngredientListBuilder extends StatelessWidget {
         const SizedBox(height: AppDimensions.space4),
         Align(
           alignment: AlignmentDirectional.centerStart,
-          child: TextButton.icon(
-            icon: const ButleryIcon(ButleryIcons.plus),
-            label: Text(context.l10n.recipeAddIngredientHeading),
-            onPressed: canAddHeading ? onAddHeading : null,
+          child: Wrap(
+            children: [
+              TextButton.icon(
+                icon: const ButleryIcon(ButleryIcons.plus),
+                label: Text(
+                  context.l10n.commonAddWithLabel(label.toLowerCase()),
+                ),
+                onPressed: onAddLine,
+              ),
+              TextButton.icon(
+                icon: const ButleryIcon(ButleryIcons.plus),
+                label: Text(context.l10n.recipeAddIngredientHeading),
+                onPressed: canAddHeading ? onAddHeading : null,
+              ),
+            ],
           ),
         ),
       ],
@@ -280,11 +291,14 @@ class SectionedIngredientListBuilder extends StatelessWidget {
 
   void _handleLineChange(int lineIndex, String value) {
     onLineChanged(lineIndex, value);
-    // Auto-add a new line when the user starts typing in the last line.
-    if (lineIndex == lineControllers.length - 1 &&
-        value.trim().isNotEmpty &&
-        value.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => onAddLine());
+    // Not gated on length == 1: a pasted line, dictation or autocomplete
+    // fills the last row in one change, and the last row only holds text
+    // before its successor exists.
+    if (lineIndex == lineControllers.length - 1 && value.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Two changes can land before the frame; only the first may add.
+        if (lineIndex == lineControllers.length - 1) onAddLine();
+      });
     }
   }
 
