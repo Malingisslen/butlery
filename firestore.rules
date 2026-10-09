@@ -1509,13 +1509,14 @@ service cloud.firestore {
             && voteMapOk(data, 'resolved', 100);
         }
 
-        // A cast ballot cannot be changed or withdrawn (produktregler 4.8).
+        // A cast ballot's key cannot be removed; its value can change
+        // (produktregler 4.8).
         // The diff is taken on the nested map: a document-level diff only
         // says that `ballots` changed, not which key.
-        function ballotsKept() {
-          let d = request.resource.data.get('ballots', {})
-                    .diff(resource.data.get('ballots', {}));
-          return d.changedKeys().size() == 0 && d.removedKeys().size() == 0;
+        function ballotKeysKept() {
+          return request.resource.data.get('ballots', {})
+            .diff(resource.data.get('ballots', {}))
+            .removedKeys().size() == 0;
         }
 
         allow read: if isAuthenticated()
@@ -1537,7 +1538,7 @@ service cloud.firestore {
           && request.auth.uid == voteUid
           && isRealtimeParticipant('realtime_resources', resourceId)
           && voteShapeOk(request.resource.data)
-          && ballotsKept()
+          && ballotKeysKept()
           && ((request.resource.data.get('started', {})
                    == resource.data.get('started', {})
                 && request.resource.data.get('proposals', {})

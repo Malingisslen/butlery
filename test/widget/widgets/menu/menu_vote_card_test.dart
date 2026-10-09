@@ -65,26 +65,15 @@ Future<void> _pump(
   ),
 );
 
-final _lockedNotice = find.textContaining('Din röst går inte att ändra');
 final _waiting = find.text('Väntar på den som startade rösten.');
 
 void main() {
   group('an open vote', () {
-    testWidgets('warns that a ballot cannot be changed until you have voted', (
-      tester,
-    ) async {
+    testWidgets('says nothing about a vote being final', (tester) async {
       await _pump(tester, _vote(), onVote: (_) {});
-      expect(find.text('Pannkakor'), findsOneWidget);
-      expect(_lockedNotice, findsOneWidget);
-
-      await _pump(
-        tester,
-        _vote(votes: const {_me: 'a'}),
-        onVote: (_) {},
-      );
 
       expect(find.text('Pannkakor'), findsOneWidget);
-      expect(_lockedNotice, findsNothing);
+      expect(find.textContaining('går inte att ändra'), findsNothing);
     });
 
     testWidgets('tapping an option casts that option', (tester) async {
@@ -96,24 +85,22 @@ void main() {
       expect(cast, ['b']);
     });
 
-    testWidgets('after voting no option can be tapped again', (tester) async {
+    testWidgets('after voting another option can be chosen, but not the same '
+        'one again', (tester) async {
       final cast = <String>[];
-      await _pump(tester, _vote(), onVote: cast.add);
-      await tester.tap(find.text('Pannkakor'));
-      expect(cast, ['a'], reason: 'the tap works before voting');
-
       await _pump(
         tester,
         _vote(votes: const {_me: 'a'}),
         onVote: cast.add,
       );
+
       await tester.tap(find.text('Pannkakor'));
       await tester.tap(find.text('Pasta'));
 
-      expect(cast, ['a']);
+      expect(cast, ['b']);
     });
 
-    testWidgets('a screen reader hears a locked option as disabled', (
+    testWidgets('a screen reader hears only my current choice as disabled', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
@@ -124,6 +111,7 @@ void main() {
           .toBoolOrNull()!;
 
       await _pump(tester, _vote(), onVote: (_) {});
+      expect(enabled('Pannkakor'), isTrue);
       expect(enabled('Pasta'), isTrue);
 
       await _pump(
@@ -131,11 +119,14 @@ void main() {
         _vote(votes: const {_me: 'a'}),
         onVote: (_) {},
       );
-      expect(enabled('Pasta'), isFalse);
+      expect(enabled('Pannkakor'), isFalse);
+      expect(enabled('Pasta'), isTrue);
       handle.dispose();
     });
 
-    testWidgets('someone else\'s ballot does not lock mine', (tester) async {
+    testWidgets('someone else\'s ballot does not count as mine', (
+      tester,
+    ) async {
       final cast = <String>[];
       await _pump(
         tester,

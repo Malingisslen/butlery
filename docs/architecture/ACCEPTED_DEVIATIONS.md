@@ -5996,3 +5996,9 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   card shows the failure and the person tries again. A refused write is logged only:
   `collaboration_module.dart` builds `FirebaseMenuVotingRepository` without an audit
   repository.
+- **SUPERSEDES "ballots that cannot be changed or withdrawn" (Malin 2026-10-09).** The rules'
+  `ballotKeysKept()` refuses an update that removes a key from `ballots` and allows one
+  that changes a key's value; `castVote` moves a ballot to another option while the vote is
+  active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
+  to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
+  the rules cannot read the options, which live in the starter's document.

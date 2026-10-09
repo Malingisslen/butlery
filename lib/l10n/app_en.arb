@@ -3538,10 +3538,6 @@
   "@menuVoteClosesSoon": {
     "description": "Shown when less than an hour is left on a menu vote."
   },
-  "menuVoteLockedNotice": "Your vote cannot be changed. Read all the options before you choose, including the one added last.",
-  "@menuVoteLockedNotice": {
-    "description": "Said before a person votes: a cast vote is final (produktregler 4.8)."
-  },
   "menuVoteLateOption": "{count, plural, =1{Added late: 1 had already voted} other{Added late: {count} had already voted}}",
   "@menuVoteLateOption": {
     "description": "Marks an option added after people had voted.",

@@ -712,8 +712,8 @@ Fältet fylls i förväg ur **urklipp** om det ligger en länk där. En lyckad i
 **Läst ur `menu_slot_vote.dart`, `menu_voting_service.dart` och `menu_voting_viewmodel.dart`.**
 
 - Rösten hör till **platsen** (kategori + index), inte till receptet. Fönstret är **24 timmar från skapandet**, inte från senaste alternativet.
-- **En röst per person, och den går inte att ändra.** Det ska stå före valet. En oåterkallelig handling får aldrig se ut som en preferens.
-- **Alternativ kan läggas till hela den aktiva tiden**, också efter att andra röstat — vilket gör tidigare röster inaktuella utan att de kan flyttas. Tills detta är avgjort märks sent tillagda alternativ med hur många som redan röstat. Beslutet är antingen ändringsbar röst eller låsta alternativ efter första rösten.
+- **En röst per person, och den går att flytta** till ett annat alternativ tills omröstningen avgjorts eller gått ut. Den går inte att ta tillbaka. (Malin valde ändringsbar röst 2026-10-09.)
+- **Alternativ kan läggas till hela den aktiva tiden**, också efter att andra röstat. Sent tillagda alternativ märks med hur många som redan röstat, så att de som röstat ser att det finns något nytt att flytta till.
 - **Ett lika resultat avgörs inte automatiskt.** Oavgjort ritas som oavgjort och kräver ett mänskligt beslut; bara den som startade rösten fattar det.
 - **En utgången oavgjord röst är ett eget tillstånd.** Ingenting avgör vid deadline: rösten blir varken aktiv eller avgjord. Tillståndet har tre vägar: avgör efter rösterna som finns, öppna igen, eller släpp platsen.
 - **Utgången med röster skiljs från utgången utan röster.** Det senare är inget oavgjort resultat utan ett förslag ingen tog i — och ger ingen rätt på platsen.

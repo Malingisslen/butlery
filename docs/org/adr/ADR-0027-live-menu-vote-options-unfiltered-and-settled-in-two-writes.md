@@ -37,3 +37,9 @@ to produktregler 4.8, with Malin asked to choose between a changeable vote and l
 ## Consequence
 `lib/viewmodels/menu_voting_viewmodel.dart` (`settle`) and
 `docs/architecture/ACCEPTED_DEVIATIONS.md` (BUT-2118) carry it.
+
+## Superseded in part (2026-10-09)
+Malin chose the changeable vote. This retires "The locked ballot is not a disagreement: every
+seated role accepted it as the provisional answer to produktregler 4.8". The rules'
+`ballotKeysKept()` refuses removing a ballot's key and allows changing its value, and `castVote` moves a
+ballot while the vote is active.

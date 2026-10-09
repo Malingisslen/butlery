@@ -549,9 +549,9 @@ test("votes: a viewer's ballot is added to a document stored without the agenda 
   );
 });
 
-test("votes: a cast ballot cannot be changed", async () => {
+test("votes: a cast ballot can be moved to another option", async () => {
   await seedBallot(VIEWER_UID, { ballots: { "vote-1": "opt-a" } });
-  await assertFails(
+  await assertSucceeds(
     voteRef(VIEWER_UID).set(ballotDoc(VIEWER_UID, { ballots: { "vote-1": "opt-b" } }))
   );
 });

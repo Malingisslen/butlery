@@ -8683,12 +8683,6 @@ abstract class AppLocalizations {
   /// **'Stänger inom en timme'**
   String get menuVoteClosesSoon;
 
-  /// Said before a person votes: a cast vote is final (produktregler 4.8).
-  ///
-  /// In sv, this message translates to:
-  /// **'Din röst går inte att ändra. Läs igenom alternativen innan du väljer, också det som lades till sist.'**
-  String get menuVoteLockedNotice;
-
   /// Marks an option added after people had voted.
   ///
   /// In sv, this message translates to:

@@ -5220,10 +5220,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuVoteClosesSoon => 'Closes within an hour';
 
   @override
-  String get menuVoteLockedNotice =>
-      'Your vote cannot be changed. Read all the options before you choose, including the one added last.';
-
-  @override
   String menuVoteLateOption(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -3544,10 +3544,6 @@
   "@menuVoteClosesSoon": {
     "description": "Shown when less than an hour is left on a menu vote."
   },
-  "menuVoteLockedNotice": "Din röst går inte att ändra. Läs igenom alternativen innan du väljer, också det som lades till sist.",
-  "@menuVoteLockedNotice": {
-    "description": "Said before a person votes: a cast vote is final (produktregler 4.8)."
-  },
   "menuVoteLateOption": "{count, plural, =1{Tillagd sent: 1 hade redan röstat} other{Tillagd sent: {count} hade redan röstat}}",
   "@menuVoteLateOption": {
     "description": "Marks an option added after people had voted.",

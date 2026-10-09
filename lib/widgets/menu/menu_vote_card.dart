@@ -58,7 +58,6 @@ class MenuVoteCard extends StatelessWidget {
   }
 
   Widget _buildOpen(BuildContext context, ColorScheme cs) {
-    final hasVoted = vote.hasVoted(currentUserId);
     final total = vote.totalVotes;
     final tied = vote.isTie;
     return _CardFrame(
@@ -71,13 +70,6 @@ class MenuVoteCard extends StatelessWidget {
           _closesIn(context),
           style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
         ),
-        if (!hasVoted && onVote != null) ...[
-          const SizedBox(height: AppDimensions.space4),
-          Text(
-            context.l10n.menuVoteLockedNotice,
-            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
-          ),
-        ],
         const SizedBox(height: AppDimensions.spacingM),
         for (final option in vote.alternatives)
           _OptionRow(
@@ -85,7 +77,9 @@ class MenuVoteCard extends StatelessWidget {
             count: vote.tallies[option.id] ?? 0,
             total: total,
             isSelected: vote.votes[currentUserId] == option.id,
-            onTap: hasVoted || onVote == null ? null : () => onVote!(option.id),
+            onTap: onVote == null || vote.votes[currentUserId] == option.id
+                ? null
+                : () => onVote!(option.id),
           ),
         if (onPropose != null)
           _ActionRow(

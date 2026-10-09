@@ -87,6 +87,15 @@ void main() {
     return snap.exists ? MenuBallot.fromMap(uid, snap.data()!) : null;
   }
 
+  Future<Map<String, dynamic>?> rawBallot(String uid) async =>
+      (await firestore
+              .collection(FirestoreCollections.realtimeResources)
+              .doc(_menu)
+              .collection(FirestoreCollections.liveMenuVotes)
+              .doc(uid)
+              .get())
+          .data();
+
   Future<MenuSlotVote> theVote({String slot = 'Middag#0'}) async {
     final documents = await repository.watchBallots(_menu).first;
     return MenuSlotVote.deriveAll(
@@ -247,23 +256,29 @@ void main() {
       },
     );
 
-    test(
-      'is locked: a second cast is refused and the first choice stands',
-      () async {
-        signInAs(_anna);
-        final first = vote.alternatives.first.id;
-        final second = vote.alternatives.last.id;
-        await at(_t0, () => service.castVote(_menu, vote, first));
+    test('a second cast moves the ballot to the new option', () async {
+      signInAs(_anna);
+      final first = vote.alternatives.first.id;
+      final second = vote.alternatives.last.id;
+      await at(_t0, () => service.castVote(_menu, vote, first));
 
-        final changed = await at(
-          _t0,
-          () => service.castVote(_menu, vote, second),
-        );
+      final moved = await at(_t0, () => service.castVote(_menu, vote, second));
 
-        expect(changed, isFalse);
-        expect((await ballotOf(_anna))!.ballots, {vote.id: first});
-      },
-    );
+      expect(moved, isTrue);
+      expect((await ballotOf(_anna))!.ballots, {vote.id: second});
+    });
+
+    test('casting the same option again writes nothing', () async {
+      signInAs(_anna);
+      final first = vote.alternatives.first.id;
+      await at(_t0, () => service.castVote(_menu, vote, first));
+      final before = await rawBallot(_anna);
+
+      final again = await at(_t0, () => service.castVote(_menu, vote, first));
+
+      expect(again, isFalse);
+      expect(await rawBallot(_anna), before);
+    });
 
     test('an option that is not on the vote is refused', () async {
       signInAs(_anna);

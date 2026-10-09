@@ -77,13 +77,13 @@ class MenuVotingService extends BaseService {
         );
       });
 
-  /// Casts the user's ballot. It cannot be changed afterwards
-  /// (produktregler 4.8), and the rules refuse a change too.
+  /// Casts the user's ballot, or moves it while the vote is open
+  /// (produktregler 4.8).
   Future<bool> castVote(String menuId, MenuSlotVote vote, String optionId) =>
       _write(menuId, 'castVote', (ballot) {
         if (!vote.isActive ||
             vote.optionById(optionId) == null ||
-            ballot.ballots.containsKey(vote.id)) {
+            ballot.ballots[vote.id] == optionId) {
           return null;
         }
         return ballot.copyWith(ballots: {...ballot.ballots, vote.id: optionId});
@@ -144,8 +144,8 @@ class MenuVotingService extends BaseService {
   });
 
   /// Applies [change] to the user's own document. A null from [change] means
-  /// the step does not apply (already voted, vote closed, not the starter),
-  /// and the call reports false without writing.
+  /// the step does not apply (the same choice again, vote closed, not the
+  /// starter), and the call reports false without writing.
   Future<bool> _write(
     String menuId,
     String operationName,
