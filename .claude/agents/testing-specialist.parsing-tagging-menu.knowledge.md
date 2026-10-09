@@ -129,4 +129,4 @@
   is explicitly registered false.
 - Denormalized-projection tests: capture via `.captured.last`; cover NULL-CLAMP (last vote removed →
   null, not 0); prove EQUAL-WEIGHTING with ASYMMETRIC inputs.
-
+- **A scroll-view fix for "outgrows a small phone" is only as good as the viewport the page leaves it** — in the week-menu view the header sits in a non-scrolling `Column` above an `Expanded` panel, so at 320x568 with 2.0 text the header overflowed on its own and the panel's scroll view measured ZERO high: the cancel button was unreachable under the fix. Measure the scroll view's `getSize` and the target's rect at the requested size before writing "can be scrolled into view"; a size where the old layout overflows AND the new one reaches the target is the discriminating fixture (400x900 at 2.0 here). A whole-view overflow collector must filter by edge ("on the bottom") because the header's view-mode toggle overflows to the right at that scale by itself (BUT-2157, 2026-10-09).

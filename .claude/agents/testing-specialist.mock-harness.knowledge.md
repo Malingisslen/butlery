@@ -93,6 +93,7 @@
   behaviour: the "unused" stub for a call no production path can make is load-bearing for the
   pin's DIAGNOSABILITY, and a later tidy deleting it as dead downgrades a MATCHING re-wire's
   failure message while nothing reddens (BUT-2016).
+- **A static helper that resolves its collaborator from the LOCATOR is invisible to a suite that registers the SAME fake in the locator AND injects it** — `AnalyticsService.tryLog` and `analyticsService.logEvent` both land on one fake, so reverting an injected-service fix stays green. Give the VM a DIFFERENT instance than the locator holds and assert the injected one saw the event and the locator's did not (BUT-2157, 2026-10-09).
 - A **telemetry constant** added in the same commit as the behaviour it measures (the sibling
   SUCCESS event is pinned, its FAILURE twin is not, emitted from the very `catch` the change made
   reachable) (BUT-1962).
