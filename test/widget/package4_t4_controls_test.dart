@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -95,7 +96,9 @@ void main() {
       final rows = find.descendant(
         of: find.byType(AlertDialog),
         matching: find.byWidgetPredicate(
-          (w) => w is ButleryControlFocus && w.child is RadioListTile<String>,
+          (w) =>
+              w is ButleryControlFocus &&
+              w.child is RadioListTile<ReportReason>,
         ),
       );
       expect(rows, findsNWidgets(5));
