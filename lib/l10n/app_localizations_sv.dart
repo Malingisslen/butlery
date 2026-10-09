@@ -5746,7 +5746,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count inbjudningar skickade';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count inbjudningar skickade',
+      one: '1 inbjudan skickad',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6684,7 +6690,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count personer';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personer',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7647,7 +7659,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialCouldNotRejectAllRequests =>
-      'Kunde inte avvisa alla förfrågningar';
+      'Kunde inte avböja alla förfrågningar';
 
   @override
   String get socialCouldNotRemoveFriend => 'Kunde inte ta bort vän';
@@ -7659,7 +7671,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialDecline => 'Avböj';
 
   @override
-  String get socialDeclined => 'Avvisad';
+  String get socialDeclined => 'Avböjd';
 
   @override
   String get socialExpired => 'Utgången';
@@ -7696,11 +7708,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialPendingResponse => 'Väntar på svar';
 
   @override
-  String get socialRejectAll => 'Avvisa alla';
+  String get socialRejectAll => 'Avböj alla';
 
   @override
   String get socialRejectAllSelectedConfirm =>
-      'Avvisa alla valda förfrågningar?';
+      'Avböj alla valda förfrågningar?';
 
   @override
   String get socialRequestCancelled => 'Förfrågan avbruten';
@@ -7748,7 +7760,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialDeclineCount(int count) {
-    return 'Avvisa ($count)';
+    return 'Avböj ($count)';
   }
 
   @override
@@ -7758,7 +7770,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRejectAllSelectedMessage(int count) {
-    return 'Vill du avvisa $count valda förfrågningar?';
+    return 'Vill du avböja $count valda förfrågningar?';
   }
 
   @override
@@ -7773,7 +7785,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRequestsRejected(int count) {
-    return '$count förfrågningar avvisade';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count förfrågningar avböjda',
+      one: '1 förfrågan avböjd',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14732,6 +14750,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String a11yRemoveMember(String name) {
+    return 'Ta bort $name';
+  }
+
+  @override
   String get a11yToggleFullscreenChrome => 'Visa eller dölj kontroller';
 
   @override
@@ -15387,7 +15410,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRequestsRejectedPartial(int succeeded, int total) {
-    return '$succeeded av $total förfrågningar avvisade';
+    return '$succeeded av $total förfrågningar avböjda';
   }
 
   @override
@@ -15928,6 +15951,21 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get groupMemberRemoveNotSaved =>
       'Kunde inte tas bort – ändringen sparades inte';
+
+  @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'Du får inte längre ändra gruppen';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'Ändringen sparades inte';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing => 'Gruppen finns inte längre';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, vald, kunde inte tas bort';
+  }
 
   @override
   String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';

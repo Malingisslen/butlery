@@ -5745,7 +5745,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count invitations sent';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations sent',
+      one: '1 invitation sent',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6685,7 +6691,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count people';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14711,6 +14723,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yRemoveMember(String name) {
+    return 'Remove $name';
+  }
+
+  @override
   String get a11yToggleFullscreenChrome => 'Show or hide controls';
 
   @override
@@ -15909,6 +15926,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupMemberRemoveNotSaved =>
       'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'You can no longer change the group';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'The change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing =>
+      'The group no longer exists';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, selected, could not be removed';
+  }
 
   @override
   String get groupMembersRemoveNone =>

@@ -9664,7 +9664,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupInvitationsSent.
   ///
   /// In sv, this message translates to:
-  /// **'{count} inbjudningar skickade'**
+  /// **'{count, plural, =1{1 inbjudan skickad} other{{count} inbjudningar skickade}}'**
   String groupInvitationsSent(int count);
 
   /// No description provided for @groupInvitationsSentSuccess.
@@ -11248,7 +11248,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupMemberCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} personer'**
+  /// **'{count, plural, =1{1 person} other{{count} personer}}'**
   String groupMemberCount(int count);
 
   /// No description provided for @groupMembers.
@@ -12838,7 +12838,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialCouldNotRejectAllRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte avvisa alla förfrågningar'**
+  /// **'Kunde inte avböja alla förfrågningar'**
   String get socialCouldNotRejectAllRequests;
 
   /// No description provided for @socialCouldNotRemoveFriend.
@@ -12862,7 +12862,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialDeclined.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisad'**
+  /// **'Avböjd'**
   String get socialDeclined;
 
   /// No description provided for @socialExpired.
@@ -12934,13 +12934,13 @@ abstract class AppLocalizations {
   /// No description provided for @socialRejectAll.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa alla'**
+  /// **'Avböj alla'**
   String get socialRejectAll;
 
   /// No description provided for @socialRejectAllSelectedConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa alla valda förfrågningar?'**
+  /// **'Avböj alla valda förfrågningar?'**
   String get socialRejectAllSelectedConfirm;
 
   /// No description provided for @socialRequestCancelled.
@@ -13012,7 +13012,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialDeclineCount.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa ({count})'**
+  /// **'Avböj ({count})'**
   String socialDeclineCount(int count);
 
   /// No description provided for @socialNotificationsCount.
@@ -13024,7 +13024,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialRejectAllSelectedMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du avvisa {count} valda förfrågningar?'**
+  /// **'Vill du avböja {count} valda förfrågningar?'**
   String socialRejectAllSelectedMessage(int count);
 
   /// No description provided for @socialRequestsAccepted.
@@ -13042,7 +13042,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialRequestsRejected.
   ///
   /// In sv, this message translates to:
-  /// **'{count} förfrågningar avvisade'**
+  /// **'{count, plural, =1{1 förfrågan avböjd} other{{count} förfrågningar avböjda}}'**
   String socialRequestsRejected(int count);
 
   /// No description provided for @socialRequestsSelected.
@@ -24527,6 +24527,12 @@ abstract class AppLocalizations {
   /// **'Ta bort {label}'**
   String a11yRemoveIngredientChip(String label);
 
+  /// Screen-reader label for the remove button on a chosen member chip
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name}'**
+  String a11yRemoveMember(String name);
+
   /// Semantics label for tapping the fullscreen image to toggle the app bar.
   ///
   /// In sv, this message translates to:
@@ -25562,7 +25568,7 @@ abstract class AppLocalizations {
   /// Partial success after a batch friend-request action
   ///
   /// In sv, this message translates to:
-  /// **'{succeeded} av {total} förfrågningar avvisade'**
+  /// **'{succeeded} av {total} förfrågningar avböjda'**
   String socialRequestsRejectedPartial(int succeeded, int total);
 
   /// Partial success after a batch friend-request action
@@ -26452,6 +26458,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte tas bort – ändringen sparades inte'**
   String get groupMemberRemoveNotSaved;
+
+  /// BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du får inte längre ändra gruppen'**
+  String get groupMemberRemoveFailedNoPermission;
+
+  /// BUT-2153: reason under a member's name when the removal could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen sparades inte'**
+  String get groupMemberRemoveFailedNotSaved;
+
+  /// BUT-2153: reason under a member's name when the group no longer exists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen finns inte längre'**
+  String get groupMemberRemoveFailedGroupMissing;
+
+  /// BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}, vald, kunde inte tas bort'**
+  String a11yMemberRemoveFailed(String name);
 
   /// P5-U33: failure when no selected member could be removed.
   ///

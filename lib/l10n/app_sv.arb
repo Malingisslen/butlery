@@ -3839,7 +3839,7 @@
     }
   },
   "groupInvitationSent": "Skickad",
-  "groupInvitationsSent": "{count} inbjudningar skickade",
+  "groupInvitationsSent": "{count, plural, =1{1 inbjudan skickad} other{{count} inbjudningar skickade}}",
   "@groupInvitationsSent": {
     "placeholders": {
       "count": {
@@ -4510,7 +4510,7 @@
     }
   },
   "groupLeaveGroup": "Lämna grupp",
-  "groupMemberCount": "{count} personer",
+  "groupMemberCount": "{count, plural, =1{1 person} other{{count} personer}}",
   "@groupMemberCount": {
     "placeholders": {
       "count": {
@@ -5242,11 +5242,11 @@
     }
   },
   "socialCouldNotCancelAllRequests": "Kunde inte avbryta alla förfrågningar",
-  "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
+  "socialCouldNotRejectAllRequests": "Kunde inte avböja alla förfrågningar",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",
   "socialCouldNotUnblockUser": "Kunde inte avblockera användare",
   "socialDecline": "Avböj",
-  "socialDeclined": "Avvisad",
+  "socialDeclined": "Avböjd",
   "socialExpired": "Utgången",
   "socialFindFriends": "Hitta vänner",
   "socialFriendsAndGroups": "Vänner & grupper",
@@ -5258,8 +5258,8 @@
   "socialNoSentRequests": "Inga skickade förfrågningar",
   "socialNoSentRequestsDescription": "Du har inga skickade vänskapsförfrågningar",
   "socialPendingResponse": "Väntar på svar",
-  "socialRejectAll": "Avvisa alla",
-  "socialRejectAllSelectedConfirm": "Avvisa alla valda förfrågningar?",
+  "socialRejectAll": "Avböj alla",
+  "socialRejectAllSelectedConfirm": "Avböj alla valda förfrågningar?",
   "socialRequestCancelled": "Förfrågan avbruten",
   "socialSearchGroups": "Sök grupper...",
   "socialSearchNewFriends": "Sök nya vänner",
@@ -5310,7 +5310,7 @@
       }
     }
   },
-  "socialDeclineCount": "Avvisa ({count})",
+  "socialDeclineCount": "Avböj ({count})",
   "@socialDeclineCount": {
     "placeholders": {
       "count": {
@@ -5326,7 +5326,7 @@
       }
     }
   },
-  "socialRejectAllSelectedMessage": "Vill du avvisa {count} valda förfrågningar?",
+  "socialRejectAllSelectedMessage": "Vill du avböja {count} valda förfrågningar?",
   "@socialRejectAllSelectedMessage": {
     "placeholders": {
       "count": {
@@ -5350,7 +5350,7 @@
       }
     }
   },
-  "socialRequestsRejected": "{count} förfrågningar avvisade",
+  "socialRequestsRejected": "{count, plural, =1{1 förfrågan avböjd} other{{count} förfrågningar avböjda}}",
   "@socialRequestsRejected": {
     "placeholders": {
       "count": {
@@ -10748,6 +10748,15 @@
       }
     }
   },
+  "a11yRemoveMember": "Ta bort {name}",
+  "@a11yRemoveMember": {
+    "description": "Screen-reader label for the remove button on a chosen member chip",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yToggleFullscreenChrome": "Visa eller dölj kontroller",
   "@a11yToggleFullscreenChrome": {
     "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
@@ -11434,7 +11443,7 @@
       }
     }
   },
-  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avvisade",
+  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avböjda",
   "@socialRequestsRejectedPartial": {
     "description": "Partial success after a batch friend-request action",
     "placeholders": {
@@ -12092,6 +12101,27 @@
   "groupMemberRemoveNotSaved": "Kunde inte tas bort – ändringen sparades inte",
   "@groupMemberRemoveNotSaved": {
     "description": "P5-U33: reason on a member row in the partial outcome."
+  },
+  "groupMemberRemoveFailedNoPermission": "Du får inte längre ändra gruppen",
+  "@groupMemberRemoveFailedNoPermission": {
+    "description": "BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group."
+  },
+  "groupMemberRemoveFailedNotSaved": "Ändringen sparades inte",
+  "@groupMemberRemoveFailedNotSaved": {
+    "description": "BUT-2153: reason under a member's name when the removal could not be saved."
+  },
+  "groupMemberRemoveFailedGroupMissing": "Gruppen finns inte längre",
+  "@groupMemberRemoveFailedGroupMissing": {
+    "description": "BUT-2153: reason under a member's name when the group no longer exists."
+  },
+  "a11yMemberRemoveFailed": "{name}, vald, kunde inte tas bort",
+  "@a11yMemberRemoveFailed": {
+    "description": "BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "groupMembersRemoveNone": "Ingen av de valda kunde tas bort.",
   "@groupMembersRemoveNone": {
