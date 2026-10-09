@@ -19,8 +19,9 @@
  * Copy mirrors `chatGroupCreatedMessage`, `chatParticipantAdded` and
  * `chatParticipantLeft` in `lib/l10n/app_sv.arb`. Two homes for one sentence is
  * a real cost, and the alternative — shipping the ARB to the server — is a
- * bigger one; the mitigation is that these three strings are named here so a
- * translator's edit can be followed.
+ * bigger one; the mitigation is that these strings are named here so a
+ * translator's edit can be followed. `ownerHandedOver` has no ARB twin: the app
+ * never writes that row.
  */
 
 import * as admin from "firebase-admin";
@@ -30,6 +31,7 @@ export enum SystemGroupEvent {
   groupCreated = "group_created",
   memberAdded = "member_added",
   memberLeft = "participant_left",
+  ownerHandedOver = "owner_handed_over",
 }
 
 export interface GroupSystemMessageParams {
@@ -54,6 +56,8 @@ function contentFor(params: GroupSystemMessageParams): string {
       return `${params.actorDisplayName} har lagts till i gruppen`;
     case SystemGroupEvent.memberLeft:
       return `${params.actorDisplayName} har lämnat gruppen`;
+    case SystemGroupEvent.ownerHandedOver:
+      return `${params.actorDisplayName} äger nu gruppen`;
   }
 }
 

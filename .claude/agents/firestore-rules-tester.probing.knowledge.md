@@ -173,7 +173,9 @@ const ADMIN_UID = "admin-uid";
   clear, an earlier test's seed means the case never reaches the absent branch and passes
   with the null arm DELETED** (measured on `user_moderation` UM8, BUT-2046). Seed absence
   positively — `withSecurityRulesDisabled` DELETE, not "no test wrote it" — and grade it
-  with a null-arm mutant, which must kill that test alone.
+  with a null-arm mutant, which must kill that test alone. The same positive delete lets a
+  create ALLOW and its DENY twins share ONE doc id, so the pair differs in the payload
+  alone and declaration order stops mattering (BUT-2321).
   **The FINGERPRINT of this artefact is that the failures land on exactly the client
   CREATE-ALLOW tests**, because a surviving doc turns the create into an UPDATE, and these
   collections commonly carry `allow update: if false`. Measured 2026-09-16 on

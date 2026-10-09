@@ -546,18 +546,16 @@ service cloud.firestore {
         // Owner: read access
         allow read: if isOwner(userId);
 
-        // Owner: create and delete
-        allow create: if isOwner(userId);
+        // Owner: create and delete. The owner is the account the group is
+        // stored under, and `ownerId` must name it (BUT-2321): a handover
+        // moves the document (`handOverGroup`), never just the field.
+        allow create: if isOwner(userId)
+          && request.resource.data.ownerId == userId;
         allow delete: if isOwner(userId);
 
         // Owner: standard updates — protect immutable fields (ownerId, createdAt)
         allow update: if isOwner(userId)
           && cannotModify(['ownerId', 'createdAt']);
-
-        // Owner: ownership transfer — only ownerId + updatedAt may change
-        allow update: if isOwner(userId)
-          && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['ownerId', 'updatedAt']);
 
         // Group members can read the group they're in
         allow read: if isInList('friendUserIds');
@@ -1273,8 +1271,8 @@ service cloud.firestore {
       // Creator seeds themselves as admin, ALONE; projections must agree with
       // the set of members (rules trust the projections for every membership
       // lookup). BUT-2267: membership is written only by Cloud Functions
-      // (`joinGroupHousehold`, `onHouseholdGroupWritten`, the deletion
-      // cascade), because a household member can read every other member's
+      // (`joinGroupHousehold`, `onHouseholdGroupWritten`, `handOverGroup`,
+      // the deletion cascade), because a household member can read every other member's
       // shared allergen list. A client that could seat someone else could
       // point that person's next share at a household they never chose, and
       // one that could remove a member would leave that member's share behind
@@ -2436,7 +2434,7 @@ service cloud.firestore {
         && request.resource.data.name.size() <= 100;
 
       // Create, delete and EVERY membership change: Admin SDK only.
-      // `adminIds` is immutable after creation — promoting or demoting an admin
+      // Promoting or demoting an admin
       // is a feature that does not exist yet, and when it is built it needs its
       // own gated callable, not a widened update rule. Widening this rule is the
       // same mistake as the `metadata.creatorId` smuggling BUT-1788 had to close.

@@ -29,6 +29,7 @@ chapter over 20,000.
 | `users/{uid}/counters/{counterId}` (stranger +1 step, owner absolute) | `shared-content-counters-rules.test.ts` | `test:rules:shared-content-counters` |
 | `/shared_content` block hold: `blockHeld*` create/update, mirror gate, held `members` | `shared-content-block-rules.test.ts` | `test:rules:shared-content-block` |
 | `{path=**}/<name>` wildcards but `members` | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
+| `users/{uid}/friend_categories` (owner create/update, member self-edit) | `friend-categories-rules.test.ts` | `test:rules:friend-categories` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---
@@ -95,14 +96,7 @@ chapter over 20,000.
   `ingredient_suggestions` (BUT-2038): the `hasOnly` mutant kills only the extra-field
   cases and leaves a forged `status: 'approved'` ALLOWED, while the value-pin mutant kills
   that one case alone — so an allowlist and a value pin are never each other's coverage.
-- **The `hasOnly` read-coupling trap is READ-SIDE ONLY; on a CREATE limb it costs nothing
-  and must not be argued against by citing `user_moderation`.** BUT-2046's cost — a
-  legitimate new field makes the whole document unreadable to its own subject and fails the
-  Art. 15 section closed — comes from rules being unable to scope a READ by field, over
-  STORED documents written by anyone. A create-side allowlist judges only the payload in
-  front of it, the Admin SDK bypasses it entirely (so server-written moderator fields
-  belong OUTSIDE the list, not inside), and a client denial is loud and immediate. Check
-  which limb carries the conjunct before transferring that entry's warning.
+  Read-side vs create-side `hasOnly`: see the vacuity chapter.
 - **A conjunct ADDED to `hasRequiredFields`/`hasOnly` is a claim about EVERY WRITER of
   that collection, and the rules comment beside it is not evidence.** BUT-1812 added
   `'sharedToUserIds'` under "all three writers already stamp it"; only one of three did,

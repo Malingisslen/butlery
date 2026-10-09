@@ -4,11 +4,13 @@
  * `households/{id}` document that scopes allergen shares and diner profiles.
  *
  * The group decides WHO may be in the household; the household is where they
- * are. Two writers keep them in step, both through the Admin SDK, because the
+ * are. The writers below keep them in step through the Admin SDK, because the
  * client rules do not let anyone change a household's membership:
  *  - `joinGroupHousehold` (callable) adds a group member who asks to join;
  *  - `onHouseholdGroupWritten` (trigger) removes anyone the group no longer
- *    holds, and deletes their allergen share in the same batch (DPIA R7).
+ *    holds, and deletes their allergen share in the same batch (DPIA R7);
+ *  - `handOverGroup` (callable) re-points the household to the group's new
+ *    owner, removes the old owner and deletes their share (BUT-2321).
  */
 
 import { createHash } from "crypto";
