@@ -26183,6 +26183,12 @@ abstract class AppLocalizations {
   /// **'Bilden kunde inte visas'**
   String get imageCouldNotBeShown;
 
+  /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till foto'**
+  String get recipeAddPhoto;
+
   /// Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel).
   ///
   /// In sv, this message translates to:

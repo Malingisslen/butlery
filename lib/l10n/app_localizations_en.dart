@@ -15777,6 +15777,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get recipeAddPhoto => 'Add photo';
+
+  @override
   String get imageRetriesWhenOnline =>
       'Tries again when the connection is back';
 
