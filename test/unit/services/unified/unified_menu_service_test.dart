@@ -381,6 +381,60 @@ void main() {
         );
       });
 
+      Map<String, dynamic> resourceDoc({
+        required String type,
+        String title = 'Live session',
+      }) => {
+        ...RealtimeMenuData.fromMenuCategories(
+          menuTitle: title,
+          menuSnapshot: {
+            'Middag': [RecipeFactory.build(id: 'r1', title: 'Köttbullar')],
+          },
+        ).serializeContent(),
+        'type': type,
+        'ownerId': 'user-2',
+        'ownerDisplayName': 'Bea',
+        'participantIds': ['user-1', 'user-2'],
+        'createdAt': null,
+      };
+
+      /// Proves: the live menus the app writes now (realtime_resources, type
+      /// 'menu') reach the saved list with their id as the live menu id, and
+      /// other resource types in that collection do not.
+      test('merges realtime_resources menus and skips other types', () async {
+        await fakeFirestore
+            .collection('realtime_resources')
+            .doc('live-1')
+            .set(resourceDoc(type: 'menu'));
+        await fakeFirestore
+            .collection('realtime_resources')
+            .doc('recipe-1')
+            .set(resourceDoc(type: 'recipe', title: 'Not a menu'));
+
+        await service.initialize();
+
+        expect(service.menus.map((m) => m.id), ['live-1']);
+        expect(service.menus.single.realtimeMenuId, 'live-1');
+        expect(service.menus.single.allowCollaboration, isTrue);
+        expect(service.menus.single.menuTitle, 'Live session');
+      });
+
+      /// Proves: a menu present in both collections is listed once.
+      test('lists a menu found in both collections once', () async {
+        await fakeFirestore
+            .collection('realtime_resources')
+            .doc('same')
+            .set(resourceDoc(type: 'menu'));
+        await fakeFirestore
+            .collection('realtime_menus')
+            .doc('same')
+            .set(resourceDoc(type: 'menu'));
+
+        await service.initialize();
+
+        expect(service.menus.map((m) => m.id), ['same']);
+      });
+
       /// Proves: realtime_menus where the user IS the owner are skipped
       /// (because they would already be loaded in the menus collection),
       /// avoiding duplicates in the UI list.

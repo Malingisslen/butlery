@@ -421,11 +421,11 @@ class MenuContentWidgets {
                     MenuViewHelpers.capitalizeCategory(category),
                   ),
                   button: true,
-                  enabled: !viewModel.isGenerating,
+                  enabled: viewModel.canEditMenu && !viewModel.isGenerating,
                   child: PressFill(
                     surface: PressSurface.base,
                     child: InkWell(
-                      onTap: viewModel.isGenerating
+                      onTap: !viewModel.canEditMenu || viewModel.isGenerating
                           ? null
                           : () => viewModel.regenerateSection(category),
                       borderRadius: BorderRadius.circular(
@@ -436,7 +436,8 @@ class MenuContentWidgets {
                         child: ButleryIcon(
                           ButleryIcons.refreshCw,
                           size: AppDimensions.iconSizeM,
-                          color: viewModel.isGenerating
+                          color:
+                              !viewModel.canEditMenu || viewModel.isGenerating
                               ? cs.onSurfaceVariant
                               : cs.onSurface,
                         ),
@@ -751,11 +752,12 @@ class _MenuRecipeCard extends StatelessWidget {
                     child: Semantics(
                       label: context.l10n.a11yMenuSwapRecipe(recipe.title),
                       button: true,
-                      enabled: !viewModel.isGenerating,
+                      enabled: viewModel.canEditMenu && !viewModel.isGenerating,
                       child: PressFill(
                         surface: PressSurface.base,
                         child: InkWell(
-                          onTap: viewModel.isGenerating
+                          onTap:
+                              !viewModel.canEditMenu || viewModel.isGenerating
                               ? null
                               : () async {
                                   final result = await viewModel.swapRecipe(
@@ -789,7 +791,9 @@ class _MenuRecipeCard extends StatelessWidget {
                             child: ButleryIcon(
                               ButleryIcons.swapHorizontal,
                               size: AppDimensions.iconSizeS,
-                              color: viewModel.isGenerating
+                              color:
+                                  !viewModel.canEditMenu ||
+                                      viewModel.isGenerating
                                   ? cs.onSurfaceVariant
                                   : cs.onSurface,
                             ),

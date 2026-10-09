@@ -28,6 +28,7 @@ void main() {
       final handle = tester.ensureSemantics();
       final vm = _FakeMenuViewModel();
       when(() => vm.isGenerating).thenReturn(false);
+      when(() => vm.canEditMenu).thenReturn(true);
       // BUT-1464: the recipe card asks whether the recipe was included via
       // the UNKNOWN-soft allergen path (chip) — no chip in these tests.
       when(() => vm.isUnknownSoft(any())).thenReturn(false);
@@ -66,6 +67,7 @@ void main() {
       final handle = tester.ensureSemantics();
       final vm = _FakeMenuViewModel();
       when(() => vm.isGenerating).thenReturn(false);
+      when(() => vm.canEditMenu).thenReturn(true);
       // BUT-1464: the recipe card asks whether the recipe was included via
       // the UNKNOWN-soft allergen path (chip) — no chip in these tests.
       when(() => vm.isUnknownSoft(any())).thenReturn(false);
@@ -106,6 +108,7 @@ void main() {
     final handle = tester.ensureSemantics();
     final vm = _FakeMenuViewModel();
     when(() => vm.isGenerating).thenReturn(false);
+    when(() => vm.canEditMenu).thenReturn(true);
     // BUT-1464: see the identical stub note above.
     when(() => vm.isUnknownSoft(any())).thenReturn(false);
 

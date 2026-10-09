@@ -40,6 +40,7 @@ import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
 import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
+import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
     show VeckomenyDialogs;
@@ -55,7 +56,10 @@ enum _VeckomenyRootAction { load, save, clear }
 class VeckomenyView extends StatelessWidget {
   final SharedMenu? sharedMenu;
 
-  const VeckomenyView({super.key, this.sharedMenu});
+  /// Opens the shared menu with this `realtime_resources` id live.
+  final String? realtimeMenuId;
+
+  const VeckomenyView({super.key, this.sharedMenu, this.realtimeMenuId});
 
   @override
   Widget build(BuildContext context) {
@@ -66,15 +70,19 @@ class VeckomenyView extends StatelessWidget {
           create: (_) => ServiceLocator.get<WeeklyMenuPlanViewModel>(),
         ),
       ],
-      child: _VeckomenyViewContent(sharedMenu: sharedMenu),
+      child: _VeckomenyViewContent(
+        sharedMenu: sharedMenu,
+        realtimeMenuId: realtimeMenuId,
+      ),
     );
   }
 }
 
 class _VeckomenyViewContent extends StatefulWidget {
   final SharedMenu? sharedMenu;
+  final String? realtimeMenuId;
 
-  const _VeckomenyViewContent({this.sharedMenu});
+  const _VeckomenyViewContent({this.sharedMenu, this.realtimeMenuId});
 
   @override
   State<_VeckomenyViewContent> createState() => _VeckomenyViewContentState();
@@ -94,8 +102,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.addListener(_onPromptChanged);
     _loadViewModePreference();
 
-    // Load shared menu if provided
-    if (widget.sharedMenu != null) {
+    if (widget.realtimeMenuId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        unawaited(
+          context.read<MenuViewModel>().startLiveMenu(widget.realtimeMenuId!),
+        );
+      });
+    } else if (widget.sharedMenu != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<MenuViewModel>().loadFromSharedMenu(widget.sharedMenu!);
       });
@@ -118,6 +132,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final stored = await ServiceLocator.get<PersistenceService>()
         .getVeckomenyViewMode();
     if (!mounted) return;
+    // A live menu stays in Lista: its dishes are not placed in the user's own
+    // week, so the calendar and the week's shopping source do not apply.
+    if (widget.realtimeMenuId != null) {
+      await context.read<WeeklyMenuPlanViewModel>().loadWeek(clock.now());
+      return;
+    }
     if (stored != null) {
       final mode = VeckomenyViewMode.values.firstWhere(
         (m) => m.name == stored,
@@ -414,10 +434,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         title: context.l10n.menuWeek,
         secondaryLine: _weekLine(context, planVm),
         actions: _buildHeaderActions(context, viewModel),
-        bottom: VeckomenyViewModeToggle(
-          mode: _viewMode,
-          onSelect: (mode) => unawaited(_setViewMode(mode)),
-        ),
+        // A live menu has no calendar placement, so only the list is shown.
+        bottom: widget.realtimeMenuId == null
+            ? VeckomenyViewModeToggle(
+                mode: _viewMode,
+                onSelect: (mode) => unawaited(_setViewMode(mode)),
+              )
+            : null,
       ),
       body: _buildBody(context, viewModel),
       floatingActionButton: _buildShoppingFab(context, viewModel),
@@ -430,6 +453,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// BUT-1241: explicit placement choice for the generated result.
   Widget? _buildPlacementFooter(BuildContext context, MenuViewModel viewModel) {
     if (_viewMode != VeckomenyViewMode.lista ||
+        widget.realtimeMenuId != null ||
         !viewModel.hasMenu ||
         viewModel.isGenerating ||
         viewModel.hasError) {
@@ -591,18 +615,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             }
           },
           itemBuilder: (menuContext) => [
-            _rootItem(
-              _VeckomenyRootAction.load,
-              ButleryIcons.folder,
-              context.l10n.menuLoadSaved,
-            ),
+            // Loading a saved menu would replace the shared one on screen.
+            if (widget.realtimeMenuId == null)
+              _rootItem(
+                _VeckomenyRootAction.load,
+                ButleryIcons.folder,
+                context.l10n.menuLoadSaved,
+              ),
             if (viewModel.hasMenu)
               _rootItem(
                 _VeckomenyRootAction.save,
                 ButleryIcons.save,
                 context.l10n.menuSave,
               ),
-            if (viewModel.hasMenu)
+            // A clear would empty the menu for everyone it is shared with.
+            if (viewModel.hasMenu && widget.realtimeMenuId == null)
               _rootItem(
                 _VeckomenyRootAction.clear,
                 ButleryIcons.x,
@@ -669,54 +696,58 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             const FamilyPresenceBar(),
             // BUT-408: live cooking session card for the user's groups.
             const VeckomenyCookingSessionCard(),
-            Padding(
-              padding: AppDimensions.responsiveContentPadding(context),
-              child: Column(
-                children: [
-                  MenuContentWidgets.buildPromptInput(
-                    context,
-                    controller: _promptController,
-                    focusNode: _promptFocusNode,
-                    isGenerating: viewModel.isGenerating,
-                    onClear: () {
-                      _promptController.clear();
-                      setState(() {});
-                    },
-                    onChanged: () => setState(() {}),
-                    // Voice prompt (kb-whisper plan): transcript lands
-                    // EDITABLE here — the user reviews before generating.
-                    voiceButton: VoicePromptButton(
-                      enabled: !viewModel.isGenerating,
-                      onTranscript: (text) {
-                        _promptController.text = text;
-                        _promptController.selection = TextSelection.collapsed(
-                          offset: text.length,
-                        );
-                        _promptFocusNode.requestFocus();
+            // A new generation would overwrite the menu for everyone.
+            if (widget.realtimeMenuId == null)
+              Padding(
+                padding: AppDimensions.responsiveContentPadding(context),
+                child: Column(
+                  children: [
+                    MenuContentWidgets.buildPromptInput(
+                      context,
+                      controller: _promptController,
+                      focusNode: _promptFocusNode,
+                      isGenerating: viewModel.isGenerating,
+                      onClear: () {
+                        _promptController.clear();
                         setState(() {});
                       },
+                      onChanged: () => setState(() {}),
+                      // Voice prompt (kb-whisper plan): transcript lands
+                      // EDITABLE here — the user reviews before generating.
+                      voiceButton: VoicePromptButton(
+                        enabled: !viewModel.isGenerating,
+                        onTranscript: (text) {
+                          _promptController.text = text;
+                          _promptController.selection = TextSelection.collapsed(
+                            offset: text.length,
+                          );
+                          _promptFocusNode.requestFocus();
+                          setState(() {});
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: AppDimensions.spacingL,
-                      tablet: AppDimensions.spacingXl,
-                      desktop: AppDimensions.spacingXl,
+                    SizedBox(
+                      height: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: AppDimensions.spacingL,
+                        tablet: AppDimensions.spacingXl,
+                        desktop: AppDimensions.spacingXl,
+                      ),
                     ),
-                  ),
-                  _buildGenerateButton(context, viewModel),
-                  SizedBox(
-                    height: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: AppDimensions.spacingXl,
-                      tablet: AppDimensions.spacingXl * 1.5,
-                      desktop: AppDimensions.spacingXxl,
+                    _buildGenerateButton(context, viewModel),
+                    SizedBox(
+                      height: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: AppDimensions.spacingXl,
+                        tablet: AppDimensions.spacingXl * 1.5,
+                        desktop: AppDimensions.spacingXxl,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            if (widget.realtimeMenuId case final id?)
+              ConflictBanner(filterDocId: id),
             Expanded(
               child: Padding(
                 padding: AppDimensions.responsiveHorizontalPadding(context),
@@ -738,7 +769,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                           ],
                         ),
                       )
-                    : _viewMode == VeckomenyViewMode.kalender
+                    : _viewMode == VeckomenyViewMode.kalender &&
+                          widget.realtimeMenuId == null
                     ? SingleChildScrollView(
                         // BUT-1611: per-meal "who's home" lives inside the
                         // calendar (faces on each slot + a collapsible
