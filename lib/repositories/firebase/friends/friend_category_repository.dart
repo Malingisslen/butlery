@@ -139,6 +139,30 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     );
   }
 
+  /// Remove the current user from a category's member list (leaving a group).
+  /// Only touches the caller's own uid, which is all the rules let a member change.
+  Future<void> removeSelfFromCategory(String ownerId, String categoryId) async {
+    final currentUser = requireCurrentUserId();
+
+    try {
+      await _categoriesRef(ownerId).doc(categoryId).update({
+        'friendUserIds': FieldValue.arrayRemove([currentUser]),
+        'updatedAt': timestampProvider.serverTimestamp(),
+      });
+    } catch (e) {
+      AppLogger.error('Failed to remove self from category $categoryId', e);
+      rethrow;
+    }
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'remove_self_as_member',
+      granted: true,
+      details: 'Category: $categoryId, Owner: $ownerId',
+    );
+  }
+
   /// Update a friend category.
   Future<void> updateCategory(
     String userId,

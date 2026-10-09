@@ -443,6 +443,69 @@ void main() {
         );
       });
 
+      test('a member may remove themself: server first, then cache', () async {
+        mockPermissionService.setPermissionState(
+          currentUserId: 'friend_1',
+          defaultHasPermission: true,
+        );
+        mockPermissionService.setGroupAdmin(isAdmin: false);
+        final order = <String>[];
+        FriendCategory? synced;
+        when(
+          () => mockParentService.syncCategoryToFirebaseInternal(any()),
+        ).thenAnswer((invocation) async {
+          order.add('server');
+          synced = invocation.positionalArguments.single as FriendCategory;
+        });
+        when(
+          () => mockParentService.updateCategoryInternal(any(), any()),
+        ).thenAnswer((_) => order.add('cache'));
+
+        final reason = await operations.removeFriendFromCategoryWithReason(
+          'friend_1',
+          'category_1',
+        );
+
+        expect(reason, isNull);
+        expect(synced?.friendUserIds, isNot(contains('friend_1')));
+        expect(order, ['server', 'cache']);
+      });
+
+      test(
+        'a failed leave returns notSaved and leaves the cache alone',
+        () async {
+          mockPermissionService.setPermissionState(
+            currentUserId: 'friend_1',
+            defaultHasPermission: true,
+          );
+          mockPermissionService.setGroupAdmin(isAdmin: false);
+          mockParentService.friendCategoryRelationshipsInternal['friend_1'] = {
+            'category_1',
+          };
+          when(
+            () => mockParentService.syncCategoryToFirebaseInternal(any()),
+          ).thenThrow(StateError('permission-denied'));
+
+          final reason = await operations.removeFriendFromCategoryWithReason(
+            'friend_1',
+            'category_1',
+          );
+
+          expect(reason, MemberRemovalFailure.notSaved);
+          verifyNever(
+            () => mockParentService.updateCategoryInternal(any(), any()),
+          );
+          expect(
+            operations.getCategoryById('category_1')?.friendUserIds,
+            contains('friend_1'),
+          );
+          expect(
+            mockParentService.friendCategoryRelationshipsInternal['friend_1'],
+            {'category_1'},
+          );
+        },
+      );
+
       test('removeFriendFromCategoryWithReason names a failed save', () async {
         when(
           () => mockParentService.syncCategoryToFirebaseInternal(any()),
