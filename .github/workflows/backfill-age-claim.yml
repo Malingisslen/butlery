@@ -1,0 +1,65 @@
+# BUT-2316: one-time backfill of the `ageCompliant` claim for accounts that
+# finished onboarding before the age question existed. Dry run unless `apply`
+# is ticked; prints counts only. See functions/scripts/backfill-age-claim.js.
+name: Backfill age claim
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the claims (unticked = dry run)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    name: Backfill ageCompliant
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Authenticate
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured." >&2
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=butlery-app-1" >> "$GITHUB_ENV"
+
+      - name: Run backfill
+        working-directory: functions
+        env:
+          APPLY: ${{ github.event.inputs.apply }}
+        run: |
+          set -o pipefail
+          if [ "$APPLY" = "true" ]; then
+            node scripts/backfill-age-claim.js --apply | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            node scripts/backfill-age-claim.js | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
