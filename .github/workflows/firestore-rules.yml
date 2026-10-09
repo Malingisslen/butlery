@@ -7,6 +7,8 @@ name: Firestore Rules
 
 on:
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "firestore.rules"
       - "storage.rules"
@@ -160,6 +162,7 @@ concurrency:
 
 jobs:
   rules-tests:
+    if: github.event.pull_request.draft != true
     name: Rules unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 15

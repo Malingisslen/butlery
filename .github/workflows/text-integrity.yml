@@ -1,7 +1,7 @@
 name: Text integrity
 
 # Two guards over the checked-out tree, both checkout + grep only — no Flutter,
-# no Node, no toolchain — so they cost seconds and run on EVERY push and PR.
+# no Node, no toolchain — so they cost seconds.
 #
 # WHY THIS IS ITS OWN WORKFLOW, and it is the whole point (BUT-1901).
 # These steps lived in `test.yml`, whose `on:` carries a `paths-ignore` for
@@ -18,12 +18,13 @@ name: Text integrity
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
   # ── Text-integrity guard (BUT-1624, widened by BUT-1901) ─────────────
   # Two steps, two failure modes, one cheap job (checkout + grep, no Flutter
-  # toolchain, so it runs on every push/PR).
+  # toolchain).
   #
   # Step 1 — BUT-1624. A data-writing Cloud Function once landed as a git
   # BINARY blob: a NUL (\0) byte used as a Map-key separator made the whole file

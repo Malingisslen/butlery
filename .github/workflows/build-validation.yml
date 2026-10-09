@@ -11,6 +11,8 @@ on:
       - 'memory/**'
   workflow_dispatch:
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
     paths-ignore:
       - '**.md'
@@ -29,6 +31,7 @@ env:
 jobs:
   # Validation job - must pass before builds run
   validate:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -111,6 +114,7 @@ jobs:
 
   # Secret scanning - runs independently, scans full git history
   secret-scan:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -133,6 +137,7 @@ jobs:
   # develop and a manual run always build iOS, so a regression still shows up
   # on the merge that caused it.
   platforms:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -401,7 +406,7 @@ jobs:
   build-summary:
     runs-on: ubuntu-latest
     needs: [validate, build, security-scan, secret-scan]
-    if: always()
+    if: always() && github.event.pull_request.draft != true
 
     steps:
     - name: Check results
