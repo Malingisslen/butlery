@@ -330,14 +330,15 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     }
 
     if (shouldPrompt && mounted) {
-      await _maybeShowFirstCheckoffPrompt();
+      await _maybeShowFirstCheckoffPrompt(item.id);
     }
   }
 
   /// BUT-1306: one-time dialog offered on the user's first shopping check-off
   /// when the auto-add preference is still unset. Marking it prompted (whatever
-  /// the answer) ensures it never re-nags across sessions/devices.
-  Future<void> _maybeShowFirstCheckoffPrompt() async {
+  /// the answer) ensures it never re-nags across sessions/devices. [itemId] is
+  /// the row whose tick opened it, which "Ja" also puts in the pantry.
+  Future<void> _maybeShowFirstCheckoffPrompt(String itemId) async {
     final enable = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -359,7 +360,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     // Record that the prompt was shown regardless of the choice.
     await _viewModel.markPantryAutoAddPrompted();
     if (enable == true) {
-      await _viewModel.setAutoAddToPantry(true);
+      await _viewModel.acceptPantryAutoAdd(itemId);
     }
   }
 
