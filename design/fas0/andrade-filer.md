@@ -610,7 +610,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
-| `produktregler.md` | `f02d60690bd99ba4abb059151066138ddd397dae35a6eebf9a940b8c4c363b34` |
+| `produktregler.md` | `a24884d98cc734cbd2d968c5776bd89bca7f8f243d2b85b8c8a05620807f4c36` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `source-authority.json` | `0442c2bcd8b4e9ba204858179e459e948baa89670a61678165e57243b86a0d17` |
