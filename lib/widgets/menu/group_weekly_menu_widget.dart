@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -285,7 +286,8 @@ class _FaceRow extends StatelessWidget {
   /// read at all — the face carries a neutral mark instead.
   List<String> _initials(List<GroupMenuParticipant> participants) {
     final names = [
-      for (final p in participants) vm.displayNameFor(p.userId)?.trim() ?? '',
+      for (final p in participants)
+        vm.displayNameFor(p.userId).orEmptyTrimmed(),
     ];
     final initials = distinctInitials(names);
     return [
