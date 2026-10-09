@@ -231,6 +231,7 @@ async function testOrchestrator(): Promise<void> {
       calls.length === 1 &&
       calls[0].text.startsWith("Pannkakor") &&
       calls[0].mode === "extract" &&
+      calls[0].fromImageOcr === true &&
       r.retryCount === 1 &&
       r.retryOutcome === "success" &&
       r.recipe === recipe &&
@@ -242,7 +243,7 @@ async function testOrchestrator(): Promise<void> {
         ? { ok: true }
         : {
             ok: false,
-            detail: `calls=${calls.length}, mode=${calls[0]?.mode}, outcome=${r.retryOutcome}, recipe=${r.recipe?.title}, cost=${r.additionalCost}`,
+            detail: `calls=${calls.length}, mode=${calls[0]?.mode}, fromImageOcr=${calls[0]?.fromImageOcr}, outcome=${r.retryOutcome}, recipe=${r.recipe?.title}, cost=${r.additionalCost}`,
           }
     );
   }
