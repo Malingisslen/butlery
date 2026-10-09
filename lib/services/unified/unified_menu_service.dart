@@ -1,5 +1,6 @@
 // lib/services/unified/unified_menu_service.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
@@ -672,9 +673,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   String? get currentUserId =>
       (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
           .currentUserId;
-  String? get currentUserDisplayName =>
-      (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
-          .currentUserDisplayName;
+  // BUT-2009: stamped as `sharedByDisplayName`, so the profile name.
+  String? get currentUserDisplayName => AttributionSource().displayName;
   void resetForLogout() {
     _menus.clear();
     _isInitialized = false;

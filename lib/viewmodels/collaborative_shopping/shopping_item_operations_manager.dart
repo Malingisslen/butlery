@@ -1,5 +1,6 @@
 /// Manager handling shopping item operations with error handling and state management.
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -229,7 +230,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
 
       final claimed = item.assign(
         userId: currentUser.uid,
-        displayName: currentUser.displayName,
+        displayName: AttributionSource().displayName,
       );
 
       final success = await _shoppingService.updateCollaborativeItem(
@@ -276,7 +277,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
 
       final released = item.unassign(
         userId: currentUser.uid,
-        displayName: currentUser.displayName,
+        displayName: AttributionSource().displayName,
       );
       final success = await _shoppingService.updateCollaborativeItem(
         listId,

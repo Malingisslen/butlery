@@ -317,11 +317,6 @@ class UnifiedShoppingService
   /// is also when a shopper opens the list. `profileDisplayName` has no such
   /// fallback, so THIS getter can no longer stamp a Google/Apple account name
   /// onto a shared shopping list.
-  ///
-  /// Scope: this writer and `FirebaseShoppingRepository.resolveDisplayName`
-  /// only. Writers elsewhere still persist the Auth-sourced name onto
-  /// documents other users read; BUT-2009 enumerates them and is where that
-  /// list is maintained. Do not read this as a repo-wide guarantee.
   String? get currentUserDisplayName =>
       ServiceLocator.tryGet<UserService>()?.profileDisplayName;
   @override

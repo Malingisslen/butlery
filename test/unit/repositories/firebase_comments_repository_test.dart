@@ -12,6 +12,7 @@ import 'package:butlery/repositories/firebase/firebase_comments_repository.dart'
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
+import 'package:butlery/services/attribution_source.dart';
 import 'package:butlery/services/storage_service.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -210,6 +211,36 @@ void main() {
         expect(result.parentCommentId, isNull); // Top-level comment
         expect(result.likesCount, equals(0));
       });
+
+      test(
+        'stores the PROFILE name as authorDisplayName, not the Auth account\'s '
+        '(BUT-2009)',
+        () async {
+          final userService = MockUserService();
+          when(
+            () => userService.attributionDisplayName,
+          ).thenReturn('Profil Anna');
+          final attributed = FirebaseCommentsRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepo,
+            timestampProvider: const TestTimestampProvider(),
+            attribution: AttributionSource(userService: () => userService),
+          );
+
+          final result = await attributed.addComment(
+            recipeId: 'recipe-1',
+            userId: 'user-123',
+            content: 'Great recipe!',
+          );
+
+          final stored = await fakeFirestore
+              .collection('recipe_comments')
+              .doc(result.id)
+              .get();
+          expect(stored.data()!['authorDisplayName'], 'Profil Anna');
+          expect(result.authorDisplayName, 'Profil Anna');
+        },
+      );
 
       test('stamps the comments rate limit with the new comment id', () async {
         final result = await repository.addComment(

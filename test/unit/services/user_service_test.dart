@@ -16,6 +16,7 @@ import 'package:butlery/repositories/interfaces/household_allergen_share_reposit
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -1150,6 +1151,110 @@ void main() {
         expect(userService.profileDisplayName, equals('Malin M'));
         expect(userService.currentDisplayName, equals('Malin M'));
       });
+    });
+
+    // BUT-2009: what a writer stamps on a document other people read. The
+    // Auth account here has a DIFFERENT name and a photo of its own, so a
+    // getter that reached for Auth returns something these cases can see.
+    group('attribution getters (BUT-2009)', () {
+      Future<void> signInWithProfile(UserProfile? profile) async {
+        final authUser = MockFactory.createMockUser(
+          uid: 'test_user_123',
+          email: 'test@example.com',
+          displayName: 'Google Anna',
+          photoURL: 'https://example.com/google-photo.jpg',
+        );
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: authUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockAuthRepository.authStateChanges()).thenAnswer(
+          (_) => Stream.value(authUser),
+        );
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => profile,
+        );
+        await userService.initialize();
+      }
+
+      test('attributionDisplayName is the profile name', () async {
+        await signInWithProfile(
+          MockFactory.createUserProfile(
+            userId: 'test_user_123',
+            displayName: 'Profil Anna',
+          ),
+        );
+
+        expect(userService.attributionDisplayName, 'Profil Anna');
+      });
+
+      for (final entry in <String, UserProfile?>{
+        'an empty profile name': MockFactory.createUserProfile(
+          userId: 'test_user_123',
+          displayName: '',
+        ),
+        'no profile at all': null,
+      }.entries) {
+        test(
+          'with ${entry.key} attributionDisplayName is the unknown-user label, '
+          'never the Auth name',
+          () async {
+            await signInWithProfile(entry.value);
+
+            expect(
+              userService.attributionDisplayName,
+              AppLocale.current.displayUnknownUser,
+            );
+            expect(
+              userService.attributionDisplayName,
+              isNot('Google Anna'),
+            );
+          },
+        );
+      }
+
+      test('profileAvatarUrl is the profile picture', () async {
+        await signInWithProfile(
+          MockFactory.createUserProfile(
+            userId: 'test_user_123',
+            displayName: 'Profil Anna',
+            avatarUrl: 'https://example.com/profile.jpg',
+          ),
+        );
+
+        expect(userService.profileAvatarUrl, 'https://example.com/profile.jpg');
+      });
+
+      for (final entry in <String, String?>{
+        'null': null,
+        'empty': '',
+      }.entries) {
+        test(
+          'profileAvatarUrl is null for a ${entry.key} profile picture even '
+          'though Auth has a photo',
+          () async {
+            await signInWithProfile(
+              MockFactory.createUserProfile(
+                userId: 'test_user_123',
+                displayName: 'Profil Anna',
+                avatarUrl: entry.value,
+              ),
+            );
+
+            expect(userService.profileAvatarUrl, isNull);
+          },
+        );
+      }
+
+      test(
+        'profileAvatarUrl is null with no profile, not the Auth photo',
+        () async {
+          await signInWithProfile(null);
+
+          expect(userService.profileAvatarUrl, isNull);
+        },
+      );
     });
 
     group('FCM Token Management', () {

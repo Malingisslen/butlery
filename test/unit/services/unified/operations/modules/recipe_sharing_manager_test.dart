@@ -295,6 +295,9 @@ void main() {
           when(
             () => userService.profileDisplayName,
           ).thenReturn('Malin i appen');
+          when(
+            () => userService.profileAvatarUrl,
+          ).thenReturn('https://example.com/profile-malin.jpg');
 
           mockParentService.setCollaborativeState(shouldSucceed: true);
           when(
@@ -333,6 +336,12 @@ void main() {
                 'the Auth handle is the legal name on the user s Google/Apple '
                 'account, never chosen for display, and it lands verbatim in '
                 'every recipient s Article-15 bundle',
+          );
+          // BUT-2009: the picture is the profile's as well (the Auth user the
+          // permission service synthesizes carries none of this value).
+          expect(
+            docs.docs.first.data()['sharedByAvatarUrl'],
+            'https://example.com/profile-malin.jpg',
           );
           // `sharedToUserIds` is the membership field `firestore.rules`'
           // recipient branch and the GDPR export both read, and

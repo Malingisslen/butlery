@@ -1,12 +1,12 @@
 // lib/repositories/firebase/modules/shopping_template_operations_module.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 
 /// Module handling shopping list template operations.
@@ -27,6 +27,7 @@ class ShoppingTemplateOperationsModule {
   })
   validateOwnership;
   final TimestampProvider timestampProvider;
+  final AttributionSource _attribution;
 
   ShoppingTemplateOperationsModule({
     required this.firestore,
@@ -37,7 +38,8 @@ class ShoppingTemplateOperationsModule {
     required this.createList,
     required this.validateOwnership,
     this.timestampProvider = const ServerTimestampProvider(),
-  });
+    AttributionSource? attribution,
+  }) : _attribution = attribution ?? AttributionSource();
 
   /// Save shopping list as reusable template
   Future<String> saveAsTemplate({
@@ -72,7 +74,7 @@ class ShoppingTemplateOperationsModule {
       'name': templateName.trim(),
       'description': description?.trim(),
       'ownerId': uid,
-      'ownerDisplayName': authRepository.currentUser?.displayName,
+      'ownerDisplayName': _attribution.displayName,
       'originalListId': listId,
       'items': list.items.map((item) => item.toFirestore()).toList(),
       'createdAt': timestampProvider.serverTimestamp(),
@@ -275,9 +277,7 @@ class ShoppingTemplateOperationsModule {
       name: listName.trim(),
       description: description?.trim(),
       ownerId: uid,
-      ownerDisplayName:
-          authRepository.currentUser?.displayName ??
-          AppLocale.current.displayUnknownUser,
+      ownerDisplayName: _attribution.displayName,
       items: items,
     );
 

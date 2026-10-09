@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/services/attribution_source.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
@@ -133,6 +134,9 @@ void main() {
     late MockChatGroupRepository mockChatGroupRepo;
     late FakeAuthRepository mockAuthRepo;
     late User mockUser;
+    late MockUserService mockUserService;
+    const profileName = 'Profil Anna';
+    const profileAvatar = 'https://example.com/profile.jpg';
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -177,11 +181,20 @@ void main() {
         userId: 'test-user-id',
       );
 
+      // BUT-2009: the profile and the Firebase Auth account carry DIFFERENT
+      // names and photos, so a writer pointed back at Auth goes red.
+      mockUserService = MockUserService();
+      when(
+        () => mockUserService.attributionDisplayName,
+      ).thenReturn(profileName);
+      when(() => mockUserService.profileAvatarUrl).thenReturn(profileAvatar);
+
       messagingService = MessagingService(
         messagingRepository: mockMessagingRepo,
         chatGroupRepository: mockChatGroupRepo,
         authRepository: mockAuthRepo,
         reactionsService: MockMessageReactionsService(),
+        attribution: AttributionSource(userService: () => mockUserService),
       );
     });
 
@@ -252,8 +265,8 @@ void main() {
         when(
           () => mockMessagingRepo.createDirectConversation(
             user1Id: 'test-user-id',
-            user1DisplayName: 'Test User',
-            user1AvatarUrl: 'https://example.com/avatar.jpg',
+            user1DisplayName: profileName,
+            user1AvatarUrl: profileAvatar,
             user2Id: otherUserId,
             user2DisplayName: otherUserDisplayName,
             user2AvatarUrl: otherUserAvatarUrl,
@@ -272,8 +285,8 @@ void main() {
         verify(
           () => mockMessagingRepo.createDirectConversation(
             user1Id: 'test-user-id',
-            user1DisplayName: 'Test User',
-            user1AvatarUrl: 'https://example.com/avatar.jpg',
+            user1DisplayName: profileName,
+            user1AvatarUrl: profileAvatar,
             user2Id: otherUserId,
             user2DisplayName: otherUserDisplayName,
             user2AvatarUrl: otherUserAvatarUrl,
@@ -291,8 +304,8 @@ void main() {
           when(
             () => mockMessagingRepo.createDirectConversation(
               user1Id: 'test-user-id',
-              user1DisplayName: 'Test User',
-              user1AvatarUrl: 'https://example.com/avatar.jpg',
+              user1DisplayName: profileName,
+              user1AvatarUrl: profileAvatar,
               user2Id: otherUserId,
               user2DisplayName: 'Jane Doe',
               user2AvatarUrl: null,
@@ -310,8 +323,8 @@ void main() {
           verify(
             () => mockMessagingRepo.createDirectConversation(
               user1Id: 'test-user-id',
-              user1DisplayName: 'Test User',
-              user1AvatarUrl: 'https://example.com/avatar.jpg',
+              user1DisplayName: profileName,
+              user1AvatarUrl: profileAvatar,
               user2Id: otherUserId,
               user2DisplayName: 'Jane Doe',
               user2AvatarUrl: null,
@@ -619,6 +632,108 @@ void main() {
 
         // Assert
         verify(() => mockMessagingRepo.sendMessage(any())).called(1);
+      });
+
+      group('sender attribution (BUT-2009)', () {
+        // The Auth account is 'Test User' / avatar.jpg; the stored sender
+        // must be the profile's, on every message type that stamps one.
+        Future<Message> sent(Future<void> Function() send) async {
+          when(
+            () => mockMessagingRepo.sendMessage(any()),
+          ).thenAnswer((_) async {});
+          await send();
+          return verify(
+                () => mockMessagingRepo.sendMessage(captureAny()),
+              ).captured.first
+              as Message;
+        }
+
+        void expectProfile(Message m) {
+          expect(m.senderDisplayName, profileName);
+          expect(m.senderAvatarUrl, profileAvatar);
+        }
+
+        test('text message', () async {
+          expectProfile(
+            await sent(
+              () => messagingService.sendTextMessage(
+                conversationId: 'c1',
+                content: 'hej',
+              ),
+            ),
+          );
+        });
+
+        test('image message', () async {
+          expectProfile(
+            await sent(
+              () => messagingService.sendImageMessage(
+                conversationId: 'c1',
+                imageUrl: 'https://example.com/i.jpg',
+              ),
+            ),
+          );
+        });
+
+        test('recipe share', () async {
+          expectProfile(
+            await sent(
+              () => messagingService.sendRecipeShare(
+                conversationId: 'c1',
+                recipeId: 'r1',
+                recipeTitle: 'Köttbullar',
+              ),
+            ),
+          );
+        });
+
+        test('menu share', () async {
+          expectProfile(
+            await sent(
+              () => messagingService.sendMenuShare(
+                conversationId: 'c1',
+                menuId: 'm1',
+                menuTitle: 'Veckan',
+              ),
+            ),
+          );
+        });
+
+        test('shopping list share', () async {
+          expectProfile(
+            await sent(
+              () => messagingService.sendShoppingListShare(
+                conversationId: 'c1',
+                listId: 'l1',
+                listTitle: 'Handla',
+              ),
+            ),
+          );
+        });
+
+        test('poll message', () async {
+          expectProfile(
+            await sent(
+              () => messagingService.sendPollMessage(
+                conversationId: 'c1',
+                pollData: {'question': 'Middag?'},
+              ),
+            ),
+          );
+        });
+
+        test('a profile with no photo stores no avatar even though Auth has '
+            'one', () async {
+          when(() => mockUserService.profileAvatarUrl).thenReturn(null);
+          final m = await sent(
+            () => messagingService.sendTextMessage(
+              conversationId: 'c1',
+              content: 'hej',
+            ),
+          );
+          expect(m.senderAvatarUrl, isNull);
+          expect(m.senderDisplayName, profileName);
+        });
       });
 
       test('should send text message with reply', () async {

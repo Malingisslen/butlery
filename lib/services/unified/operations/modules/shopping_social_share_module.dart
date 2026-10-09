@@ -93,7 +93,8 @@ class ShoppingSocialShareModule {
             : 0,
         'sharedByUserId': currentUser.uid,
         'sharedByDisplayName': sharedByDisplayName,
-        'sharedByAvatarUrl': currentUser.avatarUrl,
+        'sharedByAvatarUrl':
+            ServiceLocator.tryGet<UserService>()?.profileAvatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
         // Same list under the spelling `firestore.rules` and the
         // GDPR export both speak — see the note in `recipe_sharing_manager`.

@@ -1,3 +1,4 @@
+import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -18,12 +19,16 @@ class FirebaseMenuCollaborationRepository
   // Real-time listeners for collaboration
   final Map<String, StreamSubscription> _menuListeners = {};
 
+  final AttributionSource _attribution;
+
   FirebaseMenuCollaborationRepository({
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
     super.timestampProvider,
-  }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
+    AttributionSource? attribution,
+  }) : _attribution = attribution ?? AttributionSource(),
+       super(authRepository: authRepository ?? FirebaseAuthRepository());
   @override
   String get collectionName => FirestoreCollections.sharedContent;
 
@@ -105,14 +110,6 @@ class FirebaseMenuCollaborationRepository
   }) async {
     try {
       final userId = requireCurrentUserId();
-      final userDisplayName = authRepository.currentUser?.displayName;
-
-      if (userDisplayName == null) {
-        AppLogger.error(
-          'Cannot enable collaboration: User display name not available',
-        );
-        return false;
-      }
 
       final collaborationData = {
         'allowCollaboration': true,
@@ -181,12 +178,7 @@ class FirebaseMenuCollaborationRepository
   }) async {
     try {
       final userId = requireCurrentUserId();
-      final userDisplayName = authRepository.currentUser?.displayName;
-
-      if (userDisplayName == null) {
-        AppLogger.error('Cannot add recipe: User display name not available');
-        return false;
-      }
+      final userDisplayName = _attribution.displayName;
 
       // Check collaboration permission
       if (!await canCollaborate(menuId, userId)) {
@@ -222,14 +214,7 @@ class FirebaseMenuCollaborationRepository
   }) async {
     try {
       final userId = requireCurrentUserId();
-      final userDisplayName = authRepository.currentUser?.displayName;
-
-      if (userDisplayName == null) {
-        AppLogger.error(
-          'Cannot remove recipe: User display name not available',
-        );
-        return false;
-      }
+      final userDisplayName = _attribution.displayName;
 
       // Check collaboration permission
       if (!await canCollaborate(menuId, userId)) {

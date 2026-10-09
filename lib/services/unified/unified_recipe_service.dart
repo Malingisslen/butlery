@@ -1,5 +1,6 @@
 // lib/services/unified/unified_recipe_service.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:rxdart/rxdart.dart';
@@ -529,8 +530,9 @@ class UnifiedRecipeService
   String? get lastError => _error; // Legacy property
 
   String? get currentUserId => _authRepository.currentUserId;
-  String? get currentUserDisplayName =>
-      _authRepository.currentUser?.displayName ?? 'Du';
+  // BUT-2009: every social writer below this service reads its name here, so
+  // it is the profile name — never the Google/Apple account name.
+  String? get currentUserDisplayName => AttributionSource().displayName;
   bool get isSyncing {
     try {
       return _cacheModule.isSyncing;

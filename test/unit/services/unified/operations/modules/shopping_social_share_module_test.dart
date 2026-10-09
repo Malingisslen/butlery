@@ -279,6 +279,9 @@ Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _receivedFor(
 /// [_meProfile]) so the two sources can never be confused for one another.
 const _myProfileName = 'Anna i appen';
 
+/// The PROFILE picture, different from [_myAvatar] (the Auth account's photo).
+const _myProfileAvatar = 'https://example.com/anna-profile.jpg';
+
 /// A DIContainer that resolves exactly one service.
 ///
 /// Deliberately NOT `TestServiceLocator.initialize()`: that installs
@@ -319,6 +322,7 @@ void main() {
     );
     final userService = MockUserService();
     when(() => userService.profileDisplayName).thenReturn(_myProfileName);
+    when(() => userService.profileAvatarUrl).thenReturn(_myProfileAvatar);
     ServiceLocator.reset();
     ServiceLocator.initialize(_SingleServiceContainer(userService));
     module = _build(firestore, perms);
@@ -493,7 +497,7 @@ void main() {
         // touch the profile name. `_myName` is the Auth handle and must NOT
         // appear.
         expect(sharedData['sharedByDisplayName'], _myProfileName);
-        expect(sharedData['sharedByAvatarUrl'], _myAvatar);
+        expect(sharedData['sharedByAvatarUrl'], _myProfileAvatar);
         expect(sharedData['isActive'], isTrue);
         expect(
           List<String>.from(sharedData['sharedToUserIds'] as List),
@@ -622,6 +626,11 @@ void main() {
           sharedData['sharedByDisplayName'],
           isNot(_myName),
           reason: 'the Firebase Auth handle must never be the fallback',
+        );
+        expect(
+          sharedData['sharedByAvatarUrl'],
+          isNull,
+          reason: 'the Auth photo must never be the fallback either',
         );
       },
     );

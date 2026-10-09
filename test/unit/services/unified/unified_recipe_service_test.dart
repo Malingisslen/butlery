@@ -15,6 +15,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/mocks/production_mocks.dart' as mocks;
+import 'package:butlery/services/user_service.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -290,6 +291,13 @@ void main() {
       // delegates to TestServiceLocator
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(mocks.MockDIContainer());
+
+      // BUT-2009: attribution is the PROFILE name; the Auth repository's
+      // user (mockAuthRepository) carries a different one.
+      when(
+        () => (TestServiceLocator.get<UserService>() as mocks.MockUserService)
+            .attributionDisplayName,
+      ).thenReturn('Profil Pelle');
 
       // Create service with mocked dependencies
       service = UnifiedRecipeService(
@@ -643,6 +651,12 @@ void main() {
 
         // Assert
         expect(success, true);
+      });
+
+      // Every social recipe writer below this service takes its name from
+      // this getter, so it is the one place the Auth name could come back.
+      test('the name its writers stamp is the PROFILE name (BUT-2009)', () {
+        expect(service.currentUserDisplayName, 'Profil Pelle');
       });
 
       // BUG-27: when the recipe is not in the in-memory cache, toggleFavorite

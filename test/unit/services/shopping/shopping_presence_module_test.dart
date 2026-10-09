@@ -15,6 +15,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/services/attribution_source.dart';
 import 'package:butlery/services/unified/operations/shopping/shopping_presence_module.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -25,6 +26,7 @@ void main() {
     late FirebaseShoppingPresenceRepository repository;
     late FirebaseShoppingPresenceModule module;
     late FakePermissionService permissionService;
+    late MockUserService userService;
 
     const userId = 'user_alice';
     const listId = 'list_helg';
@@ -40,6 +42,12 @@ void main() {
         firestoreRepository: FirestoreRepository(firestore: fake),
       );
 
+      userService = MockUserService();
+      when(() => userService.attributionDisplayName).thenReturn('Profil Alice');
+      when(
+        () => userService.profileAvatarUrl,
+      ).thenReturn('https://example.com/profile-alice.jpg');
+
       permissionService = FakePermissionService();
       permissionService.setPermissionState(
         defaultHasPermission: true,
@@ -49,6 +57,7 @@ void main() {
           uid: userId,
           email: 'alice@example.com',
           displayName: 'Alice',
+          avatarUrl: 'https://example.com/auth-alice.jpg',
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         ),
@@ -57,6 +66,9 @@ void main() {
       module = FirebaseShoppingPresenceModule(
         repository: repository,
         permissionService: permissionService,
+        // BUT-2009: the profile differs from the permission service's
+        // Auth-derived user above, so the stored row says which was read.
+        attribution: AttributionSource(userService: () => userService),
       );
     });
 
@@ -75,7 +87,11 @@ void main() {
           .doc(userId)
           .get();
       expect(snapshot.exists, isTrue);
-      expect(snapshot.data()!['displayName'], equals('Alice'));
+      expect(snapshot.data()!['displayName'], equals('Profil Alice'));
+      expect(
+        snapshot.data()!['avatarUrl'],
+        equals('https://example.com/profile-alice.jpg'),
+      );
       expect(snapshot.data()!['isActive'], isTrue);
     });
 

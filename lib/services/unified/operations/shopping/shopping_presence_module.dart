@@ -3,6 +3,7 @@
 // Collaborative shopping presence tracking (BUT-238).
 // Per-list, 30s TTL heartbeat, atomic `set(merge: true)` writes.
 
+import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 
 import 'package:butlery/core/providers/application_provider.dart';
@@ -55,14 +56,17 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
 
   final FirebaseShoppingPresenceRepository _repository;
   final PermissionService? _permissionServiceOverride;
+  final AttributionSource _attribution;
 
   final Map<String, StreamSubscription<void>> _heartbeatSubscriptions = {};
 
   FirebaseShoppingPresenceModule({
     required FirebaseShoppingPresenceRepository repository,
     PermissionService? permissionService,
+    AttributionSource? attribution,
   }) : _repository = repository,
-       _permissionServiceOverride = permissionService;
+       _permissionServiceOverride = permissionService,
+       _attribution = attribution ?? AttributionSource();
 
   PermissionService get _permissionService =>
       _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
@@ -77,12 +81,10 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
       await _repository.setUserPresence(
         listId: listId,
         userId: currentUser.uid,
-        displayName: currentUser.displayName,
-        avatarUrl: currentUser.avatarUrl,
+        displayName: _attribution.displayName,
+        avatarUrl: _attribution.avatarUrl,
       );
-      AppLogger.info(
-        'Shopping presence: ${currentUser.displayName} entered list $listId',
-      );
+      AppLogger.info('Shopping presence: entered list $listId');
       return true;
     } catch (e) {
       AppLogger.error('showPresence failed', e);
