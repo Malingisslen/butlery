@@ -6014,6 +6014,22 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
   the rules cannot read the options, which live in the starter's document.
 
+## BUT-2082 and BUT-1955 — the comments, ratings and messages export sections (2026-10-09)
+
+- **A comment or rating carries `recipe_title` beside its `data` where the requester can open
+  the recipe now.** `ActivityExportManager` reads `recipeOwnerId` and `recipeId` from the stored
+  row, and `FirebaseDataExportRepository.exportRecipeTitles` makes one server `get` of
+  `users/{recipeOwnerId}/recipes/{recipeId}` as the requester per distinct recipe, across both
+  sections, for at most `maxRecipeTitleLookups` (200) recipes. The title is the recipe owner's
+  text as it reads today. A refused or missing recipe, a row without `recipeOwnerId`, an id that is
+  not a valid path segment, and every recipe past the cap get no title and nothing else. `recipeOwnerId` stays
+  stripped. The `data_minimisation` sentence is the same bytes on every path; only our own read
+  failing adds `recipe_titles_error_code` (BUT-2056).
+- **The requester's own vote on a withheld row is exported.** A row `isOthersBlockedRow` drops
+  stays dropped; when it carried `your_poll_vote`, the conversation lists
+  `{message_id, your_poll_vote}` under `your_poll_votes_on_withheld_messages`. `message_count`
+  and `total_messages` still count rows. Retires the BUT-1955 residual in ADR-0009.
+
 ## BUT-2221 — the creator's name on dishes in shared menus (2026-10-09)
 
 - **Only the sharer's own dishes carry a name.** `MenuDishCreditViewModel` runs with

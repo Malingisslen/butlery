@@ -273,6 +273,7 @@ class SocialExportManager with SocialExportRedaction {
 
       for (final convo in conversations) {
         final messagesList = <Map<String, dynamic>>[];
+        final votesOnWithheldRows = <Map<String, dynamic>>[];
         final rawMessages = (convo['messages'] as List)
             .cast<Map<String, dynamic>>();
 
@@ -297,7 +298,17 @@ class SocialExportManager with SocialExportRedaction {
           // than the chat screen's; `isOthersBlockedRow` says why.
           final storedRow =
               sanitizeForJson(msg['data']) as Map<String, dynamic>;
-          if (isOthersBlockedRow(storedRow, userId: userId)) continue;
+          if (isOthersBlockedRow(storedRow, userId: userId)) {
+            // BUT-1955: the row is someone else's, but a vote the requester
+            // cast on it is their own record and stays in the bundle.
+            if (msg['your_poll_vote'] != null) {
+              votesOnWithheldRows.add({
+                'message_id': msg['id'],
+                'your_poll_vote': sanitizeForJson(msg['your_poll_vote']),
+              });
+            }
+            continue;
+          }
 
           // BUT-1772's per-row half: names and uids stay, the durable pointer
           // to someone else's photograph goes.
@@ -346,6 +357,10 @@ class SocialExportManager with SocialExportRedaction {
           'messages': messagesList,
           'message_count': messagesList.length,
         };
+        if (votesOnWithheldRows.isNotEmpty) {
+          conversationData['your_poll_votes_on_withheld_messages'] =
+              votesOnWithheldRows;
+        }
         if (convo['messages_truncated'] == true) {
           conversationData['messages_truncated'] = true;
         }
@@ -474,7 +489,9 @@ class SocialExportManager with SocialExportRedaction {
           'their own notification settings for this conversation (muted, '
           'pinned, archived) and, for a group chat, the moment each of THEM '
           'joined it. Rows where the app stopped a duplicate message that '
-          'someone ELSE sent have been left out entirely — yours are kept. '
+          'someone ELSE sent have been left out entirely — yours are kept, '
+          'and a vote you cast on such a row is listed under '
+          'your_poll_votes_on_withheld_messages. '
           'For a group chat, the one-line preview of the most '
           'recent message is left out when that message was sent before you '
           'joined — the same cut-off the app itself applies, so the preview '

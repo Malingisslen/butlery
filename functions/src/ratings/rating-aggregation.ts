@@ -2,7 +2,7 @@
  * BUT-482: Debounced rating aggregation.
  *
  * Background:
- *   `updateRecipeRatingStats(recipeId)` re-reads ALL ratings for a recipe and
+ *   `updateRecipeRatingStats(recipeId)` re-reads ratings for a recipe and
  *   writes `recipe_social_stats/{recipeId}`. Triggered synchronously on every
  *   rating create/update/delete, popular recipes hit Firestore's ~1/sec
  *   single-doc write throttle. This debounces those recomputes.

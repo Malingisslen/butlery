@@ -253,7 +253,7 @@ void main() {
             name: 'Smör',
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });
@@ -281,7 +281,7 @@ void main() {
             name: 'Ost',
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });
@@ -641,7 +641,7 @@ void main() {
             name: 'Räkor och ägg från Öland',
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });
@@ -657,7 +657,7 @@ void main() {
             name: longName,
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });

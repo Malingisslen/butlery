@@ -18,6 +18,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
@@ -52,12 +53,39 @@ class _ThrowingCommentsRepository extends Fake implements CommentsRepository {
   }) async => throw StateError('firestore unavailable');
 }
 
+/// BUT-2082: answers the title lookup from [titles], as the rules would: a
+/// recipe the requester cannot open is simply absent.
+class _FakeTitleLookup extends Fake implements FirebaseDataExportRepository {
+  _FakeTitleLookup({this.titles = const {}, this.throwOnRead = false});
+  final Map<String, String> titles;
+  final bool throwOnRead;
+  final requests = <List<({String ownerId, String recipeId})>>[];
+
+  @override
+  Future<({Map<String, String> titles, bool failed})> exportRecipeTitles(
+    String userId,
+    Iterable<({String ownerId, String recipeId})> recipes,
+  ) async {
+    requests.add(recipes.toList());
+    if (throwOnRead) throw StateError('firestore unavailable');
+    return (
+      titles: {
+        for (final r in recipes)
+          '${r.ownerId}/${r.recipeId}': ?titles['${r.ownerId}/${r.recipeId}'],
+      },
+      failed: false,
+    );
+  }
+}
+
 ActivityExportManager _manager({
   List<Map<String, dynamic>> comments = const [],
   List<Map<String, dynamic>> ratings = const [],
+  _FakeTitleLookup? titles,
 }) => ActivityExportManager(
   commentsRepository: _FakeCommentsRepository(comments),
   ratingsRepository: _FakeRatingsRepository(ratings),
+  dataExportRepository: titles ?? _FakeTitleLookup(),
 );
 
 /// A comment document carrying every field a writer can emit, so the
@@ -327,6 +355,151 @@ void main() {
             'found.',
       );
       expect(failed['error_code'], 'comments-and-ratings-export-failed');
+    });
+  });
+
+  group('BUT-2082: recipe titles', () {
+    test('a readable recipe\'s title sits beside the row, and the owner uid '
+        'still does not travel', () async {
+      final lookup = _FakeTitleLookup(
+        titles: {'the-recipe-owner/recipe-1': 'Kladdkaka'},
+      );
+      final result = await _manager(
+        comments: [
+          {'id': 'c1', 'data': _wholeCommentDocument()},
+        ],
+        ratings: [
+          {'id': 'recipe-1_me', 'data': _wholeRatingDocument()},
+        ],
+        titles: lookup,
+      ).exportCommentsAndRatings('me');
+
+      final comment = (result['comments'] as List).single as Map;
+      final rating = (result['ratings'] as List).single as Map;
+      expect(comment['recipe_title'], 'Kladdkaka');
+      expect(rating['recipe_title'], 'Kladdkaka');
+      expect((comment['data'] as Map).containsKey('recipe_title'), isFalse);
+      expect((comment['data'] as Map).containsKey('recipeOwnerId'), isFalse);
+      expect((rating['data'] as Map).containsKey('recipeOwnerId'), isFalse);
+      // One recipe behind a comment and a rating is read once.
+      expect(lookup.requests.single, hasLength(1));
+      expect(result.containsKey('error_code'), isFalse);
+    });
+
+    test('a recipe the requester cannot open, or a row naming no owner, '
+        'carries no title and is not a failure', () async {
+      final lookup = _FakeTitleLookup();
+      final result = await _manager(
+        comments: [
+          {'id': 'c1', 'data': _wholeCommentDocument()},
+          {
+            'id': 'c2',
+            'data': {..._wholeCommentDocument(), 'recipeOwnerId': null},
+          },
+        ],
+        titles: lookup,
+      ).exportCommentsAndRatings('me');
+
+      for (final row in (result['comments'] as List).cast<Map>()) {
+        expect(row.containsKey('recipe_title'), isFalse);
+      }
+      expect(lookup.requests.single, [
+        (ownerId: 'the-recipe-owner', recipeId: 'recipe-1'),
+      ]);
+      expect(result.containsKey('error_code'), isFalse);
+      expect(result.containsKey('recipe_titles_error_code'), isFalse);
+    });
+
+    test('a rating on a recipe no comment names gets its own lookup', () async {
+      final lookup = _FakeTitleLookup(
+        titles: {'other-owner/recipe-2': 'Pannkakor'},
+      );
+      final result = await _manager(
+        ratings: [
+          {
+            'id': 'recipe-2_me',
+            'data': {
+              ..._wholeRatingDocument(),
+              'recipeId': 'recipe-2',
+              'recipeOwnerId': 'other-owner',
+            },
+          },
+        ],
+        titles: lookup,
+      ).exportCommentsAndRatings('me');
+
+      expect(
+        ((result['ratings'] as List).single as Map)['recipe_title'],
+        'Pannkakor',
+      );
+      expect(lookup.requests.single, [
+        (ownerId: 'other-owner', recipeId: 'recipe-2'),
+      ]);
+    });
+
+    test(
+      'at most maxRecipeTitleLookups distinct recipes are looked up',
+      () async {
+        const cap = ActivityExportManager.maxRecipeTitleLookups;
+        final lookup = _FakeTitleLookup();
+        await _manager(
+          comments: [
+            for (var i = 0; i <= cap; i++)
+              {
+                'id': 'c$i',
+                'data': {..._wholeCommentDocument(), 'recipeId': 'recipe-$i'},
+              },
+          ],
+          titles: lookup,
+        ).exportCommentsAndRatings('me');
+
+        expect(lookup.requests.single, hasLength(cap));
+      },
+    );
+
+    test('a failed lookup still ships the section, flags our own read and '
+        'keeps the note', () async {
+      final ok = await _manager(
+        comments: [
+          {'id': 'c1', 'data': _wholeCommentDocument()},
+        ],
+      ).exportCommentsAndRatings('me');
+      final result = await _manager(
+        comments: [
+          {'id': 'c1', 'data': _wholeCommentDocument()},
+        ],
+        titles: _FakeTitleLookup(throwOnRead: true),
+      ).exportCommentsAndRatings('me');
+
+      expect(result['comments'], hasLength(1));
+      expect(
+        ((result['comments'] as List).single as Map).containsKey(
+          'recipe_title',
+        ),
+        isFalse,
+      );
+      expect(result['recipe_titles_error_code'], 'recipe-titles-read-failed');
+      expect(result['error_code'], 'recipe-titles-read-failed');
+      expect(result['data_minimisation'], ok['data_minimisation']);
+    });
+
+    test('the note names recipe_title and its cap', () async {
+      final note =
+          (await _manager().exportCommentsAndRatings('me'))['data_minimisation']
+              as String;
+      expect(note, contains('recipe_title'));
+      expect(note, contains('${ActivityExportManager.maxRecipeTitleLookups}'));
+    });
+
+    test('every comment field the note promises is exported, and the note '
+        'names it', () async {
+      final note =
+          (await _manager().exportCommentsAndRatings('me'))['data_minimisation']
+              as String;
+      ActivityExportManager.commentFieldsNamedInNote.forEach((field, word) {
+        expect(ActivityExportManager.commentFieldsExported, contains(field));
+        expect(note, contains(word));
+      });
     });
   });
 }
