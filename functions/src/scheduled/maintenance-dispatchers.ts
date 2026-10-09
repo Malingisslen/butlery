@@ -54,6 +54,7 @@ import { runImportTierWeekly } from "../analytics/import-tier-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
 import { updateRecipeRatingStats } from "../ratings/update-recipe-rating-stats";
+import { recordRatingReads } from "../ratings/rating-read-counter";
 import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
 
 /**
@@ -83,14 +84,6 @@ import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
  * because `recipeMethodSnapshot` was slow is the wrong trade. Its send time
  * moves 05:00 → ~06:00 UTC, which is 08:00 Swedish summer time — still outside
  * quiet hours, but the exact minute now varies with the tasks ahead of it.
- *
- * KNOWN, ACCEPTED, TICKETED SEPARATELY: `runDetectLapsedUsers` commits
- * notification batches per threshold but advances its resume cursor only at the
- * very end (BUT-1567, deliberate). A run raced out mid-threshold leaves
- * committed notification docs behind an un-advanced cursor, and the next run
- * re-sends. Moving it earlier shrinks the window; the real fix is a
- * deterministic per-user/threshold/day notification doc id, which is a
- * data-semantics change and does not belong in a mechanical trigger merge.
  */
 export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   // BUT-2046 follow-up. FIRST, not last: this is the only thing that ends a
@@ -207,8 +200,14 @@ export const weeklyReports = onSchedule(
 export const drainAggregations = onSchedule(
   { schedule: "every 1 minutes", timeoutSeconds: 120, retryCount: 0 },
   async () => {
+    let ratingDocsRead = 0;
     const [rating, pool] = await Promise.allSettled([
-      drainRatingAggregationQueue({ aggregate: updateRecipeRatingStats }),
+      drainRatingAggregationQueue({
+        aggregate: async (recipeId) => {
+          const { docsRead } = await updateRecipeRatingStats(recipeId);
+          ratingDocsRead += docsRead;
+        },
+      }),
       drainPoolAggregationQueue({ aggregate: updatePooledRatingStats }),
     ]);
 
@@ -218,6 +217,7 @@ export const drainAggregations = onSchedule(
         processed: rating.value.processed,
         failed: rating.value.failed,
         durationMs: rating.value.durationMs,
+        docsRead: ratingDocsRead,
       });
     } else {
       logDrainRejection("rating_aggregation.drain_failed", rating.reason);
@@ -233,6 +233,8 @@ export const drainAggregations = onSchedule(
     } else {
       logDrainRejection("pool_aggregation.drain_failed", pool.reason);
     }
+
+    await recordRatingReads(ratingDocsRead);
 
     const dead = deadDrainQueues(rating.status, pool.status);
     if (dead.length > 0) {

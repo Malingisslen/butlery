@@ -361,9 +361,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get bulkAddToMenuOverflowedAction => 'Lägg de resterande nästa vecka';
-
-  @override
   String bulkAddToMenuSuccessNextWeek(int count) {
     return '$count recept lades till nästa vecka';
   }
@@ -5337,19 +5334,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuCommentLabel => 'Kommentar (valfritt)';
 
   @override
-  String get menuDeleteConfirmation =>
-      'Är du säker på att du vill ta bort denna meny?';
-
-  @override
   String menuDeletedSuccess(String name) {
     return 'Meny \"$name\" borttagen';
   }
 
   @override
   String get menuDeleteFailed => 'Kunde inte ta bort meny';
-
-  @override
-  String get menuDeleteTitle => 'Ta bort meny';
 
   @override
   String menuLoadedSuccess(String name) {

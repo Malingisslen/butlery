@@ -602,12 +602,6 @@ abstract class AppLocalizations {
   /// **'{added} av {requested} lades till — resten ryms inte i veckan'**
   String bulkAddToMenuOverflowed(int added, int requested);
 
-  /// BUT-1034: action button on overflow snackbar to cascade remaining recipes to next week.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg de resterande nästa vecka'**
-  String get bulkAddToMenuOverflowedAction;
-
   /// BUT-1034: success snackbar after cascading overflow recipes into the following week.
   ///
   /// In sv, this message translates to:
@@ -8869,12 +8863,6 @@ abstract class AppLocalizations {
   /// **'Kommentar (valfritt)'**
   String get menuCommentLabel;
 
-  /// No description provided for @menuDeleteConfirmation.
-  ///
-  /// In sv, this message translates to:
-  /// **'Är du säker på att du vill ta bort denna meny?'**
-  String get menuDeleteConfirmation;
-
   /// No description provided for @menuDeletedSuccess.
   ///
   /// In sv, this message translates to:
@@ -8886,12 +8874,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ta bort meny'**
   String get menuDeleteFailed;
-
-  /// No description provided for @menuDeleteTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ta bort meny'**
-  String get menuDeleteTitle;
 
   /// No description provided for @menuLoadedSuccess.
   ///

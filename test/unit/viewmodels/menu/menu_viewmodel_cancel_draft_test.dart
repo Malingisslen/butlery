@@ -20,6 +20,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_draft.dart';
@@ -29,6 +30,8 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
@@ -175,6 +178,7 @@ void main() {
       );
     users = MockUserService();
     stubOwnPreferences(users, _noPrefs);
+    when(() => users.attributionDisplayName).thenReturn('T');
     analytics = _Analytics();
     TestServiceLocator.registerMock<UserService>(users);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipes);
@@ -343,6 +347,114 @@ void main() {
     });
   });
 
+  group('the pool hint after a cancel', () {
+    const trackNuts = UserAllergenPreferences(
+      trackedAllergens: {'nötter'},
+      trackedDietary: {},
+    );
+    final nutCakeBlocked = _dinner('nut-cake', tags: _nuts(TriState.contains));
+    final nutBunBlocked = _dinner('nut-bun', tags: _nuts(TriState.contains));
+
+    void library(List<Recipe> all) => recipes.setRecipeState(
+      recipes: all,
+      currentUserId: 'u1',
+      currentUserDisplayName: 'T',
+      isInitialized: true,
+      isLoading: false,
+      error: null,
+    );
+
+    setUp(() {
+      stubOwnPreferences(users, trackNuts);
+      library([nutCakeBlocked, soup, stew]);
+    });
+
+    test('a cancelled run gives back the hidden count of the suggestion '
+        'that stays on screen', () async {
+      await generate('en middag', {
+        'Middag': [soup],
+      });
+      expect(vm.hiddenByFamilyCount, 1);
+
+      // The second run reads a pool where two recipes are hidden.
+      library([nutCakeBlocked, nutBunBlocked, soup, stew]);
+      menuService
+        ..next = {
+          'Middag': [stew],
+        }
+        ..hold = Completer<void>();
+      final run = vm.generateMenu('en annan middag');
+      await reachComputation();
+      expect(
+        vm.hiddenByFamilyCount,
+        2,
+        reason: 'the cancelled run read its own pool before it was cancelled',
+      );
+
+      vm.cancelGeneration();
+
+      expect(await run, MenuGenerationEnd.cancelled);
+      expect(vm.menu['Middag'], [soup]);
+      expect(vm.hiddenByFamilyCount, 1);
+      menuService.hold!.complete();
+    });
+
+    test('clearing the menu forgets the hidden count', () async {
+      await generate('en middag', {
+        'Middag': [soup],
+      });
+      expect(vm.hiddenByFamilyCount, 1);
+
+      vm.clearMenu();
+
+      expect(vm.hiddenByFamilyCount, 0);
+    });
+
+    test('loading a saved menu forgets the hidden count of the generated '
+        'one', () async {
+      await generate('en middag', {
+        'Middag': [soup],
+      });
+      expect(vm.hiddenByFamilyCount, 1);
+      expect(await vm.saveMenuWithNameAndComment('Veckan', ''), isTrue);
+      final saved = await prod.ServiceLocator.get<FirestoreRepository>()
+          .collection(FirestoreCollections.menus)
+          .get();
+      expect(saved.docs, isNotEmpty);
+
+      expect(await vm.loadSavedMenu(saved.docs.first.id), isTrue);
+
+      expect(vm.menu['Middag']!.map((r) => r.id), ['soup']);
+      expect(vm.hiddenByFamilyCount, 0);
+    });
+  });
+
+  group('the cancel event', () {
+    test('goes through the analytics service the view model was given, '
+        'not the one in the locator', () async {
+      final injected = _Analytics();
+      vm.dispose();
+      vm = MenuViewModel(
+        recipeService: recipes,
+        menuService: menuService,
+        analyticsService: injected,
+      );
+      menuService.hold = Completer<void>();
+      final run = vm.generateMenu('en middag');
+      await reachComputation();
+
+      vm.cancelGeneration();
+
+      expect(await run, MenuGenerationEnd.cancelled);
+      expect(injected.events, [AnalyticsEvents.menuGenerationCancelled]);
+      expect(
+        analytics.events,
+        isNot(contains(AnalyticsEvents.menuGenerationCancelled)),
+      );
+      menuService.hold!.complete();
+    });
+  });
+
   group('the draft', () {
     test('a generation is kept as the draft; a swap updates it', () async {
       await generate('två middagar', {
@@ -359,6 +471,35 @@ void main() {
         await storedDraft(),
         allOf(contains('stew'), isNot(contains('nut'))),
       );
+    });
+
+    test('a section re-roll updates the draft', () async {
+      await generate('en middag', {
+        'Middag': [soup],
+      });
+      expect(await storedDraft(), contains('soup'));
+
+      menuService.next = {
+        'Middag': [stew],
+      };
+      await vm.regenerateSection('Middag');
+
+      expect(vm.menu['Middag'], [stew]);
+      expect(
+        await storedDraft(),
+        allOf(contains('stew'), isNot(contains('soup'))),
+      );
+    });
+
+    test('saving the menu under a name deletes the draft', () async {
+      await generate('en middag', {
+        'Middag': [soup],
+      });
+      expect(await storedDraft(), isNotNull);
+
+      expect(await vm.saveMenuWithNameAndComment('Veckan', ''), isTrue);
+
+      expect(await storedDraft(), isNull);
     });
 
     test('a loaded shared menu is never written, even after a '

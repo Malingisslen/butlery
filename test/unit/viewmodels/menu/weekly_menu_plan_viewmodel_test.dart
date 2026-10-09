@@ -1422,6 +1422,46 @@ void main() {
         expect(viewModel.plan, same(week2));
       });
 
+      test('a slow read of the week the user left that then fails does not '
+          'put its error over the week now shown', () async {
+        final week1 = _plan(weekStart: DateTime(2026, 4, 13));
+        final week2 = _plan(weekStart: DateTime(2026, 4, 20));
+        final slow = Completer<WeeklyMenuPlanRead>();
+        when(
+          () => mockService.readWeek(week1.weekStartDate),
+        ).thenAnswer((_) => slow.future);
+        when(
+          () => mockService.readWeek(week2.weekStartDate),
+        ).thenAnswer((_) async => _read(week2));
+
+        final first = viewModel.loadWeek(DateTime(2026, 4, 13));
+        await viewModel.loadWeek(DateTime(2026, 4, 20));
+        expect(viewModel.plan, same(week2), reason: 'premise: week 2 is shown');
+
+        slow.completeError(StateError('network down'));
+        await first;
+
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.plan, same(week2));
+        expect(viewModel.currentWeekStart, week2.weekStartDate);
+      });
+
+      test('a slow read of the week still shown that then fails does set '
+          'the load error', () async {
+        final week1 = _plan(weekStart: DateTime(2026, 4, 13));
+        final slow = Completer<WeeklyMenuPlanRead>();
+        when(
+          () => mockService.readWeek(week1.weekStartDate),
+        ).thenAnswer((_) => slow.future);
+
+        final first = viewModel.loadWeek(DateTime(2026, 4, 13));
+        slow.completeError(StateError('network down'));
+        await first;
+
+        expect(viewModel.error, 'Kunde inte ladda veckomenyn');
+        expect(viewModel.plan, isNull);
+      });
+
       test(
         'previousWeek rewinds by 7 days from the current week anchor',
         () async {
