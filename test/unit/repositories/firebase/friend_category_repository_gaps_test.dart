@@ -96,6 +96,31 @@ void main() {
     });
   });
 
+  group('removeSelfFromCategory', () {
+    test('removes only the current user and stamps updatedAt', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, authedUserId: _bob);
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends', members: [_alice, _bob]),
+      );
+      final ref = firestore
+          .collection('users')
+          .doc(_alice)
+          .collection('friend_categories')
+          .doc('c1');
+      final updatedBefore = (await ref.get()).data()?['updatedAt'];
+
+      await repo.removeSelfFromCategory(_alice, 'c1');
+
+      final data = (await ref.get()).data();
+      expect(data?['friendUserIds'], [_alice]);
+      expect(data?['updatedAt'], isNotNull);
+      expect(data?['updatedAt'], isNot(updatedBefore));
+    });
+  });
+
   group('fetchMemberCategories', () {
     test('returns categories where user is a friendUserIds member', () async {
       final firestore = FakeFirebaseFirestore();

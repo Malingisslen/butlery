@@ -346,35 +346,34 @@ class FriendsCategoriesOperations {
       return null; // Not an error, just already removed
     }
 
-    if (!_canEditCategory(category)) {
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final isLeaving =
+        currentUserId != null &&
+        friendId == currentUserId &&
+        currentUserId != category.ownerId;
+
+    if (!isLeaving && !_canEditCategory(category)) {
       AppLogger.warning('No permission to edit category: $categoryId');
       return MemberRemovalFailure.noPermission;
     }
 
     try {
-      // Remove from friend-category relationships
-      final friendCategoryRelationships =
-          _getFriendCategoryRelationshipsInternal();
-
-      friendCategoryRelationships[friendId]?.remove(categoryId);
-      if (friendCategoryRelationships[friendId]?.isEmpty == true) {
-        friendCategoryRelationships.remove(friendId);
-      }
-
-      // Update the category's member list
-      final updatedMemberIds = category.friendUserIds
-          .where((id) => id != friendId)
-          .toList();
-
       final updatedCategory = category.copyWith(
-        friendUserIds: updatedMemberIds,
+        friendUserIds: category.friendUserIds
+            .where((id) => id != friendId)
+            .toList(),
         updatedAt: clock.now(),
       );
 
-      // Use the internal update method that handles caching and notifications
-      _updateCategoryInternalCallback(categoryId, updatedCategory);
-
-      await _syncCategoryToFirebaseInternal(updatedCategory);
+      // A member leaving has no local edit worth keeping if the server
+      // refuses it: the group must stay on screen and the leave must fail.
+      if (isLeaving) {
+        await _syncCategoryToFirebaseInternal(updatedCategory);
+        _applyMemberRemovalLocally(friendId, categoryId, updatedCategory);
+      } else {
+        _applyMemberRemovalLocally(friendId, categoryId, updatedCategory);
+        await _syncCategoryToFirebaseInternal(updatedCategory);
+      }
 
       AppLogger.success(
         '✅ Friend removed from category: ${friendId.maskedUserId} -> $categoryId',
@@ -388,6 +387,22 @@ class FriendsCategoriesOperations {
       AppLogger.error('Error removing friend from category', e);
       return MemberRemovalFailure.notSaved;
     }
+  }
+
+  void _applyMemberRemovalLocally(
+    String friendId,
+    String categoryId,
+    FriendCategory updatedCategory,
+  ) {
+    final friendCategoryRelationships =
+        _getFriendCategoryRelationshipsInternal();
+
+    friendCategoryRelationships[friendId]?.remove(categoryId);
+    if (friendCategoryRelationships[friendId]?.isEmpty == true) {
+      friendCategoryRelationships.remove(friendId);
+    }
+
+    _updateCategoryInternalCallback(categoryId, updatedCategory);
   }
 
   Future<bool> moveFriendToCategory({

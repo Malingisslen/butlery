@@ -81,11 +81,7 @@ class FriendsInternalOperations {
         if (currentUserId == category.ownerId) {
           await _categoryRepository.saveCategory(category.ownerId, category);
         } else {
-          // Non-owner: only add self as member (no full doc overwrite)
-          await _categoryRepository.addSelfToCategory(
-            category.ownerId,
-            category.id,
-          );
+          await _writeOwnMembership(category, currentUserId);
         }
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
@@ -124,11 +120,10 @@ class FriendsInternalOperations {
                     category.ownerId,
                     category,
                   );
+                } else if (retryUserId == null) {
+                  throw StateError('Cannot retry sync: not authenticated');
                 } else {
-                  await _categoryRepository.addSelfToCategory(
-                    category.ownerId,
-                    category.id,
-                  );
+                  await _writeOwnMembership(category, retryUserId);
                 }
                 AppLogger.success(
                   '✅ Retry succeeded: ${category.name} ($expectedMemberCount members)',
@@ -137,6 +132,20 @@ class FriendsInternalOperations {
               }
             }
           } catch (verifyError) {
+            // A leave that landed takes away the leaver's own read, so the
+            // check read is denied.
+            final uid = _authRepository.currentUser?.uid;
+            final wasOwnLeave =
+                uid != null &&
+                uid != category.ownerId &&
+                !category.friendUserIds.contains(uid);
+            if (wasOwnLeave &&
+                verifyError.toString().contains('permission-denied')) {
+              AppLogger.success(
+                '✅ Leave confirmed by the denied check read: ${category.name}',
+              );
+              return;
+            }
             AppLogger.warning('Could not verify save: $verifyError');
           }
         }
@@ -153,6 +162,25 @@ class FriendsInternalOperations {
       }
     } else {
       AppLogger.warning('Invalid category type for Firebase sync');
+    }
+  }
+
+  // A non-owner may only change their own uid in the member list, never
+  // overwrite the document; the category they hand in says whether they stay.
+  Future<void> _writeOwnMembership(
+    FriendCategory category,
+    String currentUserId,
+  ) async {
+    if (category.friendUserIds.contains(currentUserId)) {
+      await _categoryRepository.addSelfToCategory(
+        category.ownerId,
+        category.id,
+      );
+    } else {
+      await _categoryRepository.removeSelfFromCategory(
+        category.ownerId,
+        category.id,
+      );
     }
   }
 

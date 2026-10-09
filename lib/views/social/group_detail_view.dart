@@ -422,6 +422,11 @@ class _GroupDetailViewState extends State<GroupDetailView>
           '/friends',
           arguments: {'tabIndex': 1},
         );
+      } else if (!success && mounted) {
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.groupLeaveFailed,
+        );
       }
     }
   }
