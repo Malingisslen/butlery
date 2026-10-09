@@ -1,6 +1,7 @@
 // lib/repositories/firebase/firebase_data_export_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show protected;
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -75,7 +76,9 @@ enum ExportResourceType {
   // BUT-2114: the user's own likes, read by collection group.
   likes('likes'),
   // BUT-2118: the user's own ballot documents on live menus.
-  liveMenuVotes('live_menu_votes')
+  liveMenuVotes('live_menu_votes'),
+  // BUT-2082: titles of the recipes the user commented on or rated.
+  recipeTitles('users/{owner}/recipes title')
   ;
 
   const ExportResourceType(this.tag);
@@ -1049,6 +1052,72 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         'data': doc.data(),
       };
     }).toList();
+  }
+
+  /// BUT-2082: the current title of each recipe in [recipes], keyed
+  /// `'ownerId/recipeId'`. Every read is a server `get` made as the user, so
+  /// the recipe read rule decides and a title comes back only for a recipe the
+  /// user can open in the app now; a cached copy never answers. A refused or
+  /// missing recipe, or an id that is not a single path segment, is left out
+  /// without a trace. Any other failure is left out too and sets `failed`, the
+  /// one outcome the caller may report, because it is our read failing rather
+  /// than a fact about the recipe's owner.
+  Future<({Map<String, String> titles, bool failed})> exportRecipeTitles(
+    String userId,
+    Iterable<({String ownerId, String recipeId})> recipes,
+  ) async {
+    await _guardSelfExport(userId, ExportResourceType.recipeTitles);
+    bool isSegment(String id) =>
+        id.isNotEmpty &&
+        !id.contains('/') &&
+        id != '.' &&
+        id != '..' &&
+        !(id.startsWith('__') && id.endsWith('__'));
+    final pending = recipes
+        .where((r) => isSegment(r.ownerId) && isSegment(r.recipeId))
+        .toList();
+    final titles = <String, String>{};
+    var failed = false;
+    const concurrency = 10;
+    for (var i = 0; i < pending.length; i += concurrency) {
+      await Future.wait(
+        pending.skip(i).take(concurrency).map((r) async {
+          try {
+            final data = await readRecipeForTitle(r.ownerId, r.recipeId);
+            // Nested under `core`, flat on documents written before it was.
+            final core = data?['core'];
+            final title = core is Map ? core['title'] : data?['title'];
+            if (title is String && title.isNotEmpty) {
+              titles['${r.ownerId}/${r.recipeId}'] = title;
+            }
+          } on FirebaseException catch (e) {
+            if (e.code == 'permission-denied' || e.code == 'not-found') return;
+            AppLogger.warning('Recipe title lookup failed: ${e.code}');
+            failed = true;
+          } catch (e) {
+            AppLogger.warning('Recipe title lookup failed: $e');
+            failed = true;
+          }
+        }),
+      );
+    }
+    return (titles: titles, failed: failed);
+  }
+
+  /// The single read behind [exportRecipeTitles]; a seam so a test can stage
+  /// the refusals the fake Firestore cannot.
+  @protected
+  Future<Map<String, dynamic>?> readRecipeForTitle(
+    String ownerId,
+    String recipeId,
+  ) async {
+    final doc = await firestore
+        .collection(FirestoreCollections.users)
+        .doc(ownerId)
+        .collection(FirestoreCollections.userRecipes)
+        .doc(recipeId)
+        .get(const GetOptions(source: Source.server));
+    return doc.data();
   }
 
   /// `pings` collection-group where `fromUserId == userId` — group pings the
