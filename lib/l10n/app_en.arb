@@ -9518,6 +9518,14 @@
   "notificationsErrorLoad": "Could not load notifications",
   "notificationsSelectedCount": "{count} selected",
   "notificationsMarkAllRead": "Mark all as read",
+  "notificationsDismissed": "{count, plural, =1{Notification removed} other{{count} notifications removed}}",
+  "@notificationsDismissed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "allergenIncludeUnknownTitle": "Show unknown allergen status",
   "allergenIncludeUnknownSubtitle": "Include recipes with unknown allergen status in menu suggestions",
   "tagDecisionWhyTitle": "Why this tag?",

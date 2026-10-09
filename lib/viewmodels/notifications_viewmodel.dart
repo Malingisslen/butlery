@@ -15,6 +15,10 @@ class NotificationsViewModel extends BaseViewModel {
   bool _hasMore = true;
   bool _isLoadingMore = false;
 
+  // Hidden under a live Ångra but not deleted yet, so a reload inside the
+  // window must not bring them back.
+  final Set<String> _pendingDismissIds = {};
+
   List<NotificationHistoryEntry> get entries => List.unmodifiable(_entries);
   bool get hasMore => _hasMore;
   bool get isLoadingMore => _isLoadingMore;
@@ -30,7 +34,7 @@ class NotificationsViewModel extends BaseViewModel {
       final results = await _notificationService.getNotificationHistory(
         limit: 20,
       );
-      _entries = results;
+      _entries = _withoutPending(results);
       _hasMore = results.length == 20;
     });
   }
@@ -47,7 +51,7 @@ class NotificationsViewModel extends BaseViewModel {
         limit: 20,
         before: _entries.last.sentAt,
       );
-      _entries = [..._entries, ...results];
+      _entries = [..._entries, ..._withoutPending(results)];
       _hasMore = results.length == 20;
     } catch (e) {
       AppLogger.warning('Failed to load more notifications: $e');
@@ -56,6 +60,12 @@ class NotificationsViewModel extends BaseViewModel {
       notifyListeners();
     }
   }
+
+  List<NotificationHistoryEntry> _withoutPending(
+    List<NotificationHistoryEntry> results,
+  ) => _pendingDismissIds.isEmpty
+      ? results
+      : results.where((e) => !_pendingDismissIds.contains(e.id)).toList();
 
   /// Pull-to-refresh: reloads from the beginning.
   Future<void> refresh() async {
@@ -108,24 +118,41 @@ class NotificationsViewModel extends BaseViewModel {
     );
   }
 
-  /// BUT-1080: optimistically removes the selected entries (by doc id) and
-  /// fires the batched delete. Returns the number removed locally.
-  Future<int> dismissSelected(Set<String> entryIds) async {
-    if (entryIds.isEmpty) return 0;
-    final removed = _entries.where((e) => entryIds.contains(e.id)).length;
-    if (removed == 0) return 0;
+  /// BUT-1080 + BUT-2225: hides the selected entries (by doc id) at once
+  /// and returns them. Nothing is deleted yet: the caller commits with
+  /// [commitDismiss] once the Ångra window closes, or puts them back with
+  /// [undoDismiss].
+  List<NotificationHistoryEntry> hideSelected(Set<String> entryIds) {
+    final hidden = _entries.where((e) => entryIds.contains(e.id)).toList();
+    if (hidden.isEmpty) return const [];
 
+    _pendingDismissIds.addAll(hidden.map((e) => e.id));
     _entries = _entries.where((e) => !entryIds.contains(e.id)).toList();
     notifyListeners();
+    return hidden;
+  }
 
-    unawaited(
-      _notificationService
-          .deleteHistoryNotifications(entryIds.toList())
-          .catchError((e) {
-            AppLogger.warning('Failed to dismiss notifications: $e');
-            return 0;
-          }),
-    );
-    return removed;
+  /// Puts entries hidden by [hideSelected] back, newest first.
+  void undoDismiss(List<NotificationHistoryEntry> hidden) {
+    if (hidden.isEmpty) return;
+    _pendingDismissIds.removeAll(hidden.map((e) => e.id));
+    final present = _entries.map((e) => e.id).toSet();
+    _entries = [..._entries, ...hidden.where((e) => !present.contains(e.id))]
+      ..sort((a, b) => b.sentAt.compareTo(a.sentAt));
+    notifyListeners();
+  }
+
+  /// Deletes entries hidden by [hideSelected]. A failed delete is logged,
+  /// not rolled back: the entries stay hidden until the next refresh.
+  Future<void> commitDismiss(List<NotificationHistoryEntry> hidden) async {
+    if (hidden.isEmpty) return;
+    final ids = hidden.map((e) => e.id).toList();
+    try {
+      await _notificationService.deleteHistoryNotifications(ids);
+    } catch (e) {
+      AppLogger.warning('Failed to dismiss notifications: $e');
+    } finally {
+      _pendingDismissIds.removeAll(ids);
+    }
   }
 }

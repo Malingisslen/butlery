@@ -9598,6 +9598,14 @@
     }
   },
   "notificationsMarkAllRead": "Markera alla som lästa",
+  "notificationsDismissed": "{count, plural, =1{Aviseringen togs bort} other{{count} aviseringar togs bort}}",
+  "@notificationsDismissed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@notificationsMarkAllRead": {
     "description": "Notifications view app-bar overflow action — bulk-marks every unread notification as read (BUT-952)."
   },
