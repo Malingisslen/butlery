@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
+import '../../test_support/semantics_announcement.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -262,9 +263,12 @@ void main() {
         // Tap the thumbnail (the InkWell wrapping it has the semantics label).
         final handle = tester.ensureSemantics();
         final thumb = find.bySemanticsLabel(
-          RegExp(r'Öppna relaterat recept: Pastasås'),
+          RegExp(r'^Öppna relaterat recept'),
         );
         expect(thumb, findsOneWidget);
+        expect(announcedLines(tester, thumb), contains('Pastasås'));
+        expectNothingAnnouncedTwice(tester, thumb);
+        expectActivatable(tester, thumb);
         handle.dispose();
 
         await tester.tap(thumb);

@@ -122,7 +122,7 @@ class _RelatedThumbnail extends StatelessWidget {
     final url = recipe.displayThumbnailUrl;
 
     return Semantics(
-      label: context.l10n.a11yRelatedRecipeThumbnail(recipe.title),
+      label: context.l10n.a11yRelatedRecipeThumbnail,
       button: true,
       child: PressFill(
         surface: PressSurface.base,

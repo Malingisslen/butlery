@@ -533,9 +533,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         child: Semantics(
                           identifier: 'btn-favorite-recipe',
                           button: true,
-                          label: recipe.isFavorite
-                              ? context.l10n.favoritesRemove
-                              : context.l10n.favoritesAdd,
                           child: RecipeHeroButton(
                             ringVisible: recipe.imageUrls.isNotEmpty,
                             icon: recipe.isFavorite
@@ -567,7 +564,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       child: Semantics(
                         identifier: 'btn-share-friends',
                         button: true,
-                        label: context.l10n.recipeShareWithFriends,
                         child: RecipeHeroButton(
                           ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.users,
@@ -584,7 +580,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       child: Semantics(
                         identifier: 'btn-share-recipe',
                         button: true,
-                        label: context.l10n.recipeShareExternal,
                         child: RecipeHeroButton(
                           ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.share2,

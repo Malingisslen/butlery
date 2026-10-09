@@ -8134,20 +8134,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yTagSelected(String tagName) {
-    return '$tagName, selected. Double tap to remove.';
-  }
-
-  @override
-  String a11yTagUnselected(String tagName) {
-    return '$tagName. Double tap to select.';
-  }
-
-  @override
   String get a11ySharedShoppingList => 'Shared shopping list';
 
   @override
-  String get a11yPrimaryImageTap => 'Primary image, tap to view full size';
+  String get a11yPrimaryImageTap => 'Tap to view full size';
 
   @override
   String get a11ySelectAsPrimary => 'Select as primary image';
@@ -8156,7 +8146,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yAddImage => 'Add image';
 
   @override
-  String get a11yRemoveImage => 'Remove image';
+  String get a11yAddImageSlot => 'Image';
 
   @override
   String get a11yViewFullSizeImage => 'View full size image';
@@ -8245,9 +8235,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yShowImage => 'Show image';
 
   @override
-  String a11yShowMore(int count) {
-    return 'Show $count more';
-  }
+  String get a11yShowMore => 'Show more';
 
   @override
   String a11yEditItem(String name) {
@@ -13504,14 +13492,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yOcrComplete => 'Text extraction complete';
 
   @override
-  String a11yCookingModeIngredient(String ingredient) {
-    return '$ingredient';
-  }
-
-  @override
-  String a11yCookingModeStep(int step, String instruction) {
-    return 'Step $step: $instruction';
-  }
+  String get a11yCookingModeStep => 'Step';
 
   @override
   String get tooltipShowPassword => 'Show password';
@@ -14414,9 +14395,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookingActiveTimersTitle => 'Active timers';
 
   @override
-  String a11yActiveTimer(String label, String time) {
-    return 'Timer $label: $time remaining';
+  String a11yActiveTimer(String label) {
+    return 'Timer $label: time left';
   }
+
+  @override
+  String get a11yActiveTimerUnnamed => 'Timer: time left';
 
   @override
   String get pauseTimer => 'Pause';
@@ -14676,17 +14660,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yCommentReplyAction => 'Reply to comment';
 
   @override
-  String a11yBulkUploadAction(String label) {
-    return '$label';
-  }
-
-  @override
   String a11yEditImageAction(String label) {
     return '$label';
   }
-
-  @override
-  String get a11yEmptyImageStateAdd => 'Add image, tap to choose';
 
   @override
   String get a11yImagePickerOpen => 'Choose images';
@@ -14778,9 +14754,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yRefineMenuPrompt => 'Refine the menu prompt';
 
   @override
-  String a11yAddIngredient(String name) {
-    return 'Add $name';
-  }
+  String get a11yAddIngredient => 'Add';
 
   @override
   String a11yQuickFilter(String label) {
@@ -14798,7 +14772,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String a11yReplaceWithSubstitute(String name) {
-    return 'Replace with $name in recipe';
+    return 'Substitute: $name';
   }
 
   @override
@@ -14874,17 +14848,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yToggleFullscreenChrome => 'Show or hide controls';
 
   @override
-  String get a11yCommentsToggle => 'Comments';
+  String get a11yCommentsToggle => 'Show or hide';
 
   @override
-  String a11yShowSubstitutionsFor(String ingredient) {
-    return 'Show substitutions for $ingredient';
-  }
+  String get a11yShowSubstitutionsFor => 'Show substitutions';
 
   @override
-  String a11yToggleStepDone(int step) {
-    return 'Mark step $step as done or undone';
-  }
+  String get a11yToggleStepDone => 'Mark as done or undone';
 
   @override
   String get a11yRemoveOwnRating => 'Remove my rating';
@@ -14895,14 +14865,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yCookingStepLongPressTimer(int step) {
-    return 'Step $step, long-press to start timer';
-  }
+  String get a11yCookingStepLongPressTimer => 'Long-press to start timer';
 
   @override
-  String a11yStartTimerForPhrase(String phrase) {
-    return 'Start timer: $phrase';
-  }
+  String get a11yStartTimerForPhrase => 'Start timer';
 
   @override
   String get a11yArchivedConversationsToggle =>
@@ -15063,9 +15029,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yRelatedRecipeThumbnail(String title) {
-    return 'Open related recipe: $title';
-  }
+  String get a11yRelatedRecipeThumbnail => 'Open related recipe';
 
   @override
   String get familyTitle => 'My family';
@@ -15343,9 +15307,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pooledHouseholdLabel => 'everyone in your kitchen';
 
   @override
-  String a11yPooledHouseholdPill(String rating) {
-    return 'Your kitchen\'s rating $rating';
-  }
+  String get a11yPooledHouseholdPill => 'Your kitchen\'s rating';
 
   @override
   String familyRatingProxyEntered(String name) {

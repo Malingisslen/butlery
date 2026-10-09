@@ -846,53 +846,50 @@ class _IngredientsPanel extends StatelessWidget {
                   );
                 }
                 final line = row as IngredientLineRow;
-                return Semantics(
-                  label: context.l10n.a11yCookingModeIngredient(line.text),
+                return GestureDetector(
                   // BUT-202: long-press → substitution suggestions sheet.
                   // BUT-948 exception: long-press activates substitutions
                   // (feature affordance), not multi-select.
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onLongPress: () => _showSubstitutionSheet(
-                      context,
-                      vm,
-                      line.ingredientIndex,
+                  behavior: HitTestBehavior.opaque,
+                  onLongPress: () => _showSubstitutionSheet(
+                    context,
+                    vm,
+                    line.ingredientIndex,
+                  ),
+                  // BUT-2194: a row is a control (long press), so it is at
+                  // least 48 dp tall (tokens.json touchTarget).
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppDimensions.minTouchTarget,
                     ),
-                    // BUT-2194: a row is a control (long press), so it is at
-                    // least 48 dp tall (tokens.json touchTarget).
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: AppDimensions.minTouchTarget,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppDimensions.space4,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.space4,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              margin: const EdgeInsetsDirectional.only(
-                                top: 8,
-                                end: 12,
-                              ),
-                              decoration: BoxDecoration(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsetsDirectional.only(
+                              top: 8,
+                              end: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cs.onPrimary,
+                              shape: BoxShape.rectangle,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              line.text,
+                              style: AppTextStyles.bodyLarge.copyWith(
                                 color: cs.onPrimary,
-                                shape: BoxShape.rectangle,
                               ),
                             ),
-                            Expanded(
-                              child: Text(
-                                line.text,
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  color: cs.onPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1152,10 +1149,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                 return KeyedSubtree(
                   key: _stepKeys[index],
                   child: Semantics(
-                    label: context.l10n.a11yCookingModeStep(
-                      stepNumber,
-                      instruction,
-                    ),
+                    label: context.l10n.a11yCookingModeStep,
                     child: GestureDetector(
                       onTap: () => vm.goToStep(index),
                       child: Padding(
@@ -1218,10 +1212,9 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                               const SizedBox(width: AppDimensions.spacingMd),
                               Expanded(
                                 child: Semantics(
-                                  label: context.l10n
-                                      .a11yCookingStepLongPressTimer(
-                                        stepNumber,
-                                      ),
+                                  label: context
+                                      .l10n
+                                      .a11yCookingStepLongPressTimer,
                                   button: true,
                                   child: GestureDetector(
                                     // BUT-406: long-press opens a step timer

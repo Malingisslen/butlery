@@ -35,20 +35,26 @@ class EmptyImageState extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: Semantics(
-          label: context.l10n.a11yEmptyImageStateAdd,
-          button: true,
-          enabled: !isLoading,
-          child: InkWell(
-            onTap: isLoading ? null : onTap,
-            borderRadius: borderRadius,
-            child: Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: isLoading
-                      ? _buildLoadingContent()
-                      : _buildIdleContent(),
+        // The scroll view splits the visible texts into their own nodes, so
+        // merge them into the button instead of naming it a second time.
+        child: MergeSemantics(
+          child: Semantics(
+            button: true,
+            enabled: !isLoading,
+            // The plate line's own live region is excluded below, because
+            // its label repeats the text next to it.
+            liveRegion: isLoading,
+            child: InkWell(
+              onTap: isLoading ? null : onTap,
+              borderRadius: borderRadius,
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: isLoading
+                        ? _buildLoadingContent()
+                        : _buildIdleContent(),
+                  ),
                 ),
               ),
             ),
@@ -64,9 +70,9 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) {
           // The plate line, not a spinner (Grafisk manual v6:209). The
           // text under it says what is happening.
-          return SizedBox(
+          return const SizedBox(
             width: AppDimensions.iconSizeXl * 2,
-            child: PlateLine(semanticLabel: context.l10n.imageAddingImage),
+            child: ExcludeSemantics(child: PlateLine()),
           );
         },
       ),

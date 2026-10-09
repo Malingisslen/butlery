@@ -197,7 +197,6 @@ class UploadProgressWidgets {
             side: BorderSide(color: cs.outlineVariant),
           ),
           child: Semantics(
-            label: context.l10n.a11yBulkUploadAction(label),
             button: true,
             child: InkWell(
               onTap: onTap,
@@ -448,7 +447,6 @@ class UploadProgressWidgets {
             ? context.modeColors.onActionDanger
             : cs.primary;
         return Semantics(
-          label: context.l10n.a11yBulkUploadAction(label),
           button: true,
           child: Material(
             color: fill,

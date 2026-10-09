@@ -5688,27 +5688,14 @@
       }
     }
   },
-  "a11yTagSelected": "{tagName}, selected. Double tap to remove.",
-  "@a11yTagSelected": {
-    "placeholders": {
-      "tagName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yTagUnselected": "{tagName}. Double tap to select.",
-  "@a11yTagUnselected": {
-    "placeholders": {
-      "tagName": {
-        "type": "String"
-      }
-    }
-  },
   "a11ySharedShoppingList": "Shared shopping list",
-  "a11yPrimaryImageTap": "Primary image, tap to view full size",
+  "a11yPrimaryImageTap": "Tap to view full size",
   "a11ySelectAsPrimary": "Select as primary image",
   "a11yAddImage": "Add image",
-  "a11yRemoveImage": "Remove image",
+  "a11yAddImageSlot": "Image",
+  "@a11yAddImageSlot": {
+    "description": "Semantics label for the add-image slot in the image grid; the visible text carries the action and the remaining count."
+  },
   "a11yViewFullSizeImage": "View full size image",
   "a11yViewFullSizeImageOf": "View full size image {current} of {total}",
   "@a11yViewFullSizeImageOf": {
@@ -5787,14 +5774,7 @@
   "a11yAllergenStatusRow": "Allergen status",
   "a11yDietaryStatusRow": "Dietary status",
   "a11yShowImage": "Show image",
-  "a11yShowMore": "Show {count} more",
-  "@a11yShowMore": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "a11yShowMore": "Show more",
   "a11yEditItem": "Edit {name}",
   "@a11yEditItem": {
     "placeholders": {
@@ -9405,25 +9385,7 @@
   "a11yItemBought": "Marked as bought",
   "a11yItemUnbought": "Marked as not bought",
   "a11yOcrComplete": "Text extraction complete",
-  "a11yCookingModeIngredient": "{ingredient}",
-  "@a11yCookingModeIngredient": {
-    "placeholders": {
-      "ingredient": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yCookingModeStep": "Step {step}: {instruction}",
-  "@a11yCookingModeStep": {
-    "placeholders": {
-      "step": {
-        "type": "int"
-      },
-      "instruction": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yCookingModeStep": "Step",
   "tooltipShowPassword": "Show password",
   "tooltipHidePassword": "Hide password",
   "tooltipSendMessage": "Send message",
@@ -10018,19 +9980,19 @@
   "@cookingActiveTimersTitle": {
     "description": "BUT-1242: header of the active-timers overview strip in cooking mode."
   },
-  "a11yActiveTimer": "Timer {label}: {time} remaining",
+  "a11yActiveTimer": "Timer {label}: time left",
   "@a11yActiveTimer": {
     "description": "BUT-1242: screen-reader label for one chip in the active-timers overview.",
     "placeholders": {
       "label": {
         "type": "String",
         "example": "Boil pasta"
-      },
-      "time": {
-        "type": "String",
-        "example": "08:30"
       }
     }
+  },
+  "a11yActiveTimerUnnamed": "Timer: time left",
+  "@a11yActiveTimerUnnamed": {
+    "description": "BUT-1953: screen-reader label for an active-timers chip whose timer has no name; the remaining time is the visible text."
   },
   "pauseTimer": "Pause",
   "@pauseTimer": {
@@ -10416,15 +10378,6 @@
   "@a11yCommentReplyAction": {
     "description": "Semantics label for the reply button on a comment item (legacy threaded view)."
   },
-  "a11yBulkUploadAction": "{label}",
-  "@a11yBulkUploadAction": {
-    "description": "Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "a11yEditImageAction": "{label}",
   "@a11yEditImageAction": {
     "description": "Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
@@ -10433,10 +10386,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yEmptyImageStateAdd": "Add image, tap to choose",
-  "@a11yEmptyImageStateAdd": {
-    "description": "Semantics label for the empty-state image picker tap target."
   },
   "a11yImagePickerOpen": "Choose images",
   "@a11yImagePickerOpen": {
@@ -10581,14 +10530,9 @@
   "@a11yRefineMenuPrompt": {
     "description": "Semantics label for the refine-prompt link in the parsed-extraction trace."
   },
-  "a11yAddIngredient": "Add {name}",
+  "a11yAddIngredient": "Add",
   "@a11yAddIngredient": {
-    "description": "Semantics label for an ingredient suggestion row in the autocomplete list.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an ingredient suggestion row in the autocomplete list."
   },
   "a11yQuickFilter": "Filter by {label}",
   "@a11yQuickFilter": {
@@ -10612,7 +10556,7 @@
   "@a11yHeirloomScanOpenFullscreen": {
     "description": "Semantics label for the tap surface over the heirloom scan image on recipe detail."
   },
-  "a11yReplaceWithSubstitute": "Replace with {name} in recipe",
+  "a11yReplaceWithSubstitute": "Substitute: {name}",
   "@a11yReplaceWithSubstitute": {
     "description": "Semantics label for the replace-with-substitute action in the cooking-mode substitution sheet.",
     "placeholders": {
@@ -10701,27 +10645,17 @@
   "@a11yToggleFullscreenChrome": {
     "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
   },
-  "a11yCommentsToggle": "Comments",
+  "a11yCommentsToggle": "Show or hide",
   "@a11yCommentsToggle": {
     "description": "Semantics label for the comments-section toggle. Expanded/collapsed state is announced separately via Semantics(toggled:)."
   },
-  "a11yShowSubstitutionsFor": "Show substitutions for {ingredient}",
+  "a11yShowSubstitutionsFor": "Show substitutions",
   "@a11yShowSubstitutionsFor": {
-    "description": "Semantics label for tapping an ingredient row to open its substitution sheet.",
-    "placeholders": {
-      "ingredient": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for tapping an ingredient row to open its substitution sheet."
   },
-  "a11yToggleStepDone": "Mark step {step} as done or undone",
+  "a11yToggleStepDone": "Mark as done or undone",
   "@a11yToggleStepDone": {
-    "description": "Semantics label for tapping an instruction row to toggle its completion.",
-    "placeholders": {
-      "step": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for tapping an instruction row to toggle its completion."
   },
   "a11yRemoveOwnRating": "Remove my rating",
   "@a11yRemoveOwnRating": {
@@ -10739,23 +10673,13 @@
       }
     }
   },
-  "a11yCookingStepLongPressTimer": "Step {step}, long-press to start timer",
+  "a11yCookingStepLongPressTimer": "Long-press to start timer",
   "@a11yCookingStepLongPressTimer": {
-    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer.",
-    "placeholders": {
-      "step": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer."
   },
-  "a11yStartTimerForPhrase": "Start timer: {phrase}",
+  "a11yStartTimerForPhrase": "Start timer",
   "@a11yStartTimerForPhrase": {
-    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).",
-    "placeholders": {
-      "phrase": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604)."
   },
   "a11yArchivedConversationsToggle": "Show or hide the conversations",
   "@a11yArchivedConversationsToggle": {
@@ -10979,14 +10903,9 @@
       }
     }
   },
-  "a11yRelatedRecipeThumbnail": "Open related recipe: {title}",
+  "a11yRelatedRecipeThumbnail": "Open related recipe",
   "@a11yRelatedRecipeThumbnail": {
-    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view."
   },
   "familyTitle": "My family",
   "familyIntro": "Everyone who eats at home with you. Adults and teens (15+) have their own accounts; children and guests are added as family members.",
@@ -11202,14 +11121,7 @@
   },
   "pooledCommunityLabel": "butlery rating",
   "pooledHouseholdLabel": "everyone in your kitchen",
-  "a11yPooledHouseholdPill": "Your kitchen's rating {rating}",
-  "@a11yPooledHouseholdPill": {
-    "placeholders": {
-      "rating": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPooledHouseholdPill": "Your kitchen's rating",
   "familyRatingProxyEntered": "entered by {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
