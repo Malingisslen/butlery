@@ -414,6 +414,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     Semantics(
                       label: context.l10n.a11yReactToComment,
                       button: true,
+                      excludeSemantics: true,
+                      onTap: _showReactionPicker,
                       child: GestureDetector(
                         onTap: _showReactionPicker,
                         child: Row(
@@ -442,7 +444,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                 if (comment.likeCount > 0) ...[
                   const SizedBox(height: AppDimensions.space4),
                   Semantics(
-                    label: context.l10n.a11yShowCommentLikes(comment.likeCount),
+                    label: context.l10n.a11yShowCommentLikes,
                     button: true,
                     child: GestureDetector(
                       onTap: widget.onShowLikes,

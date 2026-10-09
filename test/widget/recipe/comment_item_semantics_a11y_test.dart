@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -88,10 +89,10 @@ void main() {
       ),
     );
 
-    expect(
-      find.bySemanticsLabel(RegExp(r'Reagera på kommentar')),
-      findsWidgets,
-    );
+    final react = find.bySemanticsLabel(RegExp(r'^Reagera på kommentar'));
+    expect(react, findsWidgets);
+    expectNothingAnnouncedTwice(tester, react.first);
+    expectActivatable(tester, react.first);
     handle.dispose();
   });
 
@@ -119,8 +120,12 @@ void main() {
     );
 
     expect(
-      find.bySemanticsLabel(RegExp(r'Visa 3 gilla-markeringar')),
-      findsWidgets,
+      find.bySemanticsLabel(RegExp(r'^Visa vem som gillat')),
+      findsOneWidget,
+    );
+    expectNothingAnnouncedTwice(
+      tester,
+      find.bySemanticsLabel(RegExp(r'^Visa vem som gillat')),
     );
     handle.dispose();
   });

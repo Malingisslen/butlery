@@ -96,7 +96,9 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
             Positioned(
               top: AppDimensions.spacingXs,
               right: AppDimensions.spacingXs,
-              child: _CounterBadge(current: _index + 1, total: urls.length),
+              child: ExcludeSemantics(
+                child: _CounterBadge(current: _index + 1, total: urls.length),
+              ),
             ),
           ],
         ),

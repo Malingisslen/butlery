@@ -128,7 +128,6 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       child: Material(
         color: Colors.transparent,
         child: Semantics(
-          label: context.l10n.a11yImagePickerOpen,
           button: true,
           enabled: !_isLoading,
           child: InkWell(

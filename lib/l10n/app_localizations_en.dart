@@ -5433,11 +5433,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeMoveToSectionNone => 'No heading';
 
   @override
-  String a11yIngredientHeadingField(String label) {
-    return 'Heading $label';
-  }
-
-  @override
   String get recipeLeaveWithoutSaving => 'Leave without saving';
 
   @override
@@ -14640,15 +14635,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yReactToComment => 'React to comment';
 
   @override
-  String a11yShowCommentLikes(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Show $count likes',
-      one: 'Show 1 like',
-    );
-    return '$_temp0';
-  }
+  String get a11yShowCommentLikes => 'Show who liked';
 
   @override
   String get a11yLongPressCommentForReactions => 'Comment, long press to react';
@@ -14663,9 +14650,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yEditImageAction(String label) {
     return '$label';
   }
-
-  @override
-  String get a11yImagePickerOpen => 'Choose images';
 
   @override
   String a11yImagePickerRemove(int index) {
@@ -14715,14 +14699,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yShelfRecipeOpen(String title) {
-    return '$title, tap to open';
-  }
+  String get a11yShelfRecipeOpen => 'Open recipe';
 
   @override
-  String a11yCookSnapOptions(String name) {
-    return 'Cooking photo by $name, long press for options';
-  }
+  String get a11yCookSnapOptions => 'Cooking photo, long press for options';
 
   @override
   String get a11yConversationOpen => 'Open conversation';
@@ -14975,12 +14955,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleConfidenceSection => 'Show parse quality per ingredient';
-
-  @override
-  String a11yIngredientWithConfidence(String name, String confidence) {
-    return '$name, $confidence';
-  }
+  String get a11yToggleConfidenceSection => 'Show or hide';
 
   @override
   String get a11yConfidenceHigh => 'high parse quality';
@@ -15019,14 +14994,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeRelatedUnlinkError => 'Could not remove link';
 
   @override
-  String a11yRelatedRecipeChip(String title) {
-    return 'Linked recipe: $title';
-  }
+  String get a11yRelatedRecipeChip => 'Linked recipe';
 
   @override
-  String a11yRemoveRelatedRecipe(String title) {
-    return 'Remove link to $title';
-  }
+  String get a11yRemoveRelatedRecipe => 'Remove link';
 
   @override
   String get a11yRelatedRecipeThumbnail => 'Open related recipe';

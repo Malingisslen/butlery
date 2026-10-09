@@ -3,7 +3,7 @@
 // localized Semantics label discoverable via `find.bySemanticsLabel`.
 //
 // Note: Semantics merging concatenates the wrapper label with descendant text
-// labels (e.g. "Lägg till bild i galleriet\nLägg till"). The tests use
+// labels. The tests use
 // RegExp prefix matchers so they assert the wrapper label is the leading text
 // without depending on which descendants merge in.
 
@@ -85,10 +85,10 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Lägg till bild i galleriet')),
-        findsOneWidget,
-      );
+      final add = find.bySemanticsLabel(RegExp(r'^Lägg till bild i galleriet'));
+      expect(add, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, add);
+      expectActivatable(tester, add);
       handle.dispose();
     });
 
@@ -146,7 +146,9 @@ void main() {
         ),
       );
 
-      expect(find.bySemanticsLabel(RegExp(r'^Välj bilder')), findsOneWidget);
+      final picker = find.bySemanticsLabel(RegExp(r'^Välj bilder'));
+      expect(picker, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, picker);
       handle.dispose();
     });
 

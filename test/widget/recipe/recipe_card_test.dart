@@ -15,6 +15,7 @@ import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   group('RecipeCard', () {
@@ -967,6 +968,31 @@ void main() {
           expect(find.textContaining('alla'), findsOneWidget);
         },
       );
+
+      testWidgets('family and alla pills each announce their label alone', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await pump(
+          tester,
+          withCore(
+            testRecipe,
+            familyAverage: 4.2,
+            familyRatingCount: 3,
+            averageRating: 4.5,
+          ),
+        );
+
+        // The pills merge into the card's node; the visible "familj 4,2" /
+        // "alla 4,5" paraphrase the labels, so count lines carrying each value.
+        final lines = announcedLines(
+          tester,
+          find.bySemanticsLabel(RegExp('Familjebetyg 4,2')),
+        );
+        expect(lines.where((l) => l.contains('4,2')), ['Familjebetyg 4,2']);
+        expect(lines.where((l) => l.contains('4,5')), ['Allas betyg 4,5']);
+        handle.dispose();
+      });
 
       // ── Butlery-betyget community pill (AC7) ──
       testWidgets(

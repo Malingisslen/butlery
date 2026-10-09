@@ -5432,11 +5432,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeMoveToSectionNone => 'Ingen rubrik';
 
   @override
-  String a11yIngredientHeadingField(String label) {
-    return 'Rubrik $label';
-  }
-
-  @override
   String get recipeLeaveWithoutSaving => 'Lämna utan att spara';
 
   @override
@@ -14659,15 +14654,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yReactToComment => 'Reagera på kommentar';
 
   @override
-  String a11yShowCommentLikes(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Visa $count gilla-markeringar',
-      one: 'Visa 1 gilla-markering',
-    );
-    return '$_temp0';
-  }
+  String get a11yShowCommentLikes => 'Visa vem som gillat';
 
   @override
   String get a11yLongPressCommentForReactions =>
@@ -14683,9 +14670,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yEditImageAction(String label) {
     return '$label';
   }
-
-  @override
-  String get a11yImagePickerOpen => 'Välj bilder';
 
   @override
   String a11yImagePickerRemove(int index) {
@@ -14735,14 +14719,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11yShelfRecipeOpen(String title) {
-    return '$title, tryck för att öppna';
-  }
+  String get a11yShelfRecipeOpen => 'Öppna recept';
 
   @override
-  String a11yCookSnapOptions(String name) {
-    return 'Matlagningsbild av $name, långtryck för alternativ';
-  }
+  String get a11yCookSnapOptions => 'Matlagningsbild, långtryck för alternativ';
 
   @override
   String get a11yConversationOpen => 'Öppna konversationen';
@@ -14996,13 +14976,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleConfidenceSection =>
-      'Visa tolkningskvalitet per ingrediens';
-
-  @override
-  String a11yIngredientWithConfidence(String name, String confidence) {
-    return '$name, $confidence';
-  }
+  String get a11yToggleConfidenceSection => 'Visa eller dölj';
 
   @override
   String get a11yConfidenceHigh => 'hög tolkningskvalitet';
@@ -15041,14 +15015,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeRelatedUnlinkError => 'Kunde inte ta bort länken';
 
   @override
-  String a11yRelatedRecipeChip(String title) {
-    return 'Länkat recept: $title';
-  }
+  String get a11yRelatedRecipeChip => 'Länkat recept';
 
   @override
-  String a11yRemoveRelatedRecipe(String title) {
-    return 'Ta bort länk till $title';
-  }
+  String get a11yRemoveRelatedRecipe => 'Ta bort länk';
 
   @override
   String get a11yRelatedRecipeThumbnail => 'Öppna relaterat recept';
