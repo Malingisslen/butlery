@@ -7659,7 +7659,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialCouldNotRejectAllRequests =>
-      'Kunde inte avvisa alla förfrågningar';
+      'Kunde inte avböja alla förfrågningar';
 
   @override
   String get socialCouldNotRemoveFriend => 'Kunde inte ta bort vän';
@@ -7671,7 +7671,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialDecline => 'Avböj';
 
   @override
-  String get socialDeclined => 'Avvisad';
+  String get socialDeclined => 'Avböjd';
 
   @override
   String get socialExpired => 'Utgången';
@@ -7708,11 +7708,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialPendingResponse => 'Väntar på svar';
 
   @override
-  String get socialRejectAll => 'Avvisa alla';
+  String get socialRejectAll => 'Avböj alla';
 
   @override
   String get socialRejectAllSelectedConfirm =>
-      'Avvisa alla valda förfrågningar?';
+      'Avböj alla valda förfrågningar?';
 
   @override
   String get socialRequestCancelled => 'Förfrågan avbruten';
@@ -7760,7 +7760,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialDeclineCount(int count) {
-    return 'Avvisa ($count)';
+    return 'Avböj ($count)';
   }
 
   @override
@@ -7770,7 +7770,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRejectAllSelectedMessage(int count) {
-    return 'Vill du avvisa $count valda förfrågningar?';
+    return 'Vill du avböja $count valda förfrågningar?';
   }
 
   @override
@@ -7785,7 +7785,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRequestsRejected(int count) {
-    return '$count förfrågningar avvisade';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count förfrågningar avböjda',
+      one: '1 förfrågan avböjd',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -15404,7 +15410,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRequestsRejectedPartial(int succeeded, int total) {
-    return '$succeeded av $total förfrågningar avvisade';
+    return '$succeeded av $total förfrågningar avböjda';
   }
 
   @override

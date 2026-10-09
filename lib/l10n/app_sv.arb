@@ -5242,11 +5242,11 @@
     }
   },
   "socialCouldNotCancelAllRequests": "Kunde inte avbryta alla förfrågningar",
-  "socialCouldNotRejectAllRequests": "Kunde inte avvisa alla förfrågningar",
+  "socialCouldNotRejectAllRequests": "Kunde inte avböja alla förfrågningar",
   "socialCouldNotRemoveFriend": "Kunde inte ta bort vän",
   "socialCouldNotUnblockUser": "Kunde inte avblockera användare",
   "socialDecline": "Avböj",
-  "socialDeclined": "Avvisad",
+  "socialDeclined": "Avböjd",
   "socialExpired": "Utgången",
   "socialFindFriends": "Hitta vänner",
   "socialFriendsAndGroups": "Vänner & grupper",
@@ -5258,8 +5258,8 @@
   "socialNoSentRequests": "Inga skickade förfrågningar",
   "socialNoSentRequestsDescription": "Du har inga skickade vänskapsförfrågningar",
   "socialPendingResponse": "Väntar på svar",
-  "socialRejectAll": "Avvisa alla",
-  "socialRejectAllSelectedConfirm": "Avvisa alla valda förfrågningar?",
+  "socialRejectAll": "Avböj alla",
+  "socialRejectAllSelectedConfirm": "Avböj alla valda förfrågningar?",
   "socialRequestCancelled": "Förfrågan avbruten",
   "socialSearchGroups": "Sök grupper...",
   "socialSearchNewFriends": "Sök nya vänner",
@@ -5310,7 +5310,7 @@
       }
     }
   },
-  "socialDeclineCount": "Avvisa ({count})",
+  "socialDeclineCount": "Avböj ({count})",
   "@socialDeclineCount": {
     "placeholders": {
       "count": {
@@ -5326,7 +5326,7 @@
       }
     }
   },
-  "socialRejectAllSelectedMessage": "Vill du avvisa {count} valda förfrågningar?",
+  "socialRejectAllSelectedMessage": "Vill du avböja {count} valda förfrågningar?",
   "@socialRejectAllSelectedMessage": {
     "placeholders": {
       "count": {
@@ -5350,7 +5350,7 @@
       }
     }
   },
-  "socialRequestsRejected": "{count} förfrågningar avvisade",
+  "socialRequestsRejected": "{count, plural, =1{1 förfrågan avböjd} other{{count} förfrågningar avböjda}}",
   "@socialRequestsRejected": {
     "placeholders": {
       "count": {
@@ -11443,7 +11443,7 @@
       }
     }
   },
-  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avvisade",
+  "socialRequestsRejectedPartial": "{succeeded} av {total} förfrågningar avböjda",
   "@socialRequestsRejectedPartial": {
     "description": "Partial success after a batch friend-request action",
     "placeholders": {
