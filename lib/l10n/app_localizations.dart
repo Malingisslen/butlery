@@ -27602,7 +27602,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodesCopied.
   ///
   /// In sv, this message translates to:
-  /// **'Koderna är kopierade.'**
+  /// **'Koderna är kopierade. Urklippet töms om en minut.'**
   String get mfaBackupCodesCopied;
 
   /// No description provided for @mfaBackupCodesSaved.

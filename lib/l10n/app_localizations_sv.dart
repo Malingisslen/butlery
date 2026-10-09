@@ -16852,7 +16852,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaBackupCodesCopy => 'Kopiera koderna';
 
   @override
-  String get mfaBackupCodesCopied => 'Koderna är kopierade.';
+  String get mfaBackupCodesCopied =>
+      'Koderna är kopierade. Urklippet töms om en minut.';
 
   @override
   String get mfaBackupCodesSaved => 'Jag har sparat koderna';

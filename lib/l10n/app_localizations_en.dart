@@ -16826,7 +16826,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaBackupCodesCopy => 'Copy the codes';
 
   @override
-  String get mfaBackupCodesCopied => 'The codes are copied.';
+  String get mfaBackupCodesCopied =>
+      'The codes are copied. The clipboard is cleared in a minute.';
 
   @override
   String get mfaBackupCodesSaved => 'I have saved the codes';

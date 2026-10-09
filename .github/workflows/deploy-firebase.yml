@@ -264,19 +264,17 @@ jobs:
           done
 
       - name: Function parameters
-        # `IDENTITY_TOOLKIT_API_KEY` is a `defineString` with an empty default, and
-        # the CLI refuses a non-interactive functions deploy without a value for it
-        # (run 37057418062). It is the app's public web API key, so it is a repo
-        # variable, not a secret.
+        # `IDENTITY_TOOLKIT_API_KEY` is a Secret Manager secret (a server key
+        # restricted to the Identity Toolkit API), so nothing is written here for
+        # it. `MFA_EMAIL_FROM` is the sender of the two-step-verification security
+        # e-mail; while the repo variable is unset the mail is skipped and logged.
         env:
-          IDENTITY_TOOLKIT_API_KEY: ${{ vars.IDENTITY_TOOLKIT_API_KEY }}
+          MFA_EMAIL_FROM: ${{ vars.MFA_EMAIL_FROM }}
         run: |
           set -euo pipefail
-          if [ -z "$IDENTITY_TOOLKIT_API_KEY" ]; then
-            echo "::error::repo variable IDENTITY_TOOLKIT_API_KEY is not set"
-            exit 1
+          if [ -n "$MFA_EMAIL_FROM" ]; then
+            echo "MFA_EMAIL_FROM=$MFA_EMAIL_FROM" >> functions/.env.butlery-app-1
           fi
-          echo "IDENTITY_TOOLKIT_API_KEY=$IDENTITY_TOOLKIT_API_KEY" >> functions/.env.butlery-app-1
 
       - name: Deploy
         id: deploy

@@ -164,6 +164,7 @@
     "test:cleanup-old-notifications": "ts-node src/__tests__/cleanup-old-notifications.test.ts",
     "test:verify-signup-age": "ts-node src/__tests__/verify-signup-age.test.ts",
     "test:mfa-backup-codes": "ts-node src/__tests__/mfa-backup-codes.test.ts",
+    "test:mfa-security-email": "ts-node src/__tests__/mfa-security-email.test.ts",
     "test:set-profile-searchability": "ts-node src/__tests__/set-profile-searchability.test.ts",
     "test:feedback-email-failure": "ts-node src/__tests__/feedback-email-failure.test.ts",
     "test:structure-recipe-empty": "ts-node src/__tests__/structure-recipe-empty.test.ts",

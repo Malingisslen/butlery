@@ -12582,7 +12582,7 @@
   "mfaBackupCodesTitle": "Ten backup codes",
   "mfaBackupCodesBody": "Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.",
   "mfaBackupCodesCopy": "Copy the codes",
-  "mfaBackupCodesCopied": "The codes are copied.",
+  "mfaBackupCodesCopied": "The codes are copied. The clipboard is cleared in a minute.",
   "mfaBackupCodesSaved": "I have saved the codes",
   "mfaBackupCodesContinue": "Continue to the phone number",
   "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.",

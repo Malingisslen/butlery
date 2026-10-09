@@ -43,17 +43,19 @@
  *  - every call spends a limited-use App Check token;
  *  - switching two-step verification off deletes the codes server-side
  *    (`clearMfaBackupCodes`), so a stale set never becomes valid again;
- *  - every accepted and every rejected code is written to the audit log.
+ *  - every accepted and every rejected code is written to the audit log;
+ *  - a code set only counts for the enrollment it was made for: it must have
+ *    been created shortly before a factor that is still enrolled, so a set
+ *    left behind by an earlier enrollment cannot remove a later one.
  *
- * NEEDS the web API key as the `IDENTITY_TOOLKIT_API_KEY` parameter and the
- * `MFA_RECOVERY_PEPPER` secret at deploy time. Without either, recovery
- * answers `unavailable` and never unlocks anything — which is why the app
- * keeps "Slå på tvåstegsverifiering" hidden until this is deployed and
- * reviewed (PQ-16, BUT-2142).
+ * NEEDS the `IDENTITY_TOOLKIT_API_KEY` and `MFA_RECOVERY_PEPPER` secrets at
+ * deploy time. The key is a server key restricted to the Identity Toolkit
+ * API, not the app's web key. Without either, recovery answers `unavailable`
+ * and never unlocks anything.
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { defineSecret, defineString } from "firebase-functions/params";
+import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import {
@@ -63,6 +65,11 @@ import {
   scrypt,
   timingSafeEqual,
 } from "crypto";
+import {
+  MfaSecurityEvent,
+  mfaEmailApiKey,
+  notifyMfaSecurityEvent,
+} from "./mfa-security-email";
 
 /** Ten codes, as drawn and as §14.2 says. */
 export const BACKUP_CODE_COUNT = 10;
@@ -73,6 +80,34 @@ export const CODE_LENGTH = 10;
 
 /** Same recent-login rule as account deletion (request-account-deletion.ts). */
 export const REAUTH_MAX_AGE_SECONDS = 5 * 60;
+
+/**
+ * How long before a factor's enrollment its code set may have been created.
+ * The app creates the set, shows it, and enrolls the phone right after; a day
+ * leaves room for an SMS that is slow to arrive.
+ */
+export const CODES_BEFORE_ENROLLMENT_MAX_MS = 24 * 60 * 60 * 1000;
+
+/** Clock slack between Firestore's writer and the Auth server. */
+const ENROLLMENT_CLOCK_SLACK_MS = 60 * 1000;
+
+/**
+ * Whether a set created at [createdAt] belongs to one of the factors enrolled
+ * at [enrollmentTimes]. A set from an earlier enrollment that survived a
+ * switch-off (for example one made outside the app, which never calls
+ * `clearMfaBackupCodes`) is older than that window and does not count.
+ */
+export function codesBelongToEnrollment(
+  createdAt: unknown,
+  enrollmentTimes: number[],
+): boolean {
+  if (typeof createdAt !== "number") return false;
+  return enrollmentTimes.some(
+    (t) =>
+      t >= createdAt - ENROLLMENT_CLOCK_SLACK_MS &&
+      t - createdAt <= CODES_BEFORE_ENROLLMENT_MAX_MS,
+  );
+}
 
 /** A new set at most this often per account. */
 export const REGENERATE_MIN_INTERVAL_MS = 30 * 1000;
@@ -285,8 +320,11 @@ export interface RecoveryDeps {
   /** The HMAC pepper. Empty means not configured: recovery fails closed. */
   pepper: string;
   verifyFirstFactor(email: string, password: string): Promise<FirstFactor>;
+  /** Epoch millis of each second factor's enrollment. */
+  enrollmentTimes(uid: string): Promise<number[]>;
   removeSecondFactors(uid: string): Promise<void>;
   revokeSessions(uid: string): Promise<void>;
+  notify(uid: string, event: MfaSecurityEvent): Promise<void>;
   audit(entry: Record<string, unknown>): Promise<void>;
   now(): number;
 }
@@ -423,27 +461,33 @@ export async function runMfaRecovery(
     throw rejected();
   }
 
+  const enrollmentTimes = await deps.enrollmentTimes(uid);
   const codesRef = deps.db.collection(BACKUP_CODES_COLLECTION).doc(uid);
-  const spent = await deps.db.runTransaction(async (tx) => {
+  const outcome = await deps.db.runTransaction(async (tx) => {
     const snap = await tx.get(codesRef);
-    const codes = (snap.exists ? snap.data()?.codes : undefined) as
-      | StoredCode[]
-      | undefined;
-    if (!Array.isArray(codes)) return null;
+    const data = snap.exists ? snap.data() : undefined;
+    const codes = data?.codes as StoredCode[] | undefined;
+    if (!Array.isArray(codes)) return "rejected" as const;
+    // Every hash is still computed for a stale set, so the answer takes as
+    // long as for a current one.
     const match = await matchCode(codes, code);
-    if (match === null || match.used) return null;
+    if (!codesBelongToEnrollment(data?.createdAt, enrollmentTimes)) {
+      return "stale" as const;
+    }
+    if (match === null || match.used) return "rejected" as const;
     const next = codes.map((c, i) =>
       i === match.index ? { ...c, usedAt: deps.now() } : c,
     );
     tx.update(codesRef, { codes: next });
-    return match.index;
+    return "spent" as const;
   });
 
-  if (spent === null) {
+  if (outcome !== "spent") {
     // The slot reserved above stays taken: that is the counted failure.
     await deps.audit({
       userId: uid,
-      action: "mfa_backup_code_rejected",
+      action:
+        outcome === "stale" ? "mfa_backup_codes_stale" : "mfa_backup_code_rejected",
       at: deps.now(),
     });
     throw rejected();
@@ -461,6 +505,7 @@ export async function runMfaRecovery(
     action: "mfa_backup_code_used",
     at: deps.now(),
   });
+  await deps.notify(uid, "recovered");
   logger.info("[mfa-recovery] second factor removed with a backup code", {
     uid_prefix: uid.slice(0, 6),
   });
@@ -510,6 +555,7 @@ export async function runClearBackupCodes(
 
 export interface GenerateDeps {
   db: admin.firestore.Firestore;
+  notify(uid: string, event: MfaSecurityEvent): Promise<void>;
   audit(entry: Record<string, unknown>): Promise<void>;
   now(): number;
 }
@@ -542,14 +588,14 @@ export async function runGenerateBackupCodes(
     action: "mfa_backup_codes_generated",
     at: deps.now(),
   });
+  await deps.notify(uid, "codes-created");
   return { codes };
 }
 
 // --- production wiring -------------------------------------------------------
 
-const identityToolkitApiKey = defineString("IDENTITY_TOOLKIT_API_KEY", {
-  default: "",
-});
+/** A server key that may call the Identity Toolkit API and nothing else. */
+const identityToolkitApiKey = defineSecret("IDENTITY_TOOLKIT_API_KEY");
 
 /**
  * The HMAC pepper for the attempt-counter keys. A secret, never a plain
@@ -557,12 +603,25 @@ const identityToolkitApiKey = defineString("IDENTITY_TOOLKIT_API_KEY", {
  */
 const recoveryPepper = defineSecret("MFA_RECOVERY_PEPPER");
 
-function readPepper(): string {
+function readSecret(secret: ReturnType<typeof defineSecret>): string {
   try {
-    return recoveryPepper.value() ?? "";
+    return secret.value() ?? "";
   } catch {
     return "";
   }
+}
+
+/** Epoch millis of each enrolled second factor; an unreadable time is left out. */
+async function enrollmentTimesOf(uid: string): Promise<number[]> {
+  const factors = (await admin.auth().getUser(uid)).multiFactor?.enrolledFactors ?? [];
+  const times = factors.map((f) => Date.parse(f.enrollmentTime ?? ""));
+  if (times.some((t) => !Number.isFinite(t))) {
+    // Otherwise indistinguishable from a stale set in the audit log.
+    logger.warn("[mfa-recovery] factor without a readable enrollmentTime", {
+      uid_prefix: uid.slice(0, 6),
+    });
+  }
+  return times.filter((t) => Number.isFinite(t));
 }
 
 /**
@@ -644,6 +703,7 @@ export const generateMfaBackupCodes = onCall(
   {
     cors: ["https://butlery.app", "https://www.butlery.app"],
     enforceAppCheck: true,
+    secrets: [mfaEmailApiKey],
   },
   async (request): Promise<{ codes: string[] }> => {
     if (!request.auth) {
@@ -660,7 +720,12 @@ export const generateMfaBackupCodes = onCall(
       });
     }
     return runGenerateBackupCodes(
-      { db: admin.firestore(), audit: writeAudit, now: () => Date.now() },
+      {
+        db: admin.firestore(),
+        notify: notifyMfaSecurityEvent,
+        audit: writeAudit,
+        now: () => Date.now(),
+      },
       request.auth.uid,
     );
   },
@@ -673,7 +738,7 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
     // Replay protection: every call needs a fresh, limited-use App Check
     // token (the client asks for one with `limitedUseAppCheckToken`).
     consumeAppCheckToken: true,
-    secrets: [recoveryPepper],
+    secrets: [recoveryPepper, identityToolkitApiKey, mfaEmailApiKey],
   },
   async (request): Promise<{ recovered: true }> => {
     if (request.app?.alreadyConsumed === true) {
@@ -682,19 +747,21 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
     return runMfaRecovery(
       {
         db: admin.firestore(),
-        pepper: readPepper(),
+        pepper: readSecret(recoveryPepper),
         verifyFirstFactor: (email, password) =>
           verifyFirstFactorWithIdentityToolkit(
             email,
             password,
-            identityToolkitApiKey.value(),
+            readSecret(identityToolkitApiKey),
           ),
+        enrollmentTimes: enrollmentTimesOf,
         removeSecondFactors: async (uid) => {
           await admin.auth().updateUser(uid, {
             multiFactor: { enrolledFactors: null },
           });
         },
         revokeSessions: (uid) => admin.auth().revokeRefreshTokens(uid),
+        notify: notifyMfaSecurityEvent,
         audit: writeAudit,
         now: () => Date.now(),
       },

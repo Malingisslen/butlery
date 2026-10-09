@@ -6002,3 +6002,15 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
   to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
   the rules cannot read the options, which live in the starter's document.
+
+## BUT-2142 — two-step verification without backup codes (2026-10-09)
+
+- **Only the app requires backup codes before a phone is enrolled (Malin, F3-6 = A,
+  2026-10-05).** `MfaSettingsView` creates the codes and waits for the user to acknowledge them
+  before it calls `multiFactor.enroll`; the server does not check. A hand-rolled client can
+  enroll a phone without codes, and then has no way back in without the phone. Only that
+  account's own owner can do it, to their own account.
+- **A code set only counts for the enrollment it was made for.** `codesBelongToEnrollment` in
+  `functions/src/account/mfa-backup-codes.ts` accepts a set only if some enrolled factor was
+  enrolled at most `CODES_BEFORE_ENROLLMENT_MAX_MS` after the set was created. A set left over
+  from an earlier enrollment is refused like a wrong code.

@@ -12913,7 +12913,7 @@
   "mfaBackupCodesTitle": "Tio reservkoder",
   "mfaBackupCodesBody": "Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.",
   "mfaBackupCodesCopy": "Kopiera koderna",
-  "mfaBackupCodesCopied": "Koderna är kopierade.",
+  "mfaBackupCodesCopied": "Koderna är kopierade. Urklippet töms om en minut.",
   "mfaBackupCodesSaved": "Jag har sparat koderna",
   "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
   "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.",

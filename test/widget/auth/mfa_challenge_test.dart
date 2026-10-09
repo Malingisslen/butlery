@@ -3,6 +3,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/auth/mfa_types.dart';
@@ -376,6 +377,82 @@ void main() {
       await tester.tap(find.text('Avbryt'));
       await tester.pumpAndSettle();
       expect(acknowledged, isFalse);
+    });
+
+    testWidgets('copied codes are wiped from the clipboard after a minute, '
+        'even once the dialog is closed', (tester) async {
+      final writes = <String?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            writes.add((call.arguments as Map)['text'] as String?);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await tester.pumpWidget(dialogHost((_) {}));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      final copy = find.text('Kopiera koderna');
+      await tester.ensureVisible(copy);
+      await tester.pumpAndSettle();
+      await tester.tap(copy);
+      await tester.pump();
+      expect(writes, [codes.join('\n')]);
+
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+      await tester.pump(
+        mfaBackupCodesClipboardLifetime - const Duration(seconds: 1),
+      );
+      expect(writes, hasLength(1), reason: 'still there before the minute');
+
+      await tester.pump(const Duration(seconds: 1));
+      expect(writes, [codes.join('\n'), '']);
+    });
+
+    testWidgets('copying again restarts the minute', (tester) async {
+      final writes = <String?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            writes.add((call.arguments as Map)['text'] as String?);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await tester.pumpWidget(dialogHost((_) {}));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final copy = find.text('Kopiera koderna');
+      await tester.ensureVisible(copy);
+      await tester.pumpAndSettle();
+
+      await tester.tap(copy);
+      await tester.pump(const Duration(seconds: 50));
+      await tester.tap(copy);
+      await tester.pump(const Duration(seconds: 59));
+      expect(writes, hasLength(2), reason: 'the first minute no longer counts');
+
+      await tester.pump(const Duration(seconds: 1));
+      expect(writes.last, '');
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('the switch stays hidden in the app (PQ-16)', (tester) async {
