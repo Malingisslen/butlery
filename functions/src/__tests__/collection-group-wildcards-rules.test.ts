@@ -14,6 +14,7 @@
  *   {path=**}/ratings/{ratingId}    → allow read,delete if resource.data.ratedBy   == auth.uid
  *   {path=**}/recipes/{recipeId}    → allow read  if isAdmin()   (admin-only, not owner-shaped)
  *   {path=**}/likes/{likeId}        → allow read  if resource.data.userId == auth.uid (BUT-2114)
+ *   {path=**}/votes/{voteId}        → allow read  if resource.data.userId == auth.uid (BUT-2118)
  *   {path=**}/pings/{pingId}        → allow read,delete if resource.data.fromUserId == auth.uid
  *                                                          || resource.data.toUserId == auth.uid
  *
@@ -247,6 +248,71 @@ test("recipes: unauthenticated request denied", async () => {
   await seed(`cg_wild/rec3/recipes/x`, { title: "Soppa" });
   const ctx = env.unauthenticatedContext();
   await assertFails(ctx.firestore().doc(`cg_wild/rec3/recipes/x`).get());
+});
+
+// ── votes: gate is resource.data.userId == auth.uid (read only, BUT-2118) ──
+// The Art. 15 export reads `collectionGroup('votes').where('userId', ==, uid)`
+// (FirebaseDataExportRepository.exportLiveMenuVotesByUser), which reaches
+// menus the person has left.
+
+function ballotBody(userId: string): Record<string, unknown> {
+  return { userId, ballots: { "vote-1": "opt-a" }, updatedAt: new Date() };
+}
+
+test("votes: owner's filtered collection-group query returns only their ballot documents", async () => {
+  await seed(`realtime_resources/cgv_m1/votes/${OWNER}`, ballotBody(OWNER));
+  await seed(`realtime_resources/cgv_m1/votes/${OTHER}`, ballotBody(OTHER));
+  await seed(`realtime_resources/cgv_m2/votes/${OWNER}`, ballotBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  const snap = await assertSucceeds(
+    ctx.firestore().collectionGroup("votes")
+      .where("userId", "==", OWNER).limit(201).get()
+  );
+  const paths = snap.docs.map((d) => d.ref.path).sort();
+  const want = [
+    `realtime_resources/cgv_m1/votes/${OWNER}`,
+    `realtime_resources/cgv_m2/votes/${OWNER}`,
+  ];
+  if (JSON.stringify(paths) !== JSON.stringify(want)) {
+    throw new Error(`expected ${JSON.stringify(want)}, got ${JSON.stringify(paths)}`);
+  }
+});
+
+test("votes: a collection-group query filtered on ANOTHER uid is refused", async () => {
+  await seed(`realtime_resources/cgv_m3/votes/${OTHER}`, ballotBody(OTHER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().collectionGroup("votes").where("userId", "==", OTHER).get()
+  );
+});
+
+test("votes: an UNFILTERED collection-group query is refused", async () => {
+  await seed(`realtime_resources/cgv_m4/votes/${OWNER}`, ballotBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().collectionGroup("votes").get());
+});
+
+test("votes: a document LACKING userId is denied, even when its id is the caller's uid", async () => {
+  await seed(`cg_wild/v5/votes/${OWNER}`, { ballots: {} });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/v5/votes/${OWNER}`).get());
+});
+
+test("votes: owner reads their own document on a novel parent path", async () => {
+  await seed(`cg_wild/v6/votes/${OWNER}`, ballotBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(ctx.firestore().doc(`cg_wild/v6/votes/${OWNER}`).get());
+});
+
+test("votes: FOREIGN-owner document on a novel parent path is denied", async () => {
+  await seed(`cg_wild/v7/votes/${OTHER}`, ballotBody(OTHER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/v7/votes/${OTHER}`).get());
+});
+
+test("votes: the catch-all is READ-ONLY on a novel parent path", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/v8/votes/${OWNER}`).set(ballotBody(OWNER)));
 });
 
 // ── likes: gate is resource.data.userId == auth.uid (read only, BUT-2114) ──

@@ -516,7 +516,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "poll_votes", // messages/{messageId}
   "report_history", // user_moderation/{contentOwnerId} (BUT-2046)
   "ratings", // menu_ratings/{menuId}
-  "votes", // realtime_menus/{menuId}
+  "votes", // realtime_menus/{menuId}, realtime_resources/{menuId} (BUT-2118)
   // The PRE-RENAME personal shopping-list subcollection under users/{uid}
   // (BUT-1697). The live one is `unified_shopping_lists`, which IS top-level as
   // well and is therefore absent from this set.

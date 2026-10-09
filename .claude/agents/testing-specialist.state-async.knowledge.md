@@ -126,3 +126,4 @@
   none — grep the root-cause CLASS across `test/`. The third untested layer is usually the VIEW's
   outcome→message branch: assert the INVARIANT, be CHANNEL-AGNOSTIC.
 - A "reads live state, not the cache" contract is only tested if the fixture makes the two DIFFER.
+- **A brief's "sets the error" can describe a path production does not have** — read the VM method's every `return` before stubbing: `MenuVotingViewModel.settle` returns the service's `false` without `setError`, so the snackbar's generic fallback is what the user sees. Pin the return and the order of collaborator calls; do not assert an error the VM never writes (BUT-2118).

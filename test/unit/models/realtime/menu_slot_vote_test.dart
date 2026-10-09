@@ -1,6 +1,7 @@
-/// Unit tests for MenuSlotVote + VoteOption.
+/// Ballot documents and the votes derived from them (BUT-2118).
 ///
-/// Pure-Dart.
+/// Pure Dart: the interesting behaviour is who counts, which options a vote
+/// has, and what state it is in at a given moment.
 library;
 
 import 'package:clock/clock.dart';
@@ -8,258 +9,506 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 
-VoteOption _opt(String id, {String name = 'Recipe'}) => VoteOption(
+final _now = DateTime.utc(2026, 10, 9, 12);
+
+VoteOption _opt(String id, {String? name, int votersBefore = 0}) => VoteOption(
   id: id,
-  recipeId: 'r-$id',
-  recipeName: name,
-  recipeImageUrl: 'https://x/$id.jpg',
-  suggestedByUserId: 'u1',
+  dish: {'id': 'recipe-$id', 'title': name ?? 'Dish $id'},
+  votersBefore: votersBefore,
+);
+
+StartedVote _started(
+  String id, {
+  List<VoteOption>? options,
+  DateTime? deadline,
+}) => StartedVote(
+  id: id,
+  options: options ?? [_opt('a'), _opt('b')],
+  deadline: deadline ?? _now.add(const Duration(hours: 24)),
+  createdAt: _now,
+);
+
+MenuBallot _ballot(
+  String userId, {
+  Map<String, StartedVote> started = const {},
+  Map<String, VoteOption> proposals = const {},
+  Map<String, String> ballots = const {},
+  Map<String, VoteResolution> resolved = const {},
+}) => MenuBallot(
+  userId: userId,
+  started: started,
+  proposals: proposals,
+  ballots: ballots,
+  resolved: resolved,
 );
 
 MenuSlotVote _vote({
-  String id = 'v1',
-  List<VoteOption>? alternatives,
-  Map<String, String>? votes,
-  bool isResolved = false,
-  String? winningOptionId,
+  Map<String, String> votes = const {},
   DateTime? deadline,
-}) {
-  return MenuSlotVote(
-    id: id,
-    menuId: 'menu-1',
-    category: 'dinner',
-    slotIndex: 0,
-    alternatives: alternatives ?? [_opt('a'), _opt('b')],
-    votes: votes ?? const {},
-    deadline: deadline ?? DateTime.utc(2030, 1, 1),
-    isResolved: isResolved,
-    winningOptionId: winningOptionId,
-    createdByUserId: 'u1',
-    createdAt: DateTime.utc(2026, 1, 1),
-  );
-}
+  VoteResolution? resolution,
+  List<VoteOption>? alternatives,
+}) => MenuSlotVote(
+  id: 'v1',
+  category: 'Middag',
+  slotIndex: 0,
+  starterId: 'starter',
+  alternatives: alternatives ?? [_opt('a'), _opt('b'), _opt('c')],
+  votes: votes,
+  deadline: deadline ?? _now.add(const Duration(hours: 24)),
+  createdAt: _now,
+  resolution: resolution,
+);
 
 void main() {
-  group('VoteOption serialization', () {
-    test('toFirestore + fromMap round-trip', () {
-      const o = VoteOption(
-        id: 'opt-1',
-        recipeId: 'r-1',
-        recipeName: 'Pasta',
-        recipeImageUrl: 'https://x/img.jpg',
-        suggestedByUserId: 'u1',
+  group('MenuBallot', () {
+    test('survives the trip through its stored shape', () {
+      final deadline = DateTime.utc(2026, 10, 10, 8);
+      final ballot = _ballot(
+        'u1',
+        started: {
+          'Middag#1': _started(
+            'v1',
+            options: [
+              _opt('a', name: 'Pasta'),
+              _opt('b', votersBefore: 3),
+            ],
+            deadline: deadline,
+          ),
+        },
+        proposals: {'v9': _opt('p', votersBefore: 2)},
+        ballots: {'v9': 'p'},
+        resolved: {
+          'v1': VoteResolution(
+            outcome: VoteOutcome.winner,
+            optionId: 'a',
+            at: _now,
+          ),
+        },
       );
-      final restored = VoteOption.fromMap(o.toFirestore());
-      expect(restored.id, 'opt-1');
-      expect(restored.recipeId, 'r-1');
-      expect(restored.recipeName, 'Pasta');
-      expect(restored.recipeImageUrl, 'https://x/img.jpg');
-      expect(restored.suggestedByUserId, 'u1');
+
+      final back = MenuBallot.fromMap('u1', ballot.toFirestore());
+
+      final vote = back.started['Middag#1']!;
+      expect(vote.id, 'v1');
+      expect(vote.deadline.isAtSameMomentAs(deadline), isTrue);
+      expect(vote.options.map((o) => o.id), ['a', 'b']);
+      expect(vote.options.first.recipeName, 'Pasta');
+      expect(vote.options.last.votersBefore, 3);
+      expect(back.proposals['v9']!.votersBefore, 2);
+      expect(back.ballots, {'v9': 'p'});
+      expect(back.resolved['v1']!.outcome, VoteOutcome.winner);
+      expect(back.resolved['v1']!.optionId, 'a');
     });
 
-    test('fromMap handles missing recipeImageUrl as null', () {
-      final o = VoteOption.fromMap(const {
-        'id': 'x',
-        'recipeId': 'r',
-        'recipeName': 'X',
-        'suggestedByUserId': 'u',
+    test('an entry of the wrong shape is dropped, the rest is kept', () {
+      final stored = _ballot(
+        'u1',
+        started: {'Middag#0': _started('v1')},
+        proposals: {'ok': _opt('p')},
+        ballots: {'ok': 'p'},
+      ).toFirestore();
+      // toFirestore hands back narrowly typed maps; widen them to plant junk.
+      for (final key in ['started', 'proposals', 'ballots', 'resolved']) {
+        stored[key] = Map<String, dynamic>.from(stored[key] as Map);
+      }
+      (stored['started'] as Map)['bad'] = 'not a map';
+      (stored['proposals'] as Map)['bad'] = 42;
+      (stored['ballots'] as Map)['bad'] = 7;
+      (stored['resolved'] as Map)['bad'] = ['x'];
+
+      final back = MenuBallot.fromMap('u1', stored);
+
+      expect(back.started.keys, ['Middag#0']);
+      expect(back.proposals.keys, ['ok']);
+      expect(back.ballots, {'ok': 'p'});
+      expect(back.resolved, isEmpty);
+    });
+
+    test('a started vote whose options are not a list reads with none', () {
+      final stored = _ballot(
+        'u1',
+        started: {'Middag#0': _started('v1')},
+      ).toFirestore();
+      final started = Map<String, dynamic>.from(stored['started'] as Map);
+      started['Middag#0'] = {
+        ...(started['Middag#0'] as Map).cast<String, dynamic>(),
+        'options': {'not': 'a list'},
+      };
+      stored['started'] = started;
+
+      final back = MenuBallot.fromMap('u1', stored);
+
+      expect(back.started['Middag#0']!.options, isEmpty);
+    });
+
+    test('an option of the wrong shape is dropped, the valid one is kept', () {
+      final stored = _ballot(
+        'u1',
+        started: {
+          'Middag#0': _started('v1', options: [_opt('a', name: 'Pasta')]),
+        },
+      ).toFirestore();
+      final started = Map<String, dynamic>.from(stored['started'] as Map);
+      final vote = Map<String, dynamic>.from(started['Middag#0'] as Map);
+      vote['options'] = [...(vote['options'] as List), 'junk'];
+      started['Middag#0'] = vote;
+      stored['started'] = started;
+
+      final back = MenuBallot.fromMap('u1', stored);
+
+      expect(back.started['Middag#0']!.options.map((o) => o.recipeName), [
+        'Pasta',
+      ]);
+    });
+
+    test('a document with nothing in it reads as empty', () {
+      final back = MenuBallot.fromMap('u1', const {});
+
+      expect(back.userId, 'u1');
+      expect(back.isEmpty, isTrue);
+    });
+
+    test('an unknown outcome reads as released '
+        'and a release stores no option', () {
+      final released = VoteResolution(outcome: VoteOutcome.released, at: _now);
+
+      expect(released.toFirestore().containsKey('optionId'), isFalse);
+      final back = VoteResolution.fromMap({
+        'outcome': 'something-new',
+        'at': released.toFirestore()['at'],
       });
-      expect(o.recipeImageUrl, isNull);
+      expect(back.outcome, VoteOutcome.released);
+      expect(back.optionId, isNull);
+    });
+
+    test('slotKey is category#index, and the vote reports the same key', () {
+      expect(MenuBallot.slotKey('Middag', 2), 'Middag#2');
+      expect(_vote().slotKey, 'Middag#0');
     });
   });
 
-  group('MenuSlotVote.create', () {
-    test('generates id + deadline = now + window', () {
-      final fixed = DateTime.utc(2026, 1, 1, 12);
-      withClock(Clock.fixed(fixed), () {
-        final v = MenuSlotVote.create(
-          menuId: 'm1',
-          category: 'dinner',
-          slotIndex: 2,
-          alternatives: [_opt('a')],
-          votingWindow: const Duration(hours: 24),
-          createdByUserId: 'u1',
-        );
-        expect(v.id, isNotEmpty);
-        expect(v.menuId, 'm1');
-        expect(v.slotIndex, 2);
-        expect(v.deadline, fixed.add(const Duration(hours: 24)));
-        expect(v.createdAt, fixed);
-      });
-    });
-  });
+  group('MenuSlotVote.deriveAll', () {
+    const people = {'starter', 'anna', 'bo'};
 
-  group('computed getters', () {
-    test('isExpired true after deadline', () {
-      withClock(Clock.fixed(DateTime.utc(2030, 6, 1)), () {
-        final v = _vote(deadline: DateTime.utc(2030, 5, 1));
-        expect(v.isExpired, isTrue);
-        expect(v.isActive, isFalse);
-      });
+    List<MenuSlotVote> derive(List<MenuBallot> docs, [Set<String>? ids]) =>
+        MenuSlotVote.deriveAll(docs, ids ?? people);
+
+    test('options are the starter\'s two plus each person\'s own proposal', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', proposals: {'v1': _opt('c')}),
+        _ballot('bo', proposals: {'v1': _opt('d')}),
+      ];
+
+      final vote = derive(docs).single;
+
+      expect(
+        vote.alternatives.map((o) => o.id),
+        unorderedEquals(['a', 'b', 'c', 'd']),
+      );
+      expect(vote.alternatives.take(2).map((o) => o.id), ['a', 'b']);
+      expect(vote.starterId, 'starter');
+      expect(vote.category, 'Middag');
+      expect(vote.slotIndex, 0);
     });
 
-    test('isActive true while pending and not expired', () {
-      withClock(Clock.fixed(DateTime.utc(2026, 6, 1)), () {
-        final v = _vote(deadline: DateTime.utc(2030, 1, 1));
-        expect(v.isActive, isTrue);
-        expect(v.isExpired, isFalse);
-      });
+    test('a proposal on another vote is not an option here', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', proposals: {'other-vote': _opt('c')}),
+      ];
+
+      expect(derive(docs).single.alternatives.map((o) => o.id), ['a', 'b']);
     });
 
-    test('isActive false when resolved even if not expired', () {
-      withClock(Clock.fixed(DateTime.utc(2026, 6, 1)), () {
-        final v = _vote(deadline: DateTime.utc(2030, 1, 1), isResolved: true);
-        expect(v.isActive, isFalse);
-      });
+    test('an option id that two proposals share is listed once', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', proposals: {'v1': _opt('c', name: 'First')}),
+        _ballot('bo', proposals: {'v1': _opt('c', name: 'Second')}),
+      ];
+
+      final options = derive(docs).single.alternatives;
+
+      expect(options.where((o) => o.id == 'c'), hasLength(1));
     });
 
-    test('hasVoted true for users in votes map', () {
-      final v = _vote(votes: const {'u1': 'a'});
-      expect(v.hasVoted('u1'), isTrue);
-      expect(v.hasVoted('u2'), isFalse);
+    test('only people on the menu now are counted, and a ballot is theirs by '
+        'document, not by what it says', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', ballots: {'v1': 'a'}),
+        _ballot('bo', ballots: {'v1': 'b'}),
+        _ballot('gone', ballots: {'v1': 'a'}),
+      ];
+
+      final vote = derive(docs).single;
+
+      expect(vote.votes, {'anna': 'a', 'bo': 'b'});
+      expect(vote.totalVotes, 2);
     });
 
-    test('totalVotes returns map size', () {
-      expect(_vote(votes: const {'u1': 'a', 'u2': 'b'}).totalVotes, 2);
-    });
-  });
+    test('a person who left takes their proposal with them', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('gone', proposals: {'v1': _opt('c')}, ballots: {'v1': 'c'}),
+      ];
 
-  group('tallies', () {
-    test('counts votes per option', () {
-      final v = _vote(votes: const {'u1': 'a', 'u2': 'a', 'u3': 'b'});
-      expect(v.tallies, {'a': 2, 'b': 1});
-    });
+      final vote = derive(docs);
 
-    test('empty when no votes', () {
-      expect(_vote().tallies, isEmpty);
-    });
-  });
-
-  group('leadingOption', () {
-    test('returns option with most votes', () {
-      final v = _vote(votes: const {'u1': 'a', 'u2': 'a', 'u3': 'b'});
-      expect(v.leadingOption?.id, 'a');
+      expect(vote.single.alternatives.map((o) => o.id), ['a', 'b']);
+      expect(vote.single.votes, isEmpty);
     });
 
-    test('returns null when no votes', () {
-      expect(_vote().leadingOption, isNull);
+    test('a ballot naming an option that is not on the vote is ignored', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', ballots: {'v1': 'a'}),
+        _ballot('bo', ballots: {'v1': 'smuggled'}),
+      ];
+
+      final vote = derive(docs).single;
+
+      expect(vote.votes, {'anna': 'a'});
+      expect(vote.alternatives.map((o) => o.id), ['a', 'b']);
     });
 
-    test('returns null when leading option id is unknown', () {
-      final v = _vote(votes: const {'u1': 'missing-option'});
-      expect(v.leadingOption, isNull);
+    test('a ballot for a proposed option counts once that proposer is on the '
+        'menu, and stops counting when they leave', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', proposals: {'v1': _opt('c')}),
+        _ballot('bo', ballots: {'v1': 'c'}),
+      ];
+
+      expect(derive(docs).single.votes, {'bo': 'c'});
+      expect(derive(docs, {'starter', 'bo'}).single.votes, isEmpty);
+    });
+
+    test('a starter who left drops the vote, even with people voting', () {
+      final docs = [
+        _ballot('gone', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', ballots: {'v1': 'a'}),
+      ];
+
+      expect(derive(docs), isEmpty);
+    });
+
+    test('a slot key that is not category#index is skipped, a good one beside '
+        'it is not', () {
+      final docs = [
+        _ballot(
+          'starter',
+          started: {
+            'Middag': _started('v1'),
+            '#3': _started('v2'),
+            'Middag#x': _started('v3'),
+            'Middag#-1': _started('v4'),
+            'Förrätt#2': _started('v5'),
+          },
+        ),
+      ];
+
+      final votes = derive(docs);
+
+      expect(votes.map((v) => v.id), ['v5']);
+      expect(votes.single.category, 'Förrätt');
+      expect(votes.single.slotIndex, 2);
+    });
+
+    test('a category that itself contains # is split at the last one', () {
+      final docs = [
+        _ballot('starter', started: {'Tillbehör #2#1': _started('v1')}),
+      ];
+
+      final vote = derive(docs).single;
+
+      expect(vote.category, 'Tillbehör #2');
+      expect(vote.slotIndex, 1);
     });
 
     test(
-      'tie-break is deterministic: lowest option id wins on equal counts',
+      'the starter\'s settlement of this vote, and only this vote, applies',
       () {
-        // Same tally (a:1, b:1) reached via two different vote-map insertion
-        // orders must yield the same leader — otherwise the leader would flip on
-        // map iteration order and two clients could disagree.
-        final order1 = _vote(votes: const {'u1': 'a', 'u2': 'b'});
-        final order2 = _vote(votes: const {'u1': 'b', 'u2': 'a'});
-        expect(order1.leadingOption?.id, 'a');
-        expect(order2.leadingOption?.id, 'a');
+        final docs = [
+          _ballot(
+            'starter',
+            started: {'Middag#0': _started('v1')},
+            resolved: {
+              'v1': VoteResolution(
+                outcome: VoteOutcome.winner,
+                optionId: 'a',
+                at: _now,
+              ),
+              'unrelated': VoteResolution(
+                outcome: VoteOutcome.released,
+                at: _now,
+              ),
+            },
+          ),
+          // Someone else claiming the vote is settled does nothing.
+          _ballot(
+            'anna',
+            resolved: {
+              'v1': VoteResolution(outcome: VoteOutcome.released, at: _now),
+            },
+          ),
+        ];
+
+        final vote = derive(docs).single;
+
+        expect(vote.resolution!.outcome, VoteOutcome.winner);
+        expect(vote.winningOption!.id, 'a');
       },
     );
 
-    test('tie-break stays deterministic across more options', () {
-      final v = _vote(
-        alternatives: [_opt('c'), _opt('a'), _opt('b')],
-        votes: const {'u1': 'c', 'u2': 'a', 'u3': 'b'},
-      );
-      // All tied at 1 vote — 'a' sorts first.
-      expect(v.leadingOption?.id, 'a');
+    test('two starters on different slots give two votes', () {
+      final docs = [
+        _ballot('starter', started: {'Middag#0': _started('v1')}),
+        _ballot('anna', started: {'Lunch#1': _started('v2')}),
+      ];
+
+      expect(derive(docs).map((v) => (v.id, v.starterId)), [
+        ('v1', 'starter'),
+        ('v2', 'anna'),
+      ]);
     });
   });
 
-  group('winningOption', () {
-    test('returns alternative matching winningOptionId', () {
-      final v = _vote(winningOptionId: 'b');
-      expect(v.winningOption?.id, 'b');
+  group('MenuSlotVote state', () {
+    final resolvedWinner = VoteResolution(
+      outcome: VoteOutcome.winner,
+      optionId: 'a',
+      at: _now,
+    );
+
+    SlotVoteState stateAt(DateTime at, MenuSlotVote vote) =>
+        withClock(Clock.fixed(at), () => vote.state);
+
+    test('is open until the deadline, with or without votes', () {
+      expect(stateAt(_now, _vote()), SlotVoteState.open);
+      expect(stateAt(_now, _vote(votes: {'anna': 'a'})), SlotVoteState.open);
     });
 
-    test('returns null when no winner', () {
-      expect(_vote().winningOption, isNull);
+    test(
+      'the deadline instant itself is still open, one tick later is not',
+      () {
+        final vote = _vote(deadline: _now);
+
+        expect(stateAt(_now, vote), SlotVoteState.open);
+        expect(
+          stateAt(_now.add(const Duration(milliseconds: 1)), vote),
+          SlotVoteState.expiredEmpty,
+        );
+      },
+    );
+
+    test('an expired vote with ballots waits on the starter, it is not '
+        'settled', () {
+      final vote = _vote(votes: {'anna': 'a'}, deadline: _now);
+      final later = _now.add(const Duration(hours: 1));
+
+      expect(stateAt(later, vote), SlotVoteState.expiredWithVotes);
+      withClock(Clock.fixed(later), () {
+        expect(vote.isResolved, isFalse);
+        expect(vote.isActive, isFalse);
+      });
     });
 
-    test('returns null when winningOptionId not in alternatives', () {
-      final v = _vote(winningOptionId: 'unknown');
-      expect(v.winningOption, isNull);
-    });
-  });
+    test('a settled vote is decided or released whatever the clock says', () {
+      final far = _now.add(const Duration(days: 30));
 
-  group('copyWith', () {
-    test('updates votes + isResolved while keeping immutable fields', () {
-      final original = _vote(id: 'v-99');
-      final updated = original.copyWith(
-        votes: const {'u1': 'a'},
-        isResolved: true,
-        winningOptionId: 'a',
-      );
-      expect(updated.id, 'v-99');
-      expect(updated.menuId, original.menuId);
-      expect(updated.votes, {'u1': 'a'});
-      expect(updated.isResolved, isTrue);
-      expect(updated.winningOptionId, 'a');
-    });
-  });
-
-  group('toFirestore + fromMap round-trip', () {
-    test('preserves all fields', () {
-      final original = _vote(
-        votes: const {'u1': 'a', 'u2': 'b'},
-        isResolved: true,
-        winningOptionId: 'a',
-      );
-      final json = original.toFirestore();
-      final restored = MenuSlotVote.fromMap('v-restored', json);
-
-      expect(restored.menuId, original.menuId);
-      expect(restored.category, original.category);
-      expect(restored.slotIndex, original.slotIndex);
       expect(
-        restored.alternatives.map((o) => o.id),
-        original.alternatives.map((o) => o.id),
+        stateAt(far, _vote(resolution: resolvedWinner)),
+        SlotVoteState.decided,
       );
-      expect(restored.votes, {'u1': 'a', 'u2': 'b'});
-      expect(restored.isResolved, isTrue);
-      expect(restored.winningOptionId, 'a');
-      expect(restored.createdByUserId, 'u1');
+      expect(
+        stateAt(
+          far,
+          _vote(
+            resolution: VoteResolution(outcome: VoteOutcome.released, at: _now),
+          ),
+        ),
+        SlotVoteState.released,
+      );
     });
 
-    test('fromMap handles missing alternatives + votes', () {
-      final v = MenuSlotVote.fromMap('v', {
-        'menuId': 'm',
-        'category': 'c',
-        'slotIndex': 0,
-        'deadline': DateTime.utc(2030, 1, 1).toIso8601String(),
-        'createdByUserId': 'u',
-        'createdAt': DateTime.utc(2026, 1, 1).toIso8601String(),
-      });
-      expect(v.alternatives, isEmpty);
-      expect(v.votes, isEmpty);
-    });
+    test('is stale a week after the deadline, not before, and never once '
+        'settled', () {
+      final vote = _vote(deadline: _now);
+      final edge = _now.add(MenuSlotVote.hideAfterExpiry);
 
-    test('fromMap converts non-string vote keys/values', () {
-      final v = MenuSlotVote.fromMap('v', {
-        'menuId': 'm',
-        'category': 'c',
-        'slotIndex': 0,
-        'votes': {123: 456},
-        'deadline': DateTime.utc(2030, 1, 1).toIso8601String(),
-        'createdByUserId': 'u',
-        'createdAt': DateTime.utc(2026, 1, 1).toIso8601String(),
-      });
-      expect(v.votes, {'123': '456'});
+      withClock(Clock.fixed(edge), () => expect(vote.isStale, isFalse));
+      withClock(
+        Clock.fixed(edge.add(const Duration(seconds: 1))),
+        () => expect(vote.isStale, isTrue),
+      );
+      withClock(
+        Clock.fixed(edge.add(const Duration(days: 30))),
+        () => expect(
+          _vote(deadline: _now, resolution: resolvedWinner).isStale,
+          isFalse,
+        ),
+      );
     });
   });
 
-  test('toString includes id + menu + alternative/vote counts', () {
-    final v = _vote(votes: const {'u1': 'a'});
-    final s = v.toString();
-    expect(s, contains('v1'));
-    expect(s, contains('menu-1'));
-    expect(s, contains('1 votes'));
+  group('MenuSlotVote tally', () {
+    test('counts per option and names the single leader as the clear '
+        'winner', () {
+      final vote = _vote(votes: {'u1': 'a', 'u2': 'a', 'u3': 'b'});
+
+      expect(vote.tallies, {'a': 2, 'b': 1});
+      expect(vote.leaders.map((o) => o.id), ['a']);
+      expect(vote.isTie, isFalse);
+      expect(vote.clearWinner!.id, 'a');
+    });
+
+    test('equal top counts are a tie with no winner, and an option nobody '
+        'chose is not among the leaders', () {
+      final vote = _vote(votes: {'u1': 'a', 'u2': 'b'});
+
+      expect(vote.isTie, isTrue);
+      expect(vote.leaders.map((o) => o.id), ['a', 'b']);
+      expect(vote.clearWinner, isNull);
+    });
+
+    test('with no ballots there are no leaders, no tie and no winner', () {
+      final vote = _vote();
+
+      expect(vote.leaders, isEmpty);
+      expect(vote.isTie, isFalse);
+      expect(vote.clearWinner, isNull);
+    });
+
+    test('knows its starter and who has voted', () {
+      final vote = _vote(votes: {'anna': 'a'});
+
+      expect(vote.isStarter('starter'), isTrue);
+      expect(vote.isStarter('anna'), isFalse);
+      expect(vote.hasVoted('anna'), isTrue);
+      expect(vote.hasVoted('starter'), isFalse);
+    });
+
+    test('the winning option is the one the resolution names, if it is on '
+        'the vote', () {
+      final named = _vote(
+        resolution: VoteResolution(
+          outcome: VoteOutcome.winner,
+          optionId: 'b',
+          at: _now,
+        ),
+      );
+      final unknown = _vote(
+        resolution: VoteResolution(
+          outcome: VoteOutcome.winner,
+          optionId: 'zzz',
+          at: _now,
+        ),
+      );
+
+      expect(named.winningOption!.id, 'b');
+      expect(unknown.winningOption, isNull);
+    });
   });
 }

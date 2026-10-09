@@ -1,15 +1,19 @@
 /// Firebase implementation of menu voting persistence.
-/// Votes stored as subcollection: realtime_menus/{menuId}/votes/{voteId}
 
 // lib/repositories/firebase/firebase_menu_voting_repository.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_voting_repository.dart';
-import 'package:butlery/models/realtime/menu_slot_vote.dart';
-import 'package:butlery/core/utils/logger.dart';
 
-class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
+/// `realtime_resources/{menuId}/votes/{uid}`: each person writes only their
+/// own document, which is what lets `firestore.rules` pin a ballot to its
+/// voter by path (BUT-2118).
+class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuBallot>
     implements MenuVotingRepository {
   FirebaseMenuVotingRepository({
     required super.authRepository,
@@ -17,136 +21,99 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
     super.auditRepository,
   });
 
-  // Not used directly — votes live in subcollections
+  /// The rules accept an `expireAt` up to 91 days ahead of the server's
+  /// clock; 60 leaves room for a phone whose clock runs ahead.
+  static const Duration retention = Duration(days: 60);
+
+  // Bounded by the people on a menu; the limit keeps a flood of stray
+  // documents from growing every listener's snapshot.
+  static const int maxBallots = 200;
+
   @override
-  String get collectionName => 'menu_votes';
+  String get collectionName => FirestoreCollections.liveMenuVotes;
 
   CollectionReference<Map<String, dynamic>> _votesRef(String menuId) =>
-      firestore.collection('realtime_menus').doc(menuId).collection('votes');
+      firestore
+          .collection(FirestoreCollections.realtimeResources)
+          .doc(menuId)
+          .collection(FirestoreCollections.liveMenuVotes);
 
   @override
-  MenuSlotVote fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-      MenuSlotVote.fromMap(doc.id, doc.data() ?? {});
+  MenuBallot fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      MenuBallot.fromMap(doc.id, doc.data() ?? const {});
 
   @override
-  Map<String, dynamic> toFirestore(MenuSlotVote entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(MenuBallot entity) => {
+    ...entity.toFirestore(),
+    'updatedAt': FieldValue.serverTimestamp(),
+    'expireAt': Timestamp.fromDate(clock.now().add(retention)),
+  };
 
   @override
-  String getId(MenuSlotVote entity) => entity.id;
+  String getId(MenuBallot entity) => entity.userId;
 
-  // --- Permission validators ---
-
-  Future<bool> _isMenuParticipant(String menuId) async {
-    final userId = requireCurrentUserId();
-    final menuDoc = await firestore
-        .collection('realtime_menus')
-        .doc(menuId)
-        .get();
-    if (!menuDoc.exists) return false;
-    final participantIds = menuDoc.data()?['participantIds'] as List?;
-    return participantIds?.contains(userId) ?? false;
-  }
-
+  // Who may vote on which menu is decided by the rules, which read the
+  // menu's roster; the client check is only that a document is the caller's.
   @override
   Future<bool> validateCreatePermission(
     String userId,
-    MenuSlotVote entity,
-  ) async => _isMenuParticipant(entity.menuId);
+    MenuBallot entity,
+  ) async => entity.userId == userId;
 
   @override
   Future<bool> validateReadPermission(
     String userId,
     String resourceId,
-    MenuSlotVote? entity,
-  ) async => true; // Reads validated at query level
+    MenuBallot? entity,
+  ) async => true;
 
   @override
   Future<bool> validateUpdatePermission(
     String userId,
     String resourceId,
-    MenuSlotVote entity,
-  ) async => _isMenuParticipant(entity.menuId);
+    MenuBallot entity,
+  ) async => entity.userId == userId && resourceId == userId;
 
   @override
   Future<bool> validateDeletePermission(
     String userId,
     String resourceId,
-  ) async => true; // Deletion handled by vote creator check
-
-  // --- CRUD operations ---
+  ) async => resourceId == userId;
 
   @override
-  Future<MenuSlotVote> createVote(MenuSlotVote vote) async {
+  Stream<List<MenuBallot>> watchBallots(String menuId) => _votesRef(menuId)
+      .limit(maxBallots)
+      .snapshots()
+      .map((snap) => snap.docs.map(fromFirestore).toList());
+
+  @override
+  Future<void> updateOwnBallot(
+    String menuId,
+    MenuBallot Function(MenuBallot current) change,
+  ) async {
     final userId = requireCurrentUserId();
-    await validateCreatePermission(userId, vote);
-
-    await _votesRef(vote.menuId).doc(vote.id).set(vote.toFirestore());
-    AppLogger.info('Created vote ${vote.id} for menu ${vote.menuId}');
-    return vote;
-  }
-
-  @override
-  Future<MenuSlotVote?> getVote(String menuId, String voteId) async {
-    final doc = await _votesRef(menuId).doc(voteId).get();
-    if (!doc.exists) return null;
-    return MenuSlotVote.fromMap(doc.id, doc.data() ?? {});
-  }
-
-  @override
-  Future<void> castVote(
-    String menuId,
-    String voteId,
-    String userId,
-    String optionId,
-  ) async {
-    await _votesRef(menuId).doc(voteId).update({
-      'votes.$userId': optionId,
-    });
-  }
-
-  @override
-  Future<void> resolveVote(
-    String menuId,
-    String voteId,
-    String winningOptionId,
-  ) async {
-    await firestore.runTransaction((transaction) async {
-      final voteRef = _votesRef(menuId).doc(voteId);
-      final snapshot = await transaction.get(voteRef);
-      if (!snapshot.exists) return;
-
-      transaction.update(voteRef, {
-        'isResolved': true,
-        'winningOptionId': winningOptionId,
-      });
-    });
-  }
-
-  @override
-  Stream<List<MenuSlotVote>> watchVotesForMenu(String menuId) {
-    // BUT-478: `.limit(200)` defence-in-depth — votes are bounded by group
-    // size (a menu's voters are its group members), but without an explicit
-    // limit a future feature change or adversarial write could blow up
-    // snapshot payload on every change. 200 is well clear of any realistic
-    // group size.
-    return _votesRef(menuId)
-        .limit(200)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => MenuSlotVote.fromMap(doc.id, doc.data()))
-              .toList(),
+    final ref = _votesRef(menuId).doc(userId);
+    await firestore.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      final current = snap.exists
+          ? fromFirestore(snap)
+          : MenuBallot(userId: userId);
+      final next = change(current);
+      if (identical(next, current)) return;
+      final allowed = await validateUpdatePermission(userId, userId, next);
+      if (!allowed) {
+        await logPermissionCheck(
+          userId: userId,
+          resource: 'MenuBallot/$menuId/$userId',
+          operation: 'update',
+          granted: false,
+          auditRepository: auditRepository,
         );
-  }
-
-  @override
-  Future<void> addAlternative(
-    String menuId,
-    String voteId,
-    VoteOption option,
-  ) async {
-    await _votesRef(menuId).doc(voteId).update({
-      'alternatives': FieldValue.arrayUnion([option.toFirestore()]),
+        throw PermissionDeniedException(
+          'A ballot document can only be written by its owner',
+        );
+      }
+      tx.set(ref, toFirestore(next));
     });
   }
 }

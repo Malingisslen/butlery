@@ -85,6 +85,7 @@ library;
 import 'dart:io';
 
 import 'package:butlery/models/messaging/conversation_participant.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
 import 'package:butlery/models/trash_item.dart';
@@ -254,6 +255,17 @@ const _allowlists = <_Allowlist>[
     writer:
         'lib/models/realtime/realtime_menu.dart RealtimeMenu.toFirestore, '
         'written whole by ConflictResolutionModule.performUpdate (BUT-2151)',
+  ),
+  // Anchored on the helper, which holds the block's only `keys().hasOnly`; the
+  // create and update limbs both call it.
+  _Allowlist(
+    label: 'realtime_resources/{menuId}/votes',
+    mustContain: 'proposals',
+    anchor: 'function voteShapeOk',
+    writer:
+        'lib/repositories/firebase/firebase_menu_voting_repository.dart '
+        'toFirestore — MenuBallot.toFirestore plus the retention stamp '
+        '(BUT-2118)',
   ),
   // BUT-2243: the block now holds two lists, the `imports` one first. The
   // stamp limb is the only one that excludes `llm_cost`, so its entry anchors
@@ -487,6 +499,13 @@ Map<String, Set<String>> _writtenKeys() => {
     originalPrompt: 'p',
     createdForDate: DateTime(2026),
   ).toFirestore().keys.toSet(),
+  // The model's keys are derived; the two stamp keys are added in the
+  // repository's toFirestore and retyped here.
+  'realtime_resources/{menuId}/votes': {
+    ...const MenuBallot(userId: 'u').toFirestore().keys,
+    'updatedAt',
+    'expireAt',
+  },
 };
 
 /// Pulls the first `hasOnly([...])` list appearing after [anchor].
@@ -947,9 +966,11 @@ void main() {
     // BUT-2321 removed the friend_categories field-only ownership transfer:
     // one affectedKeys().hasOnly(['ownerId', 'updatedAt']), a diff
     // restriction outside the payload comparison.
+    // BUT-2118 added realtime_resources/{menuId}/votes: one keys().hasOnly,
+    // guarded above in _allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      48,
+      49,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
