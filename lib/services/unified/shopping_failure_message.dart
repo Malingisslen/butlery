@@ -45,6 +45,9 @@ String shoppingFailureMessage(Object error, {required bool shared}) {
     FirebaseException(code: 'permission-denied') => noPermission,
     FirebaseException(code: 'not-found') =>
       AppLocale.current.shoppingListNotFound,
+    // BUT-1769: a mutation refused as one the offline payload cannot carry is
+    // a contract violation, not a connection problem.
+    ArgumentError() => AppLocale.current.errorGeneric,
     _ => AppLocale.current.errorNetwork,
   };
 }

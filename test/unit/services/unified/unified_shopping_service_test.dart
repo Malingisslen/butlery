@@ -1021,6 +1021,19 @@ void main() {
       },
     );
 
+    /// BUT-1769: an offline mutation the queued payload cannot carry is
+    /// refused with an `ArgumentError`. It is a broken contract, not a dropped
+    /// connection, so it must not fall through to the network message.
+    test('a refused offline contract is not worded as a network problem', () {
+      final message = shoppingFailureMessage(
+        ArgumentError.value('name', 'mutate', 'would be dropped silently'),
+        shared: true,
+      );
+
+      expect(message, AppLocale.current.errorGeneric);
+      expect(message, isNot(AppLocale.current.errorNetwork));
+    });
+
     /// A denial decided by the RULES rather than by a client-side guard
     /// arrives as a RAW FirebaseException — every other test throws a typed
     /// exception, so without this the `permission-denied` arm of

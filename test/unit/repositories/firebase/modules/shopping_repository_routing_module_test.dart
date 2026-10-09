@@ -1066,6 +1066,51 @@ void main() {
     });
   });
 
+  // BUT-1769: the owner, offline, removing a member. The payload builders
+  // strip `memberPermissions`, and the caller used to be handed the list
+  // without the member while the server never heard of it.
+  test('an offline owner mutation that removes a member is REFUSED with a '
+      'denied audit row', () async {
+    final firestore = FakeFirebaseFirestore();
+    final saved = await _routing(
+      firestore,
+    ).createCollaborativeList(_collabList());
+    final permissionCalls = <_PermissionCall>[];
+    final owner = _routing(
+      firestore,
+      permissionCalls: permissionCalls,
+      transactionRunner: (_) async => throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'unavailable',
+      ),
+    );
+
+    await expectLater(
+      owner.mutateCollaborativeList(
+        saved.id,
+        (live) => live.copyWith(
+          items: [...live.items, _item('bröd')],
+          memberPermissions: const {},
+        ),
+      ),
+      throwsA(isA<OfflineAccessControlChangeException>()),
+    );
+
+    expect(
+      permissionCalls.where((c) => !c.granted).map((c) => c.details),
+      [contains('memberPermissions')],
+    );
+    expect(permissionCalls.where((c) => c.granted), isEmpty);
+    final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
+        .data()!;
+    expect(
+      data['items'],
+      isEmpty,
+      reason: 'nothing of a refused mutation may be queued',
+    );
+    expect((data['memberPermissions'] as Map).keys, contains('bob'));
+  });
+
   // BUT-1665. What these fake-backed tests pin, and nothing more: the mutator's
   // base object comes from a SERVER READ inside the transaction handler rather
   // than from the caller's client cache, and the escalation/edit-rights gates
@@ -1607,18 +1652,8 @@ void main() {
 
         await offline.mutateCollaborativeList(
           saved.id,
-          // Owner-driven, so the escalation guard returns early and cannot be
-          // what keeps createdAt in place.
-          (live) => UnifiedShoppingList(
-            id: live.id,
-            name: live.name,
-            ownerId: live.ownerId,
-            ownerDisplayName: live.ownerDisplayName,
+          (live) => live.copyWith(
             items: [...live.items, _item('mjölk')],
-            createdAt: live.createdAt.subtract(const Duration(days: 365)),
-            type: ListType.collaborative,
-            memberPermissions: live.memberPermissions,
-            lastActivityAt: live.lastActivityAt,
             lastActivityByUserId: 'bob',
             lastActivityByDisplayName: 'Bob Bergman',
           ),
@@ -1631,13 +1666,56 @@ void main() {
         expect((data['items'] as List), hasLength(1));
         expect(data['lastActivityByUserId'], 'bob');
         expect(data['lastActivityByDisplayName'], 'Bob Bergman');
-        expect(
-          data['createdAt'],
-          createdAtBefore,
-          reason:
-              'createdAt is in the rule\'s forbidden triple — the narrowed '
-              'append write must never carry it',
+        expect(data['createdAt'], createdAtBefore);
+      },
+    );
+
+    // BUT-1769: a mutator that CHANGES createdAt is refused before any payload
+    // is built; the builders' own strip is pinned in
+    // shopping_offline_write_module_test.dart.
+    test(
+      'an offline append that moves createdAt is refused, not queued',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList());
+        final createdAtBefore =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                    .data()!['createdAt']
+                as Timestamp;
+
+        final offline = _routing(
+          firestore,
+          transactionRunner: failsWith('unavailable'),
         );
+
+        await expectLater(
+          offline.mutateCollaborativeList(
+            saved.id,
+            // Owner-driven, so the escalation guard returns early and cannot be
+            // what keeps createdAt in place.
+            (live) => UnifiedShoppingList(
+              id: live.id,
+              name: live.name,
+              ownerId: live.ownerId,
+              ownerDisplayName: live.ownerDisplayName,
+              items: [...live.items, _item('mjölk')],
+              createdAt: live.createdAt.subtract(const Duration(days: 365)),
+              type: ListType.collaborative,
+              memberPermissions: live.memberPermissions,
+              lastActivityAt: live.lastActivityAt,
+            ),
+          ),
+          throwsA(isA<OfflineAccessControlChangeException>()),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        final data =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                .data()!;
+        expect(data['items'] as List, isEmpty);
+        expect(data['createdAt'], createdAtBefore);
       },
     );
 
@@ -1646,10 +1724,9 @@ void main() {
     // cached-base payload — which used to be `set(mutated.toFirestore(),
     // merge: true)`, i.e. the whole cached document. If the cache is stale for
     // `memberPermissions`, that replay silently reinstates a member the owner
-    // removed from another device. Reverting `cachedBasePayload` to the old
-    // whole-document write must redden HERE; nothing else covers it.
+    // removed from another device.
     test(
-      'the queued cached-base write carries no rule-locked key',
+      'an offline tick that carries a stale member map is refused, not queued',
       () async {
         final firestore = FakeFirebaseFirestore();
         final saved = await _routing(
@@ -1669,22 +1746,25 @@ void main() {
           firestore,
           transactionRunner: failsWith('unavailable'),
         );
-        await offline.mutateCollaborativeList(
-          saved.id,
-          (live) => UnifiedShoppingList(
-            id: live.id,
-            name: live.name,
-            ownerId: live.ownerId,
-            ownerDisplayName: live.ownerDisplayName,
-            items: [live.items.single.copyWith(bought: true)],
-            createdAt: live.createdAt,
-            type: ListType.collaborative,
-            memberPermissions: const {
-              'bob': SharedListPermission.edit,
-              'carol': SharedListPermission.edit,
-            },
-            lastActivityAt: live.lastActivityAt,
+        await expectLater(
+          offline.mutateCollaborativeList(
+            saved.id,
+            (live) => UnifiedShoppingList(
+              id: live.id,
+              name: live.name,
+              ownerId: live.ownerId,
+              ownerDisplayName: live.ownerDisplayName,
+              items: [live.items.single.copyWith(bought: true)],
+              createdAt: live.createdAt,
+              type: ListType.collaborative,
+              memberPermissions: const {
+                'bob': SharedListPermission.edit,
+                'carol': SharedListPermission.edit,
+              },
+              lastActivityAt: live.lastActivityAt,
+            ),
           ),
+          throwsA(isA<OfflineAccessControlChangeException>()),
         );
         await Future<void>.delayed(Duration.zero);
 
@@ -1693,8 +1773,8 @@ void main() {
                 .data()!;
         expect(
           (data['items'] as List).single['bought'],
-          isTrue,
-          reason: 'the tick itself must still land',
+          isFalse,
+          reason: 'BUT-1769: a refused mutation queues nothing',
         );
         expect(
           (data['memberPermissions'] as Map).keys,
