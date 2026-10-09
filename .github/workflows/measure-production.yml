@@ -1,4 +1,4 @@
-# BUT-2278, BUT-2260 and BUT-2031: read-only measurements against butlery-app-1.
+# BUT-2278, BUT-2260, BUT-2031 and BUT-1814: read-only measurements against butlery-app-1.
 #
 # Writes nothing to Firestore or anywhere else in the project. Prints counts
 # only, never a uid or a log line's text, because the onUserDeleted error line
@@ -68,6 +68,38 @@ jobs:
               echo "social_cleanup_failures=$count"
               echo "oldest_onUserDeleted_log_entry=${oldest:-none}"
             } | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Cloud Logging read refused: $(head -c 300 "$RUNNER_TEMP/logging.err")"
+            exit 1
+          fi
+
+      - name: "BUT-1814: maintenance chain task durations, last 30 days"
+        run: |
+          set -uo pipefail
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1
+          # These log lines carry chain, task, durationMs and error codes only.
+          if gcloud logging read \
+                'jsonPayload.message=("maintenance.task_complete" OR "maintenance.task_failed" OR "maintenance.task_skipped" OR "maintenance.chain_complete")' \
+                --project butlery-app-1 --freshness=30d --limit=20000 \
+                --format=json >"$RUNNER_TEMP/chain.json" 2>"$RUNNER_TEMP/logging.err"; then
+            jq -r '
+              def pct(p): (sort | .[((length - 1) * p | floor)]);
+              map(.jsonPayload) as $rows
+              | ($rows | map(select(.message == "maintenance.task_complete"))
+                 | group_by(.chain + "/" + .task)
+                 | map({key: (.[0].chain + "/" + .[0].task),
+                        d: map(.durationMs)})
+                 | map("\(.key) runs=\(.d | length) p50=\(.d | pct(0.5))ms p95=\(.d | pct(0.95))ms max=\(.d | max)ms")
+                 | .[]),
+                ($rows | map(select(.message == "maintenance.task_failed"))
+                 | map("FAILED \(.chain)/\(.task) timedOut=\(.timedOut) durationMs=\(.durationMs) errCode=\(.errCode)") | .[]),
+                ($rows | map(select(.message == "maintenance.task_skipped"))
+                 | map("SKIPPED \(.chain)/\(.task) availableMs=\(.availableMs)") | .[]),
+                ($rows | map(select(.message == "maintenance.chain_complete"))
+                 | group_by(.chain)
+                 | map("CHAIN \(.[0].chain) runs=\(length) max=\(map(.durationMs) | max)ms p50=\(map(.durationMs) | pct(0.5))ms")
+                 | .[])
+            ' "$RUNNER_TEMP/chain.json" | tee -a "$GITHUB_STEP_SUMMARY"
           else
             echo "::error::Cloud Logging read refused: $(head -c 300 "$RUNNER_TEMP/logging.err")"
             exit 1

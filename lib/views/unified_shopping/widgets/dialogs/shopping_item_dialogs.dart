@@ -173,7 +173,10 @@ class _AddItemDialogState extends State<_AddItemDialog> {
     final name = _nameController.text.toLowerCase().trim();
     if (name.isEmpty) return;
 
-    final suggestedCategory = _CategorySuggester.suggest(name);
+    final suggestedCategory = _CategorySuggester.suggest(
+      name,
+      savedCategory: widget.viewModel.savedCategoryFor(name),
+    );
     if (suggestedCategory != null &&
         _categoryController.text != suggestedCategory) {
       _categoryManuallyEdited = false; // Reset flag for auto-suggestion
@@ -429,14 +432,16 @@ class _EditItemDialogState extends State<_EditItemDialog> {
 
 /// Category auto-suggestion for the item-name field, delegating to the
 /// maintained engine in `lib/services/shopping/ingredient_categorizer.dart`
-/// (BUT-1890). The same engine builds the shopping list from the weekly menu,
-/// so a name categorises identically wherever it is typed.
+/// (BUT-1890). The same engine builds the shopping list from the weekly menu.
 ///
 /// `categorize` returns [ShoppingCategory.other] for no match, never null,
 /// and the caller relies on null to leave the field alone — so `other` is
 /// mapped back to null here rather than stamped into every unknown item.
 class _CategorySuggester {
-  static String? suggest(String itemName) {
+  /// A category the user once moved this item to wins over the engine's
+  /// guess (BUT-2137).
+  static String? suggest(String itemName, {String? savedCategory}) {
+    if (savedCategory != null) return savedCategory;
     final category = IngredientCategorizer.categorize(itemName);
     return category == ShoppingCategory.other ? null : category;
   }
