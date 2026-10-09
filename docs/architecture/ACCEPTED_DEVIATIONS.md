@@ -5966,3 +5966,28 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   combined with the 30-day arithmetic in a rule; the rule allows an hour either way, the
   shape `overwritten_versions` already has. The copy and the delete are one batch, so a
   refused copy refuses the delete, which before BUT-907 did not depend on the clock.
+
+## BUT-2118 — live-menu votes as one document per person (2026-10-09)
+
+- **The vote's timing and settling are app rules.** `realtime_resources/{id}/votes/{uid}` is
+  checked by the rules for its keys, `userId`, `updatedAt == request.time`, `expireAt` at most
+  91 days ahead, the size of each map, the edit role for `started`, `proposals` and `resolved`,
+  and ballots that cannot be changed or withdrawn. The 24-hour window, reopening, that only the
+  starter settles, and the shape of each option are not checked there: the rules cannot iterate
+  a map's values, and a document is bounded at 1 MiB.
+- **SUPERSEDES the scope of the BUT-2017 votes line.** That line names
+  `realtime_menus/{id}/votes`; the same gate (the caller's mirror, fail-open on a missing
+  mirror, one direction) now also covers `realtime_resources/{id}/votes` on create and update.
+  BUT-2169 left live menus untouched, so a blocked person's options and votes are shown like
+  the menu's dishes are.
+- **Options carry free text with no filter and no report path.** An option is
+  `recipe.toMenuDish()` from the proposer's recipes, written only by a participant with an
+  edit role and read only by the menu's participants: the same writers and readers as
+  `menuSnapshot`, which has neither either. Trust & Safety asked for this to be written down.
+- **Ballot secrecy is a view.** Any participant can read every ballot document on the menu.
+  The card shows counts and never who voted for what (produktregler 4.8), and no string calls
+  the vote anonymous.
+- **A leaver's ballot document stays until its TTL or their erasure.** Leaving a live menu
+  removes them from `participantIds`, which stops their starts, proposals and ballots counting;
+  the document itself goes with the TTL (`expireAt`, set 60 days ahead on each write) or the
+  account deletion cascade, which sweeps every menu.

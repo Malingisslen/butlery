@@ -1463,6 +1463,96 @@ service cloud.firestore {
 
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId;
+
+      // BUT-2118: menu voting. One document per person and menu, doc id ==
+      // the voter's uid, written only by that person, so no rule has to
+      // reason about someone else's entry inside a shared map. A vote on a
+      // slot is the starter's `started` entry; the other documents add
+      // `proposals` and `ballots` keyed by that vote's id. The app derives
+      // the tally from all of them.
+      //
+      // What the rules do NOT check, recorded in accepted-deviations: the
+      // 24-hour window (the deadline sits in the starter's document, out of
+      // reach of anyone else's write), and the contents of the nested
+      // lists and dishes, which a rule cannot iterate.
+      match /votes/{voteUid} {
+        function liveMenu() {
+          return get(/databases/$(database)/documents/realtime_resources/$(resourceId)).data;
+        }
+
+        // Starting, proposing and settling a vote put a dish in front of
+        // everyone and end in a menu write, so they take the role a swap
+        // takes. Casting a ballot does not.
+        function canEditLiveMenu() {
+          return request.auth.uid == liveMenu().ownerId
+            || liveMenu().participants.get(request.auth.uid, '')
+                 in ['editor', 'write', 'admin', 'owner'];
+        }
+
+        function voteMapOk(data, key, maxKeys) {
+          return data.get(key, {}) is map && data.get(key, {}).size() <= maxKeys;
+        }
+
+        // `expireAt` feeds the TTL on the `votes` collection group: a
+        // document goes at most 91 days after its owner last wrote it.
+        function voteShapeOk(data) {
+          return data.keys().hasOnly(['userId', 'started', 'proposals',
+                'ballots', 'resolved', 'updatedAt', 'expireAt'])
+            && data.userId == request.auth.uid
+            && data.updatedAt == request.time
+            && data.expireAt is timestamp
+            && data.expireAt > request.time
+            && data.expireAt <= request.time + duration.value(91, 'd')
+            && voteMapOk(data, 'started', 28)
+            && voteMapOk(data, 'proposals', 100)
+            && voteMapOk(data, 'ballots', 100)
+            && voteMapOk(data, 'resolved', 100);
+        }
+
+        // A cast ballot cannot be changed or withdrawn (produktregler 4.8).
+        // The diff is taken on the nested map: a document-level diff only
+        // says that `ballots` changed, not which key.
+        function ballotsKept() {
+          let d = request.resource.data.get('ballots', {})
+                    .diff(resource.data.get('ballots', {}));
+          return d.changedKeys().size() == 0 && d.removedKeys().size() == 0;
+        }
+
+        allow read: if isAuthenticated()
+          && isRealtimeParticipant('realtime_resources', resourceId);
+
+        // The BUT-2017 gate, as on every other ballot surface: nobody on
+        // this menu may have blocked the writer.
+        allow create: if isAuthenticated()
+          && request.auth.uid == voteUid
+          && isRealtimeParticipant('realtime_resources', resourceId)
+          && voteShapeOk(request.resource.data)
+          && ((request.resource.data.get('started', {}).size() == 0
+                && request.resource.data.get('proposals', {}).size() == 0
+                && request.resource.data.get('resolved', {}).size() == 0)
+              || canEditLiveMenu())
+          && notBlockedByAnyOf(liveMenu().participantIds);
+
+        allow update: if isAuthenticated()
+          && request.auth.uid == voteUid
+          && isRealtimeParticipant('realtime_resources', resourceId)
+          && voteShapeOk(request.resource.data)
+          && ballotsKept()
+          && ((request.resource.data.get('started', {})
+                   == resource.data.get('started', {})
+                && request.resource.data.get('proposals', {})
+                   == resource.data.get('proposals', {})
+                && request.resource.data.get('resolved', {})
+                   == resource.data.get('resolved', {}))
+              || canEditLiveMenu())
+          && notBlockedByAnyOf(liveMenu().participantIds);
+
+        // Deleting and recreating the document would reset every ballot, so
+        // a document holding one is left to the TTL and the erasure cascade.
+        allow delete: if isAuthenticated()
+          && request.auth.uid == voteUid
+          && resource.data.get('ballots', {}).size() == 0;
+      }
     }
 
     // ========================================
@@ -1519,10 +1609,14 @@ service cloud.firestore {
           return get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.participantIds;
         }
 
+        // BUT-2118: a `userId` here may only name the writer. The id `votes`
+        // is shared with live-menu ballots, which the account erasure and the
+        // export find by collection group on `userId`.
         allow create: if isAuthenticated()
           && request.auth.uid == voteId
           && isRealtimeParticipant('realtime_menus', menuId)
-          && notBlockedByAnyOf(menuRoster());
+          && notBlockedByAnyOf(menuRoster())
+          && request.resource.data.get('userId', request.auth.uid) == request.auth.uid;
 
         // Update: same uid as the doc id, AND the existing doc's `userId`
         // (if present) matches — defence-in-depth against legacy votes
@@ -3766,6 +3860,16 @@ service cloud.firestore {
     // NOTE: matches ALL 'likes' subcollections. A new one must carry a
     // `userId` naming its owner before relying on this block.
     match /{path=**}/likes/{likeId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // BUT-2118: users can read their OWN menu ballots via collectionGroup,
+    // for the Art. 15 export (`votes where userId == uid`), including menus
+    // they have left. Read only.
+    // NOTE: matches ALL 'votes' subcollections. A new one must carry a
+    // `userId` naming its owner before relying on this block.
+    match /{path=**}/votes/{voteId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
     }
