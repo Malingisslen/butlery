@@ -371,6 +371,38 @@ class UserService extends ChangeNotifier
     return stored;
   }
 
+  /// BUT-2221: persists the name-on-shared-dishes opt-in on its own write
+  /// path. False when the write failed or the rules refused it (a minor, or
+  /// an account whose age is not verified); the profile then keeps its value.
+  Future<bool> setShowNameOnSharedDishes(bool enabled) async {
+    _clearError();
+    final profile = _currentUserProfile;
+    if (profile == null) {
+      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
+      return false;
+    }
+    try {
+      await _repository.setShowNameOnSharedDishes(profile.uid, enabled);
+    } catch (e) {
+      AppLogger.error('setShowNameOnSharedDishes failed: $e');
+      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
+      return false;
+    }
+    // Re-read after the await: a sign-out or a profile reload may have
+    // replaced the profile captured above.
+    final current = _currentUserProfile;
+    if (current != null && current.uid == profile.uid) {
+      final updated = current.copyWith(
+        showNameOnSharedDishes: enabled,
+        showNameOnSharedDishesChangedAt: clock.now(),
+      );
+      _currentUserProfile = updated;
+      _cacheProfile(updated.uid, updated);
+    }
+    notifyListeners();
+    return true;
+  }
+
   /// Invokes the searchability callable. Returns the stored value, or null on
   /// any failure (offline, rate-limited, App Check, service unregistered) —
   /// the distinction between "server said false" and "we never reached the

@@ -113,6 +113,10 @@ These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU 
 
 If you choose to share your allergy list with your household, its members — including anyone who joins later — can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Allergy information is health data and is therefore processed on the basis of your **explicit consent (Art. 9(2)(a))**. Sharing is off by default, is per person, and can be withdrawn at any time, upon which the list is deleted immediately. The data never leaves your household, is never shared with third parties, and is not part of any public or aggregated figure.
 
+**Your name on dishes in shared menus (if you have consented):**
+
+If you turn on "Show my name on my dishes in shared menus", anyone who opens a menu you have shared sees your name under the dishes you made yourself, with a link to your public profile. This applies to every menu you have shared, older ones too. The choice is based on your **consent (Art. 6(1)(a))**, is off by default and cannot be turned on by anyone under 18. We keep the choice and the time you last changed it on your public profile, and both are part of your data export. If you turn it off, your name disappears within 30 minutes. No name is stored in the menus.
+
 ### 5.3 Community ratings ("Butlery-betyget") — legitimate interest, not consent
 
 When you rate a recipe (the "everyone" rating, 1–5 stars), that rating is combined

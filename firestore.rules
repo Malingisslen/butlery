@@ -313,6 +313,14 @@ service cloud.firestore {
         && get(userPath).data.get('isMinor', false) == true;
     }
 
+    // BUT-2221: may this account put its name on dishes in shared menus? Only a
+    // verified adult.
+    function mayShowNameOnSharedDishes(userId) {
+      return isAgeCompliant()
+        && get(/databases/$(database)/documents/users/$(userId))
+          .data.get('isMinor', false) != true;
+    }
+
     // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
@@ -809,9 +817,12 @@ service cloud.firestore {
         // isSearchable:true for a minor is denied here.
         && (request.resource.data.isSearchable != true
           || !accountIsMinor(userId))
+        // BUT-2221: the opt-in is set on an existing profile only, by the
+        // targeted update below.
         && !request.resource.data.keys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
-          'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale'
+          'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale',
+          'showNameOnSharedDishes', 'showNameOnSharedDishesChangedAt'
         ]);
 
       // BUG-011 fix: Allow friendsCount updates during bidirectional friend creation
@@ -841,6 +852,15 @@ service cloud.firestore {
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isSearchable'])
           || request.resource.data.isSearchable != true
           || !accountIsMinor(userId))
+        // BUT-2221: the name-on-dishes opt-in and its change time move
+        // together, the time is the server's own, and only a verified adult
+        // may turn it on. Turning it off is always allowed.
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['showNameOnSharedDishes', 'showNameOnSharedDishesChangedAt'])
+          || (request.resource.data.showNameOnSharedDishes is bool
+            && request.resource.data.showNameOnSharedDishesChangedAt == request.time
+            && (request.resource.data.showNameOnSharedDishes == false
+              || mayShowNameOnSharedDishes(userId))))
       ) || (
         isAuthenticated() &&
         // Only friendsCount field is being changed

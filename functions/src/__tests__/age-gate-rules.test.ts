@@ -766,6 +766,204 @@ test("public_profiles: an old address can be removed, not changed", async () => 
 });
 
 // ============================================================================
+// PUBLIC_PROFILES — BUT-2221 name on shared dishes
+//
+// The opt-in and its change time travel together, the time is the server's
+// own, and only a verified adult (ageCompliant claim, users doc present, not a
+// minor) may turn it on.
+// ============================================================================
+
+async function seedDishCreditProfile(
+  uid: string,
+  user: Record<string, unknown> | null,
+  profile: Record<string, unknown> = {}
+): Promise<void> {
+  if (user) await seedDoc(`users/${uid}`, { uid, ...user });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody(profile));
+}
+
+function dishCreditRef(uid: string, claims?: Record<string, unknown>) {
+  return env
+    .authenticatedContext(uid, claims)
+    .firestore()
+    .doc(`public_profiles/${uid}`);
+}
+
+// DC1: the ALLOW control.
+test("public_profiles: verified adult can turn on name on shared dishes", async () => {
+  const uid = `dc-adult-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: false });
+  await assertSucceeds(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishes: true,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+test("public_profiles: minor CANNOT turn on name on shared dishes", async () => {
+  const uid = `dc-minor-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: true });
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishes: true,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+test("public_profiles: adult without the ageCompliant claim CANNOT turn it on", async () => {
+  const uid = `dc-noclaim-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: false });
+  await assertFails(
+    dishCreditRef(uid).update({
+      showNameOnSharedDishes: true,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+test("public_profiles: account without a users doc CANNOT turn it on", async () => {
+  const uid = `dc-nouser-${RUN}`;
+  await seedDishCreditProfile(uid, null);
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishes: true,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+test("public_profiles: a client-chosen change time is refused", async () => {
+  const uid = `dc-clienttime-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: false });
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishes: true,
+      showNameOnSharedDishesChangedAt: new Date(),
+    })
+  );
+});
+
+test("public_profiles: the flag cannot change without a new change time", async () => {
+  const uid = `dc-notime-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: false });
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({ showNameOnSharedDishes: true })
+  );
+});
+
+test("public_profiles: a non-bool flag is refused", async () => {
+  const uid = `dc-nonbool-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: false });
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishes: "true",
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+test("public_profiles: a minor can always turn it OFF and still rename", async () => {
+  const uid = `dc-minor-off-${RUN}`;
+  await seedDishCreditProfile(
+    uid,
+    { isMinor: true },
+    { showNameOnSharedDishes: true }
+  );
+  const ref = dishCreditRef(uid, AGE_OK);
+  await assertSucceeds(ref.set({ displayName: "Anna B" }, { merge: true }));
+  await assertSucceeds(
+    ref.update({
+      showNameOnSharedDishes: false,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+test("public_profiles: another account cannot set someone's flag", async () => {
+  const uid = `dc-target-${RUN}`;
+  await seedDishCreditProfile(uid, { isMinor: false }, { friendsCount: 0 });
+  const other = env
+    .authenticatedContext(OTHER_UID, AGE_OK)
+    .firestore()
+    .doc(`public_profiles/${uid}`);
+  await assertFails(
+    other.update({
+      showNameOnSharedDishes: true,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+  await assertFails(
+    other.update({ friendsCount: 1, showNameOnSharedDishes: true })
+  );
+});
+
+test("public_profiles: a new profile cannot carry the flag", async () => {
+  const uid = `dc-create-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: false });
+  const ref = dishCreditRef(uid, AGE_OK);
+  await assertFails(ref.set(publicProfileBody({ showNameOnSharedDishes: true })));
+  await assertSucceeds(ref.set(publicProfileBody()));
+});
+
+test("public_profiles: a new profile cannot carry the change time", async () => {
+  const uid = `dc-create-time-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: false });
+  const ref = dishCreditRef(uid, AGE_OK);
+  await assertFails(
+    ref.set(
+      publicProfileBody({ showNameOnSharedDishesChangedAt: serverTimestamp() })
+    )
+  );
+  await assertSucceeds(ref.set(publicProfileBody()));
+});
+
+test("public_profiles: the change time cannot be rewritten on its own", async () => {
+  const uid = `dc-timeonly-${RUN}`;
+  await seedDishCreditProfile(
+    uid,
+    { isMinor: false },
+    { showNameOnSharedDishes: false }
+  );
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishesChangedAt: new Date(0),
+    })
+  );
+});
+
+test("public_profiles: turning it off with a client-chosen time is refused", async () => {
+  const uid = `dc-off-clienttime-${RUN}`;
+  await seedDishCreditProfile(
+    uid,
+    { isMinor: false },
+    { showNameOnSharedDishes: true }
+  );
+  await assertFails(
+    dishCreditRef(uid, AGE_OK).update({
+      showNameOnSharedDishes: false,
+      showNameOnSharedDishesChangedAt: new Date(0),
+    })
+  );
+});
+
+test("public_profiles: turning it off needs no ageCompliant claim", async () => {
+  const uid = `dc-noclaim-off-${RUN}`;
+  await seedDishCreditProfile(
+    uid,
+    { isMinor: false },
+    { showNameOnSharedDishes: true }
+  );
+  await assertSucceeds(
+    dishCreditRef(uid).update({
+      showNameOnSharedDishes: false,
+      showNameOnSharedDishesChangedAt: serverTimestamp(),
+    })
+  );
+});
+
+// ============================================================================
 // isAgeCompliant() MATRIX on the four UGC create paths
 // (12 assertions across 12 tests)
 //

@@ -18202,4 +18202,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get weekMenuPlanningCancelNote =>
       'Cancelling keeps your latest suggestion. Nothing is overwritten until you save.';
+
+  @override
+  String get privacyShowNameOnDishesTitle =>
+      'Show my name on my dishes in shared menus';
+
+  @override
+  String get privacyShowNameOnDishesSubtitle =>
+      'Anyone who opens a menu you have shared can see which dishes are yours and go to your profile. Applies to every menu you have shared, older ones too. If you turn it off, your name disappears within 30 minutes.';
+
+  @override
+  String get privacyShowNameOnDishesMinor =>
+      'Not available for accounts under 18.';
+
+  @override
+  String menuDishCreatorCredit(String name) {
+    return 'Recipe by $name';
+  }
+
+  @override
+  String get a11yOpenCreatorProfile => 'Open profile';
+
+  @override
+  String get errorCouldNotSaveDishCredit =>
+      'Your choice about showing your name on dishes could not be saved. Please try again.';
 }

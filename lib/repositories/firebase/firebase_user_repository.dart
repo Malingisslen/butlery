@@ -855,6 +855,28 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
+  Future<void> setShowNameOnSharedDishes(String userId, bool enabled) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set show-name-on-shared-dishes',
+    );
+
+    await collection.doc(userId).update({
+      'showNameOnSharedDishes': enabled,
+      'showNameOnSharedDishesChangedAt': FieldValue.serverTimestamp(),
+    });
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_show_name_on_shared_dishes',
+      granted: true,
+    );
+  }
+
+  @override
   Future<void> markPantryAutoAddPrompted(String userId) async {
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(

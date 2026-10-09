@@ -1305,6 +1305,76 @@ void main() {
       });
     });
 
+    group('name on shared dishes opt-in (BUT-2221)', () {
+      UserProfileViewModel buildFor(UserProfile profile) {
+        mockUserService.setUserState(
+          currentUser: profile,
+          users: {},
+          isLoading: false,
+          error: null,
+        );
+        final vm = UserProfileViewModel(
+          mockUserService,
+          mockImagePickerService,
+          uploadService: mockImageUploadService,
+        );
+        addTearDown(vm.dispose);
+        return vm;
+      }
+
+      test('is off until the user opts in', () {
+        final vm = buildFor(UserProfileBuilder.build(uid: testUserId));
+
+        expect(vm.showNameOnSharedDishes, isFalse);
+      });
+
+      test('a saved opt-in shows on and survives a form reset', () async {
+        final vm = buildFor(UserProfileBuilder.build(uid: testUserId));
+        when(
+          () => mockUserService.setShowNameOnSharedDishes(true),
+        ).thenAnswer((_) async => true);
+        var notifications = 0;
+        vm.addListener(() => notifications++);
+
+        expect(await vm.setShowNameOnSharedDishes(true), isTrue);
+
+        expect(vm.showNameOnSharedDishes, isTrue);
+        expect(vm.hasError, isFalse);
+        expect(notifications, greaterThanOrEqualTo(1));
+        verify(() => mockUserService.setShowNameOnSharedDishes(true)).called(1);
+
+        vm.resetForm();
+
+        expect(vm.showNameOnSharedDishes, isTrue);
+      });
+
+      test(
+        'a failed write leaves the toggle off and surfaces an error',
+        () async {
+          final vm = buildFor(UserProfileBuilder.build(uid: testUserId));
+          when(
+            () => mockUserService.setShowNameOnSharedDishes(any()),
+          ).thenAnswer((_) async => false);
+
+          expect(await vm.setShowNameOnSharedDishes(true), isFalse);
+
+          expect(vm.showNameOnSharedDishes, isFalse);
+          expect(vm.hasError, isTrue);
+        },
+      );
+
+      test('a minor is refused without calling the service', () async {
+        final vm = buildFor(
+          UserProfileBuilder.build(uid: testUserId, isMinor: true),
+        );
+
+        expect(await vm.setShowNameOnSharedDishes(true), isFalse);
+
+        expect(vm.showNameOnSharedDishes, isFalse);
+        verifyNever(() => mockUserService.setShowNameOnSharedDishes(any()));
+      });
+    });
+
     // BUT-1629: search discoverability for a 15–17-year-old. The client can
     // never write it (firestore.rules denies it and UserProfile.toFirestore
     // zeroes it), so the toggle routes through the server callable via
@@ -1312,6 +1382,7 @@ void main() {
     // ends up showing what the SERVER holds, never what was requested — a
     // privacy toggle that renders the opposite of reality is the failure that
     // matters here.
+
     group('minor searchability opt-in (BUT-1629)', () {
       UserProfileViewModel buildFor(UserProfile profile) {
         mockUserService.setUserState(
